@@ -95,11 +95,10 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: TBS-prerelease
-          path: TravBotSharp/bin/Release
       - name: Archive pre release
         uses: montudor/action-zip@v1
         with:
-            args: zip -qq -r TBS-${{needs.version.outputs.version}}.zip TravBotSharp
+            args: zip -r TBS-${{needs.version.outputs.version}}.zip .
 
       - name: Create pre release
         uses: ncipollo/release-action@v1
