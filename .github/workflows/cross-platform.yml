@@ -17,12 +17,6 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '6.0'
-    - uses: actions/cache@v2
-      with:
-        path: ${{ github.workspace }}/.nuget/packages
-        key: ${{ matrix.profile }}-nuget-${{ hashFiles('TbsCrossPlatform/packages.lock.json') }}
-        restore-keys: |
-          ${{ matrix.profile }}-nuget-
 
     - name: Install dependencies
       run: dotnet restore TbsCrossPlatform --use-lock-file --locked-mode
