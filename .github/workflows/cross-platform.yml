@@ -25,7 +25,7 @@ jobs:
           ${{ runner.os }}-nuget-
 
     - name: Install dependencies
-      run: dotnet restore TbsCrossPlatform --use-lock-file --locked-mode -v n
+      run: dotnet restore TbsCrossPlatform --use-lock-file --locked-mode
   
     - name: Build
       run: |
