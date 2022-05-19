@@ -20,9 +20,9 @@ jobs:
     - uses: actions/cache@v2
       with:
         path: ${{ github.workspace }}/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('TbsCrossPlatform/packages.lock.json') }}
+        key: ${{ matrix.profile }}-nuget-${{ hashFiles('TbsCrossPlatform/packages.lock.json') }}
         restore-keys: |
-          ${{ runner.os }}-nuget-
+          ${{ matrix.profile }}-nuget-
 
     - name: Install dependencies
       run: dotnet restore TbsCrossPlatform --use-lock-file --locked-mode
