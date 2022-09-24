@@ -12,8 +12,8 @@ jobs:
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          name: TBS-${{needs.version.outputs.version}}
-          tag: ${{github.event.inputs.version}
+          name: TBS-${{github.event.inputs.version}}
+          tag: ${{github.event.inputs.version}}
           commit: master          
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
