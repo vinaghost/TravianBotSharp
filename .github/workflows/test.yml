@@ -14,7 +14,7 @@ jobs:
         with:
           name: TBS-${{github.event.inputs.version}}
           tag: ${{github.event.inputs.version}}
-          commit: master          
+          commit: premium          
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
             **Changelog**: 
