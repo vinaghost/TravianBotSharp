@@ -1,1 +1,22 @@
-a
+name: TestFlow
+
+on:
+  workflow_dispatch:
+    inputs: 
+      version:
+        required: true
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:        
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          name: TBS-${{needs.version.outputs.version}}
+          tag: ${{github.event.inputs.version}
+          commit: master          
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            **Changelog**: 
+            nothing
+          name: TBS-release
