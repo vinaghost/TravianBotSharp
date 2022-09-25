@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.semvers.outputs.patch }}
-      changelog: ${{ steps.Changelog.outputs.changelog }}
     steps:
       - uses: docker://agilepathway/pull-request-label-checker:latest
         with:
@@ -34,15 +33,6 @@ jobs:
         uses: "WyriHaximus/github-action-next-semvers@v1"
         with:
           version: ${{ steps.previoustag.outputs.tag }}  
-            
-      - name: 'Create changelog'
-        id: Changelog
-        run: |
-          changelog="${{github.event.pull_request.body}}"
-          changelog="${changelog//'%'/'%25'}"
-          changelog="${changelog//$'\n'/'%0A'}"
-          changelog="${changelog//$'\r'/'%0D'}"
-          echo "::set-output name=changelog::$changelog"
 
   build:
     runs-on: windows-2019
