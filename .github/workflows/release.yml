@@ -54,7 +54,7 @@ jobs:
         with:
           name: TBS-${{github.event.inputs.version}}
           tag: ${{github.event.inputs.version}}
-          commit: master          
+          commit: premium          
           artifacts: "TBS/TBS-${{github.event.inputs.version}}-TravianOfficial-OldHeroUI.zip, TBS/TBS-${{github.event.inputs.version}}-TravianOfficial-NewHeroUI.zip, TBS/TBS-${{github.event.inputs.version}}-TTWars.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
