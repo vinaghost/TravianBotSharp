@@ -45,17 +45,17 @@ jobs:
       
       - name: Archive release
         run: |
-          cd TBS; zip -r "TBS-${{needs.version.outputs.version}}-TravianOfficial-OldHeroUI.zip" TBS-TRAVIAN_OFFICIAL; cd ..
-          cd TBS; zip -r "TBS-${{needs.version.outputs.version}}-TravianOfficial-NewHeroUI.zip" TBS-TRAVIAN_OFFICIAL_HEROUI; cd ..
-          cd TBS; zip -r "TBS-${{needs.version.outputs.version}}-TTWars.zip" TBS-TTWARS; cd ..
-            
+          cd TBS; zip -r "TBS-${{needs.version.outputs.version}}-TravianOfficial-OldHeroUI.zip" TBS-TRAVIAN_OFFICIAL; cp -R "TBS-${{needs.version.outputs.version}}-TravianOfficial-OldHeroUI.zip" $(pwd)/../; cd ..
+          cd TBS; zip -r "TBS-${{needs.version.outputs.version}}-TravianOfficial-NewHeroUI.zip" TBS-TRAVIAN_OFFICIAL_HEROUI; cp -R "TBS-${{needs.version.outputs.version}}-TravianOfficial-NewHeroUI.zip" $(pwd)/../; cd ..
+          cd TBS; zip -r "TBS-${{needs.version.outputs.version}}-TTWars.zip" TBS-TTWARS; cp -R "TBS-${{needs.version.outputs.version}}-TTWars.zip" $(pwd)/../; cd ..
+
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
           name: TBS-${{github.event.inputs.version}}
           tag: ${{github.event.inputs.version}}
           commit: premium          
-          artifacts: "TBS/TBS-${{github.event.inputs.version}}-TravianOfficial-OldHeroUI.zip, TBS/TBS-${{github.event.inputs.version}}-TravianOfficial-NewHeroUI.zip, TBS/TBS-${{github.event.inputs.version}}-TTWars.zip"
+          artifacts: "TBS-${{github.event.inputs.version}}-TravianOfficial-OldHeroUI.zip, TBS-${{github.event.inputs.version}}-TravianOfficial-NewHeroUI.zip, TBS-${{github.event.inputs.version}}-TTWars.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
             Please join our Discord server for more information: [https://discord.gg/mBa4f2K](https://discord.gg/mBa4f2K)
