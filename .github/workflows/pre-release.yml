@@ -83,9 +83,9 @@ jobs:
       
       - name: Archive pre release
         run: |
-            zip -r "TBS-${{needs.version.outputs.version}}-TravianOfficial.zip" TBS/TBS-TRAVIAN_OFFICIAL
-            zip -r "TBS-${{needs.version.outputs.version}}-TravianOfficial-NewHeroUI.zip" TBS/TBS-TRAVIAN_OFFICIAL_HEROUI
-            zip -r "TBS-${{needs.version.outputs.version}}-TTWars.zip" TBS/TBS-TTWARS
+            cd TBS; zip -r "TBS-${{needs.version.outputs.version}}-TravianOfficial-OldHeroUI.zip" TBS-TRAVIAN_OFFICIAL; cd ..
+            cd TBS; zip -r "TBS-${{needs.version.outputs.version}}-TravianOfficial-NewHeroUI.zip" TBS-TRAVIAN_OFFICIAL_HEROUI; cd ..
+            cd TBS; zip -r "TBS-${{needs.version.outputs.version}}-TTWars.zip" TBS-TTWARS; cd ..
 
       - name: Create pre release
         uses: ncipollo/release-action@v1
