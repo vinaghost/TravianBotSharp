@@ -45,9 +45,9 @@ jobs:
       
       - name: Archive release
         run: |
-          cd TBS; zip -r "TBS-${{needs.version.outputs.version}}-TravianOfficial-OldHeroUI.zip" TBS-TRAVIAN_OFFICIAL; cp -R "TBS-${{needs.version.outputs.version}}-TravianOfficial-OldHeroUI.zip" $(pwd)/../; cd ..
-          cd TBS; zip -r "TBS-${{needs.version.outputs.version}}-TravianOfficial-NewHeroUI.zip" TBS-TRAVIAN_OFFICIAL_HEROUI; cp -R "TBS-${{needs.version.outputs.version}}-TravianOfficial-NewHeroUI.zip" $(pwd)/../; cd ..
-          cd TBS; zip -r "TBS-${{needs.version.outputs.version}}-TTWars.zip" TBS-TTWARS; cp -R "TBS-${{needs.version.outputs.version}}-TTWars.zip" $(pwd)/../; cd ..
+          cd TBS; zip -r "TBS-${{github.event.inputs.version}}-TravianOfficial-OldHeroUI.zip" TBS-TRAVIAN_OFFICIAL; cp -R "TBS-${{github.event.inputs.version}}-TravianOfficial-OldHeroUI.zip" ../; cd ..
+          cd TBS; zip -r "TBS-${{github.event.inputs.version}}-TravianOfficial-NewHeroUI.zip" TBS-TRAVIAN_OFFICIAL_HEROUI; cp -R "TBS-${{github.event.inputs.version}}-TravianOfficial-NewHeroUI.zip" ../; cd ..
+          cd TBS; zip -r "TBS-${{github.event.inputs.version}}-TTWars.zip" TBS-TTWARS; cp -R "TBS-${{github.event.inputs.version}}-TTWars.zip" ../; cd ..
 
       - name: Create release
         uses: ncipollo/release-action@v1
