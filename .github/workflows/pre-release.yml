@@ -2,7 +2,7 @@ name: PreReleaseFlow
 
 on:
   pull_request:
-    branches: [develop]
+    branches: [premium]
     types: [closed]
   workflow_dispatch:
     
