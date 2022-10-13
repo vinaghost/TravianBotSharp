@@ -1,0 +1,21 @@
+name: TestFlow
+
+on:
+  workflow_dispatch:
+    inputs: 
+      version:
+        required: true
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:        
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          name: TBS-${{github.event.inputs.version}}
+          tag: ${{github.event.inputs.version}}
+          commit: premium          
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            **Changelog**: 
+            nothing
