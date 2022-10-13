@@ -5,6 +5,44 @@ on:
     branches: [master]
     types: [closed]
 jobs:
+  version:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.semvers.outputs.minor }}
+      changelog: ${{ steps.Changelog.outputs.changelog }}
+    steps:
+      - uses: docker://agilepathway/pull-request-label-checker:latest
+        with:
+          one_of: release
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 'Checkout repo' 
+        uses: actions/checkout@v2    
+
+      - name: 'Update tag'
+        run: git fetch --prune --unshallow --tags
+
+      - name: 'Get latest tag'
+        id: latesttag
+        uses: pozetroninc/github-action-get-latest-release@master        
+        with:
+          repository: ${{ github.repository }}
+        
+      - name: 'Get next version'
+        id: semvers
+        uses: "WyriHaximus/github-action-next-semvers@v1"
+        with:
+          version: ${{ steps.latesttag.outputs.release }}
+            
+      - name: 'Create changelog'
+        id: Changelog
+        run: |
+          changelog="${{github.event.pull_request.body}}"
+          changelog="${changelog//'%'/'%25'}"
+          changelog="${changelog//$'\n'/'%0A'}"
+          changelog="${changelog//$'\r'/'%0D'}"
+          echo "::set-output name=changelog::$changelog"
   build:
     runs-on: windows-2019
     strategy:
