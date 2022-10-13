@@ -2,30 +2,11 @@ name: BuildFlow
 
 on:
   pull_request:
-    branches-ignore: [master]
     types: [opened, reopened, synchronize]
   workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: windows-latest
-    steps:
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v2
-        with:
-            dotnet-version: 6.0.x
-
-      - name: 'Checkout repo' 
-        uses: actions/checkout@v2
-
-      - name: Navigate to Workspace
-        run: cd $GITHUB_WORKSPACE
-
-      - name: Test bot
-        run: dotnet test
-          
   build:
-    needs: test
     strategy:
       matrix:
         server: [TRAVIAN_OFFICIAL, TRAVIAN_OFFICIAL_HEROUI, TTWARS]
@@ -48,6 +29,17 @@ jobs:
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: TBS-Build-${{ matrix.server }}-${{ github.sha }}
+          name: TBS-Build-${{ matrix.server }}-${{ github.run_id }}
           path: WPFUI\bin\Release\net6.0-windows\win-x86\publish\
           if-no-files-found: error
+  commentor:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v1.4.1
+        with:
+          message: Click [here](https://nightly.link/Erol444/TravianBotSharp/actions/runs/${{ github.run_id }}) to check the build          
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    

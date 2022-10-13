@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Reactive;
 using System.Reflection;
 using System.Threading.Tasks;
-using WPFUI.Views;
 
 namespace WPFUI.ViewModels
 {
@@ -62,8 +61,7 @@ namespace WPFUI.ViewModels
 
         private void CloseTask()
         {
-            _versionWindow ??= SetupService.GetService<VersionWindow>();
-            _versionWindow.Dispatcher.Invoke(_versionWindow.Hide);
+            CloseWindow?.Invoke();
         }
 
         private string _currentVersion = "0.0.0";
@@ -124,7 +122,6 @@ namespace WPFUI.ViewModels
             get => message[IsNewVersion ? 1 : 0];
         }
 
-        private VersionWindow _versionWindow;
         private readonly string discordUrl = "https://discord.gg/DVPV4gesCz";
 
         private readonly string[] message = {
@@ -136,5 +133,7 @@ namespace WPFUI.ViewModels
         public ReactiveCommand<Unit, Unit> LatestVersionCommand { get; }
         public ReactiveCommand<Unit, Unit> LatestBuildCommand { get; }
         public ReactiveCommand<Unit, Unit> CloseCommand { get; }
+
+        public event Action CloseWindow;
     }
 }

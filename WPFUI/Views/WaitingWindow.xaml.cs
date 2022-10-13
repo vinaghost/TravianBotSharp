@@ -1,17 +1,5 @@
 ﻿using ReactiveUI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using System.Reactive.Disposables;
 using WPFUI.ViewModels;
 
 namespace WPFUI.Views
@@ -20,16 +8,18 @@ namespace WPFUI.Views
     /// Interaction logic for WaitingWindow.xaml
     /// </summary>
     public partial class WaitingWindow : ReactiveWindow<WaitingViewModel>
-
     {
         public WaitingWindow()
         {
             ViewModel = new();
             InitializeComponent();
+            ViewModel.ShowWindow += Show;
+            ViewModel.CloseWindow += Hide;
 
-            this.OneWayBind(ViewModel,
-                vm => vm.Text,
-                v => v.Text.Text);
+            this.WhenActivated(d =>
+            {
+                this.OneWayBind(ViewModel, vm => vm.Text, v => v.Text.Text).DisposeWith(d);
+            });
         }
     }
 }

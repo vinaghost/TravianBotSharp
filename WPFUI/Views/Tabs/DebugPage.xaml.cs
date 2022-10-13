@@ -16,16 +16,13 @@ namespace WPFUI.Views.Tabs
 
             this.WhenActivated(d =>
             {
-                ViewModel.Active = true;
-                this.OneWayBind(ViewModel,
-                    vm => vm.Logs,
-                    v => v.LogGrid.ItemsSource)
-                .DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.Logs, v => v.LogGrid.ItemsSource).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.Tasks, v => v.TaskGird.ItemsSource).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.GetHelpCommand, v => v.ReportButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.LogFolderCommand, v => v.LogButton).DisposeWith(d);
 
-                this.OneWayBind(ViewModel,
-                    vm => vm.Tasks,
-                    v => v.TaskGird.ItemsSource)
-                .DisposeWith(d);
+                Disposable.Create(() => ViewModel.OnDeactived()).DisposeWith(d);
+                ViewModel.OnActived();
             });
         }
     }

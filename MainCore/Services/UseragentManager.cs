@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace MainCore.Services
 {
-    public class UseragentManager : IUseragentManager
+    public sealed class UseragentManager : IUseragentManager
     {
         public UseragentManager(IRestClientManager restClientManager)
         {
-            _restClient = restClientManager.Get(-1);
+            _restClient = restClientManager.Get(new Models.Runtime.ProxyInfo());
         }
 
-        private List<string> _userAgentList { get; set; }
-        private DateTime _dateTime { get; set; }
+        private List<string> _userAgentList;
+        private DateTime _dateTime;
 
         private const string _userAgentUrl = "https://raw.githubusercontent.com/vinaghost/user-agent/main/user-agent.json";
 

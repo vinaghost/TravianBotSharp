@@ -4,15 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace MainCore.Services
 {
     public sealed class LogManager : ILogManager
     {
-        public LogManager(IDatabaseEvent databaseEvent, IDbContextFactory<AppDbContext> contextFactory)
+        public LogManager(EventManager EventManager, IDbContextFactory<AppDbContext> contextFactory)
         {
-            _databaseEvent = databaseEvent;
+            _eventManager = EventManager;
             _contextFactory = contextFactory;
         }
 
@@ -21,7 +20,6 @@ namespace MainCore.Services
             Log.Logger = new LoggerConfiguration()
               .WriteTo.Map("Account", "Other", (acc, wt) => wt.File($"./logs/log-{acc}-.txt",
                                                                         rollingInterval: RollingInterval.Day,
-                                                                        encoding: Encoding.Unicode,
                                                                         outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}"))
               .CreateLogger();
         }
@@ -30,14 +28,17 @@ namespace MainCore.Services
         {
             if (_logs.TryGetValue(accountId, out var logs))
             {
-                return logs;
+                lock (_objLocks[accountId])
+                {
+                    return new LinkedList<LogMessage>(logs);
+                }
             }
             return new LinkedList<LogMessage>();
         }
 
         private void Add(int accountId, LogMessage log)
         {
-            lock (objLock)
+            lock (_objLocks[accountId])
             {
                 _logs[accountId].AddFirst(log);
                 // keeps 200 message
@@ -46,7 +47,7 @@ namespace MainCore.Services
                     _logs[accountId].RemoveLast();
                 }
 
-                _databaseEvent.OnLogUpdated(accountId);
+                _eventManager.OnLogUpdated(accountId, log);
             }
         }
 
@@ -57,6 +58,7 @@ namespace MainCore.Services
                 using var context = _contextFactory.CreateDbContext();
                 var account = context.Accounts.Find(accountId);
                 _loggers.Add(accountId, Log.ForContext("Account", account.Username));
+                _objLocks.Add(accountId, new());
             }
         }
 
@@ -95,14 +97,14 @@ namespace MainCore.Services
                 Level = LevelEnum.Error,
                 Message = $"{message}\n{error}",
             });
-            _loggers[accountId].Error(message);
+            _loggers[accountId].Error(message, error);
         }
 
-        private readonly object objLock = new();
         private readonly Dictionary<int, LinkedList<LogMessage>> _logs = new();
+        private readonly Dictionary<int, object> _objLocks = new();
         private readonly Dictionary<int, ILogger> _loggers = new();
 
-        private readonly IDatabaseEvent _databaseEvent;
+        private readonly EventManager _eventManager;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
     }
 }

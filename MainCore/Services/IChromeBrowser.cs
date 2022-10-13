@@ -7,7 +7,7 @@ namespace MainCore.Services
 {
     public interface IChromeBrowser
     {
-        public void Setup(Access access);
+        public void Setup(Access access, AccountSetting setting);
 
         public void Close();
 
@@ -23,9 +23,7 @@ namespace MainCore.Services
 
         public WebDriverWait GetWait();
 
-        public void Navigate(string url);
-
-        public void UpdateHtml(string source = null);
+        public void Navigate(string url = null);
 
         public void WaitPageLoaded();
     }

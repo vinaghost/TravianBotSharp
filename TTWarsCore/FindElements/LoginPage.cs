@@ -5,19 +5,19 @@ namespace TTWarsCore.FindElements
 {
     public static class LoginPage
     {
-        public static HtmlNode GetUsernameNode(HtmlDocument html)
+        public static HtmlNode GetUsernameNode(HtmlDocument doc)
         {
-            return html.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("user"));
+            return doc.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("user"));
         }
 
-        public static HtmlNode GetPasswordNode(HtmlDocument html)
+        public static HtmlNode GetPasswordNode(HtmlDocument doc)
         {
-            return html.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("pw"));
+            return doc.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("pw"));
         }
 
-        public static HtmlNode GetLoginButton(HtmlDocument html)
+        public static HtmlNode GetLoginButton(HtmlDocument doc)
         {
-            return html.GetElementbyId("s1");
+            return doc.GetElementbyId("s1");
         }
     }
 }

@@ -1,15 +1,14 @@
 ﻿using MainCore.Enums;
-using MainCore.Models.Runtime;
-using System;
+using MainCore.Tasks;
 using System.Collections.Generic;
 
 namespace MainCore.Services
 {
     public interface ITaskManager
     {
-        public void Add(int index, BotTask task);
+        public void Add(int index, BotTask task, bool first = false);
 
-        public BotTask Find(int index, Type type);
+        public void Update(int index);
 
         public void Remove(int index, BotTask task);
 
@@ -19,7 +18,7 @@ namespace MainCore.Services
 
         public int Count(int index);
 
-        public List<BotTask> GetTaskList(int index);
+        public List<BotTask> GetList(int index);
 
         public bool IsTaskExecuting(int index);
 

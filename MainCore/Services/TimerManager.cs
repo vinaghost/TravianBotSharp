@@ -1,33 +1,46 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Timers;
 
 namespace MainCore.Services
 {
     public sealed class TimerManager : ITimerManager
     {
-        public TimerManager(IDatabaseEvent databaseEvent)
+        public TimerManager(EventManager EventManager)
         {
-            _mainTimer = new Timer(500);
-            _mainTimer.Elapsed += MainTimer_Elapsed;
-            _databaseEvent = databaseEvent;
-        }
-
-        private void MainTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            _databaseEvent.OnTaskExecuted();
+            _eventManager = EventManager;
         }
 
         public void Dispose()
         {
-            _mainTimer.Dispose();
+            foreach (var timer in _dictTimer.Values)
+            {
+                timer.Dispose();
+            }
         }
 
-        public void Start()
+        public void Start(int index)
         {
-            _mainTimer.Start();
+            if (!_dictTimer.ContainsKey(index))
+            {
+                var timer = new Timer(100) { AutoReset = false };
+                timer.Elapsed += (object sender, ElapsedEventArgs e) =>
+                {
+                    try
+                    {
+                        _eventManager.OnTaskExecuted(index);
+                        timer.Start();
+                    }
+                    catch
+                    {
+                        return;
+                    }
+                };
+                _dictTimer.Add(index, timer);
+                _dictTimer[index].Start();
+            }
         }
 
-        private readonly Timer _mainTimer;
-        private readonly IDatabaseEvent _databaseEvent;
+        private readonly Dictionary<int, Timer> _dictTimer = new();
+        private readonly EventManager _eventManager;
     }
 }
