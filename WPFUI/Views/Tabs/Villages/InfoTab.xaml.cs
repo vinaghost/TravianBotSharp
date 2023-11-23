@@ -1,6 +1,5 @@
-﻿using ReactiveUI;
-using System.Reactive.Disposables;
-using WPFUI.ViewModels.Tabs.Villages;
+﻿using MainCore.UI.ViewModels.Tabs.Villages;
+using ReactiveUI;
 
 namespace WPFUI.Views.Tabs.Villages
 {
@@ -9,19 +8,13 @@ namespace WPFUI.Views.Tabs.Villages
     }
 
     /// <summary>
-    /// Interaction logic for InfoPage.xaml
+    /// Interaction logic for InfoTab.xaml
     /// </summary>
     public partial class InfoTab : InfoTabBase
     {
         public InfoTab()
         {
             InitializeComponent();
-            this.WhenActivated(d =>
-            {
-                this.BindCommand(ViewModel, vm => vm.BothDorfCommand, v => v.UpdateDorfButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.Dorf1Command, v => v.UpdateDorf1Button).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.Dorf2Command, v => v.UpdateDorf2Button).DisposeWith(d);
-            });
         }
     }
 }

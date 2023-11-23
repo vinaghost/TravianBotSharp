@@ -1,5 +1,5 @@
-﻿using ReactiveUI;
-using WPFUI.ViewModels.Tabs.Villages;
+﻿using MainCore.UI.ViewModels.Tabs.Villages;
+using ReactiveUI;
 
 namespace WPFUI.Views.Tabs.Villages
 {
@@ -8,7 +8,7 @@ namespace WPFUI.Views.Tabs.Villages
     }
 
     /// <summary>
-    /// Interaction logic for NoVillagePage.xaml
+    /// Interaction logic for NoVillageTAb.xaml
     /// </summary>
     public partial class NoVillageTab : NoVillageTabBase
     {

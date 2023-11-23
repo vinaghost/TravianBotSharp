@@ -1,13 +1,15 @@
-﻿using ReactiveUI;
+﻿using MainCore.UI.ViewModels;
+using MainCore.UI.ViewModels.UserControls;
+using ReactiveUI;
+using Splat;
 using System;
 using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Windows;
-using WPFUI.ViewModels;
 
 namespace WPFUI.Views
 {
-    public class MainWindowBase : ReactiveWindow<MainWindowViewModel>
+    public class MainWindowBase : ReactiveWindow<MainViewModel>
     {
     }
 
@@ -22,16 +24,15 @@ namespace WPFUI.Views
 
         public MainWindow()
         {
+            InitializeComponent();
             Loaded += OnLoaded;
             Closing += OnClosing;
 
-            InitializeComponent();
+            WaitingOverlay.ViewModel = Locator.Current.GetService<WaitingOverlayViewModel>();
 
             this.WhenActivated(d =>
             {
-                this.OneWayBind(ViewModel, vm => vm.MainLayoutViewModel, v => v.MainLayout.Content).DisposeWith(d);
-                this.OneWayBind(ViewModel, vm => vm.WaitingOverlay, v => v.WaitingOverlay.Content).DisposeWith(d);
-                this.OneWayBind(ViewModel, vm => vm.VersionOverlay, v => v.VersionOverlay.Content).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.MainLayoutViewModel, v => v.MainLayout.Content).DisposeWith(d);
             });
         }
 
@@ -56,7 +57,7 @@ namespace WPFUI.Views
             if (_isClosing) return;
             _isClosing = true;
 
-            await ViewModel.ClosingTask(e);
+            await ViewModel.Unload();
 
             _canClose = true;
             Close();
@@ -65,7 +66,6 @@ namespace WPFUI.Views
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-
             Application.Current.Shutdown();
         }
     }

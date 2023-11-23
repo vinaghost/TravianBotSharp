@@ -1,26 +1,28 @@
-﻿using ReactiveUI;
+﻿using MainCore.UI.ViewModels.Tabs;
+using ReactiveUI;
 using System.Reactive.Disposables;
-using WPFUI.ViewModels.Tabs;
 
 namespace WPFUI.Views.Tabs
 {
-    public class AddAccountsTabBase : ReactiveUserControl<AddAccountsViewModel>
+    public partial class AddAccountsTabBase : ReactiveUserControl<AddAccountsViewModel>
     {
     }
 
     /// <summary>
-    /// Interaction logic for AddAccountsPage.xaml
+    /// Interaction logic for AddAccountsTab.xaml
     /// </summary>
     public partial class AddAccountsTab : AddAccountsTabBase
     {
         public AddAccountsTab()
         {
             InitializeComponent();
+
             this.WhenActivated(d =>
             {
-                this.BindCommand(ViewModel, vm => vm.SaveCommand, v => v.AddButton).DisposeWith(d);
-                this.OneWayBind(ViewModel, vm => vm.Accounts, v => v.AccountsDatagrid.ItemsSource).DisposeWith(d);
-                this.Bind(ViewModel, vm => vm.InputText, v => v.AccountsInput.Text).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.AddAccount, v => v.AddButton).DisposeWith(d);
+
+                this.Bind(ViewModel, vm => vm.Input, v => v.AccountsInput.Text).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.Accounts, v => v.AccountsView.ItemsSource).DisposeWith(d);
             });
         }
     }

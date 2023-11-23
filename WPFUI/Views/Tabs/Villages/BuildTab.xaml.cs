@@ -1,6 +1,6 @@
-﻿using ReactiveUI;
+﻿using MainCore.UI.ViewModels.Tabs.Villages;
+using ReactiveUI;
 using System.Reactive.Disposables;
-using WPFUI.ViewModels.Tabs.Villages;
 
 namespace WPFUI.Views.Tabs.Villages
 {
@@ -9,9 +9,8 @@ namespace WPFUI.Views.Tabs.Villages
     }
 
     /// <summary>
-    /// Interaction logic for BuildPage.xaml
+    /// Interaction logic for BuildTab.xaml
     /// </summary>
-
     public partial class BuildTab : BuildTabBase
     {
         public BuildTab()
@@ -19,40 +18,30 @@ namespace WPFUI.Views.Tabs.Villages
             InitializeComponent();
             this.WhenActivated(d =>
             {
-                this.OneWayBind(ViewModel, vm => vm.CurrentlyBuildings, v => v.CurrentlyBuildings.ItemsSource).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.Buildings.Items, v => v.BuildingsGrid.ItemsSource).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.Buildings.SelectedItem, v => v.BuildingsGrid.SelectedItem).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.Buildings.SelectedIndex, v => v.BuildingsGrid.SelectedIndex).DisposeWith(d);
 
-                this.OneWayBind(ViewModel, vm => vm.Buildings, v => v.Buildings.ItemsSource).DisposeWith(d);
-                this.Bind(ViewModel, vm => vm.CurrentBuilding, v => v.Buildings.SelectedItem).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.Jobs.Items, v => v.JobsGrid.ItemsSource).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.Jobs.SelectedItem, v => v.JobsGrid.SelectedItem).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.Jobs.SelectedIndex, v => v.JobsGrid.SelectedIndex).DisposeWith(d);
 
-                this.OneWayBind(ViewModel, vm => vm.NormalBuildings, v => v.NormalBuildings.ItemsSource).DisposeWith(d);
-                this.Bind(ViewModel, vm => vm.CurrentNormalBuilding, v => v.NormalBuildings.SelectedItem).DisposeWith(d);
-                this.Bind(ViewModel, vm => vm.IsComboBoxEnable, v => v.NormalBuildings.IsEnabled).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.Up, v => v.UpButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.Down, v => v.DownButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.Top, v => v.TopButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.Bottom, v => v.BottomButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.Delete, v => v.DeleteButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.DeleteAll, v => v.DeleteAllButton).DisposeWith(d);
 
-                this.Bind(ViewModel, vm => vm.NormalLevel, v => v.NormalLevel.Value).DisposeWith(d);
-                this.Bind(ViewModel, vm => vm.IsLevelEnable, v => v.NormalLevel.IsEnabled).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.BuildNormal, v => v.NormalBuild).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.NormalBuildInput.Buildings, v => v.NormalBuildings.ItemsSource).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.NormalBuildInput.SelectedBuilding, v => v.NormalBuildings.SelectedItem).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.NormalBuildInput.Level, v => v.NormalLevel.Text).DisposeWith(d);
 
-                this.BindCommand(ViewModel, vm => vm.NormalBuildCommand, v => v.NormalBuild).DisposeWith(d);
-
-                this.OneWayBind(ViewModel, vm => vm.ComboResTypes, v => v.ResType.ItemsSource).DisposeWith(d);
-                this.Bind(ViewModel, vm => vm.CurrentResType, v => v.ResType.SelectedItem).DisposeWith(d);
-                this.OneWayBind(ViewModel, vm => vm.ComboStrategy, v => v.Strategy.ItemsSource).DisposeWith(d);
-                this.Bind(ViewModel, vm => vm.CurrentStrategy, v => v.Strategy.SelectedItem).DisposeWith(d);
-
-                this.Bind(ViewModel, vm => vm.ResourceLevel, v => v.ResourceLevel.Value).DisposeWith(d);
-
-                this.BindCommand(ViewModel, vm => vm.ResourceBuildCommand, v => v.ResourceBuild).DisposeWith(d);
-
-                this.BindCommand(ViewModel, vm => vm.TopCommand, v => v.TopButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.BottomCommand, v => v.BottomButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.UpCommand, v => v.UpButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.DownCommand, v => v.DownButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.DeleteCommand, v => v.DeleteButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.DeleteAllCommand, v => v.DeleteAllButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.ImportCommand, v => v.ImportButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.ExportCommand, v => v.ExportButton).DisposeWith(d);
-
-                this.OneWayBind(ViewModel, vm => vm.QueueBuildings, v => v.QueueBuildings.ItemsSource).DisposeWith(d);
-                this.Bind(ViewModel, vm => vm.CurrentQueueBuilding, v => v.QueueBuildings.SelectedItem).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.BuildResource, v => v.ResourceBuild).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.ResourceBuildInput.Plans, v => v.ResType.ItemsSource).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.ResourceBuildInput.SelectedPlan, v => v.ResType.SelectedItem).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.ResourceBuildInput.Level, v => v.ResourceLevel.Text).DisposeWith(d);
             });
         }
     }

@@ -1,0 +1,64 @@
+﻿<v:AccountSettingTabBase
+    x:Class="WPFUI.Views.Tabs.AccountSettingTab"
+    xmlns:v="clr-namespace:WPFUI.Views.Tabs"
+    xmlns:uc="clr-namespace:WPFUI.Views.UserControls"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    mc:Ignorable="d"
+    d:DesignHeight="450" d:DesignWidth="800">
+    <Grid  Background="#FFE5E5E5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button x:Name="SaveButton" Grid.Column="0" ToolTip="Save">
+                <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="ContentSave" />
+            </Button>
+            <Button x:Name="ImportButton" Grid.Column="1" Style="{DynamicResource MaterialDesignRaisedDarkButton}"  Width="{DynamicResource ButtonWidth}" ToolTip="Import">
+                <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Import" />
+            </Button>
+            <Button x:Name="ExportButton" Grid.Column="2" Style="{DynamicResource MaterialDesignRaisedDarkButton}"  Width="{DynamicResource ButtonWidth}" ToolTip="Export">
+                <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Export" />
+            </Button>
+        </Grid>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Account information" VerticalAlignment="Center" FontWeight="Bold" />
+                        <uc:TribeSelectorUc x:Name="Tribes" Text="Tribe" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Activity settings" VerticalAlignment="Center" FontWeight="Bold" />
+                        <uc:RangeInputUc x:Name="WorkTime" Text="Work time" Unit="minutes" />
+                        <uc:RangeInputUc x:Name="SleepTime" Text="Sleep time" Unit="minutes" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Delay settings" VerticalAlignment="Center" FontWeight="Bold" />
+                        <uc:RangeInputUc x:Name="ClickDelay" Text="Click delay" Unit="milliseconds" />
+                        <uc:RangeInputUc x:Name="TaskDelay" Text="Task delay" Unit="milliseconds" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Update settings" VerticalAlignment="Center" FontWeight="Bold" />
+                        <CheckBox x:Name="IsAutoLoadVillage" Content="Auto load village" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</v:AccountSettingTabBase>
