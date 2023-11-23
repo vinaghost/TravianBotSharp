@@ -97,7 +97,7 @@ jobs:
           path: WPFUI\bin\Release\net6.0-windows\win-x64\publish\
           if-no-files-found: error
   Comment:
-    needs: [Build, Test]
+    needs: [Build, Version, Test]
     runs-on: ubuntu-latest
     permissions:
         pull-requests: write
@@ -106,5 +106,5 @@ jobs:
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            Build: ${{needs.version.outputs.version}} is built
-            Check detail [here](https://github.com/vinaghost/TravianBotSharp/actions/runs/${{ github.run_id }}?check_suite_focus=true)"
+            Version of this build is ${{needs.version.outputs.version}}
+            Check download link [here](https://nightly.link/vinaghost/TravianBotSharp/actions/runs/${{ github.run_id }})"
