@@ -1,0 +1,28 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converter="clr-namespace:WPFUI.Converter">
+
+    <converter:DrawingColorToMediaColorConverter x:Key="ColorConverter" />
+
+    <DataTemplate x:Key="ListBoxItem">
+        <TextBlock Text="{Binding Content}" />
+    </DataTemplate>
+    <DataTemplate x:Key="ListBoxColorItem">
+        <TextBlock Text="{Binding Content}">
+            <TextBlock.Foreground>
+                <SolidColorBrush Color="{Binding Color, Converter={StaticResource ColorConverter}}" />
+            </TextBlock.Foreground>
+        </TextBlock>
+    </DataTemplate>
+    <DataTemplate x:Key="ListBoxBlackColorItem">
+        <TextBlock Text="{Binding Content}">
+            <TextBlock.Foreground>
+                <SolidColorBrush Color="{Binding Color, Converter={StaticResource ColorConverter}}" />
+            </TextBlock.Foreground>
+            <TextBlock.Background>
+                <SolidColorBrush Color="Black" />
+            </TextBlock.Background>
+        </TextBlock>
+    </DataTemplate>
+</ResourceDictionary>

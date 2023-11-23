@@ -1,40 +1,31 @@
 ﻿<v:MainWindowBase
-        x:Class="WPFUI.Views.MainWindow"
-        xmlns:v="clr-namespace:WPFUI.Views"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:viewmodelsLayout="clr-namespace:WPFUI.ViewModels.Uc"
-        xmlns:viewsLayout="clr-namespace:WPFUI.Views.Uc"
-        xmlns:viewmodelsUc="clr-namespace:WPFUI.ViewModels.Uc"
-        xmlns:viewsUc="clr-namespace:WPFUI.Views.Uc"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-        Background="{DynamicResource MaterialDesignPaper}"
-        TextElement.FontWeight="Medium"
-        TextElement.FontSize="13"
-        FontFamily="{materialDesign:MaterialDesignFont}"
-        Title="TravianBotSharp" Height="510" Width="1024">
+    x:Class="WPFUI.Views.MainWindow"
+    xmlns:v="clr-namespace:WPFUI.Views"
+    xmlns:vm_uc="clr-namespace:MainCore.UI.ViewModels.UserControls;assembly=MainCore"
+    xmlns:v_uc="clr-namespace:WPFUI.Views.UserControls"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    Background="{DynamicResource MaterialDesignPaper}"
+    FontFamily="{materialDesign:MaterialDesignFont}"
+    TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+    TextElement.FontWeight="Medium"
+    TextElement.FontSize="13"
+    Title="Travian Bot Sharp"
+    WindowState="Maximized"
+    Height="512" Width="1024">
     <Grid>
         <ContentControl x:Name="MainLayout">
             <ContentControl.Resources>
-                <DataTemplate DataType="{x:Type viewmodelsLayout:MainLayoutViewModel}">
-                    <viewsLayout:MainLayoutUc ViewModel="{Binding .}" />
+                <DataTemplate DataType="{x:Type vm_uc:MainLayoutViewModel}">
+                    <v_uc:MainLayoutUc ViewModel="{Binding .}" />
                 </DataTemplate>
             </ContentControl.Resources>
         </ContentControl>
-        <ContentControl x:Name="VersionOverlay">
-            <ContentControl.Resources>
-                <DataTemplate DataType="{x:Type viewmodelsUc:VersionOverlayViewModel}">
-                    <viewsUc:VersionOverlayUc ViewModel="{Binding .}" />
-                </DataTemplate>
-            </ContentControl.Resources>
-        </ContentControl>
-        <ContentControl x:Name="WaitingOverlay">
-            <ContentControl.Resources>
-                <DataTemplate DataType="{x:Type viewmodelsUc:WaitingOverlayViewModel}">
-                    <viewsUc:WaitingOverlayUc DataContext="{Binding .}" />
-                </DataTemplate>
-            </ContentControl.Resources>
-        </ContentControl>
+
+        <v_uc:WaitingOverlayUc x:Name="WaitingOverlay" />
     </Grid>
 </v:MainWindowBase>

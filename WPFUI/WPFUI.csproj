@@ -1,43 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <UseWPF>true</UseWPF>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <UseWPF>true</UseWPF>
-    <ApplicationIcon>favicon.ico</ApplicationIcon>
-    <AssemblyName>TravianBotSharp</AssemblyName>
-    <AssemblyVersion>1975.4.30</AssemblyVersion>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <SelfContained>true</SelfContained>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <AssemblyName>TravianBotSharp</AssemblyName>
+    <SignAssembly>False</SignAssembly>
+    <ApplicationIcon>favicon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="favicon.ico" />
   </ItemGroup>
-
   <ItemGroup>
-    <Resource Include="Resources\clay.png" />
-    <Resource Include="Resources\crop.png" />
-    <Resource Include="Resources\egyptian.png" />
-    <Resource Include="Resources\granary.png" />
-    <Resource Include="Resources\gaul.png" />
-    <Resource Include="Resources\hun.png" />
-    <Resource Include="Resources\iron.png" />
-    <Resource Include="Resources\natar.png" />
-    <Resource Include="Resources\nature.png" />
-    <Resource Include="Resources\roman.png" />
-    <Resource Include="Resources\spartan.png" />
-    <Resource Include="Resources\teuton.png" />
-    <Resource Include="Resources\warehouse.png" />
-    <Resource Include="Resources\wood.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.0" />
-    <PackageReference Include="MaterialDesignThemes" Version="4.8.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
-    <PackageReference Include="ReactiveUI" Version="18.4.1" />
-    <PackageReference Include="ReactiveUI.WPF" Version="18.4.1" />
+    <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+    <PackageReference Include="ReactiveUI.WPF" Version="18.4.1" />    
   </ItemGroup>
 
   <ItemGroup>

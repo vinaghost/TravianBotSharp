@@ -1,0 +1,89 @@
+﻿<v:VillageSettingTabBase
+    x:Class="WPFUI.Views.Tabs.Villages.VillageSettingTab"
+    xmlns:v="clr-namespace:WPFUI.Views.Tabs.Villages"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:uc="clr-namespace:WPFUI.Views.UserControls"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    mc:Ignorable="d"
+    d:DesignHeight="450" d:DesignWidth="800">
+    <Grid  Background="#FFE5E5E5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button x:Name="SaveButton" Grid.Column="0" ToolTip="Save">
+                <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="ContentSave" />
+            </Button>
+            <Button x:Name="ImportButton" Grid.Column="1" Style="{DynamicResource MaterialDesignRaisedDarkButton}"  Width="{DynamicResource ButtonWidth}" ToolTip="Import">
+                <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Import" />
+            </Button>
+            <Button x:Name="ExportButton" Grid.Column="2" Style="{DynamicResource MaterialDesignRaisedDarkButton}"  Width="{DynamicResource ButtonWidth}" ToolTip="Export">
+                <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Export" />
+            </Button>
+        </Grid>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Upgrade settings" VerticalAlignment="Center" FontWeight="Bold" />
+                        <CheckBox x:Name="UseHeroResForBuilding" Content="Use hero resources" />
+                        <CheckBox x:Name="UseRomanQueueLogic" Content="Use Roman queue logic" />
+                        <CheckBox x:Name="UseSpecialUpgrade" Content="Use Watch Ads upgrade method" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Auto refresh" VerticalAlignment="Center" FontWeight="Bold" />
+                        <CheckBox x:Name="AutoRefreshEnable" Content="Enable auto refresh" />
+                        <uc:RangeInputUc x:Name="AutoRefreshTime" Text="Refresh every" Unit="minutes" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="NPC Crop exchange settings" VerticalAlignment="Center" FontWeight="Bold" />
+                        <CheckBox x:Name="AutoNPCEnable" Content="Enable NPC Crop exchange" />
+                        <CheckBox x:Name="AutoNPCOverflow" Content="Despite warehouse overflow" />
+                        <uc:AmountInputUc x:Name="AutoNPCGranaryPercent" Text="Granary" Unit="%" />
+                        <uc:ResourceInputUc x:Name="AutoNPCRatio" Text="Ratio" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Village information" VerticalAlignment="Center" FontWeight="Bold" />
+                        <uc:TribeSelectorUc x:Name="Tribes" Text="Tribe" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Troop training settings" VerticalAlignment="Center" FontWeight="Bold" />
+                        <CheckBox x:Name="TrainTroopEnable" Content="Enable train troop" />
+                        <uc:RangeInputUc x:Name="TrainTroopRepeatTime" Text="Next train troop execute after" Unit="mins" />
+                        <CheckBox x:Name="TrainWhenLowResource" Content="Train maximum number if low on resource" />
+                        <StackPanel Orientation="Horizontal">
+                            <uc:TroopSelectorUc x:Name="BarrackTroop" Text="Train in barrack" />
+                            <uc:RangeInputUc x:Name="BarrackAmount" Text="for" Unit="units" Margin="10,0,0,0" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <uc:TroopSelectorUc x:Name="StableTroop" Text="Train in stable" />
+                            <uc:RangeInputUc x:Name="StableAmount" Text="for" Unit="units" Margin="10,0,0,0" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <uc:TroopSelectorUc x:Name="WorkshopTroop" Text="Train in workshop" />
+                            <uc:RangeInputUc x:Name="WorkshopAmount" Text="for" Unit="units" Margin="10,0,0,0" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</v:VillageSettingTabBase>

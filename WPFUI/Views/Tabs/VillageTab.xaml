@@ -1,0 +1,46 @@
+﻿<v:VillageTabBase
+    x:Class="WPFUI.Views.Tabs.VillageTab"
+    xmlns:v="clr-namespace:WPFUI.Views.Tabs"
+    xmlns:v_tab="clr-namespace:WPFUI.Views.Tabs.Villages"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:WPFUI.Views.Tabs"
+    mc:Ignorable="d"
+    d:DesignHeight="450" d:DesignWidth="800">
+    <Grid Background="#FFE5E5E5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="4*" />
+        </Grid.ColumnDefinitions>
+        <Border Style="{DynamicResource Box}" Grid.Column="0">
+            <ListBox x:Name="VillagesGrid" SelectionMode="Single" ItemTemplate="{DynamicResource ListBoxColorItem}">
+                <ListBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem x:Name="LoadCurrent" Header="Reload this village's building" />
+                        <MenuItem x:Name="LoadUnload" Header="Reload village that missing building" />
+                        <MenuItem x:Name="LoadAll" Header="Reload all village" />
+                    </ContextMenu>
+                </ListBox.ContextMenu>
+            </ListBox>
+        </Border>
+
+        <Border Style="{DynamicResource Box}" Grid.Column="1">
+            <TabControl Grid.Column="1" Margin="10,0,0,0">
+                <TabItem x:Name="NoVillageTab" Header="No village" IsSelected="True">
+                    <v_tab:NoVillageTab x:Name="NoVillage" />
+                </TabItem>
+                <TabItem x:Name="BuildTab" Header="Build">
+                    <v_tab:BuildTab x:Name="Build" />
+                </TabItem>
+                <TabItem x:Name="SettingsTab" Header="Settings">
+                    <v_tab:VillageSettingTab x:Name="Settings" />
+                </TabItem>
+                <TabItem x:Name="InfoTab" Header="Info">
+                    <v_tab:InfoTab x:Name="Info" />
+                </TabItem>
+            </TabControl>
+        </Border>
+    </Grid>
+</v:VillageTabBase>

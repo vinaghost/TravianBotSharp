@@ -1,5 +1,5 @@
-﻿using ReactiveUI;
-using WPFUI.ViewModels.Tabs;
+﻿using MainCore.UI.ViewModels.Tabs;
+using ReactiveUI;
 
 namespace WPFUI.Views.Tabs
 {
@@ -8,7 +8,7 @@ namespace WPFUI.Views.Tabs
     }
 
     /// <summary>
-    /// Interaction logic for NoAccountPage.xaml
+    /// Interaction logic for NoAccountTab.xaml
     /// </summary>
     public partial class NoAccountTab : NoAccountTabBase
     {
