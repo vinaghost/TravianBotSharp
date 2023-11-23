@@ -1,4 +1,4 @@
-name: Release - Minor
+name: Patch
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ jobs:
   Version:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.semvers.outputs.minor }}
+      version: ${{ steps.previoustag.outputs.tag }}
       changelog: ${{ steps.changelog.outputs.changelog }}
     steps:
       - name: Checkout 
@@ -19,12 +19,6 @@ jobs:
         uses: WyriHaximus/github-action-get-previous-tag@v1.3.0  
         with:
           fallback: 1.0.0
-      
-      - name: Get next version
-        id: semvers
-        uses: WyriHaximus/github-action-next-semvers@v1.2.1
-        with:
-          version: ${{ steps.previoustag.outputs.tag }}
           
       - name: Get changelog
         id: changelog
@@ -81,7 +75,7 @@ jobs:
         with:
           name: TBS-${{needs.version.outputs.version}}
           tag: ${{needs.version.outputs.version}}
-          commit: main
+          commit: main          
           artifacts: "TBS-${{needs.version.outputs.version}}-TravianOfficial.zip, TBS-${{needs.version.outputs.version}}-TTWars.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
@@ -90,6 +84,7 @@ jobs:
             **Changelog**: 
               ${{needs.version.outputs.changelog}}
   Discord:
+    if: false
     runs-on: ubuntu-latest
     needs: [Release, version] 
     steps:
