@@ -1,0 +1,110 @@
+name: Test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  Test:
+    runs-on: windows-latest
+    steps:
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+            dotnet-version: 6.0.x
+      
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Load cached dependencies
+        uses: actions/cache@v3
+        with:
+            path: ~/.nuget/packages
+            key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+            restore-keys: ${{ runner.os }}-nuget-
+
+      - name: Install dependencies
+        run: dotnet restore --locked-mode
+
+      - name: Build
+        run: dotnet build -c Release --no-restore
+
+      - name: Test
+        run: dotnet test -c Release --no-build
+  Version:
+    runs-on: ubuntu-latest
+    permissions:
+        contents: write
+    outputs:
+      version: ${{ steps.semvers.outputs.patch }}
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v3  
+        with:
+          fetch-depth: 0 
+      
+      - name: Get Previous tag
+        id: previoustag
+        uses: WyriHaximus/github-action-get-previous-tag@v1.3.0  
+        with:
+          fallback: 1.0.0
+      
+      - name: Get next version
+        id: semvers
+        uses: WyriHaximus/github-action-next-semvers@v1.2.1
+        with:
+          version: ${{ steps.previoustag.outputs.tag }}
+          
+      - name: Create tag
+        uses: rickstaa/action-create-tag@v1.7.1
+        with:
+          tag: ${{ steps.semvers.outputs.patch }}
+          tag_exists_error: false
+          message: TBS-${{ steps.semvers.outputs.patch }}
+  Build:
+    runs-on: windows-latest
+    needs: Version
+    strategy:
+      matrix:
+        server: [TRAVIAN_OFFICIAL, TTWARS]
+    steps:
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+        
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Load cached dependencies
+        uses: actions/cache@v3
+        with:
+            path: ~/.nuget/packages
+            key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+            restore-keys: ${{ runner.os }}-nuget-
+
+      - name: Install dependencies
+        run: dotnet restore --locked-mode
+      
+      - name: Publish
+        run: dotnet publish WPFUI -c Release --no-restore --self-contained -p:PublishSingleFile=true -p:Server=${{ matrix.server }} -p:AssemblyVersion=${{needs.version.outputs.version}}
+      
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: TBS-${{ matrix.server }}-${{needs.version.outputs.version}}
+          path: WPFUI\bin\Release\net6.0-windows\win-x64\publish\
+          if-no-files-found: error
+  Comment:
+    needs: [Build, Version, Test]
+    runs-on: ubuntu-latest
+    permissions:
+        pull-requests: write
+    steps:
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            Version of this build is ${{needs.version.outputs.version}}
+            Check download link [here](https://nightly.link/vinaghost/TravianBotSharp/actions/runs/${{ github.run_id }})
