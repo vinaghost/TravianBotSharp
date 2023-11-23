@@ -96,3 +96,15 @@ jobs:
           name: TBS-${{ matrix.server }}-${{needs.version.outputs.version}}
           path: WPFUI\bin\Release\net6.0-windows\win-x64\publish\
           if-no-files-found: error
+  Comment:
+    needs: [Build, Test]
+    runs-on: ubuntu-latest
+    permissions:
+        pull-requests: write
+    steps:
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            Build: ${{needs.version.outputs.version}} is built
+            Check detail [here](https://github.com/vinaghost/TravianBotSharp/actions/runs/${{ github.run_id }}?check_suite_focus=true)"
