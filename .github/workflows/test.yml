@@ -1,0 +1,69 @@
+name: Test
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+            dotnet-version: 6.0.x
+      
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        
+      - name: Load cached dependencies
+        uses: actions/cache@v3
+        with:
+            path: ~/.nuget/packages
+            key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+            restore-keys: ${{ runner.os }}-nuget-
+
+      - name: Install dependencies
+        run: dotnet restore --locked-mode
+
+      - name: Build
+        run: dotnet build -c Release --no-restore
+
+      - name: Test
+        run: dotnet test -c Release --no-build
+    
+  # build:
+    # strategy:
+      # matrix:
+        # server: [TRAVIAN_OFFICIAL, TTWARS]
+    # runs-on: windows-latest
+    # steps:
+      # - name: Setup dotnet
+        # uses: actions/setup-dotnet@v3
+        # with:
+            # dotnet-version: 6.0.x
+      
+      # - name: 'Checkout repo' 
+        # uses: actions/checkout@v3
+        
+      # - name: Load cached dependencies
+        # uses: actions/cache@v3
+        # with:
+            # key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+            # restore-keys: ${{ runner.os }}-nuget-
+            
+      # - name: Install dependencies
+        # run: dotnet restore --locked-mode
+      
+      # - name: Build
+        # run: dotnet build WPFUI -c Release --no-restore --self-contained
+      
+      # - name: Publish
+        # run: dotnet publish WPFUI -c Release --no-build --self-contained -p:PublishSingleFile=true -p:Server=${{ matrix.server }}
+
+      # - name: Upload a Build Artifact
+        # uses: actions/upload-artifact@v3
+        # with:
+          # name: TBS-Build-${{ matrix.server }}-${{ github.run_id }}
+          # path: WPFUI\bin\Release\net6.0-windows\win-x64\publish\
+          # if-no-files-found: error
