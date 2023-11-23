@@ -1,4 +1,4 @@
-name: Release - Patch
+name: Release
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ jobs:
   Version:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.semvers.outputs.patch }}
+      version: ${{ steps.semvers.outputs.minor }}
       changelog: ${{ steps.changelog.outputs.changelog }}
     steps:
       - name: Checkout 
@@ -81,7 +81,7 @@ jobs:
         with:
           name: TBS-${{needs.version.outputs.version}}
           tag: ${{needs.version.outputs.version}}
-          commit: master          
+          commit: main
           artifacts: "TBS-${{needs.version.outputs.version}}-TravianOfficial.zip, TBS-${{needs.version.outputs.version}}-TTWars.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
