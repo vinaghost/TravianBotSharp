@@ -107,4 +107,4 @@ jobs:
         with:
           message: |
             Version of this build is ${{needs.version.outputs.version}}
-            Check download link [here](https://nightly.link/vinaghost/TravianBotSharp/actions/runs/${{ github.run_id }})"
+            Check download link [here](https://nightly.link/vinaghost/TravianBotSharp/actions/runs/${{ github.run_id }})

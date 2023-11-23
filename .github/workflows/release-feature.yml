@@ -81,7 +81,7 @@ jobs:
         with:
           name: TBS-${{needs.version.outputs.version}}
           tag: ${{needs.version.outputs.version}}
-          commit: master          
+          commit: main
           artifacts: "TBS-${{needs.version.outputs.version}}-TravianOfficial.zip, TBS-${{needs.version.outputs.version}}-TTWars.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
@@ -90,7 +90,6 @@ jobs:
             **Changelog**: 
               ${{needs.version.outputs.changelog}}
   Discord:
-    if: false
     runs-on: ubuntu-latest
     needs: [Release, version] 
     steps:
