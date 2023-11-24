@@ -18,5 +18,6 @@
         INavigationTabParser NavigationTabParser { get; }
         IUpgradeBuildingParser UpgradeBuildingParser { get; }
         IMarketParser MarketParser { get; }
+        IOptionPageParser OptionPageParser { get; }
     }
 }
