@@ -3,7 +3,7 @@ using MainCore.Infrasturecture.AutoRegisterDi;
 
 namespace MainCore.Parsers.CompleteImmediatelyParser
 {
-    [RegisterAsTransient]
+    [RegisterAsTransient(Common.Enums.ServerEnums.TravianOfficial)]
     public class TravianOfficial : ICompleteImmediatelyParser
     {
         public HtmlNode GetCompleteButton(HtmlDocument doc)
