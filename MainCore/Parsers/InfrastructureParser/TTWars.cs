@@ -6,7 +6,7 @@ using System.Net;
 
 namespace MainCore.Parsers.InfrastructureParser
 {
-    [RegisterAsTransient]
+    [RegisterAsTransient(ServerEnums.TTWars)]
     public class TTWars : IInfrastructureParser
     {
         public IEnumerable<BuildingDto> Get(HtmlDocument doc)
