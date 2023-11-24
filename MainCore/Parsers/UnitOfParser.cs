@@ -5,7 +5,7 @@ namespace MainCore.Parsers
     [RegisterAsTransient]
     public class UnitOfParser : IUnitOfParser
     {
-        public UnitOfParser(IAccountInfoParser accountInfoParser, IBuildingParser buildingParser, ICompleteImmediatelyParser completeImmediatelyParser, IFarmParser farmParser, IFieldParser fieldParser, IHeroParser heroParser, IInfrastructureParser infrastructureParser, ILoginPageParser loginPageParser, INavigationBarParser navigationBarParser, IQueueBuildingParser queueBuildingParser, IStockBarParser stockBarParser, ITroopPageParser troopPageParser, IVillagePanelParser villagePanelParser, INavigationTabParser navigationTabParser, IUpgradeBuildingParser upgradeBuildingParser, IMarketParser marketParser)
+        public UnitOfParser(IAccountInfoParser accountInfoParser, IBuildingParser buildingParser, ICompleteImmediatelyParser completeImmediatelyParser, IFarmParser farmParser, IFieldParser fieldParser, IHeroParser heroParser, IInfrastructureParser infrastructureParser, ILoginPageParser loginPageParser, INavigationBarParser navigationBarParser, IQueueBuildingParser queueBuildingParser, IStockBarParser stockBarParser, ITroopPageParser troopPageParser, IVillagePanelParser villagePanelParser, INavigationTabParser navigationTabParser, IUpgradeBuildingParser upgradeBuildingParser, IMarketParser marketParser, IOptionPageParser optionPageParser)
         {
             AccountInfoParser = accountInfoParser;
             BuildingParser = buildingParser;
@@ -23,6 +23,7 @@ namespace MainCore.Parsers
             NavigationTabParser = navigationTabParser;
             UpgradeBuildingParser = upgradeBuildingParser;
             MarketParser = marketParser;
+            OptionPageParser = optionPageParser;
         }
 
         public IAccountInfoParser AccountInfoParser { get; }
@@ -41,5 +42,6 @@ namespace MainCore.Parsers
         public IVillagePanelParser VillagePanelParser { get; }
         public IUpgradeBuildingParser UpgradeBuildingParser { get; }
         public IMarketParser MarketParser { get; }
+        public IOptionPageParser OptionPageParser { get; }
     }
 }
