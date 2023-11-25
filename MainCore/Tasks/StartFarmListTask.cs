@@ -13,18 +13,11 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class StartFarmListTask : AccountTask
     {
-        private readonly IUnitOfRepository _unitOfRepository;
-        private readonly IUnitOfCommand _unitOfCommand;
-        private readonly IMediator _mediator;
-
-        public StartFarmListTask(IMediator mediator, IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository)
+        public StartFarmListTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
-            _mediator = mediator;
-            _unitOfCommand = unitOfCommand;
-            _unitOfRepository = unitOfRepository;
         }
 
-        public override async Task<Result> Execute()
+        protected override async Task<Result> Execute()
         {
             if (CancellationToken.IsCancellationRequested) return new Cancel();
             Result result;

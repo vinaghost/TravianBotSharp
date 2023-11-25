@@ -7,12 +7,12 @@ using MainCore.Services;
 namespace MainCore.Commands.General
 {
     [RegisterAsTransient]
-    public class SleepCommand : ISleepCommand
+    public class SleepBrowserCommand : ISleepBrowserCommand
     {
         private readonly ILogService _logService;
-        private readonly ICloseCommand _closeCommand;
+        private readonly ICloseBrowserCommand _closeCommand;
 
-        public SleepCommand(ILogService logService, ICloseCommand closeCommand)
+        public SleepBrowserCommand(ILogService logService, ICloseBrowserCommand closeCommand)
         {
             _logService = logService;
             _closeCommand = closeCommand;

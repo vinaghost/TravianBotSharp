@@ -7,12 +7,12 @@ using MainCore.Services;
 namespace MainCore.Commands.General
 {
     [RegisterAsTransient]
-    public class CloseCommand : ICloseCommand
+    public class CloseBrowserCommand : ICloseBrowserCommand
     {
         private readonly IChromeManager _chromeManager;
         private readonly IUnitOfRepository _unitOfRepository;
 
-        public CloseCommand(IChromeManager chromeManager, IUnitOfRepository unitOfRepository)
+        public CloseBrowserCommand(IChromeManager chromeManager, IUnitOfRepository unitOfRepository)
         {
             _chromeManager = chromeManager;
             _unitOfRepository = unitOfRepository;

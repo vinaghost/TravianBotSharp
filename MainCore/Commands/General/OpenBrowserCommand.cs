@@ -9,12 +9,12 @@ using MainCore.Services;
 namespace MainCore.Commands.General
 {
     [RegisterAsTransient]
-    public class WorkCommand : IWorkCommand
+    public class OpenBrowserCommand : IOpenBrowserCommand
     {
         private readonly IChromeManager _chromeManager;
         private readonly IUnitOfRepository _unitOfRepository;
 
-        public WorkCommand(IChromeManager chromeManager, IUnitOfRepository unitOfRepository)
+        public OpenBrowserCommand(IChromeManager chromeManager, IUnitOfRepository unitOfRepository)
         {
             _chromeManager = chromeManager;
             _unitOfRepository = unitOfRepository;

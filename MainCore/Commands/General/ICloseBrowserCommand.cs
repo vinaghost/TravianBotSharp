@@ -3,7 +3,7 @@ using MainCore.Entities;
 
 namespace MainCore.Commands.General
 {
-    public interface ICloseCommand
+    public interface ICloseBrowserCommand
     {
         Result Execute(AccountId accountId);
     }
