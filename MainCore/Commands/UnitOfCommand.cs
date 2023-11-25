@@ -11,7 +11,7 @@ namespace MainCore.Commands
     [RegisterAsTransient]
     public class UnitOfCommand : IUnitOfCommand
     {
-        public UnitOfCommand(IDelayClickCommand delayClickCommand, IDelayTaskCommand delayTaskCommand, ISwitchTabCommand switchTabCommand, ISwitchVillageCommand switchVillageCommand, IToBuildingCommand toBuildingCommand, IToDorfCommand toDorfCommand, IToHeroInventoryCommand toHeroInventoryCommand, IUpdateAccountInfoCommand updateAccountInfoCommand, IUpdateDorfCommand updateDorfCommand, IUpdateFarmListCommand updateFarmListCommand, IUpdateHeroItemsCommand updateHeroItemsCommand, IUpdateVillageListCommand updateVillageListCommand, IGetMaximumTroopCommand updateMaximumTroopCommand, IInputAmountTroopCommand inputAmountTroopCommand, IValidateProxyCommand validateProxyCommand, IValidateContextualHelpCommand validateContextualHelpCommand)
+        public UnitOfCommand(IDelayClickCommand delayClickCommand, IDelayTaskCommand delayTaskCommand, ISwitchTabCommand switchTabCommand, ISwitchVillageCommand switchVillageCommand, IToBuildingCommand toBuildingCommand, IToDorfCommand toDorfCommand, IToHeroInventoryCommand toHeroInventoryCommand, IUpdateAccountInfoCommand updateAccountInfoCommand, IUpdateDorfCommand updateDorfCommand, IUpdateFarmListCommand updateFarmListCommand, IUpdateHeroItemsCommand updateHeroItemsCommand, IUpdateVillageListCommand updateVillageListCommand, IGetMaximumTroopCommand updateMaximumTroopCommand, IInputAmountTroopCommand inputAmountTroopCommand, IValidateProxyCommand validateProxyCommand, IValidateContextualHelpCommand validateContextualHelpCommand, IValidateLoginCommand validateLoginCommand, IValidateInGameCommand validateIngameCommand)
         {
             DelayClickCommand = delayClickCommand;
             DelayTaskCommand = delayTaskCommand;
@@ -29,6 +29,8 @@ namespace MainCore.Commands
             InputAmountTroopCommand = inputAmountTroopCommand;
             ValidateProxyCommand = validateProxyCommand;
             ValidateContextualHelpCommand = validateContextualHelpCommand;
+            ValidateLoginCommand = validateLoginCommand;
+            ValidateInGameCommand = validateIngameCommand;
         }
 
         public IDelayClickCommand DelayClickCommand { get; }
@@ -47,5 +49,8 @@ namespace MainCore.Commands
         public IInputAmountTroopCommand InputAmountTroopCommand { get; }
         public IValidateProxyCommand ValidateProxyCommand { get; }
         public IValidateContextualHelpCommand ValidateContextualHelpCommand { get; }
+
+        public IValidateLoginCommand ValidateLoginCommand { get; }
+        public IValidateInGameCommand ValidateInGameCommand { get; }
     }
 }

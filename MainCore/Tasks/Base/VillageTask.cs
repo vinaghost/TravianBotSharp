@@ -5,14 +5,13 @@ using MediatR;
 
 namespace MainCore.Tasks.Base
 {
-    public abstract class VillageTask : TaskBase
+    public abstract class VillageTask : AccountTask
     {
         protected VillageTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
         }
 
-        public AccountId AccountId { get; private set; }
-        public VillageId VillageId { get; private set; }
+        public VillageId VillageId { get; protected set; }
 
         public void Setup(AccountId accountId, VillageId villageId, CancellationToken cancellationToken = default)
         {

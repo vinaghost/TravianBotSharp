@@ -25,5 +25,7 @@ namespace MainCore.Commands
         IInputAmountTroopCommand InputAmountTroopCommand { get; }
         IValidateProxyCommand ValidateProxyCommand { get; }
         IValidateContextualHelpCommand ValidateContextualHelpCommand { get; }
+        IValidateLoginCommand ValidateLoginCommand { get; }
+        IValidateInGameCommand ValidateInGameCommand { get; }
     }
 }

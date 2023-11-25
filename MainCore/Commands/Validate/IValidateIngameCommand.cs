@@ -3,7 +3,7 @@ using MainCore.Entities;
 
 namespace MainCore.Commands.Validate
 {
-    public interface IValidateIngameCommand
+    public interface IValidateInGameCommand
     {
         bool Value { get; }
 

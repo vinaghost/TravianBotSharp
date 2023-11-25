@@ -7,12 +7,12 @@ using MainCore.Services;
 namespace MainCore.Commands.Validate
 {
     [RegisterAsTransient]
-    public class ValidateIngameCommand : IValidateIngameCommand
+    public class ValidateInGameCommand : IValidateInGameCommand
     {
         private readonly IChromeManager _chromeManager;
         private readonly IUnitOfParser _unitOfParser;
 
-        public ValidateIngameCommand(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public ValidateInGameCommand(IChromeManager chromeManager, IUnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
