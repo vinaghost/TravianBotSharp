@@ -6,7 +6,7 @@ using MediatR;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
-    public class TriggerLoginTask : INotificationHandler<AccountInit>
+    public class TriggerLoginTask : INotificationHandler<AccountInit>, INotificationHandler<AccountLogout>
     {
         private readonly ITaskManager _taskManager;
 
@@ -16,6 +16,13 @@ namespace MainCore.Notification.Handlers.Trigger
         }
 
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
+        {
+            await Task.CompletedTask;
+            var accountId = notification.AccountId;
+            Trigger(accountId);
+        }
+
+        public async Task Handle(AccountLogout notification, CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
             var accountId = notification.AccountId;

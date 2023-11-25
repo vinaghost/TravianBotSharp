@@ -14,10 +14,6 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class TrainTroopTask : VillageTask
     {
-        private readonly IUnitOfRepository _unitOfRepository;
-        private readonly IUnitOfCommand _unitOfCommand;
-        private readonly IMediator _mediator;
-
         private static readonly Dictionary<BuildingEnums, VillageSettingEnums> _settings = new()
         {
             {BuildingEnums.Barracks, VillageSettingEnums.BarrackTroop },
@@ -25,14 +21,11 @@ namespace MainCore.Tasks
             {BuildingEnums.Workshop, VillageSettingEnums.WorkshopTroop },
         };
 
-        public TrainTroopTask(IUnitOfRepository unitOfRepository, IUnitOfCommand unitOfCommand, IMediator mediator)
+        public TrainTroopTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
-            _unitOfRepository = unitOfRepository;
-            _unitOfCommand = unitOfCommand;
-            _mediator = mediator;
         }
 
-        public override async Task<Result> Execute()
+        protected override async Task<Result> Execute()
         {
             if (CancellationToken.IsCancellationRequested) return Result.Fail(new Cancel());
 
