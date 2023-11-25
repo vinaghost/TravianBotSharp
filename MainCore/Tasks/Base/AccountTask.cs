@@ -42,7 +42,9 @@ namespace MainCore.Tasks.Base
             {
                 if (this is not LoginTask)
                 {
+                    ExecuteAt = ExecuteAt.AddMilliseconds(1975);
                     await _mediator.Publish(new AccountLogout(AccountId));
+                    return Result.Fail(Skip.AccountLogout);
                 }
                 return Result.Ok();
             }
