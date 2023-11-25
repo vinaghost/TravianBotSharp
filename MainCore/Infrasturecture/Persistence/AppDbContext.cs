@@ -126,7 +126,7 @@ namespace MainCore.Infrasturecture.Persistence
             {VillageSettingEnums.UseHeroResourceForBuilding, 0 },
             {VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding, 0 },
             {VillageSettingEnums.UseSpecialUpgrade, 0 },
-            {VillageSettingEnums.InstantUpgrade, 0 },
+            {VillageSettingEnums.CompleteImmediately, 0 },
             {VillageSettingEnums.Tribe, 0 },
             {VillageSettingEnums.TrainTroopEnable, 0 },
             {VillageSettingEnums.TrainTroopRepeatTimeMin, 120 },
@@ -202,7 +202,7 @@ namespace MainCore.Infrasturecture.Persistence
             SaveChanges();
         }
 
-        public void FillVillageSettings(AccountId accountId, VillageId villageId)
+        public void FillVillageSettings(VillageId villageId)
         {
             var settings = new List<VillageSetting>();
 
@@ -210,8 +210,12 @@ namespace MainCore.Infrasturecture.Persistence
             {
                 if (setting == VillageSettingEnums.Tribe)
                 {
+                    var accountId = Villages
+                        .Where(x => x.Id == villageId.Value)
+                        .Select(x => x.AccountId)
+                        .FirstOrDefault();
                     var tribe = AccountsSetting
-                        .Where(x => x.AccountId == accountId.Value)
+                        .Where(x => x.AccountId == accountId)
                         .Where(x => x.Setting == AccountSettingEnums.Tribe)
                         .Select(x => x.Value)
                         .FirstOrDefault();

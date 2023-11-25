@@ -40,7 +40,7 @@ namespace MainCore.Notification.Handlers.Trigger
             var count = _unitOfRepository.QueueBuildingRepository.Count(villageId);
             if (count == 0) return;
 
-            var completeImmediatelyEnable = _unitOfRepository.VillageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.InstantUpgrade);
+            var completeImmediatelyEnable = _unitOfRepository.VillageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.CompleteImmediately);
             if (!completeImmediatelyEnable) return;
 
             var applyRomanQueueLogicWhenBuilding = _unitOfRepository.VillageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
