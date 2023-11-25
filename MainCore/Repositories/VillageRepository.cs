@@ -156,7 +156,11 @@ namespace MainCore.Repositories
             var villageUpdated = villages.Where(x => ids.Contains(x.Id)).ToList();
 
             villageDeleted.ForEach(x => context.Remove(x));
-            villageInserted.ForEach(x => context.Add(x.ToEntity(accountId)));
+            villageInserted.ForEach(x =>
+            {
+                context.Add(x.ToEntity(accountId));
+                context.FillVillageSettings(accountId, x.Id);
+            });
 
             foreach (var village in villageUpdated)
             {
