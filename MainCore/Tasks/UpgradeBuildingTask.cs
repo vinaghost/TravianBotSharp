@@ -19,10 +19,6 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpgradeBuildingTask : VillageTask
     {
-        private readonly IUnitOfCommand _unitOfCommand;
-        private readonly IUnitOfRepository _unitOfRepository;
-        private readonly IMediator _mediator;
-
         private readonly IChooseBuildingJobCommand _chooseBuildingJobCommand;
         private readonly IExtractResourceFieldCommand _extractResourceFieldCommand;
         private readonly IToBuildingPageCommand _toBuildingPageCommand;
@@ -35,10 +31,8 @@ namespace MainCore.Tasks
 
         private readonly IUseHeroResourceCommand _useHeroResourceCommand;
 
-        public UpgradeBuildingTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IChooseBuildingJobCommand chooseBuildingJobCommand, IExtractResourceFieldCommand extractResourceFieldCommand, IToBuildingPageCommand toBuildingPageCommand, IGetRequiredResourceCommand getRequiredResourceCommand, IAddCroplandCommand addCroplandCommand, IGetTimeWhenEnoughResourceCommand getTimeWhenEnoughResourceCommand, IConstructCommand constructCommand, IUpgradeCommand upgradeCommand, ISpecialUpgradeCommand specialUpgradeCommand, IUseHeroResourceCommand useHeroResourceCommand, IMediator mediator)
+        public UpgradeBuildingTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator, IChooseBuildingJobCommand chooseBuildingJobCommand, IExtractResourceFieldCommand extractResourceFieldCommand, IToBuildingPageCommand toBuildingPageCommand, IGetRequiredResourceCommand getRequiredResourceCommand, IAddCroplandCommand addCroplandCommand, IGetTimeWhenEnoughResourceCommand getTimeWhenEnoughResourceCommand, IConstructCommand constructCommand, IUpgradeCommand upgradeCommand, ISpecialUpgradeCommand specialUpgradeCommand, IUseHeroResourceCommand useHeroResourceCommand) : base(unitOfCommand, unitOfRepository, mediator)
         {
-            _unitOfCommand = unitOfCommand;
-            _unitOfRepository = unitOfRepository;
             _chooseBuildingJobCommand = chooseBuildingJobCommand;
             _extractResourceFieldCommand = extractResourceFieldCommand;
             _toBuildingPageCommand = toBuildingPageCommand;
@@ -49,10 +43,9 @@ namespace MainCore.Tasks
             _upgradeCommand = upgradeCommand;
             _specialUpgradeCommand = specialUpgradeCommand;
             _useHeroResourceCommand = useHeroResourceCommand;
-            _mediator = mediator;
         }
 
-        public override async Task<Result> Execute()
+        protected override async Task<Result> Execute()
         {
             if (CancellationToken.IsCancellationRequested) return new Cancel();
             Result result;

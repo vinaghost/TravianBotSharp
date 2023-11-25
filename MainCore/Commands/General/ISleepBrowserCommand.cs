@@ -3,7 +3,7 @@ using MainCore.Entities;
 
 namespace MainCore.Commands.General
 {
-    public interface ISleepCommand
+    public interface ISleepBrowserCommand
     {
         Task<Result> Execute(AccountId accountId, TimeSpan sleepTime, CancellationToken cancellationToken);
     }

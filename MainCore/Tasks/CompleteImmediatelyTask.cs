@@ -13,18 +13,11 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class CompleteImmediatelyTask : VillageTask
     {
-        private readonly IUnitOfCommand _unitOfCommand;
-        private readonly IMediator _mediator;
-        private readonly IUnitOfRepository _unitOfRepository;
-
-        public CompleteImmediatelyTask(IUnitOfCommand unitOfCommand, IMediator mediator, IUnitOfRepository unitOfRepository)
+        public CompleteImmediatelyTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
-            _unitOfCommand = unitOfCommand;
-            _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
         }
 
-        public override async Task<Result> Execute()
+        protected override async Task<Result> Execute()
         {
             if (CancellationToken.IsCancellationRequested) return new Cancel();
             Result result;
