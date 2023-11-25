@@ -1,9 +1,9 @@
 ﻿using FluentResults;
 using MainCore.Commands;
 using MainCore.Commands.Special;
-using MainCore.Commands.Step.DisableContextualHelp;
 using MainCore.Common.Errors;
 using MainCore.Infrasturecture.AutoRegisterDi;
+using MainCore.Repositories;
 using MainCore.Tasks.Base;
 using MediatR;
 
@@ -12,18 +12,11 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public sealed class LoginTask : AccountTask
     {
-        private readonly IMediator _mediator;
-        private readonly IUnitOfCommand _unitOfCommand;
-        private readonly IValidateContextualHelpCommand _validateContextualHelpCommand;
-
-        public LoginTask(IMediator mediator, IUnitOfCommand unitOfCommand, IValidateContextualHelpCommand validateContextualHelpCommand)
+        public LoginTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
-            _mediator = mediator;
-            _unitOfCommand = unitOfCommand;
-            _validateContextualHelpCommand = validateContextualHelpCommand;
         }
 
-        protected override  async Task<Result> Execute()
+        protected override async Task<Result> Execute()
         {
             if (CancellationToken.IsCancellationRequested) return new Cancel();
             Result result;
@@ -41,10 +34,10 @@ namespace MainCore.Tasks
         private async Task<Result> DisableContextualHelp()
         {
             Result result;
-            result = await _validateContextualHelpCommand.Execute(AccountId);
+            result = await _unitOfCommand.ValidateContextualHelpCommand.Execute(AccountId);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            if (!_validateContextualHelpCommand.Value) return Result.Ok();
+            if (!_unitOfCommand.ValidateContextualHelpCommand.Value) return Result.Ok();
 
             result = await _mediator.Send(new DisableContextualHelpCommand(AccountId));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));

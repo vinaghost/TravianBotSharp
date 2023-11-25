@@ -1,5 +1,6 @@
 ﻿using MainCore.Commands.General;
 using MainCore.Commands.Navigate;
+using MainCore.Commands.Step.DisableContextualHelp;
 using MainCore.Commands.Step.TrainTroop;
 using MainCore.Commands.Update;
 using MainCore.Commands.Validate;
@@ -23,5 +24,6 @@ namespace MainCore.Commands
         IGetMaximumTroopCommand GetMaximumTroopCommand { get; }
         IInputAmountTroopCommand InputAmountTroopCommand { get; }
         IValidateProxyCommand ValidateProxyCommand { get; }
+        IValidateContextualHelpCommand ValidateContextualHelpCommand { get; }
     }
 }

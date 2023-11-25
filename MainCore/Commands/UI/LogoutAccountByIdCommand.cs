@@ -17,9 +17,9 @@ namespace MainCore.Commands.UI
     public class LogoutAccountByIdCommandHandler : IRequestHandler<LogoutAccountByIdCommand>
     {
         private readonly ITaskManager _taskManager;
-        private readonly ICloseCommand _closeCommand;
+        private readonly ICloseBrowserCommand _closeCommand;
 
-        public LogoutAccountByIdCommandHandler(ITaskManager taskManager, ICloseCommand closeCommand)
+        public LogoutAccountByIdCommandHandler(ITaskManager taskManager, ICloseBrowserCommand closeCommand)
         {
             _taskManager = taskManager;
             _closeCommand = closeCommand;

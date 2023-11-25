@@ -3,6 +3,7 @@ using MainCore.Commands;
 using MainCore.Commands.Special;
 using MainCore.Common.Errors;
 using MainCore.Infrasturecture.AutoRegisterDi;
+using MainCore.Repositories;
 using MainCore.Tasks.Base;
 using MediatR;
 
@@ -11,16 +12,11 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateFarmListTask : AccountTask
     {
-        private readonly IUnitOfCommand _unitOfCommand;
-        private readonly IMediator _mediator;
-
-        public UpdateFarmListTask(IUnitOfCommand unitOfCommand, IMediator mediator)
+        public UpdateFarmListTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
-            _unitOfCommand = unitOfCommand;
-            _mediator = mediator;
         }
 
-        protected override  async Task<Result> Execute()
+        protected override async Task<Result> Execute()
         {
             if (CancellationToken.IsCancellationRequested) return new Cancel();
             Result result;

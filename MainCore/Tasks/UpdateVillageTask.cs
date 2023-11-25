@@ -13,18 +13,11 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateVillageTask : VillageTask
     {
-        private readonly IUnitOfRepository _unitOfRepository;
-        private readonly IUnitOfCommand _unitOfCommand;
-        private readonly IMediator _mediator;
-
-        public UpdateVillageTask(IUnitOfRepository unitOfRepository, IMediator mediator, IUnitOfCommand unitOfCommand)
+        public UpdateVillageTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
-            _unitOfRepository = unitOfRepository;
-            _mediator = mediator;
-            _unitOfCommand = unitOfCommand;
         }
 
-        protected override  async Task<Result> Execute()
+        protected override async Task<Result> Execute()
         {
             if (CancellationToken.IsCancellationRequested) return new Cancel();
 

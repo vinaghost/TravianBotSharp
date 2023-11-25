@@ -12,18 +12,11 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class NPCTask : VillageTask
     {
-        private readonly IUnitOfRepository _unitOfRepository;
-        private readonly IUnitOfCommand _unitOfCommand;
-        private readonly IMediator _mediator;
-
-        public NPCTask(IMediator mediator, IUnitOfRepository unitOfRepository, IUnitOfCommand unitOfCommand)
+        public NPCTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
-            _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
-            _unitOfCommand = unitOfCommand;
         }
 
-        protected override  async Task<Result> Execute()
+        protected override async Task<Result> Execute()
         {
             if (CancellationToken.IsCancellationRequested) return new Cancel();
             Result result;
