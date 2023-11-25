@@ -20,7 +20,7 @@ namespace MainCore.Tasks
             _mediator = mediator;
         }
 
-        public override async Task<Result> Execute()
+        protected override  async Task<Result> Execute()
         {
             if (CancellationToken.IsCancellationRequested) return new Cancel();
             Result result;

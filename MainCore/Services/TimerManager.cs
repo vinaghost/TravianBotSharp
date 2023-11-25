@@ -74,7 +74,7 @@ namespace MainCore.Services
 
             logger.Information("{taskName} is started", task.GetName());
             ///===========================================================///
-            var poliResult = await retryPolicy.ExecuteAndCaptureAsync(task.Execute);
+            var poliResult = await retryPolicy.ExecuteAndCaptureAsync(task.Handle);
             ///===========================================================///
             logger.Information("{taskName} is finished", task.GetName());
 

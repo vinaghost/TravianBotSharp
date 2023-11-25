@@ -9,7 +9,31 @@ namespace MainCore.Tasks.Base
         public DateTime ExecuteAt { get; set; }
         public CancellationToken CancellationToken { get; set; }
 
-        public abstract Task<Result> Execute();
+        public async Task<Result> Handle()
+        {
+            Result result;
+            result = await PreExecute();
+            if (result.IsFailed) return result;
+            result = await Execute();
+            if (result.IsFailed) return result;
+            result = await PostExecute();
+            if (result.IsFailed) return result;
+            return Result.Ok();
+        }
+
+        protected abstract Task<Result> Execute();
+
+        protected virtual async Task<Result> PreExecute()
+        {
+            await Task.CompletedTask;
+            return Result.Ok();
+        }
+
+        protected virtual async Task<Result> PostExecute()
+        {
+            await Task.CompletedTask;
+            return Result.Ok();
+        }
 
         public string GetName()
         {

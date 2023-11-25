@@ -23,7 +23,7 @@ namespace MainCore.Tasks
             _unitOfCommand = unitOfCommand;
         }
 
-        public override async Task<Result> Execute()
+        protected override  async Task<Result> Execute()
         {
             if (CancellationToken.IsCancellationRequested) return new Cancel();
 
