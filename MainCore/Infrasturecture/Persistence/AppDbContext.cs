@@ -202,7 +202,7 @@ namespace MainCore.Infrasturecture.Persistence
             SaveChanges();
         }
 
-        public void FillVillageSettings(VillageId villageId)
+        public void FillVillageSettings(AccountId accountId, VillageId villageId)
         {
             var settings = new List<VillageSetting>();
 
@@ -210,12 +210,8 @@ namespace MainCore.Infrasturecture.Persistence
             {
                 if (setting == VillageSettingEnums.Tribe)
                 {
-                    var accountId = Villages
-                        .Where(x => x.Id == villageId.Value)
-                        .Select(x => x.AccountId)
-                        .FirstOrDefault();
                     var tribe = AccountsSetting
-                        .Where(x => x.AccountId == accountId)
+                        .Where(x => x.AccountId == accountId.Value)
                         .Where(x => x.Setting == AccountSettingEnums.Tribe)
                         .Select(x => x.Value)
                         .FirstOrDefault();
