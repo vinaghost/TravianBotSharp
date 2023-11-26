@@ -87,11 +87,12 @@ namespace MainCore.Repositories
         public bool EmptySite(VillageId villageId, int location)
         {
             using var context = _contextFactory.CreateDbContext();
-            var isEmptySite = context.Buildings
+            bool isEmptySite = context.Buildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Type == BuildingEnums.Site)
                 .Where(x => x.Location == location)
                 .Any();
+
             return isEmptySite;
         }
 

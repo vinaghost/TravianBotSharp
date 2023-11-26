@@ -4,6 +4,7 @@ using MainCore.Commands.Step.UpgradeBuilding;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Common.Errors.Storage;
+using MainCore.Common.Extensions;
 using MainCore.Common.Models;
 using MainCore.DTO;
 using MainCore.Entities;
@@ -133,7 +134,7 @@ namespace MainCore.Tasks
 
                 if (IsUpgradeable(plan))
                 {
-                    if (IsSpecialUpgrade())
+                    if (IsSpecialUpgrade() && IsSpecialUpgradeable(plan))
                     {
                         result = await _specialUpgradeCommand.Execute(AccountId);
                         if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
@@ -162,6 +163,25 @@ namespace MainCore.Tasks
         {
             var emptySite = _unitOfRepository.BuildingRepository.EmptySite(VillageId, plan.Location);
             return !emptySite;
+        }
+
+        private bool IsSpecialUpgradeable(NormalBuildPlan plan)
+        {
+            var buildings = new List<BuildingEnums>()
+            {
+                BuildingEnums.Residence,
+                BuildingEnums.Palace,
+                BuildingEnums.CommandCenter
+            };
+
+            if (buildings.Contains(plan.Type)) return false;
+
+            if (plan.Type.IsResourceField())
+            {
+                var dto = _unitOfRepository.BuildingRepository.GetBuilding(VillageId, plan.Location);
+                if (dto.Level == 0) return false;
+            }
+            return true;
         }
 
         private bool IsSpecialUpgrade()
