@@ -63,8 +63,8 @@ namespace MainCore.UI.ViewModels.UserControls
         {
             var tasks = new Task[]
             {
-                Task.Run(LoadAccountList),
-                Task.Run(LoadVersion),
+                LoadAccountList(),
+                LoadVersion(),
             };
             await Task.WhenAll(tasks);
         }
@@ -140,47 +140,47 @@ namespace MainCore.UI.ViewModels.UserControls
             await _mediator.Send(new RestartAccountCommand(new AccountId(Accounts.SelectedItemId)));
         }
 
-        public void LoadStatus(AccountId accountId, StatusEnums status)
+        public async Task LoadStatus(AccountId accountId, StatusEnums status)
         {
-            Observable.Start(() =>
+            var account = await Observable.Start(() =>
             {
                 var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
                 return account;
-            }, RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(account =>
-                {
-                    account.Color = status.GetColor();
-                });
+            }, RxApp.TaskpoolScheduler);
+
+            await Observable.Start(() =>
+            {
+                account.Color = status.GetColor();
+            }, RxApp.MainThreadScheduler);
         }
 
-        public void LoadAccountList()
+        public async Task LoadAccountList()
         {
-            Observable.Start(() =>
+            var items = await Observable.Start(() =>
             {
                 var items = _unitOfRepository.AccountRepository.GetItems();
                 return items;
-            }, RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(items =>
-                {
-                    Accounts.Load(items);
-                });
+            }, RxApp.TaskpoolScheduler);
+
+            await Observable.Start(() =>
+            {
+                Accounts.Load(items);
+            }, RxApp.MainThreadScheduler);
         }
 
-        private void LoadVersion()
+        private async Task LoadVersion()
         {
-            Observable.Start(() =>
+            var version = await Observable.Start(() =>
             {
                 var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
                 var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
                 return version;
-            }, RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(x =>
-                {
-                    Version = $"{x} - {Constants.Server}";
-                });
+            }, RxApp.TaskpoolScheduler);
+
+            await Observable.Start(() =>
+            {
+                Version = $"{version} - {Constants.Server}";
+            }, RxApp.MainThreadScheduler);
         }
 
         private string _version;
