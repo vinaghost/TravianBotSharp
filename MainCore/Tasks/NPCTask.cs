@@ -35,6 +35,9 @@ namespace MainCore.Tasks
 
             result = await _mediator.Send(new NPCCommand(AccountId, VillageId));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await _unitOfCommand.UpdateDorfCommand.Execute(AccountId, VillageId);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }
 
