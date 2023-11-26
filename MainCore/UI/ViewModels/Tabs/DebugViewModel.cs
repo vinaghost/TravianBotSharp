@@ -8,6 +8,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting.Display;
 using System.Collections.ObjectModel;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text;
 
@@ -20,6 +21,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly ITaskManager _taskManager;
         private readonly MessageTemplateTextFormatter _formatter;
         public ObservableCollection<TaskItem> Tasks { get; } = new();
+
         private string _cacheLog;
         public string _logs;
 
@@ -49,10 +51,7 @@ namespace MainCore.UI.ViewModels.Tabs
             _formatter.Format(logEvent, buffer);
             buffer.WriteLine(_cacheLog);
             _cacheLog = buffer.ToString();
-
-            Observable.Start(
-                () => Logs = _cacheLog,
-                RxApp.MainThreadScheduler);
+            RxApp.MainThreadScheduler.Schedule(() => Logs = _cacheLog);
         }
 
         public async Task TaskListRefresh(AccountId accountId)
@@ -70,24 +69,27 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task LoadTask(AccountId accountId)
         {
-            Tasks.Clear();
             var tasks = _taskManager.GetTaskList(accountId);
             if (tasks.Count == 0) return;
 
             await Observable.Start(() =>
             {
+                Tasks.Clear();
+
                 tasks
-                .Select(x => new TaskItem(x))
-                .ToList()
-                .ForEach(Tasks.Add);
+                    .Select(x => new TaskItem(x))
+                    .ToList()
+                    .ForEach(Tasks.Add);
             }, RxApp.MainThreadScheduler);
         }
 
         private async Task LoadLog(AccountId accountId)
         {
             _isLogLoading = true;
+
             var logs = _logSink.GetLogs(accountId);
             var buffer = new StringWriter(new StringBuilder());
+
             foreach (var log in logs)
             {
                 _formatter.Format(log, buffer);
