@@ -10,14 +10,14 @@ using MediatR;
 
 namespace MainCore.Commands.UI
 {
-    public class LoginAccountByIdCommand : ByAccountIdBase, IRequest<Result>
+    public class LoginAccountCommand : ByAccountIdBase, IRequest<Result>
     {
-        public LoginAccountByIdCommand(AccountId accountId) : base(accountId)
+        public LoginAccountCommand(AccountId accountId) : base(accountId)
         {
         }
     }
 
-    public class LoginAccountByIdCommandHandler : IRequestHandler<LoginAccountByIdCommand, Result>
+    public class LoginAccountCommandHandler : IRequestHandler<LoginAccountCommand, Result>
     {
         private readonly ITaskManager _taskManager;
         private readonly ITimerManager _timerManager;
@@ -27,7 +27,7 @@ namespace MainCore.Commands.UI
         private readonly ILogService _logService;
         private readonly IMediator _mediator;
 
-        public LoginAccountByIdCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IOpenBrowserCommand workCommand, IChooseAccessCommand chooseAccessCommand, ILogService logService, IMediator mediator)
+        public LoginAccountCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IOpenBrowserCommand workCommand, IChooseAccessCommand chooseAccessCommand, ILogService logService, IMediator mediator)
         {
             _taskManager = taskManager;
             _timerManager = timerManager;
@@ -37,7 +37,7 @@ namespace MainCore.Commands.UI
             _mediator = mediator;
         }
 
-        public async Task<Result> Handle(LoginAccountByIdCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Handle(LoginAccountCommand request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
             _taskManager.SetStatus(accountId, StatusEnums.Starting);

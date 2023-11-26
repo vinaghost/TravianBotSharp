@@ -15,7 +15,8 @@ namespace MainCore.Notification.Handlers.Refresh
 
         public async Task Handle(StatusUpdated notification, CancellationToken cancellationToken)
         {
-            await _mainlayoutViewModel.LoadStatus(notification.AccountId, notification.Status);
+            await Task.CompletedTask;
+            _mainlayoutViewModel.LoadStatus(notification.AccountId, notification.Status);
         }
     }
 }

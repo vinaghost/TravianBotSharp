@@ -7,25 +7,25 @@ using MediatR;
 
 namespace MainCore.Commands.UI
 {
-    public class LogoutAccountByIdCommand : ByAccountIdBase, IRequest
+    public class LogoutAccountCommand : ByAccountIdBase, IRequest
     {
-        public LogoutAccountByIdCommand(AccountId accountId) : base(accountId)
+        public LogoutAccountCommand(AccountId accountId) : base(accountId)
         {
         }
     }
 
-    public class LogoutAccountByIdCommandHandler : IRequestHandler<LogoutAccountByIdCommand>
+    public class LogoutAccountCommandHandler : IRequestHandler<LogoutAccountCommand>
     {
         private readonly ITaskManager _taskManager;
         private readonly ICloseBrowserCommand _closeCommand;
 
-        public LogoutAccountByIdCommandHandler(ITaskManager taskManager, ICloseBrowserCommand closeCommand)
+        public LogoutAccountCommandHandler(ITaskManager taskManager, ICloseBrowserCommand closeCommand)
         {
             _taskManager = taskManager;
             _closeCommand = closeCommand;
         }
 
-        public async Task Handle(LogoutAccountByIdCommand request, CancellationToken cancellationToken)
+        public async Task Handle(LogoutAccountCommand request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
 

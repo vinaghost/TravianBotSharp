@@ -61,8 +61,12 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public async Task Load()
         {
-            await LoadAccountList();
-            await LoadVersion();
+            var tasks = new Task[]
+            {
+                Task.Run(LoadAccountList),
+                Task.Run(LoadVersion),
+            };
+            await Task.WhenAll(tasks);
         }
 
         private void AddAccountCommandHandler()
@@ -100,7 +104,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            await _mediator.Send(new LoginAccountByIdCommand(new AccountId(Accounts.SelectedItemId)));
+            await _mediator.Send(new LoginAccountCommand(new AccountId(Accounts.SelectedItemId)));
         }
 
         private async Task LogoutTask()
@@ -111,7 +115,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            await _mediator.Send(new LogoutAccountByIdCommand(new AccountId(Accounts.SelectedItemId)));
+            await _mediator.Send(new LogoutAccountCommand(new AccountId(Accounts.SelectedItemId)));
         }
 
         private async Task PauseTask()
@@ -122,7 +126,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            await _mediator.Send(new PauseAccountByIdCommand(new AccountId(Accounts.SelectedItemId)));
+            await _mediator.Send(new PauseAccountCommand(new AccountId(Accounts.SelectedItemId)));
         }
 
         private async Task RestartTask()
@@ -133,34 +137,50 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            await _mediator.Send(new RestartAccountByIdCommand(new AccountId(Accounts.SelectedItemId)));
+            await _mediator.Send(new RestartAccountCommand(new AccountId(Accounts.SelectedItemId)));
         }
 
-        public async Task LoadStatus(AccountId accountId, StatusEnums status)
+        public void LoadStatus(AccountId accountId, StatusEnums status)
         {
-            var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
-            await Observable.Start(() =>
+            Observable.Start(() =>
             {
-                account.Color = status.GetColor();
-            }, RxApp.MainThreadScheduler);
+                var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
+                return account;
+            }, RxApp.TaskpoolScheduler)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(account =>
+                {
+                    account.Color = status.GetColor();
+                });
         }
 
-        public async Task LoadAccountList()
+        public void LoadAccountList()
         {
-            var items = await Task.Run(() => _unitOfRepository.AccountRepository.GetItems());
-
-            await Observable.Start(() =>
+            Observable.Start(() =>
             {
-                Accounts.Load(items);
-            }, RxApp.MainThreadScheduler);
+                var items = _unitOfRepository.AccountRepository.GetItems();
+                return items;
+            }, RxApp.TaskpoolScheduler)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(items =>
+                {
+                    Accounts.Load(items);
+                });
         }
 
-        public async Task LoadVersion()
+        private void LoadVersion()
         {
-            await Task.CompletedTask;
-            var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
-            var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
-            Version = $"{version} - {Constants.Server}";
+            Observable.Start(() =>
+            {
+                var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
+                var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
+                return version;
+            }, RxApp.TaskpoolScheduler)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(x =>
+                {
+                    Version = $"{x} - {Constants.Server}";
+                });
         }
 
         private string _version;

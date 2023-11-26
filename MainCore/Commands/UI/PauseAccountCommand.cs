@@ -6,25 +6,25 @@ using MediatR;
 
 namespace MainCore.Commands.UI
 {
-    public class PauseAccountByIdCommand : ByAccountIdBase, IRequest
+    public class PauseAccountCommand : ByAccountIdBase, IRequest
     {
-        public PauseAccountByIdCommand(AccountId accountId) : base(accountId)
+        public PauseAccountCommand(AccountId accountId) : base(accountId)
         {
         }
     }
 
-    public class PauseAccountByIdCommandHandler : IRequestHandler<PauseAccountByIdCommand>
+    public class PauseAccountCommandHandler : IRequestHandler<PauseAccountCommand>
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
 
-        public PauseAccountByIdCommandHandler(ITaskManager taskManager, IDialogService dialogService)
+        public PauseAccountCommandHandler(ITaskManager taskManager, IDialogService dialogService)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
         }
 
-        public async Task Handle(PauseAccountByIdCommand request, CancellationToken cancellationToken)
+        public async Task Handle(PauseAccountCommand request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
 
