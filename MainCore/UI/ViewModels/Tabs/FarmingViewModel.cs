@@ -74,7 +74,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 }
             }
 
-            _taskManager.AddOrUpdate<StartFarmListTask>(AccountId);
+            await _taskManager.AddOrUpdate<StartFarmListTask>(AccountId);
 
             _dialogService.ShowMessageBox("Information", "Added start farm list task");
         }

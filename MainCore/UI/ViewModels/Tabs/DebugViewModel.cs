@@ -8,6 +8,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting.Display;
 using System.Collections.ObjectModel;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text;
 
@@ -49,10 +50,7 @@ namespace MainCore.UI.ViewModels.Tabs
             _formatter.Format(logEvent, buffer);
             buffer.WriteLine(_cacheLog);
             _cacheLog = buffer.ToString();
-
-            Observable.Start(
-                () => Logs = _cacheLog,
-                RxApp.MainThreadScheduler);
+            RxApp.MainThreadScheduler.Schedule(() => Logs = _cacheLog);
         }
 
         public async Task TaskListRefresh(AccountId accountId)
@@ -77,27 +75,28 @@ namespace MainCore.UI.ViewModels.Tabs
             await Observable.Start(() =>
             {
                 tasks
-                .Select(x => new TaskItem(x))
-                .ToList()
-                .ForEach(Tasks.Add);
+                    .Select(x => new TaskItem(x))
+                    .ToList()
+                    .ForEach(Tasks.Add);
             }, RxApp.MainThreadScheduler);
         }
 
         private async Task LoadLog(AccountId accountId)
         {
+            await Task.CompletedTask;
             _isLogLoading = true;
+
             var logs = _logSink.GetLogs(accountId);
             var buffer = new StringWriter(new StringBuilder());
+
             foreach (var log in logs)
             {
                 _formatter.Format(log, buffer);
             }
             _cacheLog = buffer.ToString();
 
-            await Observable.Start(() =>
-            {
-                Logs = _cacheLog;
-            }, RxApp.MainThreadScheduler);
+            Logs = _cacheLog;
+
             _isLogLoading = false;
         }
     }
