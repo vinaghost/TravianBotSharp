@@ -34,9 +34,9 @@ namespace MainCore.UI.ViewModels.Tabs
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;
 
-            LoadCurrentCommand = ReactiveCommand.Create(LoadCurrentHandler);
-            LoadUnloadCommand = ReactiveCommand.CreateFromTask(LoadUnloadHandler);
-            LoadAllCommand = ReactiveCommand.CreateFromTask(LoadAllHandler);
+            LoadCurrent = ReactiveCommand.Create(LoadCurrentHandler);
+            LoadUnload = ReactiveCommand.CreateFromTask(LoadUnloadHandler);
+            LoadAll = ReactiveCommand.CreateFromTask(LoadAllHandler);
 
             var villageObservable = this.WhenAnyValue(x => x.Villages.SelectedItem);
             villageObservable.BindTo(_selectedItemStore, vm => vm.Village);
@@ -105,8 +105,8 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         public VillageTabStore VillageTabStore => _villageTabStore;
-        public ReactiveCommand<Unit, Unit> LoadCurrentCommand { get; }
-        public ReactiveCommand<Unit, Unit> LoadUnloadCommand { get; }
-        public ReactiveCommand<Unit, Unit> LoadAllCommand { get; }
+        public ReactiveCommand<Unit, Unit> LoadCurrent { get; }
+        public ReactiveCommand<Unit, Unit> LoadUnload { get; }
+        public ReactiveCommand<Unit, Unit> LoadAll { get; }
     }
 }
