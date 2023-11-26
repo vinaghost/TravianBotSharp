@@ -27,10 +27,10 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly IMediator _mediator;
         private readonly IUnitOfRepository _unitOfRepository;
         private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
-        public ReactiveCommand<Unit, Unit> AddAccessCommand { get; }
-        public ReactiveCommand<Unit, Unit> EditAccessCommand { get; }
-        public ReactiveCommand<Unit, Unit> DeleteAccessCommand { get; }
-        public ReactiveCommand<Unit, Unit> EditAccountCommand { get; }
+        public ReactiveCommand<Unit, Unit> AddAccess { get; }
+        public ReactiveCommand<Unit, Unit> EditAccess { get; }
+        public ReactiveCommand<Unit, Unit> DeleteAccess { get; }
+        public ReactiveCommand<Unit, Unit> EditAccount { get; }
 
         public EditAccountViewModel(WaitingOverlayViewModel waitingOverlayViewModel, IValidator<AccessInput> accessInputValidator, IValidator<AccountInput> accountInputValidator, IMediator mediator, IDialogService dialogService, IUnitOfRepository unitOfRepository)
         {
@@ -42,10 +42,10 @@ namespace MainCore.UI.ViewModels.Tabs
             _dialogService = dialogService;
             _unitOfRepository = unitOfRepository;
 
-            AddAccessCommand = ReactiveCommand.Create(AddAccessCommandHandler);
-            EditAccessCommand = ReactiveCommand.Create(EditAccessCommandHandler);
-            DeleteAccessCommand = ReactiveCommand.Create(DeleteAccessCommandHandler);
-            EditAccountCommand = ReactiveCommand.CreateFromTask(EditAccountCommandHandler);
+            AddAccess = ReactiveCommand.Create(AddAccessHandler);
+            EditAccess = ReactiveCommand.Create(EditAccessHandler);
+            DeleteAccess = ReactiveCommand.Create(DeleteAccessHandler);
+            EditAccount = ReactiveCommand.CreateFromTask(EditAccountHandler);
 
             this.WhenAnyValue(vm => vm.SelectedAccess)
                 .WhereNotNull()
@@ -57,7 +57,7 @@ namespace MainCore.UI.ViewModels.Tabs
             await LoadAccount();
         }
 
-        private void AddAccessCommandHandler()
+        private void AddAccessHandler()
         {
             var result = _accessInputValidator.Validate(AccessInput);
 
@@ -70,7 +70,7 @@ namespace MainCore.UI.ViewModels.Tabs
             AccountInput.Accesses.Add(AccessInput.Clone());
         }
 
-        private void EditAccessCommandHandler()
+        private void EditAccessHandler()
         {
             var result = _accessInputValidator.Validate(AccessInput);
 
@@ -83,13 +83,13 @@ namespace MainCore.UI.ViewModels.Tabs
             AccessInput.CopyTo(SelectedAccess);
         }
 
-        private void DeleteAccessCommandHandler()
+        private void DeleteAccessHandler()
         {
             AccountInput.Accesses.Remove(SelectedAccess);
             SelectedAccess = null;
         }
 
-        private async Task EditAccountCommandHandler()
+        private async Task EditAccountHandler()
         {
             var results = _accountInputValidator.Validate(AccountInput);
 
