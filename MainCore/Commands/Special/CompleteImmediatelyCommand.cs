@@ -59,7 +59,7 @@ namespace MainCore.Commands.Special
             var confirmButton = _unitOfParser.CompleteImmediatelyParser.GetConfirmButton(html);
             if (confirmButton is null) return Result.Fail(Retry.ButtonNotFound("complete now"));
 
-            result = chromeBrowser.Click(By.XPath(completeNowButton.XPath));
+            result = chromeBrowser.Click(By.XPath(confirmButton.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             return Result.Ok();

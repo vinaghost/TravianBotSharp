@@ -126,7 +126,7 @@ namespace MainCore.Infrasturecture.Persistence
             {VillageSettingEnums.UseHeroResourceForBuilding, 0 },
             {VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding, 0 },
             {VillageSettingEnums.UseSpecialUpgrade, 0 },
-            {VillageSettingEnums.InstantUpgrade, 0 },
+            {VillageSettingEnums.CompleteImmediately, 0 },
             {VillageSettingEnums.Tribe, 0 },
             {VillageSettingEnums.TrainTroopEnable, 0 },
             {VillageSettingEnums.TrainTroopRepeatTimeMin, 120 },

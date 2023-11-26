@@ -9,7 +9,7 @@
         UseSpecialUpgrade,
 
         // Complete now
-        InstantUpgrade,
+        CompleteImmediately,
 
         // General
         Tribe,
