@@ -68,12 +68,13 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task LoadTask(AccountId accountId)
         {
-            Tasks.Clear();
             var tasks = _taskManager.GetTaskList(accountId);
             if (tasks.Count == 0) return;
 
             await Observable.Start(() =>
             {
+                Tasks.Clear();
+
                 tasks
                     .Select(x => new TaskItem(x))
                     .ToList()
