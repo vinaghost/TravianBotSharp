@@ -1,19 +1,20 @@
 ﻿using MainCore.Common.Enums;
 using MainCore.Entities;
 using MainCore.Tasks.Base;
-using static MainCore.Services.TaskManager;
 
 namespace MainCore.Services
 {
     public interface ITaskManager
     {
-        void Add<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask;
-        void Add<T>(AccountId accountId, VillageId villageId, bool first = false, DateTime executeTime = default) where T : VillageTask;
-        void AddOrUpdate<T>(AccountId accountId, VillageId villageId, bool first = false, DateTime executeTime = default) where T : VillageTask;
+        Task Add<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask;
 
-        void AddOrUpdate<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask;
+        Task Add<T>(AccountId accountId, VillageId villageId, bool first = false, DateTime executeTime = default) where T : VillageTask;
 
-        void Clear(AccountId accountId);
+        Task AddOrUpdate<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask;
+
+        Task AddOrUpdate<T>(AccountId accountId, VillageId villageId, bool first = false, DateTime executeTime = default) where T : VillageTask;
+
+        Task Clear(AccountId accountId);
 
         AccountTask Get<T>(AccountId accountId) where T : AccountTask;
 
@@ -25,14 +26,19 @@ namespace MainCore.Services
 
         StatusEnums GetStatus(AccountId accountId);
 
-        TaskInfo GetTaskInfo(AccountId accountId);
+        TaskManager.TaskInfo GetTaskInfo(AccountId accountId);
 
         List<TaskBase> GetTaskList(AccountId accountId);
-        bool IsExist<T>(AccountId accountId) where T : AccountTask;
-        bool IsExist<T>(AccountId accountId, VillageId villageId) where T : VillageTask;
-        void Remove(AccountId accountId, TaskBase task);
 
-        void ReOrder(AccountId accountId);
+        bool IsExecuting(AccountId accountId);
+
+        bool IsExist<T>(AccountId accountId) where T : AccountTask;
+
+        bool IsExist<T>(AccountId accountId, VillageId villageId) where T : VillageTask;
+
+        Task Remove(AccountId accountId, TaskBase task);
+
+        Task ReOrder(AccountId accountId);
 
         void SetStatus(AccountId accountId, StatusEnums status);
 

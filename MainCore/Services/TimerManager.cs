@@ -78,6 +78,11 @@ namespace MainCore.Services
             ///===========================================================///
             logger.Information("{taskName} is finished", task.GetName());
 
+            task.Stage = StageEnums.Waiting;
+            taskInfo.IsExecuting = false;
+            cts.Dispose();
+            taskInfo.CancellationTokenSource = null;
+
             if (poliResult.FinalException is not null)
             {
                 logger.Warning("There is something wrong. Bot is pausing. Last exception is");
@@ -101,7 +106,7 @@ namespace MainCore.Services
                     {
                         if (task.ExecuteAt == cacheExecuteTime)
                         {
-                            _taskManager.Remove(accountId, task);
+                            await _taskManager.Remove(accountId, task);
                         }
                     }
                     else if (result.HasError<Cancel>())
@@ -117,16 +122,14 @@ namespace MainCore.Services
                 {
                     if (task.ExecuteAt == cacheExecuteTime)
                     {
-                        _taskManager.Remove(accountId, task);
+                        await _taskManager.Remove(accountId, task);
+                    }
+                    else
+                    {
+                        await _taskManager.ReOrder(accountId);
                     }
                 }
             }
-
-            task.Stage = StageEnums.Waiting;
-            taskInfo.IsExecuting = false;
-            cts.Dispose();
-            taskInfo.CancellationTokenSource = null;
-            _taskManager.ReOrder(accountId);
 
             await _delayTaskCommand.Execute(accountId);
         }
