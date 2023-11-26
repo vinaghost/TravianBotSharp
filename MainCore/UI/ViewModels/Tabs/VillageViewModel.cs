@@ -34,9 +34,9 @@ namespace MainCore.UI.ViewModels.Tabs
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;
 
-            LoadCurrentCommand = ReactiveCommand.Create(LoadCurrentCommandHandler);
-            LoadUnloadCommand = ReactiveCommand.CreateFromTask(LoadUnloadCommandHandler);
-            LoadAllCommand = ReactiveCommand.CreateFromTask(LoadAllCommandHandler);
+            LoadCurrentCommand = ReactiveCommand.Create(LoadCurrentHandler);
+            LoadUnloadCommand = ReactiveCommand.CreateFromTask(LoadUnloadHandler);
+            LoadAllCommand = ReactiveCommand.CreateFromTask(LoadAllHandler);
 
             var villageObservable = this.WhenAnyValue(x => x.Villages.SelectedItem);
             villageObservable.BindTo(_selectedItemStore, vm => vm.Village);
@@ -48,7 +48,7 @@ namespace MainCore.UI.ViewModels.Tabs
             });
         }
 
-        private void LoadCurrentCommandHandler()
+        private void LoadCurrentHandler()
         {
             if (!Villages.IsSelected)
             {
@@ -61,7 +61,7 @@ namespace MainCore.UI.ViewModels.Tabs
             return;
         }
 
-        private async Task LoadUnloadCommandHandler()
+        private async Task LoadUnloadHandler()
         {
             var villages = await Task.Run(() => _unitOfRepository.VillageRepository.GetMissingBuildingVillages(AccountId));
             foreach (var village in villages)
@@ -72,7 +72,7 @@ namespace MainCore.UI.ViewModels.Tabs
             return;
         }
 
-        private async Task LoadAllCommandHandler()
+        private async Task LoadAllHandler()
         {
             var villages = await Task.Run(() => _unitOfRepository.VillageRepository.Get(AccountId));
             foreach (var village in villages)

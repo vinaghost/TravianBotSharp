@@ -36,11 +36,11 @@ namespace MainCore.UI.ViewModels.Tabs
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;
 
-            UpdateFarmListCommand = ReactiveCommand.Create(UpdateFarmListCommandHandler);
-            SaveCommand = ReactiveCommand.CreateFromTask(SaveCommandHandler);
-            ActiveFarmListCommand = ReactiveCommand.CreateFromTask(ActiveFarmListCommandHandler);
-            StartCommand = ReactiveCommand.CreateFromTask(StartCommandHandler);
-            StopCommand = ReactiveCommand.Create(StopCommandHandler);
+            UpdateFarmList = ReactiveCommand.Create(UpdateFarmListHandler);
+            Save = ReactiveCommand.CreateFromTask(SaveHandler);
+            ActiveFarmList = ReactiveCommand.CreateFromTask(ActiveFarmListHandler);
+            Start = ReactiveCommand.CreateFromTask(StartHandler);
+            Stop = ReactiveCommand.Create(StopHandler);
         }
 
         public async Task FarmListRefresh(AccountId accountId)
@@ -56,13 +56,13 @@ namespace MainCore.UI.ViewModels.Tabs
             await LoadSettings(accountId);
         }
 
-        private void UpdateFarmListCommandHandler()
+        private void UpdateFarmListHandler()
         {
             _taskManager.AddOrUpdate<UpdateFarmListTask>(AccountId);
             _dialogService.ShowMessageBox("Information", "Added update farm list task");
         }
 
-        private async Task StartCommandHandler()
+        private async Task StartHandler()
         {
             if (!FarmListSettingInput.UseStartAllButton)
             {
@@ -79,7 +79,7 @@ namespace MainCore.UI.ViewModels.Tabs
             _dialogService.ShowMessageBox("Information", "Added start farm list task");
         }
 
-        private void StopCommandHandler()
+        private void StopHandler()
         {
             var task = _taskManager.Get<StartFarmListTask>(AccountId);
 
@@ -90,7 +90,7 @@ namespace MainCore.UI.ViewModels.Tabs
             _dialogService.ShowMessageBox("Information", "Removed start farm list task");
         }
 
-        private async Task SaveCommandHandler()
+        private async Task SaveHandler()
         {
             var result = _farmListSettingInputValidator.Validate(FarmListSettingInput);
             if (!result.IsValid)
@@ -105,7 +105,7 @@ namespace MainCore.UI.ViewModels.Tabs
             _dialogService.ShowMessageBox("Information", "Settings saved");
         }
 
-        private async Task ActiveFarmListCommandHandler()
+        private async Task ActiveFarmListHandler()
         {
             var SelectedFarmList = FarmLists.SelectedItem;
             if (FarmLists.SelectedItem is null)
@@ -135,10 +135,10 @@ namespace MainCore.UI.ViewModels.Tabs
             }, RxApp.MainThreadScheduler);
         }
 
-        public ReactiveCommand<Unit, Unit> UpdateFarmListCommand { get; }
-        public ReactiveCommand<Unit, Unit> SaveCommand { get; }
-        public ReactiveCommand<Unit, Unit> ActiveFarmListCommand { get; }
-        public ReactiveCommand<Unit, Unit> StartCommand { get; }
-        public ReactiveCommand<Unit, Unit> StopCommand { get; }
+        public ReactiveCommand<Unit, Unit> UpdateFarmList { get; }
+        public ReactiveCommand<Unit, Unit> Save { get; }
+        public ReactiveCommand<Unit, Unit> ActiveFarmList { get; }
+        public ReactiveCommand<Unit, Unit> Start { get; }
+        public ReactiveCommand<Unit, Unit> Stop { get; }
     }
 }

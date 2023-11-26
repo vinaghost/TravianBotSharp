@@ -39,11 +39,11 @@ namespace MainCore.UI.ViewModels.UserControls
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;
 
-            AddAccountCommand = ReactiveCommand.Create(AddAccountCommandHandler);
-            AddAccountsCommand = ReactiveCommand.Create(AddAccountsCommandHandler);
+            AddAccountCommand = ReactiveCommand.Create(AddAccountHandler);
+            AddAccountsCommand = ReactiveCommand.Create(AddAccountsHandler);
 
-            DeleteAccountCommand = ReactiveCommand.CreateFromTask(DeleteAccountCommandHandler);
-            LoginCommand = ReactiveCommand.CreateFromTask(LoginCommandHandler);
+            DeleteAccountCommand = ReactiveCommand.CreateFromTask(DeleteAccountHandler);
+            LoginCommand = ReactiveCommand.CreateFromTask(LoginHandler);
             LogoutCommand = ReactiveCommand.CreateFromTask(LogoutTask);
             PauseCommand = ReactiveCommand.CreateFromTask(PauseTask);
             RestartCommand = ReactiveCommand.CreateFromTask(RestartTask);
@@ -69,19 +69,19 @@ namespace MainCore.UI.ViewModels.UserControls
             await Task.WhenAll(tasks);
         }
 
-        private void AddAccountCommandHandler()
+        private void AddAccountHandler()
         {
             Accounts.SelectedItem = null;
             AccountTabStore.SetTabType(AccountTabType.AddAccount);
         }
 
-        private void AddAccountsCommandHandler()
+        private void AddAccountsHandler()
         {
             Accounts.SelectedItem = null;
             AccountTabStore.SetTabType(AccountTabType.AddAccounts);
         }
 
-        private async Task DeleteAccountCommandHandler()
+        private async Task DeleteAccountHandler()
         {
             if (!Accounts.IsSelected)
             {
@@ -96,7 +96,7 @@ namespace MainCore.UI.ViewModels.UserControls
             await _mediator.Publish(new AccountUpdated());
         }
 
-        private async Task LoginCommandHandler()
+        private async Task LoginHandler()
         {
             if (!Accounts.IsSelected)
             {
