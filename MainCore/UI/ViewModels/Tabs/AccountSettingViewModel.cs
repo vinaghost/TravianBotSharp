@@ -9,7 +9,7 @@ using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 using MediatR;
 using ReactiveUI;
-using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Text.Json;
 using Unit = System.Reactive.Unit;
 
@@ -44,7 +44,7 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            RxApp.MainThreadScheduler.Schedule(() => LoadSettings(accountId));
+            LoadSettings(accountId);
         }
 
         protected override async Task Load(AccountId accountId)
@@ -108,8 +108,16 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private void LoadSettings(AccountId accountId)
         {
-            var settings = _unitOfRepository.AccountSettingRepository.Get(accountId);
-            AccountSettingInput.Set(settings);
+            Observable.Start(() =>
+            {
+                var settings = _unitOfRepository.AccountSettingRepository.Get(accountId);
+                return settings;
+            }, RxApp.TaskpoolScheduler)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe((settings) =>
+                {
+                    AccountSettingInput.Set(settings);
+                });
         }
     }
 }
