@@ -21,6 +21,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly ITaskManager _taskManager;
         private readonly MessageTemplateTextFormatter _formatter;
         public ObservableCollection<TaskItem> Tasks { get; } = new();
+
         private string _cacheLog;
         public string _logs;
 
@@ -84,7 +85,6 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task LoadLog(AccountId accountId)
         {
-            await Task.CompletedTask;
             _isLogLoading = true;
 
             var logs = _logSink.GetLogs(accountId);
@@ -96,8 +96,10 @@ namespace MainCore.UI.ViewModels.Tabs
             }
             _cacheLog = buffer.ToString();
 
-            Logs = _cacheLog;
-
+            await Observable.Start(() =>
+            {
+                Logs = _cacheLog;
+            }, RxApp.MainThreadScheduler);
             _isLogLoading = false;
         }
     }
