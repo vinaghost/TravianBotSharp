@@ -102,7 +102,8 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            var result = await _mediator.Send(new LoginAccountCommand(new AccountId(Accounts.SelectedItemId)));
+            var accountId = new AccountId(Accounts.SelectedItemId);
+            var result = await _mediator.Send(new LoginAccountCommand(accountId));
 
             if (result.IsFailed) _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());
         }
@@ -115,7 +116,8 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            await _mediator.Send(new LogoutAccountCommand(new AccountId(Accounts.SelectedItemId)));
+            var accountId = new AccountId(Accounts.SelectedItemId);
+            await _mediator.Send(new LogoutAccountCommand(accountId));
         }
 
         private async Task PauseTask()
@@ -125,8 +127,9 @@ namespace MainCore.UI.ViewModels.UserControls
                 _dialogService.ShowMessageBox("Warning", "No account selected");
                 return;
             }
+            var accountId = new AccountId(Accounts.SelectedItemId);
 
-            await _mediator.Send(new PauseAccountCommand(new AccountId(Accounts.SelectedItemId)));
+            await _mediator.Send(new PauseAccountCommand(accountId));
         }
 
         private async Task RestartTask()
@@ -136,8 +139,9 @@ namespace MainCore.UI.ViewModels.UserControls
                 _dialogService.ShowMessageBox("Warning", "No account selected");
                 return;
             }
+            var accountId = new AccountId(Accounts.SelectedItemId);
 
-            await _mediator.Send(new RestartAccountCommand(new AccountId(Accounts.SelectedItemId)));
+            await _mediator.Send(new RestartAccountCommand(accountId));
         }
 
         public async Task LoadStatus(AccountId accountId, StatusEnums status)

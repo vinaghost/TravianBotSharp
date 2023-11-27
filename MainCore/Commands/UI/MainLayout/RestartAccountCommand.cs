@@ -54,6 +54,7 @@ namespace MainCore.Commands.UI.MainLayout
         private async Task Handle(AccountId accountId)
         {
             _taskManager.SetStatus(accountId, StatusEnums.Starting);
+
             await _taskManager.Clear(accountId);
 
             await _mediator.Publish(new AccountInit(accountId));

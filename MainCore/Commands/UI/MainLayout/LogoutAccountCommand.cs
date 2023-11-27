@@ -32,7 +32,7 @@ namespace MainCore.Commands.UI.MainLayout
             _taskManager.SetStatus(accountId, StatusEnums.Stopping);
             await _taskManager.StopCurrentTask(accountId);
 
-            await Task.Run(() => _closeCommand.Execute(accountId));
+            await _closeCommand.Execute(accountId);
 
             _taskManager.SetStatus(accountId, StatusEnums.Offline);
         }
