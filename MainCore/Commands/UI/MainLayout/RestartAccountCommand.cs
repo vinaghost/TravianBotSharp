@@ -5,7 +5,7 @@ using MainCore.Notification.Message;
 using MainCore.Services;
 using MediatR;
 
-namespace MainCore.Commands.UI
+namespace MainCore.Commands.UI.MainLayout
 {
     public class RestartAccountCommand : ByAccountIdBase, IRequest
     {

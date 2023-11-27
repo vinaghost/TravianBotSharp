@@ -43,7 +43,7 @@ namespace MainCore.Commands.Special
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var access = _chooseAccessCommand.Value;
-            result = _openBrowserCommand.Execute(accountId, access);
+            result = await _openBrowserCommand.Execute(accountId, access);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

@@ -5,6 +5,6 @@ namespace MainCore.Commands.Navigate
 {
     public interface ISwitchTabCommand
     {
-        Result Execute(AccountId accountId, int index);
+        Task<Result> Execute(AccountId accountId, int index);
     }
 }

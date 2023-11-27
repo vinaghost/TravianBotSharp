@@ -20,7 +20,7 @@ namespace MainCore.Commands.Step.StartFarmlist
             _unitOfParser = unitOfParser;
         }
 
-        public Result Execute(AccountId accountId, FarmId farmListId)
+        public async Task<Result> Execute(AccountId accountId, FarmId farmListId)
         {
             var chromeBrowser = _chromeManager.Get(accountId);
             var html = chromeBrowser.Html;
@@ -30,7 +30,7 @@ namespace MainCore.Commands.Step.StartFarmlist
                 return Result.Fail(new Retry("Cannot found start button"));
             }
 
-            var result = chromeBrowser.Click(By.XPath(startButton.XPath));
+            var result = await chromeBrowser.Click(By.XPath(startButton.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

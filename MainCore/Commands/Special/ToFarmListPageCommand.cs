@@ -36,19 +36,19 @@ namespace MainCore.Commands.Special
             var rallypointVillageId = _unitOfRepository.VillageRepository.GetVillageHasRallypoint(accountId);
             if (rallypointVillageId == VillageId.Empty) return Result.Fail(new NoRallypoint());
 
-            result = _unitOfCommand.SwitchVillageCommand.Execute(accountId, rallypointVillageId);
+            result = await _unitOfCommand.SwitchVillageCommand.Execute(accountId, rallypointVillageId);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = _unitOfCommand.ToDorfCommand.Execute(accountId, 2);
+            result = await _unitOfCommand.ToDorfCommand.Execute(accountId, 2);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, rallypointVillageId);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = _unitOfCommand.ToBuildingCommand.Execute(accountId, 39);
+            result = await _unitOfCommand.ToBuildingCommand.Execute(accountId, 39);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = _unitOfCommand.SwitchTabCommand.Execute(accountId, 4);
+            result = await _unitOfCommand.SwitchTabCommand.Execute(accountId, 4);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateFarmListCommand.Execute(accountId);

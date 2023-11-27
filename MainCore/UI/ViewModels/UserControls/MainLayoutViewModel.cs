@@ -1,10 +1,9 @@
-﻿using MainCore.Commands.UI;
+﻿using MainCore.Commands.UI.MainLayout;
 using MainCore.Common;
 using MainCore.Common.Enums;
 using MainCore.Common.Extensions;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Notification.Message;
 using MainCore.Repositories;
 using MainCore.Services;
 using MainCore.UI.Enums;
@@ -39,8 +38,8 @@ namespace MainCore.UI.ViewModels.UserControls
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;
 
-            AddAccountCommand = ReactiveCommand.Create(AddAccountHandler);
-            AddAccountsCommand = ReactiveCommand.Create(AddAccountsHandler);
+            AddAccountCommand = ReactiveCommand.CreateFromTask(AddAccountHandler);
+            AddAccountsCommand = ReactiveCommand.CreateFromTask(AddAccountsHandler);
 
             DeleteAccountCommand = ReactiveCommand.CreateFromTask(DeleteAccountHandler);
             LoginCommand = ReactiveCommand.CreateFromTask(LoginHandler);
@@ -69,16 +68,16 @@ namespace MainCore.UI.ViewModels.UserControls
             await Task.WhenAll(tasks);
         }
 
-        private void AddAccountHandler()
+        private async Task AddAccountHandler()
         {
             Accounts.SelectedItem = null;
-            AccountTabStore.SetTabType(AccountTabType.AddAccount);
+            await _mediator.Send(new AddAccountCommand());
         }
 
-        private void AddAccountsHandler()
+        private async Task AddAccountsHandler()
         {
             Accounts.SelectedItem = null;
-            AccountTabStore.SetTabType(AccountTabType.AddAccounts);
+            await _mediator.Send(new AddAccountsCommand());
         }
 
         private async Task DeleteAccountHandler()
@@ -92,8 +91,7 @@ namespace MainCore.UI.ViewModels.UserControls
             var result = _dialogService.ShowConfirmBox("Information", $"Are you sure want to delete \n {Accounts.SelectedItem.Content}");
             if (!result) return;
             var accountId = new AccountId(Accounts.SelectedItemId);
-            await Task.Run(() => _unitOfRepository.AccountRepository.Delete(accountId));
-            await _mediator.Publish(new AccountUpdated());
+            await _mediator.Send(new DeleteAccountCommand(accountId));
         }
 
         private async Task LoginHandler()
@@ -104,7 +102,9 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            await _mediator.Send(new LoginAccountCommand(new AccountId(Accounts.SelectedItemId)));
+            var result = await _mediator.Send(new LoginAccountCommand(new AccountId(Accounts.SelectedItemId)));
+
+            if (result.IsFailed) _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());
         }
 
         private async Task LogoutTask()

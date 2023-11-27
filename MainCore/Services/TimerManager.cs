@@ -44,7 +44,7 @@ namespace MainCore.Services
             var retryPolicy = Policy
                 .Handle<Exception>()
                 .OrResult<Result>(x => x.HasError<Retry>())
-                .WaitAndRetryAsync(retryCount: 3, sleepDurationProvider: _ => TimeSpan.FromSeconds(5), onRetry: (error, _, retryCount, _) =>
+                .WaitAndRetryAsync(retryCount: 3, sleepDurationProvider: _ => TimeSpan.FromSeconds(5), onRetry: async (error, _, retryCount, _) =>
                 {
                     logger.Warning("There is something wrong.");
                     if (error.Exception is null)
@@ -60,7 +60,7 @@ namespace MainCore.Services
                     logger.Warning("Retry {retryCount} for {taskName}", retryCount, task.GetName());
 
                     var chromeBrowser = _chromeManager.Get(accountId);
-                    chromeBrowser.Navigate();
+                    await chromeBrowser.Navigate();
                 });
 
             var taskInfo = _taskManager.GetTaskInfo(accountId);

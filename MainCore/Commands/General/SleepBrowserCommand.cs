@@ -21,7 +21,7 @@ namespace MainCore.Commands.General
         public async Task<Result> Execute(AccountId accountId, TimeSpan sleepTime, CancellationToken cancellationToken)
         {
             Result result;
-            result = _closeCommand.Execute(accountId);
+            result = await _closeCommand.Execute(accountId);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var sleepEnd = DateTime.Now.Add(sleepTime);

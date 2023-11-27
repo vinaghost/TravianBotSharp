@@ -49,6 +49,7 @@ namespace MainCore.Commands.General
 
             var timeValid = DateTime.Now.AddMinutes(-minSleep);
             if (access.LastUsed > timeValid) return Result.Fail(NoAccessAvailable.LackOfAccess);
+
             Value = access;
             return Result.Ok();
         }
@@ -57,13 +58,14 @@ namespace MainCore.Commands.General
         {
             foreach (var access in accesses)
             {
-                logger.Information("Check proxy {proxy}", access.Proxy);
+                logger.Information("Check connection {proxy}", access.Proxy);
                 var valid = await _unitOfCommand.ValidateProxyCommand.Execute(access);
                 if (!valid)
                 {
-                    logger.Warning("Proxy {proxy} is not working", access.Proxy);
+                    logger.Warning("Connection {proxy} is not working", access.Proxy);
                     continue;
                 }
+                logger.Information("Connection {proxy} is working", access.Proxy);
                 return access;
             }
             return null;

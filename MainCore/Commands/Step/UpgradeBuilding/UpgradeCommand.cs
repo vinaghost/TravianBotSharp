@@ -20,17 +20,17 @@ namespace MainCore.Commands.Step.UpgradeBuilding
             _unitOfParser = unitOfParser;
         }
 
-        public Result Execute(AccountId accountId)
+        public async Task<Result> Execute(AccountId accountId)
         {
             var chromeBrowser = _chromeManager.Get(accountId);
             var html = chromeBrowser.Html;
 
             var button = _unitOfParser.UpgradeBuildingParser.GetUpgradeButton(html);
 
-            var result = chromeBrowser.Click(By.XPath(button.XPath));
+            var result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = chromeBrowser.WaitPageChanged("dorf");
+            result = await chromeBrowser.WaitPageChanged("dorf");
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             return Result.Ok();

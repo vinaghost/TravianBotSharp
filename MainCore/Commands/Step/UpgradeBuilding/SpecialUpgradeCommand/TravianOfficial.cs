@@ -27,7 +27,7 @@ namespace MainCore.Commands.Step.UpgradeBuilding.SpecialUpgradeCommand
             var chromeBrowser = _chromeManager.Get(accountId);
             var html = chromeBrowser.Html;
             var button = _unitOfParser.UpgradeBuildingParser.GetSpecialUpgradeButton(html);
-            var result = chromeBrowser.Click(By.XPath(button.XPath));
+            var result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var driver = chromeBrowser.Driver;
@@ -47,7 +47,7 @@ namespace MainCore.Commands.Step.UpgradeBuilding.SpecialUpgradeCommand
                 return doc.GetElementbyId("videoFeature") is not null;
             };
 
-            result = chromeBrowser.Wait(videoFeatureShown);
+            result = await chromeBrowser.Wait(videoFeatureShown);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             await Task.Delay(Random.Shared.Next(20000, 25000));
@@ -56,7 +56,7 @@ namespace MainCore.Commands.Step.UpgradeBuilding.SpecialUpgradeCommand
             var node = html.GetElementbyId("videoFeature");
             if (node is null) return Result.Fail(Retry.ButtonNotFound($"play ads"));
 
-            result = chromeBrowser.Click(By.XPath(node.XPath));
+            result = await chromeBrowser.Click(By.XPath(node.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             driver.SwitchTo().DefaultContent();
@@ -74,14 +74,14 @@ namespace MainCore.Commands.Step.UpgradeBuilding.SpecialUpgradeCommand
                 driver.Close();
                 driver.SwitchTo().Window(current);
 
-                result = chromeBrowser.Click(By.XPath(node.XPath));
+                result = await chromeBrowser.Click(By.XPath(node.XPath));
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
                 driver.SwitchTo().DefaultContent();
             }
             while (true);
 
-            result = chromeBrowser.WaitPageChanged("dorf");
+            result = await chromeBrowser.WaitPageChanged("dorf");
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             return Result.Ok();

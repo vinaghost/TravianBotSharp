@@ -4,7 +4,7 @@ using MainCore.Entities;
 using MainCore.Services;
 using MediatR;
 
-namespace MainCore.Commands.UI
+namespace MainCore.Commands.UI.MainLayout
 {
     public class PauseAccountCommand : ByAccountIdBase, IRequest
     {

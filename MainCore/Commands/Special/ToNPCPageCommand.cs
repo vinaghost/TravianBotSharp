@@ -35,10 +35,10 @@ namespace MainCore.Commands.Special
 
             var market = _unitOfRepository.BuildingRepository.GetBuildingLocation(villageId, BuildingEnums.Marketplace);
 
-            result = _unitOfCommand.ToBuildingCommand.Execute(accountId, market);
+            result = await _unitOfCommand.ToBuildingCommand.Execute(accountId, market);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = _unitOfCommand.SwitchTabCommand.Execute(accountId, 1);
+            result = await _unitOfCommand.SwitchTabCommand.Execute(accountId, 1);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

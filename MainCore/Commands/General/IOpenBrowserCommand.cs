@@ -6,6 +6,6 @@ namespace MainCore.Commands.General
 {
     public interface IOpenBrowserCommand
     {
-        Result Execute(AccountId accountId, AccessDto access);
+        Task<Result> Execute(AccountId accountId, AccessDto access);
     }
 }
