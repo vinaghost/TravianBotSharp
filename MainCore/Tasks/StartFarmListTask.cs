@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using MainCore.Commands;
+using MainCore.Commands.Special;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Infrasturecture.AutoRegisterDi;
@@ -19,11 +20,11 @@ namespace MainCore.Tasks
         protected override async Task<Result> Execute()
         {
             if (CancellationToken.IsCancellationRequested) return new Cancel();
-            await Task.CompletedTask;
-            //result = await _mediator.Send(new ToFarmListPageCommand(AccountId));
-            //if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            //result = await _mediator.Send(new StartFarmListCommand(AccountId));
-            //if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            Result result;
+            result = await _mediator.Send(new ToFarmListPageCommand(AccountId));
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            result = await _mediator.Send(new StartFarmListCommand(AccountId));
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             SetNextExecute();
             return Result.Ok();
         }
