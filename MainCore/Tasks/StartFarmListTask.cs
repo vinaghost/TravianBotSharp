@@ -31,8 +31,8 @@ namespace MainCore.Tasks
 
         private void SetNextExecute()
         {
-            var workTime = _unitOfRepository.AccountSettingRepository.GetByName(AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
-            ExecuteAt = DateTime.Now.AddMinutes(workTime);
+            var seconds = _unitOfRepository.AccountSettingRepository.GetByName(AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax, 60);
+            ExecuteAt = DateTime.Now.AddSeconds(seconds);
         }
 
         protected override void SetName()
