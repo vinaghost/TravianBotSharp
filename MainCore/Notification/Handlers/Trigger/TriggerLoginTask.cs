@@ -17,21 +17,19 @@ namespace MainCore.Notification.Handlers.Trigger
 
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
             var accountId = notification.AccountId;
-            Trigger(accountId);
+            await Trigger(accountId);
         }
 
         public async Task Handle(AccountLogout notification, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
             var accountId = notification.AccountId;
-            Trigger(accountId);
+            await Trigger(accountId);
         }
 
-        private void Trigger(AccountId accountId)
+        private async Task Trigger(AccountId accountId)
         {
-            _taskManager.AddOrUpdate<LoginTask>(accountId, first: true);
+            await _taskManager.AddOrUpdate<LoginTask>(accountId, first: true);
         }
     }
 }
