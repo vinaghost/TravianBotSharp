@@ -5,6 +5,6 @@ namespace MainCore.Commands.General
 {
     public interface ICloseBrowserCommand
     {
-        Result Execute(AccountId accountId);
+        Task<Result> Execute(AccountId accountId);
     }
 }

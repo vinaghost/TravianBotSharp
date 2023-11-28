@@ -47,7 +47,7 @@ namespace MainCore.Commands.Step.NPC
             Result result;
             for (var i = 0; i < 4; i++)
             {
-                result = chromeBrowser.InputTextbox(By.XPath(inputs[i].XPath), $"{values[i]}");
+                result = await chromeBrowser.InputTextbox(By.XPath(inputs[i].XPath), $"{values[i]}");
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
             return Result.Ok();

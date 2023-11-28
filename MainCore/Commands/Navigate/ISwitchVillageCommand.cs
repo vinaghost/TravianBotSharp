@@ -5,6 +5,6 @@ namespace MainCore.Commands.Navigate
 {
     public interface ISwitchVillageCommand
     {
-        Result Execute(AccountId accountId, VillageId villageId);
+        Task<Result> Execute(AccountId accountId, VillageId villageId);
     }
 }

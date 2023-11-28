@@ -28,7 +28,7 @@ namespace MainCore.Commands.Step.DisableContextualHelp
 
             var button = _unitOfParser.OptionPageParser.GetOptionButton(html);
             Result result;
-            result = chromeBrowser.Click(By.XPath(button.XPath));
+            result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

@@ -5,6 +5,6 @@ namespace MainCore.Commands.Step.StartFarmlist
 {
     public interface IStartAllFarmListCommand
     {
-        Result Execute(AccountId accountId);
+        Task<Result> Execute(AccountId accountId);
     }
 }

@@ -29,7 +29,7 @@ namespace MainCore.Commands.Step.NPC
 
             var button = _unitOfParser.MarketParser.GetExchangeResourcesButton(html);
             Result result;
-            result = chromeBrowser.Click(By.XPath(button.XPath));
+            result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             bool dialogShown(IWebDriver driver)
@@ -40,7 +40,7 @@ namespace MainCore.Commands.Step.NPC
                 return _unitOfParser.MarketParser.NPCDialogShown(doc);
             }
 
-            result = chromeBrowser.Wait(dialogShown);
+            result = await chromeBrowser.Wait(dialogShown);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             return Result.Ok();

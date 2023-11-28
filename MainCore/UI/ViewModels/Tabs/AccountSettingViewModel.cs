@@ -9,7 +9,7 @@ using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 using MediatR;
 using ReactiveUI;
-using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Text.Json;
 using Unit = System.Reactive.Unit;
 
@@ -40,17 +40,16 @@ namespace MainCore.UI.ViewModels.Tabs
             Import = ReactiveCommand.CreateFromTask(ImportHandler);
         }
 
-        public void SettingRefresh(AccountId accountId)
+        public async Task SettingRefresh(AccountId accountId)
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            RxApp.MainThreadScheduler.Schedule(() => LoadSettings(accountId));
+            await LoadSettings(accountId);
         }
 
         protected override async Task Load(AccountId accountId)
         {
-            await Task.CompletedTask;
-            LoadSettings(accountId);
+            await LoadSettings(accountId);
         }
 
         private async Task SaveHandler()
@@ -106,10 +105,18 @@ namespace MainCore.UI.ViewModels.Tabs
             _dialogService.ShowMessageBox("Settings exported", "Information");
         }
 
-        private void LoadSettings(AccountId accountId)
+        private async Task LoadSettings(AccountId accountId)
         {
-            var settings = _unitOfRepository.AccountSettingRepository.Get(accountId);
-            AccountSettingInput.Set(settings);
+            var settings = await Observable.Start(() =>
+            {
+                var settings = _unitOfRepository.AccountSettingRepository.Get(accountId);
+                return settings;
+            }, RxApp.TaskpoolScheduler);
+
+            await Observable.Start(() =>
+            {
+                AccountSettingInput.Set(settings);
+            }, RxApp.MainThreadScheduler);
         }
     }
 }

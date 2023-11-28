@@ -51,7 +51,7 @@ namespace MainCore.Tasks
             if (CancellationToken.IsCancellationRequested) return new Cancel();
             Result result;
 
-            result = _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId);
+            result = await _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             while (true)
@@ -141,13 +141,13 @@ namespace MainCore.Tasks
                     }
                     else
                     {
-                        result = _upgradeCommand.Execute(AccountId);
+                        result = await _upgradeCommand.Execute(AccountId);
                         if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                     }
                 }
                 else
                 {
-                    result = _constructCommand.Execute(AccountId, plan);
+                    result = await _constructCommand.Execute(AccountId, plan);
                     if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                 }
             }
