@@ -18,7 +18,7 @@ namespace TestProject.Parsers.FarmParser
         {
             var (parser, html) = Setup("TravianOfficial.html");
 
-            var node = parser.GetStartButton(html, new FarmId(1233));
+            var node = parser.GetStartButton(html, new FarmId(2008));
             node.Should().NotBeNull();
         }
 
@@ -37,7 +37,7 @@ namespace TestProject.Parsers.FarmParser
             var (parser, html) = Setup("TravianOfficial.html");
             var dto = parser.Get(html);
 
-            dto.Count().Should().Be(8);
+            dto.Count().Should().Be(7);
         }
 
         [TestMethod]
@@ -46,8 +46,8 @@ namespace TestProject.Parsers.FarmParser
             var (parser, html) = Setup("TravianOfficial.html");
             var dto = parser.Get(html).FirstOrDefault();
 
-            dto.Id.Should().Be(new FarmId(1233));
-            dto.Name.Should().Be("Inactive");
+            dto.Id.Should().Be(new FarmId(280));
+            dto.Name.Should().Be("D");
         }
     }
 }
