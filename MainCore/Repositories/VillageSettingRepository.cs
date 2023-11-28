@@ -27,7 +27,7 @@ namespace MainCore.Repositories
             return settingValue;
         }
 
-        public int GetByName(VillageId villageId, VillageSettingEnums settingMin, VillageSettingEnums settingMax)
+        public int GetByName(VillageId villageId, VillageSettingEnums settingMin, VillageSettingEnums settingMax, int multiplier = 1)
         {
             var settings = new List<VillageSettingEnums>
             {
@@ -43,7 +43,7 @@ namespace MainCore.Repositories
             if (settingValues.Count != 2) return 0;
             var min = settingValues.Min();
             var max = settingValues.Max();
-            return Random.Shared.Next(min, max);
+            return Random.Shared.Next(min * multiplier, max * multiplier);
         }
 
         public Dictionary<VillageSettingEnums, int> GetByName(VillageId villageId, List<VillageSettingEnums> settings)

@@ -23,10 +23,10 @@ namespace MainCore.Notification.Handlers.Trigger
         {
             await Task.CompletedTask;
             var accountId = notification.AccountId;
-            Trigger(accountId);
+            await Trigger(accountId);
         }
 
-        private void Trigger(AccountId accountId)
+        private async Task Trigger(AccountId accountId)
         {
             var autoLoadVillageBuilding = _unitOfRepository.AccountSettingRepository.GetBooleanByName(accountId, AccountSettingEnums.AutoLoadVillageBuilding);
             if (!autoLoadVillageBuilding) return;
@@ -35,7 +35,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
             foreach (var village in villages)
             {
-                _taskManager.AddOrUpdate<UpdateBuildingTask>(accountId, village);
+                await _taskManager.AddOrUpdate<UpdateBuildingTask>(accountId, village);
             }
         }
     }

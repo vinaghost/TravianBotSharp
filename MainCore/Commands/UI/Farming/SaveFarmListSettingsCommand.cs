@@ -14,7 +14,7 @@ namespace MainCore.Commands.UI.Farming
 
         public SaveFarmListSettingsCommand(AccountId accountId, Dictionary<AccountSettingEnums, int> settings) : base(accountId)
         {
-            settings = Settings;
+            Settings = settings;
         }
     }
 
