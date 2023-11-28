@@ -35,6 +35,7 @@ namespace MainCore.Commands.Special
             var chromeBrowser = _chromeManager.Get(accountId);
             var url = chromeBrowser.CurrentUrl;
             Result result;
+            await chromeBrowser.Navigate();
             if (url.Contains("dorf1"))
             {
                 result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, villageId);

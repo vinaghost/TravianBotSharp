@@ -27,23 +27,26 @@ namespace MainCore.Repositories
             return settingValue;
         }
 
-        public int GetByName(AccountId accountId, AccountSettingEnums settingMin, AccountSettingEnums settingMax)
+        public int GetByName(AccountId accountId, AccountSettingEnums settingMin, AccountSettingEnums settingMax, int multiplier = 1)
         {
             var settings = new List<AccountSettingEnums>
             {
                 settingMin,
                 settingMax,
             };
+
             using var context = _contextFactory.CreateDbContext();
             var settingValues = context.AccountsSetting
                    .Where(x => x.AccountId == accountId.Value)
                    .Where(x => settings.Contains(x.Setting))
                    .Select(x => x.Value)
                    .ToList();
+
             if (settingValues.Count != 2) return 0;
             var min = settingValues.Min();
             var max = settingValues.Max();
-            return Random.Shared.Next(min, max);
+
+            return Random.Shared.Next(min * multiplier, max * multiplier);
         }
 
         public bool GetBooleanByName(AccountId accountId, AccountSettingEnums setting)
