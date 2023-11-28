@@ -7,7 +7,6 @@ using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using MediatR;
 using ReactiveUI;
-using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using Unit = System.Reactive.Unit;
@@ -49,27 +48,34 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task UpdateTableHandler(string input)
         {
-            var dtos = Parse(input);
-
+            var data = await Observable.Start(() =>
+            {
+                return Parse(input);
+            }, RxApp.TaskpoolScheduler);
             await Observable.Start(() =>
             {
                 Accounts.Clear();
-                dtos.ForEach(Accounts.Add);
+                data.ForEach(Accounts.Add);
             }, RxApp.MainThreadScheduler);
         }
 
         private async Task AddAccountHandler()
         {
             await _waitingOverlayViewModel.Show("adding accounts");
-            var accounts = Accounts.ToList();
+            await Observable.Start(() =>
+            {
+                var accounts = Accounts.ToList();
+                _unitOfRepository.AccountRepository.Add(accounts);
+            }, RxApp.TaskpoolScheduler);
+
+            await _mediator.Publish(new AccountUpdated());
+
             await Observable.Start(() =>
             {
                 Accounts.Clear();
                 Input = "";
             }, RxApp.MainThreadScheduler);
 
-            await Task.Run(() => _unitOfRepository.AccountRepository.Add(accounts));
-            await _mediator.Publish(new AccountUpdated());
             await _waitingOverlayViewModel.Hide();
 
             _dialogService.ShowMessageBox("Information", "Added accounts");
@@ -78,10 +84,16 @@ namespace MainCore.UI.ViewModels.Tabs
         private static List<AccountDetailDto> Parse(string input)
         {
             if (string.IsNullOrEmpty(input)) return new List<AccountDetailDto>();
-            var strArr = input.Trim().Split('\n');
-            var accounts = new ConcurrentBag<AccountDetailDto>();
-            Parallel.ForEach(strArr, str => accounts.Add(ParseLine(str)));
-            return accounts.Where(x => x is not null).ToList();
+
+            var accounts = input
+                .Trim()
+                .Split('\n')
+                .AsParallel()
+                .Select(x => ParseLine(x))
+                .Where(x => x is not null)
+                .ToList();
+
+            return accounts;
         }
 
         private static AccountDetailDto ParseLine(string input)

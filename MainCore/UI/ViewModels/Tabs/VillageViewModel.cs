@@ -34,9 +34,9 @@ namespace MainCore.UI.ViewModels.Tabs
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;
 
-            LoadCurrentCommand = ReactiveCommand.Create(LoadCurrentCommandHandler);
-            LoadUnloadCommand = ReactiveCommand.CreateFromTask(LoadUnloadCommandHandler);
-            LoadAllCommand = ReactiveCommand.CreateFromTask(LoadAllCommandHandler);
+            LoadCurrent = ReactiveCommand.Create(LoadCurrentHandler);
+            LoadUnload = ReactiveCommand.CreateFromTask(LoadUnloadHandler);
+            LoadAll = ReactiveCommand.CreateFromTask(LoadAllHandler);
 
             var villageObservable = this.WhenAnyValue(x => x.Villages.SelectedItem);
             villageObservable.BindTo(_selectedItemStore, vm => vm.Village);
@@ -48,22 +48,24 @@ namespace MainCore.UI.ViewModels.Tabs
             });
         }
 
-        private void LoadCurrentCommandHandler()
+        private void LoadCurrentHandler()
         {
             if (!Villages.IsSelected)
             {
                 _dialogService.ShowMessageBox("Warning", "No village selected");
                 return;
             }
+
             var villageId = new VillageId(Villages.SelectedItemId);
             _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, villageId);
+
             _dialogService.ShowMessageBox("Information", $"Added update task");
             return;
         }
 
-        private async Task LoadUnloadCommandHandler()
+        private async Task LoadUnloadHandler()
         {
-            var villages = await Task.Run(() => _unitOfRepository.VillageRepository.GetMissingBuildingVillages(AccountId));
+            var villages = _unitOfRepository.VillageRepository.GetMissingBuildingVillages(AccountId);
             foreach (var village in villages)
             {
                 await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
@@ -72,9 +74,9 @@ namespace MainCore.UI.ViewModels.Tabs
             return;
         }
 
-        private async Task LoadAllCommandHandler()
+        private async Task LoadAllHandler()
         {
-            var villages = await Task.Run(() => _unitOfRepository.VillageRepository.Get(AccountId));
+            var villages = _unitOfRepository.VillageRepository.Get(AccountId);
             foreach (var village in villages)
             {
                 await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
@@ -97,7 +99,11 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task LoadVillageList(AccountId accountId)
         {
-            var villages = await Task.Run(() => _unitOfRepository.VillageRepository.GetItems(accountId));
+            var villages = await Observable.Start(() =>
+            {
+                return _unitOfRepository.VillageRepository.GetItems(accountId);
+            }, RxApp.TaskpoolScheduler);
+
             await Observable.Start(() =>
             {
                 Villages.Load(villages);
@@ -105,8 +111,8 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         public VillageTabStore VillageTabStore => _villageTabStore;
-        public ReactiveCommand<Unit, Unit> LoadCurrentCommand { get; }
-        public ReactiveCommand<Unit, Unit> LoadUnloadCommand { get; }
-        public ReactiveCommand<Unit, Unit> LoadAllCommand { get; }
+        public ReactiveCommand<Unit, Unit> LoadCurrent { get; }
+        public ReactiveCommand<Unit, Unit> LoadUnload { get; }
+        public ReactiveCommand<Unit, Unit> LoadAll { get; }
     }
 }

@@ -15,8 +15,7 @@ namespace MainCore.Notification.Handlers.Refresh
 
         public async Task Handle(AccountSettingUpdated notification, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
-            _viewModel.SettingRefresh(notification.AccountId);
+            await _viewModel.SettingRefresh(notification.AccountId);
         }
     }
 }

@@ -37,9 +37,9 @@
                 <TabItem x:Name="SettingsTab" Header="Settings">
                     <v_tab:VillageSettingTab x:Name="Settings" />
                 </TabItem>
-                <TabItem x:Name="InfoTab" Header="Info">
+                <!--<TabItem x:Name="InfoTab" Header="Info">
                     <v_tab:InfoTab x:Name="Info" />
-                </TabItem>
+                </TabItem>-->
             </TabControl>
         </Border>
     </Grid>

@@ -41,7 +41,7 @@ namespace MainCore.Commands.Special
 
             Result result;
 
-            result = chromeBrowser.Click(By.XPath(completeNowButton.XPath));
+            result = await chromeBrowser.Click(By.XPath(completeNowButton.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             bool confirmShown(IWebDriver driver)
@@ -52,14 +52,14 @@ namespace MainCore.Commands.Special
                 return confirmButton is not null;
             };
 
-            result = chromeBrowser.Wait(confirmShown);
+            result = await chromeBrowser.Wait(confirmShown);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             html = chromeBrowser.Html;
             var confirmButton = _unitOfParser.CompleteImmediatelyParser.GetConfirmButton(html);
             if (confirmButton is null) return Result.Fail(Retry.ButtonNotFound("complete now"));
 
-            result = chromeBrowser.Click(By.XPath(confirmButton.XPath));
+            result = await chromeBrowser.Click(By.XPath(confirmButton.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             return Result.Ok();

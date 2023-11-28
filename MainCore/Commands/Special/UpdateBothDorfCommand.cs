@@ -39,7 +39,7 @@ namespace MainCore.Commands.Special
             {
                 result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, villageId);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-                result = _unitOfCommand.ToDorfCommand.Execute(accountId, 2);
+                result = await _unitOfCommand.ToDorfCommand.Execute(accountId, 2);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                 result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, villageId);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
@@ -48,18 +48,18 @@ namespace MainCore.Commands.Special
             {
                 result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, villageId);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-                result = _unitOfCommand.ToDorfCommand.Execute(accountId, 1);
+                result = await _unitOfCommand.ToDorfCommand.Execute(accountId, 1);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                 result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, villageId);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
             else
             {
-                result = _unitOfCommand.ToDorfCommand.Execute(accountId, 2);
+                result = await _unitOfCommand.ToDorfCommand.Execute(accountId, 2);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                 result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, villageId);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-                result = _unitOfCommand.ToDorfCommand.Execute(accountId, 1);
+                result = await _unitOfCommand.ToDorfCommand.Execute(accountId, 1);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                 result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, villageId);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));

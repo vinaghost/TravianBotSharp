@@ -36,9 +36,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;
 
-            SaveCommand = ReactiveCommand.CreateFromTask(SaveCommandHandler);
-            ExportCommand = ReactiveCommand.CreateFromTask(ExportCommandHandler);
-            ImportCommand = ReactiveCommand.CreateFromTask(ImportCommandHandler);
+            SaveCommand = ReactiveCommand.CreateFromTask(SaveHandler);
+            ExportCommand = ReactiveCommand.CreateFromTask(ExportHandler);
+            ImportCommand = ReactiveCommand.CreateFromTask(ImportHandler);
         }
 
         public async Task SettingRefresh(VillageId villageId)
@@ -53,7 +53,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await LoadSettings(villageId);
         }
 
-        private async Task SaveCommandHandler()
+        private async Task SaveHandler()
         {
             var result = _villageSettingInputValidator.Validate(VillageSettingInput);
             if (!result.IsValid)
@@ -68,7 +68,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             _dialogService.ShowMessageBox("Information", "Settings saved");
         }
 
-        private async Task ImportCommandHandler()
+        private async Task ImportHandler()
         {
             var path = _dialogService.OpenFileDialog();
             Dictionary<VillageSettingEnums, int> settings;
@@ -97,7 +97,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             _dialogService.ShowMessageBox("Information", "Settings imported");
         }
 
-        private async Task ExportCommandHandler()
+        private async Task ExportHandler()
         {
             var path = _dialogService.SaveFileDialog();
             var settings = await Task.Run(() => _unitOfRepository.VillageSettingRepository.Get(VillageId));

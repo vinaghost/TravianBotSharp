@@ -5,6 +5,6 @@ namespace MainCore.Commands.Navigate
 {
     public interface IToBuildingCommand
     {
-        Result Execute(AccountId accountId, int location);
+        Task<Result> Execute(AccountId accountId, int location);
     }
 }

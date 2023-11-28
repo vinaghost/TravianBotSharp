@@ -22,7 +22,7 @@ namespace MainCore.Tasks
             if (CancellationToken.IsCancellationRequested) return new Cancel();
 
             Result result;
-            result = _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId);
+            result = await _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _mediator.Send(new UpdateDorf1Command(AccountId, VillageId));

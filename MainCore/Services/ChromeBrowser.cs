@@ -28,7 +28,7 @@ namespace MainCore.Services
             _chromeService.HideCommandPromptWindow = true;
         }
 
-        public Result Setup(AccountDto account, AccessDto access)
+        public async Task<Result> Setup(AccountDto account, AccessDto access)
         {
             var options = new ChromeOptions();
 
@@ -70,13 +70,13 @@ namespace MainCore.Services
 
             options.AddArguments($"user-data-dir={pathUserData}");
 
-            _driver = new ChromeDriver(_chromeService, options);
+            _driver = await Task.Run(() => new ChromeDriver(_chromeService, options));
             //if (setting.IsMinimized) _driver.Manage().Window.Minimize();
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(1);
             _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3));
 
-            var result = Navigate($"{account.Server}dorf1.php");
+            var result = await Navigate($"{account.Server}dorf1.php");
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }
@@ -92,13 +92,13 @@ namespace MainCore.Services
             }
         }
 
-        public void Shutdown()
+        public async Task Shutdown()
         {
             if (_driver is null) return;
 
             try
             {
-                _driver.Quit();
+                await Task.Run(_driver.Quit);
             }
             catch { }
             _driver = null;
@@ -120,15 +120,17 @@ namespace MainCore.Services
 
         public string CurrentUrl => _driver.Url;
 
-        public Result Navigate(string url = null)
+        public async Task<Result> Navigate(string url = null)
         {
             if (string.IsNullOrEmpty(url))
             {
-                return Navigate(CurrentUrl);
+                return await Navigate(CurrentUrl);
             }
 
-            _driver.Navigate().GoToUrl(url);
-            return WaitPageLoaded();
+            void goToUrl() => _driver.Navigate().GoToUrl(url);
+            await Task.Run(goToUrl);
+            var result = await WaitPageLoaded();
+            return result;
         }
 
         private void UpdateHtml(string source = null)
@@ -147,19 +149,19 @@ namespace MainCore.Services
             }
         }
 
-        public Result Click(By by)
+        public async Task<Result> Click(By by)
         {
             var elements = _driver.FindElements(by);
             if (elements.Count == 0) return Retry.ElementNotFound();
             var element = elements[0];
             if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable();
 
-            element.Click();
+            await Task.Run(element.Click);
 
             return Result.Ok();
         }
 
-        public Result InputTextbox(By by, string content)
+        public async Task<Result> InputTextbox(By by, string content)
         {
             var elements = _driver.FindElements(by);
             if (elements.Count == 0) return Retry.ElementNotFound();
@@ -167,43 +169,51 @@ namespace MainCore.Services
             var element = elements[0];
             if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable();
 
-            element.SendKeys(Keys.Home);
-            element.SendKeys(Keys.Shift + Keys.End);
-            element.SendKeys(content);
+            void input()
+            {
+                element.SendKeys(Keys.Home);
+                element.SendKeys(Keys.Shift + Keys.End);
+                element.SendKeys(content);
+            }
+            await Task.Run(input);
 
             return Result.Ok();
         }
 
-        public Result Wait(Func<IWebDriver, bool> condition)
+        public async Task<Result> Wait(Func<IWebDriver, bool> condition)
         {
-            try
+            Result wait()
             {
-                _wait.Until(condition);
+                try
+                {
+                    _wait.Until(condition);
+                }
+                catch (TimeoutException)
+                {
+                    return Result.Fail(new Stop("Page not loaded in 3 mins"));
+                }
+                return Result.Ok();
             }
-            catch (TimeoutException)
-            {
-                return Result.Fail(new Stop("Page not loaded in 3 mins"));
-            }
-            return Result.Ok();
+            return await Task.Run(wait);
         }
 
-        public Result WaitPageLoaded()
+        public async Task<Result> WaitPageLoaded()
         {
             static bool pageLoaded(IWebDriver driver) => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete");
-            var result = Wait(pageLoaded);
+            var result = await Wait(pageLoaded);
             return result;
         }
 
-        public Result WaitPageChanged(string part)
+        public async Task<Result> WaitPageChanged(string part)
         {
             bool pageChanged(IWebDriver driver) => driver.Url.Contains(part);
             Result result;
-            result = Wait(pageChanged);
+            result = await Wait(pageChanged);
             if (result.IsFailed) return result;
-            result = WaitPageLoaded();
+            result = await WaitPageLoaded();
             return result;
         }
 
-        public void Close() => _driver.Close();
+        public async Task Close() => await Task.Run(_driver.Close);
     }
 }

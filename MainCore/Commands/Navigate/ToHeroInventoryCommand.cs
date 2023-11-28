@@ -21,7 +21,7 @@ namespace MainCore.Commands.Navigate
             _unitOfParser = unitOfParser;
         }
 
-        public Result Execute(AccountId accountId)
+        public async Task<Result> Execute(AccountId accountId)
         {
             var chromeBrowser = _chromeManager.Get(accountId);
             var html = chromeBrowser.Html;
@@ -29,10 +29,10 @@ namespace MainCore.Commands.Navigate
             if (avatar is null) return Result.Fail(Retry.ButtonNotFound("avatar hero"));
 
             Result result;
-            result = chromeBrowser.Click(By.XPath(avatar.XPath));
+            result = await chromeBrowser.Click(By.XPath(avatar.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = chromeBrowser.WaitPageChanged("hero");
+            result = await chromeBrowser.WaitPageChanged("hero");
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             bool tabActived(IWebDriver driver)
@@ -42,7 +42,7 @@ namespace MainCore.Commands.Navigate
                 return _unitOfParser.HeroParser.InventoryTabActive(doc);
             };
 
-            result = chromeBrowser.Wait(tabActived);
+            result = await chromeBrowser.Wait(tabActived);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             return Result.Ok();

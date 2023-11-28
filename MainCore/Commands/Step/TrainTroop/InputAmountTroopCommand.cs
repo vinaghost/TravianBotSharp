@@ -21,18 +21,18 @@ namespace MainCore.Commands.Step.TrainTroop
             _unitOfParser = unitOfParser;
         }
 
-        public Result Execute(AccountId accountId, TroopEnums troop, int amount)
+        public async Task<Result> Execute(AccountId accountId, TroopEnums troop, int amount)
         {
             var chromeBrowser = _chromeManager.Get(accountId);
             var html = chromeBrowser.Html;
 
             var inputBox = _unitOfParser.TroopPageParser.GetInputBox(html, troop);
             Result result;
-            result = chromeBrowser.InputTextbox(By.XPath(inputBox.XPath), $"{amount}");
+            result = await chromeBrowser.InputTextbox(By.XPath(inputBox.XPath), $"{amount}");
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var trainButton = _unitOfParser.TroopPageParser.GetTrainButton(html);
-            result = chromeBrowser.Click(By.XPath(trainButton.XPath));
+            result = await chromeBrowser.Click(By.XPath(trainButton.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

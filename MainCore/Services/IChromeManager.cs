@@ -8,6 +8,6 @@ namespace MainCore.Services
 
         void LoadExtension();
 
-        void Shutdown();
+        Task Shutdown();
     }
 }

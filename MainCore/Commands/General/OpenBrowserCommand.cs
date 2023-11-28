@@ -20,12 +20,12 @@ namespace MainCore.Commands.General
             _unitOfRepository = unitOfRepository;
         }
 
-        public Result Execute(AccountId accountId, AccessDto access)
+        public async Task<Result> Execute(AccountId accountId, AccessDto access)
         {
             var chromeBrowser = _chromeManager.Get(accountId);
 
             var account = _unitOfRepository.AccountRepository.Get(accountId);
-            var result = chromeBrowser.Setup(account, access);
+            var result = await Task.Run(() => chromeBrowser.Setup(account, access));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

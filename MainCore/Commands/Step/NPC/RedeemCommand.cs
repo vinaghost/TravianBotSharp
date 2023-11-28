@@ -28,9 +28,9 @@ namespace MainCore.Commands.Step.NPC
 
             var button = _unitOfParser.MarketParser.GetRedeemButton(html);
             Result result;
-            result = chromeBrowser.Click(By.XPath(button.XPath));
+            result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = chromeBrowser.WaitPageLoaded();
+            result = await chromeBrowser.WaitPageLoaded();
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

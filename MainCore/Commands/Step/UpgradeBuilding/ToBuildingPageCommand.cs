@@ -25,27 +25,27 @@ namespace MainCore.Commands.Step.UpgradeBuilding
             Result result;
 
             var dorf = plan.Location < 19 ? 1 : 2;
-            result = _unitOfCommand.ToDorfCommand.Execute(accountId, dorf);
+            result = await _unitOfCommand.ToDorfCommand.Execute(accountId, dorf);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, villageId);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = _unitOfCommand.ToBuildingCommand.Execute(accountId, plan.Location);
+            result = await _unitOfCommand.ToBuildingCommand.Execute(accountId, plan.Location);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var building = _unitOfRepository.BuildingRepository.GetBuilding(villageId, plan.Location);
             if (building.Type == BuildingEnums.Site)
             {
                 var tabIndex = GetBuildingsCategory(building.Type);
-                result = _unitOfCommand.SwitchTabCommand.Execute(accountId, tabIndex);
+                result = await _unitOfCommand.SwitchTabCommand.Execute(accountId, tabIndex);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
             else
             {
                 if (building.Level == 0) return Result.Ok();
                 if (!HasMultipleTabs(building.Type)) return Result.Ok();
-                result = _unitOfCommand.SwitchTabCommand.Execute(accountId, 0);
+                result = await _unitOfCommand.SwitchTabCommand.Execute(accountId, 0);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
             return Result.Ok();
