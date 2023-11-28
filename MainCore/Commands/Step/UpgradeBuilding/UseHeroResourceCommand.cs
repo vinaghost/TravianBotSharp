@@ -33,7 +33,7 @@ namespace MainCore.Commands.Step.UpgradeBuilding
 
             var currentUrl = chromeBrowser.CurrentUrl;
             Result result;
-            result = _unitOfCommand.ToHeroInventoryCommand.Execute(accountId);
+            result = await _unitOfCommand.ToHeroInventoryCommand.Execute(accountId);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateHeroItemsCommand.Execute(accountId);
@@ -49,7 +49,7 @@ namespace MainCore.Commands.Step.UpgradeBuilding
             {
                 if (!result.HasError<Retry>())
                 {
-                    var chromeResult = chromeBrowser.Navigate(currentUrl);
+                    var chromeResult = await chromeBrowser.Navigate(currentUrl);
                     if (chromeResult.IsFailed) return chromeResult.WithError(new TraceMessage(TraceMessage.Line()));
                 }
                 return result.WithError(new TraceMessage(TraceMessage.Line()));
@@ -65,38 +65,38 @@ namespace MainCore.Commands.Step.UpgradeBuilding
 
             foreach (var item in items)
             {
-                result = UseResource(chromeBrowser, item.Item1, item.Item2);
+                result = await UseResource(chromeBrowser, item.Item1, item.Item2);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                 result = await _unitOfCommand.DelayClickCommand.Execute(accountId);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
 
-            result = chromeBrowser.Navigate(currentUrl);
+            result = await chromeBrowser.Navigate(currentUrl);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }
 
-        private Result UseResource(IChromeBrowser chromeBrowser, HeroItemEnums item, long amount)
+        private async Task<Result> UseResource(IChromeBrowser chromeBrowser, HeroItemEnums item, long amount)
         {
             if (amount == 0) return Result.Ok();
             Result result;
-            result = ClickItem(chromeBrowser, item);
+            result = await ClickItem(chromeBrowser, item);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = EnterAmount(chromeBrowser, amount);
+            result = await EnterAmount(chromeBrowser, amount);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = Confirm(chromeBrowser);
+            result = await Confirm(chromeBrowser);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }
 
-        private Result ClickItem(IChromeBrowser chromeBrowser, HeroItemEnums item)
+        private async Task<Result> ClickItem(IChromeBrowser chromeBrowser, HeroItemEnums item)
         {
             var html = chromeBrowser.Html;
             var node = _unitOfParser.HeroParser.GetItemSlot(html, item);
             if (node is null) return Result.Fail(Retry.NotFound($"{item}", "item"));
 
             Result result;
-            result = chromeBrowser.Click(By.XPath(node.XPath));
+            result = await chromeBrowser.Click(By.XPath(node.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             bool loadingCompleted(IWebDriver driver)
@@ -106,31 +106,31 @@ namespace MainCore.Commands.Step.UpgradeBuilding
                 return !_unitOfParser.HeroParser.HeroInventoryLoading(html);
             };
 
-            result = chromeBrowser.Wait(loadingCompleted);
+            result = await chromeBrowser.Wait(loadingCompleted);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             return Result.Ok();
         }
 
-        private Result EnterAmount(IChromeBrowser chromeBrowser, long amount)
+        private async Task<Result> EnterAmount(IChromeBrowser chromeBrowser, long amount)
         {
             var html = chromeBrowser.Html;
             var node = _unitOfParser.HeroParser.GetAmountBox(html);
             if (node is null) return Result.Fail(Retry.TextboxNotFound("amount input"));
             Result result;
-            result = chromeBrowser.InputTextbox(By.XPath(node.XPath), amount.ToString());
+            result = await chromeBrowser.InputTextbox(By.XPath(node.XPath), amount.ToString());
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }
 
-        private Result Confirm(IChromeBrowser chromeBrowser)
+        private async Task<Result> Confirm(IChromeBrowser chromeBrowser)
         {
             var html = chromeBrowser.Html;
             var node = _unitOfParser.HeroParser.GetConfirmButton(html);
             if (node is null) return Result.Fail(Retry.ButtonNotFound("Confirm"));
 
             Result result;
-            result = chromeBrowser.Click(By.XPath(node.XPath));
+            result = await chromeBrowser.Click(By.XPath(node.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             bool loadingCompleted(IWebDriver driver)
@@ -140,7 +140,7 @@ namespace MainCore.Commands.Step.UpgradeBuilding
                 return !_unitOfParser.HeroParser.HeroInventoryLoading(html);
             };
 
-            result = chromeBrowser.Wait(loadingCompleted);
+            result = await chromeBrowser.Wait(loadingCompleted);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             return Result.Ok();

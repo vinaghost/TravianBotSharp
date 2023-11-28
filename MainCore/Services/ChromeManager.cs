@@ -21,12 +21,12 @@ namespace MainCore.Services
             return browser;
         }
 
-        public void Shutdown()
+        public async Task Shutdown()
         {
             foreach (var id in _dictionary.Keys)
             {
                 _dictionary.Remove(id, out ChromeBrowser browser);
-                browser.Shutdown();
+                await browser.Shutdown();
             }
         }
 

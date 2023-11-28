@@ -53,14 +53,14 @@ namespace MainCore.Commands.Special
             var password = _unitOfRepository.AccountRepository.GetPassword(accountId);
 
             Result result;
-            result = chromeBrowser.InputTextbox(By.XPath(usernameNode.XPath), username);
+            result = await chromeBrowser.InputTextbox(By.XPath(usernameNode.XPath), username);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = chromeBrowser.InputTextbox(By.XPath(passwordNode.XPath), password);
+            result = await chromeBrowser.InputTextbox(By.XPath(passwordNode.XPath), password);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = chromeBrowser.Click(By.XPath(buttonNode.XPath));
+            result = await chromeBrowser.Click(By.XPath(buttonNode.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = chromeBrowser.WaitPageChanged("dorf");
+            result = await chromeBrowser.WaitPageChanged("dorf");
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             return Result.Ok();

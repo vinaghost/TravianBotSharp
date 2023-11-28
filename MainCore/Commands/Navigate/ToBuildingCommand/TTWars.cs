@@ -17,15 +17,15 @@ namespace MainCore.Commands.Navigate.ToBuildingCommand
             _chromeManager = chromeManager;
         }
 
-        public Result Execute(AccountId accountId, int location)
+        public async Task<Result> Execute(AccountId accountId, int location)
         {
             var chromeBrowser = _chromeManager.Get(accountId);
             var currentUrl = new Uri(chromeBrowser.CurrentUrl);
             var host = currentUrl.GetLeftPart(UriPartial.Authority);
             Result result;
-            result = chromeBrowser.Navigate($"{host}/build.php?id={location}");
+            result = await chromeBrowser.Navigate($"{host}/build.php?id={location}");
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = chromeBrowser.WaitPageLoaded();
+            result = await chromeBrowser.WaitPageLoaded();
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

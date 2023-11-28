@@ -1,10 +1,9 @@
-﻿using MainCore.Commands.UI;
+﻿using MainCore.Commands.UI.MainLayout;
 using MainCore.Common;
 using MainCore.Common.Enums;
 using MainCore.Common.Extensions;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Notification.Message;
 using MainCore.Repositories;
 using MainCore.Services;
 using MainCore.UI.Enums;
@@ -39,11 +38,11 @@ namespace MainCore.UI.ViewModels.UserControls
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;
 
-            AddAccountCommand = ReactiveCommand.Create(AddAccountCommandHandler);
-            AddAccountsCommand = ReactiveCommand.Create(AddAccountsCommandHandler);
+            AddAccountCommand = ReactiveCommand.CreateFromTask(AddAccountHandler);
+            AddAccountsCommand = ReactiveCommand.CreateFromTask(AddAccountsHandler);
 
-            DeleteAccountCommand = ReactiveCommand.CreateFromTask(DeleteAccountCommandHandler);
-            LoginCommand = ReactiveCommand.CreateFromTask(LoginCommandHandler);
+            DeleteAccountCommand = ReactiveCommand.CreateFromTask(DeleteAccountHandler);
+            LoginCommand = ReactiveCommand.CreateFromTask(LoginHandler);
             LogoutCommand = ReactiveCommand.CreateFromTask(LogoutTask);
             PauseCommand = ReactiveCommand.CreateFromTask(PauseTask);
             RestartCommand = ReactiveCommand.CreateFromTask(RestartTask);
@@ -61,23 +60,27 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public async Task Load()
         {
-            await LoadAccountList();
-            await LoadVersion();
+            var tasks = new Task[]
+            {
+                LoadAccountList(),
+                LoadVersion(),
+            };
+            await Task.WhenAll(tasks);
         }
 
-        private void AddAccountCommandHandler()
+        private async Task AddAccountHandler()
         {
             Accounts.SelectedItem = null;
-            AccountTabStore.SetTabType(AccountTabType.AddAccount);
+            await _mediator.Send(new AddAccountCommand());
         }
 
-        private void AddAccountsCommandHandler()
+        private async Task AddAccountsHandler()
         {
             Accounts.SelectedItem = null;
-            AccountTabStore.SetTabType(AccountTabType.AddAccounts);
+            await _mediator.Send(new AddAccountsCommand());
         }
 
-        private async Task DeleteAccountCommandHandler()
+        private async Task DeleteAccountHandler()
         {
             if (!Accounts.IsSelected)
             {
@@ -88,11 +91,10 @@ namespace MainCore.UI.ViewModels.UserControls
             var result = _dialogService.ShowConfirmBox("Information", $"Are you sure want to delete \n {Accounts.SelectedItem.Content}");
             if (!result) return;
             var accountId = new AccountId(Accounts.SelectedItemId);
-            await Task.Run(() => _unitOfRepository.AccountRepository.Delete(accountId));
-            await _mediator.Publish(new AccountUpdated());
+            await _mediator.Send(new DeleteAccountCommand(accountId));
         }
 
-        private async Task LoginCommandHandler()
+        private async Task LoginHandler()
         {
             if (!Accounts.IsSelected)
             {
@@ -100,7 +102,10 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            await _mediator.Send(new LoginAccountByIdCommand(new AccountId(Accounts.SelectedItemId)));
+            var accountId = new AccountId(Accounts.SelectedItemId);
+            var result = await _mediator.Send(new LoginAccountCommand(accountId));
+
+            if (result.IsFailed) _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());
         }
 
         private async Task LogoutTask()
@@ -111,7 +116,8 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            await _mediator.Send(new LogoutAccountByIdCommand(new AccountId(Accounts.SelectedItemId)));
+            var accountId = new AccountId(Accounts.SelectedItemId);
+            await _mediator.Send(new LogoutAccountCommand(accountId));
         }
 
         private async Task PauseTask()
@@ -121,8 +127,9 @@ namespace MainCore.UI.ViewModels.UserControls
                 _dialogService.ShowMessageBox("Warning", "No account selected");
                 return;
             }
+            var accountId = new AccountId(Accounts.SelectedItemId);
 
-            await _mediator.Send(new PauseAccountByIdCommand(new AccountId(Accounts.SelectedItemId)));
+            await _mediator.Send(new PauseAccountCommand(accountId));
         }
 
         private async Task RestartTask()
@@ -132,13 +139,19 @@ namespace MainCore.UI.ViewModels.UserControls
                 _dialogService.ShowMessageBox("Warning", "No account selected");
                 return;
             }
+            var accountId = new AccountId(Accounts.SelectedItemId);
 
-            await _mediator.Send(new RestartAccountByIdCommand(new AccountId(Accounts.SelectedItemId)));
+            await _mediator.Send(new RestartAccountCommand(accountId));
         }
 
         public async Task LoadStatus(AccountId accountId, StatusEnums status)
         {
-            var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
+            var account = await Observable.Start(() =>
+            {
+                var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
+                return account;
+            }, RxApp.TaskpoolScheduler);
+
             await Observable.Start(() =>
             {
                 account.Color = status.GetColor();
@@ -147,7 +160,11 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public async Task LoadAccountList()
         {
-            var items = await Task.Run(() => _unitOfRepository.AccountRepository.GetItems());
+            var items = await Observable.Start(() =>
+            {
+                var items = _unitOfRepository.AccountRepository.GetItems();
+                return items;
+            }, RxApp.TaskpoolScheduler);
 
             await Observable.Start(() =>
             {
@@ -155,12 +172,19 @@ namespace MainCore.UI.ViewModels.UserControls
             }, RxApp.MainThreadScheduler);
         }
 
-        public async Task LoadVersion()
+        private async Task LoadVersion()
         {
-            await Task.CompletedTask;
-            var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
-            var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
-            Version = $"{version} - {Constants.Server}";
+            var version = await Observable.Start(() =>
+            {
+                var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
+                var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
+                return version;
+            }, RxApp.TaskpoolScheduler);
+
+            await Observable.Start(() =>
+            {
+                Version = $"{version} - {Constants.Server}";
+            }, RxApp.MainThreadScheduler);
         }
 
         private string _version;

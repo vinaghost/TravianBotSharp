@@ -15,12 +15,14 @@ namespace MainCore.Commands.Special
         {
         }
     }
+
     public class StartFarmListCommandHandler : IRequestHandler<StartFarmListCommand, Result>
     {
         private readonly IStartSingleFarmListCommand _startSingleFarmListCommand;
         private readonly IStartAllFarmListCommand _startAllFarmListCommand;
         private readonly IUnitOfRepository _unitOfRepository;
         private readonly IUnitOfCommand _unitOfCommand;
+
         public StartFarmListCommandHandler(IStartSingleFarmListCommand startSingleFarmListCommand, IStartAllFarmListCommand startAllFarmListCommand, IUnitOfRepository unitOfRepository, IUnitOfCommand unitOfCommand)
         {
             _startSingleFarmListCommand = startSingleFarmListCommand;
@@ -36,7 +38,7 @@ namespace MainCore.Commands.Special
             var useStartAllButton = _unitOfRepository.AccountSettingRepository.GetBooleanByName(accountId, AccountSettingEnums.UseStartAllButton);
             if (useStartAllButton)
             {
-                result = _startAllFarmListCommand.Execute(accountId);
+                result = await _startAllFarmListCommand.Execute(accountId);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
             else
@@ -46,7 +48,7 @@ namespace MainCore.Commands.Special
 
                 foreach (var farmList in farmLists)
                 {
-                    result = _startSingleFarmListCommand.Execute(accountId, farmList);
+                    result = await _startSingleFarmListCommand.Execute(accountId, farmList);
                     if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
                     await _unitOfCommand.DelayClickCommand.Execute(accountId);

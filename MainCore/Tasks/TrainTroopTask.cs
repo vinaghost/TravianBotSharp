@@ -35,7 +35,7 @@ namespace MainCore.Tasks
             SetNextExecute();
 
             Result result;
-            result = _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId);
+            result = await _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var settings = new Dictionary<VillageSettingEnums, int>();

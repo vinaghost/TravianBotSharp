@@ -5,6 +5,6 @@ namespace MainCore.Commands.Navigate
 {
     public interface IToHeroInventoryCommand
     {
-        Result Execute(AccountId accountId);
+        Task<Result> Execute(AccountId accountId);
     }
 }

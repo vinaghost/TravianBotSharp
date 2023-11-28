@@ -18,12 +18,12 @@ namespace MainCore.Commands.General
             _unitOfRepository = unitOfRepository;
         }
 
-        public Result Execute(AccountId accountId)
+        public async Task<Result> Execute(AccountId accountId)
         {
             _unitOfRepository.AccountRepository.UpdateAccess(accountId);
 
             var chromeBrowser = _chromeManager.Get(accountId);
-            chromeBrowser.Close();
+            await Task.Run(chromeBrowser.Close);
             return Result.Ok();
         }
     }

@@ -19,7 +19,9 @@ namespace MainCore.Commands.Validate
 
         private readonly AsyncRetryPolicy<bool> _retryPolicy = Policy<bool>
                 .Handle<Exception>()
-                .WaitAndRetryAsync(retryCount: 3, sleepDurationProvider: _ => TimeSpan.FromSeconds(10));
+                .WaitAndRetryAsync(
+                    retryCount: 3,
+                    sleepDurationProvider: _ => TimeSpan.FromSeconds(10));
 
         public async Task<bool> Execute(AccessDto access)
         {
@@ -38,7 +40,7 @@ namespace MainCore.Commands.Validate
             };
             var client = _restClientManager.Get(access);
             var response = await client.ExecuteAsync(request);
-            return !string.IsNullOrWhiteSpace(response.Content);
+            return response.IsSuccessful;
         }
     }
 }

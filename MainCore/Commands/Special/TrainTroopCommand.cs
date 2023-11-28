@@ -58,7 +58,7 @@ namespace MainCore.Commands.Special
         public async Task<Result> Execute(AccountId accountId, VillageId villageId, BuildingEnums buildingType)
         {
             Result result;
-            result = _unitOfCommand.ToDorfCommand.Execute(accountId, 2);
+            result = await _unitOfCommand.ToDorfCommand.Execute(accountId, 2);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, villageId);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
@@ -68,7 +68,7 @@ namespace MainCore.Commands.Special
             {
                 return Result.Fail(new MissingBuilding(buildingType));
             }
-            result = _unitOfCommand.ToBuildingCommand.Execute(accountId, buildingLocation);
+            result = await _unitOfCommand.ToBuildingCommand.Execute(accountId, buildingLocation);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var troopSeting = _settings[buildingType];
@@ -99,7 +99,7 @@ namespace MainCore.Commands.Special
                 }
             }
 
-            result = _unitOfCommand.InputAmountTroopCommand.Execute(accountId, troop, amount);
+            result = await _unitOfCommand.InputAmountTroopCommand.Execute(accountId, troop, amount);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             return Result.Ok();

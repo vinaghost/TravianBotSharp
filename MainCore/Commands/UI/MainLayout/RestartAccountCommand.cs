@@ -2,35 +2,32 @@
 using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Notification.Message;
-using MainCore.Repositories;
 using MainCore.Services;
 using MediatR;
 
-namespace MainCore.Commands.UI
+namespace MainCore.Commands.UI.MainLayout
 {
-    public class RestartAccountByIdCommand : ByAccountIdBase, IRequest
+    public class RestartAccountCommand : ByAccountIdBase, IRequest
     {
-        public RestartAccountByIdCommand(AccountId accountId) : base(accountId)
+        public RestartAccountCommand(AccountId accountId) : base(accountId)
         {
         }
     }
 
-    public class RestartCommandHandler : IRequestHandler<RestartAccountByIdCommand>
+    public class RestartAccountCommandHandler : IRequestHandler<RestartAccountCommand>
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
-        private readonly IUnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
 
-        public RestartCommandHandler(ITaskManager taskManager, IDialogService dialogService, IUnitOfRepository unitOfRepository, IMediator mediator)
+        public RestartAccountCommandHandler(ITaskManager taskManager, IDialogService dialogService, IMediator mediator)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
-            _unitOfRepository = unitOfRepository;
             _mediator = mediator;
         }
 
-        public async Task Handle(RestartAccountByIdCommand request, CancellationToken cancellationToken)
+        public async Task Handle(RestartAccountCommand request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
             var status = _taskManager.GetStatus(accountId);
@@ -57,6 +54,7 @@ namespace MainCore.Commands.UI
         private async Task Handle(AccountId accountId)
         {
             _taskManager.SetStatus(accountId, StatusEnums.Starting);
+
             await _taskManager.Clear(accountId);
 
             await _mediator.Publish(new AccountInit(accountId));
