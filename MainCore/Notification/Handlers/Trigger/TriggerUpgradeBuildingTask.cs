@@ -20,34 +20,31 @@ namespace MainCore.Notification.Handlers.Trigger
 
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
             var accountId = notification.AccountId;
             var hasBuildingJobVillages = _unitOfRepository.VillageRepository.GetHasBuildingJobVillages(accountId);
             foreach (var village in hasBuildingJobVillages)
             {
-                Trigger(accountId, village);
+                await Trigger(accountId, village);
             }
         }
 
         public async Task Handle(JobUpdated notification, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
-            Trigger(accountId, villageId);
+            await Trigger(accountId, villageId);
         }
 
         public async Task Handle(CompleteImmediatelyMessage notification, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
-            Trigger(accountId, villageId);
+            await Trigger(accountId, villageId);
         }
 
-        private void Trigger(AccountId accountId, VillageId villageId)
+        private async Task Trigger(AccountId accountId, VillageId villageId)
         {
-            _taskManager.AddOrUpdate<UpgradeBuildingTask>(accountId, villageId);
+            await _taskManager.AddOrUpdate<UpgradeBuildingTask>(accountId, villageId);
         }
     }
 }

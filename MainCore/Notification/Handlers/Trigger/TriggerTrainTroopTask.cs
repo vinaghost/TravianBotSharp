@@ -21,10 +21,9 @@ namespace MainCore.Notification.Handlers.Trigger
 
         public async Task Handle(VillageSettingUpdated notification, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
-            Trigger(accountId, villageId);
+            await Trigger(accountId, villageId);
         }
 
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
@@ -35,17 +34,23 @@ namespace MainCore.Notification.Handlers.Trigger
             var villages = _unitOfRepository.VillageRepository.Get(accountId);
             foreach (var village in villages)
             {
-                Trigger(accountId, village);
+                await Trigger(accountId, village);
             }
         }
 
-        private void Trigger(AccountId accountId, VillageId villageId)
+        private async Task Trigger(AccountId accountId, VillageId villageId)
         {
             var trainTroopEnable = _unitOfRepository.VillageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
-            if (!trainTroopEnable) return;
-
-            if (_taskManager.IsExist<TrainTroopTask>(accountId, villageId)) return;
-            _taskManager.Add<TrainTroopTask>(accountId, villageId);
+            if (trainTroopEnable)
+            {
+                if (_taskManager.IsExist<TrainTroopTask>(accountId, villageId)) return;
+                await _taskManager.Add<TrainTroopTask>(accountId, villageId);
+            }
+            else
+            {
+                var task = _taskManager.Get<TrainTroopTask>(accountId, villageId);
+                await _taskManager.Remove(accountId, task);
+            }
         }
     }
 }

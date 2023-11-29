@@ -21,16 +21,15 @@ namespace MainCore.Notification.Handlers.Trigger
 
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
             var accountId = notification.AccountId;
-            Trigger(accountId);
+            await Trigger(accountId);
         }
 
-        private void Trigger(AccountId accountId)
+        private async Task Trigger(AccountId accountId)
         {
             if (_taskManager.IsExist<SleepTask>(accountId)) return;
             var workTime = _unitOfRepository.AccountSettingRepository.GetByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
-            _taskManager.Add<SleepTask>(accountId, executeTime: DateTime.Now.AddMinutes(workTime));
+            await _taskManager.Add<SleepTask>(accountId, executeTime: DateTime.Now.AddMinutes(workTime));
         }
     }
 }
