@@ -27,11 +27,14 @@ namespace MainCore.Commands.Step.TrainTroop
             var html = chromeBrowser.Html;
 
             var inputBox = _unitOfParser.TroopPageParser.GetInputBox(html, troop);
+            if (inputBox is null) return Result.Fail(Retry.TextboxNotFound("troop amount input"));
             Result result;
             result = await chromeBrowser.InputTextbox(By.XPath(inputBox.XPath), $"{amount}");
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var trainButton = _unitOfParser.TroopPageParser.GetTrainButton(html);
+            if (trainButton is null) return Result.Fail(Retry.ButtonNotFound("train troop"));
+
             result = await chromeBrowser.Click(By.XPath(trainButton.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
