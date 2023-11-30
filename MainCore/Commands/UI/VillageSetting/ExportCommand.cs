@@ -5,11 +5,11 @@ using MainCore.Services;
 using MediatR;
 using System.Text.Json;
 
-namespace MainCore.Commands.UI.AccountSetting
+namespace MainCore.Commands.UI.VillageSetting
 {
-    public class ExportCommand : ByAccountIdBase, IRequest
+    public class ExportCommand : ByAccountVillageIdBase, IRequest
     {
-        public ExportCommand(AccountId accountId) : base(accountId)
+        public ExportCommand(AccountId accountId, VillageId villageId) : base(accountId, villageId)
         {
         }
     }
@@ -28,8 +28,9 @@ namespace MainCore.Commands.UI.AccountSetting
         public async Task Handle(ExportCommand request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
+            var villageId = request.VillageId;
             var path = _dialogService.SaveFileDialog();
-            var settings = _unitOfRepository.AccountSettingRepository.Get(accountId);
+            var settings = _unitOfRepository.VillageSettingRepository.Get(villageId);
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString, cancellationToken);
             _dialogService.ShowMessageBox("Information", "Settings exported");

@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Notification.Message;
 using MainCore.Repositories;
@@ -8,15 +9,13 @@ using MediatR;
 
 namespace MainCore.Commands.UI.AccountSetting
 {
-    public class SaveCommand : IRequest
+    public class SaveCommand : ByAccountIdBase, IRequest
     {
-        public AccountId AccountId { get; }
         public AccountSettingInput AccountSettingInput { get; }
 
-        public SaveCommand(AccountId accountId, AccountSettingInput accountSettingInput)
+        public SaveCommand(AccountId accountId, AccountSettingInput accountSettingInput) : base(accountId)
         {
             AccountSettingInput = accountSettingInput;
-            AccountId = accountId;
         }
     }
 

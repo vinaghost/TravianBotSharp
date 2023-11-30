@@ -9,28 +9,28 @@ using MainCore.UI.Models.Input;
 using MediatR;
 using System.Text.Json;
 
-namespace MainCore.Commands.UI.AccountSetting
+namespace MainCore.Commands.UI.VillageSetting
 {
-    public class ImportCommand : ByAccountIdBase, IRequest
+    public class ImportCommand : ByAccountVillageIdBase, IRequest
     {
-        public AccountSettingInput AccountSettingInput { get; }
-
-        public ImportCommand(AccountId accountId, AccountSettingInput accountSettingInput) : base(accountId)
+        public ImportCommand(AccountId accountId, VillageId villageId, VillageSettingInput villageSettingInput) : base(accountId, villageId)
         {
-            AccountSettingInput = accountSettingInput;
+            VillageSettingInput = villageSettingInput;
         }
+
+        public VillageSettingInput VillageSettingInput { get; }
     }
 
     public class ImportCommandHandler : IRequestHandler<ImportCommand>
     {
-        private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
+        private readonly IValidator<VillageSettingInput> _villageSettingInputValidator;
         private readonly IUnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
 
-        public ImportCommandHandler(IValidator<AccountSettingInput> accountsettingInputValidator, IUnitOfRepository unitOfRepository, IDialogService dialogService, IMediator mediator)
+        public ImportCommandHandler(IValidator<VillageSettingInput> villageSettingInputValidator, IUnitOfRepository unitOfRepository, IDialogService dialogService, IMediator mediator)
         {
-            _accountsettingInputValidator = accountsettingInputValidator;
+            _villageSettingInputValidator = villageSettingInputValidator;
             _unitOfRepository = unitOfRepository;
             _dialogService = dialogService;
             _mediator = mediator;
@@ -39,14 +39,14 @@ namespace MainCore.Commands.UI.AccountSetting
         public async Task Handle(ImportCommand request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
-            var accountSettingInput = request.AccountSettingInput;
+            var villageSettingInput = request.VillageSettingInput;
 
             var path = _dialogService.OpenFileDialog();
-            Dictionary<AccountSettingEnums, int> settings;
+            Dictionary<VillageSettingEnums, int> settings;
             try
             {
                 var jsonString = await File.ReadAllTextAsync(path, cancellationToken);
-                settings = JsonSerializer.Deserialize<Dictionary<AccountSettingEnums, int>>(jsonString);
+                settings = JsonSerializer.Deserialize<Dictionary<VillageSettingEnums, int>>(jsonString);
             }
             catch
             {
@@ -54,17 +54,17 @@ namespace MainCore.Commands.UI.AccountSetting
                 return;
             }
 
-            accountSettingInput.Set(settings);
-            var result = _accountsettingInputValidator.Validate(accountSettingInput);
+            villageSettingInput.Set(settings);
+            var result = _villageSettingInputValidator.Validate(villageSettingInput);
             if (!result.IsValid)
             {
                 _dialogService.ShowMessageBox("Error", result.ToString());
                 return;
             }
-
-            settings = accountSettingInput.Get();
-            _unitOfRepository.AccountSettingRepository.Update(accountId, settings);
-            await _mediator.Publish(new AccountSettingUpdated(accountId), cancellationToken);
+            var villageId = request.VillageId;
+            settings = villageSettingInput.Get();
+            await Task.Run(() => _unitOfRepository.VillageSettingRepository.Update(villageId, settings), cancellationToken);
+            await _mediator.Publish(new VillageSettingUpdated(accountId, villageId), cancellationToken);
 
             _dialogService.ShowMessageBox("Information", "Settings imported");
         }
