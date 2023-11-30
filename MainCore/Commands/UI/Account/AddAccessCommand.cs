@@ -3,7 +3,7 @@ using MainCore.Services;
 using MainCore.UI.Models.Input;
 using MediatR;
 
-namespace MainCore.Commands.UI.AddAccount
+namespace MainCore.Commands.UI.Account
 {
     public class AddAccessCommand : IRequest
     {

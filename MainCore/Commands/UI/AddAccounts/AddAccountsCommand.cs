@@ -5,7 +5,7 @@ using MainCore.Services;
 using MainCore.UI.ViewModels.UserControls;
 using MediatR;
 
-namespace MainCore.Commands.UI.AddAccounts
+namespace MainCore.Commands.UI.Accounts
 {
     public class AddAccountsCommand : IRequest
     {
