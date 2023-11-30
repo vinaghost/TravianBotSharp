@@ -2,17 +2,19 @@
 using MainCore.Entities;
 using MainCore.Notification.Message;
 using MainCore.Repositories;
+using MainCore.Services;
+using MainCore.UI.Models.Output;
 using MediatR;
 
 namespace MainCore.Commands.UI.Farming
 {
     public class ActiveFarmListCommand : ByAccountIdBase, IRequest
     {
-        public FarmId FarmId { get; }
+        public ListBoxItem Item { get; }
 
-        public ActiveFarmListCommand(AccountId accountId, FarmId farmId) : base(accountId)
+        public ActiveFarmListCommand(AccountId accountId, ListBoxItem item) : base(accountId)
         {
-            FarmId = farmId;
+            Item = item;
         }
     }
 
@@ -20,19 +22,29 @@ namespace MainCore.Commands.UI.Farming
     {
         private readonly IMediator _mediator;
         private readonly IUnitOfRepository _unitOfRepository;
+        private readonly IDialogService _dialogService;
 
-        public ActiveFarmListCommandHandler(IMediator mediator, IUnitOfRepository unitOfRepository)
+        public ActiveFarmListCommandHandler(IMediator mediator, IUnitOfRepository unitOfRepository, IDialogService dialogService)
         {
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;
+            _dialogService = dialogService;
         }
 
         public async Task Handle(ActiveFarmListCommand request, CancellationToken cancellationToken)
         {
-            var farmId = request.FarmId;
+            var selectedFarmList = request.Item;
+            if (selectedFarmList is null)
+            {
+                _dialogService.ShowMessageBox("Warning", "No farm list selected");
+                return;
+            }
+
             var accountId = request.AccountId;
+            var farmId = new FarmId(selectedFarmList.Id);
+
             _unitOfRepository.FarmRepository.ChangeActive(farmId);
-            await _mediator.Publish(new FarmListUpdated(accountId));
+            await _mediator.Publish(new FarmListUpdated(accountId), cancellationToken);
         }
     }
 }

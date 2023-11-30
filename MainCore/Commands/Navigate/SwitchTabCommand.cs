@@ -29,6 +29,7 @@ namespace MainCore.Commands.Navigate
             var count = _unitOfParser.NavigationTabParser.CountTab(html);
             if (index > count) return Result.Fail(new Retry($"Found {count} tabs but need tab {index} active"));
             var tab = _unitOfParser.NavigationTabParser.GetTab(html, index);
+            if (tab is null) return Result.Fail(Retry.NotFound($"{index}", "tab"));
             if (_unitOfParser.NavigationTabParser.IsTabActive(tab)) return Result.Ok();
 
             Result result;
@@ -42,6 +43,7 @@ namespace MainCore.Commands.Navigate
                 var count = _unitOfParser.NavigationTabParser.CountTab(doc);
                 if (index > count) return false;
                 var tab = _unitOfParser.NavigationTabParser.GetTab(doc, index);
+                if (tab is null) return false;
                 if (!_unitOfParser.NavigationTabParser.IsTabActive(tab)) return false;
                 return true;
             };
