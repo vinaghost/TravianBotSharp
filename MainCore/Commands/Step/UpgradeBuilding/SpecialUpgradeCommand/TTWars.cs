@@ -26,6 +26,8 @@ namespace MainCore.Commands.Step.UpgradeBuilding.SpecialUpgradeCommand
             var chromeBrowser = _chromeManager.Get(accountId);
             var html = chromeBrowser.Html;
             var button = _unitOfParser.UpgradeBuildingParser.GetSpecialUpgradeButton(html);
+            if (button is null) return Result.Fail(Retry.ButtonNotFound("gold upgrade"));
+
             var result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             await Task.CompletedTask;

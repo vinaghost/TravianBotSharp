@@ -24,12 +24,12 @@ namespace WPFUI
         public App()
         {
             Container = DependencyInjection.Setup();
+            RxApp.DefaultExceptionHandler = Locator.Current.GetService<ObservableExceptionHandler>();
 
             mainWindow = new MainWindow()
             {
                 ViewModel = Locator.Current.GetService<MainViewModel>(),
             };
-            RxApp.DefaultExceptionHandler = new ObservableExceptionHandler();
 
             var dialogService = Locator.Current.GetService<IDialogService>() as DialogService;
             dialogService.MessageBoxFunc = ShowMessage;

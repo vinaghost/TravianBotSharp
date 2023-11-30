@@ -1,21 +1,22 @@
-﻿using MainCore.Common.Enums;
+﻿using FluentValidation;
 using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Notification.Message;
 using MainCore.Repositories;
 using MainCore.Services;
+using MainCore.UI.Models.Input;
 using MediatR;
 
 namespace MainCore.Commands.UI.Farming
 {
     public class SaveFarmListSettingsCommand : ByAccountIdBase, IRequest
     {
-        public Dictionary<AccountSettingEnums, int> Settings { get; }
-
-        public SaveFarmListSettingsCommand(AccountId accountId, Dictionary<AccountSettingEnums, int> settings) : base(accountId)
+        public SaveFarmListSettingsCommand(AccountId accountId, FarmListSettingInput farmListSettingInput) : base(accountId)
         {
-            Settings = settings;
+            FarmListSettingInput = farmListSettingInput;
         }
+
+        public FarmListSettingInput FarmListSettingInput { get; }
     }
 
     public class SaveCommandHandler : IRequestHandler<SaveFarmListSettingsCommand>
@@ -24,18 +25,28 @@ namespace MainCore.Commands.UI.Farming
         private readonly IMediator _mediator;
         private readonly IDialogService _dialogService;
 
-        public SaveCommandHandler(IUnitOfRepository unitOfRepository, IMediator mediator, IDialogService dialogService)
+        private readonly IValidator<FarmListSettingInput> _farmListSettingInputValidator;
+
+        public SaveCommandHandler(IUnitOfRepository unitOfRepository, IMediator mediator, IDialogService dialogService, IValidator<FarmListSettingInput> farmListSettingInputValidator)
         {
             _unitOfRepository = unitOfRepository;
             _mediator = mediator;
             _dialogService = dialogService;
+            _farmListSettingInputValidator = farmListSettingInputValidator;
         }
 
         public async Task Handle(SaveFarmListSettingsCommand request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
-            var settings = request.Settings;
+            var farmListSettingInput = request.FarmListSettingInput;
+            var result = _farmListSettingInputValidator.Validate(farmListSettingInput);
+            if (!result.IsValid)
+            {
+                _dialogService.ShowMessageBox("Error", result.ToString());
+                return;
+            }
 
+            var settings = farmListSettingInput.Get();
             _unitOfRepository.AccountSettingRepository.Update(accountId, settings);
             await _mediator.Publish(new AccountSettingUpdated(accountId));
 
