@@ -20,13 +20,13 @@ namespace WPFUI.Views.UserControls
             this.WhenActivated(d =>
             {
                 // commands
-                this.BindCommand(ViewModel, vm => vm.AddAccountCommand, v => v.AddAccountButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.AddAccountsCommand, v => v.AddAccountsButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.LoginCommand, v => v.LoginButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.LogoutCommand, v => v.LogoutButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.DeleteAccountCommand, v => v.DeleteButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.PauseCommand, v => v.PauseButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.RestartCommand, v => v.RestartButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.AddAccount, v => v.AddAccountButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.AddAccounts, v => v.AddAccountsButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.Login, v => v.LoginButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.Logout, v => v.LogoutButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.DeleteAccount, v => v.DeleteButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.Pause, v => v.PauseButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.Restart, v => v.RestartButton).DisposeWith(d);
 
                 this.OneWayBind(ViewModel, vm => vm.Version, v => v.Version.Content).DisposeWith(d);
 

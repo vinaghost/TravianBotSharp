@@ -1,4 +1,5 @@
 ﻿using MainCore.Infrasturecture.AutoRegisterDi;
+using MainCore.Services;
 using ReactiveUI;
 using Serilog;
 using System.Diagnostics;
@@ -9,6 +10,13 @@ namespace MainCore.UI
     [RegisterAsSingleton(withoutInterface: true)]
     public class ObservableExceptionHandler : IObserver<Exception>
     {
+        private readonly IDialogService _dialogService;
+
+        public ObservableExceptionHandler(IDialogService dialogService)
+        {
+            _dialogService = dialogService;
+        }
+
         public void OnNext(Exception value)
         {
             Handle(value);
@@ -24,7 +32,7 @@ namespace MainCore.UI
             Handle(null);
         }
 
-        private static void Handle(Exception exception)
+        private void Handle(Exception exception)
         {
             if (exception is null) return;
             Log.Error(exception, "UI execption");
@@ -33,6 +41,8 @@ namespace MainCore.UI
                 Debugger.Break();
                 RxApp.MainThreadScheduler.Schedule(() => { throw exception; });
             }
+
+            _dialogService.ShowMessageBox("Error", "There is something wrong. Please check logs/logs-Other.txt.");
         }
     }
 }
