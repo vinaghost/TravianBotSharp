@@ -7,14 +7,14 @@ using MediatR;
 
 namespace MainCore.Commands.UI.MainLayout
 {
-    public class PauseAccountCommand : ByListBoxItemBase, IRequest
+    public class PauseAccountCommand : ByListBoxItemBase, IRequest<StatusEnums>
     {
         public PauseAccountCommand(ListBoxItemViewModel items) : base(items)
         {
         }
     }
 
-    public class PauseAccountCommandHandler : IRequestHandler<PauseAccountCommand>
+    public class PauseAccountCommandHandler : IRequestHandler<PauseAccountCommand, StatusEnums>
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
@@ -25,30 +25,33 @@ namespace MainCore.Commands.UI.MainLayout
             _dialogService = dialogService;
         }
 
-        public async Task Handle(PauseAccountCommand request, CancellationToken cancellationToken)
+        public async Task<StatusEnums> Handle(PauseAccountCommand request, CancellationToken cancellationToken)
         {
             var accounts = request.Items;
+
             if (!accounts.IsSelected)
             {
                 _dialogService.ShowMessageBox("Warning", "No account selected");
-                return;
+                return StatusEnums.Offline;
             }
+
             var accountId = new AccountId(accounts.SelectedItemId);
             var status = _taskManager.GetStatus(accountId);
             if (status == StatusEnums.Paused)
             {
                 _taskManager.SetStatus(accountId, StatusEnums.Online);
-                return;
+                return StatusEnums.Online;
             }
 
             if (status == StatusEnums.Online)
             {
                 await _taskManager.StopCurrentTask(accountId);
                 _taskManager.SetStatus(accountId, StatusEnums.Paused);
-                return;
+                return StatusEnums.Paused;
             }
 
             _dialogService.ShowMessageBox("Information", $"Account is {status}");
+            return status;
         }
     }
 }

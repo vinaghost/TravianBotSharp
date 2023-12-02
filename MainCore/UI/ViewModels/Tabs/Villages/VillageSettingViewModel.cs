@@ -62,7 +62,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task ExportHandler()
         {
-            await _mediator.Send(new ExportCommand(AccountId, VillageId));
+            await _mediator.Send(new ExportCommand(VillageId));
         }
 
         private async Task<Dictionary<VillageSettingEnums, int>> LoadSettingHandler(VillageId villageId)

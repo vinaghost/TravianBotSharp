@@ -47,8 +47,13 @@ namespace MainCore.Commands.UI.MainLayout
                 _dialogService.ShowMessageBox("Warning", "No account selected");
                 return;
             }
-
             var accountId = new AccountId(accounts.SelectedItemId);
+
+            if (_taskManager.GetStatus(accountId) != StatusEnums.Offline)
+            {
+                _dialogService.ShowMessageBox("Warning", "Account's browser is already opened");
+                return;
+            }
 
             _taskManager.SetStatus(accountId, StatusEnums.Starting);
 
@@ -58,6 +63,7 @@ namespace MainCore.Commands.UI.MainLayout
             if (result.IsFailed)
             {
                 _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());
+                _taskManager.SetStatus(accountId, StatusEnums.Offline);
                 return;
             }
             var logger = _logService.GetLogger(accountId);
@@ -67,6 +73,7 @@ namespace MainCore.Commands.UI.MainLayout
             if (result.IsFailed)
             {
                 _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());
+                _taskManager.SetStatus(accountId, StatusEnums.Offline);
                 return;
             }
             await _mediator.Publish(new AccountInit(accountId), cancellationToken);
