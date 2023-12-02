@@ -3,13 +3,14 @@ using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Notification.Message;
 using MainCore.Services;
+using MainCore.UI.ViewModels.UserControls;
 using MediatR;
 
 namespace MainCore.Commands.UI.MainLayout
 {
-    public class RestartAccountCommand : ByAccountIdBase, IRequest
+    public class RestartAccountCommand : ByListBoxItemBase, IRequest
     {
-        public RestartAccountCommand(AccountId accountId) : base(accountId)
+        public RestartAccountCommand(ListBoxItemViewModel items) : base(items)
         {
         }
     }
@@ -29,7 +30,13 @@ namespace MainCore.Commands.UI.MainLayout
 
         public async Task Handle(RestartAccountCommand request, CancellationToken cancellationToken)
         {
-            var accountId = request.AccountId;
+            var accounts = request.Items;
+            if (!accounts.IsSelected)
+            {
+                _dialogService.ShowMessageBox("Warning", "No account selected");
+                return;
+            }
+            var accountId = new AccountId(accounts.SelectedItemId);
             var status = _taskManager.GetStatus(accountId);
 
             switch (status)

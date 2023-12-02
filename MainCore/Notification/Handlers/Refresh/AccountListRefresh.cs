@@ -1,6 +1,7 @@
 ﻿using MainCore.Notification.Message;
 using MainCore.UI.ViewModels.UserControls;
 using MediatR;
+using System.Reactive.Linq;
 
 namespace MainCore.Notification.Handlers.Refresh
 {
@@ -15,7 +16,7 @@ namespace MainCore.Notification.Handlers.Refresh
 
         public async Task Handle(AccountUpdated notification, CancellationToken cancellationToken)
         {
-            await _mainlayoutViewModel.LoadAccountList();
+            await _mainlayoutViewModel.LoadAccount.Execute();
         }
     }
 }

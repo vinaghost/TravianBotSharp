@@ -11,6 +11,7 @@ using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Notification.Message;
 using MainCore.Repositories;
+using MainCore.Services;
 using MainCore.Tasks.Base;
 using MediatR;
 using System.Text.Json;
@@ -32,7 +33,9 @@ namespace MainCore.Tasks
 
         private readonly IUseHeroResourceCommand _useHeroResourceCommand;
 
-        public UpgradeBuildingTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator, IChooseBuildingJobCommand chooseBuildingJobCommand, IExtractResourceFieldCommand extractResourceFieldCommand, IToBuildingPageCommand toBuildingPageCommand, IGetRequiredResourceCommand getRequiredResourceCommand, IAddCroplandCommand addCroplandCommand, IGetTimeWhenEnoughResourceCommand getTimeWhenEnoughResourceCommand, IConstructCommand constructCommand, IUpgradeCommand upgradeCommand, ISpecialUpgradeCommand specialUpgradeCommand, IUseHeroResourceCommand useHeroResourceCommand) : base(unitOfCommand, unitOfRepository, mediator)
+        private readonly ILogService _logService;
+
+        public UpgradeBuildingTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator, IChooseBuildingJobCommand chooseBuildingJobCommand, IExtractResourceFieldCommand extractResourceFieldCommand, IToBuildingPageCommand toBuildingPageCommand, IGetRequiredResourceCommand getRequiredResourceCommand, IAddCroplandCommand addCroplandCommand, IGetTimeWhenEnoughResourceCommand getTimeWhenEnoughResourceCommand, IConstructCommand constructCommand, IUpgradeCommand upgradeCommand, ISpecialUpgradeCommand specialUpgradeCommand, IUseHeroResourceCommand useHeroResourceCommand, ILogService logService) : base(unitOfCommand, unitOfRepository, mediator)
         {
             _chooseBuildingJobCommand = chooseBuildingJobCommand;
             _extractResourceFieldCommand = extractResourceFieldCommand;
@@ -44,13 +47,15 @@ namespace MainCore.Tasks
             _upgradeCommand = upgradeCommand;
             _specialUpgradeCommand = specialUpgradeCommand;
             _useHeroResourceCommand = useHeroResourceCommand;
+            _logService = logService;
         }
 
         protected override async Task<Result> Execute()
         {
             if (CancellationToken.IsCancellationRequested) return new Cancel();
-            Result result;
+            var logger = _logService.GetLogger(AccountId);
 
+            Result result;
             result = await _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
@@ -71,7 +76,7 @@ namespace MainCore.Tasks
                     {
                         SetTimeQueueBuildingComplete(VillageId);
                     }
-                    return result.WithError(new TraceMessage(TraceMessage.Line()));
+                    return result;
                 }
                 var job = _chooseBuildingJobCommand.Value;
                 if (job.Type == JobTypeEnums.ResourceBuild)
@@ -82,6 +87,7 @@ namespace MainCore.Tasks
                 }
 
                 var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
+                logger.Information("Build {type} to level {level} at {location}", plan.Type, plan.Level, plan.Location);
                 result = await _toBuildingPageCommand.Execute(AccountId, VillageId, plan);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 

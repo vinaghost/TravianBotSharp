@@ -1,10 +1,7 @@
-﻿using MainCore.DTO;
+﻿using MainCore.Commands.UI.Accounts;
+using MainCore.DTO;
 using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.ViewModels.Abstract;
-using MainCore.UI.ViewModels.UserControls;
 using MediatR;
 using ReactiveUI;
 using System.Collections.ObjectModel;
@@ -16,12 +13,9 @@ namespace MainCore.UI.ViewModels.Tabs
     [RegisterAsSingleton(withoutInterface: true)]
     public class AddAccountsViewModel : TabViewModelBase
     {
-        private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
-        private readonly IUnitOfRepository _unitOfRepository;
-        private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
         public ReactiveCommand<Unit, Unit> AddAccount { get; }
-        private ReactiveCommand<string, Unit> UpdateTable { get; }
+        private ReactiveCommand<string, List<AccountDetailDto>> Parse { get; }
 
         public ObservableCollection<AccountDetailDto> Accounts { get; } = new();
         private string _input;
@@ -32,56 +26,39 @@ namespace MainCore.UI.ViewModels.Tabs
             set => this.RaiseAndSetIfChanged(ref _input, value);
         }
 
-        public AddAccountsViewModel(IDialogService dialogService, IMediator mediator, WaitingOverlayViewModel waitingOverlayViewModel, IUnitOfRepository unitOfRepository)
+        public AddAccountsViewModel(IMediator mediator)
         {
             _mediator = mediator;
-            _dialogService = dialogService;
-            _waitingOverlayViewModel = waitingOverlayViewModel;
-            _unitOfRepository = unitOfRepository;
 
             AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler);
-            UpdateTable = ReactiveCommand.CreateFromTask<string>(UpdateTableHandler);
+            Parse = ReactiveCommand.Create<string, List<AccountDetailDto>>(ParseHandler);
 
             this.WhenAnyValue(x => x.Input)
-                .InvokeCommand(UpdateTable);
+                .InvokeCommand(Parse);
+
+            Parse.Subscribe(UpdateTable);
+
+            AddAccount.Subscribe(x => Clear());
         }
 
-        private async Task UpdateTableHandler(string input)
+        private void UpdateTable(List<AccountDetailDto> data)
         {
-            var data = await Observable.Start(() =>
-            {
-                return Parse(input);
-            }, RxApp.TaskpoolScheduler);
-            await Observable.Start(() =>
-            {
-                Accounts.Clear();
-                data.ForEach(Accounts.Add);
-            }, RxApp.MainThreadScheduler);
+            Accounts.Clear();
+            data.ForEach(Accounts.Add);
+        }
+
+        private void Clear()
+        {
+            Accounts.Clear();
+            Input = "";
         }
 
         private async Task AddAccountHandler()
         {
-            await _waitingOverlayViewModel.Show("adding accounts");
-            await Observable.Start(() =>
-            {
-                var accounts = Accounts.ToList();
-                _unitOfRepository.AccountRepository.Add(accounts);
-            }, RxApp.TaskpoolScheduler);
-
-            await _mediator.Publish(new AccountUpdated());
-
-            await Observable.Start(() =>
-            {
-                Accounts.Clear();
-                Input = "";
-            }, RxApp.MainThreadScheduler);
-
-            await _waitingOverlayViewModel.Hide();
-
-            _dialogService.ShowMessageBox("Information", "Added accounts");
+            await _mediator.Send(new AddAccountsCommand(Accounts.ToList()));
         }
 
-        private static List<AccountDetailDto> Parse(string input)
+        private List<AccountDetailDto> ParseHandler(string input)
         {
             if (string.IsNullOrEmpty(input)) return new List<AccountDetailDto>();
 
