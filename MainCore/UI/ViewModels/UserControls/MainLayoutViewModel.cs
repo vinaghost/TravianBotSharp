@@ -7,6 +7,7 @@ using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Repositories;
 using MainCore.Services;
 using MainCore.UI.Enums;
+using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using MediatR;
@@ -22,30 +23,34 @@ namespace MainCore.UI.ViewModels.UserControls
     {
         private readonly IMediator _mediator;
         private readonly IUnitOfRepository _unitOfRepository;
+        private readonly ITaskManager _taskManager;
 
         private readonly AccountTabStore _accountTabStore;
         private readonly SelectedItemStore _selectedItemStore;
-        private readonly IDialogService _dialogService;
-
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, IDialogService dialogService, IUnitOfRepository unitOfRepository)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, IUnitOfRepository unitOfRepository, ITaskManager taskManager)
         {
             _accountTabStore = accountTabStore;
             _selectedItemStore = selectedItemStore;
-            _dialogService = dialogService;
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;
+            _taskManager = taskManager;
 
-            AddAccountCommand = ReactiveCommand.CreateFromTask(AddAccountHandler);
-            AddAccountsCommand = ReactiveCommand.CreateFromTask(AddAccountsHandler);
+            AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler);
+            AddAccounts = ReactiveCommand.CreateFromTask(AddAccountsHandler);
 
-            DeleteAccountCommand = ReactiveCommand.CreateFromTask(DeleteAccountHandler);
-            LoginCommand = ReactiveCommand.CreateFromTask(LoginHandler);
-            LogoutCommand = ReactiveCommand.CreateFromTask(LogoutTask);
-            PauseCommand = ReactiveCommand.CreateFromTask(PauseTask);
-            RestartCommand = ReactiveCommand.CreateFromTask(RestartTask);
+            DeleteAccount = ReactiveCommand.CreateFromTask(DeleteAccountHandler);
+            Login = ReactiveCommand.CreateFromTask(LoginHandler);
+            Logout = ReactiveCommand.CreateFromTask(LogoutTask);
+            Pause = ReactiveCommand.CreateFromTask(PauseTask);
+            Restart = ReactiveCommand.CreateFromTask(RestartTask);
+
+            LoadVersion = ReactiveCommand.Create(LoadVersionHandler);
+            LoadAccount = ReactiveCommand.Create(LoadAccountHandler);
+            GetAccount = ReactiveCommand.Create<AccountId, ListBoxItem>(GetAccountHandler);
+            GetStatus = ReactiveCommand.Create<AccountId, StatusEnums>(GetStatusHandler);
 
             var accountObservable = this.WhenAnyValue(x => x.Accounts.SelectedItem);
             accountObservable.BindTo(_selectedItemStore, vm => vm.Account);
@@ -56,135 +61,125 @@ namespace MainCore.UI.ViewModels.UserControls
                 if (x is null) tabType = AccountTabType.NoAccount;
                 _accountTabStore.SetTabType(tabType);
             });
+
+            accountObservable
+                .Select(x =>
+                {
+                    if (x is null) return AccountId.Empty;
+                    return new AccountId(x.Id);
+                })
+                .InvokeCommand(GetStatus);
+
+            LoadVersion.Subscribe(version => Version = $"{version} - {Constants.Server}");
+
+            LoadAccount.Subscribe(accounts => Accounts.Load(accounts));
+
+            Pause.Subscribe(SetPauseText);
+
+            GetStatus.Subscribe(SetPauseText);
         }
 
         public async Task Load()
         {
-            var tasks = new Task[]
-            {
-                LoadAccountList(),
-                LoadVersion(),
-            };
-            await Task.WhenAll(tasks);
+            await LoadVersion
+                 .Execute()
+                 .SubscribeOn(RxApp.TaskpoolScheduler);
+
+            await LoadAccount
+                .Execute()
+                .SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         private async Task AddAccountHandler()
         {
-            Accounts.SelectedItem = null;
-            await _mediator.Send(new AddAccountCommand());
+            await _mediator.Send(new AddAccountCommand(Accounts));
         }
 
         private async Task AddAccountsHandler()
         {
-            Accounts.SelectedItem = null;
-            await _mediator.Send(new AddAccountsCommand());
+            await _mediator.Send(new AddAccountsCommand(Accounts));
         }
 
         private async Task DeleteAccountHandler()
         {
-            if (!Accounts.IsSelected)
-            {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
-                return;
-            }
-
-            var result = _dialogService.ShowConfirmBox("Information", $"Are you sure want to delete \n {Accounts.SelectedItem.Content}");
-            if (!result) return;
-            var accountId = new AccountId(Accounts.SelectedItemId);
-            await _mediator.Send(new DeleteAccountCommand(accountId));
+            await _mediator.Send(new DeleteAccountCommand(Accounts));
         }
 
         private async Task LoginHandler()
         {
-            if (!Accounts.IsSelected)
-            {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
-                return;
-            }
-
-            var accountId = new AccountId(Accounts.SelectedItemId);
-            var result = await _mediator.Send(new LoginAccountCommand(accountId));
-
-            if (result.IsFailed) _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());
+            await _mediator.Send(new LoginAccountCommand(Accounts));
         }
 
         private async Task LogoutTask()
         {
-            if (!Accounts.IsSelected)
-            {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
-                return;
-            }
-
-            var accountId = new AccountId(Accounts.SelectedItemId);
-            await _mediator.Send(new LogoutAccountCommand(accountId));
+            await _mediator.Send(new LogoutAccountCommand(Accounts));
         }
 
-        private async Task PauseTask()
+        private async Task<StatusEnums> PauseTask()
         {
-            if (!Accounts.IsSelected)
-            {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
-                return;
-            }
-            var accountId = new AccountId(Accounts.SelectedItemId);
-
-            await _mediator.Send(new PauseAccountCommand(accountId));
+            return await _mediator.Send(new PauseAccountCommand(Accounts));
         }
 
         private async Task RestartTask()
         {
-            if (!Accounts.IsSelected)
-            {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
-                return;
-            }
-            var accountId = new AccountId(Accounts.SelectedItemId);
-
-            await _mediator.Send(new RestartAccountCommand(accountId));
+            await _mediator.Send(new RestartAccountCommand(Accounts));
         }
 
         public async Task LoadStatus(AccountId accountId, StatusEnums status)
         {
-            var account = await Observable.Start(() =>
-            {
-                var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
-                return account;
-            }, RxApp.TaskpoolScheduler);
-
-            await Observable.Start(() =>
-            {
-                account.Color = status.GetColor();
-            }, RxApp.MainThreadScheduler);
+            await Task.Run(() => GetAccount.Execute(accountId).Subscribe(account => account.Color = status.GetColor()));
+            if (accountId.Value != Accounts.SelectedItemId) return;
+            await Task.Run(() => GetStatus.Execute(accountId).Subscribe());
         }
 
-        public async Task LoadAccountList()
+        private StatusEnums GetStatusHandler(AccountId accountId)
         {
-            var items = await Observable.Start(() =>
-            {
-                var items = _unitOfRepository.AccountRepository.GetItems();
-                return items;
-            }, RxApp.TaskpoolScheduler);
-
-            await Observable.Start(() =>
-            {
-                Accounts.Load(items);
-            }, RxApp.MainThreadScheduler);
+            if (accountId == AccountId.Empty) return StatusEnums.Starting;
+            return _taskManager.GetStatus(accountId);
         }
 
-        private async Task LoadVersion()
+        private List<ListBoxItem> LoadAccountHandler()
         {
-            var version = await Observable.Start(() =>
-            {
-                var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
-                var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
-                return version;
-            }, RxApp.TaskpoolScheduler);
+            var items = _unitOfRepository.AccountRepository.GetItems();
+            return items;
+        }
 
-            await Observable.Start(() =>
+        private ListBoxItem GetAccountHandler(AccountId accountId)
+        {
+            var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
+            return account;
+        }
+
+        private Version LoadVersionHandler()
+        {
+            var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
+            var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
+            Thread.Sleep(20000);
+            return version;
+        }
+
+        private void SetPauseText(StatusEnums status)
+        {
+            switch (status)
             {
-                Version = $"{version} - {Constants.Server}";
-            }, RxApp.MainThreadScheduler);
+                case StatusEnums.Offline:
+                case StatusEnums.Starting:
+                case StatusEnums.Pausing:
+                case StatusEnums.Stopping:
+                    PauseText = "[~~!~~]";
+                    break;
+
+                case StatusEnums.Online:
+                    PauseText = "Pause";
+                    break;
+
+                case StatusEnums.Paused:
+                    PauseText = "Resume";
+                    break;
+
+                default:
+                    break;
+            }
         }
 
         private string _version;
@@ -195,12 +190,24 @@ namespace MainCore.UI.ViewModels.UserControls
             set => this.RaiseAndSetIfChanged(ref _version, value);
         }
 
-        public ReactiveCommand<Unit, Unit> AddAccountCommand { get; }
-        public ReactiveCommand<Unit, Unit> AddAccountsCommand { get; }
-        public ReactiveCommand<Unit, Unit> DeleteAccountCommand { get; }
-        public ReactiveCommand<Unit, Unit> LoginCommand { get; }
-        public ReactiveCommand<Unit, Unit> LogoutCommand { get; }
-        public ReactiveCommand<Unit, Unit> PauseCommand { get; }
-        public ReactiveCommand<Unit, Unit> RestartCommand { get; }
+        private string _pauseText;
+
+        public string PauseText
+        {
+            get => _pauseText;
+            set => this.RaiseAndSetIfChanged(ref _pauseText, value);
+        }
+
+        public ReactiveCommand<Unit, Unit> AddAccount { get; }
+        public ReactiveCommand<Unit, Unit> AddAccounts { get; }
+        public ReactiveCommand<Unit, Unit> DeleteAccount { get; }
+        public ReactiveCommand<Unit, Unit> Login { get; }
+        public ReactiveCommand<Unit, Unit> Logout { get; }
+        public ReactiveCommand<Unit, StatusEnums> Pause { get; }
+        public ReactiveCommand<Unit, Unit> Restart { get; }
+        public ReactiveCommand<Unit, Version> LoadVersion { get; }
+        public ReactiveCommand<Unit, List<ListBoxItem>> LoadAccount { get; }
+        public ReactiveCommand<AccountId, ListBoxItem> GetAccount { get; }
+        public ReactiveCommand<AccountId, StatusEnums> GetStatus { get; }
     }
 }
