@@ -33,6 +33,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ReactiveCommand<Unit, Unit> Bottom { get; }
         public ReactiveCommand<Unit, Unit> Delete { get; }
         public ReactiveCommand<Unit, Unit> DeleteAll { get; }
+        public ReactiveCommand<Unit, Unit> Import { get; }
+        public ReactiveCommand<Unit, Unit> Export { get; }
         public ReactiveCommand<VillageId, List<ListBoxItem>> LoadBuilding { get; }
         public ReactiveCommand<VillageId, List<ListBoxItem>> LoadJob { get; }
 
@@ -59,6 +61,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             Bottom = ReactiveCommand.CreateFromTask(BottomHandler);
             Delete = ReactiveCommand.CreateFromTask(DeleteHandler);
             DeleteAll = ReactiveCommand.CreateFromTask(DeleteAllHandler);
+            Import = ReactiveCommand.CreateFromTask(ImportHandler);
+            Export = ReactiveCommand.CreateFromTask(ExportHandler);
 
             LoadBuilding = ReactiveCommand.CreateFromTask<VillageId, List<ListBoxItem>>(LoadBuildingHandler);
             LoadJob = ReactiveCommand.CreateFromTask<VillageId, List<ListBoxItem>>(LoadJobHandler);
@@ -169,6 +173,16 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private async Task DeleteAllHandler()
         {
             await _mediator.Send(new DeleteAllJobCommand(AccountId, VillageId, Jobs));
+        }
+
+        private async Task ImportHandler()
+        {
+            await _mediator.Send(new ImportCommand(AccountId, VillageId));
+        }
+
+        private async Task ExportHandler()
+        {
+            await _mediator.Send(new ExportCommand(VillageId));
         }
     }
 }

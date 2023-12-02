@@ -5,7 +5,7 @@ using MainCore.Services;
 using MediatR;
 using System.Text.Json;
 
-namespace MainCore.Commands.UI.VillageSetting
+namespace MainCore.Commands.UI.Build
 {
     public class ExportCommand : ByVillageIdBase, IRequest
     {
@@ -27,13 +27,14 @@ namespace MainCore.Commands.UI.VillageSetting
 
         public async Task Handle(ExportCommand request, CancellationToken cancellationToken)
         {
-            var villageId = request.VillageId;
             var path = _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
-            var settings = _unitOfRepository.VillageSettingRepository.Get(villageId);
-            var jsonString = JsonSerializer.Serialize(settings);
+            var villageId = request.VillageId;
+            var jobs = _unitOfRepository.JobRepository.GetJobs(villageId);
+
+            var jsonString = JsonSerializer.Serialize(jobs);
             await File.WriteAllTextAsync(path, jsonString, cancellationToken);
-            _dialogService.ShowMessageBox("Information", "Settings exported");
+            _dialogService.ShowMessageBox("Information", "Job list exported");
         }
     }
 }
