@@ -1,28 +1,48 @@
-﻿using ReactiveUI;
+﻿using MainCore.Infrasturecture.AutoRegisterDi;
+using MainCore.Services;
+using ReactiveUI;
+using Serilog;
 using System.Diagnostics;
 using System.Reactive.Concurrency;
 
 namespace MainCore.UI
 {
+    [RegisterAsSingleton(withoutInterface: true)]
     public class ObservableExceptionHandler : IObserver<Exception>
     {
+        private readonly IDialogService _dialogService;
+
+        public ObservableExceptionHandler(IDialogService dialogService)
+        {
+            _dialogService = dialogService;
+        }
+
         public void OnNext(Exception value)
         {
-            if (Debugger.IsAttached) Debugger.Break();
-            RxApp.MainThreadScheduler.Schedule(() => { throw value; });
+            Handle(value);
         }
 
         public void OnError(Exception error)
         {
-            if (Debugger.IsAttached) Debugger.Break();
-
-            RxApp.MainThreadScheduler.Schedule(() => { throw error; });
+            Handle(error);
         }
 
         public void OnCompleted()
         {
-            if (Debugger.IsAttached) Debugger.Break();
-            RxApp.MainThreadScheduler.Schedule(() => { throw new NotImplementedException(); });
+            Handle(null);
+        }
+
+        private void Handle(Exception exception)
+        {
+            if (exception is null) return;
+            Log.Error(exception, "UI execption");
+            if (Debugger.IsAttached)
+            {
+                Debugger.Break();
+                RxApp.MainThreadScheduler.Schedule(() => { throw exception; });
+            }
+
+            _dialogService.ShowMessageBox("Error", "There is something wrong. Please check logs/logs-Other.txt.");
         }
     }
 }

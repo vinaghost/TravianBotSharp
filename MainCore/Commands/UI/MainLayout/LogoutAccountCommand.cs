@@ -3,13 +3,14 @@ using MainCore.Common.Enums;
 using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Services;
+using MainCore.UI.ViewModels.UserControls;
 using MediatR;
 
 namespace MainCore.Commands.UI.MainLayout
 {
-    public class LogoutAccountCommand : ByAccountIdBase, IRequest
+    public class LogoutAccountCommand : ByListBoxItemBase, IRequest
     {
-        public LogoutAccountCommand(AccountId accountId) : base(accountId)
+        public LogoutAccountCommand(ListBoxItemViewModel items) : base(items)
         {
         }
     }
@@ -18,16 +19,25 @@ namespace MainCore.Commands.UI.MainLayout
     {
         private readonly ITaskManager _taskManager;
         private readonly ICloseBrowserCommand _closeCommand;
+        private readonly IDialogService _dialogService;
 
-        public LogoutAccountCommandHandler(ITaskManager taskManager, ICloseBrowserCommand closeCommand)
+        public LogoutAccountCommandHandler(ITaskManager taskManager, ICloseBrowserCommand closeCommand, IDialogService dialogService)
         {
             _taskManager = taskManager;
             _closeCommand = closeCommand;
+            _dialogService = dialogService;
         }
 
         public async Task Handle(LogoutAccountCommand request, CancellationToken cancellationToken)
         {
-            var accountId = request.AccountId;
+            var accounts = request.Items;
+            if (!accounts.IsSelected)
+            {
+                _dialogService.ShowMessageBox("Warning", "No account selected");
+                return;
+            }
+
+            var accountId = new AccountId(accounts.SelectedItemId);
 
             _taskManager.SetStatus(accountId, StatusEnums.Stopping);
             await _taskManager.StopCurrentTask(accountId);

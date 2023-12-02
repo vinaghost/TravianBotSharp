@@ -26,6 +26,7 @@ namespace MainCore.Commands.Step.UpgradeBuilding
             var html = chromeBrowser.Html;
 
             var button = _unitOfParser.UpgradeBuildingParser.GetUpgradeButton(html);
+            if (button is null) return Result.Fail(Retry.ButtonNotFound("upgrade"));
 
             var result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));

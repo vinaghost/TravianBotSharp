@@ -37,7 +37,7 @@ namespace MainCore.Commands.Step.UpgradeBuilding
             var building = _unitOfRepository.BuildingRepository.GetBuilding(villageId, plan.Location);
             if (building.Type == BuildingEnums.Site)
             {
-                var tabIndex = GetBuildingsCategory(building.Type);
+                var tabIndex = GetBuildingsCategory(plan.Type);
                 result = await _unitOfCommand.SwitchTabCommand.Execute(accountId, tabIndex);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
