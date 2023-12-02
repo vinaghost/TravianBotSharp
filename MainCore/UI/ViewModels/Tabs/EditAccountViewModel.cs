@@ -36,7 +36,7 @@ namespace MainCore.UI.ViewModels.Tabs
             EditAccess = ReactiveCommand.CreateFromTask(EditAccessHandler);
             DeleteAccess = ReactiveCommand.CreateFromTask(DeleteAccessHandler);
             EditAccount = ReactiveCommand.CreateFromTask(EditAccountHandler);
-            LoadAccount = ReactiveCommand.CreateFromTask<AccountId, AccountDto>(LoadAccountHandler);
+            LoadAccount = ReactiveCommand.Create<AccountId, AccountDto>(LoadAccountHandler);
             this.WhenAnyValue(vm => vm.SelectedAccess)
                 .WhereNotNull()
                 .Subscribe(x => x.CopyTo(AccessInput));
@@ -47,7 +47,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadAccount.Execute();
+            await LoadAccount.Execute().SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         private async Task AddAccessHandler()
@@ -70,9 +70,9 @@ namespace MainCore.UI.ViewModels.Tabs
             await _mediator.Send(new EditAccountCommand(AccountInput));
         }
 
-        private async Task<AccountDto> LoadAccountHandler(AccountId accountId)
+        private AccountDto LoadAccountHandler(AccountId accountId)
         {
-            var account = await Task.Run(() => _unitOfRepository.AccountRepository.Get(AccountId, true));
+            var account = _unitOfRepository.AccountRepository.Get(AccountId, true);
             return account;
         }
 

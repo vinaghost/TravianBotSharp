@@ -64,8 +64,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             Import = ReactiveCommand.CreateFromTask(ImportHandler);
             Export = ReactiveCommand.CreateFromTask(ExportHandler);
 
-            LoadBuilding = ReactiveCommand.CreateFromTask<VillageId, List<ListBoxItem>>(LoadBuildingHandler);
-            LoadJob = ReactiveCommand.CreateFromTask<VillageId, List<ListBoxItem>>(LoadJobHandler);
+            LoadBuilding = ReactiveCommand.Create<VillageId, List<ListBoxItem>>(LoadBuildingHandler);
+            LoadJob = ReactiveCommand.Create<VillageId, List<ListBoxItem>>(LoadJobHandler);
 
             this.WhenAnyValue(vm => vm.Buildings.SelectedItem)
                 .InvokeCommand(BuildingChanged);
@@ -83,32 +83,32 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
-            await LoadBuilding.Execute(villageId);
+            await LoadBuilding.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         public async Task JobListRefresh(VillageId villageId)
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
-            await LoadJob.Execute(villageId);
-            await LoadBuilding.Execute(villageId);
+            await LoadJob.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadBuilding.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         protected override async Task Load(VillageId villageId)
         {
-            await LoadJob.Execute(villageId);
-            await LoadBuilding.Execute(villageId);
+            await LoadJob.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadBuilding.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
-        private async Task<List<ListBoxItem>> LoadBuildingHandler(VillageId villageId)
+        private List<ListBoxItem> LoadBuildingHandler(VillageId villageId)
         {
-            var buildings = await Task.Run(() => _unitOfRepository.BuildingRepository.GetItems(villageId));
+            var buildings = _unitOfRepository.BuildingRepository.GetItems(villageId);
             return buildings;
         }
 
-        private async Task<List<ListBoxItem>> LoadJobHandler(VillageId villageId)
+        private List<ListBoxItem> LoadJobHandler(VillageId villageId)
         {
-            var buildings = await Task.Run(() => _unitOfRepository.JobRepository.GetItems(villageId));
+            var buildings = _unitOfRepository.JobRepository.GetItems(villageId);
             return buildings;
         }
 

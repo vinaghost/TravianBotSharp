@@ -34,6 +34,7 @@ namespace MainCore.UI.ViewModels.Tabs
             Parse = ReactiveCommand.Create<string, List<AccountDetailDto>>(ParseHandler);
 
             this.WhenAnyValue(x => x.Input)
+                .ObserveOn(RxApp.TaskpoolScheduler)
                 .InvokeCommand(Parse);
 
             Parse.Subscribe(UpdateTable);

@@ -42,12 +42,12 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadSettings.Execute(accountId);
+            await LoadSettings.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadSettings.Execute(accountId);
+            await LoadSettings.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         private async Task SaveHandler()

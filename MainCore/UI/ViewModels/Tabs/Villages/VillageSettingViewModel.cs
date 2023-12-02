@@ -33,7 +33,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             SaveCommand = ReactiveCommand.CreateFromTask(SaveHandler);
             ExportCommand = ReactiveCommand.CreateFromTask(ExportHandler);
             ImportCommand = ReactiveCommand.CreateFromTask(ImportHandler);
-            LoadSetting = ReactiveCommand.CreateFromTask<VillageId, Dictionary<VillageSettingEnums, int>>(LoadSettingHandler);
+            LoadSetting = ReactiveCommand.Create<VillageId, Dictionary<VillageSettingEnums, int>>(LoadSettingHandler);
 
             LoadSetting.Subscribe(settings => VillageSettingInput.Set(settings));
         }
@@ -42,12 +42,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
-            await LoadSetting.Execute(villageId);
+            await LoadSetting.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         protected override async Task Load(VillageId villageId)
         {
-            await LoadSetting.Execute(villageId);
+            await LoadSetting.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         private async Task SaveHandler()
@@ -65,9 +65,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await _mediator.Send(new ExportCommand(VillageId));
         }
 
-        private async Task<Dictionary<VillageSettingEnums, int>> LoadSettingHandler(VillageId villageId)
+        private Dictionary<VillageSettingEnums, int> LoadSettingHandler(VillageId villageId)
         {
-            var settings = await Task.Run(() => _unitOfRepository.VillageSettingRepository.Get(villageId));
+            var settings = _unitOfRepository.VillageSettingRepository.Get(villageId);
             return settings;
         }
     }

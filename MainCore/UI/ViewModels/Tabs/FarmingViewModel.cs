@@ -43,8 +43,8 @@ namespace MainCore.UI.ViewModels.Tabs
             Save = ReactiveCommand.CreateFromTask(SaveHandler);
             ActiveFarmList = ReactiveCommand.CreateFromTask(ActiveFarmListHandler);
 
-            LoadFarmList = ReactiveCommand.CreateFromTask<AccountId, List<ListBoxItem>>(LoadFarmListHandler);
-            LoadSetting = ReactiveCommand.CreateFromTask<AccountId, Dictionary<AccountSettingEnums, int>>(LoadSettingHandler);
+            LoadFarmList = ReactiveCommand.Create<AccountId, List<ListBoxItem>>(LoadFarmListHandler);
+            LoadSetting = ReactiveCommand.Create<AccountId, Dictionary<AccountSettingEnums, int>>(LoadSettingHandler);
 
             LoadFarmList.Subscribe(items => FarmLists.Load(items));
             LoadSetting.Subscribe(items => FarmListSettingInput.Set(items));
@@ -54,13 +54,13 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadFarmList.Execute(accountId);
+            await LoadFarmList.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadFarmList.Execute(accountId);
-            await LoadSetting.Execute(accountId);
+            await LoadFarmList.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadSetting.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         private async Task UpdateFarmListHandler()
@@ -88,16 +88,16 @@ namespace MainCore.UI.ViewModels.Tabs
             await _mediator.Send(new ActiveFarmListCommand(AccountId, FarmLists.SelectedItem));
         }
 
-        private async Task<Dictionary<AccountSettingEnums, int>> LoadSettingHandler(AccountId accountId)
+        private Dictionary<AccountSettingEnums, int> LoadSettingHandler(AccountId accountId)
         {
-            var items = await Task.Run(() => _unitOfRepository.AccountSettingRepository.Get(accountId));
+            var items = _unitOfRepository.AccountSettingRepository.Get(accountId);
             return items;
         }
 
-        private async Task<List<ListBoxItem>> LoadFarmListHandler(AccountId accountId)
+        private List<ListBoxItem> LoadFarmListHandler(AccountId accountId)
 
         {
-            var items = await Task.Run(() => _unitOfRepository.FarmRepository.GetItems(accountId));
+            var items = _unitOfRepository.FarmRepository.GetItems(accountId);
             return items;
         }
     }

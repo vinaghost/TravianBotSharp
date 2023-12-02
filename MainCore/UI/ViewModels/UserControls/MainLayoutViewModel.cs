@@ -81,10 +81,13 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public async Task Load()
         {
-            await Task.WhenAll(new Task[] {
-                Task.Run(() => LoadVersion.Execute().Subscribe()),
-                Task.Run(() => LoadAccount.Execute().Subscribe())
-            });
+            await LoadVersion
+                 .Execute()
+                 .SubscribeOn(RxApp.TaskpoolScheduler);
+
+            await LoadAccount
+                .Execute()
+                .SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         private async Task AddAccountHandler()
@@ -151,7 +154,7 @@ namespace MainCore.UI.ViewModels.UserControls
         {
             var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
             var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
-
+            Thread.Sleep(20000);
             return version;
         }
 
