@@ -30,6 +30,7 @@ namespace MainCore.Commands.UI.VillageSetting
             var accountId = request.AccountId;
             var villageId = request.VillageId;
             var path = _dialogService.SaveFileDialog();
+            if (string.IsNullOrEmpty(path)) return;
             var settings = _unitOfRepository.VillageSettingRepository.Get(villageId);
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString, cancellationToken);

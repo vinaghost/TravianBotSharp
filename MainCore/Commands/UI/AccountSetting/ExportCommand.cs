@@ -29,6 +29,7 @@ namespace MainCore.Commands.UI.AccountSetting
         {
             var accountId = request.AccountId;
             var path = _dialogService.SaveFileDialog();
+            if (string.IsNullOrEmpty(path)) return;
             var settings = _unitOfRepository.AccountSettingRepository.Get(accountId);
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString, cancellationToken);
