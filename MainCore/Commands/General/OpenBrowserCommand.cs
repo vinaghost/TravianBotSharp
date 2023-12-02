@@ -25,7 +25,7 @@ namespace MainCore.Commands.General
             var chromeBrowser = _chromeManager.Get(accountId);
 
             var account = _unitOfRepository.AccountRepository.Get(accountId);
-            var result = await Task.Run(() => chromeBrowser.Setup(account, access));
+            var result = await chromeBrowser.Setup(account, access);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

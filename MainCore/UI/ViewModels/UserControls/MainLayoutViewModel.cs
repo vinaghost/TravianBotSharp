@@ -5,7 +5,6 @@ using MainCore.Common.Extensions;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.Enums;
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
@@ -26,16 +25,13 @@ namespace MainCore.UI.ViewModels.UserControls
 
         private readonly AccountTabStore _accountTabStore;
         private readonly SelectedItemStore _selectedItemStore;
-        private readonly IDialogService _dialogService;
-
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, IDialogService dialogService, IUnitOfRepository unitOfRepository)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, IUnitOfRepository unitOfRepository)
         {
             _accountTabStore = accountTabStore;
             _selectedItemStore = selectedItemStore;
-            _dialogService = dialogService;
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;
 
@@ -76,78 +72,37 @@ namespace MainCore.UI.ViewModels.UserControls
 
         private async Task AddAccountHandler()
         {
-            Accounts.SelectedItem = null;
-            await _mediator.Send(new AddAccountCommand());
+            await _mediator.Send(new AddAccountCommand(Accounts));
         }
 
         private async Task AddAccountsHandler()
         {
-            Accounts.SelectedItem = null;
-            await _mediator.Send(new AddAccountsCommand());
+            await _mediator.Send(new AddAccountsCommand(Accounts));
         }
 
         private async Task DeleteAccountHandler()
         {
-            if (!Accounts.IsSelected)
-            {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
-                return;
-            }
-
-            var result = _dialogService.ShowConfirmBox("Information", $"Are you sure want to delete \n {Accounts.SelectedItem.Content}");
-            if (!result) return;
-            var accountId = new AccountId(Accounts.SelectedItemId);
-            await _mediator.Send(new DeleteAccountCommand(accountId));
+            await _mediator.Send(new DeleteAccountCommand(Accounts));
         }
 
         private async Task LoginHandler()
         {
-            if (!Accounts.IsSelected)
-            {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
-                return;
-            }
-
-            var accountId = new AccountId(Accounts.SelectedItemId);
-            var result = await _mediator.Send(new LoginAccountCommand(accountId));
-
-            if (result.IsFailed) _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());
+            await _mediator.Send(new LoginAccountCommand(Accounts));
         }
 
         private async Task LogoutTask()
         {
-            if (!Accounts.IsSelected)
-            {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
-                return;
-            }
-
-            var accountId = new AccountId(Accounts.SelectedItemId);
-            await _mediator.Send(new LogoutAccountCommand(accountId));
+            await _mediator.Send(new LogoutAccountCommand(Accounts));
         }
 
         private async Task PauseTask()
         {
-            if (!Accounts.IsSelected)
-            {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
-                return;
-            }
-            var accountId = new AccountId(Accounts.SelectedItemId);
-
-            await _mediator.Send(new PauseAccountCommand(accountId));
+            await _mediator.Send(new PauseAccountCommand(Accounts));
         }
 
         private async Task RestartTask()
         {
-            if (!Accounts.IsSelected)
-            {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
-                return;
-            }
-            var accountId = new AccountId(Accounts.SelectedItemId);
-
-            await _mediator.Send(new RestartAccountCommand(accountId));
+            await _mediator.Send(new RestartAccountCommand(Accounts));
         }
 
         public async Task LoadStatus(AccountId accountId, StatusEnums status)

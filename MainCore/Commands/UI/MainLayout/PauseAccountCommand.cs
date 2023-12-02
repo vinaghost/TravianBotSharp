@@ -2,13 +2,14 @@
 using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Services;
+using MainCore.UI.ViewModels.UserControls;
 using MediatR;
 
 namespace MainCore.Commands.UI.MainLayout
 {
-    public class PauseAccountCommand : ByAccountIdBase, IRequest
+    public class PauseAccountCommand : ByListBoxItemBase, IRequest
     {
-        public PauseAccountCommand(AccountId accountId) : base(accountId)
+        public PauseAccountCommand(ListBoxItemViewModel items) : base(items)
         {
         }
     }
@@ -26,8 +27,13 @@ namespace MainCore.Commands.UI.MainLayout
 
         public async Task Handle(PauseAccountCommand request, CancellationToken cancellationToken)
         {
-            var accountId = request.AccountId;
-
+            var accounts = request.Items;
+            if (!accounts.IsSelected)
+            {
+                _dialogService.ShowMessageBox("Warning", "No account selected");
+                return;
+            }
+            var accountId = new AccountId(accounts.SelectedItemId);
             var status = _taskManager.GetStatus(accountId);
             if (status == StatusEnums.Paused)
             {
