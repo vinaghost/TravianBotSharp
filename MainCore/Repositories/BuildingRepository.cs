@@ -234,6 +234,7 @@ namespace MainCore.Repositories
             {
                 var villageBuilding = buildings.FirstOrDefault(x => x.Location == queueBuilding.Location);
                 villageBuilding.QueueLevel = queueBuilding.Level;
+                villageBuilding.Type = queueBuilding.Type;
             }
 
             var jobBuildings = context.Jobs
@@ -254,6 +255,7 @@ namespace MainCore.Repositories
             {
                 var villageBuilding = buildings.FirstOrDefault(x => x.Location == jobBuilding.Location);
                 villageBuilding.JobLevel = jobBuilding.Level;
+                villageBuilding.Type = jobBuilding.Type;
             }
 
             var resourceJobs = context.Jobs
