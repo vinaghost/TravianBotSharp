@@ -5,6 +5,7 @@ using Splat;
 using System;
 using System.ComponentModel;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Windows;
 
 namespace WPFUI.Views
@@ -40,7 +41,7 @@ namespace WPFUI.Views
         {
             if (_isLoaded) return;
             _isLoaded = false;
-            await ViewModel.Load();
+            await ViewModel.Load.Execute();
             _isLoaded = true;
         }
 
@@ -57,7 +58,7 @@ namespace WPFUI.Views
             if (_isClosing) return;
             _isClosing = true;
 
-            await ViewModel.Unload();
+            await ViewModel.Unload.Execute();
 
             _canClose = true;
             Close();

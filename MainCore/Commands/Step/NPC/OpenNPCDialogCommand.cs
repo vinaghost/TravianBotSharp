@@ -28,6 +28,7 @@ namespace MainCore.Commands.Step.NPC
             var html = chromeBrowser.Html;
 
             var button = _unitOfParser.MarketParser.GetExchangeResourcesButton(html);
+            if (button is null) return Result.Fail(Retry.ButtonNotFound("Exchange resources"));
             Result result;
             result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));

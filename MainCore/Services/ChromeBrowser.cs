@@ -127,9 +127,21 @@ namespace MainCore.Services
                 return await Navigate(CurrentUrl);
             }
 
-            void goToUrl() => _driver.Navigate().GoToUrl(url);
-            await Task.Run(goToUrl);
-            var result = await WaitPageLoaded();
+            Result goToUrl()
+            {
+                try
+                {
+                    _driver.Navigate().GoToUrl(url);
+                    return Result.Ok();
+                }
+                catch (Exception exception)
+                {
+                    return Result.Fail(new Stop(exception.Message));
+                }
+            }
+            var result = await Task.Run(goToUrl);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            result = await WaitPageLoaded();
             return result;
         }
 

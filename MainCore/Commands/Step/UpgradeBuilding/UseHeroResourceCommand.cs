@@ -116,7 +116,7 @@ namespace MainCore.Commands.Step.UpgradeBuilding
         {
             var html = chromeBrowser.Html;
             var node = _unitOfParser.HeroParser.GetAmountBox(html);
-            if (node is null) return Result.Fail(Retry.TextboxNotFound("amount input"));
+            if (node is null) return Result.Fail(Retry.TextboxNotFound("amount resource input"));
             Result result;
             result = await chromeBrowser.InputTextbox(By.XPath(node.XPath), amount.ToString());
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
@@ -127,7 +127,7 @@ namespace MainCore.Commands.Step.UpgradeBuilding
         {
             var html = chromeBrowser.Html;
             var node = _unitOfParser.HeroParser.GetConfirmButton(html);
-            if (node is null) return Result.Fail(Retry.ButtonNotFound("Confirm"));
+            if (node is null) return Result.Fail(Retry.ButtonNotFound("confirm use resource"));
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(node.XPath));

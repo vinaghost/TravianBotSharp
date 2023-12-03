@@ -25,10 +25,7 @@ namespace MainCore.Commands.Step.StartFarmlist
             var chromeBrowser = _chromeManager.Get(accountId);
             var html = chromeBrowser.Html;
             var startButton = _unitOfParser.FarmParser.GetStartButton(html, farmListId);
-            if (startButton is null)
-            {
-                return Result.Fail(new Retry("Cannot found start button"));
-            }
+            if (startButton is null) return Result.Fail(Retry.ButtonNotFound($"Start farm {farmListId}"));
 
             var result = await chromeBrowser.Click(By.XPath(startButton.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));

@@ -26,10 +26,7 @@ namespace MainCore.Commands.Step.StartFarmlist
             var html = chromeBrowser.Html;
 
             var startAllButton = _unitOfParser.FarmParser.GetStartAllButton(html);
-            if (startAllButton is null)
-            {
-                return Result.Fail(new Retry("Cannot found start all button"));
-            }
+            if (startAllButton is null) return Result.Fail(Retry.ButtonNotFound("Start all farms"));
 
             var result = await chromeBrowser.Click(By.XPath(startAllButton.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
