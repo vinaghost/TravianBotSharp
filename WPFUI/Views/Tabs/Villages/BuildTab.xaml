@@ -84,12 +84,8 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <Button x:Name="ImportButton"       Grid.Column="0" Style="{DynamicResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Import">
-                        <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Import" />
-                    </Button>
-                    <Button x:Name="ExportButton"       Grid.Column="1" Style="{DynamicResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Export">
-                        <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Export" />
-                    </Button>
+                    <Button x:Name="ImportButton"       Grid.Column="0" Content="Import" Margin="5" />
+                    <Button x:Name="ExportButton"       Grid.Column="1" Content="Export" Margin="5" />
                 </Grid>
             </Border>
             <Border Grid.Row="1" Style="{DynamicResource Box}">

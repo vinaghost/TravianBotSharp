@@ -27,6 +27,7 @@ namespace MainCore.Commands.Step.DisableContextualHelp
             var html = chromeBrowser.Html;
 
             var option = _unitOfParser.OptionPageParser.GetHideContextualHelpOption(html);
+            if (option is null) return Result.Fail(Retry.NotFound("hide contextual help", "option"));
             Result result;
             result = await chromeBrowser.Click(By.XPath(option.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));

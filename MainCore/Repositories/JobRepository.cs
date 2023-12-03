@@ -51,7 +51,6 @@ namespace MainCore.Repositories
         {
             using var context = _contextFactory.CreateDbContext();
             var count = context.Jobs
-                .AsNoTracking()
                 .Where(x => x.VillageId == villageId.Value)
                 .Count();
 
@@ -64,6 +63,31 @@ namespace MainCore.Repositories
             };
 
             context.Add(job);
+            context.SaveChanges();
+        }
+
+        public void AddRange(VillageId villageId, List<JobDto> jobDtos)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var count = context.Jobs
+               .Where(x => x.VillageId == villageId.Value)
+               .Count();
+
+            var jobs = new List<Job>();
+            foreach (var jobDto in jobDtos)
+            {
+                var job = new Job()
+                {
+                    Position = count,
+                    VillageId = villageId.Value,
+                    Type = jobDto.Type,
+                    Content = jobDto.Content,
+                };
+
+                jobs.Add(job);
+            }
+
+            context.AddRange(jobs);
             context.SaveChanges();
         }
 
@@ -147,6 +171,18 @@ namespace MainCore.Repositories
                 .OrderBy(x => x.Position)
                 .FirstOrDefault();
             return job;
+        }
+
+        public List<JobDto> GetJobs(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var jobs = context.Jobs
+                .Where(x => x.VillageId == villageId.Value)
+                .OrderBy(x => x.Position)
+                .ToDto()
+                .ToList();
+            return jobs;
         }
 
         public JobDto GetBuildingJob(VillageId villageId)

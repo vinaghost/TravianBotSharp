@@ -5,6 +5,7 @@ using MainCore.UI.ViewModels.UserControls;
 using MediatR;
 using ReactiveUI;
 using Splat;
+using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels
 {
@@ -19,9 +20,12 @@ namespace MainCore.UI.ViewModels
         {
             _mediator = mediator;
             _waitingOverlayViewModel = waitingOverlayViewModel;
+
+            Load = ReactiveCommand.CreateFromTask(LoadHandler);
+            Unload = ReactiveCommand.CreateFromTask(UnloadHandler);
         }
 
-        public async Task Load()
+        private async Task LoadHandler()
         {
             await _waitingOverlayViewModel.Show();
             await _mediator.Publish(new MainWindowLoaded());
@@ -32,7 +36,7 @@ namespace MainCore.UI.ViewModels
             await _waitingOverlayViewModel.Hide();
         }
 
-        public async Task Unload()
+        private async Task UnloadHandler()
         {
             await _mediator.Publish(new MainWindowUnloaded());
         }
@@ -42,5 +46,8 @@ namespace MainCore.UI.ViewModels
             get => _mainLayoutViewModel;
             set => this.RaiseAndSetIfChanged(ref _mainLayoutViewModel, value);
         }
+
+        public ReactiveCommand<Unit, Unit> Load { get; }
+        public ReactiveCommand<Unit, Unit> Unload { get; }
     }
 }

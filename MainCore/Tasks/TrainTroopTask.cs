@@ -62,8 +62,8 @@ namespace MainCore.Tasks
 
         private void SetNextExecute()
         {
-            var minutes = _unitOfRepository.VillageSettingRepository.GetByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax);
-            ExecuteAt = DateTime.Now.AddMinutes(minutes);
+            var seconds = _unitOfRepository.VillageSettingRepository.GetByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
+            ExecuteAt = DateTime.Now.AddSeconds(seconds);
         }
 
         protected override void SetName()
