@@ -192,7 +192,6 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
 
             var building = context.Buildings
-                .AsNoTracking()
                 .Where(x => x.Id == buildingId.Value)
                 .Select(x => new
                 {
@@ -208,7 +207,6 @@ namespace MainCore.Repositories
         {
             using var context = _contextFactory.CreateDbContext();
             var buildings = context.Buildings
-                .AsNoTracking()
                 .Where(x => x.VillageId == villageId.Value)
                 .OrderBy(x => x.Location)
                 .AsEnumerable()
@@ -221,9 +219,7 @@ namespace MainCore.Repositories
                 })
                 .ToList();
 
-            var queueBuildings = context.QueueBuildings
-                .AsNoTracking()
-                .Where(x => x.VillageId == villageId.Value)
+            var queueBuildings = context.QueueBuildings.Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Type != BuildingEnums.Site)
                 .GroupBy(x => x.Location)
                 .Select(x => new Building()
@@ -241,7 +237,6 @@ namespace MainCore.Repositories
             }
 
             var jobBuildings = context.Jobs
-                .AsNoTracking()
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Type == JobTypeEnums.NormalBuild)
                 .Select(x => x.Content)
@@ -262,7 +257,6 @@ namespace MainCore.Repositories
             }
 
             var resourceJobs = context.Jobs
-               .AsNoTracking()
                .Where(x => x.VillageId == villageId.Value)
                .Where(x => x.Type == JobTypeEnums.ResourceBuild)
                .Select(x => x.Content)
