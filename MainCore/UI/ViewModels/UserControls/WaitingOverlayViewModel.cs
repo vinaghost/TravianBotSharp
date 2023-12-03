@@ -17,8 +17,8 @@ namespace MainCore.UI.ViewModels.UserControls
         {
             await Observable.Start(() =>
             {
-                Shown = true;
                 Message = message;
+                Shown = true;
             }, RxApp.MainThreadScheduler);
         }
 

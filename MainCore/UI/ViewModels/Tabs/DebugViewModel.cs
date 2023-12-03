@@ -8,6 +8,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting.Display;
 using System.Collections.ObjectModel;
+using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text;
@@ -40,6 +41,18 @@ namespace MainCore.UI.ViewModels.Tabs
             _taskManager = taskManager;
 
             _formatter = new("{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
+
+            LoadTask = ReactiveCommand.Create<AccountId, List<TaskItem>>(LoadTaskHandler);
+            LoadLog = ReactiveCommand.Create<AccountId>(LoadLogHandler);
+            LoadTask.Subscribe(items =>
+            {
+                Tasks.Clear();
+                items.ForEach(Tasks.Add);
+            });
+            LoadLog.Subscribe(logs =>
+            {
+                Logs = _cacheLog;
+            });
         }
 
         private void LogEmitted(AccountId accountId, LogEvent logEvent)
@@ -47,10 +60,12 @@ namespace MainCore.UI.ViewModels.Tabs
             if (!IsActive) return;
             if (accountId != AccountId) return;
             if (_isLogLoading) return;
+
             var buffer = new StringWriter(new StringBuilder());
             _formatter.Format(logEvent, buffer);
             buffer.WriteLine(_cacheLog);
             _cacheLog = buffer.ToString();
+
             RxApp.MainThreadScheduler.Schedule(() => Logs = _cacheLog);
         }
 
@@ -58,35 +73,27 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadTask(accountId);
+            await LoadTask.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadTask(accountId);
-            await LoadLog(accountId);
+            await LoadTask.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadLog.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
-        private async Task LoadTask(AccountId accountId)
+        private List<TaskItem> LoadTaskHandler(AccountId accountId)
         {
             var tasks = _taskManager.GetTaskList(accountId);
-            if (tasks.Count == 0) return;
 
-            await Observable.Start(() =>
-            {
-                Tasks.Clear();
-
-                tasks
-                    .Select(x => new TaskItem(x))
-                    .ToList()
-                    .ForEach(Tasks.Add);
-            }, RxApp.MainThreadScheduler);
+            return tasks
+                .Select(x => new TaskItem(x))
+                .ToList();
         }
 
-        private async Task LoadLog(AccountId accountId)
+        private void LoadLogHandler(AccountId accountId)
         {
             _isLogLoading = true;
-
             var logs = _logSink.GetLogs(accountId);
             var buffer = new StringWriter(new StringBuilder());
 
@@ -95,12 +102,10 @@ namespace MainCore.UI.ViewModels.Tabs
                 _formatter.Format(log, buffer);
             }
             _cacheLog = buffer.ToString();
-
-            await Observable.Start(() =>
-            {
-                Logs = _cacheLog;
-            }, RxApp.MainThreadScheduler);
             _isLogLoading = false;
         }
+
+        public ReactiveCommand<AccountId, List<TaskItem>> LoadTask { get; }
+        public ReactiveCommand<AccountId, Unit> LoadLog { get; }
     }
 }
