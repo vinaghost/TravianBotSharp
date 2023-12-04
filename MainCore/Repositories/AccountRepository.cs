@@ -27,7 +27,6 @@ namespace MainCore.Repositories
         {
             using var context = _contextFactory.CreateDbContext();
             var query = context.Accounts
-                .AsNoTracking()
                 .Where(x => x.Id == accountId.Value);
 
             if (includeAccess)
@@ -45,7 +44,6 @@ namespace MainCore.Repositories
         {
             using var context = _contextFactory.CreateDbContext();
             var access = context.Accesses
-               .AsNoTracking()
                .Where(x => x.AccountId == accountId.Value)
                .OrderBy(x => x.LastUsed) // get oldest one
                .ToDto()
@@ -57,7 +55,6 @@ namespace MainCore.Repositories
         {
             using var context = _contextFactory.CreateDbContext();
             var accessess = context.Accesses
-               .AsNoTracking()
                .Where(x => x.AccountId == accountId.Value)
                .OrderBy(x => x.LastUsed) // get oldest one
                .ToDto()
@@ -105,7 +102,6 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
 
             var isExist = context.Accounts
-                .AsNoTracking()
                 .Where(x => x.Username == dto.Username)
                 .Where(x => x.Server == dto.Server)
                 .Any();
@@ -134,7 +130,6 @@ namespace MainCore.Repositories
             foreach (var dto in dtos)
             {
                 var isExist = context.Accounts
-                    .AsNoTracking()
                     .Where(x => x.Username == dto.Username)
                     .Where(x => x.Server == dto.Server)
                     .Any();
@@ -187,7 +182,6 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
 
             var accounts = context.Accounts
-                .AsNoTracking()
                 .AsEnumerable()
                 .Select(x =>
                 {

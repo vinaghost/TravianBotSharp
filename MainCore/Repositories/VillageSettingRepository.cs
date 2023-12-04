@@ -87,7 +87,6 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
 
             var settings = context.VillagesSetting
-                .AsNoTracking()
                 .Where(x => x.VillageId == villageId.Value)
                 .ToDictionary(x => x.Setting, x => x.Value);
             return settings;

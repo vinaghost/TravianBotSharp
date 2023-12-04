@@ -79,7 +79,6 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
 
             var settings = context.AccountsSetting
-                .AsNoTracking()
                 .Where(x => x.AccountId == accountId.Value)
                 .ToDictionary(x => x.Setting, x => x.Value);
             return settings;

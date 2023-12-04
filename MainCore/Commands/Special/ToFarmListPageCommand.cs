@@ -51,6 +51,9 @@ namespace MainCore.Commands.Special
             result = await _unitOfCommand.SwitchTabCommand.Execute(accountId, 4);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
+            result = await _unitOfCommand.DelayClickCommand.Execute(accountId);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
             result = await _unitOfCommand.UpdateFarmListCommand.Execute(accountId);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();

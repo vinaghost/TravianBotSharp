@@ -18,6 +18,19 @@ namespace MainCore.Common.Extensions
             };
         }
 
+        public static BuildingEnums GetWall(this TribeEnums tribe)
+        {
+            return tribe switch
+            {
+                TribeEnums.Romans => BuildingEnums.CityWall,
+                TribeEnums.Teutons => BuildingEnums.EarthWall,
+                TribeEnums.Gauls => BuildingEnums.Palisade,
+                TribeEnums.Egyptians => BuildingEnums.StoneWall,
+                TribeEnums.Huns => BuildingEnums.MakeshiftWall,
+                _ => BuildingEnums.Site,
+            };
+        }
+
         public static bool IsMultipleBuilding(this BuildingEnums building)
         {
             return building switch
@@ -219,16 +232,16 @@ namespace MainCore.Common.Extensions
             };
         }
     }
+}
 
-    public struct PrerequisiteBuilding
+public struct PrerequisiteBuilding
+{
+    public PrerequisiteBuilding(BuildingEnums type, int level)
     {
-        public PrerequisiteBuilding(BuildingEnums type, int level)
-        {
-            Type = type;
-            Level = level;
-        }
-
-        public BuildingEnums Type { get; set; }
-        public int Level { get; set; }
+        Type = type;
+        Level = level;
     }
+
+    public BuildingEnums Type { get; set; }
+    public int Level { get; set; }
 }
