@@ -219,16 +219,16 @@ namespace MainCore.Common.Extensions
             };
         }
     }
+}
 
-    public struct PrerequisiteBuilding
+public struct PrerequisiteBuilding
+{
+    public PrerequisiteBuilding(BuildingEnums type, int level)
     {
-        public PrerequisiteBuilding(BuildingEnums type, int level)
-        {
-            Type = type;
-            Level = level;
-        }
-
-        public BuildingEnums Type { get; set; }
-        public int Level { get; set; }
+        Type = type;
+        Level = level;
     }
+
+    public BuildingEnums Type { get; set; }
+    public int Level { get; set; }
 }

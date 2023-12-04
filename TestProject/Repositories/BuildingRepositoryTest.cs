@@ -34,10 +34,10 @@ namespace TestProject.Repositories
         }
 
         [TestMethod]
-        public void GetBuildingInfo_ShouldNotThrow()
+        public void GetNormalBuilding_ShouldNotThrow()
         {
             var repository = GetRepository();
-            var func = () => repository.GetBuildingInfo(Constants.BuildingId);
+            var func = () => repository.GetNormalBuilding(Constants.VillageId, Constants.BuildingId);
             func.Should().NotThrow();
         }
 

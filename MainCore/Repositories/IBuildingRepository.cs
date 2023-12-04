@@ -14,8 +14,6 @@ namespace MainCore.Repositories
 
         BuildingDto GetBuilding(VillageId villageId, int location);
 
-        (BuildingEnums, int) GetBuildingInfo(BuildingId buildingId);
-
         List<ListBoxItem> GetItems(VillageId villageId);
 
         Building GetCropland(VillageId villageId);
@@ -33,5 +31,7 @@ namespace MainCore.Repositories
         List<BuildingEnums> GetTrainTroopBuilding(VillageId villageId);
 
         int GetBuildingLocation(VillageId villageId, BuildingEnums building);
+
+        List<BuildingEnums> GetNormalBuilding(VillageId villageId, BuildingId buildingId);
     }
 }
