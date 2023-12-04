@@ -36,7 +36,6 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
 
             var count = context.FarmLists
-                .AsNoTracking()
                 .Where(x => x.AccountId == accountId.Value)
                 .Where(x => x.IsActive)
                 .Count();
@@ -56,7 +55,6 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
 
             var items = context.FarmLists
-                .AsNoTracking()
                 .Where(x => x.AccountId == accountId.Value)
                 .Select(x => new ListBoxItem()
                 {

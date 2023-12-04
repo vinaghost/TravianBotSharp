@@ -4,6 +4,7 @@ using MainCore.Common.Enums;
 using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Notification.Message;
+using MainCore.Repositories;
 using MainCore.Services;
 using MainCore.UI.ViewModels.UserControls;
 using MediatR;
@@ -23,12 +24,14 @@ namespace MainCore.Commands.UI.MainLayout
         private readonly ITimerManager _timerManager;
         private readonly IDialogService _dialogService;
 
+        private readonly IUnitOfRepository _unitOfRepository;
+
         private readonly IChooseAccessCommand _chooseAccessCommand;
         private readonly IOpenBrowserCommand _openBrowserCommand;
         private readonly ILogService _logService;
         private readonly IMediator _mediator;
 
-        public LoginAccountCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IOpenBrowserCommand openBrowserCommand, IChooseAccessCommand chooseAccessCommand, ILogService logService, IMediator mediator, IDialogService dialogService)
+        public LoginAccountCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IOpenBrowserCommand openBrowserCommand, IChooseAccessCommand chooseAccessCommand, ILogService logService, IMediator mediator, IDialogService dialogService, IUnitOfRepository unitOfRepository)
         {
             _taskManager = taskManager;
             _timerManager = timerManager;
@@ -37,6 +40,7 @@ namespace MainCore.Commands.UI.MainLayout
             _logService = logService;
             _mediator = mediator;
             _dialogService = dialogService;
+            _unitOfRepository = unitOfRepository;
         }
 
         public async Task Handle(LoginAccountCommand request, CancellationToken cancellationToken)
@@ -48,6 +52,13 @@ namespace MainCore.Commands.UI.MainLayout
                 return;
             }
             var accountId = new AccountId(accounts.SelectedItemId);
+
+            var tribe = (TribeEnums)_unitOfRepository.AccountSettingRepository.GetByName(accountId, AccountSettingEnums.Tribe);
+            if (tribe == TribeEnums.Any)
+            {
+                _dialogService.ShowMessageBox("Warning", "Choose tribe first");
+                return;
+            }
 
             if (_taskManager.GetStatus(accountId) != StatusEnums.Offline)
             {

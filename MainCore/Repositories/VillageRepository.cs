@@ -22,7 +22,6 @@ namespace MainCore.Repositories
         {
             using var context = _contextFactory.CreateDbContext();
             var villageName = context.Villages
-                .AsNoTracking()
                 .Where(x => x.Id == villageId.Value)
                 .Select(x => x.Name)
                 .FirstOrDefault();
@@ -34,7 +33,6 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
 
             var village = context.Villages
-                .AsNoTracking()
                 .Where(x => x.AccountId == accountId.Value)
                 .Where(x => x.IsActive)
                 .Select(x => x.Id)
@@ -48,7 +46,6 @@ namespace MainCore.Repositories
         {
             using var context = _contextFactory.CreateDbContext();
             var villages = context.Villages
-                .AsNoTracking()
                 .Where(x => x.AccountId == accountId.Value)
                 .Where(x => !x.IsActive)
                 .OrderBy(x => x.Name)
@@ -64,7 +61,6 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
 
             var village = context.Villages
-                .AsNoTracking()
                 .Where(x => x.AccountId == accountId.Value)
                 .Include(x => x.Buildings.Where(x => x.Type == BuildingEnums.RallyPoint))
                 .Where(x => x.Buildings.Count > 0)
@@ -81,7 +77,6 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
 
             var villages = context.Villages
-                .AsNoTracking()
                 .Where(x => x.AccountId == accountId.Value)
                 .Select(x => x.Id)
                 .AsEnumerable()
@@ -95,7 +90,6 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
 
             var missingBuildingVillages = context.Villages
-                .AsNoTracking()
                 .Where(x => x.AccountId == accountId.Value)
                 .Include(x => x.Buildings)
                 .Where(x => x.Buildings.Count != 40)
@@ -114,7 +108,6 @@ namespace MainCore.Repositories
             };
             using var context = _contextFactory.CreateDbContext();
             var hasBuildingJobVillages = context.Villages
-                .AsNoTracking()
                 .Where(x => x.AccountId == accountId.Value)
                 .Include(x => x.Jobs.Where(x => types.Contains(x.Type)))
                 .Where(x => x.Jobs.Count() > 0)
@@ -130,7 +123,6 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
 
             var villages = context.Villages
-                .AsNoTracking()
                 .Where(x => x.AccountId == accountId.Value)
                 .OrderBy(x => x.Name)
                 .Select(x => new ListBoxItem()
