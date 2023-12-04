@@ -437,6 +437,26 @@ namespace MainCore.Repositories
             return buildings;
         }
 
+        public void UpdateWall(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var wallBuilding = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Location == 40)
+                .FirstOrDefault();
+            if (wallBuilding is null) return;
+            var tribe = (TribeEnums)context.VillagesSetting
+                       .Where(x => x.VillageId == villageId.Value)
+                       .Where(x => x.Setting == VillageSettingEnums.Tribe)
+                       .Select(x => x.Value)
+                       .FirstOrDefault();
+            var wall = tribe.GetWall();
+            if (wallBuilding.Type == wall) return;
+            wallBuilding.Type = wall;
+            context.Update(wallBuilding);
+            context.SaveChanges();
+        }
+
         public void Update(VillageId villageId, List<BuildingDto> dtos)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -446,6 +466,17 @@ namespace MainCore.Repositories
 
             foreach (var dto in dtos)
             {
+                if (dto.Location == 40)
+                {
+                    var tribe = (TribeEnums)context.VillagesSetting
+                        .Where(x => x.VillageId == villageId.Value)
+                        .Where(x => x.Setting == VillageSettingEnums.Tribe)
+                        .Select(x => x.Value)
+                        .FirstOrDefault();
+
+                    var wall = tribe.GetWall();
+                    dto.Type = wall;
+                }
                 var dbBuilding = dbBuildings
                     .FirstOrDefault(x => x.Location == dto.Location);
                 if (dbBuilding is null)

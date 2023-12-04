@@ -33,5 +33,6 @@ namespace MainCore.Repositories
         int GetBuildingLocation(VillageId villageId, BuildingEnums building);
 
         List<BuildingEnums> GetNormalBuilding(VillageId villageId, BuildingId buildingId);
+        void UpdateWall(VillageId villageId);
     }
 }
