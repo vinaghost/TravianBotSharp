@@ -20,9 +20,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private readonly IMediator _mediator;
         private readonly IUnitOfRepository _unitOfRepository;
 
-        private readonly List<BuildingEnums> _availableBuildings = new();
-
-        private ReactiveCommand<ListBoxItem, Unit> BuildingChanged { get; }
+        private ReactiveCommand<ListBoxItem, List<BuildingEnums>> LoadBuildNormal { get; }
 
         public ReactiveCommand<Unit, Unit> BuildNormal { get; }
         public ReactiveCommand<Unit, Unit> BuildResource { get; }
@@ -50,8 +48,6 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             _unitOfRepository = unitOfRepository;
             _mediator = mediator;
 
-            BuildingChanged = ReactiveCommand.CreateFromTask<ListBoxItem>(BuildingChangedHandler);
-
             BuildNormal = ReactiveCommand.CreateFromTask(BuildNormalHandler);
             BuildResource = ReactiveCommand.CreateFromTask(ResourceNormalHandler);
 
@@ -66,17 +62,27 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             LoadBuilding = ReactiveCommand.Create<VillageId, List<ListBoxItem>>(LoadBuildingHandler);
             LoadJob = ReactiveCommand.Create<VillageId, List<ListBoxItem>>(LoadJobHandler);
+            LoadBuildNormal = ReactiveCommand.Create<ListBoxItem, List<BuildingEnums>>(LoadBuildNormalHanlder);
 
             this.WhenAnyValue(vm => vm.Buildings.SelectedItem)
-                .InvokeCommand(BuildingChanged);
-
-            for (var i = BuildingEnums.Sawmill; i <= BuildingEnums.Hospital; i++)
-            {
-                _availableBuildings.Add(i);
-            }
+                .ObserveOn(RxApp.TaskpoolScheduler)
+                .InvokeCommand(LoadBuildNormal);
 
             LoadBuilding.Subscribe(buildings => Buildings.Load(buildings));
             LoadJob.Subscribe(jobs => Jobs.Load(jobs));
+            LoadBuildNormal.Subscribe(buildings =>
+            {
+                switch (buildings.Count)
+                {
+                    case 0:
+                        NormalBuildInput.Clear();
+                        break;
+
+                    default:
+                        NormalBuildInput.Set(buildings, -1);
+                        break;
+                };
+            });
         }
 
         public async Task BuildingListRefresh(VillageId villageId)
@@ -112,26 +118,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             return buildings;
         }
 
-        private async Task BuildingChangedHandler(ListBoxItem item)
+        private List<BuildingEnums> LoadBuildNormalHanlder(ListBoxItem item)
         {
-            await Task.CompletedTask;
-            if (item is null)
-            {
-                NormalBuildInput.Clear();
-            }
-            else
-            {
-                var (type, level) = _unitOfRepository.BuildingRepository.GetBuildingInfo(new BuildingId(Buildings.SelectedItemId));
-
-                if (type == BuildingEnums.Site)
-                {
-                    NormalBuildInput.Set(_availableBuildings);
-                }
-                else
-                {
-                    NormalBuildInput.Set(new List<BuildingEnums>() { type }, level + 1);
-                }
-            }
+            if (item is null) return new();
+            var buildings = _unitOfRepository.BuildingRepository.GetNormalBuilding(VillageId, new BuildingId(item.Id));
+            return buildings;
         }
 
         private async Task BuildNormalHandler()

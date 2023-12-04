@@ -207,7 +207,6 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
 
             var job = context.Jobs
-                .AsNoTracking()
                 .Where(x => x.Id == jobId.Value)
                 .Select(x => new
                 {
@@ -259,7 +258,6 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
 
             var items = context.Jobs
-                .AsNoTracking()
                 .Where(x => x.VillageId == villageId.Value)
                 .OrderBy(x => x.Position)
                 .ToDto()
