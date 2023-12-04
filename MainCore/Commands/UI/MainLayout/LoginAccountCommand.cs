@@ -31,7 +31,7 @@ namespace MainCore.Commands.UI.MainLayout
         private readonly ILogService _logService;
         private readonly IMediator _mediator;
 
-        public LoginAccountCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IOpenBrowserCommand openBrowserCommand, IChooseAccessCommand chooseAccessCommand, ILogService logService, IMediator mediator, IDialogService dialogService)
+        public LoginAccountCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IOpenBrowserCommand openBrowserCommand, IChooseAccessCommand chooseAccessCommand, ILogService logService, IMediator mediator, IDialogService dialogService, IUnitOfRepository unitOfRepository)
         {
             _taskManager = taskManager;
             _timerManager = timerManager;
@@ -40,6 +40,7 @@ namespace MainCore.Commands.UI.MainLayout
             _logService = logService;
             _mediator = mediator;
             _dialogService = dialogService;
+            _unitOfRepository = unitOfRepository;
         }
 
         public async Task Handle(LoginAccountCommand request, CancellationToken cancellationToken)
