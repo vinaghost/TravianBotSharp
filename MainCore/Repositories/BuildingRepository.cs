@@ -226,6 +226,7 @@ namespace MainCore.Repositories
                 .Where(x => x.Type == JobTypeEnums.NormalBuild)
                 .Select(x => x.Content)
                 .AsEnumerable()
+                .AsParallel()
                 .Select(x => JsonSerializer.Deserialize<NormalBuildPlan>(x))
                 .GroupBy(x => x.Location)
                 .Select(x => new Building()
@@ -247,6 +248,7 @@ namespace MainCore.Repositories
                .Where(x => x.Type == JobTypeEnums.ResourceBuild)
                .Select(x => x.Content)
                .AsEnumerable()
+               .AsParallel()
                .Select(x => JsonSerializer.Deserialize<ResourceBuildPlan>(x))
                .GroupBy(x => x.Plan)
                .Select(x => new ResourceBuildPlan
@@ -343,6 +345,7 @@ namespace MainCore.Repositories
                 .Where(x => x.Type == JobTypeEnums.NormalBuild)
                 .Select(x => x.Content)
                 .AsEnumerable()
+                .AsParallel()
                 .Select(x => JsonSerializer.Deserialize<NormalBuildPlan>(x))
                 .GroupBy(x => x.Location)
                 .Select(x => new BuildingItem()
@@ -369,6 +372,7 @@ namespace MainCore.Repositories
                .Where(x => x.Type == JobTypeEnums.ResourceBuild)
                .Select(x => x.Content)
                .AsEnumerable()
+               .AsParallel()
                .Select(x => JsonSerializer.Deserialize<ResourceBuildPlan>(x))
                .GroupBy(x => x.Plan)
                .Select(x => new ResourceBuildPlan
