@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using MainCore.Common.Errors;
+using MainCore.Common.Models;
 using MainCore.DTO;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
@@ -25,7 +26,24 @@ namespace MainCore.Commands.General
             var chromeBrowser = _chromeManager.Get(accountId);
 
             var account = _unitOfRepository.AccountRepository.Get(accountId);
-            var result = await chromeBrowser.Setup(account, access);
+
+            var serverFolderName = account.Server.Replace("https://", "").Replace("http://", "").Replace(".", "_");
+            var accountFolderName = account.Username;
+
+            var profilePath = Path.Combine(serverFolderName, accountFolderName);
+            var chromeSetting = new ChromeSetting()
+            {
+                UserAgent = access.Useragent,
+                ProfilePath = profilePath,
+                ProxyHost = access.ProxyHost,
+                ProxyPort = access.ProxyPort,
+                ProxyUsername = access.ProxyUsername,
+                ProxyPassword = access.ProxyPassword,
+            };
+            var result = await chromeBrowser.Setup(chromeSetting);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await chromeBrowser.Navigate($"{account.Server}dorf1.php");
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 using HtmlAgilityPack;
-using MainCore.DTO;
+using MainCore.Common.Models;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 
@@ -22,7 +22,7 @@ namespace MainCore.Services
 
         Task<Result> Navigate(string url = null);
 
-        Task<Result> Setup(AccountDto account, AccessDto access);
+        Task<Result> Setup(ChromeSetting setting);
 
         Task Shutdown();
 
