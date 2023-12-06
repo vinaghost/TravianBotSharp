@@ -30,6 +30,7 @@ namespace MainCore.Commands.General
             var serverFolderName = account.Server.Replace("https://", "").Replace("http://", "").Replace(".", "_");
             var accountFolderName = account.Username;
 
+            var headlessChrome = _unitOfRepository.AccountSettingRepository.GetBooleanByName(accountId, Common.Enums.AccountSettingEnums.HeadlessChrome);
             var profilePath = Path.Combine(serverFolderName, accountFolderName);
             var chromeSetting = new ChromeSetting()
             {
@@ -39,6 +40,7 @@ namespace MainCore.Commands.General
                 ProxyPort = access.ProxyPort,
                 ProxyUsername = access.ProxyUsername,
                 ProxyPassword = access.ProxyPassword,
+                IsHeadless = headlessChrome,
             };
             var result = await chromeBrowser.Setup(chromeSetting);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));

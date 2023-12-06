@@ -204,7 +204,7 @@ namespace MainCore.Services
                 {
                     _wait.Until(condition);
                 }
-                catch (TimeoutException)
+                catch (WebDriverTimeoutException)
                 {
                     return Result.Fail(new Stop("Page not loaded in 3 mins"));
                 }
