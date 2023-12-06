@@ -1,7 +1,7 @@
 ﻿using FluentResults;
 using HtmlAgilityPack;
 using MainCore.Common.Errors;
-using MainCore.DTO;
+using MainCore.Common.Models;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -28,25 +28,25 @@ namespace MainCore.Services
             _chromeService.HideCommandPromptWindow = true;
         }
 
-        public async Task<Result> Setup(AccountDto account, AccessDto access)
+        public async Task<Result> Setup(ChromeSetting setting)
         {
             var options = new ChromeOptions();
 
             options.AddExtensions(_extensionsPath);
 
-            if (!string.IsNullOrEmpty(access.ProxyHost))
+            if (!string.IsNullOrEmpty(setting.ProxyHost))
             {
-                if (!string.IsNullOrEmpty(access.ProxyUsername))
+                if (!string.IsNullOrEmpty(setting.ProxyUsername))
                 {
-                    options.AddHttpProxy(access.ProxyHost, access.ProxyPort, access.ProxyUsername, access.ProxyPassword);
+                    options.AddHttpProxy(setting.ProxyHost, setting.ProxyPort, setting.ProxyUsername, setting.ProxyPassword);
                 }
                 else
                 {
-                    options.AddArgument($"--proxy-server={access.ProxyHost}:{access.ProxyPort}");
+                    options.AddArgument($"--proxy-server={setting.ProxyHost}:{setting.ProxyPort}");
                 }
             }
 
-            options.AddArgument($"--user-agent={access.Useragent}");
+            options.AddArgument($"--user-agent={setting.UserAgent}");
 
             // So websites (Travian) can't detect the bot
             options.AddExcludedArgument("enable-automation");
@@ -54,30 +54,34 @@ namespace MainCore.Services
             options.AddArgument("--disable-blink-features=AutomationControlled");
             options.AddArgument("--disable-features=UserAgentClientHint");
             options.AddArgument("--disable-logging");
+            options.AddArgument("--ignore-certificate-errors");
 
             options.AddArgument("--mute-audio");
 
             options.AddArguments("--no-default-browser-check", "--no-first-run");
             options.AddArguments("--no-sandbox", "--test-type");
 
-            options.AddArguments("--start-maximized");
+            if (setting.IsHeadless)
+            {
+                //options.AddArgument("--remote-debugging-port=0");
+                options.AddArgument("--headless=new");
+            }
+            else
+            {
+                options.AddArgument("--start-maximized");
+            }
 
-            //if (setting.IsDontLoadImage) options.AddArguments("--blink-settings=imagesEnabled=false"); //--disable-images
-            var pathUserData = Path.Combine(AppContext.BaseDirectory, "Data", "Cache", account.Server.Replace("https://", "").Replace("http://", "").Replace(".", "_"), account.Username);
+            var pathUserData = Path.Combine(AppContext.BaseDirectory, "Data", "Cache", setting.ProfilePath);
             if (!Directory.Exists(pathUserData)) Directory.CreateDirectory(pathUserData);
 
-            pathUserData = Path.Combine(pathUserData, string.IsNullOrEmpty(access.ProxyHost) ? "default" : access.ProxyHost);
+            pathUserData = Path.Combine(pathUserData, string.IsNullOrEmpty(setting.ProxyHost) ? "default" : setting.ProxyHost);
 
             options.AddArguments($"user-data-dir={pathUserData}");
 
             _driver = await Task.Run(() => new ChromeDriver(_chromeService, options));
-            //if (setting.IsMinimized) _driver.Manage().Window.Minimize();
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(1);
             _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3));
-
-            var result = await Navigate($"{account.Server}dorf1.php");
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }
 
@@ -200,7 +204,7 @@ namespace MainCore.Services
                 {
                     _wait.Until(condition);
                 }
-                catch (TimeoutException)
+                catch (WebDriverTimeoutException)
                 {
                     return Result.Fail(new Stop("Page not loaded in 3 mins"));
                 }

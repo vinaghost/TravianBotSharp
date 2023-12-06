@@ -12,6 +12,7 @@ using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using MediatR;
 using ReactiveUI;
+using Serilog;
 using System.Reactive.Linq;
 using System.Reflection;
 using Unit = System.Reactive.Unit;
@@ -70,7 +71,9 @@ namespace MainCore.UI.ViewModels.UserControls
                 })
                 .InvokeCommand(GetStatus);
 
-            LoadVersion.Subscribe(version => Version = $"{version} - {Constants.Server}");
+            LoadVersion
+                .Do(version => Log.Information("===============> Current version: {version} <===============", version))
+                .Subscribe(version => Version = version);
 
             LoadAccount.Subscribe(accounts => Accounts.Load(accounts));
 
@@ -150,12 +153,11 @@ namespace MainCore.UI.ViewModels.UserControls
             return account;
         }
 
-        private Version LoadVersionHandler()
+        private string LoadVersionHandler()
         {
             var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
             var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
-            Thread.Sleep(20000);
-            return version;
+            return $"{version} - {Constants.Server}";
         }
 
         private void SetPauseText(StatusEnums status)
@@ -205,7 +207,7 @@ namespace MainCore.UI.ViewModels.UserControls
         public ReactiveCommand<Unit, Unit> Logout { get; }
         public ReactiveCommand<Unit, StatusEnums> Pause { get; }
         public ReactiveCommand<Unit, Unit> Restart { get; }
-        public ReactiveCommand<Unit, Version> LoadVersion { get; }
+        public ReactiveCommand<Unit, string> LoadVersion { get; }
         public ReactiveCommand<Unit, List<ListBoxItem>> LoadAccount { get; }
         public ReactiveCommand<AccountId, ListBoxItem> GetAccount { get; }
         public ReactiveCommand<AccountId, StatusEnums> GetStatus { get; }
