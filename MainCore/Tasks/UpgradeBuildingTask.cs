@@ -52,13 +52,9 @@ namespace MainCore.Tasks
 
         protected override async Task<Result> Execute()
         {
-            if (CancellationToken.IsCancellationRequested) return new Cancel();
             var logger = _logService.GetLogger(AccountId);
 
             Result result;
-            result = await _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
             while (true)
             {
                 if (CancellationToken.IsCancellationRequested) return new Cancel();

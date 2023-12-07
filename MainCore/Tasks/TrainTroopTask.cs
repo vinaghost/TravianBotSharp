@@ -2,7 +2,6 @@
 using MainCore.Commands;
 using MainCore.Commands.Special;
 using MainCore.Common.Enums;
-using MainCore.Common.Errors;
 using MainCore.Common.Errors.TrainTroop;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Repositories;
@@ -27,17 +26,12 @@ namespace MainCore.Tasks
 
         protected override async Task<Result> Execute()
         {
-            if (CancellationToken.IsCancellationRequested) return Result.Fail(new Cancel());
-
             var buildings = _unitOfRepository.BuildingRepository.GetTrainTroopBuilding(VillageId);
             if (buildings.Count == 0) return Result.Ok();
 
             SetNextExecute();
 
             Result result;
-            result = await _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
             var settings = new Dictionary<VillageSettingEnums, int>();
             foreach (var building in buildings)
             {
