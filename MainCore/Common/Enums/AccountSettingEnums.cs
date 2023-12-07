@@ -15,5 +15,6 @@
         WorkTimeMax,
         SleepTimeMin,
         SleepTimeMax,
+        HeadlessChrome,
     }
 }

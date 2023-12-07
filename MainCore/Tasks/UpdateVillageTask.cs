@@ -19,12 +19,7 @@ namespace MainCore.Tasks
 
         protected override async Task<Result> Execute()
         {
-            if (CancellationToken.IsCancellationRequested) return new Cancel();
-
             Result result;
-            result = await _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
             result = await _mediator.Send(new UpdateDorf1Command(AccountId, VillageId));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             SetNextExecute();

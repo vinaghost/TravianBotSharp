@@ -50,6 +50,7 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.SleepTimeMax, 600 },
             {AccountSettingEnums.WorkTimeMin, 600 },
             {AccountSettingEnums.WorkTimeMax, 720 },
+            {AccountSettingEnums.HeadlessChrome, 0 },
         };
 
         private List<AccountSettingEnums> GetMissingAccountSettings()

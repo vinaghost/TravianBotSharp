@@ -24,8 +24,9 @@ namespace MainCore.Tasks.Base
 
         protected override async Task<Result> PreExecute()
         {
-            Result result;
+            if (CancellationToken.IsCancellationRequested) return new Cancel();
 
+            Result result;
             result = await _unitOfCommand.ValidateInGameCommand.Execute(AccountId);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 

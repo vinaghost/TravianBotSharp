@@ -1,4 +1,6 @@
-﻿using MainCore.Commands;
+﻿using FluentResults;
+using MainCore.Commands;
+using MainCore.Common.Errors;
 using MainCore.Entities;
 using MainCore.Repositories;
 using MediatR;
@@ -18,6 +20,18 @@ namespace MainCore.Tasks.Base
             AccountId = accountId;
             VillageId = villageId;
             CancellationToken = cancellationToken;
+        }
+
+        protected override async Task<Result> PreExecute()
+        {
+            Result result;
+
+            result = await base.PreExecute();
+            if (result.IsFailed) return result;
+
+            result = await _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            return Result.Ok();
         }
     }
 }

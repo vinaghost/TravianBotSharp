@@ -34,6 +34,7 @@ namespace WPFUI.Views.UserControls
                 // account list
                 this.OneWayBind(ViewModel, vm => vm.Accounts.Items, v => v.AccountGrid.ItemsSource).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.Accounts.SelectedItem, v => v.AccountGrid.SelectedItem).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.Accounts.IsEnable, v => v.AccountGrid.IsEnabled).DisposeWith(d);
 
                 // tabs
                 this.OneWayBind(ViewModel, vm => vm.AccountTabStore.NoAccountViewModel, v => v.NoAccount.ViewModel).DisposeWith(d);

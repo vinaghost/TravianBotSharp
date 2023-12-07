@@ -518,6 +518,7 @@ namespace MainCore.Repositories
                 .Where(x => x.Type == JobTypeEnums.NormalBuild)
                 .Select(x => x.Content)
                 .AsEnumerable()
+                .AsParallel()
                 .Select(x => JsonSerializer.Deserialize<NormalBuildPlan>(x))
                 .Select(x => x.Type)
                 .Where(x => !MultipleBuildings.Contains(x))

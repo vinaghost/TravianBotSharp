@@ -18,7 +18,6 @@ namespace MainCore.Tasks
 
         protected override async Task<Result> Execute()
         {
-            if (CancellationToken.IsCancellationRequested) return new Cancel();
             Result result;
             result = await _mediator.Send(new ToFarmListPageCommand(AccountId));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
