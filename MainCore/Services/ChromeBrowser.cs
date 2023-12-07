@@ -25,7 +25,7 @@ namespace MainCore.Services
             _extensionsPath = extensionsPath;
 
             _chromeService = ChromeDriverService.CreateDefaultService();
-            _chromeService.HideCommandPromptWindow = true;
+            _chromeService.HideCommandPromptWindow = false;
         }
 
         public async Task<Result> Setup(ChromeSetting setting)
@@ -56,14 +56,14 @@ namespace MainCore.Services
             options.AddArgument("--disable-logging");
             options.AddArgument("--ignore-certificate-errors");
 
-            options.AddArgument("--mute-audio");
+            options.AddArguments("--mute-audio", "--disable-gpu");
 
             options.AddArguments("--no-default-browser-check", "--no-first-run");
             options.AddArguments("--no-sandbox", "--test-type");
 
             if (setting.IsHeadless)
             {
-                //options.AddArgument("--remote-debugging-port=0");
+                options.AddArgument("--remote-debugging-port=0");
                 options.AddArgument("--headless=new");
             }
             else
@@ -81,6 +81,7 @@ namespace MainCore.Services
             _driver = await Task.Run(() => new ChromeDriver(_chromeService, options));
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(1);
+
             _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3));
             return Result.Ok();
         }

@@ -41,12 +41,13 @@ namespace MainCore.UI.ViewModels.UserControls
 
             AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler);
             AddAccounts = ReactiveCommand.CreateFromTask(AddAccountsHandler);
-
             DeleteAccount = ReactiveCommand.CreateFromTask(DeleteAccountHandler);
-            Login = ReactiveCommand.CreateFromTask(LoginHandler);
-            Logout = ReactiveCommand.CreateFromTask(LogoutTask);
-            Pause = ReactiveCommand.CreateFromTask(PauseTask);
-            Restart = ReactiveCommand.CreateFromTask(RestartTask);
+
+            var isEnable = this.WhenAnyValue(x => x.Accounts.IsEnable);
+            Login = ReactiveCommand.CreateFromTask(LoginHandler, isEnable);
+            Logout = ReactiveCommand.CreateFromTask(LogoutTask, isEnable);
+            Pause = ReactiveCommand.CreateFromTask(PauseTask, isEnable);
+            Restart = ReactiveCommand.CreateFromTask(RestartTask, isEnable);
 
             LoadVersion = ReactiveCommand.Create(LoadVersionHandler);
             LoadAccount = ReactiveCommand.Create(LoadAccountHandler);
@@ -80,6 +81,11 @@ namespace MainCore.UI.ViewModels.UserControls
             Pause.Subscribe(SetPauseText);
 
             GetStatus.Subscribe(SetPauseText);
+
+            Login.IsExecuting.Select(x => !x).BindTo(Accounts, x => x.IsEnable);
+            Logout.IsExecuting.Select(x => !x).BindTo(Accounts, x => x.IsEnable);
+            Pause.IsExecuting.Select(x => !x).BindTo(Accounts, x => x.IsEnable);
+            Restart.IsExecuting.Select(x => !x).BindTo(Accounts, x => x.IsEnable);
         }
 
         public async Task Load()
