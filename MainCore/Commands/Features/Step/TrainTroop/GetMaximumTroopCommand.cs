@@ -1,0 +1,46 @@
+﻿using FluentResults;
+using MainCore.Commands.Base;
+using MainCore.Common.Enums;
+using MainCore.Common.MediatR;
+using MainCore.Entities;
+using MainCore.Infrasturecture.AutoRegisterDi;
+using MainCore.Parsers;
+using MainCore.Services;
+
+namespace MainCore.Commands.Features.Step.TrainTroop
+{
+    public class GetMaximumTroopCommand : ByAccountIdBase, ICommand<int>
+    {
+        public TroopEnums Troop { get; }
+
+        public GetMaximumTroopCommand(AccountId accountId, TroopEnums troop) : base(accountId)
+        {
+            Troop = troop;
+        }
+    }
+
+    [RegisterAsTransient]
+    public class GetMaximumTroopCommandHandler : ICommandHandler<GetMaximumTroopCommand, int>
+    {
+        private readonly IChromeManager _chromeManager;
+        private readonly IUnitOfParser _unitOfParser;
+
+        public GetMaximumTroopCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        {
+            _chromeManager = chromeManager;
+            _unitOfParser = unitOfParser;
+        }
+
+        public int Value { get; private set; }
+
+        public async Task<Result> Handle(GetMaximumTroopCommand command, CancellationToken cancellationToken)
+        {
+            await Task.CompletedTask;
+
+            var chromeBrowser = _chromeManager.Get(command.AccountId);
+            var html = chromeBrowser.Html;
+            Value = _unitOfParser.TroopPageParser.GetMaxAmount(html, command.Troop);
+            return Result.Ok();
+        }
+    }
+}

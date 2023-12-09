@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using System.Reflection;
 
 namespace MainCore.Services
 {
@@ -60,8 +61,16 @@ namespace MainCore.Services
                 logger = Log.ForContext("Account", $"{account.Username}_{uri.Host}")
                             .ForContext("AccountId", accountId);
                 _loggers.Add(accountId, logger);
+                logger.Information("===============> Current version: {version} <===============", GetVersion());
             }
             return logger;
+        }
+
+        private string GetVersion()
+        {
+            var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
+            var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
+            return $"{version} - {Common.Constants.Server}";
         }
     }
 }

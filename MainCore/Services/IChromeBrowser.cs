@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 using HtmlAgilityPack;
-using MainCore.DTO;
+using MainCore.Common.Models;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 
@@ -20,16 +20,18 @@ namespace MainCore.Services
 
         bool IsOpen();
 
-        Task<Result> Navigate(string url = null);
+        Task<Result> Navigate(string url, CancellationToken cancellationToken);
 
-        Task<Result> Setup(AccountDto account, AccessDto access);
+        Task<Result> Refresh(CancellationToken cancellationToken);
+
+        Task<Result> Setup(ChromeSetting setting);
 
         Task Shutdown();
 
-        Task<Result> Wait(Func<IWebDriver, bool> condition);
+        Task<Result> Wait(Func<IWebDriver, bool> condition, CancellationToken cancellationToken);
 
-        Task<Result> WaitPageChanged(string part);
+        Task<Result> WaitPageChanged(string part, CancellationToken cancellationToken);
 
-        Task<Result> WaitPageLoaded();
+        Task<Result> WaitPageLoaded(CancellationToken cancellationToken);
     }
 }

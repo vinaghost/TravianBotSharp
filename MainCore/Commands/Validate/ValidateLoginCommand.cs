@@ -1,4 +1,6 @@
 ﻿using FluentResults;
+using MainCore.Commands.Base;
+using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Parsers;
@@ -6,13 +8,20 @@ using MainCore.Services;
 
 namespace MainCore.Commands.Validate
 {
+    public class ValidateLoginCommand : ByAccountIdBase, ICommand<bool>
+    {
+        public ValidateLoginCommand(AccountId accountId) : base(accountId)
+        {
+        }
+    }
+
     [RegisterAsTransient]
-    public class ValidateLoginCommand : IValidateLoginCommand
+    public class ValidateLoginCommandHandler : ICommandHandler<ValidateLoginCommand, bool>
     {
         private readonly IChromeManager _chromeManager;
         private readonly IUnitOfParser _unitOfParser;
 
-        public ValidateLoginCommand(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public ValidateLoginCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
@@ -20,10 +29,10 @@ namespace MainCore.Commands.Validate
 
         public bool Value { get; private set; }
 
-        public async Task<Result> Execute(AccountId accountId)
+        public async Task<Result> Handle(ValidateLoginCommand command, CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
-            var chromeBrowser = _chromeManager.Get(accountId);
+            var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
 
             var loginButton = _unitOfParser.LoginPageParser.GetLoginButton(html);

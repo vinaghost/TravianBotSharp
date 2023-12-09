@@ -1,56 +1,35 @@
-﻿using MainCore.Commands.General;
+﻿using MainCore.Commands.Base;
+using MainCore.Commands.General;
 using MainCore.Commands.Navigate;
-using MainCore.Commands.Step.DisableContextualHelp;
-using MainCore.Commands.Step.TrainTroop;
 using MainCore.Commands.Update;
 using MainCore.Commands.Validate;
 using MainCore.Infrasturecture.AutoRegisterDi;
 
 namespace MainCore.Commands
 {
-    [RegisterAsTransient]
-    public class UnitOfCommand : IUnitOfCommand
+    [RegisterAsTransient(withoutInterface: true)]
+    public class UnitOfCommand
     {
-        public UnitOfCommand(IDelayClickCommand delayClickCommand, IDelayTaskCommand delayTaskCommand, ISwitchTabCommand switchTabCommand, ISwitchVillageCommand switchVillageCommand, IToBuildingCommand toBuildingCommand, IToDorfCommand toDorfCommand, IToHeroInventoryCommand toHeroInventoryCommand, IUpdateAccountInfoCommand updateAccountInfoCommand, IUpdateDorfCommand updateDorfCommand, IUpdateFarmListCommand updateFarmListCommand, IUpdateHeroItemsCommand updateHeroItemsCommand, IUpdateVillageListCommand updateVillageListCommand, IGetMaximumTroopCommand updateMaximumTroopCommand, IInputAmountTroopCommand inputAmountTroopCommand, IValidateProxyCommand validateProxyCommand, IValidateContextualHelpCommand validateContextualHelpCommand, IValidateLoginCommand validateLoginCommand, IValidateInGameCommand validateIngameCommand)
-        {
-            DelayClickCommand = delayClickCommand;
-            DelayTaskCommand = delayTaskCommand;
-            SwitchTabCommand = switchTabCommand;
-            SwitchVillageCommand = switchVillageCommand;
-            ToBuildingCommand = toBuildingCommand;
-            ToDorfCommand = toDorfCommand;
-            ToHeroInventoryCommand = toHeroInventoryCommand;
-            UpdateAccountInfoCommand = updateAccountInfoCommand;
-            UpdateDorfCommand = updateDorfCommand;
-            UpdateFarmListCommand = updateFarmListCommand;
-            UpdateHeroItemsCommand = updateHeroItemsCommand;
-            UpdateVillageListCommand = updateVillageListCommand;
-            GetMaximumTroopCommand = updateMaximumTroopCommand;
-            InputAmountTroopCommand = inputAmountTroopCommand;
-            ValidateProxyCommand = validateProxyCommand;
-            ValidateContextualHelpCommand = validateContextualHelpCommand;
-            ValidateLoginCommand = validateLoginCommand;
-            ValidateInGameCommand = validateIngameCommand;
-        }
+        public ICommandHandler<OpenBrowserCommand> OpenBrowserCommand { get; }
+        public ICommandHandler<CloseBrowserCommand> CloseBrowserCommand { get; }
+        public ICommandHandler<SleepBrowserCommand> SleepBrowserCommand { get; }
+        public ICommandHandler<DelayClickCommand> DelayClickCommand { get; }
+        public ICommandHandler<DelayTaskCommand> DelayTaskCommand { get; }
 
-        public IDelayClickCommand DelayClickCommand { get; }
-        public IDelayTaskCommand DelayTaskCommand { get; }
-        public ISwitchTabCommand SwitchTabCommand { get; }
-        public ISwitchVillageCommand SwitchVillageCommand { get; }
-        public IToBuildingCommand ToBuildingCommand { get; }
-        public IToDorfCommand ToDorfCommand { get; }
-        public IToHeroInventoryCommand ToHeroInventoryCommand { get; }
-        public IUpdateAccountInfoCommand UpdateAccountInfoCommand { get; }
-        public IUpdateDorfCommand UpdateDorfCommand { get; }
-        public IUpdateFarmListCommand UpdateFarmListCommand { get; }
-        public IUpdateHeroItemsCommand UpdateHeroItemsCommand { get; }
-        public IUpdateVillageListCommand UpdateVillageListCommand { get; }
-        public IGetMaximumTroopCommand GetMaximumTroopCommand { get; }
-        public IInputAmountTroopCommand InputAmountTroopCommand { get; }
-        public IValidateProxyCommand ValidateProxyCommand { get; }
-        public IValidateContextualHelpCommand ValidateContextualHelpCommand { get; }
+        public ICommandHandler<SwitchTabCommand> SwitchTabCommand { get; }
+        public ICommandHandler<SwitchVillageCommand> SwitchVillageCommand { get; }
+        public ICommandHandler<ToBuildingCommand> ToBuildingCommand { get; }
+        public ICommandHandler<ToDorfCommand> ToDorfCommand { get; }
+        public ICommandHandler<ToHeroInventoryCommand> ToHeroInventoryCommand { get; }
 
-        public IValidateLoginCommand ValidateLoginCommand { get; }
-        public IValidateInGameCommand ValidateInGameCommand { get; }
+        public ICommandHandler<UpdateAccountInfoCommand> UpdateAccountInfoCommand { get; }
+        public ICommandHandler<UpdateDorfCommand> UpdateDorfCommand { get; }
+        public ICommandHandler<UpdateFarmListCommand> UpdateFarmListCommand { get; }
+        public ICommandHandler<UpdateHeroItemsCommand> UpdateHeroItemsCommand { get; }
+        public ICommandHandler<UpdateVillageListCommand> UpdateVillageListCommand { get; }
+
+        public ICommandHandler<ValidateIngameCommand, bool> ValidateIngameCommand { get; }
+        public ICommandHandler<ValidateLoginCommand, bool> ValidateLoginCommand { get; }
+        public ICommandHandler<ValidateProxyCommand, bool> ValidateProxyCommand { get; }
     }
 }

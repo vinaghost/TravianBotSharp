@@ -1,7 +1,9 @@
 ﻿using FluentResults;
 using HtmlAgilityPack;
+using MainCore.Commands.Base;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
+using MainCore.Common.MediatR;
 using MainCore.DTO;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
@@ -13,16 +15,23 @@ using MediatR;
 
 namespace MainCore.Commands.Update
 {
-    [RegisterAsTransient]
-    public class UpdateDorfCommand : UpdateCommandBase, IUpdateDorfCommand
+    public class UpdateDorfCommand : ByAccountVillageIdBase, ICommand
     {
-        public UpdateDorfCommand(IChromeManager chromeManager, IMediator mediator, IUnitOfRepository unitOfRepository, IUnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
+        public UpdateDorfCommand(AccountId accountId, VillageId villageId) : base(accountId, villageId)
+        {
+        }
+    }
+
+    [RegisterAsTransient]
+    public class UpdateDorfCommandHandler : UpdateCommandHandlerBase, ICommandHandler<UpdateDorfCommand>
+    {
+        public UpdateDorfCommandHandler(IChromeManager chromeManager, IMediator mediator, IUnitOfRepository unitOfRepository, IUnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
         {
         }
 
-        public async Task<Result> Execute(AccountId accountId, VillageId villageId)
+        public async Task<Result> Handle(UpdateDorfCommand command, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _chromeManager.Get(accountId);
+            var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
 
             var dtoBuilding = GetBuildings(chromeBrowser.CurrentUrl, html);
@@ -35,16 +44,16 @@ namespace MainCore.Commands.Update
             var result = IsVaild(queueBuildings);
             if (result.IsFailed) return result;
 
-            _unitOfRepository.QueueBuildingRepository.Update(villageId, queueBuildings);
+            _unitOfRepository.QueueBuildingRepository.Update(command.VillageId, queueBuildings);
 
-            _unitOfRepository.BuildingRepository.Update(villageId, dtoBuilding.ToList());
+            _unitOfRepository.BuildingRepository.Update(command.VillageId, dtoBuilding.ToList());
 
             var dtoUnderConstructionBuildings = dtoBuilding.Where(x => x.IsUnderConstruction).ToList();
-            _unitOfRepository.QueueBuildingRepository.Update(villageId, dtoUnderConstructionBuildings);
-            await _mediator.Publish(new QueueBuildingUpdated(accountId, villageId));
+            _unitOfRepository.QueueBuildingRepository.Update(command.VillageId, dtoUnderConstructionBuildings);
+            await _mediator.Publish(new QueueBuildingUpdated(command.AccountId, command.VillageId), cancellationToken);
 
-            _unitOfRepository.StorageRepository.Update(villageId, dtoStorage);
-            await _mediator.Publish(new StorageUpdated(accountId, villageId));
+            _unitOfRepository.StorageRepository.Update(command.VillageId, dtoStorage);
+            await _mediator.Publish(new StorageUpdated(command.AccountId, command.VillageId), cancellationToken);
 
             return Result.Ok();
         }

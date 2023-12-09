@@ -28,6 +28,7 @@ namespace WPFUI.Views.Tabs
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.SleepTime, v => v.SleepTime.ViewModel).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.IsAutoLoadVillage, v => v.IsAutoLoadVillage.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.Tribe, v => v.Tribes.ViewModel).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.HeadlessChrome, v => v.HeadlessChrome.IsChecked).DisposeWith(d);
             });
         }
     }
