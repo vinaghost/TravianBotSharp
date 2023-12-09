@@ -19,11 +19,11 @@ namespace MainCore.Commands.UI.MainLayout
     public class DeleteAccountCommandHandler : IRequestHandler<DeleteAccountCommand>
     {
         private readonly IMediator _mediator;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
         private readonly ITaskManager _taskManager;
 
-        public DeleteAccountCommandHandler(IMediator mediator, IUnitOfRepository unitOfRepository, IDialogService dialogService, ITaskManager taskManager)
+        public DeleteAccountCommandHandler(IMediator mediator, UnitOfRepository unitOfRepository, IDialogService dialogService, ITaskManager taskManager)
         {
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;

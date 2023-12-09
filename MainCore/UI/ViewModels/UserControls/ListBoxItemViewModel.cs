@@ -64,5 +64,13 @@ namespace MainCore.UI.ViewModels.UserControls
         }
 
         public int Count => Items.Count;
+
+        private bool _isEnable = true;
+
+        public bool IsEnable
+        {
+            get => _isEnable;
+            set => this.RaiseAndSetIfChanged(ref _isEnable, value);
+        }
     }
 }

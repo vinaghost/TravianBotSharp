@@ -10,9 +10,9 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerUpgradeBuildingTaskHandler : INotificationHandler<AccountInit>, INotificationHandler<JobUpdated>, INotificationHandler<CompleteImmediatelyMessage>
     {
         private readonly ITaskManager _taskManager;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public TriggerUpgradeBuildingTaskHandler(ITaskManager taskManager, IUnitOfRepository unitOfRepository)
+        public TriggerUpgradeBuildingTaskHandler(ITaskManager taskManager, UnitOfRepository unitOfRepository)
         {
             _taskManager = taskManager;
             _unitOfRepository = unitOfRepository;

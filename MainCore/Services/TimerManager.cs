@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using MainCore.Commands.Base;
 using MainCore.Commands.General;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
@@ -19,9 +20,9 @@ namespace MainCore.Services
         private readonly ITaskManager _taskManager;
         private readonly IChromeManager _chromeManager;
         private readonly ILogService _logService;
-        private readonly IDelayTaskCommand _delayTaskCommand;
+        private readonly ICommandHandler<DelayTaskCommand> _delayTaskCommand;
 
-        public TimerManager(ITaskManager taskManager, IChromeManager chromeManager, ILogService logService, IDelayTaskCommand delayTaskCommand)
+        public TimerManager(ITaskManager taskManager, IChromeManager chromeManager, ILogService logService, ICommandHandler<DelayTaskCommand> delayTaskCommand)
         {
             _taskManager = taskManager;
             _chromeManager = chromeManager;
@@ -60,7 +61,7 @@ namespace MainCore.Services
                     logger.Warning("Retry {retryCount} for {taskName}", retryCount, task.GetName());
 
                     var chromeBrowser = _chromeManager.Get(accountId);
-                    await chromeBrowser.Navigate();
+                    await chromeBrowser.Refresh(task.CancellationToken);
                 });
 
             var taskInfo = _taskManager.GetTaskInfo(accountId);
@@ -131,7 +132,7 @@ namespace MainCore.Services
                 }
             }
 
-            await _delayTaskCommand.Execute(accountId);
+            await _delayTaskCommand.Handle(new DelayTaskCommand(accountId), CancellationToken.None);
         }
 
         public void Shutdown()
