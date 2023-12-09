@@ -22,18 +22,18 @@ namespace MainCore.Commands.General
     public class SleepBrowserCommandHandler : ICommandHandler<SleepBrowserCommand>
     {
         private readonly ILogService _logService;
-        private readonly CloseBrowserCommandHandler _closeCommandHandler;
+        private readonly ICommandHandler<CloseBrowserCommand> _closeCommand;
 
-        public SleepBrowserCommandHandler(ILogService logService, CloseBrowserCommandHandler closeCommandHandler)
+        public SleepBrowserCommandHandler(ILogService logService, ICommandHandler<CloseBrowserCommand> closeCommand)
         {
             _logService = logService;
-            _closeCommandHandler = closeCommandHandler;
+            _closeCommand = closeCommand;
         }
 
         public async Task<Result> Handle(SleepBrowserCommand command, CancellationToken cancellationToken)
         {
             Result result;
-            result = await _closeCommandHandler.Handle(new CloseBrowserCommand(command.AccountId), cancellationToken);
+            result = await _closeCommand.Handle(new CloseBrowserCommand(command.AccountId), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var sleepEnd = DateTime.Now.Add(command.SleepTime);

@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using MainCore.Commands.Base;
 using MainCore.Commands.General;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
@@ -19,14 +20,14 @@ namespace MainCore.Services
         private readonly ITaskManager _taskManager;
         private readonly IChromeManager _chromeManager;
         private readonly ILogService _logService;
-        private readonly DelayTaskCommandHandler _delayTaskCommandHandler;
+        private readonly ICommandHandler<DelayTaskCommand> _delayTaskCommand;
 
-        public TimerManager(ITaskManager taskManager, IChromeManager chromeManager, ILogService logService, DelayTaskCommandHandler delayTaskCommandHandler)
+        public TimerManager(ITaskManager taskManager, IChromeManager chromeManager, ILogService logService, ICommandHandler<DelayTaskCommand> delayTaskCommand)
         {
             _taskManager = taskManager;
             _chromeManager = chromeManager;
             _logService = logService;
-            _delayTaskCommandHandler = delayTaskCommandHandler;
+            _delayTaskCommand = delayTaskCommand;
         }
 
         public async Task Execute(AccountId accountId)
@@ -131,7 +132,7 @@ namespace MainCore.Services
                 }
             }
 
-            await _delayTaskCommandHandler.Handle(new DelayTaskCommand(accountId), CancellationToken.None);
+            await _delayTaskCommand.Handle(new DelayTaskCommand(accountId), CancellationToken.None);
         }
 
         public void Shutdown()
