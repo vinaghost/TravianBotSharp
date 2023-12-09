@@ -23,10 +23,10 @@ namespace MainCore.Commands.UI.Account
         private readonly IValidator<AccountInput> _accountInputValidator;
         private readonly IDialogService _dialogService;
         private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
 
-        public AddAccountCommandHandler(IValidator<AccountInput> accountInputValidator, IDialogService dialogService, WaitingOverlayViewModel waitingOverlayViewModel, IUnitOfRepository unitOfRepository, IMediator mediator)
+        public AddAccountCommandHandler(IValidator<AccountInput> accountInputValidator, IDialogService dialogService, WaitingOverlayViewModel waitingOverlayViewModel, UnitOfRepository unitOfRepository, IMediator mediator)
         {
             _accountInputValidator = accountInputValidator;
             _dialogService = dialogService;

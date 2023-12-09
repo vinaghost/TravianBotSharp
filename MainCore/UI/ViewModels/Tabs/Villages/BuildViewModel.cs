@@ -18,7 +18,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
     public class BuildViewModel : VillageTabViewModelBase
     {
         private readonly IMediator _mediator;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
         private ReactiveCommand<ListBoxItem, List<BuildingEnums>> LoadBuildNormal { get; }
 
@@ -43,7 +43,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Buildings { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(IMediator mediator, IUnitOfRepository unitOfRepository)
+        public BuildViewModel(IMediator mediator, UnitOfRepository unitOfRepository)
         {
             _unitOfRepository = unitOfRepository;
             _mediator = mediator;

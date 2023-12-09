@@ -1,7 +1,7 @@
 ﻿using FluentResults;
 using HtmlAgilityPack;
 using MainCore.Common.Errors;
-using MainCore.DTO;
+using MainCore.Common.Models;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -25,28 +25,28 @@ namespace MainCore.Services
             _extensionsPath = extensionsPath;
 
             _chromeService = ChromeDriverService.CreateDefaultService();
-            _chromeService.HideCommandPromptWindow = true;
+            _chromeService.HideCommandPromptWindow = false;
         }
 
-        public async Task<Result> Setup(AccountDto account, AccessDto access)
+        public async Task<Result> Setup(ChromeSetting setting)
         {
             var options = new ChromeOptions();
 
             options.AddExtensions(_extensionsPath);
 
-            if (!string.IsNullOrEmpty(access.ProxyHost))
+            if (!string.IsNullOrEmpty(setting.ProxyHost))
             {
-                if (!string.IsNullOrEmpty(access.ProxyUsername))
+                if (!string.IsNullOrEmpty(setting.ProxyUsername))
                 {
-                    options.AddHttpProxy(access.ProxyHost, access.ProxyPort, access.ProxyUsername, access.ProxyPassword);
+                    options.AddHttpProxy(setting.ProxyHost, setting.ProxyPort, setting.ProxyUsername, setting.ProxyPassword);
                 }
                 else
                 {
-                    options.AddArgument($"--proxy-server={access.ProxyHost}:{access.ProxyPort}");
+                    options.AddArgument($"--proxy-server={setting.ProxyHost}:{setting.ProxyPort}");
                 }
             }
 
-            options.AddArgument($"--user-agent={access.Useragent}");
+            options.AddArgument($"--user-agent={setting.UserAgent}");
 
             // So websites (Travian) can't detect the bot
             options.AddExcludedArgument("enable-automation");
@@ -54,30 +54,35 @@ namespace MainCore.Services
             options.AddArgument("--disable-blink-features=AutomationControlled");
             options.AddArgument("--disable-features=UserAgentClientHint");
             options.AddArgument("--disable-logging");
+            options.AddArgument("--ignore-certificate-errors");
 
-            options.AddArgument("--mute-audio");
+            options.AddArguments("--mute-audio", "--disable-gpu");
 
             options.AddArguments("--no-default-browser-check", "--no-first-run");
             options.AddArguments("--no-sandbox", "--test-type");
 
-            options.AddArguments("--start-maximized");
+            if (setting.IsHeadless)
+            {
+                options.AddArgument("--remote-debugging-port=0");
+                options.AddArgument("--headless=new");
+            }
+            else
+            {
+                options.AddArgument("--start-maximized");
+            }
 
-            //if (setting.IsDontLoadImage) options.AddArguments("--blink-settings=imagesEnabled=false"); //--disable-images
-            var pathUserData = Path.Combine(AppContext.BaseDirectory, "Data", "Cache", account.Server.Replace("https://", "").Replace("http://", "").Replace(".", "_"), account.Username);
+            var pathUserData = Path.Combine(AppContext.BaseDirectory, "Data", "Cache", setting.ProfilePath);
             if (!Directory.Exists(pathUserData)) Directory.CreateDirectory(pathUserData);
 
-            pathUserData = Path.Combine(pathUserData, string.IsNullOrEmpty(access.ProxyHost) ? "default" : access.ProxyHost);
+            pathUserData = Path.Combine(pathUserData, string.IsNullOrEmpty(setting.ProxyHost) ? "default" : setting.ProxyHost);
 
             options.AddArguments($"user-data-dir={pathUserData}");
 
             _driver = await Task.Run(() => new ChromeDriver(_chromeService, options));
-            //if (setting.IsMinimized) _driver.Manage().Window.Minimize();
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(1);
-            _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3));
 
-            var result = await Navigate($"{account.Server}dorf1.php");
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3));
             return Result.Ok();
         }
 
@@ -120,11 +125,16 @@ namespace MainCore.Services
 
         public string CurrentUrl => _driver.Url;
 
-        public async Task<Result> Navigate(string url = null)
+        public async Task<Result> Refresh(CancellationToken cancellationToken)
+        {
+            return await Navigate("", cancellationToken);
+        }
+
+        public async Task<Result> Navigate(string url, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(url))
             {
-                return await Navigate(CurrentUrl);
+                return await Navigate(CurrentUrl, cancellationToken);
             }
 
             Result goToUrl()
@@ -141,7 +151,8 @@ namespace MainCore.Services
             }
             var result = await Task.Run(goToUrl);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = await WaitPageLoaded();
+            result = await WaitPageLoaded(cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return result;
         }
 
@@ -192,15 +203,19 @@ namespace MainCore.Services
             return Result.Ok();
         }
 
-        public async Task<Result> Wait(Func<IWebDriver, bool> condition)
+        public async Task<Result> Wait(Func<IWebDriver, bool> condition, CancellationToken cancellationToken)
         {
             Result wait()
             {
                 try
                 {
-                    _wait.Until(condition);
+                    _wait.Until(driver =>
+                    {
+                        if (cancellationToken.IsCancellationRequested) return true;
+                        return condition(driver);
+                    });
                 }
-                catch (TimeoutException)
+                catch (WebDriverTimeoutException)
                 {
                     return Result.Fail(new Stop("Page not loaded in 3 mins"));
                 }
@@ -209,20 +224,22 @@ namespace MainCore.Services
             return await Task.Run(wait);
         }
 
-        public async Task<Result> WaitPageLoaded()
+        public async Task<Result> WaitPageLoaded(CancellationToken cancellationToken)
         {
             static bool pageLoaded(IWebDriver driver) => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete");
-            var result = await Wait(pageLoaded);
+            var result = await Wait(pageLoaded, cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return result;
         }
 
-        public async Task<Result> WaitPageChanged(string part)
+        public async Task<Result> WaitPageChanged(string part, CancellationToken cancellationToken)
         {
             bool pageChanged(IWebDriver driver) => driver.Url.Contains(part);
             Result result;
-            result = await Wait(pageChanged);
-            if (result.IsFailed) return result;
-            result = await WaitPageLoaded();
+            result = await Wait(pageChanged, cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            result = await WaitPageLoaded(cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return result;
         }
 

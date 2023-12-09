@@ -1,4 +1,5 @@
-﻿using MainCore.Commands.General;
+﻿using MainCore.Commands.Base;
+using MainCore.Commands.General;
 using MainCore.Common.Enums;
 using MainCore.Common.MediatR;
 using MainCore.Entities;
@@ -18,14 +19,14 @@ namespace MainCore.Commands.UI.MainLayout
     public class LogoutAccountCommandHandler : IRequestHandler<LogoutAccountCommand>
     {
         private readonly ITaskManager _taskManager;
-        private readonly ICloseBrowserCommand _closeCommand;
         private readonly IDialogService _dialogService;
+        private readonly ICommandHandler<CloseBrowserCommand> _closeBrowserCommand;
 
-        public LogoutAccountCommandHandler(ITaskManager taskManager, ICloseBrowserCommand closeCommand, IDialogService dialogService)
+        public LogoutAccountCommandHandler(ITaskManager taskManager, IDialogService dialogService, ICommandHandler<CloseBrowserCommand> closeBrowserCommand)
         {
             _taskManager = taskManager;
-            _closeCommand = closeCommand;
             _dialogService = dialogService;
+            _closeBrowserCommand = closeBrowserCommand;
         }
 
         public async Task Handle(LogoutAccountCommand request, CancellationToken cancellationToken)
@@ -62,7 +63,7 @@ namespace MainCore.Commands.UI.MainLayout
             _taskManager.SetStatus(accountId, StatusEnums.Stopping);
             await _taskManager.StopCurrentTask(accountId);
 
-            await _closeCommand.Execute(accountId);
+            await _closeBrowserCommand.Handle(new(accountId), cancellationToken);
 
             _taskManager.SetStatus(accountId, StatusEnums.Offline);
         }

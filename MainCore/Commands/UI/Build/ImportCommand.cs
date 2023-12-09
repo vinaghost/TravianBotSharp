@@ -22,11 +22,11 @@ namespace MainCore.Commands.UI.Build
 
     public class ImportCommandHandler : IRequestHandler<ImportCommand>
     {
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
 
-        public ImportCommandHandler(IUnitOfRepository unitOfRepository, IDialogService dialogService, IMediator mediator)
+        public ImportCommandHandler(UnitOfRepository unitOfRepository, IDialogService dialogService, IMediator mediator)
         {
             _unitOfRepository = unitOfRepository;
             _dialogService = dialogService;

@@ -44,7 +44,7 @@ namespace MainCore.Services
             var clientOptions = new RestClientOptions
             {
                 MaxTimeout = 3000,
-                BaseUrl = new Uri("https://api.ipify.org/"),
+                BaseUrl = new Uri("https://travian.com/"),
                 Proxy = proxy,
             };
 
