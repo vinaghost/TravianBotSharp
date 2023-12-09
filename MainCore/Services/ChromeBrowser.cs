@@ -19,6 +19,7 @@ namespace MainCore.Services
 
         private readonly string[] _extensionsPath;
         private readonly HtmlDocument _htmlDoc = new();
+        public string EndpointAddress { get; private set; }
 
         public ChromeBrowser(string[] extensionsPath)
         {
@@ -63,12 +64,14 @@ namespace MainCore.Services
 
             if (setting.IsHeadless)
             {
-                options.AddArgument("--remote-debugging-port=0");
                 options.AddArgument("--headless=new");
+                options.AddArgument("--remote-debugging-port=0");
+                EndpointAddress = _driver.GetDevToolsSession().EndpointAddress;
             }
             else
             {
                 options.AddArgument("--start-maximized");
+                EndpointAddress = "";
             }
 
             var pathUserData = Path.Combine(AppContext.BaseDirectory, "Data", "Cache", setting.ProfilePath);
@@ -83,6 +86,7 @@ namespace MainCore.Services
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(1);
 
             _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3));
+
             return Result.Ok();
         }
 

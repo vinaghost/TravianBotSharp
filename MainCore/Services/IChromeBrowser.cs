@@ -11,6 +11,7 @@ namespace MainCore.Services
         string CurrentUrl { get; }
         ChromeDriver Driver { get; }
         HtmlDocument Html { get; }
+        string EndpointAddress { get; }
 
         Task<Result> Click(By by);
 
