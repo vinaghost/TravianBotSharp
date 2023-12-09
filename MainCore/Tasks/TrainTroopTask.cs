@@ -20,7 +20,7 @@ namespace MainCore.Tasks
             {BuildingEnums.Workshop, VillageSettingEnums.WorkshopTroop },
         };
 
-        public TrainTroopTask(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        public TrainTroopTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
         }
 

@@ -13,7 +13,7 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class SleepTask : AccountTask
     {
-        public SleepTask(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        public SleepTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
         }
 

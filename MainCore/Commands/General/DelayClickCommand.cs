@@ -19,9 +19,9 @@ namespace MainCore.Commands.General
     public class DelayClickCommandHandler : ICommandHandler<DelayClickCommand>
 
     {
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public DelayClickCommandHandler(IUnitOfRepository unitOfRepository)
+        public DelayClickCommandHandler(UnitOfRepository unitOfRepository)
         {
             _unitOfRepository = unitOfRepository;
         }

@@ -21,10 +21,10 @@ namespace MainCore.Commands.UI.AddAccounts
     {
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
 
-        public AddAccountsCommandHandler(IDialogService dialogService, IMediator mediator, IUnitOfRepository unitOfRepository, WaitingOverlayViewModel waitingOverlayViewModel)
+        public AddAccountsCommandHandler(IDialogService dialogService, IMediator mediator, UnitOfRepository unitOfRepository, WaitingOverlayViewModel waitingOverlayViewModel)
         {
             _dialogService = dialogService;
             _mediator = mediator;

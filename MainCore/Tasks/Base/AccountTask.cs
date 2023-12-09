@@ -10,7 +10,7 @@ namespace MainCore.Tasks.Base
 {
     public abstract class AccountTask : TaskBase
     {
-        protected AccountTask(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        protected AccountTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
         }
 

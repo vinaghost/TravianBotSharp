@@ -21,7 +21,7 @@ namespace MainCore.Commands.Update
     [RegisterAsTransient]
     public class UpdateAccountInfoCommandHandler : UpdateCommandHandlerBase, ICommandHandler<UpdateAccountInfoCommand>
     {
-        public UpdateAccountInfoCommandHandler(IChromeManager chromeManager, IMediator mediator, IUnitOfRepository unitOfRepository, IUnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
+        public UpdateAccountInfoCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, IUnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
         {
         }
 

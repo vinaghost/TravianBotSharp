@@ -18,9 +18,9 @@ namespace MainCore.Commands.General
     [RegisterAsTransient]
     public class DelayTaskCommandHandler : ICommandHandler<DelayTaskCommand>
     {
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public DelayTaskCommandHandler(IUnitOfRepository unitOfRepository)
+        public DelayTaskCommandHandler(UnitOfRepository unitOfRepository)
         {
             _unitOfRepository = unitOfRepository;
         }

@@ -23,7 +23,7 @@ namespace MainCore.UI.ViewModels.UserControls
     public class MainLayoutViewModel : ViewModelBase
     {
         private readonly IMediator _mediator;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly ITaskManager _taskManager;
 
         private readonly AccountTabStore _accountTabStore;
@@ -31,7 +31,7 @@ namespace MainCore.UI.ViewModels.UserControls
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, IUnitOfRepository unitOfRepository, ITaskManager taskManager)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, UnitOfRepository unitOfRepository, ITaskManager taskManager)
         {
             _accountTabStore = accountTabStore;
             _selectedItemStore = selectedItemStore;

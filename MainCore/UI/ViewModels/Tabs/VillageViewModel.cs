@@ -19,7 +19,7 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         private readonly VillageTabStore _villageTabStore;
 
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
         public ListBoxItemViewModel Villages { get; } = new();
 
@@ -29,7 +29,7 @@ namespace MainCore.UI.ViewModels.Tabs
         public ReactiveCommand<Unit, Unit> LoadAll { get; }
         public ReactiveCommand<AccountId, List<ListBoxItem>> LoadVillage { get; }
 
-        public VillageViewModel(VillageTabStore villageTabStore, IMediator mediator, IUnitOfRepository unitOfRepository)
+        public VillageViewModel(VillageTabStore villageTabStore, IMediator mediator, UnitOfRepository unitOfRepository)
         {
             _villageTabStore = villageTabStore;
             _mediator = mediator;

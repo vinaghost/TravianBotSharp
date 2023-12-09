@@ -21,10 +21,10 @@ namespace MainCore.Commands.UI.Farming
     public class ActiveFarmListCommandHandler : IRequestHandler<ActiveFarmListCommand>
     {
         private readonly IMediator _mediator;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
 
-        public ActiveFarmListCommandHandler(IMediator mediator, IUnitOfRepository unitOfRepository, IDialogService dialogService)
+        public ActiveFarmListCommandHandler(IMediator mediator, UnitOfRepository unitOfRepository, IDialogService dialogService)
         {
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;

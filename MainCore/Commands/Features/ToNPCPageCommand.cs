@@ -17,10 +17,10 @@ namespace MainCore.Commands.Features
 
     public class ToNPCPageCommandHandler : IRequestHandler<ToNPCPageCommand, Result>
     {
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly UnitOfCommand _unitOfCommand;
 
-        public ToNPCPageCommandHandler(IUnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand)
+        public ToNPCPageCommandHandler(UnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand)
         {
             _unitOfRepository = unitOfRepository;
             _unitOfCommand = unitOfCommand;

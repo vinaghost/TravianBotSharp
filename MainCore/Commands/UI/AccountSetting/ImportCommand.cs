@@ -24,11 +24,11 @@ namespace MainCore.Commands.UI.AccountSetting
     public class ImportCommandHandler : IRequestHandler<ImportCommand>
     {
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
 
-        public ImportCommandHandler(IValidator<AccountSettingInput> accountsettingInputValidator, IUnitOfRepository unitOfRepository, IDialogService dialogService, IMediator mediator)
+        public ImportCommandHandler(IValidator<AccountSettingInput> accountsettingInputValidator, UnitOfRepository unitOfRepository, IDialogService dialogService, IMediator mediator)
         {
             _accountsettingInputValidator = accountsettingInputValidator;
             _unitOfRepository = unitOfRepository;

@@ -11,9 +11,9 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerTrainTroopTask : INotificationHandler<VillageSettingUpdated>, INotificationHandler<AccountInit>
     {
         private readonly ITaskManager _taskManager;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public TriggerTrainTroopTask(ITaskManager taskManager, IUnitOfRepository unitOfRepository)
+        public TriggerTrainTroopTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
         {
             _taskManager = taskManager;
             _unitOfRepository = unitOfRepository;

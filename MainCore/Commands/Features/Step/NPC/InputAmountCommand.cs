@@ -22,11 +22,11 @@ namespace MainCore.Commands.Features.Step.NPC
     [RegisterAsTransient]
     public class InputAmountCommandHandler : ICommandHandler<InputAmountCommand>
     {
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly IChromeManager _chromeManager;
         private readonly IUnitOfParser _unitOfParser;
 
-        public InputAmountCommandHandler(IUnitOfRepository unitOfRepository, IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public InputAmountCommandHandler(UnitOfRepository unitOfRepository, IChromeManager chromeManager, IUnitOfParser unitOfParser)
         {
             _unitOfRepository = unitOfRepository;
             _chromeManager = chromeManager;

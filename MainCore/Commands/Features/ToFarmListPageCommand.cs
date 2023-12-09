@@ -17,10 +17,10 @@ namespace MainCore.Commands.Features
 
     public class ToFarmListPageCommandHandler : IRequestHandler<ToFarmListPageCommand, Result>
     {
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly UnitOfCommand _unitOfCommand;
 
-        public ToFarmListPageCommandHandler(IUnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand)
+        public ToFarmListPageCommandHandler(UnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand)
         {
             _unitOfRepository = unitOfRepository;
             _unitOfCommand = unitOfCommand;

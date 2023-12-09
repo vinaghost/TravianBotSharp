@@ -9,7 +9,7 @@ namespace MainCore.Tasks.Base
 {
     public abstract class VillageTask : AccountTask
     {
-        protected VillageTask(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        protected VillageTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
         }
 

@@ -21,13 +21,13 @@ namespace MainCore.Commands.UI.Farming
 
     public class SaveCommandHandler : IRequestHandler<SaveFarmListSettingsCommand>
     {
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
         private readonly IDialogService _dialogService;
 
         private readonly IValidator<FarmListSettingInput> _farmListSettingInputValidator;
 
-        public SaveCommandHandler(IUnitOfRepository unitOfRepository, IMediator mediator, IDialogService dialogService, IValidator<FarmListSettingInput> farmListSettingInputValidator)
+        public SaveCommandHandler(UnitOfRepository unitOfRepository, IMediator mediator, IDialogService dialogService, IValidator<FarmListSettingInput> farmListSettingInputValidator)
         {
             _unitOfRepository = unitOfRepository;
             _mediator = mediator;

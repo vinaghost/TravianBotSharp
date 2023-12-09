@@ -13,7 +13,7 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class StartFarmListTask : AccountTask
     {
-        public StartFarmListTask(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        public StartFarmListTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
         }
 

@@ -16,7 +16,7 @@ namespace MainCore.Tasks
     {
         private readonly ICommandHandler<ValidateContextualHelpCommand, bool> _validateContextualHelpCommand;
 
-        public LoginTask(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator, ICommandHandler<ValidateContextualHelpCommand, bool> validateContextualHelpCommand) : base(unitOfCommand, unitOfRepository, mediator)
+        public LoginTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ICommandHandler<ValidateContextualHelpCommand, bool> validateContextualHelpCommand) : base(unitOfCommand, unitOfRepository, mediator)
         {
             _validateContextualHelpCommand = validateContextualHelpCommand;
         }

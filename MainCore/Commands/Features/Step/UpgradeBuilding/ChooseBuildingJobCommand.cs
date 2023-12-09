@@ -22,11 +22,11 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
     [RegisterAsTransient]
     public class ChooseBuildingJobCommandHandler : ICommandHandler<ChooseBuildingJobCommand, JobDto>
     {
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
         private readonly IMediator _mediator;
 
-        public ChooseBuildingJobCommandHandler(IUnitOfRepository unitOfRepository, IMediator mediator)
+        public ChooseBuildingJobCommandHandler(UnitOfRepository unitOfRepository, IMediator mediator)
         {
             _unitOfRepository = unitOfRepository;
             _mediator = mediator;

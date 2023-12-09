@@ -19,9 +19,9 @@ namespace MainCore.Commands.General
     public class CloseBrowserCommandHandler : ICommandHandler<CloseBrowserCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public CloseBrowserCommandHandler(IChromeManager chromeManager, IUnitOfRepository unitOfRepository)
+        public CloseBrowserCommandHandler(IChromeManager chromeManager, UnitOfRepository unitOfRepository)
         {
             _chromeManager = chromeManager;
             _unitOfRepository = unitOfRepository;

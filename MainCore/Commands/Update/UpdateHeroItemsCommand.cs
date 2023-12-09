@@ -21,7 +21,7 @@ namespace MainCore.Commands.Update
     [RegisterAsTransient]
     public class UpdateHeroItemsCommandHandler : UpdateCommandHandlerBase, ICommandHandler<UpdateHeroItemsCommand>
     {
-        public UpdateHeroItemsCommandHandler(IChromeManager chromeManager, IMediator mediator, IUnitOfRepository unitOfRepository, IUnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
+        public UpdateHeroItemsCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, IUnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
         {
         }
 

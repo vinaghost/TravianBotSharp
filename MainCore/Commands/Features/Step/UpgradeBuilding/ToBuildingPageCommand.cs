@@ -24,9 +24,9 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
     public class ToBuildingPageCommandHandler : ICommandHandler<ToBuildingPageCommand>
     {
         private readonly UnitOfCommand _unitOfCommand;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public ToBuildingPageCommandHandler(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository)
+        public ToBuildingPageCommandHandler(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository)
         {
             _unitOfCommand = unitOfCommand;
             _unitOfRepository = unitOfRepository;

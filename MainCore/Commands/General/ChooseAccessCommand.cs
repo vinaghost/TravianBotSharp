@@ -27,11 +27,11 @@ namespace MainCore.Commands.General
     {
         public AccessDto Value { get; private set; }
 
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly UnitOfCommand _unitOfCommand;
         private readonly ILogService _logService;
 
-        public ChooseAccessCommandHandler(IUnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, ILogService logService)
+        public ChooseAccessCommandHandler(UnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, ILogService logService)
         {
             _unitOfRepository = unitOfRepository;
             _unitOfCommand = unitOfCommand;

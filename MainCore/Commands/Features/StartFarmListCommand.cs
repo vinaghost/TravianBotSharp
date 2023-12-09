@@ -21,10 +21,10 @@ namespace MainCore.Commands.Features
     {
         private readonly ICommandHandler<StartSingleFarmListCommand> _startSingleFarmListCommand;
         private readonly ICommandHandler<StartAllFarmListCommand> _startAllFarmListCommand;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly UnitOfCommand _unitOfCommand;
 
-        public StartFarmListCommandHandler(ICommandHandler<StartSingleFarmListCommand> startSingleFarmListCommand, ICommandHandler<StartAllFarmListCommand> startAllFarmListCommand, IUnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand)
+        public StartFarmListCommandHandler(ICommandHandler<StartSingleFarmListCommand> startSingleFarmListCommand, ICommandHandler<StartAllFarmListCommand> startAllFarmListCommand, UnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand)
         {
             _startSingleFarmListCommand = startSingleFarmListCommand;
             _startAllFarmListCommand = startAllFarmListCommand;

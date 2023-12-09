@@ -40,13 +40,13 @@ namespace MainCore.Commands.Features
             {BuildingEnums.Workshop, (VillageSettingEnums.WorkshopAmountMin,VillageSettingEnums.WorkshopAmountMax ) },
         };
 
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly UnitOfCommand _unitOfCommand;
 
         private readonly ICommandHandler<GetMaximumTroopCommand, int> _getMaximumTroopCommand;
         private readonly ICommandHandler<InputAmountTroopCommand> _inputAmountTroopCommand;
 
-        public TrainTroopCommandHandler(IUnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, ICommandHandler<GetMaximumTroopCommand, int> getMaximumTroopCommand, ICommandHandler<InputAmountTroopCommand> inputAmountTroopCommand)
+        public TrainTroopCommandHandler(UnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, ICommandHandler<GetMaximumTroopCommand, int> getMaximumTroopCommand, ICommandHandler<InputAmountTroopCommand> inputAmountTroopCommand)
         {
             _unitOfRepository = unitOfRepository;
             _unitOfCommand = unitOfCommand;

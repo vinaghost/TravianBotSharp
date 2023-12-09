@@ -27,11 +27,11 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
     public class UseHeroResourceCommandHandler : ICommandHandler<UseHeroResourceCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly UnitOfCommand _unitOfCommand;
         private readonly IUnitOfParser _unitOfParser;
 
-        public UseHeroResourceCommandHandler(IChromeManager chromeManager, IUnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, IUnitOfParser unitOfParser)
+        public UseHeroResourceCommandHandler(IChromeManager chromeManager, UnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, IUnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfRepository = unitOfRepository;

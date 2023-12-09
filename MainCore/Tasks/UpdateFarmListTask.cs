@@ -12,7 +12,7 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateFarmListTask : AccountTask
     {
-        public UpdateFarmListTask(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        public UpdateFarmListTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
         }
 

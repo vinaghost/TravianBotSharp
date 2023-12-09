@@ -26,9 +26,9 @@ namespace MainCore.Commands.UI.Build
         private readonly IMediator _mediator;
         private readonly IDialogService _dialogService;
         private readonly ITaskManager _taskManager;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public MoveJobCommandHandler(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, IUnitOfRepository unitOfRepository)
+        public MoveJobCommandHandler(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, UnitOfRepository unitOfRepository)
         {
             _mediator = mediator;
             _dialogService = dialogService;

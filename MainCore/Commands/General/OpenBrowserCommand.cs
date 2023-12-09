@@ -25,9 +25,9 @@ namespace MainCore.Commands.General
     public class OpenBrowserCommandHandler : ICommandHandler<OpenBrowserCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public OpenBrowserCommandHandler(IChromeManager chromeManager, IUnitOfRepository unitOfRepository)
+        public OpenBrowserCommandHandler(IChromeManager chromeManager, UnitOfRepository unitOfRepository)
         {
             _chromeManager = chromeManager;
             _unitOfRepository = unitOfRepository;

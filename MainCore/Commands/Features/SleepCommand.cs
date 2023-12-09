@@ -23,9 +23,9 @@ namespace MainCore.Commands.Features
         private readonly ICommandHandler<ChooseAccessCommand, AccessDto> _chooseAccessCommand;
         private readonly ICommandHandler<SleepBrowserCommand> _sleepBrowserCommand;
         private readonly ICommandHandler<OpenBrowserCommand> _openBrowserCommand;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public SleepCommandHandler(ICommandHandler<ChooseAccessCommand, AccessDto> chooseAccessCommand, ICommandHandler<SleepBrowserCommand> sleepBrowserCommand, ICommandHandler<OpenBrowserCommand> openBrowserCommand, IUnitOfRepository unitOfRepository)
+        public SleepCommandHandler(ICommandHandler<ChooseAccessCommand, AccessDto> chooseAccessCommand, ICommandHandler<SleepBrowserCommand> sleepBrowserCommand, ICommandHandler<OpenBrowserCommand> openBrowserCommand, UnitOfRepository unitOfRepository)
         {
             _chooseAccessCommand = chooseAccessCommand;
             _sleepBrowserCommand = sleepBrowserCommand;

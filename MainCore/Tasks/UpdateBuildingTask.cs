@@ -12,7 +12,7 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateBuildingTask : VillageTask
     {
-        public UpdateBuildingTask(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        public UpdateBuildingTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
         }
 

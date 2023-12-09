@@ -21,9 +21,9 @@ namespace MainCore.Commands.Features
     {
         private readonly IChromeManager _chromeManager;
         private readonly IUnitOfParser _unitOfParser;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public LoginCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser, IUnitOfRepository unitOfRepository)
+        public LoginCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser, UnitOfRepository unitOfRepository)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

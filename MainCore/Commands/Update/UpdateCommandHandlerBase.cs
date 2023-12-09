@@ -9,10 +9,10 @@ namespace MainCore.Commands.Update
     {
         protected readonly IChromeManager _chromeManager;
         protected readonly IMediator _mediator;
-        protected readonly IUnitOfRepository _unitOfRepository;
+        protected readonly UnitOfRepository _unitOfRepository;
         protected readonly IUnitOfParser _unitOfParser;
 
-        public UpdateCommandHandlerBase(IChromeManager chromeManager, IMediator mediator, IUnitOfRepository unitOfRepository, IUnitOfParser unitOfParser)
+        public UpdateCommandHandlerBase(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, IUnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _mediator = mediator;
