@@ -8,28 +8,22 @@ using MainCore.Infrasturecture.AutoRegisterDi;
 namespace MainCore.Commands
 {
     [RegisterAsTransient(withoutInterface: true)]
-    public class UnitOfCommand
-    {
-        public ICommandHandler<OpenBrowserCommand> OpenBrowserCommand { get; }
-        public ICommandHandler<CloseBrowserCommand> CloseBrowserCommand { get; }
-        public ICommandHandler<SleepBrowserCommand> SleepBrowserCommand { get; }
-        public ICommandHandler<DelayClickCommand> DelayClickCommand { get; }
-        public ICommandHandler<DelayTaskCommand> DelayTaskCommand { get; }
-
-        public ICommandHandler<SwitchTabCommand> SwitchTabCommand { get; }
-        public ICommandHandler<SwitchVillageCommand> SwitchVillageCommand { get; }
-        public ICommandHandler<ToBuildingCommand> ToBuildingCommand { get; }
-        public ICommandHandler<ToDorfCommand> ToDorfCommand { get; }
-        public ICommandHandler<ToHeroInventoryCommand> ToHeroInventoryCommand { get; }
-
-        public ICommandHandler<UpdateAccountInfoCommand> UpdateAccountInfoCommand { get; }
-        public ICommandHandler<UpdateDorfCommand> UpdateDorfCommand { get; }
-        public ICommandHandler<UpdateFarmListCommand> UpdateFarmListCommand { get; }
-        public ICommandHandler<UpdateHeroItemsCommand> UpdateHeroItemsCommand { get; }
-        public ICommandHandler<UpdateVillageListCommand> UpdateVillageListCommand { get; }
-
-        public ICommandHandler<ValidateIngameCommand, bool> ValidateIngameCommand { get; }
-        public ICommandHandler<ValidateLoginCommand, bool> ValidateLoginCommand { get; }
-        public ICommandHandler<ValidateProxyCommand, bool> ValidateProxyCommand { get; }
-    }
+    public record UnitOfCommand(ICommandHandler<OpenBrowserCommand> OpenBrowserCommand,
+                                ICommandHandler<CloseBrowserCommand> CloseBrowserCommand,
+                                ICommandHandler<SleepBrowserCommand> SleepBrowserCommand,
+                                ICommandHandler<DelayClickCommand> DelayClickCommand,
+                                ICommandHandler<DelayTaskCommand> DelayTaskCommand,
+                                ICommandHandler<SwitchTabCommand> SwitchTabCommand,
+                                ICommandHandler<SwitchVillageCommand> SwitchVillageCommand,
+                                ICommandHandler<ToBuildingCommand> ToBuildingCommand,
+                                ICommandHandler<ToDorfCommand> ToDorfCommand,
+                                ICommandHandler<ToHeroInventoryCommand> ToHeroInventoryCommand,
+                                ICommandHandler<UpdateAccountInfoCommand> UpdateAccountInfoCommand,
+                                ICommandHandler<UpdateDorfCommand> UpdateDorfCommand,
+                                ICommandHandler<UpdateFarmListCommand> UpdateFarmListCommand,
+                                ICommandHandler<UpdateHeroItemsCommand> UpdateHeroItemsCommand,
+                                ICommandHandler<UpdateVillageListCommand> UpdateVillageListCommand,
+                                ICommandHandler<ValidateIngameCommand, bool> ValidateIngameCommand,
+                                ICommandHandler<ValidateLoginCommand, bool> ValidateLoginCommand,
+                                ICommandHandler<ValidateProxyCommand, bool> ValidateProxyCommand);
 }

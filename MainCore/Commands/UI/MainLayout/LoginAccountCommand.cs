@@ -71,7 +71,7 @@ namespace MainCore.Commands.UI.MainLayout
             _taskManager.SetStatus(accountId, StatusEnums.Starting);
 
             Result result;
-            result = await _chooseAccessCommand.Handle(new ChooseAccessCommand(accountId, false), cancellationToken);
+            result = await _chooseAccessCommand.Handle(new(accountId, false), cancellationToken);
 
             if (result.IsFailed)
             {
