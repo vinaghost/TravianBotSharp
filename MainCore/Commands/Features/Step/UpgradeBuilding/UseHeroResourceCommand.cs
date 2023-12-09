@@ -28,10 +28,10 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
     {
         private readonly IChromeManager _chromeManager;
         private readonly IUnitOfRepository _unitOfRepository;
-        private readonly IUnitOfCommand _unitOfCommand;
+        private readonly UnitOfCommand _unitOfCommand;
         private readonly IUnitOfParser _unitOfParser;
 
-        public UseHeroResourceCommandHandler(IChromeManager chromeManager, IUnitOfRepository unitOfRepository, IUnitOfCommand unitOfCommand, IUnitOfParser unitOfParser)
+        public UseHeroResourceCommandHandler(IChromeManager chromeManager, IUnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, IUnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfRepository = unitOfRepository;
@@ -45,10 +45,10 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
 
             var currentUrl = chromeBrowser.CurrentUrl;
             Result result;
-            result = await _unitOfCommand.ToHeroInventoryCommand.Execute(command.AccountId, cancellationToken);
+            result = await _unitOfCommand.ToHeroInventoryCommand.Handle(new(command.AccountId), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateHeroItemsCommand.Execute(command.AccountId);
+            result = await _unitOfCommand.UpdateHeroItemsCommand.Handle(new(command.AccountId), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var requiredResource = command.RequiredResource;
@@ -80,7 +80,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             {
                 result = await UseResource(chromeBrowser, item.Item1, item.Item2, cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-                result = await _unitOfCommand.DelayClickCommandHandler.Handle(new(command.AccountId), cancellationToken);
+                result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
 

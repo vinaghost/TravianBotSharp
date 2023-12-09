@@ -8,7 +8,7 @@ using MainCore.Services;
 
 namespace MainCore.Commands.Features.Step.DisableContextualHelp
 {
-    public class ValidateContextualHelpCommand : ByAccountIdBase, ICommand
+    public class ValidateContextualHelpCommand : ByAccountIdBase, ICommand<bool>
     {
         public ValidateContextualHelpCommand(AccountId accountId) : base(accountId)
         {
@@ -16,7 +16,7 @@ namespace MainCore.Commands.Features.Step.DisableContextualHelp
     }
 
     [RegisterAsTransient]
-    public class ValidateContextualHelpCommandHandler : ICommandHandler<ValidateContextualHelpCommand>
+    public class ValidateContextualHelpCommandHandler : ICommandHandler<ValidateContextualHelpCommand, bool>
     {
         private readonly IChromeManager _chromeManager;
         private readonly IUnitOfParser _unitOfParser;

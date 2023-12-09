@@ -1,7 +1,9 @@
 ﻿using FluentResults;
+using MainCore.Commands.Base;
 using MainCore.Commands.General;
 using MainCore.Common.Enums;
 using MainCore.Common.MediatR;
+using MainCore.DTO;
 using MainCore.Entities;
 using MainCore.Notification.Message;
 using MainCore.Repositories;
@@ -26,18 +28,18 @@ namespace MainCore.Commands.UI.MainLayout
 
         private readonly IUnitOfRepository _unitOfRepository;
 
-        private readonly ChooseAccessCommandHandler _chooseAccessCommandHandler;
-        private readonly IOpenBrowserCommand _openBrowserCommand;
+        private readonly ICommandHandler<ChooseAccessCommand, AccessDto> _chooseAccessCommand;
+        private readonly ICommandHandler<OpenBrowserCommand> _openBrowserCommand;
         private readonly ILogService _logService;
         private readonly IMediator _mediator;
 
-        public LoginAccountCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IDialogService dialogService, IUnitOfRepository unitOfRepository, ChooseAccessCommandHandler chooseAccessCommandHandler, IOpenBrowserCommand openBrowserCommand, ILogService logService, IMediator mediator)
+        public LoginAccountCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IDialogService dialogService, IUnitOfRepository unitOfRepository, ICommandHandler<ChooseAccessCommand, AccessDto> chooseAccessCommand, ICommandHandler<OpenBrowserCommand> openBrowserCommand, ILogService logService, IMediator mediator)
         {
             _taskManager = taskManager;
             _timerManager = timerManager;
             _dialogService = dialogService;
             _unitOfRepository = unitOfRepository;
-            _chooseAccessCommandHandler = chooseAccessCommandHandler;
+            _chooseAccessCommand = chooseAccessCommand;
             _openBrowserCommand = openBrowserCommand;
             _logService = logService;
             _mediator = mediator;
@@ -69,7 +71,7 @@ namespace MainCore.Commands.UI.MainLayout
             _taskManager.SetStatus(accountId, StatusEnums.Starting);
 
             Result result;
-            result = await _chooseAccessCommandHandler.Handle(new ChooseAccessCommand(accountId, false), cancellationToken);
+            result = await _chooseAccessCommand.Handle(new ChooseAccessCommand(accountId, false), cancellationToken);
 
             if (result.IsFailed)
             {
@@ -78,9 +80,9 @@ namespace MainCore.Commands.UI.MainLayout
                 return;
             }
             var logger = _logService.GetLogger(accountId);
-            var access = _chooseAccessCommandHandler.Value;
+            var access = _chooseAccessCommand.Value;
             logger.Information("Using connection {proxy} to start chrome", access.Proxy);
-            result = await _openBrowserCommand.Execute(accountId, access, cancellationToken);
+            result = await _openBrowserCommand.Handle(new(accountId, access), cancellationToken);
             if (result.IsFailed)
             {
                 _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());

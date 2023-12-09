@@ -8,11 +8,11 @@ namespace MainCore.Tasks.Base
 {
     public abstract class TaskBase
     {
-        protected readonly IUnitOfCommand _unitOfCommand;
+        protected readonly UnitOfCommand _unitOfCommand;
         protected readonly IUnitOfRepository _unitOfRepository;
         protected readonly IMediator _mediator;
 
-        protected TaskBase(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator)
+        protected TaskBase(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator)
         {
             _unitOfCommand = unitOfCommand;
             _unitOfRepository = unitOfRepository;

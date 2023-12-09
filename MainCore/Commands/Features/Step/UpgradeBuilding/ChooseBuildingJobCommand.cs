@@ -12,7 +12,7 @@ using MediatR;
 
 namespace MainCore.Commands.Features.Step.UpgradeBuilding
 {
-    public class ChooseBuildingJobCommand : ByAccountVillageIdBase, ICommand
+    public class ChooseBuildingJobCommand : ByAccountVillageIdBase, ICommand<JobDto>
     {
         public ChooseBuildingJobCommand(AccountId accountId, VillageId villageId) : base(accountId, villageId)
         {
@@ -20,7 +20,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
     }
 
     [RegisterAsTransient]
-    public class ChooseBuildingJobCommandHandler : ICommandHandler<ChooseBuildingJobCommand>
+    public class ChooseBuildingJobCommandHandler : ICommandHandler<ChooseBuildingJobCommand, JobDto>
     {
         private readonly IUnitOfRepository _unitOfRepository;
 

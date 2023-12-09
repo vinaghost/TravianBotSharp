@@ -38,17 +38,17 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
 
         public async Task<Result> Handle(ExtractResourceFieldCommand command, CancellationToken cancellationToken)
         {
-            var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content);
-            var normalBuildPlan = _buildingRepository.GetNormalBuildPlan(villageId, resourceBuildPlan);
+            var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(command.Job.Content);
+            var normalBuildPlan = _buildingRepository.GetNormalBuildPlan(command.VillageId, resourceBuildPlan);
             if (normalBuildPlan is null)
             {
-                _jobRepository.Delete(job.Id);
+                _jobRepository.Delete(command.Job.Id);
             }
             else
             {
-                _jobRepository.AddToTop(villageId, normalBuildPlan);
+                _jobRepository.AddToTop(command.VillageId, normalBuildPlan);
             }
-            await _mediator.Publish(new JobUpdated(accountId, villageId));
+            await _mediator.Publish(new JobUpdated(command.AccountId, command.VillageId));
             return Result.Ok();
         }
     }

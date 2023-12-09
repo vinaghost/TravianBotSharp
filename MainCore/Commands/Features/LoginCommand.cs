@@ -8,7 +8,7 @@ using MainCore.Services;
 using MediatR;
 using OpenQA.Selenium;
 
-namespace MainCore.Commands.Special
+namespace MainCore.Commands.Features
 {
     public class LoginCommand : ByAccountIdBase, IRequest<Result>
     {

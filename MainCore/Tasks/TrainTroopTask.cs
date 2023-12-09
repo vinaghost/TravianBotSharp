@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 using MainCore.Commands;
-using MainCore.Commands.Special;
+using MainCore.Commands.Features;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors.TrainTroop;
 using MainCore.Infrasturecture.AutoRegisterDi;
@@ -20,7 +20,7 @@ namespace MainCore.Tasks
             {BuildingEnums.Workshop, VillageSettingEnums.WorkshopTroop },
         };
 
-        public TrainTroopTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        public TrainTroopTask(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
         }
 

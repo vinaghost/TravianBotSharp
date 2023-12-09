@@ -6,7 +6,7 @@ using MainCore.Entities;
 using MainCore.Repositories;
 using MediatR;
 
-namespace MainCore.Commands.Special
+namespace MainCore.Commands.Features
 {
     public class ToFarmListPageCommand : ByAccountIdBase, IRequest<Result>
     {
@@ -18,9 +18,9 @@ namespace MainCore.Commands.Special
     public class ToFarmListPageCommandHandler : IRequestHandler<ToFarmListPageCommand, Result>
     {
         private readonly IUnitOfRepository _unitOfRepository;
-        private readonly IUnitOfCommand _unitOfCommand;
+        private readonly UnitOfCommand _unitOfCommand;
 
-        public ToFarmListPageCommandHandler(IUnitOfRepository unitOfRepository, IUnitOfCommand unitOfCommand)
+        public ToFarmListPageCommandHandler(IUnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand)
         {
             _unitOfRepository = unitOfRepository;
             _unitOfCommand = unitOfCommand;
@@ -30,31 +30,31 @@ namespace MainCore.Commands.Special
         {
             var accountId = request.AccountId;
             Result result;
-            result = await _unitOfCommand.UpdateVillageListCommand.Execute(accountId);
+            result = await _unitOfCommand.UpdateVillageListCommand.Handle(new(accountId), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var rallypointVillageId = _unitOfRepository.VillageRepository.GetVillageHasRallypoint(accountId);
             if (rallypointVillageId == VillageId.Empty) return Result.Fail(new NoRallypoint());
 
-            result = await _unitOfCommand.SwitchVillageCommand.Execute(accountId, rallypointVillageId, cancellationToken);
+            result = await _unitOfCommand.SwitchVillageCommand.Handle(new(accountId, rallypointVillageId), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.ToDorfCommand.Execute(accountId, 2, cancellationToken);
+            result = await _unitOfCommand.ToDorfCommand.Handle(new(accountId, 2), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, rallypointVillageId);
+            result = await _unitOfCommand.UpdateDorfCommand.Handle(new(accountId, rallypointVillageId), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.ToBuildingCommand.Execute(accountId, 39, cancellationToken);
+            result = await _unitOfCommand.ToBuildingCommand.Handle(new(accountId, 39), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.SwitchTabCommand.Execute(accountId, 4, cancellationToken);
+            result = await _unitOfCommand.SwitchTabCommand.Handle(new(accountId, 4), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.DelayClickCommandHandler.Handle(new(accountId), cancellationToken);
+            result = await _unitOfCommand.DelayClickCommand.Handle(new(accountId), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateFarmListCommand.Execute(accountId);
+            result = await _unitOfCommand.UpdateFarmListCommand.Handle(new(accountId), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

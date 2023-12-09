@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 using MainCore.Commands;
-using MainCore.Commands.Special;
+using MainCore.Commands.Features;
 using MainCore.Common.Errors;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Repositories;
@@ -12,7 +12,7 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateBuildingTask : VillageTask
     {
-        public UpdateBuildingTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        public UpdateBuildingTask(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
         }
 

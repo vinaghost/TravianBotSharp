@@ -10,7 +10,7 @@ namespace MainCore.Tasks.Base
 {
     public abstract class AccountTask : TaskBase
     {
-        protected AccountTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        protected AccountTask(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
         }
 
@@ -27,14 +27,14 @@ namespace MainCore.Tasks.Base
             if (CancellationToken.IsCancellationRequested) return new Cancel();
 
             Result result;
-            result = await _unitOfCommand.ValidateInGameCommand.Execute(AccountId);
+            result = await _unitOfCommand.ValidateIngameCommand.Handle(new(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            var inGame = _unitOfCommand.ValidateInGameCommand.Value;
+            var inGame = _unitOfCommand.ValidateIngameCommand.Value;
 
             if (inGame) return Result.Ok();
 
-            result = await _unitOfCommand.ValidateLoginCommand.Execute(AccountId);
+            result = await _unitOfCommand.ValidateLoginCommand.Handle(new(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var login = _unitOfCommand.ValidateLoginCommand.Value;

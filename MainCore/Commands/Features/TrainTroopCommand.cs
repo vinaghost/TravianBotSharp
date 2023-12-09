@@ -1,4 +1,6 @@
 ﻿using FluentResults;
+using MainCore.Commands.Base;
+using MainCore.Commands.Features.Step.TrainTroop;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Common.Errors.TrainTroop;
@@ -6,7 +8,7 @@ using MainCore.Entities;
 using MainCore.Repositories;
 using MediatR;
 
-namespace MainCore.Commands.Special
+namespace MainCore.Commands.Features
 {
     public class TrainTroopCommand : IRequest<Result>
     {
@@ -39,12 +41,17 @@ namespace MainCore.Commands.Special
         };
 
         private readonly IUnitOfRepository _unitOfRepository;
-        private readonly IUnitOfCommand _unitOfCommand;
+        private readonly UnitOfCommand _unitOfCommand;
 
-        public TrainTroopCommandHandler(IUnitOfRepository unitOfRepository, IUnitOfCommand unitOfCommand)
+        private readonly ICommandHandler<GetMaximumTroopCommand, int> _getMaximumTroopCommand;
+        private readonly ICommandHandler<InputAmountTroopCommand> _inputAmountTroopCommand;
+
+        public TrainTroopCommandHandler(IUnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, ICommandHandler<GetMaximumTroopCommand, int> getMaximumTroopCommand, ICommandHandler<InputAmountTroopCommand> inputAmountTroopCommand)
         {
             _unitOfRepository = unitOfRepository;
             _unitOfCommand = unitOfCommand;
+            _getMaximumTroopCommand = getMaximumTroopCommand;
+            _inputAmountTroopCommand = inputAmountTroopCommand;
         }
 
         public async Task<Result> Handle(TrainTroopCommand request, CancellationToken cancellationToken)
@@ -58,9 +65,9 @@ namespace MainCore.Commands.Special
         public async Task<Result> Execute(AccountId accountId, VillageId villageId, BuildingEnums buildingType, CancellationToken cancellationToken)
         {
             Result result;
-            result = await _unitOfCommand.ToDorfCommand.Execute(accountId, 2, cancellationToken);
+            result = await _unitOfCommand.ToDorfCommand.Handle(new(accountId, 2), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, villageId);
+            result = await _unitOfCommand.UpdateDorfCommand.Handle(new(accountId, villageId), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var buildingLocation = _unitOfRepository.BuildingRepository.GetBuildingLocation(villageId, buildingType);
@@ -68,7 +75,7 @@ namespace MainCore.Commands.Special
             {
                 return Result.Fail(new MissingBuilding(buildingType));
             }
-            result = await _unitOfCommand.ToBuildingCommand.Execute(accountId, buildingLocation, cancellationToken);
+            result = await _unitOfCommand.ToBuildingCommand.Handle(new(accountId, buildingLocation), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var troopSeting = _settings[buildingType];
@@ -76,10 +83,10 @@ namespace MainCore.Commands.Special
             var (minSetting, maxSetting) = _amountSettings[buildingType];
             var amount = _unitOfRepository.VillageSettingRepository.GetByName(villageId, minSetting, maxSetting);
 
-            result = _unitOfCommand.GetMaximumTroopCommand.Execute(accountId, troop);
+            result = await _getMaximumTroopCommand.Handle(new(accountId, troop), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            var maxAmount = _unitOfCommand.GetMaximumTroopCommand.Value;
+            var maxAmount = _getMaximumTroopCommand.Value;
 
             if (maxAmount == 0)
             {
@@ -99,7 +106,7 @@ namespace MainCore.Commands.Special
                 }
             }
 
-            result = await _unitOfCommand.InputAmountTroopCommand.Execute(accountId, troop, amount);
+            result = await _inputAmountTroopCommand.Handle(new(accountId, troop, amount), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             return Result.Ok();

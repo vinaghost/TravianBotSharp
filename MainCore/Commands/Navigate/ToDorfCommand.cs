@@ -11,7 +11,6 @@ using OpenQA.Selenium;
 
 namespace MainCore.Commands.Navigate
 {
-    [RegisterAsTransient]
     public class ToDorfCommand : ByAccountIdBase, ICommand
     {
         public int Dorf { get; }

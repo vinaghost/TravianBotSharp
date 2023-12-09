@@ -5,7 +5,7 @@ using MainCore.Common.Errors;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Services;
 
-namespace MainCore.Commands.Navigate.ToBuildingCommand
+namespace MainCore.Commands.Navigate.ToBuildingCommandHandler
 {
     [RegisterAsTransient(ServerEnums.TTWars)]
     public class TTWars : ICommandHandler<ToBuildingCommand>

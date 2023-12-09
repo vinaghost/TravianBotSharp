@@ -14,18 +14,19 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
     {
         public NormalBuildPlan Plan { get; }
 
-        public ToBuildingPageCommand(AccountId accountId, VillageId villageId) : base(accountId, villageId)
+        public ToBuildingPageCommand(AccountId accountId, VillageId villageId, NormalBuildPlan plan) : base(accountId, villageId)
         {
+            Plan = plan;
         }
     }
 
     [RegisterAsTransient]
     public class ToBuildingPageCommandHandler : ICommandHandler<ToBuildingPageCommand>
     {
-        private readonly IUnitOfCommand _unitOfCommand;
+        private readonly UnitOfCommand _unitOfCommand;
         private readonly IUnitOfRepository _unitOfRepository;
 
-        public ToBuildingPageCommandHandler(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository)
+        public ToBuildingPageCommandHandler(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository)
         {
             _unitOfCommand = unitOfCommand;
             _unitOfRepository = unitOfRepository;
@@ -36,27 +37,27 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             Result result;
 
             var dorf = command.Plan.Location < 19 ? 1 : 2;
-            result = await _unitOfCommand.ToDorfCommand.Execute(command.AccountId, dorf, cancellationToken);
+            result = await _unitOfCommand.ToDorfCommand.Handle(new(command.AccountId, dorf), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateDorfCommand.Execute(command.AccountId, command.VillageId);
+            result = await _unitOfCommand.UpdateDorfCommand.Handle(new(command.AccountId, command.VillageId), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.ToBuildingCommand.Execute(command.AccountId, command.Plan.Location, cancellationToken);
+            result = await _unitOfCommand.ToBuildingCommand.Handle(new(command.AccountId, command.Plan.Location), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var building = _unitOfRepository.BuildingRepository.GetBuilding(command.VillageId, command.Plan.Location);
             if (building.Type == BuildingEnums.Site)
             {
                 var tabIndex = GetBuildingsCategory(command.Plan.Type);
-                result = await _unitOfCommand.SwitchTabCommand.Execute(command.AccountId, tabIndex, cancellationToken);
+                result = await _unitOfCommand.SwitchTabCommand.Handle(new(command.AccountId, tabIndex), cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
             else
             {
                 if (building.Level == 0) return Result.Ok();
                 if (!HasMultipleTabs(building.Type)) return Result.Ok();
-                result = await _unitOfCommand.SwitchTabCommand.Execute(command.AccountId, 0, cancellationToken);
+                result = await _unitOfCommand.SwitchTabCommand.Handle(new(command.AccountId, 0), cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
             return Result.Ok();

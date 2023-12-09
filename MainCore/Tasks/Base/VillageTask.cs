@@ -9,7 +9,7 @@ namespace MainCore.Tasks.Base
 {
     public abstract class VillageTask : AccountTask
     {
-        protected VillageTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        protected VillageTask(UnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
         {
         }
 
@@ -29,7 +29,7 @@ namespace MainCore.Tasks.Base
             result = await base.PreExecute();
             if (result.IsFailed) return result;
 
-            result = await _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId, CancellationToken);
+            result = await _unitOfCommand.SwitchVillageCommand.Handle(new(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

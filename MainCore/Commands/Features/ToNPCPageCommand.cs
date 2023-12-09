@@ -6,7 +6,7 @@ using MainCore.Entities;
 using MainCore.Repositories;
 using MediatR;
 
-namespace MainCore.Commands.Special
+namespace MainCore.Commands.Features
 {
     public class ToNPCPageCommand : ByAccountVillageIdBase, IRequest<Result>
     {
@@ -18,9 +18,9 @@ namespace MainCore.Commands.Special
     public class ToNPCPageCommandHandler : IRequestHandler<ToNPCPageCommand, Result>
     {
         private readonly IUnitOfRepository _unitOfRepository;
-        private readonly IUnitOfCommand _unitOfCommand;
+        private readonly UnitOfCommand _unitOfCommand;
 
-        public ToNPCPageCommandHandler(IUnitOfRepository unitOfRepository, IUnitOfCommand unitOfCommand)
+        public ToNPCPageCommandHandler(IUnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand)
         {
             _unitOfRepository = unitOfRepository;
             _unitOfCommand = unitOfCommand;
@@ -35,10 +35,10 @@ namespace MainCore.Commands.Special
 
             var market = _unitOfRepository.BuildingRepository.GetBuildingLocation(villageId, BuildingEnums.Marketplace);
 
-            result = await _unitOfCommand.ToBuildingCommand.Execute(accountId, market, cancellationToken);
+            result = await _unitOfCommand.ToBuildingCommand.Handle(new(accountId, market), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.SwitchTabCommand.Execute(accountId, 1, cancellationToken);
+            result = await _unitOfCommand.SwitchTabCommand.Handle(new(accountId, 1), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

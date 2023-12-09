@@ -1,13 +1,15 @@
 ﻿using FluentResults;
+using MainCore.Commands.Base;
 using MainCore.Commands.General;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Common.MediatR;
+using MainCore.DTO;
 using MainCore.Entities;
 using MainCore.Repositories;
 using MediatR;
 
-namespace MainCore.Commands.Special
+namespace MainCore.Commands.Features
 {
     public class SleepCommand : ByAccountIdBase, IRequest<Result>
     {
@@ -18,14 +20,14 @@ namespace MainCore.Commands.Special
 
     public class SleepCommandHandler : IRequestHandler<SleepCommand, Result>
     {
-        private readonly ChooseAccessCommandHandler _chooseAccessCommandHandler;
-        private readonly SleepBrowserCommandHandler _sleepBrowserCommand;
-        private readonly OpenBrowserCommandHandler _openBrowserCommand;
+        private readonly ICommandHandler<ChooseAccessCommand, AccessDto> _chooseAccessCommand;
+        private readonly ICommandHandler<SleepBrowserCommand> _sleepBrowserCommand;
+        private readonly ICommandHandler<OpenBrowserCommand> _openBrowserCommand;
         private readonly IUnitOfRepository _unitOfRepository;
 
-        public SleepCommandHandler(ChooseAccessCommandHandler chooseAccessCommandHandler, SleepBrowserCommandHandler sleepBrowserCommand, OpenBrowserCommandHandler openBrowserCommand, IUnitOfRepository unitOfRepository)
+        public SleepCommandHandler(ICommandHandler<ChooseAccessCommand, AccessDto> chooseAccessCommand, ICommandHandler<SleepBrowserCommand> sleepBrowserCommand, ICommandHandler<OpenBrowserCommand> openBrowserCommand, IUnitOfRepository unitOfRepository)
         {
-            _chooseAccessCommandHandler = chooseAccessCommandHandler;
+            _chooseAccessCommand = chooseAccessCommand;
             _sleepBrowserCommand = sleepBrowserCommand;
             _openBrowserCommand = openBrowserCommand;
             _unitOfRepository = unitOfRepository;
@@ -36,14 +38,14 @@ namespace MainCore.Commands.Special
             var accountId = request.AccountId;
             var sleepTimeMinutes = _unitOfRepository.AccountSettingRepository.GetByName(accountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
             Result result;
-            result = await _sleepBrowserCommand.Execute(accountId, TimeSpan.FromMinutes(sleepTimeMinutes), cancellationToken);
+            result = await _sleepBrowserCommand.Handle(new(accountId, TimeSpan.FromMinutes(sleepTimeMinutes)), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _chooseAccessCommandHandler.Handle(new ChooseAccessCommand(accountId, false), cancellationToken);
+            result = await _chooseAccessCommand.Handle(new ChooseAccessCommand(accountId, false), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            var access = _chooseAccessCommandHandler.Value;
-            result = await _openBrowserCommand.Execute(accountId, access, cancellationToken);
+            var access = _chooseAccessCommand.Value;
+            result = await _openBrowserCommand.Handle(new(accountId, access), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

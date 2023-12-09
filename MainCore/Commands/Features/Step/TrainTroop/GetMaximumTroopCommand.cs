@@ -9,7 +9,7 @@ using MainCore.Services;
 
 namespace MainCore.Commands.Features.Step.TrainTroop
 {
-    public class GetMaximumTroopCommand : ByAccountIdBase, ICommand
+    public class GetMaximumTroopCommand : ByAccountIdBase, ICommand<int>
     {
         public TroopEnums Troop { get; }
 
@@ -20,7 +20,7 @@ namespace MainCore.Commands.Features.Step.TrainTroop
     }
 
     [RegisterAsTransient]
-    public class GetMaximumTroopCommandHandler : ICommandHandler<GetMaximumTroopCommand>
+    public class GetMaximumTroopCommandHandler : ICommandHandler<GetMaximumTroopCommand, int>
     {
         private readonly IChromeManager _chromeManager;
         private readonly IUnitOfParser _unitOfParser;

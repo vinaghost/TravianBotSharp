@@ -16,8 +16,10 @@ namespace MainCore.Commands.Features.Step.TrainTroop
         public TroopEnums Troop { get; }
         public int Amount { get; }
 
-        public InputAmountTroopCommand(AccountId accountId) : base(accountId)
+        public InputAmountTroopCommand(AccountId accountId, TroopEnums troop, int amount) : base(accountId)
         {
+            Troop = troop;
+            Amount = amount;
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using MainCore.Commands.Base;
 using MainCore.Commands.Features.Step.StartFarmlist;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
@@ -7,7 +8,7 @@ using MainCore.Entities;
 using MainCore.Repositories;
 using MediatR;
 
-namespace MainCore.Commands.Special
+namespace MainCore.Commands.Features
 {
     public class StartFarmListCommand : ByAccountIdBase, IRequest<Result>
     {
@@ -18,12 +19,12 @@ namespace MainCore.Commands.Special
 
     public class StartFarmListCommandHandler : IRequestHandler<StartFarmListCommand, Result>
     {
-        private readonly IStartSingleFarmListCommand _startSingleFarmListCommand;
-        private readonly IStartAllFarmListCommand _startAllFarmListCommand;
+        private readonly ICommandHandler<StartSingleFarmListCommand> _startSingleFarmListCommand;
+        private readonly ICommandHandler<StartAllFarmListCommand> _startAllFarmListCommand;
         private readonly IUnitOfRepository _unitOfRepository;
-        private readonly IUnitOfCommand _unitOfCommand;
+        private readonly UnitOfCommand _unitOfCommand;
 
-        public StartFarmListCommandHandler(IStartSingleFarmListCommand startSingleFarmListCommand, IStartAllFarmListCommand startAllFarmListCommand, IUnitOfRepository unitOfRepository, IUnitOfCommand unitOfCommand)
+        public StartFarmListCommandHandler(ICommandHandler<StartSingleFarmListCommand> startSingleFarmListCommand, ICommandHandler<StartAllFarmListCommand> startAllFarmListCommand, IUnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand)
         {
             _startSingleFarmListCommand = startSingleFarmListCommand;
             _startAllFarmListCommand = startAllFarmListCommand;
@@ -38,7 +39,7 @@ namespace MainCore.Commands.Special
             var useStartAllButton = _unitOfRepository.AccountSettingRepository.GetBooleanByName(accountId, AccountSettingEnums.UseStartAllButton);
             if (useStartAllButton)
             {
-                result = await _startAllFarmListCommand.Execute(accountId);
+                result = await _startAllFarmListCommand.Handle(new(accountId), cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
             else
@@ -48,10 +49,10 @@ namespace MainCore.Commands.Special
 
                 foreach (var farmList in farmLists)
                 {
-                    result = await _startSingleFarmListCommand.Execute(accountId, farmList);
+                    result = await _startSingleFarmListCommand.Handle(new(accountId, farmList), cancellationToken);
                     if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-                    await _unitOfCommand.DelayClickCommandHandler.Handle(new(accountId), cancellationToken);
+                    await _unitOfCommand.DelayClickCommand.Handle(new(accountId), cancellationToken);
                 }
             }
             return Result.Ok();

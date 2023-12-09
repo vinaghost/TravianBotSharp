@@ -28,10 +28,10 @@ namespace MainCore.Commands.General
         public AccessDto Value { get; private set; }
 
         private readonly IUnitOfRepository _unitOfRepository;
-        private readonly IUnitOfCommand _unitOfCommand;
+        private readonly UnitOfCommand _unitOfCommand;
         private readonly ILogService _logService;
 
-        public ChooseAccessCommandHandler(IUnitOfRepository unitOfRepository, IUnitOfCommand unitOfCommand, ILogService logService)
+        public ChooseAccessCommandHandler(IUnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, ILogService logService)
         {
             _unitOfRepository = unitOfRepository;
             _unitOfCommand = unitOfCommand;
@@ -43,7 +43,7 @@ namespace MainCore.Commands.General
             var logger = _logService.GetLogger(command.AccountId);
             var accesses = _unitOfRepository.AccountRepository.GetAccesses(command.AccountId);
 
-            var access = await GetValidAccess(accesses, logger);
+            var access = await GetValidAccess(accesses, logger, cancellationToken);
             if (access is null) return Result.Fail(NoAccessAvailable.AllAccessNotWorking);
 
             if (accesses.Count == 1)
@@ -66,15 +66,16 @@ namespace MainCore.Commands.General
             return Result.Ok();
         }
 
-        private async Task<AccessDto> GetValidAccess(List<AccessDto> accesses, ILogger logger)
+        private async Task<AccessDto> GetValidAccess(List<AccessDto> accesses, ILogger logger, CancellationToken cancellationToken)
         {
             foreach (var access in accesses)
             {
                 logger.Information("Check connection {proxy}", access.Proxy);
-                var valid = await _unitOfCommand.ValidateProxyCommand.Execute(access);
-                if (!valid)
+                var result = await _unitOfCommand.ValidateProxyCommand.Handle(new(access), cancellationToken);
+                if (result.IsFailed) return null;
+                if (!_unitOfCommand.ValidateProxyCommand.Value)
                 {
-                    logger.Warning("Connection {proxy} is not working", access.Proxy);
+                    logger.Warning("Connection {proxy} cannot connect to travian.com", access.Proxy);
                     continue;
                 }
                 logger.Information("Connection {proxy} is working", access.Proxy);

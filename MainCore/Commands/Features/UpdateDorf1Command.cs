@@ -5,7 +5,7 @@ using MainCore.Entities;
 using MainCore.Services;
 using MediatR;
 
-namespace MainCore.Commands.Special
+namespace MainCore.Commands.Features
 {
     public class UpdateDorf1Command : ByAccountVillageIdBase, IRequest<Result>
     {
@@ -17,9 +17,9 @@ namespace MainCore.Commands.Special
     public class UpdateDorf1CommandHandler : IRequestHandler<UpdateDorf1Command, Result>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfCommand _unitOfCommand;
+        private readonly UnitOfCommand _unitOfCommand;
 
-        public UpdateDorf1CommandHandler(IChromeManager chromeManager, IUnitOfCommand unitOfCommand)
+        public UpdateDorf1CommandHandler(IChromeManager chromeManager, UnitOfCommand unitOfCommand)
         {
             _chromeManager = chromeManager;
             _unitOfCommand = unitOfCommand;
@@ -38,23 +38,23 @@ namespace MainCore.Commands.Special
             await chromeBrowser.Refresh(cancellationToken);
             if (url.Contains("dorf1"))
             {
-                result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, villageId);
+                result = await _unitOfCommand.UpdateDorfCommand.Handle(new(accountId, villageId), cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
             else if (url.Contains("dorf2"))
             {
-                result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, villageId);
+                result = await _unitOfCommand.UpdateDorfCommand.Handle(new(accountId, villageId), cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-                result = await _unitOfCommand.ToDorfCommand.Execute(accountId, 1, cancellationToken);
+                result = await _unitOfCommand.ToDorfCommand.Handle(new(accountId, 1), cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-                result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, villageId);
+                result = await _unitOfCommand.UpdateDorfCommand.Handle(new(accountId, villageId), cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
             else
             {
-                result = await _unitOfCommand.ToDorfCommand.Execute(accountId, 1, cancellationToken);
+                result = await _unitOfCommand.ToDorfCommand.Handle(new(accountId, 1), cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-                result = await _unitOfCommand.UpdateDorfCommand.Execute(accountId, villageId);
+                result = await _unitOfCommand.UpdateDorfCommand.Handle(new(accountId, villageId), cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
 

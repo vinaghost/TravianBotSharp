@@ -29,10 +29,6 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             _mediator = mediator;
         }
 
-        public async Task<Result> Execute(AccountId accountId, VillageId villageId)
-        {
-        }
-
         public async Task<Result> Handle(AddCroplandCommand command, CancellationToken cancellationToken)
         {
             var cropland = _unitOfRepository.BuildingRepository.GetCropland(command.VillageId);
@@ -45,7 +41,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             };
 
             _unitOfRepository.JobRepository.AddToTop(command.VillageId, plan);
-            await _mediator.Publish(new JobUpdated(command.AccountId, command.VillageId));
+            await _mediator.Publish(new JobUpdated(command.AccountId, command.VillageId), cancellationToken);
             return Result.Ok();
         }
     }
