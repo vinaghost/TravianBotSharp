@@ -18,14 +18,14 @@ namespace MainCore.Commands.UI.MainLayout
     public class LogoutAccountCommandHandler : IRequestHandler<LogoutAccountCommand>
     {
         private readonly ITaskManager _taskManager;
-        private readonly ICloseBrowserCommand _closeCommand;
         private readonly IDialogService _dialogService;
+        private readonly CloseBrowserCommandHandler _closeBrowserCommandHandler;
 
-        public LogoutAccountCommandHandler(ITaskManager taskManager, ICloseBrowserCommand closeCommand, IDialogService dialogService)
+        public LogoutAccountCommandHandler(ITaskManager taskManager, IDialogService dialogService, CloseBrowserCommandHandler closeBrowserCommandHandler)
         {
             _taskManager = taskManager;
-            _closeCommand = closeCommand;
             _dialogService = dialogService;
+            _closeBrowserCommandHandler = closeBrowserCommandHandler;
         }
 
         public async Task Handle(LogoutAccountCommand request, CancellationToken cancellationToken)
@@ -62,7 +62,7 @@ namespace MainCore.Commands.UI.MainLayout
             _taskManager.SetStatus(accountId, StatusEnums.Stopping);
             await _taskManager.StopCurrentTask(accountId);
 
-            await _closeCommand.Execute(accountId);
+            await _closeBrowserCommandHandler.Handle(new CloseBrowserCommand(accountId), cancellationToken);
 
             _taskManager.SetStatus(accountId, StatusEnums.Offline);
         }

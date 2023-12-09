@@ -1,6 +1,8 @@
 ﻿using FluentResults;
+using MainCore.Commands.Base;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
+using MainCore.Common.MediatR;
 using MainCore.DTO;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
@@ -10,26 +12,36 @@ using Serilog;
 
 namespace MainCore.Commands.General
 {
-    [RegisterAsTransient]
-    public class ChooseAccessCommand : IChooseAccessCommand
+    public class ChooseAccessCommand : ByAccountIdBase, ICommand<AccessDto>
     {
+        public bool IgnoreSleepTime { get; }
+
+        public ChooseAccessCommand(AccountId accountId, bool ignoreSleepTime) : base(accountId)
+        {
+            IgnoreSleepTime = ignoreSleepTime;
+        }
+    }
+
+    [RegisterAsTransient]
+    public class ChooseAccessCommandHandler : ICommandHandler<ChooseAccessCommand, AccessDto>
+    {
+        public AccessDto Value { get; private set; }
+
         private readonly IUnitOfRepository _unitOfRepository;
         private readonly IUnitOfCommand _unitOfCommand;
         private readonly ILogService _logService;
 
-        public AccessDto Value { get; private set; }
-
-        public ChooseAccessCommand(IUnitOfRepository unitOfRepository, IUnitOfCommand unitOfCommand, ILogService logService)
+        public ChooseAccessCommandHandler(IUnitOfRepository unitOfRepository, IUnitOfCommand unitOfCommand, ILogService logService)
         {
             _unitOfRepository = unitOfRepository;
             _unitOfCommand = unitOfCommand;
             _logService = logService;
         }
 
-        public async Task<Result> Execute(AccountId accountId, bool ignoreSleepTime)
+        public async Task<Result> Handle(ChooseAccessCommand command, CancellationToken cancellationToken)
         {
-            var logger = _logService.GetLogger(accountId);
-            var accesses = _unitOfRepository.AccountRepository.GetAccesses(accountId);
+            var logger = _logService.GetLogger(command.AccountId);
+            var accesses = _unitOfRepository.AccountRepository.GetAccesses(command.AccountId);
 
             var access = await GetValidAccess(accesses, logger);
             if (access is null) return Result.Fail(NoAccessAvailable.AllAccessNotWorking);
@@ -39,13 +51,13 @@ namespace MainCore.Commands.General
                 Value = access;
                 return Result.Ok();
             }
-            if (ignoreSleepTime)
+            if (command.IgnoreSleepTime)
             {
                 Value = access;
                 return Result.Ok();
             }
 
-            var minSleep = _unitOfRepository.AccountSettingRepository.GetByName(accountId, AccountSettingEnums.SleepTimeMin);
+            var minSleep = _unitOfRepository.AccountSettingRepository.GetByName(command.AccountId, AccountSettingEnums.SleepTimeMin);
 
             var timeValid = DateTime.Now.AddMinutes(-minSleep);
             if (access.LastUsed > timeValid) return Result.Fail(NoAccessAvailable.LackOfAccess);

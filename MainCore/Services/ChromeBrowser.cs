@@ -125,11 +125,16 @@ namespace MainCore.Services
 
         public string CurrentUrl => _driver.Url;
 
-        public async Task<Result> Navigate(string url = null)
+        public async Task<Result> Refresh(CancellationToken cancellationToken)
+        {
+            return await Navigate("", cancellationToken);
+        }
+
+        public async Task<Result> Navigate(string url, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(url))
             {
-                return await Navigate(CurrentUrl);
+                return await Navigate(CurrentUrl, cancellationToken);
             }
 
             Result goToUrl()
@@ -146,7 +151,8 @@ namespace MainCore.Services
             }
             var result = await Task.Run(goToUrl);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = await WaitPageLoaded();
+            result = await WaitPageLoaded(cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return result;
         }
 
@@ -197,13 +203,17 @@ namespace MainCore.Services
             return Result.Ok();
         }
 
-        public async Task<Result> Wait(Func<IWebDriver, bool> condition)
+        public async Task<Result> Wait(Func<IWebDriver, bool> condition, CancellationToken cancellationToken)
         {
             Result wait()
             {
                 try
                 {
-                    _wait.Until(condition);
+                    _wait.Until(driver =>
+                    {
+                        if (cancellationToken.IsCancellationRequested) return true;
+                        return condition(driver);
+                    });
                 }
                 catch (WebDriverTimeoutException)
                 {
@@ -214,20 +224,22 @@ namespace MainCore.Services
             return await Task.Run(wait);
         }
 
-        public async Task<Result> WaitPageLoaded()
+        public async Task<Result> WaitPageLoaded(CancellationToken cancellationToken)
         {
             static bool pageLoaded(IWebDriver driver) => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete");
-            var result = await Wait(pageLoaded);
+            var result = await Wait(pageLoaded, cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return result;
         }
 
-        public async Task<Result> WaitPageChanged(string part)
+        public async Task<Result> WaitPageChanged(string part, CancellationToken cancellationToken)
         {
             bool pageChanged(IWebDriver driver) => driver.Url.Contains(part);
             Result result;
-            result = await Wait(pageChanged);
-            if (result.IsFailed) return result;
-            result = await WaitPageLoaded();
+            result = await Wait(pageChanged, cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            result = await WaitPageLoaded(cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return result;
         }
 

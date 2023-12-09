@@ -19,14 +19,14 @@ namespace MainCore.Services
         private readonly ITaskManager _taskManager;
         private readonly IChromeManager _chromeManager;
         private readonly ILogService _logService;
-        private readonly IDelayTaskCommand _delayTaskCommand;
+        private readonly DelayTaskCommandHandler _delayTaskCommandHandler;
 
-        public TimerManager(ITaskManager taskManager, IChromeManager chromeManager, ILogService logService, IDelayTaskCommand delayTaskCommand)
+        public TimerManager(ITaskManager taskManager, IChromeManager chromeManager, ILogService logService, DelayTaskCommandHandler delayTaskCommandHandler)
         {
             _taskManager = taskManager;
             _chromeManager = chromeManager;
             _logService = logService;
-            _delayTaskCommand = delayTaskCommand;
+            _delayTaskCommandHandler = delayTaskCommandHandler;
         }
 
         public async Task Execute(AccountId accountId)
@@ -60,7 +60,7 @@ namespace MainCore.Services
                     logger.Warning("Retry {retryCount} for {taskName}", retryCount, task.GetName());
 
                     var chromeBrowser = _chromeManager.Get(accountId);
-                    await chromeBrowser.Navigate();
+                    await chromeBrowser.Refresh(task.CancellationToken);
                 });
 
             var taskInfo = _taskManager.GetTaskInfo(accountId);
@@ -131,7 +131,7 @@ namespace MainCore.Services
                 }
             }
 
-            await _delayTaskCommand.Execute(accountId);
+            await _delayTaskCommandHandler.Handle(new DelayTaskCommand(accountId), CancellationToken.None);
         }
 
         public void Shutdown()

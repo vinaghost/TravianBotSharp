@@ -1,5 +1,7 @@
 ﻿using FluentResults;
+using MainCore.Commands.Base;
 using MainCore.Common.Errors;
+using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Parsers;
@@ -8,23 +10,30 @@ using OpenQA.Selenium;
 
 namespace MainCore.Commands.Navigate
 {
+    public class SwitchVillageCommand : ByAccountVillageIdBase, ICommand
+    {
+        public SwitchVillageCommand(AccountId accountId, VillageId villageId) : base(accountId, villageId)
+        {
+        }
+    }
+
     [RegisterAsTransient]
-    public class SwitchVillageCommand : ISwitchVillageCommand
+    public class SwitchVillageCommandHandler : ICommandHandler<SwitchVillageCommand>
     {
         private readonly IChromeManager _chromeManager;
         private readonly IUnitOfParser _unitOfParser;
 
-        public SwitchVillageCommand(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public SwitchVillageCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
         }
 
-        public async Task<Result> Execute(AccountId accountId, VillageId villageId)
+        public async Task<Result> Handle(SwitchVillageCommand command, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _chromeManager.Get(accountId);
+            var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
-            var node = _unitOfParser.VillagePanelParser.GetVillageNode(html, villageId);
+            var node = _unitOfParser.VillagePanelParser.GetVillageNode(html, command.VillageId);
             if (node is null) return Skip.VillageNotFound;
 
             if (_unitOfParser.VillagePanelParser.IsActive(node)) return Result.Ok();
@@ -32,7 +41,7 @@ namespace MainCore.Commands.Navigate
             Result result;
             result = await chromeBrowser.Click(By.XPath(node.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = await chromeBrowser.WaitPageChanged($"{villageId}");
+            result = await chromeBrowser.WaitPageChanged($"{command.VillageId}", cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

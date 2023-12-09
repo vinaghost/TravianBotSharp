@@ -29,7 +29,7 @@ namespace MainCore.Tasks.Base
             result = await base.PreExecute();
             if (result.IsFailed) return result;
 
-            result = await _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId);
+            result = await _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId, CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 using MainCore.Commands;
-using MainCore.Commands.Step.UpgradeBuilding;
+using MainCore.Commands.Features.Step.UpgradeBuilding;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Common.Errors.Storage;
@@ -84,7 +84,7 @@ namespace MainCore.Tasks
 
                 var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
                 logger.Information("Build {type} to level {level} at {location}", plan.Type, plan.Level, plan.Location);
-                result = await _toBuildingPageCommand.Execute(AccountId, VillageId, plan);
+                result = await _toBuildingPageCommand.Execute(AccountId, VillageId, plan, CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
                 if (await JobComplete(AccountId, VillageId, job))
@@ -117,7 +117,7 @@ namespace MainCore.Tasks
                     if (IsUseHeroResource())
                     {
                         var missingResource = _unitOfRepository.StorageRepository.GetMissingResource(VillageId, _getRequiredResourceCommand.Value);
-                        var heroResourceResult = await _useHeroResourceCommand.Execute(AccountId, missingResource);
+                        var heroResourceResult = await _useHeroResourceCommand.Execute(AccountId, missingResource, CancellationToken);
                         if (heroResourceResult.IsFailed)
                         {
                             if (!heroResourceResult.HasError<Retry>())
@@ -138,18 +138,18 @@ namespace MainCore.Tasks
                 {
                     if (IsSpecialUpgrade() && IsSpecialUpgradeable(plan))
                     {
-                        result = await _specialUpgradeCommand.Execute(AccountId);
+                        result = await _specialUpgradeCommand.Execute(AccountId, CancellationToken);
                         if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                     }
                     else
                     {
-                        result = await _upgradeCommand.Execute(AccountId);
+                        result = await _upgradeCommand.Execute(AccountId, CancellationToken);
                         if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                     }
                 }
                 else
                 {
-                    result = await _constructCommand.Execute(AccountId, plan);
+                    result = await _constructCommand.Execute(AccountId, plan, CancellationToken);
                     if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                 }
             }
