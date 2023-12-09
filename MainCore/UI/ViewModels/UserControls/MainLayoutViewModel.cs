@@ -198,7 +198,7 @@ namespace MainCore.UI.ViewModels.UserControls
             set => this.RaiseAndSetIfChanged(ref _version, value);
         }
 
-        private string _pauseText;
+        private string _pauseText = "[~~!~~]";
 
         public string PauseText
         {
