@@ -32,10 +32,10 @@ namespace MainCore.Commands.UI.Build
         private readonly ITaskManager _taskManager;
         private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
         private readonly IDialogService _dialogService;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
 
-        public BuildNormalCommandHandler(ITaskManager taskManager, IValidator<NormalBuildInput> normalBuildInputValidator, IDialogService dialogService, IUnitOfRepository unitOfRepository, IMediator mediator)
+        public BuildNormalCommandHandler(ITaskManager taskManager, IValidator<NormalBuildInput> normalBuildInputValidator, IDialogService dialogService, UnitOfRepository unitOfRepository, IMediator mediator)
         {
             _taskManager = taskManager;
             _normalBuildInputValidator = normalBuildInputValidator;

@@ -1,4 +1,6 @@
 ﻿using FluentResults;
+using MainCore.Commands.Base;
+using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Notification.Message;
@@ -9,21 +11,28 @@ using MediatR;
 
 namespace MainCore.Commands.Update
 {
-    [RegisterAsTransient]
-    public class UpdateAccountInfoCommand : UpdateCommandBase, IUpdateAccountInfoCommand
+    public class UpdateAccountInfoCommand : ByAccountIdBase, ICommand
     {
-        public UpdateAccountInfoCommand(IChromeManager chromeManager, IMediator mediator, IUnitOfRepository unitOfRepository, IUnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
+        public UpdateAccountInfoCommand(AccountId accountId) : base(accountId)
+        {
+        }
+    }
+
+    [RegisterAsTransient]
+    public class UpdateAccountInfoCommandHandler : UpdateCommandHandlerBase, ICommandHandler<UpdateAccountInfoCommand>
+    {
+        public UpdateAccountInfoCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, IUnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
         {
         }
 
-        public async Task<Result> Execute(AccountId accountId)
+        public async Task<Result> Handle(UpdateAccountInfoCommand command, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _chromeManager.Get(accountId);
+            var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
             var dto = _unitOfParser.AccountInfoParser.Get(html);
-            _unitOfRepository.AccountInfoRepository.Update(accountId, dto);
+            _unitOfRepository.AccountInfoRepository.Update(command.AccountId, dto);
 
-            await _mediator.Publish(new AccountInfoUpdated(accountId));
+            await _mediator.Publish(new AccountInfoUpdated(command.AccountId), cancellationToken);
             return Result.Ok();
         }
     }

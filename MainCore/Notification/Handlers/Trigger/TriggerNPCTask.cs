@@ -11,9 +11,9 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerNPCTask : INotificationHandler<StorageUpdated>, INotificationHandler<VillageSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public TriggerNPCTask(ITaskManager taskManager, IUnitOfRepository unitOfRepository)
+        public TriggerNPCTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
         {
             _taskManager = taskManager;
             _unitOfRepository = unitOfRepository;

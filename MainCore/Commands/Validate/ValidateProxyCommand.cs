@@ -1,4 +1,6 @@
-﻿using MainCore.DTO;
+﻿using FluentResults;
+using MainCore.Commands.Base;
+using MainCore.DTO;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Services;
 using Polly;
@@ -7,12 +9,22 @@ using RestSharp;
 
 namespace MainCore.Commands.Validate
 {
+    public class ValidateProxyCommand : ICommand<bool>
+    {
+        public AccessDto Access { get; }
+
+        public ValidateProxyCommand(AccessDto access)
+        {
+            Access = access;
+        }
+    }
+
     [RegisterAsTransient]
-    public class ValidateProxyCommand : IValidateProxyCommand
+    public class ValidateProxyCommandHandler : ICommandHandler<ValidateProxyCommand, bool>
     {
         private readonly IRestClientManager _restClientManager;
 
-        public ValidateProxyCommand(IRestClientManager restClientManager)
+        public ValidateProxyCommandHandler(IRestClientManager restClientManager)
         {
             _restClientManager = restClientManager;
         }
@@ -23,14 +35,7 @@ namespace MainCore.Commands.Validate
                     retryCount: 3,
                     sleepDurationProvider: _ => TimeSpan.FromSeconds(10));
 
-        public async Task<bool> Execute(AccessDto access)
-        {
-            var poliResult = await _retryPolicy
-                .ExecuteAndCaptureAsync(() => Validate(access));
-
-            if (!poliResult.Result) return false;
-            return true;
-        }
+        public bool Value { get; private set; }
 
         private async Task<bool> Validate(AccessDto access)
         {
@@ -41,6 +46,14 @@ namespace MainCore.Commands.Validate
             var client = _restClientManager.Get(access);
             var response = await client.ExecuteAsync(request);
             return response.IsSuccessful;
+        }
+
+        public async Task<Result> Handle(ValidateProxyCommand command, CancellationToken cancellationToken)
+        {
+            var poliResult = await _retryPolicy
+                    .ExecuteAndCaptureAsync(() => Validate(command.Access));
+            Value = poliResult.Result;
+            return Result.Ok();
         }
     }
 }

@@ -11,9 +11,9 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerRefreshVillageTask : INotificationHandler<VillageSettingUpdated>, INotificationHandler<AccountInit>
     {
         private readonly ITaskManager _taskManager;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public TriggerRefreshVillageTask(ITaskManager taskManager, IUnitOfRepository unitOfRepository)
+        public TriggerRefreshVillageTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
         {
             _taskManager = taskManager;
             _unitOfRepository = unitOfRepository;

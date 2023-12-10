@@ -18,9 +18,9 @@ namespace MainCore.Commands.UI.Farming
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public StartFarmListCommandHandler(ITaskManager taskManager, IDialogService dialogService, IUnitOfRepository unitOfRepository)
+        public StartFarmListCommandHandler(ITaskManager taskManager, IDialogService dialogService, UnitOfRepository unitOfRepository)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;

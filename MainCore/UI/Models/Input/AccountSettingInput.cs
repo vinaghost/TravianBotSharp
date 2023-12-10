@@ -15,6 +15,7 @@ namespace MainCore.UI.Models.Input
             WorkTime.Set(settings.GetValueOrDefault(AccountSettingEnums.WorkTimeMin), settings.GetValueOrDefault(AccountSettingEnums.WorkTimeMax));
             SleepTime.Set(settings.GetValueOrDefault(AccountSettingEnums.SleepTimeMin), settings.GetValueOrDefault(AccountSettingEnums.SleepTimeMax));
             IsAutoLoadVillage = settings.GetValueOrDefault(AccountSettingEnums.AutoLoadVillageBuilding) == 1;
+            HeadlessChrome = settings.GetValueOrDefault(AccountSettingEnums.HeadlessChrome) == 1;
         }
 
         public Dictionary<AccountSettingEnums, int> Get()
@@ -25,6 +26,7 @@ namespace MainCore.UI.Models.Input
             var isAutoLoadVillage = IsAutoLoadVillage ? 1 : 0;
             var (workTimeMin, workTimeMax) = WorkTime.Get();
             var (sleepTimeMin, sleepTimeMax) = SleepTime.Get();
+            var headlessChrome = HeadlessChrome ? 1 : 0;
 
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
@@ -38,6 +40,7 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.SleepTimeMin, sleepTimeMin },
                 { AccountSettingEnums.AutoLoadVillageBuilding, isAutoLoadVillage },
                 { AccountSettingEnums.Tribe, tribe },
+                { AccountSettingEnums.HeadlessChrome, headlessChrome },
             };
             return settings;
         }
@@ -55,6 +58,14 @@ namespace MainCore.UI.Models.Input
         {
             get => _isAutoLoadVillage;
             set => this.RaiseAndSetIfChanged(ref _isAutoLoadVillage, value);
+        }
+
+        private bool _headlessChrome;
+
+        public bool HeadlessChrome
+        {
+            get => _headlessChrome;
+            set => this.RaiseAndSetIfChanged(ref _headlessChrome, value);
         }
     }
 }

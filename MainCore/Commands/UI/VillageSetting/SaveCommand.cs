@@ -22,11 +22,11 @@ namespace MainCore.Commands.UI.VillageSetting
     public class SaveCommandHandler : IRequestHandler<SaveCommand>
     {
         private readonly IValidator<VillageSettingInput> _villageSettingInputValidator;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
 
-        public SaveCommandHandler(IValidator<VillageSettingInput> villageSettingInputValidator, IUnitOfRepository unitOfRepository, IDialogService dialogService, IMediator mediator)
+        public SaveCommandHandler(IValidator<VillageSettingInput> villageSettingInputValidator, UnitOfRepository unitOfRepository, IDialogService dialogService, IMediator mediator)
         {
             _villageSettingInputValidator = villageSettingInputValidator;
             _unitOfRepository = unitOfRepository;

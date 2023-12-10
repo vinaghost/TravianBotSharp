@@ -11,9 +11,9 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerBuildingUpdateTask : INotificationHandler<VillageUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public TriggerBuildingUpdateTask(ITaskManager taskManager, IUnitOfRepository unitOfRepository)
+        public TriggerBuildingUpdateTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
         {
             _taskManager = taskManager;
             _unitOfRepository = unitOfRepository;

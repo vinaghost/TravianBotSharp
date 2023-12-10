@@ -25,11 +25,11 @@ namespace MainCore.Commands.UI.Build
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
         private readonly IValidator<ResourceBuildInput> _resourceBuildInputValidator;
 
-        public BuildResourceCommandHandler(ITaskManager taskManager, IDialogService dialogService, IUnitOfRepository unitOfRepository, IMediator mediator, IValidator<ResourceBuildInput> resourceBuildInputValidator)
+        public BuildResourceCommandHandler(ITaskManager taskManager, IDialogService dialogService, UnitOfRepository unitOfRepository, IMediator mediator, IValidator<ResourceBuildInput> resourceBuildInputValidator)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;

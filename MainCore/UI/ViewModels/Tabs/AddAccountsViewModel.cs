@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.UI.Accounts;
+﻿using MainCore.Commands.UI.AddAccounts;
 using MainCore.DTO;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.UI.ViewModels.Abstract;

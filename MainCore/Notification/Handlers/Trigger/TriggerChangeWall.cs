@@ -6,9 +6,9 @@ namespace MainCore.Notification.Handlers.Trigger
 {
     public class TriggerChangeWall : INotificationHandler<VillageSettingUpdated>
     {
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        public TriggerChangeWall(IUnitOfRepository unitOfRepository)
+        public TriggerChangeWall(UnitOfRepository unitOfRepository)
         {
             _unitOfRepository = unitOfRepository;
         }

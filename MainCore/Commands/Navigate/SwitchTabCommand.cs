@@ -1,6 +1,8 @@
 ﻿using FluentResults;
 using HtmlAgilityPack;
+using MainCore.Commands.Base;
 using MainCore.Common.Errors;
+using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Parsers;
@@ -9,27 +11,37 @@ using OpenQA.Selenium;
 
 namespace MainCore.Commands.Navigate
 {
+    public class SwitchTabCommand : ByAccountIdBase, ICommand
+    {
+        public int Index { get; }
+
+        public SwitchTabCommand(AccountId accountId, int index) : base(accountId)
+        {
+            Index = index;
+        }
+    }
+
     [RegisterAsTransient]
-    public class SwitchTabCommand : ISwitchTabCommand
+    public class SwitchTabCommandHandler : ICommandHandler<SwitchTabCommand>
     {
         private readonly IChromeManager _chromeManager;
         private readonly IUnitOfParser _unitOfParser;
 
-        public SwitchTabCommand(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public SwitchTabCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
         }
 
-        public async Task<Result> Execute(AccountId accountId, int index)
+        public async Task<Result> Handle(SwitchTabCommand command, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _chromeManager.Get(accountId);
+            var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
 
             var count = _unitOfParser.NavigationTabParser.CountTab(html);
-            if (index > count) return Result.Fail(new Retry($"Found {count} tabs but need tab {index} active"));
-            var tab = _unitOfParser.NavigationTabParser.GetTab(html, index);
-            if (tab is null) return Result.Fail(Retry.NotFound($"{index}", "tab"));
+            if (command.Index > count) return Result.Fail(new Retry($"Found {count} tabs but need tab {command.Index} active"));
+            var tab = _unitOfParser.NavigationTabParser.GetTab(html, command.Index);
+            if (tab is null) return Result.Fail(Retry.NotFound($"{command.Index}", "tab"));
             if (_unitOfParser.NavigationTabParser.IsTabActive(tab)) return Result.Ok();
 
             Result result;
@@ -41,14 +53,14 @@ namespace MainCore.Commands.Navigate
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
                 var count = _unitOfParser.NavigationTabParser.CountTab(doc);
-                if (index > count) return false;
-                var tab = _unitOfParser.NavigationTabParser.GetTab(doc, index);
+                if (command.Index > count) return false;
+                var tab = _unitOfParser.NavigationTabParser.GetTab(doc, command.Index);
                 if (tab is null) return false;
                 if (!_unitOfParser.NavigationTabParser.IsTabActive(tab)) return false;
                 return true;
             };
 
-            result = await chromeBrowser.Wait(tabActived);
+            result = await chromeBrowser.Wait(tabActived, cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

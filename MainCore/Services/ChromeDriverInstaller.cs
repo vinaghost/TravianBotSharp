@@ -124,7 +124,7 @@ namespace MainCore.Services
             if (match.Success)
             {
                 var target = match.Value;
-                var newTarget = "{console.log(\"undetected chromedriver 1337!\")}"
+                var newTarget = "{console.log(\"undetected chromedriver 1337?\")}"
                     .PadRight(target.Length, ' ');
                 var newContent = content.Replace(target, newTarget);
 
