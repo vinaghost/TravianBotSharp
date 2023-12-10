@@ -21,7 +21,7 @@ namespace MainCore.UI.ViewModels.Tabs
         public ListBoxItemViewModel FarmLists { get; } = new();
 
         private readonly IMediator _mediator;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
 
         public ReactiveCommand<Unit, Unit> UpdateFarmList { get; }
         public ReactiveCommand<Unit, Unit> Save { get; }
@@ -31,7 +31,7 @@ namespace MainCore.UI.ViewModels.Tabs
         public ReactiveCommand<AccountId, List<ListBoxItem>> LoadFarmList { get; }
         public ReactiveCommand<AccountId, Dictionary<AccountSettingEnums, int>> LoadSetting { get; }
 
-        public FarmingViewModel(IMediator mediator, IUnitOfRepository unitOfRepository)
+        public FarmingViewModel(IMediator mediator, UnitOfRepository unitOfRepository)
         {
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;

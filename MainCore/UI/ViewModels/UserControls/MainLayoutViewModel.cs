@@ -12,6 +12,7 @@ using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using MediatR;
 using ReactiveUI;
+using Serilog;
 using System.Reactive.Linq;
 using System.Reflection;
 using Unit = System.Reactive.Unit;
@@ -22,7 +23,7 @@ namespace MainCore.UI.ViewModels.UserControls
     public class MainLayoutViewModel : ViewModelBase
     {
         private readonly IMediator _mediator;
-        private readonly IUnitOfRepository _unitOfRepository;
+        private readonly UnitOfRepository _unitOfRepository;
         private readonly ITaskManager _taskManager;
 
         private readonly AccountTabStore _accountTabStore;
@@ -30,7 +31,7 @@ namespace MainCore.UI.ViewModels.UserControls
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, IUnitOfRepository unitOfRepository, ITaskManager taskManager)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, UnitOfRepository unitOfRepository, ITaskManager taskManager)
         {
             _accountTabStore = accountTabStore;
             _selectedItemStore = selectedItemStore;
@@ -40,12 +41,13 @@ namespace MainCore.UI.ViewModels.UserControls
 
             AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler);
             AddAccounts = ReactiveCommand.CreateFromTask(AddAccountsHandler);
-
             DeleteAccount = ReactiveCommand.CreateFromTask(DeleteAccountHandler);
-            Login = ReactiveCommand.CreateFromTask(LoginHandler);
-            Logout = ReactiveCommand.CreateFromTask(LogoutTask);
-            Pause = ReactiveCommand.CreateFromTask(PauseTask);
-            Restart = ReactiveCommand.CreateFromTask(RestartTask);
+
+            var isEnable = this.WhenAnyValue(x => x.Accounts.IsEnable);
+            Login = ReactiveCommand.CreateFromTask(LoginHandler, isEnable);
+            Logout = ReactiveCommand.CreateFromTask(LogoutTask, isEnable);
+            Pause = ReactiveCommand.CreateFromTask(PauseTask, isEnable);
+            Restart = ReactiveCommand.CreateFromTask(RestartTask, isEnable);
 
             LoadVersion = ReactiveCommand.Create(LoadVersionHandler);
             LoadAccount = ReactiveCommand.Create(LoadAccountHandler);
@@ -70,13 +72,20 @@ namespace MainCore.UI.ViewModels.UserControls
                 })
                 .InvokeCommand(GetStatus);
 
-            LoadVersion.Subscribe(version => Version = $"{version} - {Constants.Server}");
+            LoadVersion
+                .Do(version => Log.Information("===============> Current version: {version} <===============", version))
+                .Subscribe(version => Version = version);
 
             LoadAccount.Subscribe(accounts => Accounts.Load(accounts));
 
             Pause.Subscribe(SetPauseText);
 
             GetStatus.Subscribe(SetPauseText);
+
+            Login.IsExecuting.Select(x => !x).BindTo(Accounts, x => x.IsEnable);
+            Logout.IsExecuting.Select(x => !x).BindTo(Accounts, x => x.IsEnable);
+            Pause.IsExecuting.Select(x => !x).BindTo(Accounts, x => x.IsEnable);
+            Restart.IsExecuting.Select(x => !x).BindTo(Accounts, x => x.IsEnable);
         }
 
         public async Task Load()
@@ -150,12 +159,11 @@ namespace MainCore.UI.ViewModels.UserControls
             return account;
         }
 
-        private Version LoadVersionHandler()
+        private string LoadVersionHandler()
         {
             var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
             var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
-            Thread.Sleep(20000);
-            return version;
+            return $"{version} - {Constants.Server}";
         }
 
         private void SetPauseText(StatusEnums status)
@@ -190,7 +198,7 @@ namespace MainCore.UI.ViewModels.UserControls
             set => this.RaiseAndSetIfChanged(ref _version, value);
         }
 
-        private string _pauseText;
+        private string _pauseText = "[~~!~~]";
 
         public string PauseText
         {
@@ -205,7 +213,7 @@ namespace MainCore.UI.ViewModels.UserControls
         public ReactiveCommand<Unit, Unit> Logout { get; }
         public ReactiveCommand<Unit, StatusEnums> Pause { get; }
         public ReactiveCommand<Unit, Unit> Restart { get; }
-        public ReactiveCommand<Unit, Version> LoadVersion { get; }
+        public ReactiveCommand<Unit, string> LoadVersion { get; }
         public ReactiveCommand<Unit, List<ListBoxItem>> LoadAccount { get; }
         public ReactiveCommand<AccountId, ListBoxItem> GetAccount { get; }
         public ReactiveCommand<AccountId, StatusEnums> GetStatus { get; }

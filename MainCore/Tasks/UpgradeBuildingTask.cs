@@ -1,6 +1,7 @@
 ﻿using FluentResults;
 using MainCore.Commands;
-using MainCore.Commands.Step.UpgradeBuilding;
+using MainCore.Commands.Base;
+using MainCore.Commands.Features.Step.UpgradeBuilding;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Common.Errors.Storage;
@@ -21,21 +22,21 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpgradeBuildingTask : VillageTask
     {
-        private readonly IChooseBuildingJobCommand _chooseBuildingJobCommand;
-        private readonly IExtractResourceFieldCommand _extractResourceFieldCommand;
-        private readonly IToBuildingPageCommand _toBuildingPageCommand;
-        private readonly IGetRequiredResourceCommand _getRequiredResourceCommand;
-        private readonly IAddCroplandCommand _addCroplandCommand;
-        private readonly IGetTimeWhenEnoughResourceCommand _getTimeWhenEnoughResourceCommand;
-        private readonly IConstructCommand _constructCommand;
-        private readonly IUpgradeCommand _upgradeCommand;
-        private readonly ISpecialUpgradeCommand _specialUpgradeCommand;
+        private readonly ICommandHandler<ChooseBuildingJobCommand, JobDto> _chooseBuildingJobCommand;
+        private readonly ICommandHandler<ExtractResourceFieldCommand> _extractResourceFieldCommand;
+        private readonly ICommandHandler<ToBuildingPageCommand> _toBuildingPageCommand;
+        private readonly ICommandHandler<GetRequiredResourceCommand, long[]> _getRequiredResourceCommand;
+        private readonly ICommandHandler<AddCroplandCommand> _addCroplandCommand;
+        private readonly ICommandHandler<GetTimeWhenEnoughResourceCommand, TimeSpan> _getTimeWhenEnoughResourceCommand;
+        private readonly ICommandHandler<ConstructCommand> _constructCommand;
+        private readonly ICommandHandler<UpgradeCommand> _upgradeCommand;
+        private readonly ICommandHandler<SpecialUpgradeCommand> _specialUpgradeCommand;
 
-        private readonly IUseHeroResourceCommand _useHeroResourceCommand;
+        private readonly ICommandHandler<UseHeroResourceCommand> _useHeroResourceCommand;
 
         private readonly ILogService _logService;
 
-        public UpgradeBuildingTask(IUnitOfCommand unitOfCommand, IUnitOfRepository unitOfRepository, IMediator mediator, IChooseBuildingJobCommand chooseBuildingJobCommand, IExtractResourceFieldCommand extractResourceFieldCommand, IToBuildingPageCommand toBuildingPageCommand, IGetRequiredResourceCommand getRequiredResourceCommand, IAddCroplandCommand addCroplandCommand, IGetTimeWhenEnoughResourceCommand getTimeWhenEnoughResourceCommand, IConstructCommand constructCommand, IUpgradeCommand upgradeCommand, ISpecialUpgradeCommand specialUpgradeCommand, IUseHeroResourceCommand useHeroResourceCommand, ILogService logService) : base(unitOfCommand, unitOfRepository, mediator)
+        public UpgradeBuildingTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ICommandHandler<ChooseBuildingJobCommand, JobDto> chooseBuildingJobCommand, ICommandHandler<ExtractResourceFieldCommand> extractResourceFieldCommand, ICommandHandler<ToBuildingPageCommand> toBuildingPageCommand, ICommandHandler<GetRequiredResourceCommand, long[]> getRequiredResourceCommand, ICommandHandler<AddCroplandCommand> addCroplandCommand, ICommandHandler<GetTimeWhenEnoughResourceCommand, TimeSpan> getTimeWhenEnoughResourceCommand, ICommandHandler<ConstructCommand> constructCommand, ICommandHandler<UpgradeCommand> upgradeCommand, ICommandHandler<SpecialUpgradeCommand> specialUpgradeCommand, ICommandHandler<UseHeroResourceCommand> useHeroResourceCommand, ILogService logService) : base(unitOfCommand, unitOfRepository, mediator)
         {
             _chooseBuildingJobCommand = chooseBuildingJobCommand;
             _extractResourceFieldCommand = extractResourceFieldCommand;
@@ -52,24 +53,20 @@ namespace MainCore.Tasks
 
         protected override async Task<Result> Execute()
         {
-            if (CancellationToken.IsCancellationRequested) return new Cancel();
             var logger = _logService.GetLogger(AccountId);
 
             Result result;
-            result = await _unitOfCommand.SwitchVillageCommand.Execute(AccountId, VillageId);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
             while (true)
             {
                 if (CancellationToken.IsCancellationRequested) return new Cancel();
 
-                result = await _unitOfCommand.UpdateAccountInfoCommand.Execute(AccountId);
+                result = await _unitOfCommand.UpdateAccountInfoCommand.Handle(new(AccountId), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-                result = await _unitOfCommand.UpdateDorfCommand.Execute(AccountId, VillageId);
+                result = await _unitOfCommand.UpdateDorfCommand.Handle(new(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-                result = await _chooseBuildingJobCommand.Execute(AccountId, VillageId);
+                result = await _chooseBuildingJobCommand.Handle(new(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed)
                 {
                     if (result.HasError<BuildingQueue>())
@@ -81,14 +78,14 @@ namespace MainCore.Tasks
                 var job = _chooseBuildingJobCommand.Value;
                 if (job.Type == JobTypeEnums.ResourceBuild)
                 {
-                    result = await _extractResourceFieldCommand.Execute(AccountId, VillageId, job);
+                    result = await _extractResourceFieldCommand.Handle(new(AccountId, VillageId, job), CancellationToken);
                     if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                     continue;
                 }
 
                 var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
                 logger.Information("Build {type} to level {level} at {location}", plan.Type, plan.Level, plan.Location);
-                result = await _toBuildingPageCommand.Execute(AccountId, VillageId, plan);
+                result = await _toBuildingPageCommand.Handle(new(AccountId, VillageId, plan), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
                 if (await JobComplete(AccountId, VillageId, job))
@@ -96,7 +93,7 @@ namespace MainCore.Tasks
                     continue;
                 }
 
-                result = _getRequiredResourceCommand.Execute(AccountId, VillageId, plan);
+                result = await _getRequiredResourceCommand.Handle(new(AccountId, VillageId, plan), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
                 var requiredResource = _getRequiredResourceCommand.Value;
@@ -105,7 +102,7 @@ namespace MainCore.Tasks
                 {
                     if (result.HasError<FreeCrop>())
                     {
-                        result = await _addCroplandCommand.Execute(AccountId, VillageId);
+                        result = await _addCroplandCommand.Handle(new(AccountId, VillageId), CancellationToken);
                         if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                         continue;
                     }
@@ -121,12 +118,12 @@ namespace MainCore.Tasks
                     if (IsUseHeroResource())
                     {
                         var missingResource = _unitOfRepository.StorageRepository.GetMissingResource(VillageId, _getRequiredResourceCommand.Value);
-                        var heroResourceResult = await _useHeroResourceCommand.Execute(AccountId, missingResource);
+                        var heroResourceResult = await _useHeroResourceCommand.Handle(new(AccountId, missingResource), CancellationToken);
                         if (heroResourceResult.IsFailed)
                         {
                             if (!heroResourceResult.HasError<Retry>())
                             {
-                                var timeResult = SetEnoughResourcesTime(AccountId, VillageId, plan);
+                                var timeResult = await SetEnoughResourcesTime(AccountId, VillageId, plan);
                                 if (timeResult.IsFailed)
                                 {
                                     return timeResult.WithError(new TraceMessage(TraceMessage.Line()));
@@ -142,18 +139,18 @@ namespace MainCore.Tasks
                 {
                     if (IsSpecialUpgrade() && IsSpecialUpgradeable(plan))
                     {
-                        result = await _specialUpgradeCommand.Execute(AccountId);
+                        result = await _specialUpgradeCommand.Handle(new(AccountId), CancellationToken);
                         if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                     }
                     else
                     {
-                        result = await _upgradeCommand.Execute(AccountId);
+                        result = await _upgradeCommand.Handle(new(AccountId), CancellationToken);
                         if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                     }
                 }
                 else
                 {
-                    result = await _constructCommand.Execute(AccountId, plan);
+                    result = await _constructCommand.Handle(new(AccountId, plan), CancellationToken);
                     if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                 }
             }
@@ -202,9 +199,9 @@ namespace MainCore.Tasks
             return useHeroResource;
         }
 
-        private Result SetEnoughResourcesTime(AccountId accountId, VillageId villageId, NormalBuildPlan plan)
+        private async Task<Result> SetEnoughResourcesTime(AccountId accountId, VillageId villageId, NormalBuildPlan plan)
         {
-            var result = _getTimeWhenEnoughResourceCommand.Execute(accountId, villageId, plan);
+            var result = await _getTimeWhenEnoughResourceCommand.Handle(new(accountId, villageId, plan), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             var time = _getTimeWhenEnoughResourceCommand.Value;
             ExecuteAt = DateTime.Now.Add(time);
