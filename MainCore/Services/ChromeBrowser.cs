@@ -26,7 +26,7 @@ namespace MainCore.Services
             _extensionsPath = extensionsPath;
 
             _chromeService = ChromeDriverService.CreateDefaultService();
-            _chromeService.HideCommandPromptWindow = false;
+            _chromeService.HideCommandPromptWindow = true;
         }
 
         public async Task<Result> Setup(ChromeSetting setting)
