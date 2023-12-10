@@ -8,6 +8,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting.Display;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -33,6 +34,7 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         private bool _isLogLoading = false;
+        private const string _discordUrl = "https://ko-fi.com/vinaghost";
 
         public DebugViewModel(ILogEventSink logSink, ITaskManager taskManager)
         {
@@ -44,6 +46,9 @@ namespace MainCore.UI.ViewModels.Tabs
 
             LoadTask = ReactiveCommand.Create<AccountId, List<TaskItem>>(LoadTaskHandler);
             LoadLog = ReactiveCommand.Create<AccountId>(LoadLogHandler);
+            GetHelpCommand = ReactiveCommand.Create(GetHelpTask);
+            LogFolderCommand = ReactiveCommand.Create(LogFolderTask);
+
             LoadTask.Subscribe(items =>
             {
                 Tasks.Clear();
@@ -105,7 +110,27 @@ namespace MainCore.UI.ViewModels.Tabs
             _isLogLoading = false;
         }
 
+        private void GetHelpTask()
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = _discordUrl,
+                UseShellExecute = true
+            });
+        }
+
+        private void LogFolderTask()
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = Path.Combine(AppContext.BaseDirectory, "logs"),
+                UseShellExecute = true
+            });
+        }
+
         public ReactiveCommand<AccountId, List<TaskItem>> LoadTask { get; }
         public ReactiveCommand<AccountId, Unit> LoadLog { get; }
+        public ReactiveCommand<Unit, Unit> GetHelpCommand { get; }
+        public ReactiveCommand<Unit, Unit> LogFolderCommand { get; }
     }
 }

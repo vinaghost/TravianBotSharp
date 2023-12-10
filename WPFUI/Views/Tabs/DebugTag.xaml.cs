@@ -20,6 +20,9 @@ namespace WPFUI.Views.Tabs
             {
                 this.Bind(ViewModel, vm => vm.Logs, v => v.LogView.Text).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.Tasks, v => v.TaskView.ItemsSource).DisposeWith(d);
+
+                this.BindCommand(ViewModel, vm => vm.GetHelpCommand, v => v.ReportButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.LogFolderCommand, v => v.LogButton).DisposeWith(d);
             });
         }
     }
