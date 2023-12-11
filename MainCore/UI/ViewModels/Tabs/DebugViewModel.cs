@@ -54,7 +54,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 Tasks.Clear();
                 items.ForEach(Tasks.Add);
             });
-            LoadLog.Subscribe(logs =>
+            LoadLog.Subscribe(x =>
             {
                 Logs = _cacheLog;
             });
