@@ -19,7 +19,7 @@ namespace MainCore.Services
 
         private readonly string[] _extensionsPath;
         private readonly HtmlDocument _htmlDoc = new();
-        public string EndpointAddress { get; private set; }
+        public string EndpointAddress => _driver?.GetDevToolsSession().EndpointAddress ?? "";
 
         public ChromeBrowser(string[] extensionsPath)
         {
@@ -61,19 +61,16 @@ namespace MainCore.Services
 
             options.AddArguments("--no-default-browser-check", "--no-first-run");
             options.AddArguments("--no-sandbox", "--test-type");
+            options.AddArgument("--remote-debugging-port=0");
 
             if (setting.IsHeadless)
             {
                 options.AddArgument("--headless=new");
-                options.AddArgument("--remote-debugging-port=0");
-                EndpointAddress = _driver.GetDevToolsSession().EndpointAddress;
             }
             else
             {
                 options.AddArgument("--start-maximized");
-                EndpointAddress = "";
             }
-
             var pathUserData = Path.Combine(AppContext.BaseDirectory, "Data", "Cache", setting.ProfilePath);
             if (!Directory.Exists(pathUserData)) Directory.CreateDirectory(pathUserData);
 
