@@ -82,7 +82,7 @@ namespace MainCore.Commands.UI.Build
             }
         }
 
-        private bool IsResourceField(NormalBuildPlan plan)
+        private static bool IsResourceField(NormalBuildPlan plan)
         {
             return plan.Type.IsResourceField();
         }
