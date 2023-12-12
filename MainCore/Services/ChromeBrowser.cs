@@ -25,7 +25,6 @@ namespace MainCore.Services
             get
             {
                 if (_driver is null) return "";
-                if (!_driver.HasActiveDevToolsSession) return "";
                 return _driver.GetDevToolsSession().EndpointAddress;
             }
         }
@@ -109,13 +108,7 @@ namespace MainCore.Services
         public async Task Shutdown()
         {
             if (_driver is null) return;
-
-            try
-            {
-                await Task.Run(_driver.Quit);
-            }
-            catch { }
-            _driver = null;
+            await Close();
             _chromeService.Dispose();
         }
 
@@ -252,6 +245,11 @@ namespace MainCore.Services
             return result;
         }
 
-        public async Task Close() => await Task.Run(_driver.Close);
+        public async Task Close()
+        {
+            if (_driver is null) return;
+            await Task.Run(_driver.Quit);
+            _driver = null;
+        }
     }
 }
