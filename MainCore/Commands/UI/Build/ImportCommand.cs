@@ -1,5 +1,4 @@
-﻿using DynamicData;
-using MainCore.Common.Enums;
+﻿using MainCore.Common.Enums;
 using MainCore.Common.Extensions;
 using MainCore.Common.MediatR;
 using MainCore.Common.Models;
@@ -51,27 +50,41 @@ namespace MainCore.Commands.UI.Build
             var accountId = request.AccountId;
             var villageId = request.VillageId;
 
-            var deserializeJobs = jobs
-                .Where(x => x.Type == JobTypeEnums.NormalBuild)
-                .Select(x => new
-                {
-                    Job = x,
-                    Content = JsonSerializer.Deserialize<NormalBuildPlan>(x.Content),
-                })
-                .ToList();
-
-            var fieldJobs = deserializeJobs
-                .Where(x => x.Content.Type.IsResourceField())
-                .Select(x => x.Job)
-                .ToList();
-
-            jobs.RemoveMany(fieldJobs);
-
-            _unitOfRepository.JobRepository.AddRange(villageId, jobs);
+            var modifiedJobs = GetModifiedJobs(jobs);
+            _unitOfRepository.JobRepository.AddRange(villageId, modifiedJobs);
 
             await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
 
             _dialogService.ShowMessageBox("Information", "Jobs imported");
+        }
+
+        private IEnumerable<JobDto> GetModifiedJobs(List<JobDto> jobs)
+        {
+            foreach (var job in jobs)
+            {
+                switch (job.Type)
+                {
+                    case JobTypeEnums.NormalBuild:
+                        {
+                            var content = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
+                            if (IsResourceField(content)) continue;
+                            yield return job;
+                            continue;
+                        }
+                    case JobTypeEnums.ResourceBuild:
+                        {
+                            yield return job;
+                            continue;
+                        }
+                    default:
+                        continue;
+                }
+            }
+        }
+
+        private bool IsResourceField(NormalBuildPlan plan)
+        {
+            return plan.Type.IsResourceField();
         }
     }
 }
