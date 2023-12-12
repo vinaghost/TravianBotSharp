@@ -72,6 +72,13 @@ namespace MainCore.UI.ViewModels.Tabs
             LoadLog.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler).Subscribe();
         }
 
+        public async Task EndpointAddressRefresh(AccountId accountId)
+        {
+            if (!IsActive) return;
+            if (accountId != AccountId) return;
+            await LoadEndpointAddress.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+        }
+
         public async Task TaskListRefresh(AccountId accountId)
         {
             if (!IsActive) return;
