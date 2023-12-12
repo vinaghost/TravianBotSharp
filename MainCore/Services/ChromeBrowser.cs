@@ -19,7 +19,16 @@ namespace MainCore.Services
 
         private readonly string[] _extensionsPath;
         private readonly HtmlDocument _htmlDoc = new();
-        public string EndpointAddress => _driver?.GetDevToolsSession().EndpointAddress ?? "";
+
+        public string EndpointAddress
+        {
+            get
+            {
+                if (_driver is null) return "";
+                if (!_driver.HasActiveDevToolsSession) return "";
+                return _driver.GetDevToolsSession().EndpointAddress;
+            }
+        }
 
         public ChromeBrowser(string[] extensionsPath)
         {
@@ -61,7 +70,6 @@ namespace MainCore.Services
 
             options.AddArguments("--no-default-browser-check", "--no-first-run");
             options.AddArguments("--no-sandbox", "--test-type");
-            options.AddArgument("--remote-debugging-port=0");
 
             if (setting.IsHeadless)
             {
@@ -78,11 +86,11 @@ namespace MainCore.Services
 
             options.AddArguments($"user-data-dir={pathUserData}");
 
-            _driver = await Task.Run(() => new ChromeDriver(_chromeService, options));
+            _driver = await Task.Run(() => new ChromeDriver(_chromeService, options, TimeSpan.FromMinutes(1)));
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(1);
-
-            _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3));
+            _driver.GetDevToolsSession();
+            _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3)); // watch ads
 
             return Result.Ok();
         }
