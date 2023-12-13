@@ -17,9 +17,18 @@
             <ColumnDefinition Width="2" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Border Style="{DynamicResource Box}" Grid.Column="0">
-            <ListBox x:Name="BuildingsGrid" SelectionMode="Single" ItemTemplate="{DynamicResource ListBoxBlackColorItem}" />
-        </Border>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Border Style="{DynamicResource Box}" Grid.Row="0">
+                <ListBox x:Name="QueueGrid" SelectionMode="Single" ItemTemplate="{DynamicResource ListBoxItem}" />
+            </Border>
+            <Border Style="{DynamicResource Box}" Grid.Row="1">
+                <ListBox x:Name="BuildingsGrid" SelectionMode="Single" ItemTemplate="{DynamicResource ListBoxBlackColorItem}" />
+            </Border>
+        </Grid>
         <Grid Grid.Column="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -77,8 +86,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <Border Grid.Row="0" Style="{DynamicResource Box}">
-                <Grid>
+                <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
@@ -87,7 +95,6 @@
                     <Button x:Name="ImportButton"       Grid.Column="0" Content="Import" Margin="5" />
                     <Button x:Name="ExportButton"       Grid.Column="1" Content="Export" Margin="5" />
                 </Grid>
-            </Border>
             <Border Grid.Row="1" Style="{DynamicResource Box}">
                 <ListBox x:Name="JobsGrid" SelectionMode="Single" ItemTemplate="{DynamicResource ListBoxColorItem}">
                     <ListBox.ContextMenu>

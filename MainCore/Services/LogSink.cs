@@ -33,7 +33,7 @@ namespace MainCore.Services
             var logs = GetLogs(accountId);
             logs.AddFirst(logEvent);
             // keeps 200 message
-            while (logs.Count > 200)
+            if (logs.Count > 200)
             {
                 logs.RemoveLast();
             }
