@@ -24,7 +24,7 @@ namespace MainCore.Repositories
 
         bool IsRallyPointExists(VillageId villageId);
 
-        List<BuildingItem> GetLevelBuildings(VillageId villageId);
+        List<BuildingItem> GetBuildingItems(VillageId villageId);
 
         void Update(VillageId villageId, List<BuildingDto> dtos);
 
