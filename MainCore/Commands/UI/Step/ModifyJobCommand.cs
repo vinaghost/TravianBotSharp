@@ -26,9 +26,25 @@ namespace MainCore.Commands.UI.Step
     public class ModifyJobCommandHandler : ICommandHandler<ModifyJobCommand, List<JobDto>>
     {
         private readonly UnitOfRepository _unitOfRepository;
-        private readonly List<int> _excludedLocations = new() { 26, 39, 40 }; //main building, rallypoint and wall
+        private static readonly List<int> _excludedLocations = new() { 26, 39, 40 }; //main building, rallypoint and wall
+
+        private static readonly Dictionary<ResourcePlanEnums, List<BuildingEnums>> _fieldList = new()
+        {
+            {ResourcePlanEnums.AllResources, new(){
+                BuildingEnums.Woodcutter,
+                BuildingEnums.ClayPit,
+                BuildingEnums.IronMine,
+                BuildingEnums.Cropland,}},
+            {ResourcePlanEnums.ExcludeCrop, new() {
+                BuildingEnums.Woodcutter,
+                BuildingEnums.ClayPit,
+                BuildingEnums.IronMine,}},
+            {ResourcePlanEnums.OnlyCrop, new() {
+                BuildingEnums.Cropland,}},
+        };
 
         public ModifyJobCommandHandler(UnitOfRepository unitOfRepository)
+
         {
             _unitOfRepository = unitOfRepository;
         }
@@ -67,7 +83,8 @@ namespace MainCore.Commands.UI.Step
                         }
                     case JobTypeEnums.ResourceBuild:
                         {
-                            yield return job;
+                            var plan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content);
+                            if (IsValidPlan(buildings, plan)) yield return job;
                             continue;
                         }
                     default:
@@ -81,11 +98,28 @@ namespace MainCore.Commands.UI.Step
             return JsonSerializer.Serialize(plan);
         }
 
+        private static bool IsValidPlan(List<BuildingItem> buildings, ResourceBuildPlan plan)
+        {
+            var fieldTypes = _fieldList[plan.Plan];
+
+            var fields = buildings
+                .Where(x => fieldTypes.Contains(x.Type))
+                .ToList();
+
+            if (fields.TrueForAll(x => x.Level >= plan.Level)) return false;
+
+            foreach (var field in fields)
+            {
+                if (field.Level < plan.Level) field.JobLevel = plan.Level;
+            }
+            return true;
+        }
+
         private static bool IsValidPlan(List<BuildingItem> buildings, NormalBuildPlan plan)
         {
             var building = buildings.FirstOrDefault(x => x.Location == plan.Location);
             if (building is null) return false;
-            if (building.JobLevel >= plan.Level) return false;
+            if (building.Level >= plan.Level) return false;
 
             if (building.Type == BuildingEnums.Site) building.Type = plan.Type;
             building.JobLevel = plan.Level;
@@ -110,7 +144,10 @@ namespace MainCore.Commands.UI.Step
 
         private static bool ModifyMultiple(List<BuildingItem> buildings, NormalBuildPlan plan)
         {
-            var largestLevelBuilding = buildings.Where(x => x.Type == plan.Type).OrderByDescending(x => x.Level).FirstOrDefault();
+            var largestLevelBuilding = buildings
+                .Where(x => x.Type == plan.Type)
+                .OrderByDescending(x => x.Level)
+                .FirstOrDefault();
             if (largestLevelBuilding is not null && largestLevelBuilding.Type.GetMaxLevel() < largestLevelBuilding.Level)
             {
                 plan.Location = largestLevelBuilding.Location;
@@ -121,7 +158,8 @@ namespace MainCore.Commands.UI.Step
 
         private static bool ModifySame(List<BuildingItem> buildings, NormalBuildPlan plan)
         {
-            var sameTypeBuilding = buildings.Where(x => x.Type == plan.Type).FirstOrDefault();
+            var sameTypeBuilding = buildings
+                .FirstOrDefault(x => x.Type == plan.Type);
             if (sameTypeBuilding is not null)
             {
                 if (sameTypeBuilding.Location != plan.Location)
@@ -133,7 +171,7 @@ namespace MainCore.Commands.UI.Step
             return false;
         }
 
-        private void ModifyRandom(List<BuildingItem> buildings, NormalBuildPlan plan, Dictionary<int, int> changedLocations)
+        private static void ModifyRandom(List<BuildingItem> buildings, NormalBuildPlan plan, Dictionary<int, int> changedLocations)
         {
             var freeLocations = buildings
                .Where(x => x.Type == BuildingEnums.Site)
