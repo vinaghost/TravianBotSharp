@@ -75,7 +75,7 @@ namespace MainCore.Commands.UI.Build
 
         private async Task NormalBuild(AccountId accountId, VillageId villageId, NormalBuildPlan plan)
         {
-            var buildings = await Task.Run(() => _unitOfRepository.BuildingRepository.GetLevelBuildings(villageId));
+            var buildings = await Task.Run(() => _unitOfRepository.BuildingRepository.GetBuildingItems(villageId));
             var result = CheckRequirements(buildings, plan);
             if (result.IsFailed)
             {
