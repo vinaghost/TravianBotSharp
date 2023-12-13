@@ -126,7 +126,7 @@ namespace MainCore.Commands.UI.Step
             return true;
         }
 
-        private void Modify(List<BuildingItem> buildings, NormalBuildPlan plan, Dictionary<int, int> changedLocations)
+        private static void Modify(List<BuildingItem> buildings, NormalBuildPlan plan, Dictionary<int, int> changedLocations)
         {
             if (plan.Type.IsMultipleBuilding())
             {
