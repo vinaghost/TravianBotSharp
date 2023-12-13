@@ -1,8 +1,10 @@
-﻿using MainCore.Common.Enums;
+﻿using Humanizer;
+using MainCore.Common.Enums;
 using MainCore.DTO;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Infrasturecture.Persistence;
+using MainCore.UI.Models.Output;
 using Microsoft.EntityFrameworkCore;
 
 namespace MainCore.Repositories
@@ -100,6 +102,34 @@ namespace MainCore.Repositories
 
             context.AddRange(entities);
             context.SaveChanges();
+        }
+
+        public List<ListBoxItem> GetItems(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var queue = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type != BuildingEnums.Site)
+                .AsEnumerable()
+                .Select(x => new ListBoxItem()
+                {
+                    Id = x.Id,
+                    Content = $"{x.Type.Humanize()} to level {x.Level} complete at {x.CompleteTime}",
+                })
+                .ToList();
+
+            var tribe = (TribeEnums)context.VillagesSetting
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Setting == VillageSettingEnums.Tribe)
+                .Select(x => x.Value)
+                .FirstOrDefault();
+
+            var count = 2;
+            if (tribe == TribeEnums.Romans) count = 3;
+            queue.AddRange(Enumerable.Range(0, count - queue.Count).Select(x => new ListBoxItem()));
+
+            return queue;
         }
     }
 }

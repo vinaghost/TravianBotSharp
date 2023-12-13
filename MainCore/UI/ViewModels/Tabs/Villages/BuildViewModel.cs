@@ -35,12 +35,14 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ReactiveCommand<Unit, Unit> Export { get; }
         public ReactiveCommand<VillageId, List<ListBoxItem>> LoadBuilding { get; }
         public ReactiveCommand<VillageId, List<ListBoxItem>> LoadJob { get; }
+        public ReactiveCommand<VillageId, List<ListBoxItem>> LoadQueue { get; }
 
         public NormalBuildInput NormalBuildInput { get; } = new();
 
         public ResourceBuildInput ResourceBuildInput { get; } = new();
 
         public ListBoxItemViewModel Buildings { get; } = new();
+        public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
         public BuildViewModel(IMediator mediator, UnitOfRepository unitOfRepository)
@@ -62,6 +64,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             LoadBuilding = ReactiveCommand.Create<VillageId, List<ListBoxItem>>(LoadBuildingHandler);
             LoadJob = ReactiveCommand.Create<VillageId, List<ListBoxItem>>(LoadJobHandler);
+            LoadQueue = ReactiveCommand.Create<VillageId, List<ListBoxItem>>(LoadQueueHandler);
             LoadBuildNormal = ReactiveCommand.Create<ListBoxItem, List<BuildingEnums>>(LoadBuildNormalHanlder);
 
             this.WhenAnyValue(vm => vm.Buildings.SelectedItem)
@@ -70,6 +73,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             LoadBuilding.Subscribe(buildings => Buildings.Load(buildings));
             LoadJob.Subscribe(jobs => Jobs.Load(jobs));
+            LoadQueue.Subscribe(queue => Queue.Load(queue));
             LoadBuildNormal.Subscribe(buildings =>
             {
                 switch (buildings.Count)
@@ -83,6 +87,13 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                         break;
                 };
             });
+        }
+
+        public async Task QueueRefresh(VillageId villageId)
+        {
+            if (!IsActive) return;
+            if (villageId != VillageId) return;
+            await LoadQueue.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         public async Task BuildingListRefresh(VillageId villageId)
@@ -104,6 +115,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             await LoadJob.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
             await LoadBuilding.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadQueue.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         private List<ListBoxItem> LoadBuildingHandler(VillageId villageId)
@@ -112,10 +124,16 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             return buildings;
         }
 
+        private List<ListBoxItem> LoadQueueHandler(VillageId villageId)
+        {
+            var queue = _unitOfRepository.QueueBuildingRepository.GetItems(villageId);
+            return queue;
+        }
+
         private List<ListBoxItem> LoadJobHandler(VillageId villageId)
         {
-            var buildings = _unitOfRepository.JobRepository.GetItems(villageId);
-            return buildings;
+            var jobs = _unitOfRepository.JobRepository.GetItems(villageId);
+            return jobs;
         }
 
         private List<BuildingEnums> LoadBuildNormalHanlder(ListBoxItem item)
