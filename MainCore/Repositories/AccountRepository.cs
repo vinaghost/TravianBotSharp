@@ -168,7 +168,7 @@ namespace MainCore.Repositories
             var account = dto.ToEntity();
             foreach (var access in account.Accesses)
             {
-                if (string.IsNullOrEmpty(access.Useragent))
+                if (string.IsNullOrWhiteSpace(access.Useragent))
                 {
                     access.Useragent = _useragentManager.Get();
                 }

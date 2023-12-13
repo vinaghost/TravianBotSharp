@@ -15,11 +15,13 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandH
     {
         private readonly IChromeManager _chromeManager;
         private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfCommand _unitOfCommand;
 
-        public TravianOfficial(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public TravianOfficial(IChromeManager chromeManager, IUnitOfParser unitOfParser, UnitOfCommand unitOfCommand)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
+            _unitOfCommand = unitOfCommand;
         }
 
         public async Task<Result> Handle(SpecialUpgradeCommand command, CancellationToken cancellationToken)
@@ -51,7 +53,25 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandH
             result = await chromeBrowser.Wait(videoFeatureShown, cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            await Task.Delay(Random.Shared.Next(20000, 25000), CancellationToken.None);
+            html = chromeBrowser.Html;
+            var videoFeature = html.GetElementbyId("videoFeature");
+            if (videoFeature.HasClass("infoScreen"))
+            {
+                var checkbox = videoFeature.Descendants("div").FirstOrDefault(x => x.HasClass("checkbox"));
+                if (checkbox is null) return Result.Fail(Retry.ButtonNotFound("Don't show watch ads confirm again"));
+                result = await chromeBrowser.Click(By.XPath(checkbox.XPath));
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                var watchButton = videoFeature.Descendants("button").FirstOrDefault(x => x.HasClass("green"));
+                if (watchButton is null) return Result.Fail(Retry.ButtonNotFound("Watch ads"));
+                result = await chromeBrowser.Click(By.XPath(watchButton.XPath));
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            }
+
+            await Task.Delay(Random.Shared.Next(20_000, 25_000), CancellationToken.None);
 
             html = chromeBrowser.Html;
             var node = html.GetElementbyId("videoFeature");
@@ -84,6 +104,22 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandH
 
             result = await chromeBrowser.WaitPageChanged("dorf", cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            html = chromeBrowser.Html;
+            var dontShowThisAgain = html.GetElementbyId("dontShowThisAgain");
+            if (dontShowThisAgain is not null)
+            {
+                result = await chromeBrowser.Click(By.XPath(dontShowThisAgain.XPath));
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                var okButton = html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
+                if (okButton is null) return Result.Fail(Retry.ButtonNotFound("ok"));
+                result = await chromeBrowser.Click(By.XPath(okButton.XPath));
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            }
 
             return Result.Ok();
         }

@@ -36,13 +36,6 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
         {
             Result result;
 
-            var dorf = command.Plan.Location < 19 ? 1 : 2;
-            result = await _unitOfCommand.ToDorfCommand.Handle(new(command.AccountId, dorf), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
-            result = await _unitOfCommand.UpdateDorfCommand.Handle(new(command.AccountId, command.VillageId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
             result = await _unitOfCommand.ToBuildingCommand.Handle(new(command.AccountId, command.Plan.Location), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
