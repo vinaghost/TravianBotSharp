@@ -2,7 +2,6 @@
 using MainCore.Common.Enums;
 using MainCore.DTO;
 using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
 using System.Net;
 
 namespace MainCore.Parsers.AccountInfoParser
@@ -46,13 +45,9 @@ namespace MainCore.Parsers.AccountInfoParser
 
         private static bool HasPlusAccount(HtmlDocument doc)
         {
-            var buttons = doc.DocumentNode.Descendants("button");
-            var off = buttons.FirstOrDefault(x => x.HasClass("barracksBlack"));
-            if (off is not null) return false;
-
-            var on = buttons.FirstOrDefault(x => x.HasClass("barracksWhite"));
-            if (on is not null) return true;
-            return false;
+            var barracksButton = doc.DocumentNode.Descendants("a").FirstOrDefault(x => x.HasClass("barracks") && x.HasClass("round"));
+            if (barracksButton is null) return false;
+            return barracksButton.HasClass("green");
         }
     }
 }

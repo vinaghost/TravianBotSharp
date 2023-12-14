@@ -17,18 +17,18 @@ namespace MainCore.Parsers.QueueBuildingParser
             {
                 var node = nodes[i];
                 var duration = GetDuration(node);
-                if (duration < TimeSpan.Zero)
-                {
-                    yield return new()
-                    {
-                        Position = i,
-                        Type = "Site",
-                        Level = -1,
-                        CompleteTime = DateTime.MaxValue,
-                        Location = -1,
-                    };
-                    continue;
-                }
+                //if (duration < TimeSpan.Zero)
+                //{
+                //    yield return new()
+                //    {
+                //        Position = i,
+                //        Type = "Site",
+                //        Level = -1,
+                //        CompleteTime = DateTime.MaxValue,
+                //        Location = -1,
+                //    };
+                //    continue;
+                //}
 
                 var type = GetBuildingType(node);
                 var level = GetLevel(node);

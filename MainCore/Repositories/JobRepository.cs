@@ -66,7 +66,7 @@ namespace MainCore.Repositories
             context.SaveChanges();
         }
 
-        public void AddRange(VillageId villageId, List<JobDto> jobDtos)
+        public void AddRange(VillageId villageId, IEnumerable<JobDto> jobDtos)
         {
             using var context = _contextFactory.CreateDbContext();
             var count = context.Jobs
