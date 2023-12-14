@@ -36,6 +36,10 @@ namespace MainCore.Commands.Navigate
         public async Task<Result> Handle(ToDorfCommand command, CancellationToken cancellationToken)
         {
             var chromeBrowser = _chromeManager.Get(command.AccountId);
+            var currentUrl = chromeBrowser.CurrentUrl;
+
+            if (currentUrl.Contains($"dorf{command.Dorf}")) return Result.Ok();
+
             var html = chromeBrowser.Html;
 
             var button = GetButton(html, command.Dorf);
