@@ -29,7 +29,15 @@ namespace MainCore.Commands.Navigate.ToBuildingCommandHandler
             if (node is null) return Result.Fail(Retry.NotFound($"{command.Location}", "nodeBuilding"));
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(node.XPath));
+            if (command.Location > 18 && node.HasClass("g0"))
+            {
+                var css = $"#villageContent > div.buildingSlot.a{command.Location} > svg > path";
+                result = await chromeBrowser.Click(By.CssSelector(css));
+            }
+            else
+            {
+                result = await chromeBrowser.Click(By.XPath(node.XPath));
+            }
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             result = await chromeBrowser.WaitPageLoaded(cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
