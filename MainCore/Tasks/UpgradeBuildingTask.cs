@@ -84,14 +84,22 @@ namespace MainCore.Tasks
                 }
 
                 var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
-                logger.Information("Build {type} to level {level} at {location}", plan.Type, plan.Level, plan.Location);
-                result = await _toBuildingPageCommand.Handle(new(AccountId, VillageId, plan), CancellationToken);
+
+                var dorf = plan.Location < 19 ? 1 : 2;
+                result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, dorf), CancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                result = await _unitOfCommand.UpdateDorfCommand.Handle(new(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
                 if (await JobComplete(AccountId, VillageId, job))
                 {
                     continue;
                 }
+
+                logger.Information("Build {type} to level {level} at location {location}", plan.Type, plan.Level, plan.Location);
+                result = await _toBuildingPageCommand.Handle(new(AccountId, VillageId, plan), CancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
                 result = await _getRequiredResourceCommand.Handle(new(AccountId, VillageId, plan), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
