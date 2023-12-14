@@ -48,6 +48,9 @@ namespace MainCore.Commands.UI.Build
                 return;
             }
 
+            var confirm = _dialogService.ShowConfirmBox("Warning", "TBS will remove resource field build job if its position doesn't match with current village.");
+            if (!confirm) return;
+
             var accountId = request.AccountId;
             var villageId = request.VillageId;
 

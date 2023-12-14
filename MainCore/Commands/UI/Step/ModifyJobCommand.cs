@@ -73,7 +73,6 @@ namespace MainCore.Commands.UI.Step
                     case JobTypeEnums.NormalBuild:
                         {
                             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
-                            if (plan.Type.IsResourceField()) continue;
 
                             Modify(buildings, plan, changedLocations);
                             job.Content = GetContent(plan);
@@ -119,15 +118,25 @@ namespace MainCore.Commands.UI.Step
         {
             var building = buildings.FirstOrDefault(x => x.Location == plan.Location);
             if (building is null) return false;
-            if (building.Level >= plan.Level) return false;
 
-            if (building.Type == BuildingEnums.Site) building.Type = plan.Type;
+            if (building.Type != BuildingEnums.Site)
+            {
+                if (building.Type != plan.Type) return false;
+                if (building.Level >= plan.Level) return false;
+            }
+            else
+            {
+                building.Type = plan.Type;
+            }
+
             building.JobLevel = plan.Level;
             return true;
         }
 
         private static void Modify(List<BuildingItem> buildings, NormalBuildPlan plan, Dictionary<int, int> changedLocations)
         {
+            if (plan.Type.IsResourceField()) return;
+
             if (plan.Type.IsMultipleBuilding())
             {
                 if (ModifyMultiple(buildings, plan)) return;
@@ -179,10 +188,12 @@ namespace MainCore.Commands.UI.Step
                .Where(x => !_excludedLocations.Contains(x))
                .ToList();
 
-            var randomLocation = GetRandomLocation(freeLocations);
-            changedLocations[plan.Location] = randomLocation;
+            if (!changedLocations.ContainsKey(plan.Location))
+            {
+                changedLocations[plan.Location] = GetRandomLocation(freeLocations);
+            }
 
-            plan.Location = randomLocation;
+            plan.Location = changedLocations[plan.Location];
         }
 
         private static int GetRandomLocation(List<int> freeLocations)
