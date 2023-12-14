@@ -360,42 +360,20 @@ namespace MainCore.Repositories
 
         public List<BuildingEnums> GetNormalBuilding(VillageId villageId, BuildingId buildingId)
         {
-            using var context = _contextFactory.CreateDbContext();
-
-            var type = context.Buildings
-                .Where(x => x.Id == buildingId.Value)
+            var buildingItems = GetBuildingItems(villageId);
+            var type = buildingItems
+                .Where(x => x.Id == buildingId)
                 .Select(x => x.Type)
                 .FirstOrDefault();
             if (type != BuildingEnums.Site) return new() { type };
+            using var context = _contextFactory.CreateDbContext();
 
-            var villageBuildings = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Select(x => x.Type)
-                .Where(x => !MultipleBuildings.Contains(x))
-                .Distinct()
-                .ToList();
-            var jobBuildings = context.Jobs
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type == JobTypeEnums.NormalBuild)
-                .Select(x => x.Content)
-                .AsEnumerable()
-                .AsParallel()
-                .Select(x => JsonSerializer.Deserialize<NormalBuildPlan>(x))
+            var buildings = buildingItems
                 .Select(x => x.Type)
                 .Where(x => !MultipleBuildings.Contains(x))
                 .Distinct()
                 .ToList();
 
-            var queueBuildings = context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Select(x => x.Type)
-                .Where(x => !MultipleBuildings.Contains(x))
-                .Distinct()
-                .ToList();
-            var buildings = new[] { villageBuildings, jobBuildings, queueBuildings }
-                .SelectMany(x => x)
-                .Distinct()
-                .ToList();
             return AvailableBuildings.Where(x => !buildings.Contains(x)).ToList();
         }
 
