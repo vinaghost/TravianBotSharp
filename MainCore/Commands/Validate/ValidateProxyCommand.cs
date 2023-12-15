@@ -45,7 +45,8 @@ namespace MainCore.Commands.Validate
             };
             var client = _restClientManager.Get(access);
             var response = await client.ExecuteAsync(request);
-            return response.IsSuccessful;
+            if (!response.IsSuccessful) throw new Exception("Proxy failed");
+            return true;
         }
 
         public async Task<Result> Handle(ValidateProxyCommand command, CancellationToken cancellationToken)
