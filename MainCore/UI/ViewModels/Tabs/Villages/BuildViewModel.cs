@@ -24,6 +24,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         public ReactiveCommand<Unit, Unit> BuildNormal { get; }
         public ReactiveCommand<Unit, Unit> BuildResource { get; }
+        public ReactiveCommand<Unit, Unit> UpgradeOneLevel { get; }
 
         public ReactiveCommand<Unit, Unit> Up { get; }
         public ReactiveCommand<Unit, Unit> Down { get; }
@@ -52,6 +53,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             BuildNormal = ReactiveCommand.CreateFromTask(BuildNormalHandler);
             BuildResource = ReactiveCommand.CreateFromTask(ResourceNormalHandler);
+            UpgradeOneLevel = ReactiveCommand.CreateFromTask(UpgradeOneLevelHandler);
 
             Up = ReactiveCommand.CreateFromTask(UpHandler);
             Down = ReactiveCommand.CreateFromTask(DownHandler);
@@ -147,6 +149,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             var location = Buildings.SelectedIndex + 1;
             await _mediator.Send(new BuildNormalCommand(AccountId, VillageId, NormalBuildInput, location));
+        }
+
+        private async Task UpgradeOneLevelHandler()
+        {
+            var location = Buildings.SelectedIndex + 1;
+            await _mediator.Send(new UpgradeOneLevelCommand(AccountId, VillageId, location));
         }
 
         private async Task ResourceNormalHandler()
