@@ -216,6 +216,7 @@ namespace MainCore.Repositories
                     .Select(x => x.Content)
                     .AsEnumerable()
                     .AsParallel()
+                    .AsOrdered()
                     .Select(x => JsonSerializer.Deserialize<NormalBuildPlan>(x))
                     .GroupBy(x => x.Location);
 
@@ -223,10 +224,10 @@ namespace MainCore.Repositories
                 {
                     var building = villageBuildings.FirstOrDefault(x => x.Location == jobBuilding.Key);
                     if (building is null) continue;
-                    var job = jobBuilding.FirstOrDefault();
+                    var job = jobBuilding.MaxBy(x => x.Level);
                     if (job is null) continue;
                     if (building.Type == BuildingEnums.Site) building.Type = job.Type;
-                    building.JobLevel = job.Level;
+                    if (building.JobLevel <= job.Level) building.JobLevel = job.Level;
                 }
 
                 var resourceJobs = context.Jobs
@@ -235,6 +236,7 @@ namespace MainCore.Repositories
                    .Select(x => x.Content)
                    .AsEnumerable()
                    .AsParallel()
+                   .AsOrdered()
                    .Select(x => JsonSerializer.Deserialize<ResourceBuildPlan>(x))
                    .GroupBy(x => x.Plan);
 
