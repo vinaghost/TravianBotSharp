@@ -31,6 +31,7 @@ namespace WPFUI.Views.Tabs.Villages
                 this.Bind(ViewModel, vm => vm.Jobs.SelectedIndex, v => v.QueueGrid.SelectedIndex).DisposeWith(d);
 
                 this.BindCommand(ViewModel, vm => vm.UpgradeOneLevel, v => v.UpgradeOneLevelButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.UpgradeMaxLevel, v => v.UpgradeMaxLevelButton).DisposeWith(d);
 
                 this.BindCommand(ViewModel, vm => vm.Import, v => v.ImportButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.Export, v => v.ExportButton).DisposeWith(d);

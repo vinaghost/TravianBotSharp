@@ -1,4 +1,5 @@
 ﻿using MainCore.Common.Enums;
+using MainCore.Common.Extensions;
 using MainCore.Common.MediatR;
 using MainCore.Common.Models;
 using MainCore.Entities;
@@ -9,24 +10,26 @@ using MediatR;
 
 namespace MainCore.Commands.UI.Build
 {
-    public class UpgradeOneLevelCommand : ByAccountVillageIdBase, IRequest
+    public class UpgradeLevelCommand : ByAccountVillageIdBase, IRequest
     {
         public int Location { get; }
+        public bool IsMaxLevel { get; }
 
-        public UpgradeOneLevelCommand(AccountId accountId, VillageId villageId, int location) : base(accountId, villageId)
+        public UpgradeLevelCommand(AccountId accountId, VillageId villageId, int location, bool isMaxLevel) : base(accountId, villageId)
         {
             Location = location;
+            IsMaxLevel = isMaxLevel;
         }
     }
 
-    public class UpgradeOneLevelCommandHandler : IRequestHandler<UpgradeOneLevelCommand>
+    public class UpgradeLevelCommandHandler : IRequestHandler<UpgradeLevelCommand>
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
         private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
 
-        public UpgradeOneLevelCommandHandler(ITaskManager taskManager, IDialogService dialogService, UnitOfRepository unitOfRepository, IMediator mediator)
+        public UpgradeLevelCommandHandler(ITaskManager taskManager, IDialogService dialogService, UnitOfRepository unitOfRepository, IMediator mediator)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
@@ -34,7 +37,7 @@ namespace MainCore.Commands.UI.Build
             _mediator = mediator;
         }
 
-        public async Task Handle(UpgradeOneLevelCommand request, CancellationToken cancellationToken)
+        public async Task Handle(UpgradeLevelCommand request, CancellationToken cancellationToken)
         {
             var status = _taskManager.GetStatus(request.AccountId);
             if (status == StatusEnums.Online)
@@ -49,11 +52,22 @@ namespace MainCore.Commands.UI.Build
             if (building is null) return;
             if (building.Type == BuildingEnums.Site) return;
 
+            var level = 0;
+
+            if (request.IsMaxLevel)
+            {
+                level = building.Type.GetMaxLevel();
+            }
+            else
+            {
+                level = building.Level + 1;
+            }
+
             var plan = new NormalBuildPlan()
             {
                 Location = request.Location,
                 Type = building.Type,
-                Level = building.Level + 1,
+                Level = level,
             };
 
             _unitOfRepository.JobRepository.Add(request.VillageId, plan);

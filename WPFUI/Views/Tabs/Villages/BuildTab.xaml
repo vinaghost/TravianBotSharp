@@ -34,6 +34,11 @@
                                     <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Hammer" />
                                 </MenuItem.Icon>
                             </MenuItem>
+                            <MenuItem x:Name="UpgradeMaxLevelButton" Header="Upgrade max level">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Hammer" />
+                                </MenuItem.Icon>
+                            </MenuItem>
                         </ContextMenu>
                     </ListBox.ContextMenu>
                 </ListBox>
