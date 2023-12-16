@@ -104,8 +104,8 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
             bool isEmptySite = context.Buildings
                 .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type == BuildingEnums.Site)
                 .Where(x => x.Location == location)
+                .Where(x => x.Type == BuildingEnums.Site || x.Level == -1)
                 .Any();
 
             return isEmptySite;
