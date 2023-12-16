@@ -100,6 +100,7 @@ namespace MainCore.Tasks
                 }
 
                 logger.Information("Build {type} to level {level} at location {location}", plan.Type, plan.Level, plan.Location);
+
                 result = await _toBuildingPageCommand.Handle(new(AccountId, VillageId, plan), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 

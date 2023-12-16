@@ -136,6 +136,7 @@ namespace MainCore.Repositories
             if (!buildings.Any()) return null;
 
             var chosenOne = buildings
+                .OrderBy(x => x.Id.Value + Random.Shared.Next())
                 .OrderBy(x => x.Level)
                 .FirstOrDefault();
 
@@ -177,6 +178,22 @@ namespace MainCore.Repositories
                 Color = building.Type.GetColor(),
             };
             return item;
+        }
+
+        public List<BuildingItem> GetBuildings(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var villageBuildings = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Select(x => new BuildingItem()
+                {
+                    Id = new(x.Id),
+                    Location = x.Location,
+                    Type = x.Type,
+                    CurrentLevel = x.Level
+                })
+                .ToList();
+            return villageBuildings;
         }
 
         public List<BuildingItem> GetBuildingItems(VillageId villageId, bool ignoreJobBuilding = false)

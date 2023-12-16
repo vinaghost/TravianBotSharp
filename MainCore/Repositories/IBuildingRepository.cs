@@ -35,5 +35,6 @@ namespace MainCore.Repositories
         List<BuildingEnums> GetNormalBuilding(VillageId villageId, BuildingId buildingId);
 
         void UpdateWall(VillageId villageId);
+        List<BuildingItem> GetBuildings(VillageId villageId);
     }
 }

@@ -137,7 +137,6 @@ namespace MainCore.Repositories
                 .Where(x => x.Type == JobTypeEnums.ResourceBuild)
                 .ToDto()
                 .FirstOrDefault();
-
             if (job is null) return resourceBuildJob;
             if (resourceBuildJob is null) return job;
             if (job.Position < resourceBuildJob.Position) return job;
