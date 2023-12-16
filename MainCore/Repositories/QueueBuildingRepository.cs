@@ -1,8 +1,10 @@
-﻿using MainCore.Common.Enums;
+﻿using Humanizer;
+using MainCore.Common.Enums;
 using MainCore.DTO;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Infrasturecture.Persistence;
+using MainCore.UI.Models.Output;
 using Microsoft.EntityFrameworkCore;
 
 namespace MainCore.Repositories
@@ -32,10 +34,24 @@ namespace MainCore.Repositories
         {
             using var context = _contextFactory.CreateDbContext();
             var now = DateTime.Now;
-            context.QueueBuildings
+            var completeBuildingQuery = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Type != BuildingEnums.Site)
-                .Where(x => x.CompleteTime < now)
+                .Where(x => x.CompleteTime < now);
+
+            var completeBuildingLocations = completeBuildingQuery
+                .Select(x => x.Location)
+                .ToList();
+
+            foreach (var completeBuildingLocation in completeBuildingLocations)
+            {
+                context.Buildings
+                    .Where(x => x.VillageId == villageId.Value)
+                    .Where(x => x.Location == completeBuildingLocation)
+                    .ExecuteUpdate(x => x.SetProperty(x => x.Level, x => x.Level + 1));
+            }
+
+            completeBuildingQuery
                 .ExecuteUpdate(x => x.SetProperty(x => x.Type, BuildingEnums.Site));
         }
 
@@ -54,29 +70,57 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
             var queueBuildings = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type != BuildingEnums.Site);
+                .Where(x => x.Type != BuildingEnums.Site)
+                .ToList();
 
             if (dtos.Count == 1)
             {
                 var building = dtos[0];
                 queueBuildings = queueBuildings
-                    .Where(x => x.Type == building.Type);
+                    .Where(x => x.Type == building.Type)
+                    .ToList();
 
-                var list = queueBuildings.ToList();
-                foreach (var item in list)
+                foreach (var item in queueBuildings)
                 {
                     item.Location = building.Location;
                 }
-                context.UpdateRange(list);
             }
             else if (dtos.Count == 2)
             {
-                foreach (var dto in dtos)
+                var typeCount = dtos.DistinctBy(x => x.Type).Count();
+
+                if (typeCount == 2)
                 {
-                    var list = queueBuildings.ToList();
-                    var queueBuilding = list.FirstOrDefault(x => x.Type == dto.Type);
-                    queueBuilding.Location = dto.Location;
-                    context.Update(queueBuilding);
+                    foreach (var dto in dtos)
+                    {
+                        var queueBuilding = queueBuildings.FirstOrDefault(x => x.Type == dto.Type);
+                        if (queueBuilding is not null)
+                        {
+                            queueBuilding.Location = dto.Location;
+                        }
+                    }
+                }
+                else if (typeCount == 1)
+                {
+                    queueBuildings = queueBuildings.Where(x => x.Type == dtos[0].Type).ToList();
+                    if (dtos[0].Level == dtos[1].Level)
+                    {
+                        for (var i = 0; i < dtos.Count; i++)
+                        {
+                            queueBuildings[i].Location = dtos[i].Location;
+                        }
+                    }
+                    else
+                    {
+                        foreach (var dto in dtos)
+                        {
+                            var queueBuilding = queueBuildings.FirstOrDefault(x => x.Level == dto.Level + 1);
+                            if (queueBuilding is not null)
+                            {
+                                queueBuilding.Location = dto.Location;
+                            }
+                        }
+                    }
                 }
             }
             context.SaveChanges();
@@ -100,6 +144,34 @@ namespace MainCore.Repositories
 
             context.AddRange(entities);
             context.SaveChanges();
+        }
+
+        public List<ListBoxItem> GetItems(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var queue = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type != BuildingEnums.Site)
+                .AsEnumerable()
+                .Select(x => new ListBoxItem()
+                {
+                    Id = x.Id,
+                    Content = $"{x.Type.Humanize()} to level {x.Level} complete at {x.CompleteTime}",
+                })
+                .ToList();
+
+            var tribe = (TribeEnums)context.VillagesSetting
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Setting == VillageSettingEnums.Tribe)
+                .Select(x => x.Value)
+                .FirstOrDefault();
+
+            var count = 2;
+            if (tribe == TribeEnums.Romans) count = 3;
+            queue.AddRange(Enumerable.Range(0, count - queue.Count).Select(x => new ListBoxItem()));
+
+            return queue;
         }
     }
 }

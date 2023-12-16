@@ -35,8 +35,9 @@ namespace MainCore.Tasks
         private readonly ICommandHandler<UseHeroResourceCommand> _useHeroResourceCommand;
 
         private readonly ILogService _logService;
+        private readonly ITaskManager _taskManager;
 
-        public UpgradeBuildingTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ICommandHandler<ChooseBuildingJobCommand, JobDto> chooseBuildingJobCommand, ICommandHandler<ExtractResourceFieldCommand> extractResourceFieldCommand, ICommandHandler<ToBuildingPageCommand> toBuildingPageCommand, ICommandHandler<GetRequiredResourceCommand, long[]> getRequiredResourceCommand, ICommandHandler<AddCroplandCommand> addCroplandCommand, ICommandHandler<GetTimeWhenEnoughResourceCommand, TimeSpan> getTimeWhenEnoughResourceCommand, ICommandHandler<ConstructCommand> constructCommand, ICommandHandler<UpgradeCommand> upgradeCommand, ICommandHandler<SpecialUpgradeCommand> specialUpgradeCommand, ICommandHandler<UseHeroResourceCommand> useHeroResourceCommand, ILogService logService) : base(unitOfCommand, unitOfRepository, mediator)
+        public UpgradeBuildingTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ICommandHandler<ChooseBuildingJobCommand, JobDto> chooseBuildingJobCommand, ICommandHandler<ExtractResourceFieldCommand> extractResourceFieldCommand, ICommandHandler<ToBuildingPageCommand> toBuildingPageCommand, ICommandHandler<GetRequiredResourceCommand, long[]> getRequiredResourceCommand, ICommandHandler<AddCroplandCommand> addCroplandCommand, ICommandHandler<GetTimeWhenEnoughResourceCommand, TimeSpan> getTimeWhenEnoughResourceCommand, ICommandHandler<ConstructCommand> constructCommand, ICommandHandler<UpgradeCommand> upgradeCommand, ICommandHandler<SpecialUpgradeCommand> specialUpgradeCommand, ICommandHandler<UseHeroResourceCommand> useHeroResourceCommand, ILogService logService, ITaskManager taskManager) : base(unitOfCommand, unitOfRepository, mediator)
         {
             _chooseBuildingJobCommand = chooseBuildingJobCommand;
             _extractResourceFieldCommand = extractResourceFieldCommand;
@@ -49,6 +50,7 @@ namespace MainCore.Tasks
             _specialUpgradeCommand = specialUpgradeCommand;
             _useHeroResourceCommand = useHeroResourceCommand;
             _logService = logService;
+            _taskManager = taskManager;
         }
 
         protected override async Task<Result> Execute()
@@ -71,7 +73,7 @@ namespace MainCore.Tasks
                 {
                     if (result.HasError<BuildingQueue>())
                     {
-                        SetTimeQueueBuildingComplete(VillageId);
+                        await SetTimeQueueBuildingComplete(AccountId, VillageId);
                     }
                     return result;
                 }
@@ -84,14 +86,23 @@ namespace MainCore.Tasks
                 }
 
                 var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
-                logger.Information("Build {type} to level {level} at {location}", plan.Type, plan.Level, plan.Location);
-                result = await _toBuildingPageCommand.Handle(new(AccountId, VillageId, plan), CancellationToken);
+
+                var dorf = plan.Location < 19 ? 1 : 2;
+                result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, dorf), CancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                result = await _unitOfCommand.UpdateDorfCommand.Handle(new(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
                 if (await JobComplete(AccountId, VillageId, job))
                 {
                     continue;
                 }
+
+                logger.Information("Build {type} to level {level} at location {location}", plan.Type, plan.Level, plan.Location);
+
+                result = await _toBuildingPageCommand.Handle(new(AccountId, VillageId, plan), CancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
                 result = await _getRequiredResourceCommand.Handle(new(AccountId, VillageId, plan), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
@@ -205,19 +216,22 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             var time = _getTimeWhenEnoughResourceCommand.Value;
             ExecuteAt = DateTime.Now.Add(time);
+            await _taskManager.ReOrder(accountId);
             return Result.Ok();
         }
 
-        private void SetTimeQueueBuildingComplete(VillageId villageId)
+        private async Task SetTimeQueueBuildingComplete(AccountId accountId, VillageId villageId)
         {
             var buildingQueue = _unitOfRepository.QueueBuildingRepository.GetFirst(villageId);
             if (buildingQueue is null)
             {
                 ExecuteAt = DateTime.Now.AddSeconds(1);
+                await _taskManager.ReOrder(accountId);
                 return;
             }
 
             ExecuteAt = buildingQueue.CompleteTime.AddSeconds(3);
+            await _taskManager.ReOrder(accountId);
         }
 
         private async Task<bool> JobComplete(AccountId accountId, VillageId villageId, JobDto job)

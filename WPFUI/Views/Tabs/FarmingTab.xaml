@@ -42,8 +42,8 @@
                         <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="ContentSave" />
                     </Button>
                 </StackPanel>
-                <Button x:Name="ActiveButton"   Grid.Row="1" Content="Active/Deactive this list farm" Margin="10" />
-                <Button x:Name="StartButton"    Grid.Row="2" ToolTip="Send all active farmlist" Margin="10">
+                <Button x:Name="ActiveButton"   Grid.Row="1" Margin="10" />
+                <Button x:Name="StartButton"    Grid.Row="2" ToolTip="Start" Margin="10">
                     <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Play" />
                 </Button>
                 <Button x:Name="StopButton"     Grid.Row="3" ToolTip="Stop"             Margin="10">

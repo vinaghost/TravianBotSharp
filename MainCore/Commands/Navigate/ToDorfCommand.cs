@@ -14,10 +14,12 @@ namespace MainCore.Commands.Navigate
     public class ToDorfCommand : ByAccountIdBase, ICommand
     {
         public int Dorf { get; }
+        public bool IsForceReload { get; }
 
-        public ToDorfCommand(AccountId accountId, int dorf) : base(accountId)
+        public ToDorfCommand(AccountId accountId, int dorf, bool isForceReload = false) : base(accountId)
         {
             Dorf = dorf;
+            IsForceReload = isForceReload;
         }
     }
 
@@ -36,17 +38,38 @@ namespace MainCore.Commands.Navigate
         public async Task<Result> Handle(ToDorfCommand command, CancellationToken cancellationToken)
         {
             var chromeBrowser = _chromeManager.Get(command.AccountId);
+            var currentUrl = chromeBrowser.CurrentUrl;
+            var currentDorf = GetCurrentDorf(currentUrl);
+            var dorf = command.Dorf;
+            if (dorf == 0)
+            {
+                if (currentDorf == 0) dorf = 1;
+                else dorf = currentDorf;
+            }
+
+            if (currentDorf != 0)
+            {
+                if (dorf == currentDorf && !command.IsForceReload) return Result.Ok();
+            }
+
             var html = chromeBrowser.Html;
 
-            var button = GetButton(html, command.Dorf);
-            if (button is null) return Retry.ButtonNotFound($"dorf{command.Dorf}");
+            var button = GetButton(html, dorf);
+            if (button is null) return Retry.ButtonNotFound($"dorf{dorf}");
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = await chromeBrowser.WaitPageChanged($"dorf{command.Dorf}", cancellationToken);
+            result = await chromeBrowser.WaitPageChanged($"dorf{dorf}", cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
+        }
+
+        private int GetCurrentDorf(string url)
+        {
+            if (url.Contains($"dorf1")) return 1;
+            if (url.Contains($"dorf2")) return 2;
+            return 0;
         }
 
         private HtmlNode GetButton(HtmlDocument doc, int dorf)

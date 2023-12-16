@@ -21,7 +21,7 @@ namespace MainCore.Tasks
         {
             Result result;
 
-            result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 1), CancellationToken);
+            result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 0), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateDorfCommand.Handle(new(AccountId, VillageId), CancellationToken);
