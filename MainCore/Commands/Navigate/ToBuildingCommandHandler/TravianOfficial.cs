@@ -31,8 +31,18 @@ namespace MainCore.Commands.Navigate.ToBuildingCommandHandler
             Result result;
             if (command.Location > 18 && node.HasClass("g0"))
             {
-                var css = $"#villageContent > div.buildingSlot.a{command.Location} > svg > path";
-                result = await chromeBrowser.Click(By.CssSelector(css));
+                if (command.Location == 40) // wall
+                {
+                    var currentUrl = new Uri(chromeBrowser.CurrentUrl);
+                    var host = currentUrl.GetLeftPart(UriPartial.Authority);
+                    result = await chromeBrowser.Navigate($"{host}/build.php?id={command.Location}", cancellationToken);
+                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                }
+                else
+                {
+                    var css = $"#villageContent > div.buildingSlot.a{command.Location} > svg > path";
+                    result = await chromeBrowser.Click(By.CssSelector(css));
+                }
             }
             else
             {
