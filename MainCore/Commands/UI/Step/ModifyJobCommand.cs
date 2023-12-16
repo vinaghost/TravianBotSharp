@@ -157,7 +157,7 @@ namespace MainCore.Commands.UI.Step
                 .Where(x => x.Type == plan.Type)
                 .OrderByDescending(x => x.Level)
                 .FirstOrDefault();
-            if (largestLevelBuilding is not null && largestLevelBuilding.Type.GetMaxLevel() < largestLevelBuilding.Level)
+            if (largestLevelBuilding is not null && largestLevelBuilding.Type.GetMaxLevel() > largestLevelBuilding.Level)
             {
                 plan.Location = largestLevelBuilding.Location;
                 return true;
@@ -173,7 +173,7 @@ namespace MainCore.Commands.UI.Step
             {
                 if (sameTypeBuilding.Location != plan.Location)
                 {
-                    sameTypeBuilding.Location = plan.Location;
+                    plan.Location = sameTypeBuilding.Location;
                 }
                 return true;
             }
