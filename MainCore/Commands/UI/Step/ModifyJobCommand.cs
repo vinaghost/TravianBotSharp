@@ -143,6 +143,15 @@ namespace MainCore.Commands.UI.Step
             }
             else
             {
+                if (plan.Type.IsWall())
+                {
+                    var wall = buildings.FirstOrDefault(x => x.Location == 40);
+                    if (plan.Type != wall.Type)
+                    {
+                        plan.Type = wall.Type;
+                    }
+                }
+
                 if (ModifySame(buildings, plan)) return;
             }
 

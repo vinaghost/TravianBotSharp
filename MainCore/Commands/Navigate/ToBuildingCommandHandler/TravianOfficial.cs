@@ -6,6 +6,7 @@ using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Parsers;
 using MainCore.Services;
 using OpenQA.Selenium;
+using System.Web;
 
 namespace MainCore.Commands.Navigate.ToBuildingCommandHandler
 {
@@ -42,13 +43,32 @@ namespace MainCore.Commands.Navigate.ToBuildingCommandHandler
                 {
                     var css = $"#villageContent > div.buildingSlot.a{command.Location} > svg > path";
                     result = await chromeBrowser.Click(By.CssSelector(css));
+                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                 }
             }
             else
             {
-                result = await chromeBrowser.Click(By.XPath(node.XPath));
+                if (command.Location == 40) // wall
+                {
+                    var path = node.Descendants("path").FirstOrDefault();
+                    if (path is null) return Result.Fail(Retry.NotFound($"{command.Location}", "wall bottom path"));
+
+                    var javascript = path.GetAttributeValue("onclick", "");
+                    if (string.IsNullOrEmpty(javascript)) return Result.Fail(Retry.NotFound($"{command.Location}", "JavaScriptExecutor onclick wall"));
+
+                    var decodedJs = HttpUtility.HtmlDecode(javascript);
+                    var js = chromeBrowser.Driver as IJavaScriptExecutor;
+                    js.ExecuteScript(decodedJs);
+
+                    result = await chromeBrowser.WaitPageChanged("build.php", cancellationToken);
+                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                }
+                else
+                {
+                    result = await chromeBrowser.Click(By.XPath(node.XPath));
+                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                }
             }
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             result = await chromeBrowser.WaitPageLoaded(cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
