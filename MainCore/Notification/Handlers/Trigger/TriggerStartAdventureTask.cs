@@ -8,7 +8,7 @@ using MediatR;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
-    public class TriggerStartAdventureTask : INotificationHandler<AdventureUpdated>
+    public class TriggerStartAdventureTask : INotificationHandler<AdventureUpdated>, INotificationHandler<AccountInit>, INotificationHandler<AccountSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
         private readonly UnitOfRepository _unitOfRepository;
@@ -20,6 +20,16 @@ namespace MainCore.Notification.Handlers.Trigger
         }
 
         public async Task Handle(AdventureUpdated notification, CancellationToken cancellationToken)
+        {
+            await Trigger(notification.AccountId);
+        }
+
+        public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
+        {
+            await Trigger(notification.AccountId);
+        }
+
+        public async Task Handle(AccountSettingUpdated notification, CancellationToken cancellationToken)
         {
             await Trigger(notification.AccountId);
         }
