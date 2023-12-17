@@ -69,7 +69,10 @@ namespace MainCore.Parsers.HeroParser
             var tbody = adventures.Descendants("tbody").FirstOrDefault();
             if (tbody is null) return null;
 
-            return tbody.Descendants("tr").FirstOrDefault();
+            var tr = tbody.Descendants("tr").FirstOrDefault();
+            if (tr is null) return null;
+            var button = tr.Descendants("button").FirstOrDefault();
+            return button;
         }
 
         public string GetAdventureInfo(HtmlNode node)

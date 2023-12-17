@@ -132,7 +132,9 @@ namespace MainCore.Parsers.HeroParser
             var list = adventures.Descendants("tr").ToList();
             list.RemoveAt(0);
             if (list.Count == 0) return null;
-            return list[0];
+            var tr = list[0];
+            var button = tr.Descendants("button").FirstOrDefault();
+            return button;
         }
 
         public string GetAdventureInfo(HtmlNode node)

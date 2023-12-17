@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using HtmlAgilityPack;
 using MainCore.Commands.Base;
 using MainCore.Common.Errors;
 using MainCore.Common.MediatR;
@@ -42,6 +43,20 @@ namespace MainCore.Commands.Navigate
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await chromeBrowser.WaitPageChanged("adventures", cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            bool tableShow(IWebDriver driver)
+            {
+                var doc = new HtmlDocument();
+                doc.LoadHtml(driver.PageSource);
+                var table = doc.DocumentNode
+                    .Descendants("table")
+                    .Where(x => x.HasClass("adventureList"))
+                    .Any();
+                return table;
+            };
+
+            result = await chromeBrowser.Wait(tableShow, cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }
