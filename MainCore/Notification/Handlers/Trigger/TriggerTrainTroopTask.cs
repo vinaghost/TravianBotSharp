@@ -21,20 +21,15 @@ namespace MainCore.Notification.Handlers.Trigger
 
         public async Task Handle(VillageSettingUpdated notification, CancellationToken cancellationToken)
         {
-            var accountId = notification.AccountId;
-            var villageId = notification.VillageId;
-            await Trigger(accountId, villageId);
+            await Trigger(notification.AccountId, notification.VillageId);
         }
 
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
-            var accountId = notification.AccountId;
-
-            var villages = _unitOfRepository.VillageRepository.Get(accountId);
+            var villages = _unitOfRepository.VillageRepository.Get(notification.AccountId);
             foreach (var village in villages)
             {
-                await Trigger(accountId, village);
+                await Trigger(notification.AccountId, village);
             }
         }
 

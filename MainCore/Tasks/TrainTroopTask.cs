@@ -5,6 +5,7 @@ using MainCore.Common.Enums;
 using MainCore.Common.Errors.TrainTroop;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Repositories;
+using MainCore.Services;
 using MainCore.Tasks.Base;
 using MediatR;
 
@@ -20,16 +21,17 @@ namespace MainCore.Tasks
             {BuildingEnums.Workshop, VillageSettingEnums.WorkshopTroop },
         };
 
-        public TrainTroopTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        private readonly ITaskManager _taskManager;
+
+        public TrainTroopTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager) : base(unitOfCommand, unitOfRepository, mediator)
         {
+            _taskManager = taskManager;
         }
 
         protected override async Task<Result> Execute()
         {
             var buildings = _unitOfRepository.BuildingRepository.GetTrainTroopBuilding(VillageId);
             if (buildings.Count == 0) return Result.Ok();
-
-            SetNextExecute();
 
             Result result;
             var settings = new Dictionary<VillageSettingEnums, int>();
@@ -50,14 +52,15 @@ namespace MainCore.Tasks
             }
 
             _unitOfRepository.VillageSettingRepository.Update(VillageId, settings);
-            SetNextExecute();
+            await SetNextExecute();
             return Result.Ok();
         }
 
-        private void SetNextExecute()
+        private async Task SetNextExecute()
         {
             var seconds = _unitOfRepository.VillageSettingRepository.GetByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
+            await _taskManager.ReOrder(AccountId);
         }
 
         protected override void SetName()

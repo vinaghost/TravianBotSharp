@@ -21,7 +21,7 @@ namespace MainCore.Commands.Update
     [RegisterAsTransient]
     public class UpdateAccountInfoCommandHandler : UpdateCommandHandlerBase, ICommandHandler<UpdateAccountInfoCommand>
     {
-        public UpdateAccountInfoCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, IUnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
+        public UpdateAccountInfoCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, UnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
         {
         }
 
@@ -31,8 +31,13 @@ namespace MainCore.Commands.Update
             var html = chromeBrowser.Html;
             var dto = _unitOfParser.AccountInfoParser.Get(html);
             _unitOfRepository.AccountInfoRepository.Update(command.AccountId, dto);
-
             await _mediator.Publish(new AccountInfoUpdated(command.AccountId), cancellationToken);
+
+            if (_unitOfParser.HeroParser.CanStartAdventure(html))
+            {
+                await _mediator.Publish(new AdventureUpdated(command.AccountId), cancellationToken);
+            }
+
             return Result.Ok();
         }
     }

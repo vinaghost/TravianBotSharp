@@ -21,7 +21,7 @@ namespace MainCore.Commands.Update
     [RegisterAsTransient]
     public class UpdateHeroItemsCommandHandler : UpdateCommandHandlerBase, ICommandHandler<UpdateHeroItemsCommand>
     {
-        public UpdateHeroItemsCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, IUnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
+        public UpdateHeroItemsCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, UnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
         {
         }
 
@@ -29,7 +29,7 @@ namespace MainCore.Commands.Update
         {
             var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
-            var dtos = _unitOfParser.HeroParser.Get(html);
+            var dtos = _unitOfParser.HeroParser.GetItems(html);
             _unitOfRepository.HeroItemRepository.Update(command.AccountId, dtos.ToList());
             await _mediator.Publish(new HeroItemUpdated(command.AccountId), cancellationToken);
             return Result.Ok();

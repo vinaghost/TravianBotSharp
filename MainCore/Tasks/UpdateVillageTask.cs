@@ -5,6 +5,7 @@ using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Repositories;
+using MainCore.Services;
 using MainCore.Tasks.Base;
 using MediatR;
 
@@ -13,8 +14,11 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateVillageTask : VillageTask
     {
-        public UpdateVillageTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        private readonly ITaskManager _taskManager;
+
+        public UpdateVillageTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager) : base(unitOfCommand, unitOfRepository, mediator)
         {
+            _taskManager = taskManager;
         }
 
         protected override async Task<Result> Execute()
@@ -22,14 +26,15 @@ namespace MainCore.Tasks
             Result result;
             result = await _mediator.Send(new UpdateDorf1Command(AccountId, VillageId));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            SetNextExecute();
+            await SetNextExecute();
             return Result.Ok();
         }
 
-        private void SetNextExecute()
+        private async Task SetNextExecute()
         {
             var seconds = _unitOfRepository.VillageSettingRepository.GetByName(VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
+            await _taskManager.ReOrder(AccountId);
         }
 
         protected override void SetName()

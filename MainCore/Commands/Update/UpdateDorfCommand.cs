@@ -25,7 +25,7 @@ namespace MainCore.Commands.Update
     [RegisterAsTransient]
     public class UpdateDorfCommandHandler : UpdateCommandHandlerBase, ICommandHandler<UpdateDorfCommand>
     {
-        public UpdateDorfCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, IUnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
+        public UpdateDorfCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, UnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
         {
         }
 

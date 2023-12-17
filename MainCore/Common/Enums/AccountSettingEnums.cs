@@ -16,5 +16,6 @@
         SleepTimeMin,
         SleepTimeMax,
         HeadlessChrome,
+        AutoStartAdventure,
     }
 }

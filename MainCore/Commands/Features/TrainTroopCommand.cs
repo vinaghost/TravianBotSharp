@@ -67,7 +67,7 @@ namespace MainCore.Commands.Features
             Result result;
             result = await _unitOfCommand.ToDorfCommand.Handle(new(accountId, 2), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = await _unitOfCommand.UpdateDorfCommand.Handle(new(accountId, villageId), cancellationToken);
+            result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(accountId, villageId), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var buildingLocation = _unitOfRepository.BuildingRepository.GetBuildingLocation(villageId, buildingType);

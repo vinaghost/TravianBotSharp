@@ -1,18 +1,17 @@
-﻿using MainCore.Entities;
+﻿using MainCore.Commands.UI.Debug;
+using MainCore.Commands.UI.DebugTab;
+using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Services;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
+using MediatR;
 using ReactiveUI;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Formatting.Display;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Text;
+using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
@@ -20,11 +19,9 @@ namespace MainCore.UI.ViewModels.Tabs
     public class DebugViewModel : AccountTabViewModelBase
     {
         private readonly LogSink _logSink;
-        private readonly ITaskManager _taskManager;
-        private readonly MessageTemplateTextFormatter _formatter;
+        private readonly IMediator _mediator;
         public ObservableCollection<TaskItem> Tasks { get; } = new();
 
-        private string _cacheLog;
         public string _logs;
 
         public string Logs
@@ -33,21 +30,25 @@ namespace MainCore.UI.ViewModels.Tabs
             set => this.RaiseAndSetIfChanged(ref _logs, value);
         }
 
-        private bool _isLogLoading = false;
-        private const string _discordUrl = "https://ko-fi.com/vinaghost";
+        private string _endpointAddress;
 
-        public DebugViewModel(ILogEventSink logSink, ITaskManager taskManager)
+        public string EndpointAddress
+        {
+            get => _endpointAddress;
+            set => this.RaiseAndSetIfChanged(ref _endpointAddress, value);
+        }
+
+        public DebugViewModel(ILogEventSink logSink, IMediator mediator)
         {
             _logSink = logSink as LogSink;
             _logSink.LogEmitted += LogEmitted;
-            _taskManager = taskManager;
+            _mediator = mediator;
 
-            _formatter = new("{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
-
-            LoadTask = ReactiveCommand.Create<AccountId, List<TaskItem>>(LoadTaskHandler);
-            LoadLog = ReactiveCommand.Create<AccountId>(LoadLogHandler);
-            GetHelpCommand = ReactiveCommand.Create(GetHelpTask);
-            LogFolderCommand = ReactiveCommand.Create(LogFolderTask);
+            LoadTask = ReactiveCommand.CreateFromTask<AccountId, List<TaskItem>>(LoadTaskHandler);
+            LoadLog = ReactiveCommand.CreateFromTask<AccountId, string>(LoadLogHandler);
+            LoadEndpointAddress = ReactiveCommand.CreateFromTask<AccountId, string>(LoadEndpointAddressHandler);
+            LeftCommand = ReactiveCommand.CreateFromTask(LeftTask);
+            RightCommand = ReactiveCommand.CreateFromTask(RightTask);
 
             LoadTask.Subscribe(items =>
             {
@@ -56,7 +57,11 @@ namespace MainCore.UI.ViewModels.Tabs
             });
             LoadLog.Subscribe(logs =>
             {
-                Logs = _cacheLog;
+                Logs = logs;
+            });
+            LoadEndpointAddress.Subscribe(address =>
+            {
+                EndpointAddress = address;
             });
         }
 
@@ -64,14 +69,14 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            if (_isLogLoading) return;
+            LoadLog.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler).Subscribe();
+        }
 
-            var buffer = new StringWriter(new StringBuilder());
-            _formatter.Format(logEvent, buffer);
-            buffer.WriteLine(_cacheLog);
-            _cacheLog = buffer.ToString();
-
-            RxApp.MainThreadScheduler.Schedule(() => Logs = _cacheLog);
+        public async Task EndpointAddressRefresh(AccountId accountId)
+        {
+            if (!IsActive) return;
+            if (accountId != AccountId) return;
+            await LoadEndpointAddress.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         public async Task TaskListRefresh(AccountId accountId)
@@ -85,52 +90,39 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             await LoadTask.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
             await LoadLog.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadEndpointAddress.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
-        private List<TaskItem> LoadTaskHandler(AccountId accountId)
+        private async Task<List<TaskItem>> LoadTaskHandler(AccountId accountId)
         {
-            var tasks = _taskManager.GetTaskList(accountId);
-
-            return tasks
-                .Select(x => new TaskItem(x))
-                .ToList();
+            return await _mediator.Send(new GetTaskCommand(accountId));
         }
 
-        private void LoadLogHandler(AccountId accountId)
+        private async Task<string> LoadLogHandler(AccountId accountId)
         {
-            _isLogLoading = true;
-            var logs = _logSink.GetLogs(accountId);
-            var buffer = new StringWriter(new StringBuilder());
-
-            foreach (var log in logs)
-            {
-                _formatter.Format(log, buffer);
-            }
-            _cacheLog = buffer.ToString();
-            _isLogLoading = false;
+            var logs = await _mediator.Send(new GetLogCommand(AccountId));
+            return logs;
         }
 
-        private void GetHelpTask()
+        private async Task<string> LoadEndpointAddressHandler(AccountId accountId)
         {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = _discordUrl,
-                UseShellExecute = true
-            });
+            return await _mediator.Send(new LoadEndpointAddress(accountId));
         }
 
-        private void LogFolderTask()
+        private async Task LeftTask()
         {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = Path.Combine(AppContext.BaseDirectory, "logs"),
-                UseShellExecute = true
-            });
+            await _mediator.Send(new LeftCommand());
+        }
+
+        private async Task RightTask()
+        {
+            await _mediator.Send(new RightCommand());
         }
 
         public ReactiveCommand<AccountId, List<TaskItem>> LoadTask { get; }
-        public ReactiveCommand<AccountId, Unit> LoadLog { get; }
-        public ReactiveCommand<Unit, Unit> GetHelpCommand { get; }
-        public ReactiveCommand<Unit, Unit> LogFolderCommand { get; }
+        public ReactiveCommand<AccountId, string> LoadLog { get; }
+        public ReactiveCommand<AccountId, string> LoadEndpointAddress { get; }
+        public ReactiveCommand<Unit, Unit> LeftCommand { get; }
+        public ReactiveCommand<Unit, Unit> RightCommand { get; }
     }
 }

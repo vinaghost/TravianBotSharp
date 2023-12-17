@@ -20,10 +20,10 @@ namespace MainCore.Tasks
         {
             Result result;
 
-            result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 1), CancellationToken);
+            result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateDorfCommand.Handle(new(AccountId, VillageId), CancellationToken);
+            result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _mediator.Send(new ToNPCPageCommand(AccountId, VillageId));
@@ -32,7 +32,7 @@ namespace MainCore.Tasks
             result = await _mediator.Send(new NPCCommand(AccountId, VillageId));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateDorfCommand.Handle(new(AccountId, VillageId), CancellationToken);
+            result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

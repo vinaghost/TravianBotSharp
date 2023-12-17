@@ -64,6 +64,12 @@
                         <CheckBox x:Name="HeadlessChrome" Content="Use headless chrome" />
                     </StackPanel>
                 </Border>
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Feature settings" VerticalAlignment="Center" FontWeight="Bold" />
+                        <CheckBox x:Name="IsAutoStartAdventure" Content="Auto start adventure" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
     </Grid>
