@@ -5,7 +5,6 @@ using MainCore.Commands.Features;
 using MainCore.Commands.Features.Step.StartAdventure;
 using MainCore.Commands.Validate;
 using MainCore.Common.Errors;
-using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Repositories;
 using MainCore.Services;
@@ -46,15 +45,15 @@ namespace MainCore.Tasks
             result = await _getDurationAdventureCommand.Handle(new(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            await SetNextExecute(AccountId, _getDurationAdventureCommand.Value);
+            await SetNextExecute(_getDurationAdventureCommand.Value);
 
             return Result.Ok();
         }
 
-        private async Task SetNextExecute(AccountId accountId, TimeSpan duration)
+        private async Task SetNextExecute(TimeSpan duration)
         {
             ExecuteAt = DateTime.Now.Add(duration * 2);
-            await _taskManager.ReOrder(accountId);
+            await _taskManager.ReOrder(AccountId);
         }
 
         protected override void SetName()
