@@ -51,6 +51,7 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.WorkTimeMin, 600 },
             {AccountSettingEnums.WorkTimeMax, 720 },
             {AccountSettingEnums.HeadlessChrome, 0 },
+            {AccountSettingEnums.AutoStartAdventure, 0 },
         };
 
         private List<AccountSettingEnums> GetMissingAccountSettings()
