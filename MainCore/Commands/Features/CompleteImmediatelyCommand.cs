@@ -20,9 +20,9 @@ namespace MainCore.Commands.Features
     public class CompleteImmediatelyCommandHandler : IRequestHandler<CompleteImmediatelyCommand, Result>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public CompleteImmediatelyCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public CompleteImmediatelyCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

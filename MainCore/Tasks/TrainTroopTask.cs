@@ -29,8 +29,6 @@ namespace MainCore.Tasks
             var buildings = _unitOfRepository.BuildingRepository.GetTrainTroopBuilding(VillageId);
             if (buildings.Count == 0) return Result.Ok();
 
-            SetNextExecute();
-
             Result result;
             var settings = new Dictionary<VillageSettingEnums, int>();
             foreach (var building in buildings)

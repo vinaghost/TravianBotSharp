@@ -14,9 +14,9 @@ namespace MainCore.Commands.Navigate.ToBuildingCommandHandler
     public class TravianOfficial : ICommandHandler<ToBuildingCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public TravianOfficial(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public TravianOfficial(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

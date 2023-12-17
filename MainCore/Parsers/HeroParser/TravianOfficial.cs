@@ -8,6 +8,93 @@ namespace MainCore.Parsers.HeroParser
     [RegisterAsTransient(ServerEnums.TravianOfficial)]
     public class TravianOfficial : IHeroParser
     {
+        public TimeSpan GetAdventureDuration(HtmlDocument doc)
+        {
+            var heroAdventure = doc.GetElementbyId("heroAdventure");
+            var timer = heroAdventure
+                .Descendants("span")
+                .Where(x => x.HasClass("timer"))
+                .FirstOrDefault();
+            if (timer is null) return TimeSpan.Zero;
+
+            var seconds = timer.GetAttributeValue("value", 0);
+            return TimeSpan.FromSeconds(seconds);
+        }
+
+        public HtmlNode GetContinueButton(HtmlDocument doc)
+        {
+            var button = doc.DocumentNode
+                .Descendants("button")
+                .Where(x => x.HasClass("continue"))
+                .FirstOrDefault();
+            return button;
+        }
+
+        public HtmlNode GetHeroAdventure(HtmlDocument doc)
+        {
+            var adventure = doc.DocumentNode
+                .Descendants("a")
+                .Where(x => x.HasClass("adventure") && x.HasClass("round"))
+                .FirstOrDefault();
+            return adventure;
+        }
+
+        public bool CanStartAdventure(HtmlDocument doc)
+        {
+            var status = doc.DocumentNode
+                .Descendants("div")
+                .Where(x => x.HasClass("heroStatus"))
+                .FirstOrDefault();
+            if (status is null) return false;
+
+            var heroHome = status.Descendants("i")
+                .Where(x => x.HasClass("heroHome"))
+                .Any();
+            if (!heroHome) return false;
+
+            var adventure = GetHeroAdventure(doc);
+            if (adventure is null) return false;
+
+            var adventureAvailabe = adventure.Descendants("div")
+                .Where(x => x.HasClass("content"))
+                .Any();
+            return adventureAvailabe;
+        }
+
+        public HtmlNode GetAdventure(HtmlDocument doc)
+        {
+            var adventures = doc.GetElementbyId("heroAdventure");
+            if (adventures is null) return null;
+
+            var tbody = adventures.Descendants("tbody").FirstOrDefault();
+            if (tbody is null) return null;
+
+            return tbody.Descendants("tr").FirstOrDefault();
+        }
+
+        public string GetAdventureInfo(HtmlNode node)
+        {
+            var difficult = GetAdventureDifficult(node);
+            var coordinates = GetAdventureCoordinates(node);
+
+            return $"{difficult} - {coordinates}";
+        }
+
+        private static string GetAdventureDifficult(HtmlNode node)
+        {
+            var tdList = node.Descendants("td").ToArray();
+            if (tdList.Length < 3) return "unknown";
+            var iconDifficulty = tdList[3].FirstChild;
+            return iconDifficulty.GetAttributeValue("alt", "unknown");
+        }
+
+        private static string GetAdventureCoordinates(HtmlNode node)
+        {
+            var tdList = node.Descendants("td").ToArray();
+            if (tdList.Length < 2) return "[~|~]";
+            return tdList[1].InnerText;
+        }
+
         public bool InventoryTabActive(HtmlDocument doc)
         {
             var heroDiv = doc.GetElementbyId("heroV2");
@@ -70,7 +157,7 @@ namespace MainCore.Parsers.HeroParser
             return buttonTransfer.ElementAt(1);
         }
 
-        public IEnumerable<HeroItemDto> Get(HtmlDocument doc)
+        public IEnumerable<HeroItemDto> GetItems(HtmlDocument doc)
         {
             var heroItemsDiv = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("heroItems"));
             if (heroItemsDiv is null) yield break;

@@ -21,9 +21,9 @@ namespace MainCore.Commands.Navigate
     public class SwitchVillageCommandHandler : ICommandHandler<SwitchVillageCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public SwitchVillageCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public SwitchVillageCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

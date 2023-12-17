@@ -24,13 +24,13 @@ namespace MainCore.Tasks
             result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 0), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateDorfCommand.Handle(new(AccountId, VillageId), CancellationToken);
+            result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _mediator.Send(new CompleteImmediatelyCommand(AccountId));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateDorfCommand.Handle(new(AccountId, VillageId), CancellationToken);
+            result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             await _mediator.Publish(new CompleteImmediatelyMessage(AccountId, VillageId));

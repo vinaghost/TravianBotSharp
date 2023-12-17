@@ -27,9 +27,9 @@ namespace MainCore.Commands.Navigate
     public class ToDorfCommandHandler : ICommandHandler<ToDorfCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public ToDorfCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public ToDorfCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

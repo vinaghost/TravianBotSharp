@@ -14,10 +14,10 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandH
     public class TravianOfficial : ICommandHandler<SpecialUpgradeCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
         private readonly UnitOfCommand _unitOfCommand;
 
-        public TravianOfficial(IChromeManager chromeManager, IUnitOfParser unitOfParser, UnitOfCommand unitOfCommand)
+        public TravianOfficial(IChromeManager chromeManager, UnitOfParser unitOfParser, UnitOfCommand unitOfCommand)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

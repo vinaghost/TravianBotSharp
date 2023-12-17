@@ -62,10 +62,7 @@ namespace MainCore.Tasks
             {
                 if (CancellationToken.IsCancellationRequested) return new Cancel();
 
-                result = await _unitOfCommand.UpdateAccountInfoCommand.Handle(new(AccountId), CancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
-                result = await _unitOfCommand.UpdateDorfCommand.Handle(new(AccountId, VillageId), CancellationToken);
+                result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
                 result = await _chooseBuildingJobCommand.Handle(new(AccountId, VillageId), CancellationToken);
@@ -91,7 +88,7 @@ namespace MainCore.Tasks
                 result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, dorf), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-                result = await _unitOfCommand.UpdateDorfCommand.Handle(new(AccountId, VillageId), CancellationToken);
+                result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
                 if (await JobComplete(AccountId, VillageId, job))

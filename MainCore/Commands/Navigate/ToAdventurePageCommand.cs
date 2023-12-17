@@ -8,40 +8,40 @@ using MainCore.Parsers;
 using MainCore.Services;
 using OpenQA.Selenium;
 
-namespace MainCore.Commands.Features.Step.NPC
+namespace MainCore.Commands.Navigate
 {
-    public class RedeemCommand : ByAccountIdBase, ICommand
+    public class ToAdventurePageCommand : ByAccountIdBase, ICommand
     {
-        public RedeemCommand(AccountId accountId) : base(accountId)
+        public ToAdventurePageCommand(AccountId accountId) : base(accountId)
         {
         }
     }
 
     [RegisterAsTransient]
-    public class RedeemCommandHandler : ICommandHandler<RedeemCommand>
+    public class ToAdventurePageCommandHandler : ICommandHandler<ToAdventurePageCommand>
     {
         private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;
 
-        public RedeemCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
+        public ToAdventurePageCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
         }
 
-        public async Task<Result> Handle(RedeemCommand command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(ToAdventurePageCommand command, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
             var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
 
-            var button = _unitOfParser.MarketParser.GetRedeemButton(html);
-            if (button is null) return Result.Fail(Retry.ButtonNotFound("redeem"));
+            var adventure = _unitOfParser.HeroParser.GetHeroAdventure(html);
+            if (adventure is null) return Result.Fail(Retry.ButtonNotFound("hero adventure"));
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath));
+            result = await chromeBrowser.Click(By.XPath(adventure.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = await chromeBrowser.WaitPageLoaded(cancellationToken);
+
+            result = await chromeBrowser.WaitPageChanged("adventures", cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

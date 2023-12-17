@@ -53,7 +53,7 @@ namespace MainCore.Parsers.HeroParser
             return doc.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("ok"));
         }
 
-        public IEnumerable<HeroItemDto> Get(HtmlDocument doc)
+        public IEnumerable<HeroItemDto> GetItems(HtmlDocument doc)
         {
             var inventory = doc.GetElementbyId("itemsToSale");
             if (inventory is null) yield break;
@@ -97,6 +97,86 @@ namespace MainCore.Parsers.HeroParser
                     Amount = int.Parse(amountValueStr),
                 };
             }
+        }
+
+        public HtmlNode GetHeroAdventure(HtmlDocument doc)
+        {
+            return doc.DocumentNode.Descendants().FirstOrDefault(x => x.HasClass("adventure"));
+        }
+
+        public bool CanStartAdventure(HtmlDocument doc)
+        {
+            var messageStatus = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("heroStatusMessage"));
+
+            var status = messageStatus
+                .Descendants("img")
+                .Where(x => x.HasClass("heroStatus100"))
+                .Any();
+            if (!status) return false;
+
+            var adventure = GetHeroAdventure(doc);
+            if (adventure is null) return false;
+
+            var adventureAvailabe = adventure.Descendants("div")
+                .Where(x => x.HasClass("content"))
+                .Any();
+            return adventureAvailabe;
+        }
+
+        public HtmlNode GetAdventure(HtmlDocument doc)
+        {
+            var adventures = doc.GetElementbyId("adventureListForm");
+            if (adventures is null) return null;
+            var list = adventures.Descendants("tr").ToList();
+            list.RemoveAt(0);
+            if (list.Count == 0) return null;
+            return list[0];
+        }
+
+        public string GetAdventureInfo(HtmlNode node)
+        {
+            var difficult = GetAdventureDifficult(node);
+            var coordinates = GetAdventureCoordinates(node);
+
+            return $"{difficult} - {coordinates}";
+        }
+
+        private static string GetAdventureDifficult(HtmlNode node)
+        {
+            var img = node.Descendants("img").FirstOrDefault();
+            if (img is null) return "unknown";
+            return img.GetAttributeValue("alt", "unknown");
+        }
+
+        private static string GetAdventureCoordinates(HtmlNode node)
+        {
+            var coordsNode = node.Descendants("td").FirstOrDefault(x => x.HasClass("coords"));
+            if (coordsNode is null) return "[~|~]";
+            return coordsNode.InnerText;
+        }
+
+        public HtmlNode GetContinueButton(HtmlDocument doc)
+        {
+            var button = doc.DocumentNode
+                .Descendants("button")
+                .Where(x => x.HasClass("continue"))
+                .FirstOrDefault();
+            return button;
+        }
+
+        public TimeSpan GetAdventureDuration(HtmlDocument doc)
+        {
+            var heroAdventure = doc.GetElementbyId("heroAdventure");
+            var timer = heroAdventure
+                .Descendants("span")
+                .Where(x => x.HasClass("timer"))
+                .FirstOrDefault();
+            if (timer is null) return TimeSpan.Zero;
+
+            var seconds = timer.GetAttributeValue("value", 0);
+            return TimeSpan.FromSeconds(seconds);
         }
     }
 }

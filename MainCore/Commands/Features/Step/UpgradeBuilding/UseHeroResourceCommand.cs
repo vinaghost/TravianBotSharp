@@ -30,9 +30,9 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
         private readonly IChromeManager _chromeManager;
         private readonly UnitOfRepository _unitOfRepository;
         private readonly UnitOfCommand _unitOfCommand;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public UseHeroResourceCommandHandler(IChromeManager chromeManager, UnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, IUnitOfParser unitOfParser)
+        public UseHeroResourceCommandHandler(IChromeManager chromeManager, UnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfRepository = unitOfRepository;

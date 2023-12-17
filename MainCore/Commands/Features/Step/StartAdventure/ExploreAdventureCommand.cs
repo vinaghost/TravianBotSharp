@@ -9,50 +9,49 @@ using MainCore.Parsers;
 using MainCore.Services;
 using OpenQA.Selenium;
 
-namespace MainCore.Commands.Features.Step.NPC
+namespace MainCore.Commands.Features.Step.StartAdventure
 {
-    public class OpenNPCDialogCommand : ByAccountIdBase, ICommand
+    public class ExploreAdventureCommand : ByAccountIdBase, ICommand
     {
-        public OpenNPCDialogCommand(AccountId accountId) : base(accountId)
+        public ExploreAdventureCommand(AccountId accountId) : base(accountId)
         {
         }
     }
 
     [RegisterAsTransient]
-    public class OpenNPCDialogCommandHandler : ICommandHandler<OpenNPCDialogCommand>
+    public class ExploreAdventureCommandHandler : ICommandHandler<ExploreAdventureCommand>
     {
         private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;
 
-        public OpenNPCDialogCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
+        public ExploreAdventureCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
         }
 
-        public async Task<Result> Handle(OpenNPCDialogCommand command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(ExploreAdventureCommand command, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
             var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
 
-            var button = _unitOfParser.MarketParser.GetExchangeResourcesButton(html);
-            if (button is null) return Result.Fail(Retry.ButtonNotFound("Exchange resources"));
+            var adventure = _unitOfParser.HeroParser.GetAdventure(html);
+            if (adventure is null) return Result.Fail(Retry.ButtonNotFound("adventure place"));
+
             Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath));
+            result = await chromeBrowser.Click(By.XPath(adventure.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            bool dialogShown(IWebDriver driver)
+            bool continueShow(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
+                var continueButton = _unitOfParser.HeroParser.GetContinueButton(doc);
+                return continueButton is not null;
+            };
 
-                return _unitOfParser.MarketParser.NPCDialogShown(doc);
-            }
-
-            result = await chromeBrowser.Wait(dialogShown, cancellationToken);
+            result = await chromeBrowser.Wait(continueShow, cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
             return Result.Ok();
         }
     }

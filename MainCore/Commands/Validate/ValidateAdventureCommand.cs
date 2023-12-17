@@ -8,20 +8,20 @@ using MainCore.Services;
 
 namespace MainCore.Commands.Validate
 {
-    public class ValidateIngameCommand : ByAccountIdBase, ICommand<bool>
+    public class ValidateAdventureCommand : ByAccountIdBase, ICommand<bool>
     {
-        public ValidateIngameCommand(AccountId accountId) : base(accountId)
+        public ValidateAdventureCommand(AccountId accountId) : base(accountId)
         {
         }
     }
 
     [RegisterAsTransient]
-    public class ValidateIngameCommandHandler : ICommandHandler<ValidateIngameCommand, bool>
+    public class ValidateAdventureCommandHandler : ICommandHandler<ValidateAdventureCommand, bool>
     {
         private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;
 
-        public ValidateIngameCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
+        public ValidateAdventureCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
@@ -29,15 +29,13 @@ namespace MainCore.Commands.Validate
 
         public bool Value { get; private set; }
 
-        public async Task<Result> Handle(ValidateIngameCommand command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(ValidateAdventureCommand command, CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
             var chromeBrowser = _chromeManager.Get(command.AccountId);
+
             var html = chromeBrowser.Html;
-
-            var fieldButton = _unitOfParser.NavigationBarParser.GetResourceButton(html);
-
-            Value = fieldButton is not null;
+            Value = _unitOfParser.HeroParser.CanStartAdventure(html);
             return Result.Ok();
         }
     }
