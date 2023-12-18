@@ -19,5 +19,6 @@ namespace MainCore.Parsers
                                IVillagePanelParser VillagePanelParser,
                                IUpgradeBuildingParser UpgradeBuildingParser,
                                IMarketParser MarketParser,
+                               IQuestParser QuestParser,
                                IOptionPageParser OptionPageParser);
 }
