@@ -5,6 +5,7 @@ using MainCore.Commands.Features;
 using MainCore.Commands.Validate;
 using MainCore.Common.Errors;
 using MainCore.Infrasturecture.AutoRegisterDi;
+using MainCore.Notification.Message;
 using MainCore.Repositories;
 using MainCore.Tasks.Base;
 using MediatR;
@@ -35,6 +36,7 @@ namespace MainCore.Tasks
             result = await _mediator.Send(new ClaimQuestCommand(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
+            await _mediator.Publish(new StorageUpdated(AccountId, VillageId), CancellationToken);
             return Result.Ok();
         }
 

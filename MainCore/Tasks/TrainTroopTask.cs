@@ -37,7 +37,7 @@ namespace MainCore.Tasks
             var settings = new Dictionary<VillageSettingEnums, int>();
             foreach (var building in buildings)
             {
-                result = await _mediator.Send(new TrainTroopCommand(AccountId, VillageId, building));
+                result = await _mediator.Send(new TrainTroopCommand(AccountId, VillageId, building), CancellationToken);
                 if (result.IsFailed)
                 {
                     if (result.HasError<MissingBuilding>())

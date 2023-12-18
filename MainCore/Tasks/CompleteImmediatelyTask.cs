@@ -27,13 +27,13 @@ namespace MainCore.Tasks
             result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _mediator.Send(new CompleteImmediatelyCommand(AccountId));
+            result = await _mediator.Send(new CompleteImmediatelyCommand(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            await _mediator.Publish(new CompleteImmediatelyMessage(AccountId, VillageId));
+            await _mediator.Publish(new CompleteImmediatelyMessage(AccountId, VillageId), CancellationToken);
             return Result.Ok();
         }
 

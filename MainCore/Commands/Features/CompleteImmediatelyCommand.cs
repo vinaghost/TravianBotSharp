@@ -59,7 +59,19 @@ namespace MainCore.Commands.Features
             var confirmButton = _unitOfParser.CompleteImmediatelyParser.GetConfirmButton(html);
             if (confirmButton is null) return Result.Fail(Retry.ButtonNotFound("complete now"));
 
+            var oldQueueCount = _unitOfParser.QueueBuildingParser.Get(html).Count();
+
             result = await chromeBrowser.Click(By.XPath(confirmButton.XPath));
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            bool queueDifferent(IWebDriver driver)
+            {
+                var doc = new HtmlDocument();
+                doc.LoadHtml(driver.PageSource);
+                var newQueueCount = _unitOfParser.QueueBuildingParser.Get(html).Count();
+                return oldQueueCount != newQueueCount;
+            };
+            result = await chromeBrowser.Wait(queueDifferent, cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             return Result.Ok();

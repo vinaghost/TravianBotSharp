@@ -41,6 +41,7 @@ namespace MainCore.Commands.Features.Step.NPC
             Result result;
             result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
             result = await chromeBrowser.WaitPageLoaded(cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();

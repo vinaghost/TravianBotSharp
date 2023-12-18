@@ -16,8 +16,11 @@ namespace MainCore.Parsers.QuestParser
         {
             var questmasterButton = GetQuestMaster(doc);
             if (questmasterButton is null) return false;
-
-            return questmasterButton.HasClass("claimable");
+            var newQuestSpeechBubble = questmasterButton
+                .Descendants("div")
+                .Where(x => x.HasClass("newQuestSpeechBubble"))
+                .Any();
+            return newQuestSpeechBubble;
         }
 
         public HtmlNode GetQuestCollectButton(HtmlDocument doc)

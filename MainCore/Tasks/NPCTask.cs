@@ -26,10 +26,10 @@ namespace MainCore.Tasks
             result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _mediator.Send(new ToNPCPageCommand(AccountId, VillageId));
+            result = await _mediator.Send(new ToNPCPageCommand(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _mediator.Send(new NPCCommand(AccountId, VillageId));
+            result = await _mediator.Send(new NPCCommand(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);

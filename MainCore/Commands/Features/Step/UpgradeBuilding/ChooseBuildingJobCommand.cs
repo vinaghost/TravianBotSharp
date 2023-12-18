@@ -53,7 +53,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
                 if (countQueueBuilding == 0)
                 {
                     var job = _unitOfRepository.JobRepository.GetBuildingJob(command.VillageId);
-                    if (await JobComplete(command.AccountId, command.VillageId, job)) continue;
+                    if (await JobComplete(command.AccountId, command.VillageId, job, cancellationToken)) continue;
                     Value = job;
                     return Result.Ok();
                 }
@@ -66,7 +66,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
                     if (plusActive)
                     {
                         var job = _unitOfRepository.JobRepository.GetBuildingJob(command.VillageId);
-                        if (await JobComplete(command.AccountId, command.VillageId, job)) continue;
+                        if (await JobComplete(command.AccountId, command.VillageId, job, cancellationToken)) continue;
                         if (!JobRequirements(command.VillageId, job))
                         {
                             job = _unitOfRepository.JobRepository.GetResourceBuildingJob(command.VillageId);
@@ -79,7 +79,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
                     {
                         var job = GetJobBasedOnRomanLogic(command.VillageId, countQueueBuilding);
                         if (job is null) return Result.Fail(BuildingQueue.NotTaskInqueue);
-                        if (await JobComplete(command.AccountId, command.VillageId, job)) continue;
+                        if (await JobComplete(command.AccountId, command.VillageId, job, cancellationToken)) continue;
                         if (!JobRequirements(command.VillageId, job)) return Result.Fail(BuildingQueue.NotEnoughPrerequisiteBuilding);
                         Value = job;
                         return Result.Ok();
@@ -93,7 +93,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
                     {
                         var job = GetJobBasedOnRomanLogic(command.VillageId, countQueueBuilding);
                         if (job is null) return Result.Fail(BuildingQueue.NotTaskInqueue);
-                        if (await JobComplete(command.AccountId, command.VillageId, job)) continue;
+                        if (await JobComplete(command.AccountId, command.VillageId, job, cancellationToken)) continue;
                         if (!JobRequirements(command.VillageId, job)) return Result.Fail(BuildingQueue.NotEnoughPrerequisiteBuilding);
                         Value = job;
                         return Result.Ok();
@@ -105,12 +105,12 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             while (true);
         }
 
-        private async Task<bool> JobComplete(AccountId accountId, VillageId villageId, JobDto job)
+        private async Task<bool> JobComplete(AccountId accountId, VillageId villageId, JobDto job, CancellationToken cancellationToken)
         {
             if (_unitOfRepository.JobRepository.JobComplete(villageId, job))
             {
                 _unitOfRepository.JobRepository.Delete(job.Id);
-                await _mediator.Publish(new JobUpdated(accountId, villageId));
+                await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
                 return true;
             }
             return false;

@@ -24,7 +24,7 @@ namespace MainCore.Tasks
         protected override async Task<Result> Execute()
         {
             Result result;
-            result = await _mediator.Send(new LoginCommand(AccountId));
+            result = await _mediator.Send(new LoginCommand(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await DisableContextualHelp();
@@ -43,7 +43,7 @@ namespace MainCore.Tasks
 
             if (!_validateContextualHelpCommand.Value) return Result.Ok();
 
-            result = await _mediator.Send(new DisableContextualHelpCommand(AccountId));
+            result = await _mediator.Send(new DisableContextualHelpCommand(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 1), CancellationToken);

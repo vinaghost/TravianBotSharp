@@ -25,10 +25,11 @@ namespace MainCore.Commands.Features.Step.ClaimQuest
         private readonly UnitOfParser _unitOfParser;
         private readonly UnitOfCommand _unitOfCommand;
 
-        public CollectRewardCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
+        public CollectRewardCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser, UnitOfCommand unitOfCommand)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
+            _unitOfCommand = unitOfCommand;
         }
 
         public async Task<Result> Handle(CollectRewardCommand command, CancellationToken cancellationToken)
@@ -66,7 +67,7 @@ namespace MainCore.Commands.Features.Step.ClaimQuest
         private async Task<Result> Handle(IChromeBrowser chromeBrowser)
         {
             var html = chromeBrowser.Html;
-            var firstTab = _unitOfParser.NavigationTabParser.GetTab(html, 1);
+            var firstTab = _unitOfParser.NavigationTabParser.GetTab(html, 0);
             if (firstTab is null) return Result.Fail(Retry.NotFound("tasks", "tab"));
 
             var firstTabActive = _unitOfParser.NavigationTabParser.IsTabActive(firstTab);
@@ -74,7 +75,7 @@ namespace MainCore.Commands.Features.Step.ClaimQuest
             Result result;
             if (firstTabActive)
             {
-                var secondTab = _unitOfParser.NavigationTabParser.GetTab(html, 2);
+                var secondTab = _unitOfParser.NavigationTabParser.GetTab(html, 1);
                 result = await chromeBrowser.Click(By.XPath(secondTab.XPath));
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
