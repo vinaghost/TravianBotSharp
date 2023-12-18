@@ -36,7 +36,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId)
         {
-            var autoStartAdventure = _unitOfRepository.AccountSettingRepository.GetBooleanByName(accountId, AccountSettingEnums.AutoStartAdventure);
+            var autoStartAdventure = _unitOfRepository.AccountSettingRepository.GetBooleanByName(accountId, AccountSettingEnums.EnableAutoStartAdventure);
             if (autoStartAdventure)
             {
                 if (_taskManager.IsExist<StartAdventureTask>(accountId)) return;

@@ -41,7 +41,7 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.ClickDelayMax, 900 },
             {AccountSettingEnums.TaskDelayMin, 1000 },
             {AccountSettingEnums.TaskDelayMax, 1500 },
-            {AccountSettingEnums.AutoLoadVillageBuilding, 1 },
+            {AccountSettingEnums.EnableAutoLoadVillageBuilding, 1 },
             {AccountSettingEnums.UseStartAllButton, 0 },
             {AccountSettingEnums.FarmIntervalMin, 540 },
             {AccountSettingEnums.FarmIntervalMax, 660 },
@@ -51,7 +51,7 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.WorkTimeMin, 600 },
             {AccountSettingEnums.WorkTimeMax, 720 },
             {AccountSettingEnums.HeadlessChrome, 0 },
-            {AccountSettingEnums.AutoStartAdventure, 0 },
+            {AccountSettingEnums.EnableAutoStartAdventure, 0 },
         };
 
         private List<AccountSettingEnums> GetMissingAccountSettings()

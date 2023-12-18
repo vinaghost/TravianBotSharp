@@ -14,9 +14,9 @@ namespace MainCore.UI.Models.Input
             TaskDelay.Set(settings.GetValueOrDefault(AccountSettingEnums.TaskDelayMin), settings.GetValueOrDefault(AccountSettingEnums.TaskDelayMax));
             WorkTime.Set(settings.GetValueOrDefault(AccountSettingEnums.WorkTimeMin), settings.GetValueOrDefault(AccountSettingEnums.WorkTimeMax));
             SleepTime.Set(settings.GetValueOrDefault(AccountSettingEnums.SleepTimeMin), settings.GetValueOrDefault(AccountSettingEnums.SleepTimeMax));
-            IsAutoLoadVillage = settings.GetValueOrDefault(AccountSettingEnums.AutoLoadVillageBuilding) == 1;
+            EnableAutoLoadVillage = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoLoadVillageBuilding) == 1;
             HeadlessChrome = settings.GetValueOrDefault(AccountSettingEnums.HeadlessChrome) == 1;
-            IsAutoStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.AutoStartAdventure) == 1;
+            EnableAutoStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoStartAdventure) == 1;
         }
 
         public Dictionary<AccountSettingEnums, int> Get()
@@ -24,11 +24,11 @@ namespace MainCore.UI.Models.Input
             var tribe = (int)Tribe.Get();
             var (clickDelayMin, clickDelayMax) = ClickDelay.Get();
             var (taskDelayMin, taskDelayMax) = TaskDelay.Get();
-            var isAutoLoadVillage = IsAutoLoadVillage ? 1 : 0;
+            var isAutoLoadVillage = EnableAutoLoadVillage ? 1 : 0;
             var (workTimeMin, workTimeMax) = WorkTime.Get();
             var (sleepTimeMin, sleepTimeMax) = SleepTime.Get();
             var headlessChrome = HeadlessChrome ? 1 : 0;
-            var autoStartAdventure = IsAutoStartAdventure ? 1 : 0;
+            var autoStartAdventure = EnableAutoStartAdventure ? 1 : 0;
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
                 { AccountSettingEnums.ClickDelayMin, clickDelayMin },
@@ -39,10 +39,10 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.WorkTimeMin, workTimeMin },
                 { AccountSettingEnums.SleepTimeMax, sleepTimeMax },
                 { AccountSettingEnums.SleepTimeMin, sleepTimeMin },
-                { AccountSettingEnums.AutoLoadVillageBuilding, isAutoLoadVillage },
+                { AccountSettingEnums.EnableAutoLoadVillageBuilding, isAutoLoadVillage },
                 { AccountSettingEnums.Tribe, tribe },
                 { AccountSettingEnums.HeadlessChrome, headlessChrome },
-                { AccountSettingEnums.AutoStartAdventure, autoStartAdventure },
+                { AccountSettingEnums.EnableAutoStartAdventure, autoStartAdventure },
             };
             return settings;
         }
@@ -54,12 +54,12 @@ namespace MainCore.UI.Models.Input
         public RangeInputViewModel WorkTime { get; } = new();
         public RangeInputViewModel SleepTime { get; } = new();
 
-        private bool _isAutoLoadVillage;
+        private bool _enableAutoLoadVillage;
 
-        public bool IsAutoLoadVillage
+        public bool EnableAutoLoadVillage
         {
-            get => _isAutoLoadVillage;
-            set => this.RaiseAndSetIfChanged(ref _isAutoLoadVillage, value);
+            get => _enableAutoLoadVillage;
+            set => this.RaiseAndSetIfChanged(ref _enableAutoLoadVillage, value);
         }
 
         private bool _headlessChrome;
@@ -70,12 +70,12 @@ namespace MainCore.UI.Models.Input
             set => this.RaiseAndSetIfChanged(ref _headlessChrome, value);
         }
 
-        private bool _isAutoStartAdventure;
+        private bool _enableAutoStartAdventure;
 
-        public bool IsAutoStartAdventure
+        public bool EnableAutoStartAdventure
         {
-            get => _isAutoStartAdventure;
-            set => this.RaiseAndSetIfChanged(ref _isAutoStartAdventure, value);
+            get => _enableAutoStartAdventure;
+            set => this.RaiseAndSetIfChanged(ref _enableAutoStartAdventure, value);
         }
     }
 }
