@@ -48,5 +48,8 @@
 
         AutoRefreshMin,
         AutoRefreshMax,
+
+        // Claim quest
+        AutoClaimQuestEnable,
     }
 }

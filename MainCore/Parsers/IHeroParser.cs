@@ -16,8 +16,18 @@ namespace MainCore.Parsers
 
         bool InventoryTabActive(HtmlDocument doc);
 
-        IEnumerable<HeroItemDto> Get(HtmlDocument doc);
+        IEnumerable<HeroItemDto> GetItems(HtmlDocument doc);
 
         bool HeroInventoryLoading(HtmlDocument doc);
+
+        HtmlNode GetHeroAdventure(HtmlDocument doc);
+
+        bool CanStartAdventure(HtmlDocument doc);
+
+        HtmlNode GetAdventure(HtmlDocument doc);
+
+        string GetAdventureInfo(HtmlNode node);
+        HtmlNode GetContinueButton(HtmlDocument doc);
+        TimeSpan GetAdventureDuration(HtmlDocument doc);
     }
 }

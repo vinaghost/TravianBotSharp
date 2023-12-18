@@ -22,9 +22,9 @@ namespace MainCore.Commands.Features.Step.NPC
     public class OpenNPCDialogCommandHandler : ICommandHandler<OpenNPCDialogCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public OpenNPCDialogCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public OpenNPCDialogCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

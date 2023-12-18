@@ -20,10 +20,10 @@ namespace MainCore.Commands.Features
     public class LoginCommandHandler : IRequestHandler<LoginCommand, Result>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
         private readonly UnitOfRepository _unitOfRepository;
 
-        public LoginCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser, UnitOfRepository unitOfRepository)
+        public LoginCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser, UnitOfRepository unitOfRepository)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

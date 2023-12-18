@@ -39,11 +39,11 @@ namespace MainCore.UI.ViewModels.UserControls
             _unitOfRepository = unitOfRepository;
             _taskManager = taskManager;
 
-            AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler);
-            AddAccounts = ReactiveCommand.CreateFromTask(AddAccountsHandler);
-            DeleteAccount = ReactiveCommand.CreateFromTask(DeleteAccountHandler);
-
             var isEnable = this.WhenAnyValue(x => x.Accounts.IsEnable);
+            AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler, isEnable);
+            AddAccounts = ReactiveCommand.CreateFromTask(AddAccountsHandler, isEnable);
+            DeleteAccount = ReactiveCommand.CreateFromTask(DeleteAccountHandler, isEnable);
+
             Login = ReactiveCommand.CreateFromTask(LoginHandler, isEnable);
             Logout = ReactiveCommand.CreateFromTask(LogoutTask, isEnable);
             Pause = ReactiveCommand.CreateFromTask(PauseTask, isEnable);

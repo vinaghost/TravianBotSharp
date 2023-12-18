@@ -25,9 +25,9 @@ namespace MainCore.Commands.Navigate
     public class SwitchTabCommandHandler : ICommandHandler<SwitchTabCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public SwitchTabCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public SwitchTabCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

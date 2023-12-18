@@ -33,6 +33,7 @@ namespace MainCore.UI.Models.Input
 
         private bool _autoRefreshEnable;
         public RangeInputViewModel AutoRefreshTime { get; } = new();
+        private bool _autoClaimQuestEnable;
 
         public void Set(Dictionary<VillageSettingEnums, int> settings)
         {
@@ -78,6 +79,8 @@ namespace MainCore.UI.Models.Input
             AutoRefreshTime.Set(
                 settings.GetValueOrDefault(VillageSettingEnums.AutoRefreshMin),
                 settings.GetValueOrDefault(VillageSettingEnums.AutoRefreshMax));
+
+            AutoClaimQuestEnable = settings.GetValueOrDefault(VillageSettingEnums.AutoClaimQuestEnable) == 1;
         }
 
         public Dictionary<VillageSettingEnums, int> Get()
@@ -106,6 +109,8 @@ namespace MainCore.UI.Models.Input
 
             var autoRefreshEnable = AutoRefreshEnable ? 1 : 0;
             var (autoRefreshMin, autoRefreshMax) = AutoRefreshTime.Get();
+
+            var autoClaimQuestEnable = AutoClaimQuestEnable ? 1 : 0;
 
             var settings = new Dictionary<VillageSettingEnums, int>()
             {
@@ -137,6 +142,7 @@ namespace MainCore.UI.Models.Input
                 { VillageSettingEnums.AutoRefreshEnable, autoRefreshEnable },
                 { VillageSettingEnums.AutoRefreshMin, autoRefreshMin },
                 { VillageSettingEnums.AutoRefreshMax, autoRefreshMax },
+                { VillageSettingEnums.AutoClaimQuestEnable, autoClaimQuestEnable },
             };
             return settings;
         }
@@ -205,6 +211,12 @@ namespace MainCore.UI.Models.Input
         {
             get => _autoRefreshEnable;
             set => this.RaiseAndSetIfChanged(ref _autoRefreshEnable, value);
+        }
+
+        public bool AutoClaimQuestEnable
+        {
+            get => _autoClaimQuestEnable;
+            set => this.RaiseAndSetIfChanged(ref _autoClaimQuestEnable, value);
         }
     }
 }

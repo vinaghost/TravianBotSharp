@@ -19,7 +19,7 @@ namespace MainCore.Commands
                                 ICommandHandler<ToDorfCommand> ToDorfCommand,
                                 ICommandHandler<ToHeroInventoryCommand> ToHeroInventoryCommand,
                                 ICommandHandler<UpdateAccountInfoCommand> UpdateAccountInfoCommand,
-                                ICommandHandler<UpdateDorfCommand> UpdateDorfCommand,
+                                ICommandHandler<UpdateVillageInfoCommand> UpdateVillageInfoCommand,
                                 ICommandHandler<UpdateFarmListCommand> UpdateFarmListCommand,
                                 ICommandHandler<UpdateHeroItemsCommand> UpdateHeroItemsCommand,
                                 ICommandHandler<UpdateVillageListCommand> UpdateVillageListCommand,

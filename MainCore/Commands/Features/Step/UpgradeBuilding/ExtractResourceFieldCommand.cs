@@ -48,7 +48,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             {
                 _jobRepository.AddToTop(command.VillageId, normalBuildPlan);
             }
-            await _mediator.Publish(new JobUpdated(command.AccountId, command.VillageId));
+            await _mediator.Publish(new JobUpdated(command.AccountId, command.VillageId), cancellationToken);
             return Result.Ok();
         }
     }

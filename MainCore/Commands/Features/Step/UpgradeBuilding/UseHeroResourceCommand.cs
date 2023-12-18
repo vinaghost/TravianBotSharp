@@ -1,6 +1,7 @@
 ﻿using FluentResults;
 using HtmlAgilityPack;
 using MainCore.Commands.Base;
+using MainCore.Commands.General;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Common.MediatR;
@@ -29,9 +30,9 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
         private readonly IChromeManager _chromeManager;
         private readonly UnitOfRepository _unitOfRepository;
         private readonly UnitOfCommand _unitOfCommand;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public UseHeroResourceCommandHandler(IChromeManager chromeManager, UnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, IUnitOfParser unitOfParser)
+        public UseHeroResourceCommandHandler(IChromeManager chromeManager, UnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfRepository = unitOfRepository;
@@ -76,11 +77,10 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
                 (HeroItemEnums.Crop, requiredResource[3]),
             };
 
+            var delayClickCommand = new DelayClickCommand(command.AccountId);
             foreach (var item in items)
             {
-                result = await UseResource(chromeBrowser, item.Item1, item.Item2, cancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-                result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
+                result = await UseResource(chromeBrowser, item.Item1, item.Item2, delayClickCommand, cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
 
@@ -89,15 +89,24 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             return Result.Ok();
         }
 
-        private async Task<Result> UseResource(IChromeBrowser chromeBrowser, HeroItemEnums item, long amount, CancellationToken cancellationToken)
+        private async Task<Result> UseResource(IChromeBrowser chromeBrowser, HeroItemEnums item, long amount, DelayClickCommand delayClickCommand, CancellationToken cancellationToken)
         {
             if (amount == 0) return Result.Ok();
             Result result;
             result = await ClickItem(chromeBrowser, item, cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await _unitOfCommand.DelayClickCommand.Handle(delayClickCommand, cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             result = await EnterAmount(chromeBrowser, amount);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await _unitOfCommand.DelayClickCommand.Handle(delayClickCommand, cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             result = await Confirm(chromeBrowser, cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await _unitOfCommand.DelayClickCommand.Handle(delayClickCommand, cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }
@@ -161,6 +170,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
 
         private static long RoundUpTo100(long res)
         {
+            if (res == 0) return 0;
             var remainder = res % 100;
             return res + (100 - remainder);
         }

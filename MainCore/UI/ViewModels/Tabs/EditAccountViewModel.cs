@@ -37,6 +37,7 @@ namespace MainCore.UI.ViewModels.Tabs
             DeleteAccess = ReactiveCommand.CreateFromTask(DeleteAccessHandler);
             EditAccount = ReactiveCommand.CreateFromTask(EditAccountHandler);
             LoadAccount = ReactiveCommand.Create<AccountId, AccountDto>(LoadAccountHandler);
+
             this.WhenAnyValue(vm => vm.SelectedAccess)
                 .WhereNotNull()
                 .Subscribe(x => x.CopyTo(AccessInput));
@@ -68,6 +69,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private async Task EditAccountHandler()
         {
             await _mediator.Send(new EditAccountCommand(AccountInput));
+            await LoadAccount.Execute().SubscribeOn(RxApp.TaskpoolScheduler);
         }
 
         private AccountDto LoadAccountHandler(AccountId accountId)
