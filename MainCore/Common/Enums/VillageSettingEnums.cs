@@ -50,6 +50,6 @@
         AutoRefreshMax,
 
         // Claim quest
-        AutoClaimQuest,
+        AutoClaimQuestEnable,
     }
 }

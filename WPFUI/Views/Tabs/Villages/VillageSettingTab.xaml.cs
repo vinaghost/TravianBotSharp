@@ -46,6 +46,8 @@ namespace WPFUI.Views.Tabs.Villages
 
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.AutoRefreshEnable, v => v.AutoRefreshEnable.IsChecked).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.AutoRefreshTime, v => v.AutoRefreshTime.ViewModel).DisposeWith(d);
+
+                this.Bind(ViewModel, vm => vm.VillageSettingInput.AutoClaimQuestEnable, v => v.AutoClaimQuestEnable.IsChecked).DisposeWith(d);
             });
         }
     }

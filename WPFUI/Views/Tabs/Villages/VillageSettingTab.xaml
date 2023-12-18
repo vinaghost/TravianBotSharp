@@ -66,6 +66,12 @@
                 </Border>
                 <Border Style="{DynamicResource Box}">
                     <StackPanel>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Feature settings" VerticalAlignment="Center" FontWeight="Bold" />
+                        <CheckBox x:Name="AutoClaimQuestEnable" Content="Enable auto claim village's quest" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
                         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Troop training settings" VerticalAlignment="Center" FontWeight="Bold" />
                         <CheckBox x:Name="TrainTroopEnable" Content="Enable train troop" />
                         <uc:RangeInputUc x:Name="TrainTroopRepeatTime" Text="Next train troop execute after" Unit="mins" />
