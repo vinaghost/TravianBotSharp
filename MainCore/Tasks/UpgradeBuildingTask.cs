@@ -61,6 +61,8 @@ namespace MainCore.Tasks
             while (true)
             {
                 if (CancellationToken.IsCancellationRequested) return new Cancel();
+                result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 0), CancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
                 result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));

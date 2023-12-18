@@ -123,9 +123,9 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
 
             bool loadingCompleted(IWebDriver driver)
             {
-                var html = new HtmlDocument();
-                html.LoadHtml(driver.PageSource);
-                return !_unitOfParser.HeroParser.HeroInventoryLoading(html);
+                var doc = new HtmlDocument();
+                doc.LoadHtml(driver.PageSource);
+                return !_unitOfParser.HeroParser.HeroInventoryLoading(doc);
             };
 
             result = await chromeBrowser.Wait(loadingCompleted, cancellationToken);
@@ -157,9 +157,9 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
 
             bool loadingCompleted(IWebDriver driver)
             {
-                var html = new HtmlDocument();
-                html.LoadHtml(driver.PageSource);
-                return !_unitOfParser.HeroParser.HeroInventoryLoading(html);
+                var doc = new HtmlDocument();
+                doc.LoadHtml(driver.PageSource);
+                return !_unitOfParser.HeroParser.HeroInventoryLoading(doc);
             };
 
             result = await chromeBrowser.Wait(loadingCompleted, cancellationToken);

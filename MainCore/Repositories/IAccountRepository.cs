@@ -26,6 +26,6 @@ namespace MainCore.Repositories
 
         void Update(AccountDto dto);
 
-        void UpdateAccess(AccountId accountId);
+        void UpdateAccessLastUsed(AccessId accessId);
     }
 }

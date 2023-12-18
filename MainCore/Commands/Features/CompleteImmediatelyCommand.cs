@@ -59,7 +59,9 @@ namespace MainCore.Commands.Features
             var confirmButton = _unitOfParser.CompleteImmediatelyParser.GetConfirmButton(html);
             if (confirmButton is null) return Result.Fail(Retry.ButtonNotFound("complete now"));
 
-            var oldQueueCount = _unitOfParser.QueueBuildingParser.Get(html).Count();
+            var oldQueueCount = _unitOfParser.QueueBuildingParser.Get(html)
+                .Where(x => x.Level != -1)
+                .Count();
 
             result = await chromeBrowser.Click(By.XPath(confirmButton.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
@@ -68,7 +70,9 @@ namespace MainCore.Commands.Features
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                var newQueueCount = _unitOfParser.QueueBuildingParser.Get(html).Count();
+                var newQueueCount = _unitOfParser.QueueBuildingParser.Get(doc)
+                    .Where(x => x.Level != -1)
+                    .Count();
                 return oldQueueCount != newQueueCount;
             };
             result = await chromeBrowser.Wait(queueDifferent, cancellationToken);

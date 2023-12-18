@@ -1,4 +1,5 @@
 ﻿using MainCore.DTO;
+using MainCore.Entities;
 using ReactiveUI;
 using Riok.Mapperly.Abstractions;
 
@@ -42,7 +43,7 @@ namespace MainCore.UI.Models.Input
             };
         }
 
-        public int Id { get; set; }
+        public AccessId Id { get; set; }
         private string _password;
         private string _proxyHost;
         private int _proxyPort;
