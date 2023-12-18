@@ -5,7 +5,7 @@ namespace MainCore.DTO
 {
     public class AccessDto
     {
-        public int Id { get; set; }
+        public AccessId Id { get; set; }
         public string Password { get; set; }
 
         public string ProxyHost { get; set; }
@@ -30,7 +30,11 @@ namespace MainCore.DTO
 
         public static partial AccessDto ToDto(this Access entity);
 
-        private static partial Access ToEntity(this AccessDto dto);
+        public static partial Access ToEntity(this AccessDto dto);
+
+        private static int ToInt(this AccessId accessId) => accessId.Value;
+
+        private static AccessId ToAccessId(this int value) => new(value);
 
         public static partial IQueryable<AccessDto> ToDto(this IQueryable<Access> entities);
     }

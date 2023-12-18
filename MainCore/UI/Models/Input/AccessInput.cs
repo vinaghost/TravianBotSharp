@@ -1,4 +1,5 @@
 ﻿using MainCore.DTO;
+using MainCore.Entities;
 using ReactiveUI;
 using Riok.Mapperly.Abstractions;
 
@@ -14,6 +15,7 @@ namespace MainCore.UI.Models.Input
             ProxyUsername = "";
             ProxyPassword = "";
             Useragent = "";
+            LastUsed = DateTime.MinValue;
         }
 
         public void CopyTo(AccessInput target)
@@ -24,6 +26,7 @@ namespace MainCore.UI.Models.Input
             target.ProxyUsername = ProxyUsername;
             target.ProxyPassword = ProxyPassword;
             target.Useragent = Useragent;
+            target.LastUsed = LastUsed;
         }
 
         public AccessInput Clone()
@@ -36,16 +39,18 @@ namespace MainCore.UI.Models.Input
                 ProxyUsername = ProxyUsername,
                 ProxyPassword = ProxyPassword,
                 Useragent = Useragent,
+                LastUsed = LastUsed,
             };
         }
 
-        public int Id { get; set; }
+        public AccessId Id { get; set; }
         private string _password;
         private string _proxyHost;
         private int _proxyPort;
         private string _proxyUsername;
         private string _proxyPassword;
         private string _useragent;
+        private DateTime _lastUsed;
 
         public string Password
         {
@@ -81,6 +86,12 @@ namespace MainCore.UI.Models.Input
         {
             get => _useragent;
             set => this.RaiseAndSetIfChanged(ref _useragent, value);
+        }
+
+        public DateTime LastUsed
+        {
+            get => _lastUsed;
+            set => this.RaiseAndSetIfChanged(ref _lastUsed, value);
         }
     }
 

@@ -20,7 +20,7 @@ namespace MainCore.Services
 
         public RestClient Get(AccessDto access)
         {
-            if (_database.TryGetValue(access.Id, out RestClient client))
+            if (_database.TryGetValue(access.Id.Value, out RestClient client))
             {
                 return client;
             }
@@ -43,13 +43,13 @@ namespace MainCore.Services
 
             var clientOptions = new RestClientOptions
             {
-                MaxTimeout = 3000,
-                BaseUrl = new Uri("https://travian.com/"),
+                MaxTimeout = 30000,
+                BaseUrl = new Uri("https://google.com/"),
                 Proxy = proxy,
             };
 
             client = new RestClient(clientOptions);
-            _database.Add(access.Id, client);
+            _database.Add(access.Id.Value, client);
             return client;
         }
 

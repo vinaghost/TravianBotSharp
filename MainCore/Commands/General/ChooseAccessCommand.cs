@@ -46,6 +46,8 @@ namespace MainCore.Commands.General
             var access = await GetValidAccess(accesses, logger, cancellationToken);
             if (access is null) return Result.Fail(NoAccessAvailable.AllAccessNotWorking);
 
+            _unitOfRepository.AccountRepository.UpdateAccessLastUsed(access.Id);
+
             if (accesses.Count == 1)
             {
                 Value = access;

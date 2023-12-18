@@ -19,9 +19,9 @@ namespace MainCore.Commands.Validate
     public class ValidateLoginCommandHandler : ICommandHandler<ValidateLoginCommand, bool>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public ValidateLoginCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public ValidateLoginCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

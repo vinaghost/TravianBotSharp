@@ -66,7 +66,7 @@ namespace MainCore.Repositories
             context.SaveChanges();
         }
 
-        public void AddRange(VillageId villageId, List<JobDto> jobDtos)
+        public void AddRange(VillageId villageId, IEnumerable<JobDto> jobDtos)
         {
             using var context = _contextFactory.CreateDbContext();
             var count = context.Jobs
@@ -137,7 +137,6 @@ namespace MainCore.Repositories
                 .Where(x => x.Type == JobTypeEnums.ResourceBuild)
                 .ToDto()
                 .FirstOrDefault();
-
             if (job is null) return resourceBuildJob;
             if (resourceBuildJob is null) return job;
             if (job.Position < resourceBuildJob.Position) return job;

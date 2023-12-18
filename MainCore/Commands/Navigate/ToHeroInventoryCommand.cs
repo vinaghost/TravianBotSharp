@@ -21,10 +21,10 @@ namespace MainCore.Commands.Navigate
     [RegisterAsTransient]
     public class ToHeroInventoryCommandHandler : ICommandHandler<ToHeroInventoryCommand>
     {
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
         private readonly IChromeManager _chromeManager;
 
-        public ToHeroInventoryCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public ToHeroInventoryCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

@@ -27,9 +27,9 @@ namespace MainCore.Commands.Features.Step.TrainTroop
     public class InputAmountTroopCommandHandler : ICommandHandler<InputAmountTroopCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public InputAmountTroopCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public InputAmountTroopCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

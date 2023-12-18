@@ -31,7 +31,7 @@ namespace MainCore.Commands.UI.Build
             if (string.IsNullOrEmpty(path)) return;
             var villageId = request.VillageId;
             var jobs = _unitOfRepository.JobRepository.GetJobs(villageId);
-
+            jobs.ForEach(job => job.Id = JobId.Empty);
             var jsonString = JsonSerializer.Serialize(jobs);
             await File.WriteAllTextAsync(path, jsonString, cancellationToken);
             _dialogService.ShowMessageBox("Information", "Job list exported");
