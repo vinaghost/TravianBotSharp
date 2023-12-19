@@ -59,10 +59,13 @@ namespace MainCore.Commands.Features.Step.ClaimQuest.CollectRewardCommandHandler
                 result = await chromeBrowser.Click(By.XPath(collect.XPath));
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
+                result = await chromeBrowser.WaitPageLoaded(cancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
                 result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-                result = await chromeBrowser.WaitPageLoaded(cancellationToken);
+                result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
             while (_unitOfParser.QuestParser.IsQuestClaimable(html));

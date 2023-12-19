@@ -54,20 +54,15 @@
                 </Border>
                 <Border Style="{DynamicResource Box}">
                     <StackPanel>
-                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Update settings" VerticalAlignment="Center" FontWeight="Bold" />
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Feature settings" VerticalAlignment="Center" FontWeight="Bold" />
                         <CheckBox x:Name="EnableAutoLoadVillage" Content="Enable auto load village's building" />
+                        <CheckBox x:Name="EnableAutoStartAdventure" Content="Enable auto start adventure" />
                     </StackPanel>
                 </Border>
                 <Border Style="{DynamicResource Box}">
                     <StackPanel>
                         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Chrome settings" VerticalAlignment="Center" FontWeight="Bold" />
                         <CheckBox x:Name="HeadlessChrome" Content="Use headless chrome" />
-                    </StackPanel>
-                </Border>
-                <Border Style="{DynamicResource Box}">
-                    <StackPanel>
-                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Feature settings" VerticalAlignment="Center" FontWeight="Bold" />
-                        <CheckBox x:Name="EnableAutoStartAdventure" Content="Enable auto start adventure" />
                     </StackPanel>
                 </Border>
             </StackPanel>
