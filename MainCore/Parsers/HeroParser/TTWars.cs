@@ -106,15 +106,11 @@ namespace MainCore.Parsers.HeroParser
 
         public bool CanStartAdventure(HtmlDocument doc)
         {
-            var messageStatus = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("heroStatusMessage"));
+            var heroHome = doc.DocumentNode
+                .Descendants("svg")
+                .Any(x => x.HasClass("heroHome"));
 
-            var status = messageStatus
-                .Descendants("img")
-                .Where(x => x.HasClass("heroStatus100"))
-                .Any();
-            if (!status) return false;
+            if (!heroHome) return false;
 
             var adventure = GetHeroAdventure(doc);
             if (adventure is null) return false;
@@ -133,7 +129,7 @@ namespace MainCore.Parsers.HeroParser
             list.RemoveAt(0);
             if (list.Count == 0) return null;
             var tr = list[0];
-            var button = tr.Descendants("button").FirstOrDefault();
+            var button = tr.Descendants("a").FirstOrDefault(x => x.HasClass("gotoAdventure"));
             return button;
         }
 
@@ -147,7 +143,7 @@ namespace MainCore.Parsers.HeroParser
 
         private static string GetAdventureDifficult(HtmlNode node)
         {
-            var img = node.Descendants("img").FirstOrDefault();
+            var img = node.Descendants("img").FirstOrDefault(x => x.HasClass("adventureDifficulty1"));
             if (img is null) return "unknown";
             return img.GetAttributeValue("alt", "unknown");
         }
@@ -161,16 +157,26 @@ namespace MainCore.Parsers.HeroParser
 
         public HtmlNode GetContinueButton(HtmlDocument doc)
         {
-            var button = doc.DocumentNode
+            var div = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("adventureSendButton"));
+
+            if (div is null) return null;
+
+            var button = div
                 .Descendants("button")
-                .Where(x => x.HasClass("continue"))
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.HasClass("green"));
             return button;
         }
 
         public TimeSpan GetAdventureDuration(HtmlDocument doc)
         {
-            var heroAdventure = doc.GetElementbyId("heroAdventure");
+            var heroAdventure = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("heroStatusMessage"));
+
+            if (heroAdventure is null) return TimeSpan.Zero;
+
             var timer = heroAdventure
                 .Descendants("span")
                 .Where(x => x.HasClass("timer"))
