@@ -17,7 +17,7 @@ namespace TestProject.Parsers.HeroParser
         public void Get_Count_ShouldBeCorrect()
         {
             var (parser, html) = Setup("TravianOfficial_inventory.html");
-            var dto = parser.Get(html);
+            var dto = parser.GetItems(html);
 
             dto.Count().Should().Be(13);
         }
@@ -27,7 +27,7 @@ namespace TestProject.Parsers.HeroParser
         {
             var (parser, html) = Setup("TravianOfficial_inventory.html");
 
-            var dto = parser.Get(html).FirstOrDefault();
+            var dto = parser.GetItems(html).FirstOrDefault();
 
             dto.Type.Should().Be(HeroItemEnums.Wood);
             dto.Amount.Should().Be(118_226);
@@ -80,6 +80,42 @@ namespace TestProject.Parsers.HeroParser
             var node = parser.GetItemSlot(html, type);
 
             node.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public void GetAdventureDuration_ShouldBeCorrect()
+        {
+            var (parser, html) = Setup("TravianOfficial_adventure_confirm.html");
+            var duration = parser.GetAdventureDuration(html);
+
+            duration.Should().Be(TimeSpan.FromSeconds(2 * 3600 + 40 * 60 + 22));
+        }
+
+        [TestMethod]
+        public void GetContinueButton_ShouldNotBeNull()
+        {
+            var (parser, html) = Setup("TravianOfficial_adventure_confirm.html");
+            var button = parser.GetContinueButton(html);
+
+            button.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public void GetHeroAdventure_ShouldNotBeNull()
+        {
+            var (parser, html) = Setup("TravianOfficial_adventure_confirm.html");
+            var button = parser.GetHeroAdventure(html);
+
+            button.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public void GetAdventure_ShouldNotBeNull()
+        {
+            var (parser, html) = Setup("TravianOfficial_adventure.html");
+            var button = parser.GetAdventure(html);
+
+            button.Should().NotBeNull();
         }
     }
 }

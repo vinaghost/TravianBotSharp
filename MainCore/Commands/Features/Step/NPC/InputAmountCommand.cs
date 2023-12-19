@@ -24,9 +24,9 @@ namespace MainCore.Commands.Features.Step.NPC
     {
         private readonly UnitOfRepository _unitOfRepository;
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public InputAmountCommandHandler(UnitOfRepository unitOfRepository, IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public InputAmountCommandHandler(UnitOfRepository unitOfRepository, IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _unitOfRepository = unitOfRepository;
             _chromeManager = chromeManager;

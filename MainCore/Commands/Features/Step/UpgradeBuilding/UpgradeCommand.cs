@@ -21,9 +21,9 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
     public class UpgradeCommandHandler : ICommandHandler<UpgradeCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public UpgradeCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public UpgradeCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

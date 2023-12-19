@@ -1,8 +1,6 @@
-﻿using DynamicData;
-using MainCore.Common.Enums;
-using MainCore.Common.Extensions;
+﻿using MainCore.Commands.Base;
+using MainCore.Commands.UI.Step;
 using MainCore.Common.MediatR;
-using MainCore.Common.Models;
 using MainCore.DTO;
 using MainCore.Entities;
 using MainCore.Notification.Message;
@@ -25,12 +23,14 @@ namespace MainCore.Commands.UI.Build
         private readonly UnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
+        private readonly ICommandHandler<ModifyJobCommand, List<JobDto>> _modifyJobCommand;
 
-        public ImportCommandHandler(UnitOfRepository unitOfRepository, IDialogService dialogService, IMediator mediator)
+        public ImportCommandHandler(UnitOfRepository unitOfRepository, IDialogService dialogService, IMediator mediator, ICommandHandler<ModifyJobCommand, List<JobDto>> modifyJobCommand)
         {
             _unitOfRepository = unitOfRepository;
             _dialogService = dialogService;
             _mediator = mediator;
+            _modifyJobCommand = modifyJobCommand;
         }
 
         public async Task Handle(ImportCommand request, CancellationToken cancellationToken)
@@ -48,26 +48,15 @@ namespace MainCore.Commands.UI.Build
                 return;
             }
 
+            var confirm = _dialogService.ShowConfirmBox("Warning", "TBS will remove resource field build job if its position doesn't match with current village.");
+            if (!confirm) return;
+
             var accountId = request.AccountId;
             var villageId = request.VillageId;
 
-            var deserializeJobs = jobs
-                .Where(x => x.Type == JobTypeEnums.NormalBuild)
-                .Select(x => new
-                {
-                    Job = x,
-                    Content = JsonSerializer.Deserialize<NormalBuildPlan>(x.Content),
-                })
-                .ToList();
-
-            var fieldJobs = deserializeJobs
-                .Where(x => x.Content.Type.IsResourceField())
-                .Select(x => x.Job)
-                .ToList();
-
-            jobs.RemoveMany(fieldJobs);
-
-            _unitOfRepository.JobRepository.AddRange(villageId, jobs);
+            await _modifyJobCommand.Handle(new(villageId, jobs), cancellationToken);
+            var modifiedJobs = _modifyJobCommand.Value;
+            _unitOfRepository.JobRepository.AddRange(villageId, modifiedJobs);
 
             await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
 

@@ -6,7 +6,7 @@
         ClickDelayMax,
         TaskDelayMin,
         TaskDelayMax,
-        AutoLoadVillageBuilding,
+        EnableAutoLoadVillageBuilding,
         UseStartAllButton,
         FarmIntervalMin,
         FarmIntervalMax,
@@ -16,5 +16,6 @@
         SleepTimeMin,
         SleepTimeMax,
         HeadlessChrome,
+        EnableAutoStartAdventure,
     }
 }

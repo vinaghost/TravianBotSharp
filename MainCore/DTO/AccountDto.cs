@@ -22,6 +22,10 @@ namespace MainCore.DTO
 
         private static AccountId ToAccountId(this int value) => new(value);
 
+        private static int ToInt(this AccessId accessId) => accessId.Value;
+
+        private static AccessId ToAccessId(this int value) => new(value);
+
         public static partial IQueryable<AccountDto> ToDto(this IQueryable<Account> entities);
     }
 }

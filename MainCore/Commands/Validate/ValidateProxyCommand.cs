@@ -33,7 +33,7 @@ namespace MainCore.Commands.Validate
                 .Handle<Exception>()
                 .WaitAndRetryAsync(
                     retryCount: 3,
-                    sleepDurationProvider: _ => TimeSpan.FromSeconds(10));
+                    sleepDurationProvider: times => TimeSpan.FromSeconds(10 * times));
 
         public bool Value { get; private set; }
 
@@ -45,7 +45,8 @@ namespace MainCore.Commands.Validate
             };
             var client = _restClientManager.Get(access);
             var response = await client.ExecuteAsync(request);
-            return response.IsSuccessful;
+            if (!response.IsSuccessful) throw new Exception("Proxy failed");
+            return true;
         }
 
         public async Task<Result> Handle(ValidateProxyCommand command, CancellationToken cancellationToken)

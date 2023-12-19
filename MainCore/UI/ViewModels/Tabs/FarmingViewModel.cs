@@ -9,6 +9,7 @@ using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using MediatR;
 using ReactiveUI;
+using System.Drawing;
 using System.Reactive.Linq;
 using Unit = System.Reactive.Unit;
 
@@ -31,7 +32,15 @@ namespace MainCore.UI.ViewModels.Tabs
         public ReactiveCommand<AccountId, List<ListBoxItem>> LoadFarmList { get; }
         public ReactiveCommand<AccountId, Dictionary<AccountSettingEnums, int>> LoadSetting { get; }
 
+        private static readonly Dictionary<Color, string> _activeTexts = new()
+        {
+            { Color.Green , "Deactive" },
+            { Color.Red , "Active" },
+            { Color.Black , "No farmlist selected" },
+        };
+
         public FarmingViewModel(IMediator mediator, UnitOfRepository unitOfRepository)
+
         {
             _mediator = mediator;
             _unitOfRepository = unitOfRepository;
@@ -46,8 +55,21 @@ namespace MainCore.UI.ViewModels.Tabs
             LoadFarmList = ReactiveCommand.Create<AccountId, List<ListBoxItem>>(LoadFarmListHandler);
             LoadSetting = ReactiveCommand.Create<AccountId, Dictionary<AccountSettingEnums, int>>(LoadSettingHandler);
 
-            LoadFarmList.Subscribe(items => FarmLists.Load(items));
+            LoadFarmList.Subscribe(items =>
+            {
+                FarmLists.Load(items);
+                if (items.Count > 0)
+                {
+                    var color = FarmLists.SelectedItem?.Color ?? Color.Black;
+                    ActiveText = _activeTexts[color];
+                }
+            });
             LoadSetting.Subscribe(items => FarmListSettingInput.Set(items));
+            ActiveFarmList.Subscribe(x =>
+            {
+                var color = FarmLists.SelectedItem?.Color ?? Color.Black;
+                ActiveText = _activeTexts[color];
+            });
         }
 
         public async Task FarmListRefresh(AccountId accountId)
@@ -95,10 +117,17 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         private List<ListBoxItem> LoadFarmListHandler(AccountId accountId)
-
         {
             var items = _unitOfRepository.FarmRepository.GetItems(accountId);
             return items;
+        }
+
+        private string _activeText = "No farmlist selected";
+
+        public string ActiveText
+        {
+            get => _activeText;
+            set => this.RaiseAndSetIfChanged(ref _activeText, value);
         }
     }
 }

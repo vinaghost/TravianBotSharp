@@ -24,7 +24,7 @@ namespace MainCore.Repositories
 
         bool IsRallyPointExists(VillageId villageId);
 
-        List<BuildingItem> GetLevelBuildings(VillageId villageId);
+        List<BuildingItem> GetBuildingItems(VillageId villageId, bool ignoreJobBuilding = false);
 
         void Update(VillageId villageId, List<BuildingDto> dtos);
 
@@ -33,6 +33,8 @@ namespace MainCore.Repositories
         int GetBuildingLocation(VillageId villageId, BuildingEnums building);
 
         List<BuildingEnums> GetNormalBuilding(VillageId villageId, BuildingId buildingId);
+
         void UpdateWall(VillageId villageId);
+        List<BuildingItem> GetBuildings(VillageId villageId);
     }
 }

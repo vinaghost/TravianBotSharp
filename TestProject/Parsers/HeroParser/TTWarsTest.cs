@@ -18,7 +18,7 @@ namespace TestProject.Parsers.HeroParser
         {
             var (parser, html) = Setup("TTWars_inventory.html");
 
-            var dto = parser.Get(html);
+            var dto = parser.GetItems(html);
 
             dto.Count().Should().Be(5);
         }
@@ -28,7 +28,7 @@ namespace TestProject.Parsers.HeroParser
         {
             var (parser, html) = Setup("TTWars_inventory.html");
 
-            var dto = parser.Get(html).FirstOrDefault();
+            var dto = parser.GetItems(html).FirstOrDefault();
 
             dto.Type.Should().Be(HeroItemEnums.Wood);
             dto.Amount.Should().Be(799_998);

@@ -21,9 +21,9 @@ namespace MainCore.Commands.Features.Step.DisableContextualHelp
     public class OptionsSubmitCommandHandler : ICommandHandler<OptionsSubmitCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public OptionsSubmitCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public OptionsSubmitCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

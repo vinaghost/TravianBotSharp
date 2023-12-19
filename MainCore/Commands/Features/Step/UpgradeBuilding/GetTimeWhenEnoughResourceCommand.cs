@@ -24,11 +24,11 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
     public class GetTimeWhenEnoughResourceCommandHandler : ICommandHandler<GetTimeWhenEnoughResourceCommand, TimeSpan>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
         private readonly UnitOfRepository _unitOfRepository;
         public TimeSpan Value { get; private set; }
 
-        public GetTimeWhenEnoughResourceCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser, UnitOfRepository unitOfRepository)
+        public GetTimeWhenEnoughResourceCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser, UnitOfRepository unitOfRepository)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

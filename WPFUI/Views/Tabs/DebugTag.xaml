@@ -5,37 +5,46 @@
     xmlns:v="clr-namespace:WPFUI.Views.Tabs"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:local="clr-namespace:WPFUI.Views.Tabs"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800">
     <Grid Background="#FFE5E5E5">
         <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="1*" />
-        </Grid.ColumnDefinitions>
-        <Button x:Name="ReportButton"           Grid.Row="0" Grid.Column="0" Content="Buy a Coffee for Vinaghost" Margin="10" />
-        <Button x:Name="LogButton"              Grid.Row="0" Grid.Column="1" Content="Open log folder"            Margin="10" />
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="1*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Button x:Name="ReportButton"           Grid.Row="0" Grid.Column="0" Content="Buy a Coffee for Vinaghost" Margin="10" />
+            <Button x:Name="LogButton"              Grid.Row="0" Grid.Column="1" Content="Open log folder"            Margin="10" />
 
-        <Label x:Name="TaskTableLabel"          Grid.Row="1" Grid.Column="0" Content="Task table"   HorizontalContentAlignment="Center" />
-        <Label x:Name="LogTableLabel"           Grid.Row="1" Grid.Column="1" Content="Log messages"    HorizontalContentAlignment="Center" />
-        <Border Style="{DynamicResource Box}"   Grid.Row="2" Grid.Column="0">
-            <ListView x:Name="TaskView">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="Task" DisplayMemberBinding="{Binding Task}" Width="Auto" />
-                        <GridViewColumn Header="Execute at" DisplayMemberBinding="{Binding ExecuteAt}" Width="Auto" />
-                        <GridViewColumn Header="Stage" DisplayMemberBinding="{Binding Stage}" Width="Auto" />
-                    </GridView>
-                </ListView.View>
-            </ListView>
-        </Border>
-        <Border Style="{DynamicResource Box}"  Grid.Row="2" Grid.Column="1">
-            <TextBox x:Name="LogView" IsReadOnly="True" />
-        </Border>
+            <Label x:Name="TaskTableLabel"          Grid.Row="1" Grid.Column="0" Content="Task table"   HorizontalContentAlignment="Center" />
+            <Label x:Name="LogTableLabel"           Grid.Row="1" Grid.Column="1" Content="Log messages"    HorizontalContentAlignment="Center" />
+            <Border Style="{DynamicResource Box}"   Grid.Row="2" Grid.Column="0">
+                <ListView x:Name="TaskView">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Task" DisplayMemberBinding="{Binding Task}" Width="Auto" />
+                            <GridViewColumn Header="Execute at" DisplayMemberBinding="{Binding ExecuteAt}" Width="Auto" />
+                            <GridViewColumn Header="Stage" DisplayMemberBinding="{Binding Stage}" Width="Auto" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Border>
+            <Border Style="{DynamicResource Box}"  Grid.Row="2" Grid.Column="1">
+                <TextBox x:Name="LogView" IsReadOnly="True" />
+            </Border>
+        </Grid>
+
+        <TextBox x:Name="DevToolsEndpointAddress" Grid.Row="1" materialDesign:HintAssist.Hint="Devtools endpoint address" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Margin="5" IsReadOnly="True" />
     </Grid>
 </v:DebugTagBase>

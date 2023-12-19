@@ -19,11 +19,11 @@ namespace MainCore.Commands.Features.Step.DisableContextualHelp
     public class ValidateContextualHelpCommandHandler : ICommandHandler<ValidateContextualHelpCommand, bool>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
         public bool Value { get; private set; }
 
-        public ValidateContextualHelpCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public ValidateContextualHelpCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
