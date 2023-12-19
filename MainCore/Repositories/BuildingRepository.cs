@@ -201,6 +201,7 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
             var villageBuildings = context.Buildings
                 .Where(x => x.VillageId == villageId.Value)
+                .OrderBy(x => x.Location)
                 .Select(x => new BuildingItem()
                 {
                     Id = new(x.Id),

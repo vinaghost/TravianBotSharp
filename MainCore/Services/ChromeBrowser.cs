@@ -221,6 +221,7 @@ namespace MainCore.Services
                 {
                     return Result.Fail(new Stop("Page not loaded in 3 mins"));
                 }
+                if (cancellationToken.IsCancellationRequested) return Result.Fail(new Cancel());
                 return Result.Ok();
             }
             return await Task.Run(wait);
