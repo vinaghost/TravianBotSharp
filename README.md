@@ -11,19 +11,12 @@
 
 - Multi-account support
 - Auto builder (support use resource from hero inventory)
-- Auto send hero to adventures
-- Auto send farmlist 
-- Auto improve troop
+- Auto start adventures
+- Auto start farm lists
+- Auto claim side quest
 - Auto NPC
-
-## Documentaion
-
-You can read our docs from this [link](https://tbs-docs.readthedocs.io/)
+- Auto train troop
 
 ## Tech specification
 
-Currently, TBS only runs on Windows. It will be cross-platform in the future.
-
-## Credits
-
-- [Xceed Extended WPF Toolkit™](https://github.com/xceedsoftware/wpftoolkit)
+Currently, TBS only runs on Windows.
