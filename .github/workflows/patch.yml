@@ -78,7 +78,7 @@ jobs:
           cd TBS; zip -r "TBS-${{needs.version.outputs.version}}-TTWars.zip" TBS-TTWARS; cp -R "TBS-${{needs.version.outputs.version}}-TTWars.zip" ../; cd ..
       
       - name: Create release
-        uses: ncipollo/release-action@v1.13
+        uses: ncipollo/release-action@v1.13.0
         with:
           name: TBS-${{needs.version.outputs.version}}
           tag: ${{needs.version.outputs.version}}
