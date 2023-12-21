@@ -24,10 +24,10 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
     public class GetRequiredResourceCommandHandler : ICommandHandler<GetRequiredResourceCommand, long[]>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
         private readonly UnitOfRepository _unitOfRepository;
 
-        public GetRequiredResourceCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser, UnitOfRepository unitOfRepository)
+        public GetRequiredResourceCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser, UnitOfRepository unitOfRepository)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

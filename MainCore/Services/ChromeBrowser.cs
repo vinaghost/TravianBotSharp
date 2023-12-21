@@ -19,7 +19,15 @@ namespace MainCore.Services
 
         private readonly string[] _extensionsPath;
         private readonly HtmlDocument _htmlDoc = new();
-        public string EndpointAddress { get; private set; }
+
+        public string EndpointAddress
+        {
+            get
+            {
+                if (_driver is null) return "";
+                return _driver.GetDevToolsSession().EndpointAddress;
+            }
+        }
 
         public ChromeBrowser(string[] extensionsPath)
         {
@@ -65,15 +73,11 @@ namespace MainCore.Services
             if (setting.IsHeadless)
             {
                 options.AddArgument("--headless=new");
-                options.AddArgument("--remote-debugging-port=0");
-                EndpointAddress = _driver.GetDevToolsSession().EndpointAddress;
             }
             else
             {
                 options.AddArgument("--start-maximized");
-                EndpointAddress = "";
             }
-
             var pathUserData = Path.Combine(AppContext.BaseDirectory, "Data", "Cache", setting.ProfilePath);
             if (!Directory.Exists(pathUserData)) Directory.CreateDirectory(pathUserData);
 
@@ -81,11 +85,11 @@ namespace MainCore.Services
 
             options.AddArguments($"user-data-dir={pathUserData}");
 
-            _driver = await Task.Run(() => new ChromeDriver(_chromeService, options));
+            _driver = await Task.Run(() => new ChromeDriver(_chromeService, options, TimeSpan.FromMinutes(1)));
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(1);
-
-            _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3));
+            _driver.GetDevToolsSession();
+            _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3)); // watch ads
 
             return Result.Ok();
         }
@@ -104,13 +108,7 @@ namespace MainCore.Services
         public async Task Shutdown()
         {
             if (_driver is null) return;
-
-            try
-            {
-                await Task.Run(_driver.Quit);
-            }
-            catch { }
-            _driver = null;
+            await Close();
             _chromeService.Dispose();
         }
 
@@ -223,6 +221,7 @@ namespace MainCore.Services
                 {
                     return Result.Fail(new Stop("Page not loaded in 3 mins"));
                 }
+                if (cancellationToken.IsCancellationRequested) return Result.Fail(new Cancel());
                 return Result.Ok();
             }
             return await Task.Run(wait);
@@ -247,6 +246,11 @@ namespace MainCore.Services
             return result;
         }
 
-        public async Task Close() => await Task.Run(_driver.Close);
+        public async Task Close()
+        {
+            if (_driver is null) return;
+            await Task.Run(_driver.Quit);
+            _driver = null;
+        }
     }
 }

@@ -19,7 +19,7 @@ namespace MainCore.Tasks
         protected override async Task<Result> Execute()
         {
             Result result;
-            result = await _mediator.Send(new UpdateBothDorfCommand(AccountId, VillageId));
+            result = await _mediator.Send(new UpdateBothDorfCommand(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }

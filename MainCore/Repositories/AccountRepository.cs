@@ -62,18 +62,12 @@ namespace MainCore.Repositories
             return accessess;
         }
 
-        public void UpdateAccess(AccountId accountId)
+        public void UpdateAccessLastUsed(AccessId accessId)
         {
             using var context = _contextFactory.CreateDbContext();
             var access = context.Accesses
-               .Where(x => x.AccountId == accountId.Value)
-               .OrderByDescending(x => x.LastUsed) // get newest one
-               .FirstOrDefault();
-
-            access.LastUsed = DateTime.Now;
-
-            context.Update(access);
-            context.SaveChanges();
+               .Where(x => x.Id == accessId.Value)
+               .ExecuteUpdate(x => x.SetProperty(x => x.LastUsed, x => DateTime.Now));
         }
 
         public string GetUsername(AccountId accountId)
@@ -168,7 +162,7 @@ namespace MainCore.Repositories
             var account = dto.ToEntity();
             foreach (var access in account.Accesses)
             {
-                if (string.IsNullOrEmpty(access.Useragent))
+                if (string.IsNullOrWhiteSpace(access.Useragent))
                 {
                     access.Useragent = _useragentManager.Get();
                 }

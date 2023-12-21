@@ -19,7 +19,7 @@ namespace TestProject.Repositories
         public void GetBooleanByName_ShouldNotThrow()
         {
             var repository = GetRepository();
-            var func = () => repository.GetBooleanByName(Constants.AccountId, AccountSettingEnums.AutoLoadVillageBuilding);
+            var func = () => repository.GetBooleanByName(Constants.AccountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             func.Should().NotThrow();
         }
 

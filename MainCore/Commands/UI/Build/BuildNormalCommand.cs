@@ -70,12 +70,12 @@ namespace MainCore.Commands.UI.Build
                 Type = type,
                 Level = level,
             };
-            await NormalBuild(accountId, villageId, plan);
+            await NormalBuild(accountId, villageId, plan, cancellationToken);
         }
 
-        private async Task NormalBuild(AccountId accountId, VillageId villageId, NormalBuildPlan plan)
+        private async Task NormalBuild(AccountId accountId, VillageId villageId, NormalBuildPlan plan, CancellationToken cancellationToken)
         {
-            var buildings = await Task.Run(() => _unitOfRepository.BuildingRepository.GetLevelBuildings(villageId));
+            var buildings = _unitOfRepository.BuildingRepository.GetBuildingItems(villageId);
             var result = CheckRequirements(buildings, plan);
             if (result.IsFailed)
             {
@@ -86,7 +86,7 @@ namespace MainCore.Commands.UI.Build
             Validate(buildings, plan);
 
             await Task.Run(() => _unitOfRepository.JobRepository.Add(villageId, plan));
-            await _mediator.Publish(new JobUpdated(accountId, villageId));
+            await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
         }
 
         private static Result CheckRequirements(List<BuildingItem> buildings, NormalBuildPlan plan)

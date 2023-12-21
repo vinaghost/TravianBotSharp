@@ -21,9 +21,9 @@ namespace MainCore.Commands.Features.Step.DisableContextualHelp
     public class ToOptionsPageCommandHandler : ICommandHandler<ToOptionsPageCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public ToOptionsPageCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public ToOptionsPageCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

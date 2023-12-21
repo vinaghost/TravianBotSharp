@@ -24,9 +24,9 @@ namespace MainCore.Commands.Features.Step.StartFarmlist
     public class StartSingleFarmListCommandHandler : ICommandHandler<StartSingleFarmListCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly IUnitOfParser _unitOfParser;
+        private readonly UnitOfParser _unitOfParser;
 
-        public StartSingleFarmListCommandHandler(IChromeManager chromeManager, IUnitOfParser unitOfParser)
+        public StartSingleFarmListCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;

@@ -54,8 +54,9 @@
                 </Border>
                 <Border Style="{DynamicResource Box}">
                     <StackPanel>
-                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Update settings" VerticalAlignment="Center" FontWeight="Bold" />
-                        <CheckBox x:Name="IsAutoLoadVillage" Content="Auto load village" />
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Feature settings" VerticalAlignment="Center" FontWeight="Bold" />
+                        <CheckBox x:Name="EnableAutoLoadVillage" Content="Enable auto load village's building" />
+                        <CheckBox x:Name="EnableAutoStartAdventure" Content="Enable auto start adventure" />
                     </StackPanel>
                 </Border>
                 <Border Style="{DynamicResource Box}">

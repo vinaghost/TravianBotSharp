@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using StronglyTypedIds;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MainCore.Entities
 {
@@ -18,4 +19,8 @@ namespace MainCore.Entities
 
         public int AccountId { get; set; }
     }
+
+    [StronglyTypedId]
+    public partial struct AccessId
+    { }
 }
