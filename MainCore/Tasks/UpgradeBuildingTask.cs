@@ -143,6 +143,8 @@ namespace MainCore.Tasks
                             return heroResourceResult.WithError(new TraceMessage(TraceMessage.Line()));
                         }
                     }
+
+                    return result.WithError(new TraceMessage(TraceMessage.Line()));
                 }
 
                 if (IsUpgradeable(plan))
