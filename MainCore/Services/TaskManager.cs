@@ -182,6 +182,10 @@ namespace MainCore.Services
                         task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
                     }
                 }
+                else
+                {
+                    task.ExecuteAt = DateTime.Now;
+                }
             }
             else
             {
