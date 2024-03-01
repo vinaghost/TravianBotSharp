@@ -52,11 +52,11 @@ namespace MainCore.Services
             return taskInfo.Status;
         }
 
-        public void SetStatus(AccountId accountId, StatusEnums status)
+        public async Task SetStatus(AccountId accountId, StatusEnums status)
         {
             var taskInfo = GetTaskInfo(accountId);
             taskInfo.Status = status;
-            _mediator.Publish(new StatusUpdated(accountId, status));
+            await _mediator.Publish(new StatusUpdated(accountId, status));
         }
 
         public bool IsExecuting(AccountId accountId)
@@ -89,7 +89,7 @@ namespace MainCore.Services
                 await Task.Delay(500);
             }
             while (currentTask.Stage != StageEnums.Waiting);
-            SetStatus(accountId, StatusEnums.Offline);
+            await SetStatus(accountId, StatusEnums.Offline);
         }
 
         public async Task AddOrUpdate<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask
@@ -181,6 +181,10 @@ namespace MainCore.Services
                     {
                         task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
                     }
+                }
+                else
+                {
+                    task.ExecuteAt = DateTime.Now;
                 }
             }
             else

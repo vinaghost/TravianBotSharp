@@ -60,12 +60,12 @@ namespace MainCore.Commands.UI.MainLayout
                     break;
             }
 
-            _taskManager.SetStatus(accountId, StatusEnums.Stopping);
+            await _taskManager.SetStatus(accountId, StatusEnums.Stopping);
             await _taskManager.StopCurrentTask(accountId);
 
             await _closeBrowserCommand.Handle(new(accountId), cancellationToken);
 
-            _taskManager.SetStatus(accountId, StatusEnums.Offline);
+            await _taskManager.SetStatus(accountId, StatusEnums.Offline);
         }
     }
 }
