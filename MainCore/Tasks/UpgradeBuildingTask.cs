@@ -143,8 +143,16 @@ namespace MainCore.Tasks
                             return heroResourceResult.WithError(new TraceMessage(TraceMessage.Line()));
                         }
                     }
+                    else
+                    {
+                        var timeResult = await SetEnoughResourcesTime(AccountId, VillageId, plan);
+                        if (timeResult.IsFailed)
+                        {
+                            return timeResult.WithError(new TraceMessage(TraceMessage.Line()));
+                        }
 
-                    return result.WithError(new TraceMessage(TraceMessage.Line()));
+                        return result.WithError(new TraceMessage(TraceMessage.Line()));
+                    }
                 }
 
                 if (IsUpgradeable(plan))
