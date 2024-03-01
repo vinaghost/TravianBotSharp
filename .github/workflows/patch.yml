@@ -91,7 +91,6 @@ jobs:
             **Changelog**: 
               ${{needs.version.outputs.changelog}}
   Discord:
-    if: false
     runs-on: ubuntu-latest
     needs: [Release, Version] 
     steps:
