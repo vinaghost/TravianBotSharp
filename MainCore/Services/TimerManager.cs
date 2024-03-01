@@ -89,7 +89,7 @@ namespace MainCore.Services
                 logger.Warning("There is something wrong. Bot is pausing. Last exception is");
                 var ex = poliResult.FinalException;
                 logger.Error(ex, "{message}", ex.Message);
-                _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                await _taskManager.SetStatus(accountId, StatusEnums.Paused);
             }
             else
             {
@@ -101,7 +101,7 @@ namespace MainCore.Services
 
                     if (result.HasError<Stop>())
                     {
-                        _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                        await _taskManager.SetStatus(accountId, StatusEnums.Paused);
                     }
                     else if (result.HasError<Skip>())
                     {
@@ -112,11 +112,11 @@ namespace MainCore.Services
                     }
                     else if (result.HasError<Cancel>())
                     {
-                        _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                        await _taskManager.SetStatus(accountId, StatusEnums.Paused);
                     }
                     else if (result.HasError<Retry>())
                     {
-                        _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                        await _taskManager.SetStatus(accountId, StatusEnums.Paused);
                     }
                 }
                 else

@@ -74,29 +74,28 @@ namespace MainCore.UI.ViewModels.UserControls
 
             LoadVersion
                 .Do(version => Log.Information("===============> Current version: {version} <===============", version))
-                .Subscribe(version => Version = version);
+                .ToProperty(this, x => x.Version, out _version);
 
             LoadAccount.Subscribe(accounts => Accounts.Load(accounts));
 
-            Pause.Subscribe(SetPauseText);
-
             GetStatus.Subscribe(SetPauseText);
-
-            Login.IsExecuting.Select(x => !x).BindTo(Accounts, x => x.IsEnable);
-            Logout.IsExecuting.Select(x => !x).BindTo(Accounts, x => x.IsEnable);
-            Pause.IsExecuting.Select(x => !x).BindTo(Accounts, x => x.IsEnable);
-            Restart.IsExecuting.Select(x => !x).BindTo(Accounts, x => x.IsEnable);
+            Observable
+                .Merge(new IObservable<bool>[] {
+                    Login.IsExecuting.Select(x => !x),
+                    Logout.IsExecuting.Select(x => !x),
+                    Pause.IsExecuting.Select(x => !x),
+                    Restart.IsExecuting.Select(x => !x),
+                })
+                .BindTo(Accounts, x => x.IsEnable);
         }
 
         public async Task Load()
         {
             await LoadVersion
-                 .Execute()
-                 .SubscribeOn(RxApp.TaskpoolScheduler);
+                 .Execute();
 
             await LoadAccount
-                .Execute()
-                .SubscribeOn(RxApp.TaskpoolScheduler);
+                .Execute();
         }
 
         private async Task AddAccountHandler()
@@ -136,9 +135,14 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public async Task LoadStatus(AccountId accountId, StatusEnums status)
         {
-            await Task.Run(() => GetAccount.Execute(accountId).Subscribe(account => account.Color = status.GetColor()));
+            GetAccount
+                .Execute(accountId)
+                .ObserveOn(RxApp.TaskpoolScheduler)
+                .Subscribe(account => account.Color = status.GetColor());
             if (accountId.Value != Accounts.SelectedItemId) return;
-            await Task.Run(() => GetStatus.Execute(accountId).Subscribe());
+            await GetStatus
+                .Execute(accountId)
+                .ObserveOn(RxApp.TaskpoolScheduler);
         }
 
         private StatusEnums GetStatusHandler(AccountId accountId)
@@ -190,13 +194,8 @@ namespace MainCore.UI.ViewModels.UserControls
             }
         }
 
-        private string _version;
-
-        public string Version
-        {
-            get => _version;
-            set => this.RaiseAndSetIfChanged(ref _version, value);
-        }
+        private readonly ObservableAsPropertyHelper<string> _version;
+        public string Version => _version.Value;
 
         private string _pauseText = "[~~!~~]";
 

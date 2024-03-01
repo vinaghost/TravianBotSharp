@@ -40,7 +40,7 @@ namespace MainCore.Services
 
         Task ReOrder(AccountId accountId);
 
-        void SetStatus(AccountId accountId, StatusEnums status);
+        Task SetStatus(AccountId accountId, StatusEnums status);
 
         Task StopCurrentTask(AccountId accountId);
     }
