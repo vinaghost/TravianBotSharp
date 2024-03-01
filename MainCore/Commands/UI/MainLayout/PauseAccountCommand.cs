@@ -39,14 +39,14 @@ namespace MainCore.Commands.UI.MainLayout
             var status = _taskManager.GetStatus(accountId);
             if (status == StatusEnums.Paused)
             {
-                _taskManager.SetStatus(accountId, StatusEnums.Online);
+                await _taskManager.SetStatus(accountId, StatusEnums.Online);
                 return StatusEnums.Online;
             }
 
             if (status == StatusEnums.Online)
             {
                 await _taskManager.StopCurrentTask(accountId);
-                _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                await _taskManager.SetStatus(accountId, StatusEnums.Paused);
                 return StatusEnums.Paused;
             }
 

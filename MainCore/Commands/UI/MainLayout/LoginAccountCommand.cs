@@ -68,7 +68,7 @@ namespace MainCore.Commands.UI.MainLayout
                 return;
             }
 
-            _taskManager.SetStatus(accountId, StatusEnums.Starting);
+            await _taskManager.SetStatus(accountId, StatusEnums.Starting);
 
             Result result;
             result = await _chooseAccessCommand.Handle(new(accountId, false), cancellationToken);
@@ -76,7 +76,7 @@ namespace MainCore.Commands.UI.MainLayout
             if (result.IsFailed)
             {
                 _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());
-                _taskManager.SetStatus(accountId, StatusEnums.Offline);
+                await _taskManager.SetStatus(accountId, StatusEnums.Offline);
                 return;
             }
             var logger = _logService.GetLogger(accountId);
@@ -86,13 +86,13 @@ namespace MainCore.Commands.UI.MainLayout
             if (result.IsFailed)
             {
                 _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());
-                _taskManager.SetStatus(accountId, StatusEnums.Offline);
+                await _taskManager.SetStatus(accountId, StatusEnums.Offline);
                 return;
             }
             await _mediator.Publish(new AccountInit(accountId), cancellationToken);
 
             _timerManager.Start(accountId);
-            _taskManager.SetStatus(accountId, StatusEnums.Online);
+            await _taskManager.SetStatus(accountId, StatusEnums.Online);
         }
     }
 }
