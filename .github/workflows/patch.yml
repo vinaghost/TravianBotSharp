@@ -53,7 +53,7 @@ jobs:
       
       - name: Publish
         run: dotnet publish WPFUI -c Release --no-restore --self-contained -p:PublishSingleFile=true -p:Server=${{ matrix.server }} -p:AssemblyVersion=${{needs.version.outputs.version}}
-     
+        
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v3
         with:
@@ -82,7 +82,7 @@ jobs:
         with:
           name: TBS-${{needs.version.outputs.version}}
           tag: ${{needs.version.outputs.version}}
-          commit: main          
+          commit: main
           artifacts: "TBS-${{needs.version.outputs.version}}-TravianOfficial.zip, TBS-${{needs.version.outputs.version}}-TTWars.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
@@ -102,7 +102,7 @@ jobs:
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_BOT }}
-          title: New release
+          title: New patch
           nodetail: true
           description: |
             Version `TBS-${{needs.version.outputs.version}}`
