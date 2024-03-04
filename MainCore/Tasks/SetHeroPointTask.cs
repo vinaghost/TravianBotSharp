@@ -19,7 +19,7 @@ namespace MainCore.Tasks
         protected override async Task<Result> Execute()
         {
             Result result;
-            result = await _unitOfCommand.ToHeroInventoryCommand.Handle(new(AccountId), CancellationToken);
+            result = await _unitOfCommand.ToHeroAttributeCommand.Handle(new(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _mediator.Send(new SetHeroPointCommand(AccountId));

@@ -56,7 +56,10 @@ namespace MainCore.Commands.Navigate
 
             html = chromeBrowser.Html;
             var attributeTab = _unitOfParser.HeroParser.GetHeroAttributeNode(html);
-            if (avatar is null) return Result.Fail(Retry.ButtonNotFound("hero attribute"));
+            if (attributeTab is null) return Result.Fail(Retry.ButtonNotFound("hero attribute"));
+
+            result = await chromeBrowser.Click(By.XPath(attributeTab.XPath));
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await chromeBrowser.WaitPageChanged("attributes", cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
