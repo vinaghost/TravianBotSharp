@@ -17,5 +17,11 @@
         SleepTimeMax,
         HeadlessChrome,
         EnableAutoStartAdventure,
+
+        EnableAutoSetHeroPoint,
+        HeroFightingPoint,
+        HeroOffPoint,
+        HeroDefPoint,
+        HeroResourcePoint,
     }
 }
