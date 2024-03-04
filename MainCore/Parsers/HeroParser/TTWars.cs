@@ -13,6 +13,16 @@ namespace MainCore.Parsers.HeroParser
             return true;
         }
 
+        public bool AttributeTabActive(HtmlDocument doc)
+        {
+            return true;
+        }
+
+        public HtmlNode GetHeroAttributeNode(HtmlDocument doc)
+        {
+            return null;
+        }
+
         public bool HeroInventoryLoading(HtmlDocument doc)
         {
             return true;
@@ -185,6 +195,36 @@ namespace MainCore.Parsers.HeroParser
 
             var seconds = timer.GetAttributeValue("value", 0);
             return TimeSpan.FromSeconds(seconds);
+        }
+
+        public HtmlNode GetFightingStrengthInputBox(HtmlDocument doc)
+        {
+            return null;
+        }
+
+        public HtmlNode GetOffBonusInputBox(HtmlDocument doc)
+        {
+            return null;
+        }
+
+        public HtmlNode GetDefBonusInputBox(HtmlDocument doc)
+        {
+            return null;
+        }
+
+        public HtmlNode GetResourceProductionInputBox(HtmlDocument doc)
+        {
+            return null;
+        }
+
+        public HtmlNode GetSaveButton(HtmlDocument doc)
+        {
+            return null;
+        }
+
+        public bool IsLevelUp(HtmlDocument doc)
+        {
+            return false;
         }
     }
 }
