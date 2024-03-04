@@ -56,7 +56,7 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.HeroFightingPoint, 1 },
             {AccountSettingEnums.HeroOffPoint, 0},
             {AccountSettingEnums.HeroDefPoint, 0 },
-            {AccountSettingEnums.HeroFightingPoint, 3 },
+            {AccountSettingEnums.HeroResourcePoint, 3 },
         };
 
         private List<AccountSettingEnums> GetMissingAccountSettings()

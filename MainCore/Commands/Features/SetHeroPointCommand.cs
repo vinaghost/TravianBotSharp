@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using HtmlAgilityPack;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Common.MediatR;
@@ -96,12 +97,16 @@ namespace MainCore.Commands.Features
             result = await _unitOfCommand.DelayClickCommand.Handle(new(accountId), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = chromeBrowser.Wait((driver) =>
+            bool saveButtonActived(IWebDriver driver)
             {
-                saveButton = _unitOfParser.HeroParser.GetSaveButton(html);
+                var doc = new HtmlDocument();
+                doc.LoadHtml(driver.PageSource);
+                saveButton = _unitOfParser.HeroParser.GetSaveButton(doc);
                 var element = driver.FindElement(By.XPath(saveButton.XPath));
                 return element.Displayed && element.Enabled;
-            });
+            };
+
+            result = await chromeBrowser.Wait(saveButtonActived, cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await chromeBrowser.Click(By.XPath(saveButton.XPath));
