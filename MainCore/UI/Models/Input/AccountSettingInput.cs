@@ -17,6 +17,12 @@ namespace MainCore.UI.Models.Input
             EnableAutoLoadVillage = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoLoadVillageBuilding) == 1;
             HeadlessChrome = settings.GetValueOrDefault(AccountSettingEnums.HeadlessChrome) == 1;
             EnableAutoStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoStartAdventure) == 1;
+
+            EnableAutoSetHeroPoint = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoSetHeroPoint) == 1;
+            HeroFightingPoint = settings.GetValueOrDefault(AccountSettingEnums.HeroFightingPoint);
+            HeroOffPoint = settings.GetValueOrDefault(AccountSettingEnums.HeroOffPoint);
+            HeroDefPoint = settings.GetValueOrDefault(AccountSettingEnums.HeroDefPoint);
+            HeroResourcePoint = settings.GetValueOrDefault(AccountSettingEnums.HeroResourcePoint);
         }
 
         public Dictionary<AccountSettingEnums, int> Get()
@@ -29,6 +35,11 @@ namespace MainCore.UI.Models.Input
             var (sleepTimeMin, sleepTimeMax) = SleepTime.Get();
             var headlessChrome = HeadlessChrome ? 1 : 0;
             var autoStartAdventure = EnableAutoStartAdventure ? 1 : 0;
+            var enableAutoSetHeroPoint = EnableAutoSetHeroPoint ? 1 : 0;
+            var heroFightingPoint = HeroFightingPoint;
+            var heroOffPoint = HeroOffPoint;
+            var heroDefPoint = HeroDefPoint;
+            var heroResourcePoint = HeroResourcePoint;
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
                 { AccountSettingEnums.ClickDelayMin, clickDelayMin },
@@ -43,6 +54,11 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.Tribe, tribe },
                 { AccountSettingEnums.HeadlessChrome, headlessChrome },
                 { AccountSettingEnums.EnableAutoStartAdventure, autoStartAdventure },
+                { AccountSettingEnums.EnableAutoSetHeroPoint, enableAutoSetHeroPoint },
+                { AccountSettingEnums.HeroFightingPoint, heroFightingPoint },
+                { AccountSettingEnums.HeroOffPoint, heroOffPoint },
+                { AccountSettingEnums.HeroDefPoint, heroDefPoint },
+                { AccountSettingEnums.HeroResourcePoint, heroResourcePoint },
             };
             return settings;
         }
@@ -76,6 +92,46 @@ namespace MainCore.UI.Models.Input
         {
             get => _enableAutoStartAdventure;
             set => this.RaiseAndSetIfChanged(ref _enableAutoStartAdventure, value);
+        }
+
+        private bool _enableAutoSetHeroPoint;
+
+        public bool EnableAutoSetHeroPoint
+        {
+            get => _enableAutoSetHeroPoint;
+            set => this.RaiseAndSetIfChanged(ref _enableAutoSetHeroPoint, value);
+        }
+
+        private int _heroFightingPoint;
+
+        public int HeroFightingPoint
+        {
+            get => _heroFightingPoint;
+            set => this.RaiseAndSetIfChanged(ref _heroFightingPoint, value);
+        }
+
+        private int _heroOffPoint;
+
+        public int HeroOffPoint
+        {
+            get => _heroOffPoint;
+            set => this.RaiseAndSetIfChanged(ref _heroOffPoint, value);
+        }
+
+        private int _heroDefPoint;
+
+        public int HeroDefPoint
+        {
+            get => _heroDefPoint;
+            set => this.RaiseAndSetIfChanged(ref _heroDefPoint, value);
+        }
+
+        private int _heroResourcePoint;
+
+        public int HeroResourcePoint
+        {
+            get => _heroResourcePoint;
+            set => this.RaiseAndSetIfChanged(ref _heroResourcePoint, value);
         }
     }
 }
