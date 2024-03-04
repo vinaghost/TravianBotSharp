@@ -29,5 +29,12 @@ namespace MainCore.Parsers
         string GetAdventureInfo(HtmlNode node);
         HtmlNode GetContinueButton(HtmlDocument doc);
         TimeSpan GetAdventureDuration(HtmlDocument doc);
+        HtmlNode GetHeroAttributeNode(HtmlDocument doc);
+        bool AttributeTabActive(HtmlDocument doc);
+        HtmlNode GetFightingStrengthInputBox(HtmlDocument doc);
+        HtmlNode GetOffBonusInputBox(HtmlDocument doc);
+        HtmlNode GetResourceProductionInputBox(HtmlDocument doc);
+        HtmlNode GetDefBonusInputBox(HtmlDocument doc);
+        HtmlNode GetSaveButton(HtmlDocument doc);
     }
 }
