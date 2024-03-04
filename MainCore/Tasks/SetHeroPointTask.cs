@@ -30,7 +30,7 @@ namespace MainCore.Tasks
 
         protected override void SetName()
         {
-            throw new NotImplementedException();
+            _name = "Set hero point task";
         }
     }
 }
