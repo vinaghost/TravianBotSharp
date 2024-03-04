@@ -221,5 +221,10 @@ namespace MainCore.Parsers.HeroParser
         {
             return null;
         }
+
+        public bool IsLevelUp(HtmlDocument doc)
+        {
+            return false;
+        }
     }
 }

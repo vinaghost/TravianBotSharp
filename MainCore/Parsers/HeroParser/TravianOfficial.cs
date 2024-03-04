@@ -268,5 +268,14 @@ namespace MainCore.Parsers.HeroParser
             var button = doc.GetElementbyId("savePoints");
             return button;
         }
+
+        public bool IsLevelUp(HtmlDocument doc)
+        {
+            var topBarHero = doc.GetElementbyId("topBarHero");
+            if (topBarHero is null) return false;
+            var levelUp = topBarHero.Descendants("i").FirstOrDefault(x => x.HasClass("levelUp"));
+            if (levelUp is null) return false;
+            return levelUp.HasClass("show");
+        }
     }
 }

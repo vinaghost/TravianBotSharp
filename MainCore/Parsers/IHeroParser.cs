@@ -36,5 +36,6 @@ namespace MainCore.Parsers
         HtmlNode GetResourceProductionInputBox(HtmlDocument doc);
         HtmlNode GetDefBonusInputBox(HtmlDocument doc);
         HtmlNode GetSaveButton(HtmlDocument doc);
+        bool IsLevelUp(HtmlDocument doc);
     }
 }
