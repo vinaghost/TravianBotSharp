@@ -4,6 +4,7 @@ using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Repositories;
 using MainCore.UI.Models.Input;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MediatR;
 using ReactiveUI;
@@ -68,6 +69,12 @@ namespace MainCore.UI.ViewModels.Tabs
         private Dictionary<AccountSettingEnums, int> LoadSettingsHandler(AccountId accountId)
         {
             var settings = _unitOfRepository.AccountSettingRepository.Get(accountId);
+
+            var villages = _unitOfRepository.VillageRepository.GetItems(accountId);
+            Observable.Start(() => AccountSettingInput.HeroRespawnVillage.Set(villages.Select(x => new ComboBoxItem<int>(x.Id, x.Content)).ToList()))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe();
+
             return settings;
         }
     }

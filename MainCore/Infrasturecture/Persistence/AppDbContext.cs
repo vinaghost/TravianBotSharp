@@ -52,6 +52,14 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.WorkTimeMax, 720 },
             {AccountSettingEnums.HeadlessChrome, 0 },
             {AccountSettingEnums.EnableAutoStartAdventure, 0 },
+            {AccountSettingEnums.EnableAutoSetHeroPoint, 0 },
+            {AccountSettingEnums.HeroFightingPoint, 1 },
+            {AccountSettingEnums.HeroOffPoint, 0},
+            {AccountSettingEnums.HeroDefPoint, 0 },
+            {AccountSettingEnums.HeroResourcePoint, 3 },
+            {AccountSettingEnums.EnableAutoReviveHero, 0 },
+            {AccountSettingEnums.HeroRespawnVillage, 0 },
+            {AccountSettingEnums.UseHeroResourceToRevive, 0 },
         };
 
         private List<AccountSettingEnums> GetMissingAccountSettings()

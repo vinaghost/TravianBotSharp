@@ -38,6 +38,14 @@ namespace MainCore.Commands.Update
                 await _mediator.Publish(new AdventureUpdated(command.AccountId), cancellationToken);
             }
 
+            if (_unitOfParser.HeroParser.IsLevelUp(html))
+            {
+                await _mediator.Publish(new HeroLevelUpdated(command.AccountId), cancellationToken);
+            }
+            if (_unitOfParser.HeroParser.IsDead(html))
+            {
+                await _mediator.Publish(new HeroDead(command.AccountId), cancellationToken);
+            }
             return Result.Ok();
         }
     }

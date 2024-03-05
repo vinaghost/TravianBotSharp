@@ -17,5 +17,15 @@
         SleepTimeMax,
         HeadlessChrome,
         EnableAutoStartAdventure,
+
+        EnableAutoSetHeroPoint,
+        HeroFightingPoint,
+        HeroOffPoint,
+        HeroDefPoint,
+        HeroResourcePoint,
+
+        EnableAutoReviveHero,
+        HeroRespawnVillage,
+        UseHeroResourceToRevive,
     }
 }
