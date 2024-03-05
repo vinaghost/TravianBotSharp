@@ -19,7 +19,7 @@ namespace MainCore.UI.Models.Input
         {
             this.WhenAnyValue(vm => vm.SelectedBuilding)
                 .WhereNotNull()
-                .Subscribe((x) => Level = x.Content.GetMaxLevel());
+                .Subscribe((x) => Level = x.Value.GetMaxLevel());
         }
 
         public void Set(List<BuildingEnums> buildings, int level = -1)
@@ -48,7 +48,7 @@ namespace MainCore.UI.Models.Input
             {
                 return (BuildingEnums.Site, -1);
             }
-            return (SelectedBuilding.Content, Level);
+            return (SelectedBuilding.Value, Level);
         }
 
         public void Clear()

@@ -61,6 +61,21 @@ namespace MainCore.Parsers.HeroParser
             return adventureAvailabe;
         }
 
+        public bool IsDead(HtmlDocument doc)
+        {
+            var status = doc.DocumentNode
+                .Descendants("div")
+                .Where(x => x.HasClass("heroStatus"))
+                .FirstOrDefault();
+            if (status is null) return false;
+
+            var heroDead = status.Descendants("i")
+                .Where(x => x.HasClass("heroDead"))
+                .Any();
+            if (!heroDead) return false;
+            return true;
+        }
+
         public HtmlNode GetAdventure(HtmlDocument doc)
         {
             var adventures = doc.GetElementbyId("heroAdventure");
@@ -106,6 +121,25 @@ namespace MainCore.Parsers.HeroParser
                 .FirstOrDefault(x => x.GetAttributeValue("data-tab", 0) == 1);
             if (aNode is null) return false;
             return aNode.HasClass("active");
+        }
+
+        public bool AttributeTabActive(HtmlDocument doc)
+        {
+            var heroDiv = doc.GetElementbyId("heroV2");
+            if (heroDiv is null) return false;
+            var aNode = heroDiv.Descendants("a")
+                .FirstOrDefault(x => x.GetAttributeValue("data-tab", 0) == 2);
+            if (aNode is null) return false;
+            return aNode.HasClass("active");
+        }
+
+        public HtmlNode GetHeroAttributeNode(HtmlDocument doc)
+        {
+            var heroDiv = doc.GetElementbyId("heroV2");
+            if (heroDiv is null) return null;
+            var aNode = heroDiv.Descendants("a")
+                .FirstOrDefault(x => x.GetAttributeValue("data-tab", 0) == 2);
+            return aNode;
         }
 
         public bool HeroInventoryLoading(HtmlDocument doc)
@@ -218,6 +252,95 @@ namespace MainCore.Parsers.HeroParser
                 };
                 continue;
             }
+        }
+
+        public HtmlNode GetFightingStrengthInputBox(HtmlDocument doc)
+        {
+            var inputBox = doc.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "") == "fightingStrength");
+            return inputBox;
+        }
+
+        public HtmlNode GetOffBonusInputBox(HtmlDocument doc)
+        {
+            var inputBox = doc.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "") == "offBonus");
+            return inputBox;
+        }
+
+        public HtmlNode GetDefBonusInputBox(HtmlDocument doc)
+        {
+            var inputBox = doc.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "") == "defBonus");
+            return inputBox;
+        }
+
+        public HtmlNode GetResourceProductionInputBox(HtmlDocument doc)
+        {
+            var inputBox = doc.DocumentNode.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "") == "resourceProduction");
+            return inputBox;
+        }
+
+        public HtmlNode GetSaveButton(HtmlDocument doc)
+        {
+            var button = doc.GetElementbyId("savePoints");
+            return button;
+        }
+
+        public bool IsLevelUp(HtmlDocument doc)
+        {
+            var topBarHero = doc.GetElementbyId("topBarHero");
+            if (topBarHero is null) return false;
+            var levelUp = topBarHero.Descendants("i").FirstOrDefault(x => x.HasClass("levelUp"));
+            if (levelUp is null) return false;
+            return levelUp.HasClass("show");
+        }
+
+        public long[] GetRevivedResource(HtmlDocument doc)
+        {
+            var reviveWrapper = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("reviveWrapper"));
+            if (reviveWrapper is null) return Array.Empty<long>();
+            var reviveWithResources = reviveWrapper
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("reviveWithResources") && x.HasClass("charges"));
+            if (reviveWithResources is null) return Array.Empty<long>();
+
+            var resourceDivs = reviveWithResources
+                .Descendants("div")
+                .Where(x => x.HasClass("resource"))
+                .Take(4);
+            if (!resourceDivs.Any()) return Array.Empty<long>();
+
+            var resources = new long[5];
+            for (var i = 0; i < 4; i++)
+            {
+                var resourceDiv = resourceDivs.ElementAt(i);
+                var resourceValue = resourceDiv
+                    .Descendants("span")
+                    .FirstOrDefault();
+                if (resourceValue is null)
+                {
+                    resources[i] = 0;
+                    continue;
+                }
+                var resourceValueStr = new string(resourceValue.InnerText.Where(c => char.IsDigit(c)).ToArray());
+                if (string.IsNullOrEmpty(resourceValueStr)) continue;
+                resources[i] = long.Parse(resourceValueStr);
+            }
+
+            resources[4] = 0; // free crop
+            return resources;
+        }
+
+        public HtmlNode GetReviveButton(HtmlDocument doc)
+        {
+            var reviveWrapper = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("reviveWrapper"));
+            if (reviveWrapper is null) return null;
+            var reviveWithResourcesButton = reviveWrapper
+                .Descendants("button")
+                .FirstOrDefault(x => x.HasClass("reviveWithResources") && x.HasClass("green"));
+            return reviveWithResourcesButton;
         }
     }
 }
