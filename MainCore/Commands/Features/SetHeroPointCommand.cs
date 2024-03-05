@@ -43,28 +43,28 @@ namespace MainCore.Commands.Features
             var fightingInput = _unitOfParser.HeroParser.GetFightingStrengthInputBox(html);
             if (fightingInput is null)
             {
-                return Result.Fail(new Retry("Cannot find fighting strength input box"));
+                return Result.Fail(Retry.TextboxNotFound("fighting strength"));
             }
             var offInput = _unitOfParser.HeroParser.GetOffBonusInputBox(html);
             if (offInput is null)
             {
-                return Result.Fail(new Retry("Cannot find off bonus input box"));
+                return Result.Fail(Retry.TextboxNotFound("off bonus"));
             }
             var defInput = _unitOfParser.HeroParser.GetDefBonusInputBox(html);
             if (defInput is null)
             {
-                return Result.Fail(new Retry("Cannot find def bonus input box"));
+                return Result.Fail(Retry.TextboxNotFound("def bonus"));
             }
             var resourceInput = _unitOfParser.HeroParser.GetResourceProductionInputBox(html);
             if (resourceInput is null)
             {
-                return Result.Fail(new Retry("Cannot find resource production input box"));
+                return Result.Fail(Retry.TextboxNotFound("resource production"));
             }
 
             var saveButton = _unitOfParser.HeroParser.GetSaveButton(html);
             if (saveButton is null)
             {
-                return Result.Fail(new Retry("Cannot find save button"));
+                return Result.Fail(Retry.ButtonNotFound("save"));
             }
 
             var currentFightingPoint = fightingInput.GetAttributeValue("value", 0);

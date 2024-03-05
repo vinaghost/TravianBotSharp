@@ -57,6 +57,9 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.HeroOffPoint, 0},
             {AccountSettingEnums.HeroDefPoint, 0 },
             {AccountSettingEnums.HeroResourcePoint, 3 },
+            {AccountSettingEnums.EnableAutoReviveHero, 0 },
+            {AccountSettingEnums.HeroRespawnVillage, 0 },
+            {AccountSettingEnums.UseHeroResourceToRevive, 0 },
         };
 
         private List<AccountSettingEnums> GetMissingAccountSettings()

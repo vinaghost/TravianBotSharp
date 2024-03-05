@@ -23,5 +23,9 @@
         HeroOffPoint,
         HeroDefPoint,
         HeroResourcePoint,
+
+        EnableAutoReviveHero,
+        HeroRespawnVillage,
+        UseHeroResourceToRevive,
     }
 }

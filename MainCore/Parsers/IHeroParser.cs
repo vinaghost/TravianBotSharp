@@ -37,5 +37,8 @@ namespace MainCore.Parsers
         HtmlNode GetDefBonusInputBox(HtmlDocument doc);
         HtmlNode GetSaveButton(HtmlDocument doc);
         bool IsLevelUp(HtmlDocument doc);
+        long[] GetRevivedResource(HtmlDocument doc);
+        HtmlNode GetReviveButton(HtmlDocument doc);
+        bool IsDead(HtmlDocument doc);
     }
 }

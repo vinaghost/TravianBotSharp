@@ -18,11 +18,6 @@ namespace MainCore.Parsers.HeroParser
             return true;
         }
 
-        public HtmlNode GetHeroAttributeNode(HtmlDocument doc)
-        {
-            return null;
-        }
-
         public bool HeroInventoryLoading(HtmlDocument doc)
         {
             return true;
@@ -197,34 +192,54 @@ namespace MainCore.Parsers.HeroParser
             return TimeSpan.FromSeconds(seconds);
         }
 
+        public HtmlNode GetHeroAttributeNode(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
         public HtmlNode GetFightingStrengthInputBox(HtmlDocument doc)
         {
-            return null;
+            throw new NotImplementedException();
         }
 
         public HtmlNode GetOffBonusInputBox(HtmlDocument doc)
         {
-            return null;
-        }
-
-        public HtmlNode GetDefBonusInputBox(HtmlDocument doc)
-        {
-            return null;
+            throw new NotImplementedException();
         }
 
         public HtmlNode GetResourceProductionInputBox(HtmlDocument doc)
         {
-            return null;
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetDefBonusInputBox(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
         }
 
         public HtmlNode GetSaveButton(HtmlDocument doc)
         {
-            return null;
+            throw new NotImplementedException();
         }
 
         public bool IsLevelUp(HtmlDocument doc)
         {
-            return false;
+            throw new NotImplementedException();
+        }
+
+        public long[] GetRevivedResource(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetReviveButton(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsDead(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
         }
     }
 }
