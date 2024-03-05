@@ -1,0 +1,23 @@
+﻿<v:VillageSelectorUcBase
+    x:Class="WPFUI.Views.UserControls.VillageSelectorUc"
+    xmlns:v="clr-namespace:WPFUI.Views.UserControls"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    mc:Ignorable="d"
+    d:DesignHeight="450" d:DesignWidth="800"
+    x:Name="root">
+    <StackPanel VerticalAlignment="Bottom">
+        <StackPanel Orientation="Horizontal">
+            <Label Content="{Binding Text, ElementName=root}" Width="NaN" />
+            <ComboBox x:Name="VillageComboBox" Text="-- Select village --">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Content}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+    </StackPanel>
+</v:VillageSelectorUcBase>
