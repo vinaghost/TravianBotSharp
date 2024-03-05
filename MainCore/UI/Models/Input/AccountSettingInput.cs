@@ -16,6 +16,7 @@ namespace MainCore.UI.Models.Input
             SleepTime.Set(settings.GetValueOrDefault(AccountSettingEnums.SleepTimeMin), settings.GetValueOrDefault(AccountSettingEnums.SleepTimeMax));
             EnableAutoLoadVillage = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoLoadVillageBuilding) == 1;
             HeadlessChrome = settings.GetValueOrDefault(AccountSettingEnums.HeadlessChrome) == 1;
+
             EnableAutoStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoStartAdventure) == 1;
 
             EnableAutoSetHeroPoint = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoSetHeroPoint) == 1;
@@ -23,6 +24,10 @@ namespace MainCore.UI.Models.Input
             HeroOffPoint = settings.GetValueOrDefault(AccountSettingEnums.HeroOffPoint);
             HeroDefPoint = settings.GetValueOrDefault(AccountSettingEnums.HeroDefPoint);
             HeroResourcePoint = settings.GetValueOrDefault(AccountSettingEnums.HeroResourcePoint);
+
+            EnableAutoReviveHero = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoReviveHero) == 1;
+            UseHeroResourceToRevive = settings.GetValueOrDefault(AccountSettingEnums.UseHeroResourceToRevive) == 1;
+            HeroRespawnVillage.Set(settings.GetValueOrDefault(AccountSettingEnums.HeroRespawnVillage));
         }
 
         public Dictionary<AccountSettingEnums, int> Get()
@@ -40,6 +45,10 @@ namespace MainCore.UI.Models.Input
             var heroOffPoint = HeroOffPoint;
             var heroDefPoint = HeroDefPoint;
             var heroResourcePoint = HeroResourcePoint;
+
+            var enableAutoReviveHero = EnableAutoReviveHero ? 1 : 0;
+            var useHeroResourceToRevive = UseHeroResourceToRevive ? 1 : 0;
+            var heroRespawnVillage = HeroRespawnVillage.Get();
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
                 { AccountSettingEnums.ClickDelayMin, clickDelayMin },
@@ -59,6 +68,9 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.HeroOffPoint, heroOffPoint },
                 { AccountSettingEnums.HeroDefPoint, heroDefPoint },
                 { AccountSettingEnums.HeroResourcePoint, heroResourcePoint },
+                { AccountSettingEnums.EnableAutoReviveHero, enableAutoReviveHero },
+                { AccountSettingEnums.UseHeroResourceToRevive, useHeroResourceToRevive },
+                { AccountSettingEnums.HeroRespawnVillage, heroRespawnVillage },
             };
             return settings;
         }
@@ -133,5 +145,23 @@ namespace MainCore.UI.Models.Input
             get => _heroResourcePoint;
             set => this.RaiseAndSetIfChanged(ref _heroResourcePoint, value);
         }
+
+        private bool _enableAutoReviveHero;
+
+        public bool EnableAutoReviveHero
+        {
+            get => _enableAutoReviveHero;
+            set => this.RaiseAndSetIfChanged(ref _enableAutoReviveHero, value);
+        }
+
+        private bool _useHeroResourceToRevive;
+
+        public bool UseHeroResourceToRevive
+        {
+            get => _useHeroResourceToRevive;
+            set => this.RaiseAndSetIfChanged(ref _useHeroResourceToRevive, value);
+        }
+
+        public VillageSelectorViewModel HeroRespawnVillage { get; } = new();
     }
 }
