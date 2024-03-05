@@ -30,7 +30,7 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public int Get()
         {
-            return SelectedItem.Value;
+            return SelectedItem?.Value ?? 0;
         }
     }
 }
