@@ -85,7 +85,7 @@ namespace MainCore.Services
 
             options.AddArguments($"user-data-dir={pathUserData}");
 
-            _driver = await Task.Run(() => new ChromeDriver(_chromeService, options, TimeSpan.FromMinutes(1)));
+            _driver = await Task.Run(() => new ChromeDriver(_chromeService, options, TimeSpan.FromMinutes(3)));
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(1);
             _driver.GetDevToolsSession();

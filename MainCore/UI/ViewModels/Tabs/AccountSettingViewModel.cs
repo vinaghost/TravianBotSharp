@@ -43,12 +43,14 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadSettings.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadSettings.Execute(accountId);
         }
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadSettings.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+            var villages = _unitOfRepository.VillageRepository.GetItems(accountId);
+            AccountSettingInput.HeroRespawnVillage.Set(villages.Select(x => new ComboBoxItem<int>(x.Id, x.Content)).ToList());
+            await LoadSettings.Execute(accountId);
         }
 
         private async Task SaveHandler()
@@ -69,12 +71,6 @@ namespace MainCore.UI.ViewModels.Tabs
         private Dictionary<AccountSettingEnums, int> LoadSettingsHandler(AccountId accountId)
         {
             var settings = _unitOfRepository.AccountSettingRepository.Get(accountId);
-
-            var villages = _unitOfRepository.VillageRepository.GetItems(accountId);
-            Observable.Start(() => AccountSettingInput.HeroRespawnVillage.Set(villages.Select(x => new ComboBoxItem<int>(x.Id, x.Content)).ToList()))
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe();
-
             return settings;
         }
     }
