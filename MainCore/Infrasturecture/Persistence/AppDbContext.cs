@@ -60,6 +60,7 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.EnableAutoReviveHero, 0 },
             {AccountSettingEnums.HeroRespawnVillage, 0 },
             {AccountSettingEnums.UseHeroResourceToRevive, 0 },
+            {AccountSettingEnums.EquipGearBeforeStartAdventure, 0 },
         };
 
         private List<AccountSettingEnums> GetMissingAccountSettings()

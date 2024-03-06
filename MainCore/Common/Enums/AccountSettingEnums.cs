@@ -27,5 +27,7 @@
         EnableAutoReviveHero,
         HeroRespawnVillage,
         UseHeroResourceToRevive,
+
+        EquipGearBeforeStartAdventure,
     }
 }

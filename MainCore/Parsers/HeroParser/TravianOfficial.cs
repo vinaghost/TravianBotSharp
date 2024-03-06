@@ -342,5 +342,57 @@ namespace MainCore.Parsers.HeroParser
                 .FirstOrDefault(x => x.HasClass("reviveWithResources") && x.HasClass("green"));
             return reviveWithResourcesButton;
         }
+
+        private int GetGear(HtmlDocument doc, string gearSlotName)
+        {
+            var equipmentSlots = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("equipmentSlots"));
+            if (equipmentSlots is null) return 0;
+
+            var gearSlot = equipmentSlots.Descendants("div").FirstOrDefault(x => x.HasClass(gearSlotName));
+            if (gearSlot is null) return 0;
+            if (gearSlot.HasClass("empty")) return 0;
+
+            var gearNode = gearSlot.Descendants("div").FirstOrDefault(x => x.HasClass("item"));
+            if (gearNode is null) return 0;
+            var classes = gearNode.GetClasses();
+            if (classes.Count() != 2) return 0;
+
+            var itemValue = classes.ElementAt(1);
+            if (itemValue is null) return 0;
+
+            var itemValueStr = new string(itemValue.Where(c => char.IsDigit(c)).ToArray());
+            if (string.IsNullOrEmpty(itemValueStr)) return 0;
+            return int.Parse(itemValueStr);
+        }
+
+        public int GetHelmet(HtmlDocument doc)
+        {
+            return GetGear(doc, "helmet");
+        }
+
+        public int GetBody(HtmlDocument doc)
+        {
+            return GetGear(doc, "body");
+        }
+
+        public int GetShoes(HtmlDocument doc)
+        {
+            return GetGear(doc, "shoes");
+        }
+
+        public int GetLeftHand(HtmlDocument doc)
+        {
+            return GetGear(doc, "leftHand");
+        }
+
+        public int GetRightHand(HtmlDocument doc)
+        {
+            return GetGear(doc, "rightHand");
+        }
+
+        public int GetHorse(HtmlDocument doc)
+        {
+            return GetGear(doc, "horse");
+        }
     }
 }
