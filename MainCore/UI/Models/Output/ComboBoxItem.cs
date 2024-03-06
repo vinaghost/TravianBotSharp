@@ -2,13 +2,13 @@
 {
     public class ComboBoxItem<T>
     {
-        public ComboBoxItem(T value, string content)
+        public ComboBoxItem(T content, string name)
         {
-            Value = value;
             Content = content;
+            Name = name;
         }
 
-        public T Value { get; set; }
-        public string Content { get; set; }
+        public T Content { get; set; }
+        public string Name { get; set; }
     }
 }

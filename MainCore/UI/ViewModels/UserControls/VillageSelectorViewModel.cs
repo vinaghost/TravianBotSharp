@@ -25,12 +25,12 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public void Set(int currentVillage)
         {
-            SelectedItem = Items.FirstOrDefault(x => x.Value == currentVillage);
+            SelectedItem = Items.FirstOrDefault(x => x.Content == currentVillage);
         }
 
         public int Get()
         {
-            return SelectedItem?.Value ?? 0;
+            return SelectedItem?.Content ?? 0;
         }
     }
 }
