@@ -14,7 +14,7 @@
             <ComboBox x:Name="VillageComboBox" Text="-- Select village --">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Content}" />
+                        <TextBlock Text="{Binding Name}" />
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
