@@ -28,6 +28,8 @@ namespace MainCore.UI.Models.Input
             EnableAutoReviveHero = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoReviveHero) == 1;
             UseHeroResourceToRevive = settings.GetValueOrDefault(AccountSettingEnums.UseHeroResourceToRevive) == 1;
             HeroRespawnVillage.Set(settings.GetValueOrDefault(AccountSettingEnums.HeroRespawnVillage));
+
+            EquipGearBeforeStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.EquipGearBeforeStartAdventure) == 1;
         }
 
         public Dictionary<AccountSettingEnums, int> Get()
@@ -49,6 +51,9 @@ namespace MainCore.UI.Models.Input
             var enableAutoReviveHero = EnableAutoReviveHero ? 1 : 0;
             var useHeroResourceToRevive = UseHeroResourceToRevive ? 1 : 0;
             var heroRespawnVillage = HeroRespawnVillage.Get();
+
+            var equipGearBeforeStartAdventure = EquipGearBeforeStartAdventure ? 1 : 0;
+
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
                 { AccountSettingEnums.ClickDelayMin, clickDelayMin },
@@ -71,6 +76,7 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.EnableAutoReviveHero, enableAutoReviveHero },
                 { AccountSettingEnums.UseHeroResourceToRevive, useHeroResourceToRevive },
                 { AccountSettingEnums.HeroRespawnVillage, heroRespawnVillage },
+                { AccountSettingEnums.EquipGearBeforeStartAdventure, equipGearBeforeStartAdventure },
             };
             return settings;
         }
@@ -163,5 +169,13 @@ namespace MainCore.UI.Models.Input
         }
 
         public VillageSelectorViewModel HeroRespawnVillage { get; } = new();
+
+        private bool _equipGearBeforeStartAdventure;
+
+        public bool EquipGearBeforeStartAdventure
+        {
+            get => _equipGearBeforeStartAdventure;
+            set => this.RaiseAndSetIfChanged(ref _equipGearBeforeStartAdventure, value);
+        }
     }
 }

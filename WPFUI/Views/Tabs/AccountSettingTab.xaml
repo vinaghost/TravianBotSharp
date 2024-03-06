@@ -62,6 +62,7 @@
                     <StackPanel>
                         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Hero feature settings" VerticalAlignment="Center" FontWeight="Bold" />
                         <CheckBox x:Name="EnableAutoStartAdventure" Content="Enable auto start adventure" />
+                        <CheckBox x:Name="EquipGearBeforeStartAdventure" Content="Equip gear before start adventure" />
 
                         <CheckBox x:Name="EnableAutoSetHeroPoint" Content="Enable auto set point when hero level up" />
                         <TextBox x:Name="HeroFightingPoint" materialDesign:HintAssist.Hint="Hero fighting point" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="100" HorizontalAlignment="Left" Margin="5,0,0,0" />
