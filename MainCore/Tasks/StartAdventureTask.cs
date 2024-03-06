@@ -4,6 +4,7 @@ using MainCore.Commands.Base;
 using MainCore.Commands.Features;
 using MainCore.Commands.Features.Step.StartAdventure;
 using MainCore.Commands.Validate;
+using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Repositories;
@@ -42,6 +43,14 @@ namespace MainCore.Tasks
 
             var canStartAdventure = _validateAdventureCommand.Value;
             if (!canStartAdventure) return Result.Ok();
+
+            var equipGear = _unitOfRepository.AccountSettingRepository.GetBooleanByName(AccountId, AccountSettingEnums.EquipGearBeforeStartAdventure);
+
+            if (equipGear)
+            {
+                result = await _mediator.Send(new EquipGearCommand(AccountId), CancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            }
 
             result = await _mediator.Send(new StartAdventureCommand(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));

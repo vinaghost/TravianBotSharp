@@ -17,7 +17,7 @@ namespace MainCore.UI.Models.Input
 
         public (ResourcePlanEnums, int) Get()
         {
-            return (SelectedPlan.Content, Level);
+            return (SelectedPlan.Value, Level);
         }
 
         public ObservableCollection<ComboBoxItem<ResourcePlanEnums>> Plans { get; set; } = new()
