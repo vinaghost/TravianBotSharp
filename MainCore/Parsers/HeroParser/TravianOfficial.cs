@@ -444,5 +444,50 @@ namespace MainCore.Parsers.HeroParser
                 _ => 0,
             };
         }
+
+        public IEnumerable<AdventureDto> GetAdventures(HtmlDocument doc)
+        {
+            var adventures = doc.GetElementbyId("heroAdventure");
+            if (adventures is null) return null;
+            var tbody = adventures.Descendants("tbody").FirstOrDefault();
+            if (tbody is null) return null;
+
+            var dtos = tbody.Descendants("tr")
+                .Select(adventure =>
+                {
+                    var (x, y) = GetAdventureCoordinates_(adventure);
+                    return new AdventureDto()
+                    {
+                        Difficulty = (DifficultyEnums)GetAdventureDifficult_(adventure),
+                        X = x,
+                        Y = y,
+                    };
+                });
+            return dtos;
+        }
+
+        private int GetAdventureDifficult_(HtmlNode node)
+        {
+            var tdList = node.Descendants("td").ToArray();
+            if (tdList.Length < 3) return 0;
+            var iconDifficulty = tdList[3].FirstChild;
+            if (iconDifficulty.GetAttributeValue("alt", "").Contains("hard")) return 1;
+            return 0;
+        }
+
+        private (int, int) GetAdventureCoordinates_(HtmlNode node)
+        {
+            var tdList = node.Descendants("td").ToArray();
+            if (tdList.Length < 2) return (0, 0);
+            var coords = tdList[1].InnerText.Split('|');
+            if (coords.Length < 2) return (0, 0);
+            coords[0] = coords[0].Replace('−', '-');
+            var valueX = new string(coords[0].Where(c => char.IsDigit(c) || c == '-').ToArray());
+            if (string.IsNullOrEmpty(valueX)) return (0, 0);
+            coords[1] = coords[1].Replace('−', '-');
+            var valueY = new string(coords[1].Where(c => char.IsDigit(c) || c == '-').ToArray());
+            if (string.IsNullOrEmpty(valueY)) return (0, 0);
+            return (int.Parse(valueX), int.Parse(valueY));
+        }
     }
 }

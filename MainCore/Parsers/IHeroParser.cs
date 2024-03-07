@@ -67,5 +67,7 @@ namespace MainCore.Parsers
         int GetRightHand(HtmlDocument doc);
 
         HeroDto Get(HtmlDocument doc);
+
+        IEnumerable<AdventureDto> GetAdventures(HtmlDocument doc);
     }
 }

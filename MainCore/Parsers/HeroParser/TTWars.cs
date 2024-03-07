@@ -276,5 +276,10 @@ namespace MainCore.Parsers.HeroParser
         {
             throw new NotImplementedException();
         }
+
+        public IEnumerable<AdventureDto> GetAdventures(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

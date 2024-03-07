@@ -10,6 +10,7 @@ namespace MainCore.Repositories
                                    IFarmRepository FarmRepository,
                                    IHeroRepository HeroRepository,
                                    IHeroItemRepository HeroItemRepository,
+                                   IAdventureRepository AdventureRepository,
                                    IJobRepository JobRepository,
                                    IQueueBuildingRepository QueueBuildingRepository,
                                    IStorageRepository StorageRepository,
