@@ -29,5 +29,7 @@
         UseHeroResourceToRevive,
 
         EquipGearBeforeStartAdventure,
+        HealingBeforeStartAdventure,
+        HealthBeforeStartAdventure,
     }
 }

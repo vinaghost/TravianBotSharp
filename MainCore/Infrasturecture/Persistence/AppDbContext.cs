@@ -276,6 +276,7 @@ namespace MainCore.Infrasturecture.Persistence
             var migrations = new List<KeyValuePair<long, string>>()
             {
                 KeyValuePair.Create(202303071943,"AddHeroTable"),
+                KeyValuePair.Create(202303072023,"AddAdventureTable"),
             };
             foreach (var migration in migrations)
             {
