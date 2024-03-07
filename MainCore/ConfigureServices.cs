@@ -83,11 +83,6 @@ namespace MainCore
             var container = host.Services;
             container.UseMicrosoftDependencyResolver();
 
-            using (var scope = container.CreateScope())
-            {
-                var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
-                runner.MigrateUp();
-            }
             return container;
         }
     }
