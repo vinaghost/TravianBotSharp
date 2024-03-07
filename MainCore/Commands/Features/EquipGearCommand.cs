@@ -2,6 +2,7 @@
 using HtmlAgilityPack;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
+using MainCore.Common.Extensions;
 using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Parsers;
@@ -90,6 +91,28 @@ namespace MainCore.Commands.Features
             {
                 logger.Information("Found new horse: {horse}", horse);
                 result = await ClickItem(chromeBrowser, horse, cancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                result = await _unitOfCommand.DelayClickCommand.Handle(new(accountId), cancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            }
+
+            var left = GetBetterLeft(heroItems, html);
+            if (left != HeroItemEnums.None)
+            {
+                logger.Information("Found new left item: {left}", left);
+                result = await ClickItem(chromeBrowser, left, cancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                result = await _unitOfCommand.DelayClickCommand.Handle(new(accountId), cancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            }
+
+            var right = GetBetterRight(accountId, heroItems, html);
+            if (right != HeroItemEnums.None)
+            {
+                logger.Information("Found new weapon: {right}", right);
+                result = await ClickItem(chromeBrowser, right, cancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
                 result = await _unitOfCommand.DelayClickCommand.Handle(new(accountId), cancellationToken);
@@ -212,6 +235,44 @@ namespace MainCore.Commands.Features
             };
 
             return GetBetterGear(currentGear, items, listGear);
+        }
+
+        private HeroItemEnums GetBetterLeft(IList<HeroItemEnums> items, HtmlDocument doc)
+        {
+            var currentGear = (HeroItemEnums)_unitOfParser.HeroParser.GetLeftHand(doc);
+            var listGear = new List<HeroItemEnums>()
+            {
+                HeroItemEnums.Map3,
+                HeroItemEnums.Map2,
+                HeroItemEnums.Map1,
+            };
+
+            return GetBetterGear(currentGear, items, listGear);
+        }
+
+        private HeroItemEnums GetBetterRight(AccountId accountId, IList<HeroItemEnums> items, HtmlDocument doc)
+        {
+            var tribe = (TribeEnums)_unitOfRepository.AccountSettingRepository.GetByName(accountId, AccountSettingEnums.Tribe);
+            var listWeapons = tribe.GetWeapons();
+
+            var inventoryWeapon = items.Intersect(listWeapons).ToList();
+            if (!inventoryWeapon.Any()) return 0;
+
+            var currentGear = (HeroItemEnums)_unitOfParser.HeroParser.GetRightHand(doc);
+
+            var indexCurrentGear = listWeapons.IndexOf(currentGear);
+            if (indexCurrentGear != -1)
+            {
+                var level = currentGear.ToString().ToInt();
+
+                listWeapons = listWeapons.Where(x => x.ToString().ToInt() > level).ToList();
+            }
+
+            //remove all item isn't in inventory
+            listWeapons.RemoveAll(x => !inventoryWeapon.Contains(x));
+            if (!listWeapons.Any()) return 0;
+
+            return listWeapons.First();
         }
     }
 }
