@@ -18,6 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentMigrator" Version="5.1.0" />
+    <PackageReference Include="FluentMigrator.Runner.Core" Version="5.1.0" />
+    <PackageReference Include="FluentMigrator.Runner.SQLite" Version="5.1.0" />
     <PackageReference Include="FluentValidation" Version="11.7.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.7.1" />
     <PackageReference Include="FluentResults" Version="3.15.2" />

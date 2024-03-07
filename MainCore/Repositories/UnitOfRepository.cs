@@ -8,6 +8,7 @@ namespace MainCore.Repositories
                                    IAccountSettingRepository AccountSettingRepository,
                                    IBuildingRepository BuildingRepository,
                                    IFarmRepository FarmRepository,
+                                   IHeroRepository HeroRepository,
                                    IHeroItemRepository HeroItemRepository,
                                    IJobRepository JobRepository,
                                    IQueueBuildingRepository QueueBuildingRepository,
