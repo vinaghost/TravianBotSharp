@@ -4,6 +4,7 @@ using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Repositories;
 using MainCore.UI.Models.Input;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MediatR;
 using ReactiveUI;
@@ -42,12 +43,14 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadSettings.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadSettings.Execute(accountId);
         }
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadSettings.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+            var villages = _unitOfRepository.VillageRepository.GetItems(accountId);
+            AccountSettingInput.HeroRespawnVillage.Set(villages.Select(x => new ComboBoxItem<int>(x.Id, x.Content)).ToList());
+            await LoadSettings.Execute(accountId);
         }
 
         private async Task SaveHandler()

@@ -26,6 +26,11 @@ namespace MainCore.Notification.Handlers.MainWindowLoad
             {
                 await Task.Run(context.FillAccountSettings, cancellationToken);
                 await Task.Run(context.FillVillageSettings, cancellationToken);
+                await Task.Run(context.FillHero, cancellationToken);
+            }
+            else
+            {
+                await Task.Run(context.AddVersionInfo, cancellationToken);
             }
         }
     }
