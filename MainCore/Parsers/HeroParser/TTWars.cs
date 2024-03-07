@@ -271,5 +271,10 @@ namespace MainCore.Parsers.HeroParser
         {
             throw new NotImplementedException();
         }
+
+        public HeroDto Get(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

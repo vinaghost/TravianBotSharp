@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using HtmlAgilityPack;
 using MainCore.Commands.Base;
 using MainCore.Common.MediatR;
 using MainCore.Entities;
@@ -29,24 +30,39 @@ namespace MainCore.Commands.Update
         {
             var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
-            var dto = _unitOfParser.AccountInfoParser.Get(html);
-            _unitOfRepository.AccountInfoRepository.Update(command.AccountId, dto);
-            await _mediator.Publish(new AccountInfoUpdated(command.AccountId), cancellationToken);
 
-            if (_unitOfParser.HeroParser.CanStartAdventure(html))
-            {
-                await _mediator.Publish(new AdventureUpdated(command.AccountId), cancellationToken);
-            }
+            await UpdateAccount(command.AccountId, html, cancellationToken);
+            await UpdateHero(command.AccountId, html, cancellationToken);
 
-            if (_unitOfParser.HeroParser.IsLevelUp(html))
-            {
-                await _mediator.Publish(new HeroLevelUpdated(command.AccountId), cancellationToken);
-            }
-            if (_unitOfParser.HeroParser.IsDead(html))
-            {
-                await _mediator.Publish(new HeroDead(command.AccountId), cancellationToken);
-            }
             return Result.Ok();
+        }
+
+        public async Task UpdateAccount(AccountId accountId, HtmlDocument doc, CancellationToken cancellationToken)
+        {
+            var dto = _unitOfParser.AccountInfoParser.Get(doc);
+            _unitOfRepository.AccountInfoRepository.Update(accountId, dto);
+            await _mediator.Publish(new AccountInfoUpdated(accountId), cancellationToken);
+        }
+
+        public async Task UpdateHero(AccountId accountId, HtmlDocument doc, CancellationToken cancellationToken)
+        {
+            var dto = _unitOfParser.HeroParser.Get(doc);
+            _unitOfRepository.HeroRepository.Update(accountId, dto);
+            await _mediator.Publish(new HeroUpdated(accountId), cancellationToken);
+
+            if (_unitOfParser.HeroParser.CanStartAdventure(doc))
+            {
+                await _mediator.Publish(new AdventureUpdated(accountId), cancellationToken);
+            }
+
+            if (_unitOfParser.HeroParser.IsLevelUp(doc))
+            {
+                await _mediator.Publish(new HeroLevelUpdated(accountId), cancellationToken);
+            }
+            if (_unitOfParser.HeroParser.IsDead(doc))
+            {
+                await _mediator.Publish(new HeroDead(accountId), cancellationToken);
+            }
         }
     }
 }

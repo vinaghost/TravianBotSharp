@@ -394,5 +394,55 @@ namespace MainCore.Parsers.HeroParser
         {
             return GetGear(doc, "horse");
         }
+
+        public HeroDto Get(HtmlDocument doc)
+        {
+            var dto = new HeroDto()
+            {
+                Health = GetHealth(doc),
+                Status = (HeroStatusEnums)GetStatus(doc),
+            };
+            return dto;
+        }
+
+        private static int GetHealth(HtmlDocument doc)
+        {
+            var healthMask = doc.GetElementbyId("healthMask");
+            if (healthMask is null) return -1;
+            var path = healthMask.Descendants("path").FirstOrDefault();
+            if (path is null) return -1;
+            var commands = path.GetAttributeValue("d", "").Split(' ');
+            try
+            {
+                var xx = double.Parse(commands[^2], System.Globalization.CultureInfo.InvariantCulture);
+                var yy = double.Parse(commands[^1], System.Globalization.CultureInfo.InvariantCulture);
+
+                var rad = Math.Atan2(yy - 55, xx - 55);
+                return (int)Math.Round(-56.173 * rad + 96.077);
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        private static int GetStatus(HtmlDocument doc)
+        {
+            var heroStatusDiv = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("heroStatus"));
+            if (heroStatusDiv is null) return 0;
+            var iconHeroStatus = heroStatusDiv.Descendants("i").FirstOrDefault();
+            if (iconHeroStatus == null) return 0;
+            var status = iconHeroStatus.GetClasses().FirstOrDefault();
+            if (status is null) return 0;
+            return status switch
+            {
+                "heroRunning" => 2,// away
+                "heroHome" => 1,// home
+                "heroDead" => 3,// dead
+                "heroReviving" => 4,// regenerating
+                "heroReinforcing" => 5,// reinforcing
+                _ => 0,
+            };
+        }
     }
 }
