@@ -30,6 +30,8 @@ namespace MainCore.Infrasturecture.Persistence
         public DbSet<Storage> Storages { get; set; }
         public DbSet<VillageSetting> VillagesSetting { get; set; }
         public DbSet<Farm> FarmLists { get; set; }
+        public DbSet<Hero> Heroes { get; set; }
+        public DbSet<Adventure> Adventures { get; set; }
 
         #endregion table
 
@@ -62,6 +64,22 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.UseHeroResourceToRevive, 0 },
             {AccountSettingEnums.EquipGearBeforeStartAdventure, 0 },
         };
+
+        public void FillHero()
+        {
+            if (Heroes.Any()) return;
+            if (!Accounts.Any()) return;
+
+            var heros = Accounts.Select(x => new Hero()
+            {
+                AccountId = x.Id,
+                Health = 0,
+                Status = 0,
+            });
+
+            Heroes.AddRange(heros);
+            SaveChanges();
+        }
 
         private List<AccountSettingEnums> GetMissingAccountSettings()
         {
@@ -250,5 +268,19 @@ namespace MainCore.Infrasturecture.Persistence
         }
 
         #endregion village setting
+
+        public void AddVersionInfo()
+        {
+            Database.ExecuteSqlRaw("CREATE TABLE \"VersionInfo\" (\"Version\" INTEGER NOT NULL, \"AppliedOn\" DATETIME, \"Description\" TEXT)");
+
+            var migrations = new List<KeyValuePair<long, string>>()
+            {
+                KeyValuePair.Create(202303071943,"AddHeroTable"),
+            };
+            foreach (var migration in migrations)
+            {
+                Database.ExecuteSqlRaw($"INSERT INTO VersionInfo (Version, Description) VALUES ('{migration.Key}','{migration.Value}')");
+            }
+        }
     }
 }
