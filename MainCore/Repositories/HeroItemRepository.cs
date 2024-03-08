@@ -86,5 +86,14 @@ namespace MainCore.Repositories
 
             context.SaveChanges();
         }
+
+        public List<HeroItemDto> GetItems(AccountId accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return context.HeroItems
+                .Where(x => x.AccountId == accountId.Value)
+                .ToDto()
+                .ToList();
+        }
     }
 }

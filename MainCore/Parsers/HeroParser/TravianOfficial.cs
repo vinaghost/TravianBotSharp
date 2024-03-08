@@ -452,6 +452,8 @@ namespace MainCore.Parsers.HeroParser
             var tbody = adventures.Descendants("tbody").FirstOrDefault();
             if (tbody is null) return null;
 
+            if (tbody.Descendants("td").Where(x => x.HasClass("noAdventures")).Any()) return Enumerable.Empty<AdventureDto>();
+
             var dtos = tbody.Descendants("tr")
                 .Select(adventure =>
                 {

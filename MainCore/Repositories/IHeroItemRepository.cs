@@ -8,7 +8,11 @@ namespace MainCore.Repositories
     public interface IHeroItemRepository
     {
         IList<HeroItemEnums> Get(AccountId accountId);
+
+        List<HeroItemDto> GetItems(AccountId accountId);
+
         Result IsEnoughResource(AccountId accountId, long[] requiredResource);
+
         void Update(AccountId accountId, List<HeroItemDto> dtos);
     }
 }

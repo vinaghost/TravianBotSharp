@@ -24,5 +24,7 @@ namespace MainCore.DTO
         public static partial void To(this AdventureDto dto, Adventure entity);
 
         private static partial Adventure ToEntity(this AdventureDto dto);
+
+        public static partial IQueryable<AdventureDto> ToDto(this IQueryable<Adventure> entities);
     }
 }

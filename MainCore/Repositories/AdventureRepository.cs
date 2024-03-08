@@ -16,6 +16,16 @@ namespace MainCore.Repositories
             _contextFactory = contextFactory;
         }
 
+        public List<AdventureDto> Get(AccountId accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            return context.Adventures
+                .Where(x => x.AccountId == accountId.Value)
+                .ToDto()
+                .ToList();
+        }
+
         public void Update(AccountId accountId, List<AdventureDto> dtos)
         {
             using var context = _contextFactory.CreateDbContext();
