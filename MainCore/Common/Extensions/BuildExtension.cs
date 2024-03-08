@@ -81,13 +81,12 @@ namespace MainCore.Common.Extensions
                     },
                 BuildingEnums.GrainMill => new()
                     {
-                        new(BuildingEnums.Cropland, 10),
-                        new(BuildingEnums.MainBuilding, 5),
+                        new(BuildingEnums.Cropland, 5),
                     },
                 BuildingEnums.Bakery => new()
                     {
                         new(BuildingEnums.Cropland, 10),
-                        new(BuildingEnums.GrainMill, 10),
+                        new(BuildingEnums.GrainMill, 5),
                         new(BuildingEnums.MainBuilding, 5),
                     },
                 BuildingEnums.Warehouse => new()
