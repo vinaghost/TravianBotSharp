@@ -67,7 +67,5 @@ namespace MainCore.Notification.Handlers.Trigger
 
             await _taskManager.Add<CompleteImmediatelyTask>(accountId, villageId);
         }
-
-        private
     }
 }
