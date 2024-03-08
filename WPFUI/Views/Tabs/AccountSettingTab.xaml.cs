@@ -41,6 +41,9 @@ namespace WPFUI.Views.Tabs
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.EnableAutoReviveHero, v => v.EnableAutoReviveHero.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.UseHeroResourceToRevive, v => v.UseHeroResourceToRevive.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.HeroRespawnVillage, v => v.HeroRespawnVillage.ViewModel).DisposeWith(d);
+
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.HealingBeforeStartAdventure, v => v.HealingBeforeStartAdventure.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.HealthBeforeStartAdventure, v => v.HealthBeforeStartAdventure.Text).DisposeWith(d);
             });
         }
     }

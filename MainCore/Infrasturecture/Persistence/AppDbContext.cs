@@ -63,6 +63,8 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.HeroRespawnVillage, 0 },
             {AccountSettingEnums.UseHeroResourceToRevive, 0 },
             {AccountSettingEnums.EquipGearBeforeStartAdventure, 0 },
+            {AccountSettingEnums.HealingBeforeStartAdventure, 0 },
+            {AccountSettingEnums.HealthBeforeStartAdventure, 40 },
         };
 
         public void FillHero()
