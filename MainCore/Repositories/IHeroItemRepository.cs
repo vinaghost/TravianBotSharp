@@ -10,7 +10,7 @@ namespace MainCore.Repositories
         IList<HeroItemEnums> Get(AccountId accountId);
 
         List<HeroItemDto> GetItems(AccountId accountId);
-
+        bool IsEnoughOintment(AccountId accountId, int required);
         Result IsEnoughResource(AccountId accountId, long[] requiredResource);
 
         void Update(AccountId accountId, List<HeroItemDto> dtos);

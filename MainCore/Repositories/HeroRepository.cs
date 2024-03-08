@@ -25,6 +25,15 @@ namespace MainCore.Repositories
                 .FirstOrDefault();
         }
 
+        public int GetHealth(AccountId accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return context.Heroes
+                .Where(x => x.AccountId == accountId.Value)
+                .Select(x => x.Health)
+                .FirstOrDefault();
+        }
+
         public void Update(AccountId accountId, HeroDto dto)
         {
             using var context = _contextFactory.CreateDbContext();

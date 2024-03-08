@@ -51,6 +51,18 @@ namespace MainCore.Repositories
             return result;
         }
 
+        public bool IsEnoughOintment(AccountId accountId, int required)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var ointment = context.HeroItems
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => x.Type == HeroItemEnums.Ointment)
+                .Where(x => x.Amount >= required)
+                .Any();
+            return ointment;
+        }
+
         public IList<HeroItemEnums> Get(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();

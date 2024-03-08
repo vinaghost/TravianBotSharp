@@ -52,6 +52,24 @@ namespace MainCore.Tasks
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
 
+            var currentHealth = _unitOfRepository.HeroRepository.GetHealth(AccountId);
+            var requiredHealth = _unitOfRepository.AccountSettingRepository.GetByName(AccountId, AccountSettingEnums.HealthBeforeStartAdventure);
+
+            if (requiredHealth >= currentHealth)
+            {
+                var healing = _unitOfRepository.AccountSettingRepository.GetBooleanByName(AccountId, AccountSettingEnums.HealingBeforeStartAdventure);
+
+                if (healing)
+                {
+                    result = await _mediator.Send(new HealHeroCommand(AccountId), CancellationToken);
+                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                }
+                else
+                {
+                    return Result.Fail(new Skip($"Hero doesn't have enough health to start [{currentHealth}]"));
+                }
+            }
+
             result = await _mediator.Send(new StartAdventureCommand(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 

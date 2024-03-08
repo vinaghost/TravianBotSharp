@@ -30,6 +30,9 @@ namespace MainCore.UI.Models.Input
             HeroRespawnVillage.Set(settings.GetValueOrDefault(AccountSettingEnums.HeroRespawnVillage));
 
             EquipGearBeforeStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.EquipGearBeforeStartAdventure) == 1;
+
+            HealingBeforeStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.HealingBeforeStartAdventure) == 1;
+            HealthBeforeStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.HealthBeforeStartAdventure);
         }
 
         public Dictionary<AccountSettingEnums, int> Get()
@@ -54,6 +57,9 @@ namespace MainCore.UI.Models.Input
 
             var equipGearBeforeStartAdventure = EquipGearBeforeStartAdventure ? 1 : 0;
 
+            var healingBeforeStartAdventure = HealingBeforeStartAdventure ? 1 : 0;
+            var healthBeforeStartAdventure = HealthBeforeStartAdventure;
+
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
                 { AccountSettingEnums.ClickDelayMin, clickDelayMin },
@@ -77,6 +83,8 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.UseHeroResourceToRevive, useHeroResourceToRevive },
                 { AccountSettingEnums.HeroRespawnVillage, heroRespawnVillage },
                 { AccountSettingEnums.EquipGearBeforeStartAdventure, equipGearBeforeStartAdventure },
+                { AccountSettingEnums.HealingBeforeStartAdventure, healingBeforeStartAdventure },
+                { AccountSettingEnums.HealthBeforeStartAdventure,  healthBeforeStartAdventure},
             };
             return settings;
         }
@@ -176,6 +184,22 @@ namespace MainCore.UI.Models.Input
         {
             get => _equipGearBeforeStartAdventure;
             set => this.RaiseAndSetIfChanged(ref _equipGearBeforeStartAdventure, value);
+        }
+
+        private int _healthBeforeStartAdventure;
+
+        public int HealthBeforeStartAdventure
+        {
+            get => _healthBeforeStartAdventure;
+            set => this.RaiseAndSetIfChanged(ref _healthBeforeStartAdventure, value);
+        }
+
+        private bool _healingBeforeStartAdventure;
+
+        public bool HealingBeforeStartAdventure
+        {
+            get => _healingBeforeStartAdventure;
+            set => this.RaiseAndSetIfChanged(ref _healingBeforeStartAdventure, value);
         }
     }
 }
