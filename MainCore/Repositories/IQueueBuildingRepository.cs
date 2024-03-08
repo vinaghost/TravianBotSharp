@@ -12,6 +12,7 @@ namespace MainCore.Repositories
 
         QueueBuilding GetFirst(VillageId villageId);
         List<ListBoxItem> GetItems(VillageId villageId);
+        DateTime GetQueueTime(VillageId villageId);
         void Update(VillageId villageId, List<BuildingDto> dtos);
 
         void Update(VillageId villageId, List<QueueBuildingDto> dtos);
