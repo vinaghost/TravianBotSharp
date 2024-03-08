@@ -12,6 +12,7 @@ namespace MainCore.Entities
         public string Server { get; set; }
 
         public AccountInfo Info { get; set; }
+        public Hero Hero { get; set; }
 
         public ICollection<AccountSetting> Settings { get; set; }
         public ICollection<Access> Accesses { get; set; }

@@ -23,5 +23,7 @@ namespace MainCore.DTO
         public static partial void To(this HeroItemDto dto, HeroItem entity);
 
         private static partial HeroItem ToEntity(this HeroItemDto dto);
+
+        public static partial IQueryable<HeroItemDto> ToDto(this IQueryable<HeroItem> entities);
     }
 }

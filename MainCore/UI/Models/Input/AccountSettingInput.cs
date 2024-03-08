@@ -16,7 +16,23 @@ namespace MainCore.UI.Models.Input
             SleepTime.Set(settings.GetValueOrDefault(AccountSettingEnums.SleepTimeMin), settings.GetValueOrDefault(AccountSettingEnums.SleepTimeMax));
             EnableAutoLoadVillage = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoLoadVillageBuilding) == 1;
             HeadlessChrome = settings.GetValueOrDefault(AccountSettingEnums.HeadlessChrome) == 1;
+
             EnableAutoStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoStartAdventure) == 1;
+
+            EnableAutoSetHeroPoint = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoSetHeroPoint) == 1;
+            HeroFightingPoint = settings.GetValueOrDefault(AccountSettingEnums.HeroFightingPoint);
+            HeroOffPoint = settings.GetValueOrDefault(AccountSettingEnums.HeroOffPoint);
+            HeroDefPoint = settings.GetValueOrDefault(AccountSettingEnums.HeroDefPoint);
+            HeroResourcePoint = settings.GetValueOrDefault(AccountSettingEnums.HeroResourcePoint);
+
+            EnableAutoReviveHero = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoReviveHero) == 1;
+            UseHeroResourceToRevive = settings.GetValueOrDefault(AccountSettingEnums.UseHeroResourceToRevive) == 1;
+            HeroRespawnVillage.Set(settings.GetValueOrDefault(AccountSettingEnums.HeroRespawnVillage));
+
+            EquipGearBeforeStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.EquipGearBeforeStartAdventure) == 1;
+
+            HealingBeforeStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.HealingBeforeStartAdventure) == 1;
+            HealthBeforeStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.HealthBeforeStartAdventure);
         }
 
         public Dictionary<AccountSettingEnums, int> Get()
@@ -29,6 +45,21 @@ namespace MainCore.UI.Models.Input
             var (sleepTimeMin, sleepTimeMax) = SleepTime.Get();
             var headlessChrome = HeadlessChrome ? 1 : 0;
             var autoStartAdventure = EnableAutoStartAdventure ? 1 : 0;
+            var enableAutoSetHeroPoint = EnableAutoSetHeroPoint ? 1 : 0;
+            var heroFightingPoint = HeroFightingPoint;
+            var heroOffPoint = HeroOffPoint;
+            var heroDefPoint = HeroDefPoint;
+            var heroResourcePoint = HeroResourcePoint;
+
+            var enableAutoReviveHero = EnableAutoReviveHero ? 1 : 0;
+            var useHeroResourceToRevive = UseHeroResourceToRevive ? 1 : 0;
+            var heroRespawnVillage = HeroRespawnVillage.Get();
+
+            var equipGearBeforeStartAdventure = EquipGearBeforeStartAdventure ? 1 : 0;
+
+            var healingBeforeStartAdventure = HealingBeforeStartAdventure ? 1 : 0;
+            var healthBeforeStartAdventure = HealthBeforeStartAdventure;
+
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
                 { AccountSettingEnums.ClickDelayMin, clickDelayMin },
@@ -43,6 +74,17 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.Tribe, tribe },
                 { AccountSettingEnums.HeadlessChrome, headlessChrome },
                 { AccountSettingEnums.EnableAutoStartAdventure, autoStartAdventure },
+                { AccountSettingEnums.EnableAutoSetHeroPoint, enableAutoSetHeroPoint },
+                { AccountSettingEnums.HeroFightingPoint, heroFightingPoint },
+                { AccountSettingEnums.HeroOffPoint, heroOffPoint },
+                { AccountSettingEnums.HeroDefPoint, heroDefPoint },
+                { AccountSettingEnums.HeroResourcePoint, heroResourcePoint },
+                { AccountSettingEnums.EnableAutoReviveHero, enableAutoReviveHero },
+                { AccountSettingEnums.UseHeroResourceToRevive, useHeroResourceToRevive },
+                { AccountSettingEnums.HeroRespawnVillage, heroRespawnVillage },
+                { AccountSettingEnums.EquipGearBeforeStartAdventure, equipGearBeforeStartAdventure },
+                { AccountSettingEnums.HealingBeforeStartAdventure, healingBeforeStartAdventure },
+                { AccountSettingEnums.HealthBeforeStartAdventure,  healthBeforeStartAdventure},
             };
             return settings;
         }
@@ -76,6 +118,88 @@ namespace MainCore.UI.Models.Input
         {
             get => _enableAutoStartAdventure;
             set => this.RaiseAndSetIfChanged(ref _enableAutoStartAdventure, value);
+        }
+
+        private bool _enableAutoSetHeroPoint;
+
+        public bool EnableAutoSetHeroPoint
+        {
+            get => _enableAutoSetHeroPoint;
+            set => this.RaiseAndSetIfChanged(ref _enableAutoSetHeroPoint, value);
+        }
+
+        private int _heroFightingPoint;
+
+        public int HeroFightingPoint
+        {
+            get => _heroFightingPoint;
+            set => this.RaiseAndSetIfChanged(ref _heroFightingPoint, value);
+        }
+
+        private int _heroOffPoint;
+
+        public int HeroOffPoint
+        {
+            get => _heroOffPoint;
+            set => this.RaiseAndSetIfChanged(ref _heroOffPoint, value);
+        }
+
+        private int _heroDefPoint;
+
+        public int HeroDefPoint
+        {
+            get => _heroDefPoint;
+            set => this.RaiseAndSetIfChanged(ref _heroDefPoint, value);
+        }
+
+        private int _heroResourcePoint;
+
+        public int HeroResourcePoint
+        {
+            get => _heroResourcePoint;
+            set => this.RaiseAndSetIfChanged(ref _heroResourcePoint, value);
+        }
+
+        private bool _enableAutoReviveHero;
+
+        public bool EnableAutoReviveHero
+        {
+            get => _enableAutoReviveHero;
+            set => this.RaiseAndSetIfChanged(ref _enableAutoReviveHero, value);
+        }
+
+        private bool _useHeroResourceToRevive;
+
+        public bool UseHeroResourceToRevive
+        {
+            get => _useHeroResourceToRevive;
+            set => this.RaiseAndSetIfChanged(ref _useHeroResourceToRevive, value);
+        }
+
+        public VillageSelectorViewModel HeroRespawnVillage { get; } = new();
+
+        private bool _equipGearBeforeStartAdventure;
+
+        public bool EquipGearBeforeStartAdventure
+        {
+            get => _equipGearBeforeStartAdventure;
+            set => this.RaiseAndSetIfChanged(ref _equipGearBeforeStartAdventure, value);
+        }
+
+        private int _healthBeforeStartAdventure;
+
+        public int HealthBeforeStartAdventure
+        {
+            get => _healthBeforeStartAdventure;
+            set => this.RaiseAndSetIfChanged(ref _healthBeforeStartAdventure, value);
+        }
+
+        private bool _healingBeforeStartAdventure;
+
+        public bool HealingBeforeStartAdventure
+        {
+            get => _healingBeforeStartAdventure;
+            set => this.RaiseAndSetIfChanged(ref _healingBeforeStartAdventure, value);
         }
     }
 }
