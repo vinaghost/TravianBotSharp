@@ -12,6 +12,7 @@ namespace MainCore.UI.Models.Input
         private bool _applyRomanQueueLogicWhenBuilding;
         private bool _useSpecialUpgrade;
         private bool _completeImmediately;
+        private int _completeImmediatelyTime;
         public TribeSelectorViewModel Tribe { get; } = new();
 
         private bool _trainTroopEnable;
@@ -43,6 +44,7 @@ namespace MainCore.UI.Models.Input
             UseHeroResourceForBuilding = settings.GetValueOrDefault(VillageSettingEnums.UseHeroResourceForBuilding) == 1;
             ApplyRomanQueueLogicWhenBuilding = settings.GetValueOrDefault(VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding) == 1;
             CompleteImmediately = settings.GetValueOrDefault(VillageSettingEnums.CompleteImmediately) == 1;
+            CompleteImmediatelyTime = settings.GetValueOrDefault(VillageSettingEnums.CompleteImmediatelyTime);
             UseSpecialUpgrade = settings.GetValueOrDefault(VillageSettingEnums.UseSpecialUpgrade) == 1;
 
             TrainTroopEnable = settings.GetValueOrDefault(VillageSettingEnums.TrainTroopEnable) == 1;
@@ -89,6 +91,7 @@ namespace MainCore.UI.Models.Input
             var applyRomanQueueLogicWhenBuilding = ApplyRomanQueueLogicWhenBuilding ? 1 : 0;
             var useSpecialUpgrade = UseSpecialUpgrade ? 1 : 0;
             var completeImmediately = CompleteImmediately ? 1 : 0;
+            var completeImmediatelyTime = CompleteImmediatelyTime;
 
             var tribe = (int)Tribe.Get();
 
@@ -118,6 +121,7 @@ namespace MainCore.UI.Models.Input
                 { VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding, applyRomanQueueLogicWhenBuilding },
                 { VillageSettingEnums.UseSpecialUpgrade, useSpecialUpgrade },
                 { VillageSettingEnums.CompleteImmediately, completeImmediately },
+                { VillageSettingEnums.CompleteImmediatelyTime, completeImmediatelyTime },
                 { VillageSettingEnums.Tribe, tribe },
                 { VillageSettingEnums.TrainTroopEnable, trainTroopEnable },
                 { VillageSettingEnums.TrainWhenLowResource, trainWhenLowResource },
@@ -169,6 +173,12 @@ namespace MainCore.UI.Models.Input
         {
             get => _completeImmediately;
             set => this.RaiseAndSetIfChanged(ref _completeImmediately, value);
+        }
+
+        public int CompleteImmediatelyTime
+        {
+            get => _completeImmediatelyTime;
+            set => this.RaiseAndSetIfChanged(ref _completeImmediatelyTime, value);
         }
 
         public bool ApplyRomanQueueLogicWhenBuilding
