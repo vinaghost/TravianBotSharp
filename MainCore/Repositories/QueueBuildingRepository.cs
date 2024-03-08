@@ -19,6 +19,18 @@ namespace MainCore.Repositories
             _contextFactory = contextFactory;
         }
 
+        public DateTime GetQueueTime(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var queueBuilding = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type != BuildingEnums.Site)
+                .OrderByDescending(x => x.Position)
+                .Select(x => x.CompleteTime)
+                .FirstOrDefault();
+            return queueBuilding;
+        }
+
         public QueueBuilding GetFirst(VillageId villageId)
         {
             using var context = _contextFactory.CreateDbContext();
