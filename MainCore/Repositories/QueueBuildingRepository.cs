@@ -31,6 +31,25 @@ namespace MainCore.Repositories
             return queueBuilding;
         }
 
+        public bool IsSkippableBuilding(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var buildings = new List<BuildingEnums>()
+            {
+                BuildingEnums.Site,
+                BuildingEnums.Residence,
+                BuildingEnums.Palace,
+                BuildingEnums.CommandCenter,
+            };
+
+            var queueBuilding = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => !buildings.Contains(x.Type))
+                .Any();
+            return queueBuilding;
+        }
+
         public QueueBuilding GetFirst(VillageId villageId)
         {
             using var context = _contextFactory.CreateDbContext();

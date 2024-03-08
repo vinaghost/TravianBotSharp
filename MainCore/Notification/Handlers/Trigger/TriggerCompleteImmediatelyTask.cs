@@ -63,7 +63,11 @@ namespace MainCore.Notification.Handlers.Trigger
 
             if (requiredTime > queueTime) return;
 
+            if (!_unitOfRepository.QueueBuildingRepository.IsSkippableBuilding(villageId)) return;
+
             await _taskManager.Add<CompleteImmediatelyTask>(accountId, villageId);
         }
+
+        private
     }
 }
