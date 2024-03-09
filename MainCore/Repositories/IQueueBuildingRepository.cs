@@ -11,7 +11,11 @@ namespace MainCore.Repositories
         int Count(VillageId villageId);
 
         QueueBuilding GetFirst(VillageId villageId);
+
         List<ListBoxItem> GetItems(VillageId villageId);
+
+        bool IsSkippableBuilding(VillageId villageId);
+
         void Update(VillageId villageId, List<BuildingDto> dtos);
 
         void Update(VillageId villageId, List<QueueBuildingDto> dtos);

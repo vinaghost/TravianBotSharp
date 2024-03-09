@@ -31,6 +31,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
+            if (_taskManager.IsExist<CompleteImmediatelyTask>(accountId, villageId)) return;
             _unitOfRepository.QueueBuildingRepository.Clean(villageId);
             var count = _unitOfRepository.QueueBuildingRepository.Count(villageId);
             if (count == 0) return;
@@ -52,7 +53,7 @@ namespace MainCore.Notification.Handlers.Trigger
             }
             if (count != countNeeded) return;
 
-            if (_taskManager.IsExist<CompleteImmediatelyTask>(accountId, villageId)) return;
+            if (!_unitOfRepository.QueueBuildingRepository.IsSkippableBuilding(villageId)) return;
 
             await _taskManager.Add<CompleteImmediatelyTask>(accountId, villageId);
         }
