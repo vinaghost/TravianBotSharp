@@ -85,11 +85,11 @@ namespace MainCore.Services
 
             options.AddArguments($"user-data-dir={pathUserData}");
 
-            _driver = await Task.Run(() => new ChromeDriver(_chromeService, options, TimeSpan.FromMinutes(10)));
+            _driver = await Task.Run(() => new ChromeDriver(_chromeService, options, TimeSpan.FromMinutes(3)));
 
-            _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(10);
+            _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(3);
             _driver.GetDevToolsSession();
-            _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(10)); // watch ads
+            _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3)); // watch ads
 
             return Result.Ok();
         }
