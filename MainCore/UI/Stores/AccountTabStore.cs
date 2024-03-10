@@ -21,12 +21,13 @@ namespace MainCore.UI.Stores
         private readonly AddAccountViewModel _addAccountViewModel;
         private readonly AddAccountsViewModel _addAccountsViewModel;
         private readonly AccountSettingViewModel _accountSettingViewModel;
+        private readonly HeroViewModel _heroViewModel;
         private readonly VillageViewModel _villageViewModel;
         private readonly EditAccountViewModel _editAccountViewModel;
         private readonly FarmingViewModel _farmingViewModel;
         private readonly DebugViewModel _debugViewModel;
 
-        public AccountTabStore(NoAccountViewModel noAccountViewModel, AddAccountViewModel addAccountViewModel, AddAccountsViewModel addAccountsViewModel, EditAccountViewModel editAccountViewModel, DebugViewModel debugViewModel, AccountSettingViewModel accountSettingViewModel, VillageViewModel villageViewModel, FarmingViewModel farmingViewModel)
+        public AccountTabStore(NoAccountViewModel noAccountViewModel, AddAccountViewModel addAccountViewModel, AddAccountsViewModel addAccountsViewModel, EditAccountViewModel editAccountViewModel, DebugViewModel debugViewModel, AccountSettingViewModel accountSettingViewModel, VillageViewModel villageViewModel, FarmingViewModel farmingViewModel, HeroViewModel heroViewModel)
         {
             _noAccountViewModel = noAccountViewModel;
             _addAccountViewModel = addAccountViewModel;
@@ -36,6 +37,7 @@ namespace MainCore.UI.Stores
             _debugViewModel = debugViewModel;
             _villageViewModel = villageViewModel;
             _farmingViewModel = farmingViewModel;
+            _heroViewModel = heroViewModel;
         }
 
         public void SetTabType(AccountTabType tabType)
@@ -116,5 +118,6 @@ namespace MainCore.UI.Stores
         public EditAccountViewModel EditAccountViewModel => _editAccountViewModel;
         public DebugViewModel DebugViewModel => _debugViewModel;
         public FarmingViewModel FarmingViewModel => _farmingViewModel;
+        public HeroViewModel HeroViewModel => _heroViewModel;
     }
 }

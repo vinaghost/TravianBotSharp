@@ -29,6 +29,9 @@ namespace MainCore.Tasks.Base
             result = await base.PreExecute();
             if (result.IsFailed) return result;
 
+            result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 1), CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
             result = await _unitOfCommand.SwitchVillageCommand.Handle(new(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
