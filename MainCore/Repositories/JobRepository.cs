@@ -1,5 +1,6 @@
 ﻿using Humanizer;
 using MainCore.Common.Enums;
+using MainCore.Common.Extensions;
 using MainCore.Common.Models;
 using MainCore.DTO;
 using MainCore.Entities;
@@ -312,6 +313,41 @@ namespace MainCore.Repositories
                 .Select(x => x.Level)
                 .FirstOrDefault();
             if (villageBuilding >= plan.Level) return true;
+
+            return false;
+        }
+
+        public bool JobValid(VillageId villageId, JobDto job)
+        {
+            if (job.Type == JobTypeEnums.ResourceBuild) return true;
+            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
+            if (plan.Type.IsResourceField()) return true;
+            using var context = _contextFactory.CreateDbContext();
+
+            var prerequisiteBuildings = plan.Type.GetPrerequisiteBuildings();
+
+            foreach (var prerequisiteBuilding in prerequisiteBuildings)
+            {
+                var vaild = context.Buildings
+                    .Where(x => x.VillageId == villageId.Value)
+                    .Where(x => x.Type == prerequisiteBuilding.Type)
+                    .Any(x => x.Level >= prerequisiteBuilding.Level);
+                if (!vaild) return false;
+            }
+
+            if (!plan.Type.IsMultipleBuilding()) return true;
+
+            var building = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type == plan.Type)
+                .OrderByDescending(x => x.Level)
+                .FirstOrDefault();
+
+            if (building is null) return true;
+
+            if (building.Location == plan.Location) return true;
+
+            if (building.Level == building.Type.GetMaxLevel()) return true;
 
             return false;
         }
