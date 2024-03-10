@@ -30,6 +30,8 @@ namespace MainCore.Repositories
 
         bool JobComplete(VillageId villageId, JobDto job);
 
+        bool JobValid(VillageId villageId, JobDto job);
+
         void Move(JobId oldJobId, JobId newJobId);
     }
 }
