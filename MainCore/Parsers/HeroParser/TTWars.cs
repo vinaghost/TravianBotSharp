@@ -13,6 +13,11 @@ namespace MainCore.Parsers.HeroParser
             return true;
         }
 
+        public bool AttributeTabActive(HtmlDocument doc)
+        {
+            return true;
+        }
+
         public bool HeroInventoryLoading(HtmlDocument doc)
         {
             return true;
@@ -185,6 +190,96 @@ namespace MainCore.Parsers.HeroParser
 
             var seconds = timer.GetAttributeValue("value", 0);
             return TimeSpan.FromSeconds(seconds);
+        }
+
+        public HtmlNode GetHeroAttributeNode(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetFightingStrengthInputBox(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetOffBonusInputBox(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetResourceProductionInputBox(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetDefBonusInputBox(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetSaveButton(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsLevelUp(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long[] GetRevivedResource(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HtmlNode GetReviveButton(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsDead(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetHelmet(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetShoes(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetBody(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetLeftHand(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetHorse(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetRightHand(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public HeroDto Get(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<AdventureDto> GetAdventures(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
         }
     }
 }
