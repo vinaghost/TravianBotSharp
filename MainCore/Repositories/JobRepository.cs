@@ -343,6 +343,8 @@ namespace MainCore.Repositories
                 .OrderByDescending(x => x.Level)
                 .FirstOrDefault();
 
+            if (building is null) return true;
+
             if (building.Location == plan.Location) return true;
 
             if (building.Level == building.Type.GetMaxLevel()) return true;
