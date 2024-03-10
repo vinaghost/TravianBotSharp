@@ -2,16 +2,13 @@
 using MainCore.Commands.Base;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
-using MainCore.Common.Extensions;
 using MainCore.Common.MediatR;
-using MainCore.Common.Models;
 using MainCore.DTO;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Notification.Message;
 using MainCore.Repositories;
 using MediatR;
-using System.Text.Json;
 
 namespace MainCore.Commands.Features.Step.UpgradeBuilding
 {
@@ -54,6 +51,11 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
                 {
                     var job = _unitOfRepository.JobRepository.GetBuildingJob(command.VillageId);
                     if (await JobComplete(command.AccountId, command.VillageId, job, cancellationToken)) continue;
+                    if (!JobRequirements(command.VillageId, job))
+                    {
+                        return Result.Fail(BuildingQueue.NotEnoughPrerequisiteBuilding)
+                            .WithError(new Stop("order building in queue building is not correct. please check"));
+                    }
                     Value = job;
                     return Result.Ok();
                 }
@@ -132,19 +134,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
 
         private bool JobRequirements(VillageId villageId, JobDto job)
         {
-            if (job.Type == JobTypeEnums.ResourceBuild) return true;
-            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
-
-            var prerequisiteBuildings = plan.Type.GetPrerequisiteBuildings();
-            if (prerequisiteBuildings.Count == 0) return true;
-            var buildings = _unitOfRepository.BuildingRepository.GetBuildings(villageId);
-            foreach (var prerequisiteBuilding in prerequisiteBuildings)
-            {
-                var building = buildings.FirstOrDefault(x => x.Type == prerequisiteBuilding.Type);
-                if (building is null) return false;
-                if (building.Level < prerequisiteBuilding.Level) return false;
-            }
-            return true;
+            return _unitOfRepository.JobRepository.JobValid(villageId, job);
         }
     }
 }
