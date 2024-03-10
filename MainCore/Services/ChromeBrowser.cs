@@ -87,7 +87,7 @@ namespace MainCore.Services
 
             _driver = await Task.Run(() => new ChromeDriver(_chromeService, options, TimeSpan.FromMinutes(3)));
 
-            _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(1);
+            _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(3);
             _driver.GetDevToolsSession();
             _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3)); // watch ads
 
@@ -231,7 +231,12 @@ namespace MainCore.Services
         {
             static bool pageLoaded(IWebDriver driver) => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete");
             var result = await Wait(pageLoaded, cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed)
+            {
+                return result
+                    .WithError(new Error($"page stuck at loading stage [Current: {CurrentUrl}]"))
+                    .WithError(new TraceMessage(TraceMessage.Line()));
+            }
             return result;
         }
 
@@ -240,7 +245,13 @@ namespace MainCore.Services
             bool pageChanged(IWebDriver driver) => driver.Url.Contains(part);
             Result result;
             result = await Wait(pageChanged, cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed)
+            {
+                return result
+                    .WithError(new Error($"page stuck at changing stage [Current: {CurrentUrl}] [Expected: {part}]"))
+                    .WithError(new TraceMessage(TraceMessage.Line()));
+            }
+
             result = await WaitPageLoaded(cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return result;
