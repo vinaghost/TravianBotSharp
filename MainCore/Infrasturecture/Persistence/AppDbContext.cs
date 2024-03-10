@@ -30,6 +30,8 @@ namespace MainCore.Infrasturecture.Persistence
         public DbSet<Storage> Storages { get; set; }
         public DbSet<VillageSetting> VillagesSetting { get; set; }
         public DbSet<Farm> FarmLists { get; set; }
+        public DbSet<Hero> Heroes { get; set; }
+        public DbSet<Adventure> Adventures { get; set; }
 
         #endregion table
 
@@ -52,7 +54,34 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.WorkTimeMax, 720 },
             {AccountSettingEnums.HeadlessChrome, 0 },
             {AccountSettingEnums.EnableAutoStartAdventure, 0 },
+            {AccountSettingEnums.EnableAutoSetHeroPoint, 0 },
+            {AccountSettingEnums.HeroFightingPoint, 1 },
+            {AccountSettingEnums.HeroOffPoint, 0},
+            {AccountSettingEnums.HeroDefPoint, 0 },
+            {AccountSettingEnums.HeroResourcePoint, 3 },
+            {AccountSettingEnums.EnableAutoReviveHero, 0 },
+            {AccountSettingEnums.HeroRespawnVillage, 0 },
+            {AccountSettingEnums.UseHeroResourceToRevive, 0 },
+            {AccountSettingEnums.EquipGearBeforeStartAdventure, 0 },
+            {AccountSettingEnums.HealingBeforeStartAdventure, 0 },
+            {AccountSettingEnums.HealthBeforeStartAdventure, 40 },
         };
+
+        public void FillHero()
+        {
+            if (Heroes.Any()) return;
+            if (!Accounts.Any()) return;
+
+            var heros = Accounts.Select(x => new Hero()
+            {
+                AccountId = x.Id,
+                Health = 0,
+                Status = 0,
+            });
+
+            Heroes.AddRange(heros);
+            SaveChanges();
+        }
 
         private List<AccountSettingEnums> GetMissingAccountSettings()
         {
@@ -157,6 +186,7 @@ namespace MainCore.Infrasturecture.Persistence
             {VillageSettingEnums.AutoRefreshMax, 75 },
 
             {VillageSettingEnums.AutoClaimQuestEnable, 0 },
+            {VillageSettingEnums.CompleteImmediatelyTime, 180 },
         };
 
         private List<VillageSettingEnums> GetMissingVillageSettings()
@@ -241,5 +271,20 @@ namespace MainCore.Infrasturecture.Persistence
         }
 
         #endregion village setting
+
+        public void AddVersionInfo()
+        {
+            Database.ExecuteSqlRaw("CREATE TABLE \"VersionInfo\" (\"Version\" INTEGER NOT NULL, \"AppliedOn\" DATETIME, \"Description\" TEXT)");
+
+            var migrations = new List<KeyValuePair<long, string>>()
+            {
+                KeyValuePair.Create(202303071943,"AddHeroTable"),
+                KeyValuePair.Create(202303072023,"AddAdventureTable"),
+            };
+            foreach (var migration in migrations)
+            {
+                Database.ExecuteSqlRaw($"INSERT INTO VersionInfo (Version, Description) VALUES ('{migration.Key}','{migration.Value}')");
+            }
+        }
     }
 }
