@@ -48,7 +48,15 @@ namespace MainCore.Commands.Features
 
             Result result;
 
+            var currentUrl = chromeBrowser.CurrentUrl;
+
+            result = await _unitOfCommand.ToDorfCommand.Handle(new(accountId, 1), cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
             result = await _unitOfCommand.SwitchVillageCommand.Handle(new(accountId, villageId), cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await chromeBrowser.Navigate(currentUrl, cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var html = chromeBrowser.Html;

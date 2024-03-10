@@ -36,10 +36,10 @@ namespace MainCore.Commands.Features
             var rallypointVillageId = _unitOfRepository.VillageRepository.GetVillageHasRallypoint(accountId);
             if (rallypointVillageId == VillageId.Empty) return Result.Fail(new NoRallypoint());
 
-            result = await _unitOfCommand.SwitchVillageCommand.Handle(new(accountId, rallypointVillageId), cancellationToken);
+            result = await _unitOfCommand.ToDorfCommand.Handle(new(accountId, 2), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.ToDorfCommand.Handle(new(accountId, 2), cancellationToken);
+            result = await _unitOfCommand.SwitchVillageCommand.Handle(new(accountId, rallypointVillageId), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(accountId, rallypointVillageId), cancellationToken);
