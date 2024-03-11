@@ -38,7 +38,7 @@ namespace MainCore.Commands.Features
             result = await _unitOfCommand.ToBuildingCommand.Handle(new(accountId, market), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await _unitOfCommand.SwitchTabCommand.Handle(new(accountId, 1), cancellationToken);
+            result = await _unitOfCommand.SwitchTabCommand.Handle(new(accountId, 0), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }
