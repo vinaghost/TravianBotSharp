@@ -97,7 +97,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
 
                 if (countQueueBuilding == 2)
                 {
-                    if (applyRomanQueueLogic)
+                    if (plusActive && applyRomanQueueLogic)
                     {
                         var job = GetJobBasedOnRomanLogic(command.VillageId, countQueueBuilding);
                         if (job is null) return Result.Fail(BuildingQueue.NotTaskInqueue);
