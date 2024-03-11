@@ -1,4 +1,5 @@
-﻿using MainCore.DTO;
+﻿using FluentResults;
+using MainCore.DTO;
 using MainCore.Entities;
 using MainCore.UI.Models.Output;
 
@@ -30,7 +31,7 @@ namespace MainCore.Repositories
 
         bool JobComplete(VillageId villageId, JobDto job);
 
-        bool JobValid(VillageId villageId, JobDto job);
+        Result JobValid(VillageId villageId, JobDto job);
 
         void Move(JobId oldJobId, JobId newJobId);
     }

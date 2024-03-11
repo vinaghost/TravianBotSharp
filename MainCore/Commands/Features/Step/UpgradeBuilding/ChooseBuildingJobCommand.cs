@@ -51,10 +51,11 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
                 {
                     var job = _unitOfRepository.JobRepository.GetBuildingJob(command.VillageId);
                     if (await JobComplete(command.AccountId, command.VillageId, job, cancellationToken)) continue;
-                    if (!JobRequirements(command.VillageId, job))
+                    var result = _unitOfRepository.JobRepository.JobValid(command.VillageId, job);
+                    if (result.IsFailed)
                     {
-                        return Result.Fail(BuildingQueue.NotEnoughPrerequisiteBuilding)
-                            .WithError(new Stop("order building in queue building is not correct. please check"));
+                        return result
+                            .WithError(new Stop("order building in queue building is not correct, please check"));
                     }
                     Value = job;
                     return Result.Ok();
@@ -69,10 +70,11 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
                     {
                         var job = _unitOfRepository.JobRepository.GetBuildingJob(command.VillageId);
                         if (await JobComplete(command.AccountId, command.VillageId, job, cancellationToken)) continue;
-                        if (!JobRequirements(command.VillageId, job))
+                        var result = _unitOfRepository.JobRepository.JobValid(command.VillageId, job);
+                        if (result.IsFailed)
                         {
                             job = _unitOfRepository.JobRepository.GetResourceBuildingJob(command.VillageId);
-                            if (job is null) return Result.Fail(BuildingQueue.NotEnoughPrerequisiteBuilding);
+                            if (job is null) return result;
                         }
                         Value = job;
                         return Result.Ok();
@@ -82,7 +84,11 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
                         var job = GetJobBasedOnRomanLogic(command.VillageId, countQueueBuilding);
                         if (job is null) return Result.Fail(BuildingQueue.NotTaskInqueue);
                         if (await JobComplete(command.AccountId, command.VillageId, job, cancellationToken)) continue;
-                        if (!JobRequirements(command.VillageId, job)) return Result.Fail(BuildingQueue.NotEnoughPrerequisiteBuilding);
+                        var result = _unitOfRepository.JobRepository.JobValid(command.VillageId, job);
+                        if (result.IsFailed)
+                        {
+                            return result;
+                        }
                         Value = job;
                         return Result.Ok();
                     }
@@ -96,7 +102,11 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
                         var job = GetJobBasedOnRomanLogic(command.VillageId, countQueueBuilding);
                         if (job is null) return Result.Fail(BuildingQueue.NotTaskInqueue);
                         if (await JobComplete(command.AccountId, command.VillageId, job, cancellationToken)) continue;
-                        if (!JobRequirements(command.VillageId, job)) return Result.Fail(BuildingQueue.NotEnoughPrerequisiteBuilding);
+                        var result = _unitOfRepository.JobRepository.JobValid(command.VillageId, job);
+                        if (result.IsFailed)
+                        {
+                            return result;
+                        }
                         Value = job;
                         return Result.Ok();
                     }
@@ -130,11 +140,6 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             {
                 return _unitOfRepository.JobRepository.GetResourceBuildingJob(villageId);
             }
-        }
-
-        private bool JobRequirements(VillageId villageId, JobDto job)
-        {
-            return _unitOfRepository.JobRepository.JobValid(villageId, job);
         }
     }
 }
