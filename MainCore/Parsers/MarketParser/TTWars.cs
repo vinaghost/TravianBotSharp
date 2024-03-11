@@ -51,7 +51,7 @@ namespace MainCore.Parsers.MarketParser
             for (int i = 0; i < 4; i++)
             {
                 var node = doc.DocumentNode.Descendants("input")
-                    .Where(x => x.Name == $"desired{i}")
+                    .Where(x => x.GetAttributeValue("name", "") == $"desired{i}")
                     .FirstOrDefault();
                 yield return node;
             }

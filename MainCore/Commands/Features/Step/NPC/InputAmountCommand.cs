@@ -48,7 +48,7 @@ namespace MainCore.Commands.Features.Step.NPC
                 values[i] = sum * ratio[i] / sumRatio;
             }
             var sumValue = values.Sum();
-            var diff = sumValue - sum;
+            var diff = sum - sumValue;
             values[3] += diff;
 
             var inputs = _unitOfParser.MarketParser.GetInputs(html).ToArray();
