@@ -4,6 +4,7 @@ using MainCore.Commands.Base;
 using MainCore.Commands.Features;
 using MainCore.Commands.Features.Step.StartAdventure;
 using MainCore.Commands.Validate;
+using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Repositories;
@@ -42,6 +43,32 @@ namespace MainCore.Tasks
 
             var canStartAdventure = _validateAdventureCommand.Value;
             if (!canStartAdventure) return Result.Ok();
+
+            var equipGear = _unitOfRepository.AccountSettingRepository.GetBooleanByName(AccountId, AccountSettingEnums.EquipGearBeforeStartAdventure);
+
+            if (equipGear)
+            {
+                result = await _mediator.Send(new EquipGearCommand(AccountId), CancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            }
+
+            var currentHealth = _unitOfRepository.HeroRepository.GetHealth(AccountId);
+            var requiredHealth = _unitOfRepository.AccountSettingRepository.GetByName(AccountId, AccountSettingEnums.HealthBeforeStartAdventure);
+
+            if (requiredHealth >= currentHealth)
+            {
+                var healing = _unitOfRepository.AccountSettingRepository.GetBooleanByName(AccountId, AccountSettingEnums.HealingBeforeStartAdventure);
+
+                if (healing)
+                {
+                    result = await _mediator.Send(new HealHeroCommand(AccountId), CancellationToken);
+                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                }
+                else
+                {
+                    return Result.Fail(new Skip($"Hero doesn't have enough health to start [{currentHealth}]"));
+                }
+            }
 
             result = await _mediator.Send(new StartAdventureCommand(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
