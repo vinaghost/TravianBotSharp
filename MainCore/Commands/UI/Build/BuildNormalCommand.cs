@@ -95,7 +95,7 @@ namespace MainCore.Commands.UI.Build
             if (prerequisiteBuildings.Count == 0) return Result.Ok();
             foreach (var prerequisiteBuilding in prerequisiteBuildings)
             {
-                var building = buildings.FirstOrDefault(x => x.Type == prerequisiteBuilding.Type);
+                var building = buildings.Where(x => x.Type == prerequisiteBuilding.Type).OrderByDescending(x => x.Level).FirstOrDefault();
                 if (building is null) return Result.Fail($"Required {prerequisiteBuilding.Type.Humanize()} lvl {prerequisiteBuilding.Level}");
                 if (building.Level < prerequisiteBuilding.Level) return Result.Fail($"Required {prerequisiteBuilding.Type.Humanize()} lvl {prerequisiteBuilding.Level}");
             }

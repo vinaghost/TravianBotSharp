@@ -60,7 +60,7 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
             var percent = context.Storages
                 .Where(x => x.VillageId == villageId.Value)
-                .Select(x => x.Crop * 1f / x.Granary)
+                .Select(x => x.Crop * 100f / x.Granary)
                 .FirstOrDefault();
             return (int)percent;
         }

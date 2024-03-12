@@ -26,6 +26,7 @@ namespace WPFUI.Views.Tabs.Villages
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.ApplyRomanQueueLogicWhenBuilding, v => v.UseRomanQueueLogic.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.UseSpecialUpgrade, v => v.UseSpecialUpgrade.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.CompleteImmediately, v => v.CompleteImmediately.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.VillageSettingInput.CompleteImmediatelyTime, v => v.CompleteImmediatelyTime.Text).DisposeWith(d);
 
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.Tribe, v => v.Tribes.ViewModel).DisposeWith(d);
 
