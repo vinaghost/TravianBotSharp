@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using HtmlAgilityPack;
 using MainCore.Commands.Base;
 using MainCore.Common.Errors;
 using MainCore.Common.MediatR;
@@ -41,7 +42,17 @@ namespace MainCore.Commands.Navigate
             Result result;
             result = await chromeBrowser.Click(By.XPath(node.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = await chromeBrowser.WaitPageChanged($"{command.VillageId}", cancellationToken);
+
+            bool villageChanged(IWebDriver driver)
+            {
+                var doc = new HtmlDocument();
+                doc.LoadHtml(driver.PageSource);
+
+                var villageNode = _unitOfParser.VillagePanelParser.GetVillageNode(doc, command.VillageId);
+                return villageNode is not null && _unitOfParser.VillagePanelParser.IsActive(villageNode);
+            };
+
+            result = await chromeBrowser.Wait(villageChanged, cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }
