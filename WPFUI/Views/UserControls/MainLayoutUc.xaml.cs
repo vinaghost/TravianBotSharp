@@ -45,6 +45,7 @@ namespace WPFUI.Views.UserControls
                 this.OneWayBind(ViewModel, vm => vm.AccountTabStore.EditAccountViewModel, v => v.EditAccount.ViewModel).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.AccountTabStore.FarmingViewModel, v => v.Farming.ViewModel).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.AccountTabStore.DebugViewModel, v => v.Debug.ViewModel).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.AccountTabStore.HeroViewModel, v => v.Hero.ViewModel).DisposeWith(d);
 
                 // visible
                 this.OneWayBind(ViewModel, vm => vm.AccountTabStore.IsNoAccountTabVisible, v => v.NoAccountTab.Visibility).DisposeWith(d);
@@ -55,6 +56,7 @@ namespace WPFUI.Views.UserControls
                 this.OneWayBind(ViewModel, vm => vm.AccountTabStore.IsNormalTabVisible, v => v.EditAccountTab.Visibility).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.AccountTabStore.IsNormalTabVisible, v => v.FarmingTab.Visibility).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.AccountTabStore.IsNormalTabVisible, v => v.DebugTab.Visibility).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.AccountTabStore.IsNormalTabVisible, v => v.HeroTab.Visibility).DisposeWith(d);
 
                 // selected
                 this.Bind(ViewModel, vm => vm.AccountTabStore.NoAccountViewModel.IsActive, v => v.NoAccountTab.IsSelected).DisposeWith(d);
@@ -65,6 +67,7 @@ namespace WPFUI.Views.UserControls
                 this.Bind(ViewModel, vm => vm.AccountTabStore.EditAccountViewModel.IsActive, v => v.EditAccountTab.IsSelected).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountTabStore.FarmingViewModel.IsActive, v => v.FarmingTab.IsSelected).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountTabStore.DebugViewModel.IsActive, v => v.DebugTab.IsSelected).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountTabStore.HeroViewModel.IsActive, v => v.HeroTab.IsSelected).DisposeWith(d);
             });
         }
     }

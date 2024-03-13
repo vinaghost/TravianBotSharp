@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using FluentMigrator.Runner;
+using FluentValidation;
 using MainCore.Common;
 using MainCore.Common.Enums;
 using MainCore.Infrasturecture.AutoRegisterDi;
@@ -35,6 +36,13 @@ namespace MainCore
                 {
                     cfg.RegisterServicesFromAssemblyContaining<AppDbContext>();
                 });
+
+            services
+                .AddFluentMigratorCore()
+                .ConfigureRunner(rb => rb
+                    .AddSQLite()
+                    .WithGlobalConnectionString(_connectionString)
+                    .WithMigrationsIn(typeof(DependencyInjection).Assembly));
             return services;
         }
 
@@ -74,6 +82,7 @@ namespace MainCore
                .Build();
             var container = host.Services;
             container.UseMicrosoftDependencyResolver();
+
             return container;
         }
     }

@@ -30,6 +30,20 @@ namespace WPFUI.Views.Tabs
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.Tribe, v => v.Tribes.ViewModel).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.HeadlessChrome, v => v.HeadlessChrome.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.EnableAutoStartAdventure, v => v.EnableAutoStartAdventure.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.EquipGearBeforeStartAdventure, v => v.EquipGearBeforeStartAdventure.IsChecked).DisposeWith(d);
+
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.EnableAutoSetHeroPoint, v => v.EnableAutoSetHeroPoint.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.HeroFightingPoint, v => v.HeroFightingPoint.Text).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.HeroOffPoint, v => v.HeroOffPoint.Text).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.HeroDefPoint, v => v.HeroDefPoint.Text).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.HeroResourcePoint, v => v.HeroResourcePoint.Text).DisposeWith(d);
+
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.EnableAutoReviveHero, v => v.EnableAutoReviveHero.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.UseHeroResourceToRevive, v => v.UseHeroResourceToRevive.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.HeroRespawnVillage, v => v.HeroRespawnVillage.ViewModel).DisposeWith(d);
+
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.HealingBeforeStartAdventure, v => v.HealingBeforeStartAdventure.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.HealthBeforeStartAdventure, v => v.HealthBeforeStartAdventure.Text).DisposeWith(d);
             });
         }
     }

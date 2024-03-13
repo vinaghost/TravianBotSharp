@@ -51,5 +51,7 @@
 
         // Claim quest
         AutoClaimQuestEnable,
+
+        CompleteImmediatelyTime,
     }
 }
