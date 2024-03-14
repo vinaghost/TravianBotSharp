@@ -140,7 +140,7 @@ namespace MainCore.Repositories
                 .Min();
 
             var chosenOne = buildings
-                .Where(x => x.Level < minLevel + 2)
+                .Where(x => x.Level == minLevel)
                 .OrderBy(x => x.Id.Value + Random.Shared.Next())
                 .FirstOrDefault();
 
