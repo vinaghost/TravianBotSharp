@@ -135,9 +135,13 @@ namespace MainCore.Repositories
 
             if (!buildings.Any()) return null;
 
+            var minLevel = buildings
+                .Select(x => x.Level)
+                .Min();
+
             var chosenOne = buildings
+                .Where(x => x.Level < minLevel + 2)
                 .OrderBy(x => x.Id.Value + Random.Shared.Next())
-                .OrderBy(x => x.Level)
                 .FirstOrDefault();
 
             var normalBuildPlan = new NormalBuildPlan()
