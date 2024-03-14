@@ -63,7 +63,7 @@ namespace MainCore.Commands.UI.Step
 
         private IEnumerable<JobDto> GetModifiedJobs(VillageId villageId, List<JobDto> jobs)
         {
-            var buildings = _unitOfRepository.BuildingRepository.GetBuildingItems(villageId);
+            var buildings = _unitOfRepository.BuildingRepository.GetBuildings(villageId);
 
             var changedLocations = new Dictionary<int, int>();
             foreach (var job in jobs)
