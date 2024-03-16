@@ -188,6 +188,11 @@ namespace MainCore.Infrasturecture.Persistence
 
             {VillageSettingEnums.AutoClaimQuestEnable, 0 },
             {VillageSettingEnums.CompleteImmediatelyTime, 180 },
+            {VillageSettingEnums.TrainTroopBatch, 0 },
+            {VillageSettingEnums.TrainTroopBatchSize, 0 },
+            {VillageSettingEnums.TrainTroopWaitBuilding, 0 },
+            {VillageSettingEnums.ResearchTroopWaitBuilding, 0 },
+            {VillageSettingEnums.CelebrationWaitBuilding, 0 },
         };
 
         private List<VillageSettingEnums> GetMissingVillageSettings()
