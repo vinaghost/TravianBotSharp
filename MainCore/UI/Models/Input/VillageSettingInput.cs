@@ -18,9 +18,9 @@ namespace MainCore.UI.Models.Input
         private bool _trainTroopEnable;
         private bool _trainWhenLowResource;
 
-        public TroopSelectorViewModel BarrackTroop { get; } = new();
-        public TroopSelectorViewModel StableTroop { get; } = new();
-        public TroopSelectorViewModel WorkshopTroop { get; } = new();
+        public TroopSelectorBasedOnBuildingViewModel BarrackTroop { get; } = new();
+        public TroopSelectorBasedOnBuildingViewModel StableTroop { get; } = new();
+        public TroopSelectorBasedOnBuildingViewModel WorkshopTroop { get; } = new();
 
         public RangeInputViewModel TrainTroopRepeatTime { get; } = new();
         public RangeInputViewModel BarrackAmount { get; } = new();
