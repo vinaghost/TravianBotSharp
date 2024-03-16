@@ -26,6 +26,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ReactiveCommand<Unit, Unit> BuildResource { get; }
         public ReactiveCommand<Unit, Unit> UpgradeOneLevel { get; }
         public ReactiveCommand<Unit, Unit> UpgradeMaxLevel { get; }
+        public ReactiveCommand<Unit, Unit> TrainTroop { get; }
+        public ReactiveCommand<Unit, Unit> ResearchTroop { get; }
+        public ReactiveCommand<Unit, Unit> Celebration { get; }
 
         public ReactiveCommand<Unit, Unit> Up { get; }
         public ReactiveCommand<Unit, Unit> Down { get; }
@@ -43,6 +46,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         public ResourceBuildInput ResourceBuildInput { get; } = new();
 
+        public TrainTroopInput TrainTroopInput { get; } = new();
+        public ResearchTroopInput ResearchTroopInput { get; } = new();
+        public CelebrationInput CelebrationInput { get; } = new();
+
         public ListBoxItemViewModel Buildings { get; } = new();
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
@@ -56,6 +63,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             BuildResource = ReactiveCommand.CreateFromTask(ResourceNormalHandler);
             UpgradeOneLevel = ReactiveCommand.CreateFromTask(UpgradeOneLevelHandler);
             UpgradeMaxLevel = ReactiveCommand.CreateFromTask(UpgradeMaxLevelHandler);
+
+            TrainTroop = ReactiveCommand.CreateFromTask(TrainTroopHandler);
+            ResearchTroop = ReactiveCommand.CreateFromTask(ResearchTroopHandler);
+            Celebration = ReactiveCommand.CreateFromTask(CelebrationHandler);
 
             Up = ReactiveCommand.CreateFromTask(UpHandler);
             Down = ReactiveCommand.CreateFromTask(DownHandler);
@@ -97,29 +108,34 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
-            await LoadQueue.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadQueue.Execute(villageId);
         }
 
         public async Task BuildingListRefresh(VillageId villageId)
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
-            await LoadBuilding.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadBuilding.Execute(villageId);
         }
 
         public async Task JobListRefresh(VillageId villageId)
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
-            await LoadJob.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
-            await LoadBuilding.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadJob.Execute(villageId);
+            await LoadBuilding.Execute(villageId);
         }
 
         protected override async Task Load(VillageId villageId)
         {
-            await LoadJob.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
-            await LoadBuilding.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
-            await LoadQueue.Execute(villageId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadJob.Execute(villageId);
+            await LoadBuilding.Execute(villageId);
+            await LoadQueue.Execute(villageId);
+
+            var tribe = (TribeEnums)_unitOfRepository.VillageSettingRepository.GetByName(villageId, VillageSettingEnums.Tribe);
+
+            TrainTroopInput.Set(tribe);
+            ResearchTroopInput.Set(tribe);
         }
 
         private List<ListBoxItem> LoadBuildingHandler(VillageId villageId)
@@ -168,6 +184,21 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private async Task ResourceNormalHandler()
         {
             await _mediator.Send(new BuildResourceCommand(AccountId, VillageId, ResourceBuildInput));
+        }
+
+        private async Task TrainTroopHandler()
+        {
+            await _mediator.Send(new TrainTroopCommand(AccountId, VillageId, TrainTroopInput));
+        }
+
+        private async Task ResearchTroopHandler()
+        {
+            await _mediator.Send(new ResearchTroopCommand(AccountId, VillageId, ResearchTroopInput));
+        }
+
+        private async Task CelebrationHandler()
+        {
+            await _mediator.Send(new CelebrationCommand(AccountId, VillageId, CelebrationInput));
         }
 
         private async Task UpHandler()
