@@ -1,5 +1,4 @@
 ﻿using FluentResults;
-using Humanizer;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Common.Extensions;
@@ -23,6 +22,9 @@ namespace MainCore.Repositories
         {
             { typeof(NormalBuildPlan),JobTypeEnums.NormalBuild  },
             { typeof(ResourceBuildPlan),JobTypeEnums.ResourceBuild },
+            { typeof(TrainTroopPlan),JobTypeEnums.TrainTroop },
+            { typeof(ResearchTroopPlan),JobTypeEnums.ResearchTroop },
+            { typeof(CelebrationPlan),JobTypeEnums.Celebration },
         };
 
         public JobRepository(IDbContextFactory<AppDbContext> contextFactory)
@@ -282,12 +284,27 @@ namespace MainCore.Repositories
                 case JobTypeEnums.NormalBuild:
                     {
                         var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
-                        return $"Build {plan.Type.Humanize()} to level {plan.Level} at location {plan.Location}";
+                        return plan.ToString();
                     }
                 case JobTypeEnums.ResourceBuild:
                     {
                         var plan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content);
-                        return $"Build {plan.Plan.Humanize()} to level {plan.Level}";
+                        return plan.ToString();
+                    }
+                case JobTypeEnums.TrainTroop:
+                    {
+                        var plan = JsonSerializer.Deserialize<TrainTroopPlan>(job.Content);
+                        return plan.ToString();
+                    }
+                case JobTypeEnums.ResearchTroop:
+                    {
+                        var plan = JsonSerializer.Deserialize<ResearchTroopPlan>(job.Content);
+                        return plan.ToString();
+                    }
+                case JobTypeEnums.Celebration:
+                    {
+                        var plan = JsonSerializer.Deserialize<CelebrationPlan>(job.Content);
+                        return plan.ToString();
                     }
                 default:
                     return job.Content;
