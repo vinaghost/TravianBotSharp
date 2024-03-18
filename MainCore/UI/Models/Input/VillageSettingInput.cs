@@ -18,9 +18,9 @@ namespace MainCore.UI.Models.Input
         private bool _trainTroopEnable;
         private bool _trainWhenLowResource;
 
-        public TroopSelectorViewModel BarrackTroop { get; } = new();
-        public TroopSelectorViewModel StableTroop { get; } = new();
-        public TroopSelectorViewModel WorkshopTroop { get; } = new();
+        public TroopSelectorBasedOnBuildingViewModel BarrackTroop { get; } = new();
+        public TroopSelectorBasedOnBuildingViewModel StableTroop { get; } = new();
+        public TroopSelectorBasedOnBuildingViewModel WorkshopTroop { get; } = new();
 
         public RangeInputViewModel TrainTroopRepeatTime { get; } = new();
         public RangeInputViewModel BarrackAmount { get; } = new();
@@ -83,6 +83,12 @@ namespace MainCore.UI.Models.Input
                 settings.GetValueOrDefault(VillageSettingEnums.AutoRefreshMax));
 
             AutoClaimQuestEnable = settings.GetValueOrDefault(VillageSettingEnums.AutoClaimQuestEnable) == 1;
+
+            TrainTroopBatch = settings.GetValueOrDefault(VillageSettingEnums.TrainTroopBatch) == 1;
+            TrainTroopBatchSize = settings.GetValueOrDefault(VillageSettingEnums.TrainTroopBatchSize);
+            TrainTroopWaitBuilding = settings.GetValueOrDefault(VillageSettingEnums.TrainTroopWaitBuilding) == 1;
+            ResearchTroopWaitBuilding = settings.GetValueOrDefault(VillageSettingEnums.ResearchTroopWaitBuilding) == 1;
+            CelebrationWaitBuilding = settings.GetValueOrDefault(VillageSettingEnums.CelebrationWaitBuilding) == 1;
         }
 
         public Dictionary<VillageSettingEnums, int> Get()
@@ -114,6 +120,12 @@ namespace MainCore.UI.Models.Input
             var (autoRefreshMin, autoRefreshMax) = AutoRefreshTime.Get();
 
             var autoClaimQuestEnable = AutoClaimQuestEnable ? 1 : 0;
+
+            var trainTroopBatch = TrainTroopBatch ? 1 : 0;
+            var trainTroopBatchSize = TrainTroopBatchSize;
+            var trainTroopWaitBuilding = TrainTroopWaitBuilding ? 1 : 0;
+            var researchTroopWaitBuilding = ResearchTroopWaitBuilding ? 1 : 0;
+            var celebrationWaitBuilding = CelebrationWaitBuilding ? 1 : 0;
 
             var settings = new Dictionary<VillageSettingEnums, int>()
             {
@@ -147,6 +159,11 @@ namespace MainCore.UI.Models.Input
                 { VillageSettingEnums.AutoRefreshMin, autoRefreshMin },
                 { VillageSettingEnums.AutoRefreshMax, autoRefreshMax },
                 { VillageSettingEnums.AutoClaimQuestEnable, autoClaimQuestEnable },
+                { VillageSettingEnums.TrainTroopBatch, trainTroopBatch },
+                { VillageSettingEnums.TrainTroopBatchSize, trainTroopBatchSize },
+                { VillageSettingEnums.TrainTroopWaitBuilding, trainTroopWaitBuilding },
+                { VillageSettingEnums.ResearchTroopWaitBuilding, researchTroopWaitBuilding },
+                { VillageSettingEnums.CelebrationWaitBuilding, celebrationWaitBuilding },
             };
             return settings;
         }
@@ -227,6 +244,46 @@ namespace MainCore.UI.Models.Input
         {
             get => _autoClaimQuestEnable;
             set => this.RaiseAndSetIfChanged(ref _autoClaimQuestEnable, value);
+        }
+
+        private bool _trainTroopBatch;
+
+        public bool TrainTroopBatch
+        {
+            get => _trainTroopBatch;
+            set => this.RaiseAndSetIfChanged(ref _trainTroopBatch, value);
+        }
+
+        private int _trainTroopBatchSize;
+
+        public int TrainTroopBatchSize
+        {
+            get => _trainTroopBatchSize;
+            set => this.RaiseAndSetIfChanged(ref _trainTroopBatchSize, value);
+        }
+
+        private bool _trainTroopWaitBuilding;
+
+        public bool TrainTroopWaitBuilding
+        {
+            get => _trainTroopWaitBuilding;
+            set => this.RaiseAndSetIfChanged(ref _trainTroopWaitBuilding, value);
+        }
+
+        private bool _researchTroopWaitBuilding;
+
+        public bool ResearchTroopWaitBuilding
+        {
+            get => _researchTroopWaitBuilding;
+            set => this.RaiseAndSetIfChanged(ref _researchTroopWaitBuilding, value);
+        }
+
+        private bool _celebrationWaitBuilding;
+
+        public bool CelebrationWaitBuilding
+        {
+            get => _celebrationWaitBuilding;
+            set => this.RaiseAndSetIfChanged(ref _celebrationWaitBuilding, value);
         }
     }
 }
