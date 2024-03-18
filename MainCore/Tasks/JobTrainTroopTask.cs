@@ -43,16 +43,27 @@ namespace MainCore.Tasks
                 var job = _unitOfRepository.JobRepository.GetFirst(VillageId);
                 if (job is null || job.Type != JobTypeEnums.TrainTroop) return Result.Fail(new Skip("No train troop job"));
 
-                var plan = JsonSerializer.Deserialize<TrainTroopPlan>(job.Content);
-
-                var building = plan.Type.GetTrainBuilding();
-                if (plan.Great) building = building.GetGreat();
-
                 Result result;
                 result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
                 result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                var waitProgressingBuild = _unitOfRepository.VillageSettingRepository.GetBooleanByName(VillageId, VillageSettingEnums.TrainTroopWaitBuilding);
+                if (waitProgressingBuild)
+                {
+                    var progressingBuild = _unitOfRepository.QueueBuildingRepository.Count(VillageId);
+                    if (progressingBuild > 0)
+                    {
+                        await SetTimeQueueBuildingComplete(AccountId, VillageId);
+                        return Result.Fail(new Skip("Wait progressing build complete"));
+                    }
+                }
+
+                var plan = JsonSerializer.Deserialize<TrainTroopPlan>(job.Content);
+
+                var building = plan.Type.GetTrainBuilding();
+                if (plan.Great) building = building.GetGreat();
 
                 var location = _unitOfRepository.BuildingRepository.GetBuildingLocation(VillageId, building);
                 if (location == default)
@@ -141,6 +152,20 @@ namespace MainCore.Tasks
         private async Task SetEnoughResourcesTime(AccountId accountId)
         {
             ExecuteAt = DateTime.Now.AddMinutes(15);
+            await _taskManager.ReOrder(accountId);
+        }
+
+        private async Task SetTimeQueueBuildingComplete(AccountId accountId, VillageId villageId)
+        {
+            var buildingQueue = _unitOfRepository.QueueBuildingRepository.GetFirst(villageId);
+            if (buildingQueue is null)
+            {
+                ExecuteAt = DateTime.Now.AddSeconds(1);
+                await _taskManager.ReOrder(accountId);
+                return;
+            }
+
+            ExecuteAt = buildingQueue.CompleteTime.AddSeconds(3);
             await _taskManager.ReOrder(accountId);
         }
     }
