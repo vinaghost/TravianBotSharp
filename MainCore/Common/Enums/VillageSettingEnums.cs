@@ -53,5 +53,12 @@
         AutoClaimQuestEnable,
 
         CompleteImmediatelyTime,
+
+        TrainTroopBatch,
+        TrainTroopBatchSize,
+
+        TrainTroopWaitBuilding,
+        ResearchTroopWaitBuilding,
+        CelebrationWaitBuilding,
     }
 }
