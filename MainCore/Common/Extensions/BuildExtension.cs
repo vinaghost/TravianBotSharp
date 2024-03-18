@@ -45,6 +45,18 @@ namespace MainCore.Common.Extensions
             };
         }
 
+        public static BuildingEnums GetGreat(this BuildingEnums building)
+        {
+            return building switch
+            {
+                BuildingEnums.Warehouse => BuildingEnums.GreatWarehouse,
+                BuildingEnums.Granary => BuildingEnums.GreatGranary,
+                BuildingEnums.Barracks => BuildingEnums.GreatBarracks,
+                BuildingEnums.Stable => BuildingEnums.GreatStable,
+                _ => building
+            };
+        }
+
         public static int GetMaxLevel(this BuildingEnums building)
         {
             return building switch

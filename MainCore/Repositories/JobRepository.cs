@@ -190,6 +190,17 @@ namespace MainCore.Repositories
             return jobs;
         }
 
+        public JobDto GetFirst(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var job = context.Jobs
+                .Where(x => x.VillageId == villageId.Value)
+                .OrderBy(x => x.Position)
+                .ToDto()
+                .FirstOrDefault();
+            return job;
+        }
+
         public JobDto GetBuildingJob(VillageId villageId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -313,7 +324,7 @@ namespace MainCore.Repositories
 
         public bool JobComplete(VillageId villageId, JobDto job)
         {
-            if (job.Type == JobTypeEnums.ResourceBuild) return false;
+            if (job.Type != JobTypeEnums.NormalBuild) return false;
             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
 
             using var context = _contextFactory.CreateDbContext();
@@ -339,7 +350,7 @@ namespace MainCore.Repositories
 
         public Result JobValid(VillageId villageId, JobDto job)
         {
-            if (job.Type == JobTypeEnums.ResourceBuild) return Result.Ok();
+            if (job.Type != JobTypeEnums.NormalBuild) return Result.Ok();
             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
             if (plan.Type.IsResourceField()) return Result.Ok();
             using var context = _contextFactory.CreateDbContext();

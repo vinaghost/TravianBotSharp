@@ -20,7 +20,7 @@ namespace MainCore.Repositories
         void Delete(JobId jobId);
 
         JobDto GetBuildingJob(VillageId villageId);
-
+        JobDto GetFirst(VillageId villageId);
         JobDto GetInfrastructureBuildingJob(VillageId villageId);
 
         List<ListBoxItem> GetItems(VillageId villageId);
