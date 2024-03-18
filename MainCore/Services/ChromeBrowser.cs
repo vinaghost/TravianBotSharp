@@ -7,6 +7,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Chrome.ChromeDriverExtensions;
 using OpenQA.Selenium.Support.UI;
+using Polly;
 
 namespace MainCore.Services
 {
@@ -129,14 +130,29 @@ namespace MainCore.Services
 
         public async Task<Result> Refresh(CancellationToken cancellationToken)
         {
-            return await Navigate("", cancellationToken);
+            Result refresh()
+            {
+                try
+                {
+                    _driver.Navigate().Refresh();
+                    return Result.Ok();
+                }
+                catch (Exception exception)
+                {
+                    return Result.Fail(new Stop(exception.Message));
+                }
+            }
+
+            var result = await Task.Run(refresh);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            return result;
         }
 
         public async Task<Result> Navigate(string url, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(url))
             {
-                return await Navigate(CurrentUrl, cancellationToken);
+                return await Refresh(cancellationToken);
             }
 
             Result goToUrl()
@@ -230,11 +246,21 @@ namespace MainCore.Services
         public async Task<Result> WaitPageLoaded(CancellationToken cancellationToken)
         {
             static bool pageLoaded(IWebDriver driver) => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete");
+
+            var retryPolicy = Policy
+                .HandleResult<Result>(x => x.HasError<Stop>())
+                .WaitAndRetryAsync(retryCount: 3, sleepDurationProvider: _ => TimeSpan.FromSeconds(5), onRetry: (error, _, retryCount, _) =>
+                {
+                    _driver.Navigate().Refresh();
+                });
+
+            var poliResult = await retryPolicy.ExecuteAndCaptureAsync(() => Wait(pageLoaded, cancellationToken));
+
             var result = await Wait(pageLoaded, cancellationToken);
             if (result.IsFailed)
             {
                 return result
-                    .WithError(new Error($"page stuck at loading stage [Current: {CurrentUrl}]"))
+                    .WithError(new Error(message: $"page stuck at loading stage [Current: {CurrentUrl}]"))
                     .WithError(new TraceMessage(TraceMessage.Line()));
             }
             return result;

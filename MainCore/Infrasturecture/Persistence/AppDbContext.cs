@@ -32,6 +32,7 @@ namespace MainCore.Infrasturecture.Persistence
         public DbSet<Farm> FarmLists { get; set; }
         public DbSet<Hero> Heroes { get; set; }
         public DbSet<Adventure> Adventures { get; set; }
+        public DbSet<Troop> Troops { get; set; }
 
         #endregion table
 
@@ -187,6 +188,11 @@ namespace MainCore.Infrasturecture.Persistence
 
             {VillageSettingEnums.AutoClaimQuestEnable, 0 },
             {VillageSettingEnums.CompleteImmediatelyTime, 180 },
+            {VillageSettingEnums.TrainTroopBatch, 0 },
+            {VillageSettingEnums.TrainTroopBatchSize, 0 },
+            {VillageSettingEnums.TrainTroopWaitBuilding, 0 },
+            {VillageSettingEnums.ResearchTroopWaitBuilding, 0 },
+            {VillageSettingEnums.CelebrationWaitBuilding, 0 },
         };
 
         private List<VillageSettingEnums> GetMissingVillageSettings()
@@ -280,6 +286,7 @@ namespace MainCore.Infrasturecture.Persistence
             {
                 KeyValuePair.Create(202303071943,"AddHeroTable"),
                 KeyValuePair.Create(202303072023,"AddAdventureTable"),
+                KeyValuePair.Create(202403151103,"AddTroopTable"),
             };
             foreach (var migration in migrations)
             {
