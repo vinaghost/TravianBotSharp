@@ -243,6 +243,15 @@ namespace MainCore.Repositories
                 .ExecuteUpdate(x => x.SetProperty(x => x.Position, x => x.Position - 1));
         }
 
+        public void Update<T>(JobId jobId, T plan)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var content = JsonSerializer.Serialize(plan);
+            context.Jobs
+                .Where(x => x.Id == jobId.Value)
+                .ExecuteUpdate(x => x.SetProperty(x => x.Content, x => content));
+        }
+
         public void Delete(VillageId villageId)
         {
             using var context = _contextFactory.CreateDbContext();

@@ -20,7 +20,9 @@ namespace MainCore.Repositories
         void Delete(JobId jobId);
 
         JobDto GetBuildingJob(VillageId villageId);
+
         JobDto GetFirst(VillageId villageId);
+
         JobDto GetInfrastructureBuildingJob(VillageId villageId);
 
         List<ListBoxItem> GetItems(VillageId villageId);
@@ -34,5 +36,7 @@ namespace MainCore.Repositories
         Result JobValid(VillageId villageId, JobDto job);
 
         void Move(JobId oldJobId, JobId newJobId);
+
+        void Update<T>(JobId jobId, T plan);
     }
 }

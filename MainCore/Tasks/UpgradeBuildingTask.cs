@@ -61,6 +61,10 @@ namespace MainCore.Tasks
             while (true)
             {
                 if (CancellationToken.IsCancellationRequested) return new Cancel();
+
+                result = await HandleNonBuildingJob();
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
                 result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 0), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
@@ -252,6 +256,21 @@ namespace MainCore.Tasks
                 return true;
             }
             return false;
+        }
+
+        private async Task<Result> HandleNonBuildingJob()
+        {
+            var job = _unitOfRepository.JobRepository.GetFirst(VillageId);
+            if (job is null) return Result.Ok();
+            if (job.Type == JobTypeEnums.NormalBuild || job.Type == JobTypeEnums.ResourceBuild) return Result.Ok();
+
+            var now = DateTime.Now;
+
+            ExecuteAt = now.AddSeconds(1);
+
+            await _taskManager.AddOrUpdate<JobTrainTroopTask>(AccountId, VillageId, executeTime: now);
+
+            return Result.Fail(new Skip("Do job train troop task first"));
         }
     }
 }

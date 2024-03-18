@@ -11,6 +11,7 @@ using MainCore.Common.Extensions;
 using MainCore.Common.Models;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
+using MainCore.Notification.Message;
 using MainCore.Repositories;
 using MainCore.Services;
 using MainCore.Tasks.Base;
@@ -35,69 +36,94 @@ namespace MainCore.Tasks
 
         protected override async Task<Result> Execute()
         {
-            await Task.CompletedTask;
-
-            var job = _unitOfRepository.JobRepository.GetFirst(VillageId);
-            if (job.Type != JobTypeEnums.TrainTroop) return Result.Fail(new Skip("No train troop job"));
-
-            var plan = JsonSerializer.Deserialize<TrainTroopPlan>(job.Content);
-
-            var building = plan.Type.GetTrainBuilding();
-            if (plan.Great) building = building.GetGreat();
-
-            Result result;
-            result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
-            var location = _unitOfRepository.BuildingRepository.GetBuildingLocation(VillageId, building);
-            if (location == default)
+            while (true)
             {
-                return Result.Fail(new MissingBuilding(building))
-                    .WithError(new Stop("reason below"));
-            }
+                if (CancellationToken.IsCancellationRequested) return new Cancel();
 
-            var cost = plan.Type.GetTrainCost();
-            Array.ForEach(cost, x => x *= plan.Amount);
+                var job = _unitOfRepository.JobRepository.GetFirst(VillageId);
+                if (job is null || job.Type != JobTypeEnums.TrainTroop) return Result.Fail(new Skip("No train troop job"));
 
-            result = _unitOfRepository.StorageRepository.IsEnoughResource(VillageId, cost);
-            if (result.IsFailed)
-            {
-                if (result.HasError<GranaryLimit>() || result.HasError<WarehouseLimit>())
+                var plan = JsonSerializer.Deserialize<TrainTroopPlan>(job.Content);
+
+                var building = plan.Type.GetTrainBuilding();
+                if (plan.Great) building = building.GetGreat();
+
+                Result result;
+                result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                var location = _unitOfRepository.BuildingRepository.GetBuildingLocation(VillageId, building);
+                if (location == default)
                 {
-                    return result
-                        .WithError(new Stop("Please take a look on building job queue"))
-                        .WithError(new TraceMessage(TraceMessage.Line()));
+                    return Result.Fail(new MissingBuilding(building))
+                        .WithError(new Stop("reason below"));
                 }
 
-                if (!IsUseHeroResource())
-                {
-                    await SetEnoughResourcesTime(AccountId);
-                    return result.WithError(new TraceMessage(TraceMessage.Line()));
-                }
+                var cost = plan.Type.GetTrainCost();
+                cost = cost.Select(x => x * plan.Amount).ToArray();
 
-                var missingResource = _unitOfRepository.StorageRepository.GetMissingResource(VillageId, cost);
-                var heroResourceResult = await _useHeroResourceCommand.Handle(new(AccountId, missingResource), CancellationToken);
-                if (heroResourceResult.IsFailed)
+                result = _unitOfRepository.StorageRepository.IsEnoughResource(VillageId, cost);
+                if (result.IsFailed)
                 {
-                    if (!heroResourceResult.HasError<Retry>())
+                    var batch = _unitOfRepository.VillageSettingRepository.GetBooleanByName(VillageId, VillageSettingEnums.TrainTroopBatch);
+                    if (batch)
                     {
-                        await SetEnoughResourcesTime(AccountId);
+                        var batchSize = _unitOfRepository.VillageSettingRepository.GetByName(VillageId, VillageSettingEnums.TrainTroopBatchSize);
+
+                        if (plan.Amount > batchSize)
+                        {
+                            var subPlan = new TrainTroopPlan()
+                            {
+                                Amount = batchSize,
+                                Great = plan.Great,
+                                Type = plan.Type,
+                            };
+
+                            plan.Amount -= batchSize;
+
+                            _unitOfRepository.JobRepository.Update(job.Id, plan);
+                            _unitOfRepository.JobRepository.AddToTop(VillageId, subPlan);
+                            await _mediator.Publish(new JobUpdated(AccountId, VillageId));
+                            continue;
+                        }
                     }
 
-                    return heroResourceResult.WithError(new TraceMessage(TraceMessage.Line()));
+                    if (result.HasError<GranaryLimit>() || result.HasError<WarehouseLimit>())
+                    {
+                        return result
+                            .WithError(new Stop("Please take a look on building job queue"))
+                            .WithError(new TraceMessage(TraceMessage.Line()));
+                    }
+
+                    if (!IsUseHeroResource())
+                    {
+                        await SetEnoughResourcesTime(AccountId);
+                        return result
+                            .WithError(new TraceMessage(TraceMessage.Line()));
+                    }
+
+                    var missingResource = _unitOfRepository.StorageRepository.GetMissingResource(VillageId, cost);
+                    var heroResourceResult = await _useHeroResourceCommand.Handle(new(AccountId, missingResource), CancellationToken);
+                    if (heroResourceResult.IsFailed)
+                    {
+                        if (!heroResourceResult.HasError<Retry>())
+                        {
+                            await SetEnoughResourcesTime(AccountId);
+                        }
+
+                        return heroResourceResult.WithError(new TraceMessage(TraceMessage.Line()));
+                    }
                 }
+                result = await _unitOfCommand.ToBuildingCommand.Handle(new(AccountId, location), CancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                result = await _inputAmountTroopCommand.Handle(new(AccountId, plan.Type, plan.Amount), CancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                _unitOfRepository.JobRepository.Delete(job.Id);
             }
-            result = await _unitOfCommand.ToBuildingCommand.Handle(new(AccountId, location), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
-            result = await _inputAmountTroopCommand.Handle(new(AccountId, plan.Type, plan.Amount), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
-            _unitOfRepository.JobRepository.Delete(job.Id);
-
-            return Result.Ok();
         }
 
         protected override void SetName()
