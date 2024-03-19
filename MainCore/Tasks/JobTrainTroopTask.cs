@@ -9,7 +9,6 @@ using MainCore.Common.Errors.Storage;
 using MainCore.Common.Errors.TrainTroop;
 using MainCore.Common.Extensions;
 using MainCore.Common.Models;
-using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Notification.Message;
 using MainCore.Repositories;
@@ -55,7 +54,7 @@ namespace MainCore.Tasks
                     var progressingBuild = _unitOfRepository.QueueBuildingRepository.Count(VillageId);
                     if (progressingBuild > 0)
                     {
-                        await SetTimeQueueBuildingComplete(AccountId, VillageId);
+                        await SetTimeQueueBuildingComplete();
                         return Result.Fail(new Skip("Wait progressing build complete"));
                     }
                 }
@@ -85,14 +84,16 @@ namespace MainCore.Tasks
 
                         if (plan.Amount > batchSize)
                         {
+                            var maximumTroop = _unitOfRepository.StorageRepository.GetMaximumTroopCanTrain(VillageId, plan.Type);
+                            if (maximumTroop < batchSize) maximumTroop = batchSize;
                             var subPlan = new TrainTroopPlan()
                             {
-                                Amount = batchSize,
+                                Amount = maximumTroop,
                                 Great = plan.Great,
                                 Type = plan.Type,
                             };
 
-                            plan.Amount -= batchSize;
+                            plan.Amount -= maximumTroop;
 
                             _unitOfRepository.JobRepository.Update(job.Id, plan);
                             _unitOfRepository.JobRepository.AddToTop(VillageId, subPlan);
@@ -110,7 +111,7 @@ namespace MainCore.Tasks
 
                     if (!IsUseHeroResource())
                     {
-                        await SetEnoughResourcesTime(AccountId);
+                        await SetEnoughResourcesTime();
                         return result
                             .WithError(new TraceMessage(TraceMessage.Line()));
                     }
@@ -121,7 +122,7 @@ namespace MainCore.Tasks
                     {
                         if (!heroResourceResult.HasError<Retry>())
                         {
-                            await SetEnoughResourcesTime(AccountId);
+                            await SetEnoughResourcesTime();
                         }
 
                         return heroResourceResult.WithError(new TraceMessage(TraceMessage.Line()));
@@ -149,24 +150,29 @@ namespace MainCore.Tasks
             return useHeroResource;
         }
 
-        private async Task SetEnoughResourcesTime(AccountId accountId)
+        private async Task SetEnoughResourcesTime()
         {
             ExecuteAt = DateTime.Now.AddMinutes(15);
-            await _taskManager.ReOrder(accountId);
+            if (_taskManager.IsExist<UpgradeBuildingTask>(AccountId, VillageId))
+            {
+                var task = _taskManager.Get<UpgradeBuildingTask>(AccountId, VillageId);
+                task.ExecuteAt = ExecuteAt.AddSeconds(1);
+            }
+            await _taskManager.ReOrder(AccountId);
         }
 
-        private async Task SetTimeQueueBuildingComplete(AccountId accountId, VillageId villageId)
+        private async Task SetTimeQueueBuildingComplete()
         {
-            var buildingQueue = _unitOfRepository.QueueBuildingRepository.GetFirst(villageId);
-            if (buildingQueue is null)
-            {
-                ExecuteAt = DateTime.Now.AddSeconds(1);
-                await _taskManager.ReOrder(accountId);
-                return;
-            }
+            var buildingQueue = _unitOfRepository.QueueBuildingRepository.GetFirst(VillageId);
 
             ExecuteAt = buildingQueue.CompleteTime.AddSeconds(3);
-            await _taskManager.ReOrder(accountId);
+            if (_taskManager.IsExist<UpgradeBuildingTask>(AccountId, VillageId))
+            {
+                var task = _taskManager.Get<UpgradeBuildingTask>(AccountId, VillageId);
+                task.ExecuteAt = ExecuteAt.AddSeconds(1);
+            }
+
+            await _taskManager.ReOrder(AccountId);
         }
     }
 }

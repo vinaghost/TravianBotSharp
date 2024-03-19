@@ -264,13 +264,24 @@ namespace MainCore.Tasks
             if (job is null) return Result.Ok();
             if (job.Type == JobTypeEnums.NormalBuild || job.Type == JobTypeEnums.ResourceBuild) return Result.Ok();
 
-            var now = DateTime.Now;
+            if (job.Type == JobTypeEnums.TrainTroop)
+            {
+                if (_taskManager.IsExist<JobTrainTroopTask>(AccountId, VillageId))
+                {
+                    var task = _taskManager.Get<JobTrainTroopTask>(AccountId, VillageId);
+                    ExecuteAt = task.ExecuteAt.AddSeconds(1);
+                    await _taskManager.ReOrder(AccountId);
+                }
+                else
+                {
+                    var now = DateTime.Now;
+                    ExecuteAt = now.AddSeconds(1);
+                    await _taskManager.Add<JobTrainTroopTask>(AccountId, VillageId, executeTime: now);
+                }
 
-            ExecuteAt = now.AddSeconds(1);
-
-            await _taskManager.AddOrUpdate<JobTrainTroopTask>(AccountId, VillageId, executeTime: now);
-
-            return Result.Fail(new Skip("Do job train troop task first"));
+                return Result.Fail(new Skip("Do job train troop task first"));
+            }
+            return Result.Ok();
         }
     }
 }

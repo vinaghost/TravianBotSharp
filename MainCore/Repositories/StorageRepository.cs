@@ -1,6 +1,8 @@
 ﻿using FluentResults;
+using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Common.Errors.Storage;
+using MainCore.Common.Extensions;
 using MainCore.DTO;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
@@ -37,6 +39,27 @@ namespace MainCore.Repositories
             if (storage.Warehouse < max) result.WithError(new WarehouseLimit(storage.Warehouse, max));
             if (storage.Granary < requiredResource[3]) result.WithError(new GranaryLimit(storage.Granary, requiredResource[3]));
             return result;
+        }
+
+        public int GetMaximumTroopCanTrain(VillageId villageId, TroopEnums troop)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var storage = context.Storages
+                .Where(x => x.VillageId == villageId.Value)
+                .FirstOrDefault();
+            if (storage is null) return 0;
+
+            var cost = troop.GetTrainCost();
+
+            var ratio = new long[4];
+
+            ratio[0] = storage.Wood % cost[0];
+            ratio[1] = storage.Clay % cost[1];
+            ratio[2] = storage.Iron % cost[2];
+            ratio[3] = storage.Crop % cost[3];
+
+            var min = ratio.Min();
+            return (int)min;
         }
 
         public long[] GetMissingResource(VillageId villageId, long[] requiredResource)
