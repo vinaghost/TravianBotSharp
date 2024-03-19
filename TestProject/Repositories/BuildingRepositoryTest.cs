@@ -93,7 +93,7 @@ namespace TestProject.Repositories
         public void GetLevelBuildings_ShouldNotThrow()
         {
             var repository = GetRepository();
-            var func = () => repository.GetBuildingItems(Constants.VillageId);
+            var func = () => repository.GetBuildings(Constants.VillageId);
             func.Should().NotThrow();
         }
 
