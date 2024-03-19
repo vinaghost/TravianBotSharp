@@ -2,11 +2,11 @@
 {
     public class CelebrationPlan
     {
-        public bool Great { get; set; }
+        public bool Big { get; set; }
 
         public override string ToString()
         {
-            var celebration = Great ? "Great celebration" : "Small celebration";
+            var celebration = Big ? "Great celebration" : "Small celebration";
             return $"Hold {celebration}";
         }
     }

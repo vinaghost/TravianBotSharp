@@ -264,24 +264,76 @@ namespace MainCore.Tasks
             if (job is null) return Result.Ok();
             if (job.Type == JobTypeEnums.NormalBuild || job.Type == JobTypeEnums.ResourceBuild) return Result.Ok();
 
-            if (job.Type == JobTypeEnums.TrainTroop)
+            switch (job.Type)
             {
-                if (_taskManager.IsExist<JobTrainTroopTask>(AccountId, VillageId))
-                {
-                    var task = _taskManager.Get<JobTrainTroopTask>(AccountId, VillageId);
-                    ExecuteAt = task.ExecuteAt.AddSeconds(1);
-                    await _taskManager.ReOrder(AccountId);
-                }
-                else
-                {
-                    var now = DateTime.Now;
-                    ExecuteAt = now.AddSeconds(1);
-                    await _taskManager.Add<JobTrainTroopTask>(AccountId, VillageId, executeTime: now);
-                }
+                case JobTypeEnums.TrainTroop:
+                    return await HandleTrainTroopJob();
 
-                return Result.Fail(new Skip("Do job train troop task first"));
+                case JobTypeEnums.ResearchTroop:
+                    return await HandleResearchTroopJob();
+
+                case JobTypeEnums.Celebration:
+                    return await HandleCelebrationJob();
+
+                case JobTypeEnums.NormalBuild:
+                case JobTypeEnums.ResourceBuild:
+                default:
+                    return Result.Ok();
             }
-            return Result.Ok();
+        }
+
+        private async Task<Result> HandleTrainTroopJob()
+        {
+            if (_taskManager.IsExist<JobTrainTroopTask>(AccountId, VillageId))
+            {
+                var task = _taskManager.Get<JobTrainTroopTask>(AccountId, VillageId);
+                ExecuteAt = task.ExecuteAt.AddSeconds(1);
+                await _taskManager.ReOrder(AccountId);
+            }
+            else
+            {
+                var now = DateTime.Now;
+                ExecuteAt = now.AddSeconds(1);
+                await _taskManager.Add<JobTrainTroopTask>(AccountId, VillageId, executeTime: now);
+            }
+
+            return Result.Fail(new Skip("Do job train troop first"));
+        }
+
+        private async Task<Result> HandleResearchTroopJob()
+        {
+            if (_taskManager.IsExist<JobResearchTroopTask>(AccountId, VillageId))
+            {
+                var task = _taskManager.Get<JobResearchTroopTask>(AccountId, VillageId);
+                ExecuteAt = task.ExecuteAt.AddSeconds(1);
+                await _taskManager.ReOrder(AccountId);
+            }
+            else
+            {
+                var now = DateTime.Now;
+                ExecuteAt = now.AddSeconds(1);
+                await _taskManager.Add<JobResearchTroopTask>(AccountId, VillageId, executeTime: now);
+            }
+
+            return Result.Fail(new Skip("Do job research troop first"));
+        }
+
+        private async Task<Result> HandleCelebrationJob()
+        {
+            if (_taskManager.IsExist<JobHoldCelebrationTask>(AccountId, VillageId))
+            {
+                var task = _taskManager.Get<JobHoldCelebrationTask>(AccountId, VillageId);
+                ExecuteAt = task.ExecuteAt.AddSeconds(1);
+                await _taskManager.ReOrder(AccountId);
+            }
+            else
+            {
+                var now = DateTime.Now;
+                ExecuteAt = now.AddSeconds(1);
+                await _taskManager.Add<JobHoldCelebrationTask>(AccountId, VillageId, executeTime: now);
+            }
+
+            return Result.Fail(new Skip("Do job celebration first"));
         }
     }
 }
