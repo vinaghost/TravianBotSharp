@@ -12,11 +12,11 @@ namespace MainCore.Commands.Features.Step.HoldCelebration
 {
     public class HoldCommand : ByAccountIdBase, ICommand
     {
-        public bool BigCelebration { get; }
+        public bool GreatCelebration { get; }
 
-        public HoldCommand(AccountId accountId, bool bigCelebration) : base(accountId)
+        public HoldCommand(AccountId accountId, bool greatCelebration) : base(accountId)
         {
-            BigCelebration = bigCelebration;
+            GreatCelebration = greatCelebration;
         }
     }
 
@@ -37,7 +37,7 @@ namespace MainCore.Commands.Features.Step.HoldCelebration
             var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
 
-            var button = _unitOfParser.TownHallParser.GetHoldButton(html, command.BigCelebration);
+            var button = _unitOfParser.TownHallParser.GetHoldButton(html, command.GreatCelebration);
             if (button is null) return Result.Fail(Retry.ButtonNotFound("hold celebration"));
 
             Result result;

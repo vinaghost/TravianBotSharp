@@ -51,7 +51,7 @@ namespace MainCore.Commands.UI.Build
             var great = input.Get();
             var plan = new CelebrationPlan()
             {
-                Big = great,
+                Great = great,
             };
             var villageId = request.VillageId;
 
