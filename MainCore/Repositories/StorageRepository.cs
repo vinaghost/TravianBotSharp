@@ -53,10 +53,10 @@ namespace MainCore.Repositories
 
             var ratio = new long[4];
 
-            ratio[0] = storage.Wood % cost[0];
-            ratio[1] = storage.Clay % cost[1];
-            ratio[2] = storage.Iron % cost[2];
-            ratio[3] = storage.Crop % cost[3];
+            ratio[0] = storage.Wood / cost[0];
+            ratio[1] = storage.Clay / cost[1];
+            ratio[2] = storage.Iron / cost[2];
+            ratio[3] = storage.Crop / cost[3];
 
             var min = ratio.Min();
             return (int)min;
