@@ -61,6 +61,17 @@ namespace MainCore.Tasks
 
             var plan = JsonSerializer.Deserialize<CelebrationPlan>(job.Content);
 
+            if (!_unitOfRepository.BuildingRepository.IsTownHall(VillageId, plan.Great))
+            {
+                if (_unitOfRepository.QueueBuildingRepository.IsTownHall(VillageId, plan.Great))
+                {
+                    await SetTimeQueueBuildingComplete();
+                    return Result.Fail(new Skip("Wait town hall complete"));
+                }
+
+                return Result.Fail(new Stop("There is no town hall"));
+            }
+
             var location = _unitOfRepository.BuildingRepository.GetBuildingLocation(VillageId, BuildingEnums.TownHall);
             if (location == default)
             {

@@ -35,5 +35,6 @@ namespace MainCore.Repositories
         List<BuildingEnums> GetNormalBuilding(VillageId villageId, BuildingId buildingId);
 
         void UpdateWall(VillageId villageId);
+        bool IsTownHall(VillageId villageId, bool great);
     }
 }
