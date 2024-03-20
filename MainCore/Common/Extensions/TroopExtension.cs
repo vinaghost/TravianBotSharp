@@ -99,5 +99,37 @@ namespace MainCore.Common.Extensions
                 _ => Array.Empty<long>(),
             };
         }
+
+        private static readonly int[] _standardResearchCostCoeffsB = { 100, 100, 200, 160 };
+        private static readonly int[] _standardResearchCostCoeffsK = { 6, 4, 8, 6 };
+
+        private static readonly int[] _adminResearchCostCoeffsB = { 100, 100, 200, 160 };
+        private static readonly int[] _adminResearchCostCoeffsK = { 6, 4, 8, 6 };
+
+        public static long[] GetResearchCost(this TroopEnums troop)
+        {
+            var troopInTribe = (int)troop % 10;
+
+            if (troopInTribe == 1) return new long[] { 0, 0, 0, 0 };
+
+            var costTrain = troop.GetTrainCost();
+            var cost = new long[4];
+
+            if (troopInTribe == 9)
+            {
+                for (var i = 0; i < cost.Length; i++)
+                {
+                    cost[i] = costTrain[i] * _adminResearchCostCoeffsK[i] + _adminResearchCostCoeffsB[i];
+                }
+            }
+            else
+            {
+                for (var i = 0; i < cost.Length; i++)
+                {
+                    cost[i] = costTrain[i] * _standardResearchCostCoeffsK[i] + _standardResearchCostCoeffsB[i];
+                }
+            }
+            return cost;
+        }
     }
 }
