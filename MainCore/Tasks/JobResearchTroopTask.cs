@@ -103,6 +103,8 @@ namespace MainCore.Tasks
             result = await _researchCommand.Handle(new(AccountId, plan.Type), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
+            _unitOfRepository.JobRepository.Delete(job.Id);
+
             return Result.Ok();
         }
 

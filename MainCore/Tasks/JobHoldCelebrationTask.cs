@@ -115,6 +115,8 @@ namespace MainCore.Tasks
             result = await _holdCommand.Handle(new(AccountId, plan.Great), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
+            _unitOfRepository.JobRepository.Delete(job.Id);
+
             return Result.Ok();
         }
 
