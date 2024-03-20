@@ -48,7 +48,7 @@ namespace MainCore.Tasks
             result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            var waitProgressingBuild = _unitOfRepository.VillageSettingRepository.GetBooleanByName(VillageId, VillageSettingEnums.TrainTroopWaitBuilding);
+            var waitProgressingBuild = _unitOfRepository.VillageSettingRepository.GetBooleanByName(VillageId, VillageSettingEnums.CelebrationWaitBuilding);
             if (waitProgressingBuild)
             {
                 var progressingBuild = _unitOfRepository.QueueBuildingRepository.Count(VillageId);
