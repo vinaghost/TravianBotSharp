@@ -40,7 +40,7 @@ namespace MainCore.Tasks
             Result result;
 
             var job = _unitOfRepository.JobRepository.GetFirst(VillageId);
-            if (job is null || job.Type != JobTypeEnums.TrainTroop) return Result.Fail(new Skip("No holding celebration job"));
+            if (job is null || job.Type != JobTypeEnums.Celebration) return Result.Fail(new Skip("No holding celebration job"));
 
             result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
