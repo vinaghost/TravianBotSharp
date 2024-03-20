@@ -38,10 +38,20 @@
                         <CheckBox x:Name="UseHeroResForBuilding" Content="Use hero resources when lack of resources" />
                         <CheckBox x:Name="UseRomanQueueLogic" Content="Use Roman queue logic" />
                         <CheckBox x:Name="CompleteImmediately" Content="Use complete immediately button when time reaches" />
-                            <TextBox x:Name="CompleteImmediatelyTime" materialDesign:HintAssist.Hint="Time trigger complete immediately button (minutes)" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="350" HorizontalAlignment="Left" Margin="5,0,0,0" />
-                        
+                        <TextBox x:Name="CompleteImmediatelyTime" materialDesign:HintAssist.Hint="Time trigger complete immediately button (minutes)" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="350" HorizontalAlignment="Left" Margin="5,0,0,0" />
 
                         <CheckBox x:Name="UseSpecialUpgrade" Content="Use special upgrade method (the right upgrade button)" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Job settings" VerticalAlignment="Center" FontWeight="Bold" />
+                        <CheckBox x:Name="TrainTroopBatch" Content="Use train troop batch if don't have enough resource" />
+                        <TextBox x:Name="TrainTroopBatchSize" materialDesign:HintAssist.Hint="Troop per batch" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="350" HorizontalAlignment="Left" Margin="5,0,0,0" />
+
+                        <CheckBox x:Name="TrainTroopWaitBuilding" Content="Train troop wait progressing build complete before start" />
+                        <CheckBox x:Name="ResearchTroopWaitBuilding" Content="Research troop wait progressing build complete before start" />
+                        <CheckBox x:Name="CelebrationWaitBuilding" Content="Hold celbration wait progressing build complete before start" />
                     </StackPanel>
                 </Border>
                 <Border Style="{DynamicResource Box}">
