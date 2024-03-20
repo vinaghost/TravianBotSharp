@@ -20,5 +20,7 @@ namespace MainCore.Parsers
                                IUpgradeBuildingParser UpgradeBuildingParser,
                                IMarketParser MarketParser,
                                IQuestParser QuestParser,
+                               ITownHallParser TownHallParser,
+                               IAcademyParser AcademyParser,
                                IOptionPageParser OptionPageParser);
 }

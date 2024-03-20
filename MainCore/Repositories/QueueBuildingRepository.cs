@@ -86,6 +86,17 @@ namespace MainCore.Repositories
                 .ExecuteUpdate(x => x.SetProperty(x => x.Type, BuildingEnums.Site));
         }
 
+        public bool IsTownHall(VillageId villageId, bool great)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var level = great ? 10 : 1;
+
+            return context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Any(x => x.Type == BuildingEnums.TownHall && x.Level >= level);
+        }
+
         public int Count(VillageId villageId)
         {
             using var context = _contextFactory.CreateDbContext();

@@ -8,6 +8,7 @@
     xmlns:local="clr-namespace:WPFUI.Views.Tabs.Villages"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800"
+    xmlns:uc="clr-namespace:WPFUI.Views.UserControls"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -46,6 +47,9 @@
         </Grid>
         <Grid Grid.Column="2">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -92,6 +96,60 @@
                     <TextBox x:Name="ResourceLevel" Grid.Row="1"  Grid.Column="1" />
                     <Button x:Name="ResourceBuild" Grid.Row="3" Grid.ColumnSpan="2" Style="{DynamicResource MaterialDesignFloatingActionMiniDarkButton}" ToolTip="Build">
                         <materialDesign:PackIcon Width="30" Height="30" Kind="Hammer" />
+                    </Button>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="2" Style="{DynamicResource Box}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="5" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <uc:TroopSelectorUc x:Name="TrainTroopType" Grid.Row="0" />
+
+                    <TextBox x:Name="TrainTroopAmount" Grid.Row="1" materialDesign:HintAssist.Hint="Amount" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="100" Margin="8,0,0,0" HorizontalAlignment="Left" />
+                    <StackPanel Grid.Row="2" Orientation="Horizontal">
+                        <RadioButton IsChecked="True" Style="{StaticResource MaterialDesignChoiceChipPrimaryRadioButton}" Content="Normal" />
+                        <RadioButton x:Name="TrainTroopGreat" Style="{StaticResource MaterialDesignChoiceChipPrimaryRadioButton}" Content="Great" />
+                    </StackPanel>
+
+                    <Button x:Name="TrainTroop" Grid.Row="4" Style="{DynamicResource MaterialDesignFloatingActionMiniDarkButton}" ToolTip="Train">
+                        <materialDesign:PackIcon Width="30" Height="30" Kind="Fencing" />
+                    </Button>
+                </Grid>
+            </Border>
+            <Border Grid.Row="3" Style="{DynamicResource Box}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="5" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <uc:TroopSelectorUc x:Name="ResearchTroopType" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+
+                    <Button x:Name="ResearchTroop" Grid.Row="2" Style="{DynamicResource MaterialDesignFloatingActionMiniDarkButton}" ToolTip="Research">
+                        <materialDesign:PackIcon Width="30" Height="30" Kind="School" />
+                    </Button>
+                </Grid>
+            </Border>
+            <Border Grid.Row="4" Style="{DynamicResource Box}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="5" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal">
+                        <RadioButton IsChecked="True" Style="{StaticResource MaterialDesignChoiceChipPrimaryRadioButton}" Content="Small" />
+                        <RadioButton x:Name="CelebrationGreat" Style="{StaticResource MaterialDesignChoiceChipPrimaryRadioButton}" Content="Great" />
+                    </StackPanel>
+
+                    <Button x:Name="Celebration" Grid.Row="2" Style="{DynamicResource MaterialDesignFloatingActionMiniDarkButton}" ToolTip="Hold celebration">
+                        <materialDesign:PackIcon Width="30" Height="30" Kind="PartyPopper" />
                     </Button>
                 </Grid>
             </Border>
