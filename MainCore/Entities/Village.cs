@@ -19,6 +19,7 @@ namespace MainCore.Entities
         public ICollection<Job> Jobs { get; set; }
         public Storage Storage { get; set; }
         public ICollection<VillageSetting> VillageSetting { get; set; }
+        public ICollection<ExpansionSlot> ExpansionSlots { get; set; }
     }
 
     [StronglyTypedId]
