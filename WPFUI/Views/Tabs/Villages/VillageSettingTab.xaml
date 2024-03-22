@@ -103,6 +103,13 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
+
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Settle settings" VerticalAlignment="Center" FontWeight="Bold" />
+                        <CheckBox x:Name="AutoTrainSettle" Content="Enable train settle" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
     </Grid>

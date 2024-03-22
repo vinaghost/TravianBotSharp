@@ -2,7 +2,7 @@
 {
     public enum ExpansionStatusEnum
     {
-        FreeExpansionSlot = 0,
+        FreeExpansionSlot,
         UsedExpansionSlot,
         NextExpansionSlot,
     }

@@ -194,6 +194,8 @@ namespace MainCore.Infrasturecture.Persistence
             {VillageSettingEnums.TrainTroopWaitBuilding, 0 },
             {VillageSettingEnums.ResearchTroopWaitBuilding, 0 },
             {VillageSettingEnums.CelebrationWaitBuilding, 0 },
+
+            {VillageSettingEnums.AutoTrainSettle, 0 },
         };
 
         private List<VillageSettingEnums> GetMissingVillageSettings()

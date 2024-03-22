@@ -36,6 +36,8 @@ namespace MainCore.UI.Models.Input
         public RangeInputViewModel AutoRefreshTime { get; } = new();
         private bool _autoClaimQuestEnable;
 
+        private bool _autoTrainSettle;
+
         public void Set(Dictionary<VillageSettingEnums, int> settings)
         {
             var tribe = (TribeEnums)settings.GetValueOrDefault(VillageSettingEnums.Tribe);
@@ -89,6 +91,8 @@ namespace MainCore.UI.Models.Input
             TrainTroopWaitBuilding = settings.GetValueOrDefault(VillageSettingEnums.TrainTroopWaitBuilding) == 1;
             ResearchTroopWaitBuilding = settings.GetValueOrDefault(VillageSettingEnums.ResearchTroopWaitBuilding) == 1;
             CelebrationWaitBuilding = settings.GetValueOrDefault(VillageSettingEnums.CelebrationWaitBuilding) == 1;
+
+            AutoTrainSettle = settings.GetValueOrDefault(VillageSettingEnums.AutoTrainSettle) == 1;
         }
 
         public Dictionary<VillageSettingEnums, int> Get()
@@ -127,6 +131,7 @@ namespace MainCore.UI.Models.Input
             var researchTroopWaitBuilding = ResearchTroopWaitBuilding ? 1 : 0;
             var celebrationWaitBuilding = CelebrationWaitBuilding ? 1 : 0;
 
+            var autoTrainSettle = AutoTrainSettle ? 1 : 0;
             var settings = new Dictionary<VillageSettingEnums, int>()
             {
                 { VillageSettingEnums.UseHeroResourceForBuilding, useHeroResourceForBuilding },
@@ -164,6 +169,7 @@ namespace MainCore.UI.Models.Input
                 { VillageSettingEnums.TrainTroopWaitBuilding, trainTroopWaitBuilding },
                 { VillageSettingEnums.ResearchTroopWaitBuilding, researchTroopWaitBuilding },
                 { VillageSettingEnums.CelebrationWaitBuilding, celebrationWaitBuilding },
+                { VillageSettingEnums.AutoTrainSettle, autoTrainSettle },
             };
             return settings;
         }
@@ -284,6 +290,12 @@ namespace MainCore.UI.Models.Input
         {
             get => _celebrationWaitBuilding;
             set => this.RaiseAndSetIfChanged(ref _celebrationWaitBuilding, value);
+        }
+
+        public bool AutoTrainSettle
+        {
+            get => _autoTrainSettle;
+            set => this.RaiseAndSetIfChanged(ref _autoTrainSettle, value);
         }
     }
 }

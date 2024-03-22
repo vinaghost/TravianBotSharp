@@ -60,5 +60,7 @@
         TrainTroopWaitBuilding,
         ResearchTroopWaitBuilding,
         CelebrationWaitBuilding,
+
+        AutoTrainSettle,
     }
 }

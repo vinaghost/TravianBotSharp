@@ -30,5 +30,14 @@ namespace MainCore.Repositories
 
             context.SaveChanges();
         }
+
+        public bool IsDefaultExpansionSlot(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var expansionSlot = context.ExpansionSlots
+                .Where(x => x.VillageId == villageId.Value)
+                .Any();
+            return !expansionSlot;
+        }
     }
 }
