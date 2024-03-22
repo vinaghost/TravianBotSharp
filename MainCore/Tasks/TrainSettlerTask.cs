@@ -69,7 +69,7 @@ namespace MainCore.Tasks
             if (_unitOfParser.SettleParser.IsSettlerEnough(html, settler))
             {
                 _unitOfRepository.VillageRepository.SetSettlers(VillageId, 3);
-                return Result.Fail(new Skip("Enough settlers"));
+                return Result.Fail(new Skip("Village has enough settlers"));
             }
 
             var cost = settler.GetTrainCost();
@@ -108,6 +108,9 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _unitOfCommand.DelayClickCommand.Handle(new(AccountId), CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await chromeBrowser.WaitPageLoaded(CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             html = chromeBrowser.Html;
