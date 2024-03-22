@@ -291,6 +291,7 @@ namespace MainCore.Infrasturecture.Persistence
                 KeyValuePair.Create(202303072023,"AddAdventureTable"),
                 KeyValuePair.Create(202403151103,"AddTroopTable"),
                 KeyValuePair.Create(202403221509,"AddExpansionSlotTable"),
+                KeyValuePair.Create(202403151103,"AddSettlerToVillageTabel"),
             };
             foreach (var migration in migrations)
             {

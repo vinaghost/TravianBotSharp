@@ -12,5 +12,20 @@ namespace MainCore.Parsers.SettleParser
         {
             throw new NotImplementedException();
         }
+
+        public int GetProgressingSettlerAmount(HtmlDocument doc, TroopEnums troop)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetSettlerAmount(HtmlDocument doc, TroopEnums troop)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsSettlerEnough(HtmlDocument doc, TroopEnums troop)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

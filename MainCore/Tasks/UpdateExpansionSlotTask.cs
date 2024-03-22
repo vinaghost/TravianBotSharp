@@ -22,12 +22,18 @@ namespace MainCore.Tasks
 
         protected override async Task<Result> Execute()
         {
+            Result result;
+
+            result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
             var location = _unitOfRepository.BuildingRepository.GetSettleLocation(VillageId);
             if (location == default)
             {
                 return Result.Fail(new Skip("There is no building for settle"));
             }
-            Result result;
 
             result = await _unitOfCommand.ToBuildingCommand.Handle(new(AccountId, location), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
