@@ -22,5 +22,6 @@ namespace MainCore.Parsers
                                IQuestParser QuestParser,
                                ITownHallParser TownHallParser,
                                IAcademyParser AcademyParser,
+                               ISettleParser SettleParser,
                                IOptionPageParser OptionPageParser);
 }

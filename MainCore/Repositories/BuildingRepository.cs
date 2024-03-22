@@ -122,6 +122,20 @@ namespace MainCore.Repositories
             return isEmptySite;
         }
 
+        public int GetSettleLocation(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var settleBuildings = new List<BuildingEnums>() { BuildingEnums.Residence, BuildingEnums.Palace, BuildingEnums.CommandCenter };
+
+            var location = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => settleBuildings.Contains(x.Type))
+                .Select(x => x.Location)
+                .FirstOrDefault();
+            return location;
+        }
+
         public Building GetCropland(VillageId villageId)
         {
             using var context = _contextFactory.CreateDbContext();

@@ -36,5 +36,6 @@ namespace MainCore.Repositories
 
         void UpdateWall(VillageId villageId);
         bool IsTownHall(VillageId villageId, bool great);
+        int GetSettleLocation(VillageId villageId);
     }
 }
