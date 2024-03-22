@@ -27,6 +27,7 @@ namespace MainCore.UI.ViewModels.Tabs
         public ReactiveCommand<Unit, Unit> LoadCurrent { get; }
         public ReactiveCommand<Unit, Unit> LoadUnload { get; }
         public ReactiveCommand<Unit, Unit> LoadAll { get; }
+        public ReactiveCommand<Unit, Unit> ResetSettle { get; }
         public ReactiveCommand<AccountId, List<ListBoxItem>> LoadVillage { get; }
 
         public VillageViewModel(VillageTabStore villageTabStore, IMediator mediator, UnitOfRepository unitOfRepository)
@@ -38,6 +39,7 @@ namespace MainCore.UI.ViewModels.Tabs
             LoadCurrent = ReactiveCommand.CreateFromTask(LoadCurrentHandler);
             LoadUnload = ReactiveCommand.CreateFromTask(LoadUnloadHandler);
             LoadAll = ReactiveCommand.CreateFromTask(LoadAllHandler);
+            ResetSettle = ReactiveCommand.CreateFromTask(ResetSettleHandler);
             LoadVillage = ReactiveCommand.Create<AccountId, List<ListBoxItem>>(LoadVillageHandler);
 
             var villageObservable = this.WhenAnyValue(x => x.Villages.SelectedItem);
@@ -67,6 +69,11 @@ namespace MainCore.UI.ViewModels.Tabs
         private async Task LoadCurrentHandler()
         {
             await _mediator.Send(new LoadCurrentCommand(AccountId, Villages));
+        }
+
+        private async Task ResetSettleHandler()
+        {
+            await _mediator.Send(new ResetSettlerCommand(Villages));
         }
 
         private async Task LoadUnloadHandler()

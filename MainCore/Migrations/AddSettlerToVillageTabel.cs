@@ -2,7 +2,7 @@
 
 namespace MainCore.Migrations
 {
-    [Migration(202403151103)]
+    [Migration(202422032353)]
     public class AddSettlerToVillageTabel : Migration
     {
         public override void Up()

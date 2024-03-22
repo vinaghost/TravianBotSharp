@@ -21,6 +21,7 @@
                         <MenuItem x:Name="LoadCurrent" Header="Reload this village's building" />
                         <MenuItem x:Name="LoadUnload" Header="Reload village that missing building" />
                         <MenuItem x:Name="LoadAll" Header="Reload all village" />
+                        <MenuItem x:Name="ResetSettle" Header="Reset settler amount" />
                     </ContextMenu>
                 </ListBox.ContextMenu>
             </ListBox>
