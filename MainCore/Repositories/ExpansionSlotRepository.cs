@@ -72,16 +72,14 @@ namespace MainCore.Repositories
 
             if (dto.Level == 15 && dto.Type == BuildingEnums.Palace)
             {
-                // 1 locked slot for level 20
-                // so 1 + 1 = 2
-                if (expansionSlots.Count(x => x == ExpansionStatusEnum.FreeExpansionSlot) >= 2) return true;
+                if (expansionSlots.Count(x => x == ExpansionStatusEnum.FreeExpansionSlot) >= 1) return true;
                 return false;
             }
 
             if (dto.Level == 10)
             {
                 // don't need check palace because third slot is nextExpansionSlot not freeExpansionSlot
-                if (expansionSlots.Count(x => x == ExpansionStatusEnum.FreeExpansionSlot) >= 2) return true;
+                if (expansionSlots.Count(x => x == ExpansionStatusEnum.FreeExpansionSlot) >= 1) return true;
                 return false;
             }
             return false;

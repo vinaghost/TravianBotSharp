@@ -8,6 +8,7 @@ using MainCore.Common.Errors;
 using MainCore.Common.Errors.Storage;
 using MainCore.Common.Extensions;
 using MainCore.Infrasturecture.AutoRegisterDi;
+using MainCore.Notification.Message;
 using MainCore.Parsers;
 using MainCore.Repositories;
 using MainCore.Services;
@@ -74,55 +75,62 @@ namespace MainCore.Tasks
 
             var cost = settler.GetTrainCost();
 
-            result = _unitOfRepository.StorageRepository.IsEnoughResource(VillageId, cost);
-            if (result.IsFailed)
+            do
             {
-                if (result.HasError<GranaryLimit>() || result.HasError<WarehouseLimit>())
-                {
-                    return result
-                        .WithError(new Stop("Please take a look on building job queue"))
-                        .WithError(new TraceMessage(TraceMessage.Line()));
-                }
+                var dtoStorage = _unitOfParser.StockBarParser.Get(html);
 
-                if (!IsUseHeroResource())
-                {
-                    await SetEnoughResourcesTime();
-                    return result
-                        .WithError(new TraceMessage(TraceMessage.Line()));
-                }
+                _unitOfRepository.StorageRepository.Update(VillageId, dtoStorage);
+                await _mediator.Publish(new StorageUpdated(AccountId, VillageId), CancellationToken);
 
-                var missingResource = _unitOfRepository.StorageRepository.GetMissingResource(VillageId, cost);
-                var heroResourceResult = await _useHeroResourceCommand.Handle(new(AccountId, missingResource), CancellationToken);
-                if (heroResourceResult.IsFailed)
+                result = _unitOfRepository.StorageRepository.IsEnoughResource(VillageId, cost);
+                if (result.IsFailed)
                 {
-                    if (!heroResourceResult.HasError<Retry>())
+                    if (result.HasError<GranaryLimit>() || result.HasError<WarehouseLimit>())
                     {
-                        await SetEnoughResourcesTime();
+                        return result
+                            .WithError(new Stop("Please take a look on building job queue"))
+                            .WithError(new TraceMessage(TraceMessage.Line()));
                     }
 
-                    return heroResourceResult.WithError(new TraceMessage(TraceMessage.Line()));
+                    if (!IsUseHeroResource())
+                    {
+                        await SetEnoughResourcesTime();
+                        return result
+                            .WithError(new TraceMessage(TraceMessage.Line()));
+                    }
+
+                    var missingResource = _unitOfRepository.StorageRepository.GetMissingResource(VillageId, cost);
+                    var heroResourceResult = await _useHeroResourceCommand.Handle(new(AccountId, missingResource), CancellationToken);
+                    if (heroResourceResult.IsFailed)
+                    {
+                        if (!heroResourceResult.HasError<Retry>())
+                        {
+                            await SetEnoughResourcesTime();
+                        }
+
+                        return heroResourceResult.WithError(new TraceMessage(TraceMessage.Line()));
+                    }
                 }
+
+                result = await _inputAmountTroopCommand.Handle(new(AccountId, settler, 1), CancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                result = await _unitOfCommand.DelayClickCommand.Handle(new(AccountId), CancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                result = await chromeBrowser.WaitPageLoaded(CancellationToken);
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                html = chromeBrowser.Html;
+
+                var currentSettler = _unitOfParser.SettleParser.GetSettlerAmount(html, settler);
+                var progressSettler = _unitOfParser.SettleParser.GetProgressingSettlerAmount(html, settler);
+                var totalSettler = currentSettler + progressSettler;
+                _unitOfRepository.VillageRepository.SetSettlers(VillageId, totalSettler);
+
+                if (totalSettler >= 3) break;
             }
-
-            result = await _inputAmountTroopCommand.Handle(new(AccountId, settler, 1), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
-            result = await _unitOfCommand.DelayClickCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
-            result = await chromeBrowser.WaitPageLoaded(CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
-            html = chromeBrowser.Html;
-
-            var currentSettler = _unitOfParser.SettleParser.GetSettlerAmount(html, settler);
-            var progressSettler = _unitOfParser.SettleParser.GetProgressingSettlerAmount(html, settler);
-            var totalSettler = currentSettler + progressSettler;
-            _unitOfRepository.VillageRepository.SetSettlers(VillageId, totalSettler);
-            if (totalSettler < 3)
-            {
-                ExecuteAt = DateTime.Now;
-            }
+            while (true);
 
             return Result.Ok();
         }
