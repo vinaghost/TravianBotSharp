@@ -76,9 +76,7 @@ namespace MainCore.Parsers.SettleParser
 
         public bool IsSettlerEnough(HtmlDocument doc, TroopEnums troop)
         {
-            return doc.DocumentNode
-                .Descendants("img")
-                .Any(x => x.HasClass($"u{(int)troop}"));
+            return GetSettlerAmount(doc, troop) + GetProgressingSettlerAmount(doc, troop) >= 3;
         }
 
         public int GetSettlerAmount(HtmlDocument doc, TroopEnums troop)

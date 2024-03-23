@@ -1,4 +1,5 @@
-﻿using MainCore.Common.Enums;
+﻿using Humanizer;
+using MainCore.Common.Enums;
 using MainCore.DTO;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
@@ -84,6 +85,17 @@ namespace MainCore.Repositories
                 return false;
             }
             return false;
+        }
+
+        public string GetExpansionSlot(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var expansionSlots = context.ExpansionSlots
+               .Where(x => x.VillageId == villageId.Value)
+               .Select(x => x.Status == ExpansionStatusEnum.UsedExpansionSlot ? $"{x.Status.Humanize()} : {x.Content}" : $"{x.Status.Humanize()}")
+               .AsEnumerable();
+
+            return string.Join('\n', expansionSlots);
         }
     }
 }

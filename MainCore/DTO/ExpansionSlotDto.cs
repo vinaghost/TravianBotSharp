@@ -8,7 +8,7 @@ namespace MainCore.DTO
     {
         public int Id { get; set; }
         public ExpansionStatusEnum Status { get; set; }
-        public string Content { get; set; }
+        public string Content { get; set; } = "";
     }
 
     [Mapper]

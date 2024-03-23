@@ -5,9 +5,18 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:WPFUI.Views.Tabs.Villages"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-    </Grid>
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <Border Style="{DynamicResource Box}">
+                <StackPanel>
+                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Settlers" VerticalAlignment="Center" FontWeight="Bold" />
+                    <TextBox x:Name="SettleAmount" IsReadOnly="True" materialDesign:HintAssist.Hint="Amount settler" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="350" HorizontalAlignment="Left" Margin="5,0,0,0" />
+                    <TextBox x:Name="ExpansionSlot" IsReadOnly="True" materialDesign:HintAssist.Hint="ExpansionSlot" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="350" HorizontalAlignment="Left" Margin="5,0,0,0" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
 </v:InfoTabBase>

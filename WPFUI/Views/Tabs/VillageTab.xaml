@@ -21,7 +21,8 @@
                         <MenuItem x:Name="LoadCurrent" Header="Reload this village's building" />
                         <MenuItem x:Name="LoadUnload" Header="Reload village that missing building" />
                         <MenuItem x:Name="LoadAll" Header="Reload all village" />
-                        <MenuItem x:Name="ResetSettle" Header="Reset settler amount" />
+                        <MenuItem x:Name="UpdateExpansionSlot" Header="Update this village's expansion slot" />
+                        <MenuItem x:Name="ResetSettle" Header="Reset this village's settler amount" />
                     </ContextMenu>
                 </ListBox.ContextMenu>
             </ListBox>
@@ -38,9 +39,9 @@
                 <TabItem x:Name="SettingsTab" Header="Settings">
                     <v_tab:VillageSettingTab x:Name="Settings" />
                 </TabItem>
-                <!--<TabItem x:Name="InfoTab" Header="Info">
+                <TabItem x:Name="InfoTab" Header="Info">
                     <v_tab:InfoTab x:Name="Info" />
-                </TabItem>-->
+                </TabItem>
             </TabControl>
         </Border>
     </Grid>

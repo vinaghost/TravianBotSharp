@@ -28,6 +28,7 @@ namespace MainCore.UI.ViewModels.Tabs
         public ReactiveCommand<Unit, Unit> LoadUnload { get; }
         public ReactiveCommand<Unit, Unit> LoadAll { get; }
         public ReactiveCommand<Unit, Unit> ResetSettle { get; }
+        public ReactiveCommand<Unit, Unit> UpdateExpansionSlot { get; }
         public ReactiveCommand<AccountId, List<ListBoxItem>> LoadVillage { get; }
 
         public VillageViewModel(VillageTabStore villageTabStore, IMediator mediator, UnitOfRepository unitOfRepository)
@@ -40,6 +41,7 @@ namespace MainCore.UI.ViewModels.Tabs
             LoadUnload = ReactiveCommand.CreateFromTask(LoadUnloadHandler);
             LoadAll = ReactiveCommand.CreateFromTask(LoadAllHandler);
             ResetSettle = ReactiveCommand.CreateFromTask(ResetSettleHandler);
+            UpdateExpansionSlot = ReactiveCommand.CreateFromTask(UpdateExpansionSlotHandler);
             LoadVillage = ReactiveCommand.Create<AccountId, List<ListBoxItem>>(LoadVillageHandler);
 
             var villageObservable = this.WhenAnyValue(x => x.Villages.SelectedItem);
@@ -84,6 +86,11 @@ namespace MainCore.UI.ViewModels.Tabs
         private async Task LoadAllHandler()
         {
             await _mediator.Send(new LoadAllCommand(AccountId));
+        }
+
+        private async Task UpdateExpansionSlotHandler()
+        {
+            await _mediator.Send(new UpdateExpansionSlotCommand(AccountId, Villages));
         }
 
         private List<ListBoxItem> LoadVillageHandler(AccountId accountId)

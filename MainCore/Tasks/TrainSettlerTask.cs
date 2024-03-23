@@ -38,7 +38,7 @@ namespace MainCore.Tasks
         {
             Result result;
 
-            if (_unitOfRepository.VillageRepository.GetSettlers(VillageId) == 3)
+            if (_unitOfRepository.VillageRepository.GetSettlers(VillageId) >= 3)
             {
                 return Result.Fail(new Skip("Village has enough settlers"));
             }
