@@ -4,5 +4,8 @@
     {
         NormalBuild,
         ResourceBuild,
+        TrainTroop,
+        ResearchTroop,
+        Celebration,
     }
 }
