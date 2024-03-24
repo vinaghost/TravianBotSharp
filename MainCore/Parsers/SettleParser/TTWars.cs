@@ -18,6 +18,11 @@ namespace MainCore.Parsers.SettleParser
             throw new NotImplementedException();
         }
 
+        public HtmlNode GetSettleButton(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
         public int GetSettlerAmount(HtmlDocument doc, TroopEnums troop)
         {
             throw new NotImplementedException();

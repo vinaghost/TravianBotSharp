@@ -124,5 +124,17 @@ namespace MainCore.Parsers.SettleParser
             }
             return sum;
         }
+
+        public HtmlNode GetSettleButton(HtmlDocument doc)
+        {
+            var settleVillageForm = doc.DocumentNode
+                .Descendants("form")
+                .FirstOrDefault(x => x.HasClass("settleVillageForm"));
+            if (settleVillageForm is null) return null;
+            var button = settleVillageForm
+                .Descendants("button")
+                .FirstOrDefault(x => x.HasClass("green"));
+            return button;
+        }
     }
 }

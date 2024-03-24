@@ -26,6 +26,22 @@ namespace MainCore.Repositories
             return accountInfo.HasPlusAccount;
         }
 
+        public bool IsEnoughCP(AccountId accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var accountInfo = context.AccountsInfo
+                .Where(x => x.AccountId == accountId.Value)
+                .FirstOrDefault();
+            if (accountInfo is null) return false;
+
+            var villageCount = context.Villages
+                .Where(x => x.AccountId == accountId.Value)
+                .Count();
+
+            return accountInfo.MaximumVillage > villageCount;
+        }
+
         public void Update(AccountId accountId, AccountInfoDto dto)
         {
             using var context = _contextFactory.CreateDbContext();
