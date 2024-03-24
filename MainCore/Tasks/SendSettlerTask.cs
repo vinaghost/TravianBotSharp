@@ -104,6 +104,8 @@ namespace MainCore.Tasks
             result = await chromeBrowser.WaitPageLoaded(CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
+            _unitOfRepository.ExpansionSlotRepository.RemoveFreeExpansionSlot(VillageId);
+
             return Result.Ok();
         }
 

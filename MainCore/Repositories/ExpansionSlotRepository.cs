@@ -64,24 +64,20 @@ namespace MainCore.Repositories
                .Select(x => x.Status)
                .ToList();
 
-            if (dto.Level == 20)
+            if (IsValidSettleBuilding(dto))
             {
                 if (expansionSlots.Any(x => x == ExpansionStatusEnum.FreeExpansionSlot)) return true;
                 return false;
             }
 
-            if (dto.Level == 15 && dto.Type == BuildingEnums.Palace)
-            {
-                if (expansionSlots.Count(x => x == ExpansionStatusEnum.FreeExpansionSlot) >= 1) return true;
-                return false;
-            }
+            return false;
+        }
 
-            if (dto.Level == 10)
-            {
-                // don't need check palace because third slot is nextExpansionSlot not freeExpansionSlot
-                if (expansionSlots.Count(x => x == ExpansionStatusEnum.FreeExpansionSlot) >= 1) return true;
-                return false;
-            }
+        private bool IsValidSettleBuilding(BuildingDto dto)
+        {
+            if (dto.Level == 20) return true;
+            if (dto.Level == 15 && dto.Type == BuildingEnums.Palace) return true;
+            if (dto.Level == 10) return true;
             return false;
         }
 
@@ -94,6 +90,18 @@ namespace MainCore.Repositories
                .AsEnumerable();
 
             return string.Join('\n', expansionSlots);
+        }
+
+        public void RemoveFreeExpansionSlot(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var expansionSlot = context.ExpansionSlots
+               .Where(x => x.VillageId == villageId.Value)
+               .Where(x => x.Status == ExpansionStatusEnum.FreeExpansionSlot)
+               .FirstOrDefault();
+
+            context.Remove(expansionSlot);
+            context.SaveChanges();
         }
     }
 }
