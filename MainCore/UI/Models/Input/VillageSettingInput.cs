@@ -37,6 +37,7 @@ namespace MainCore.UI.Models.Input
         private bool _autoClaimQuestEnable;
 
         private bool _autoTrainSettle;
+        private bool _autoSendSettle;
 
         public void Set(Dictionary<VillageSettingEnums, int> settings)
         {
@@ -93,6 +94,7 @@ namespace MainCore.UI.Models.Input
             CelebrationWaitBuilding = settings.GetValueOrDefault(VillageSettingEnums.CelebrationWaitBuilding) == 1;
 
             AutoTrainSettle = settings.GetValueOrDefault(VillageSettingEnums.AutoTrainSettle) == 1;
+            AutoSendSettle = settings.GetValueOrDefault(VillageSettingEnums.AutoSendSettle) == 1;
         }
 
         public Dictionary<VillageSettingEnums, int> Get()
@@ -132,6 +134,7 @@ namespace MainCore.UI.Models.Input
             var celebrationWaitBuilding = CelebrationWaitBuilding ? 1 : 0;
 
             var autoTrainSettle = AutoTrainSettle ? 1 : 0;
+            var autoSendSettle = AutoSendSettle ? 1 : 0;
             var settings = new Dictionary<VillageSettingEnums, int>()
             {
                 { VillageSettingEnums.UseHeroResourceForBuilding, useHeroResourceForBuilding },
@@ -170,6 +173,7 @@ namespace MainCore.UI.Models.Input
                 { VillageSettingEnums.ResearchTroopWaitBuilding, researchTroopWaitBuilding },
                 { VillageSettingEnums.CelebrationWaitBuilding, celebrationWaitBuilding },
                 { VillageSettingEnums.AutoTrainSettle, autoTrainSettle },
+                { VillageSettingEnums.AutoSendSettle, autoSendSettle },
             };
             return settings;
         }
@@ -296,6 +300,12 @@ namespace MainCore.UI.Models.Input
         {
             get => _autoTrainSettle;
             set => this.RaiseAndSetIfChanged(ref _autoTrainSettle, value);
+        }
+
+        public bool AutoSendSettle
+        {
+            get => _autoSendSettle;
+            set => this.RaiseAndSetIfChanged(ref _autoSendSettle, value);
         }
     }
 }
