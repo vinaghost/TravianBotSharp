@@ -190,6 +190,40 @@ namespace MainCore.Services
             }
         }
 
+        public TimeSpan GetTimeEnoughResource(long[] required)
+        {
+            var production = GetProduction();
+            var storage = GetStorage();
+
+            var missing = new long[4];
+
+            for (var i = 0; i < 4; i++)
+            {
+                missing[i] = required[i] - storage[i];
+            }
+
+            var time = new TimeSpan[4];
+
+            for (var i = 0; i < 4; i++)
+            {
+                time[i] = TimeSpan.FromSeconds(3600 * missing[i] / production[i]);
+            }
+
+            return time.Max();
+        }
+
+        public long[] GetProduction()
+        {
+            var production = _driver.ExecuteScript("return resources.production") as Dictionary<string, object>;
+            return new long[] { (long)production["l1"], (long)production["l2"], (long)production["l3"], (long)production["l4"] };
+        }
+
+        public long[] GetStorage()
+        {
+            var storage = _driver.ExecuteScript("return resources.storage") as Dictionary<string, object>;
+            return new long[] { (long)storage["l1"], (long)storage["l2"], (long)storage["l3"], (long)storage["l4"] };
+        }
+
         public async Task<Result> Click(By by)
         {
             var elements = _driver.FindElements(by);

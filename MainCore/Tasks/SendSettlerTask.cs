@@ -77,7 +77,7 @@ namespace MainCore.Tasks
 
                 if (!IsUseHeroResource())
                 {
-                    await SetEnoughResourcesTime();
+                    await SetEnoughResourcesTime(Cost);
                     return result
                         .WithError(new TraceMessage(TraceMessage.Line()));
                 }
@@ -88,7 +88,7 @@ namespace MainCore.Tasks
                 {
                     if (!heroResourceResult.HasError<Retry>())
                     {
-                        await SetEnoughResourcesTime();
+                        await SetEnoughResourcesTime(Cost);
                     }
 
                     return heroResourceResult.WithError(new TraceMessage(TraceMessage.Line()));
@@ -121,9 +121,11 @@ namespace MainCore.Tasks
             return useHeroResource;
         }
 
-        private async Task SetEnoughResourcesTime()
+        private async Task SetEnoughResourcesTime(long[] required)
         {
-            ExecuteAt = DateTime.Now.AddMinutes(15);
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            var time = chromeBrowser.GetTimeEnoughResource(required);
+            ExecuteAt = DateTime.Now.Add(time);
             if (_taskManager.IsExist<UpgradeBuildingTask>(AccountId, VillageId))
             {
                 var task = _taskManager.Get<UpgradeBuildingTask>(AccountId, VillageId);

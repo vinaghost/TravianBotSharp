@@ -24,12 +24,14 @@ namespace MainCore.Tasks
         private readonly ICommandHandler<ResearchCommand> _researchCommand;
         private readonly ITaskManager _taskManager;
         private readonly ICommandHandler<UseHeroResourceCommand> _useHeroResourceCommand;
+        private readonly IChromeManager _chromeManager;
 
-        public JobResearchTroopTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager, ICommandHandler<ResearchCommand> researchCommand, ICommandHandler<UseHeroResourceCommand> useHeroResourceCommand) : base(unitOfCommand, unitOfRepository, mediator)
+        public JobResearchTroopTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager, ICommandHandler<ResearchCommand> researchCommand, ICommandHandler<UseHeroResourceCommand> useHeroResourceCommand, IChromeManager chromeManager) : base(unitOfCommand, unitOfRepository, mediator)
         {
             _taskManager = taskManager;
             _researchCommand = researchCommand;
             _useHeroResourceCommand = useHeroResourceCommand;
+            _chromeManager = chromeManager;
         }
 
         protected override async Task<Result> Execute()
@@ -79,7 +81,7 @@ namespace MainCore.Tasks
 
                 if (!IsUseHeroResource())
                 {
-                    await SetEnoughResourcesTime();
+                    await SetEnoughResourcesTime(cost);
                     return result
                         .WithError(new TraceMessage(TraceMessage.Line()));
                 }
@@ -90,7 +92,7 @@ namespace MainCore.Tasks
                 {
                     if (!heroResourceResult.HasError<Retry>())
                     {
-                        await SetEnoughResourcesTime();
+                        await SetEnoughResourcesTime(cost);
                     }
 
                     return heroResourceResult.WithError(new TraceMessage(TraceMessage.Line()));
@@ -128,9 +130,11 @@ namespace MainCore.Tasks
             await _taskManager.ReOrder(AccountId);
         }
 
-        private async Task SetEnoughResourcesTime()
+        private async Task SetEnoughResourcesTime(long[] required)
         {
-            ExecuteAt = DateTime.Now.AddMinutes(15);
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            var time = chromeBrowser.GetTimeEnoughResource(required);
+            ExecuteAt = DateTime.Now.Add(time);
             if (_taskManager.IsExist<UpgradeBuildingTask>(AccountId, VillageId))
             {
                 var task = _taskManager.Get<UpgradeBuildingTask>(AccountId, VillageId);
