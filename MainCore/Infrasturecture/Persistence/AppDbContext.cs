@@ -34,6 +34,7 @@ namespace MainCore.Infrasturecture.Persistence
         public DbSet<Adventure> Adventures { get; set; }
         public DbSet<Troop> Troops { get; set; }
         public DbSet<ExpansionSlot> ExpansionSlots { get; set; }
+        public DbSet<NewVillage> NewVillages { get; set; }
 
         #endregion table
 
@@ -294,6 +295,7 @@ namespace MainCore.Infrasturecture.Persistence
                 KeyValuePair.Create(202403221509,"AddExpansionSlotTable"),
                 KeyValuePair.Create(202422032353,"AddSettlerToVillageTabel"),
                 KeyValuePair.Create(202403232304,"AddMaximumVillageToAccountInfoTable"),
+                KeyValuePair.Create(202403252026,"AddNewVillagesTable"),
             };
             foreach (var migration in migrations)
             {
