@@ -100,5 +100,17 @@ namespace MainCore.Parsers.VillagePanelParser
 
             return int.Parse(yStr);
         }
+
+        public VillageId GetCurrentVillageId(HtmlDocument doc)
+        {
+            var villageBox = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.Id.Equals("sidebarBoxVillagelist"));
+            if (villageBox is null) return VillageId.Empty;
+            var village = villageBox
+                .Descendants("li")
+                .Where(x => IsActive(x))
+                .Select(x => GetId(x))
+                .FirstOrDefault();
+            return village;
+        }
     }
 }

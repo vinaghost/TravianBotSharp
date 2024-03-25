@@ -17,7 +17,7 @@ namespace MainCore.Repositories
         DateTime GetQueueTime(VillageId villageId);
 
         bool IsSkippableBuilding(VillageId villageId);
-
+        bool IsTownHall(VillageId villageId, bool great);
         void Update(VillageId villageId, List<BuildingDto> dtos);
 
         void Update(VillageId villageId, List<QueueBuildingDto> dtos);

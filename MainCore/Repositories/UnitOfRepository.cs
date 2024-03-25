@@ -15,5 +15,6 @@ namespace MainCore.Repositories
                                    IQueueBuildingRepository QueueBuildingRepository,
                                    IStorageRepository StorageRepository,
                                    IVillageRepository VillageRepository,
+                                   IExpansionSlotRepository ExpansionSlotRepository,
                                    IVillageSettingRepository VillageSettingRepository);
 }

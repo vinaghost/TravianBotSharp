@@ -1,5 +1,4 @@
 ﻿using FluentResults;
-using Humanizer;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Common.Extensions;
@@ -23,6 +22,9 @@ namespace MainCore.Repositories
         {
             { typeof(NormalBuildPlan),JobTypeEnums.NormalBuild  },
             { typeof(ResourceBuildPlan),JobTypeEnums.ResourceBuild },
+            { typeof(TrainTroopPlan),JobTypeEnums.TrainTroop },
+            { typeof(ResearchTroopPlan),JobTypeEnums.ResearchTroop },
+            { typeof(CelebrationPlan),JobTypeEnums.Celebration },
         };
 
         public JobRepository(IDbContextFactory<AppDbContext> contextFactory)
@@ -88,6 +90,7 @@ namespace MainCore.Repositories
                 };
 
                 jobs.Add(job);
+                count++;
             }
 
             context.AddRange(jobs);
@@ -187,6 +190,17 @@ namespace MainCore.Repositories
             return jobs;
         }
 
+        public JobDto GetFirst(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var job = context.Jobs
+                .Where(x => x.VillageId == villageId.Value)
+                .OrderBy(x => x.Position)
+                .ToDto()
+                .FirstOrDefault();
+            return job;
+        }
+
         public JobDto GetBuildingJob(VillageId villageId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -227,6 +241,15 @@ namespace MainCore.Repositories
                 .Where(x => x.VillageId == job.VillageId)
                 .Where(x => x.Position > job.Position)
                 .ExecuteUpdate(x => x.SetProperty(x => x.Position, x => x.Position - 1));
+        }
+
+        public void Update<T>(JobId jobId, T plan)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var content = JsonSerializer.Serialize(plan);
+            context.Jobs
+                .Where(x => x.Id == jobId.Value)
+                .ExecuteUpdate(x => x.SetProperty(x => x.Content, x => content));
         }
 
         public void Delete(VillageId villageId)
@@ -281,12 +304,27 @@ namespace MainCore.Repositories
                 case JobTypeEnums.NormalBuild:
                     {
                         var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
-                        return $"Build {plan.Type.Humanize()} to level {plan.Level} at location {plan.Location}";
+                        return plan.ToString();
                     }
                 case JobTypeEnums.ResourceBuild:
                     {
                         var plan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content);
-                        return $"Build {plan.Plan.Humanize()} to level {plan.Level}";
+                        return plan.ToString();
+                    }
+                case JobTypeEnums.TrainTroop:
+                    {
+                        var plan = JsonSerializer.Deserialize<TrainTroopPlan>(job.Content);
+                        return plan.ToString();
+                    }
+                case JobTypeEnums.ResearchTroop:
+                    {
+                        var plan = JsonSerializer.Deserialize<ResearchTroopPlan>(job.Content);
+                        return plan.ToString();
+                    }
+                case JobTypeEnums.Celebration:
+                    {
+                        var plan = JsonSerializer.Deserialize<CelebrationPlan>(job.Content);
+                        return plan.ToString();
                     }
                 default:
                     return job.Content;
@@ -295,7 +333,7 @@ namespace MainCore.Repositories
 
         public bool JobComplete(VillageId villageId, JobDto job)
         {
-            if (job.Type == JobTypeEnums.ResourceBuild) return false;
+            if (job.Type != JobTypeEnums.NormalBuild) return false;
             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
 
             using var context = _contextFactory.CreateDbContext();
@@ -321,7 +359,7 @@ namespace MainCore.Repositories
 
         public Result JobValid(VillageId villageId, JobDto job)
         {
-            if (job.Type == JobTypeEnums.ResourceBuild) return Result.Ok();
+            if (job.Type != JobTypeEnums.NormalBuild) return Result.Ok();
             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
             if (plan.Type.IsResourceField()) return Result.Ok();
             using var context = _contextFactory.CreateDbContext();

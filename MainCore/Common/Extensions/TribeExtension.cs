@@ -4,6 +4,19 @@ namespace MainCore.Common.Extensions
 {
     public static class TribeExtension
     {
+        public static TroopEnums GetSettle(this TribeEnums tribe)
+        {
+            return tribe switch
+            {
+                TribeEnums.Romans => TroopEnums.RomanSettler,
+                TribeEnums.Teutons => TroopEnums.TeutonSettler,
+                TribeEnums.Gauls => TroopEnums.GaulSettler,
+                TribeEnums.Egyptians => TroopEnums.EgyptianSettler,
+                TribeEnums.Huns => TroopEnums.HunSettler,
+                _ => TroopEnums.None,
+            };
+        }
+
         public static List<HeroItemEnums> GetWeapons(this TribeEnums tribe)
         {
             return tribe switch
