@@ -296,6 +296,7 @@ namespace MainCore.Infrasturecture.Persistence
                 KeyValuePair.Create(202422032353,"AddSettlerToVillageTabel"),
                 KeyValuePair.Create(202403232304,"AddMaximumVillageToAccountInfoTable"),
                 KeyValuePair.Create(202403252026,"AddNewVillagesTable"),
+                KeyValuePair.Create(202403232304,"AddMaximumVillageToAccountInfoTable"),
             };
             foreach (var migration in migrations)
             {
