@@ -46,8 +46,9 @@ namespace MainCore.Tasks
             var chromeBrowser = _chromeManager.Get(AccountId);
             var account = _unitOfRepository.AccountRepository.Get(AccountId);
 
-            var x = 81;
-            var y = 76;
+            var newVillage = _unitOfRepository.NewVillageRepository.Get(AccountId);
+            if (newVillage is null) return Result.Fail(new Skip("There is no new village in Settle tab"));
+            var (x, y) = (newVillage.X, newVillage.Y);
             var kid = 1 + ((200 - y) * (200 * 2 + 1)) + 200 + x;
             result = await chromeBrowser.Navigate($"{account.Server}build.php?gid=16&tt=2&eventType=10&targetMapId={kid}", CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
