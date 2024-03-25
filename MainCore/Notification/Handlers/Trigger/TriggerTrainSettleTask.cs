@@ -50,7 +50,15 @@ namespace MainCore.Notification.Handlers.Trigger
             if (!_unitOfRepository.ExpansionSlotRepository.IsSlotAvailable(villageId)) return;
 
             if (_taskManager.IsExist<TrainSettlerTask>(accountId, villageId)) return;
-            await _taskManager.Add<TrainSettlerTask>(accountId, villageId);
+
+            var now = DateTime.Now;
+
+            if (_taskManager.IsExist<UpgradeBuildingTask>(accountId, villageId))
+            {
+                var task = _taskManager.Get<UpgradeBuildingTask>(accountId, villageId);
+                task.ExecuteAt = now.AddSeconds(1);
+            }
+            await _taskManager.Add<TrainSettlerTask>(accountId, villageId, executeTime: now);
         }
     }
 }

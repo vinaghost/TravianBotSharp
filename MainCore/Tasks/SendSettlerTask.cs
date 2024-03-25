@@ -19,13 +19,6 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class SendSettlerTask : VillageTask
     {
-        private static readonly Dictionary<BuildingEnums, VillageSettingEnums> _settings = new()
-        {
-            {BuildingEnums.Barracks, VillageSettingEnums.BarrackTroop },
-            {BuildingEnums.Stable, VillageSettingEnums.StableTroop },
-            {BuildingEnums.Workshop, VillageSettingEnums.WorkshopTroop },
-        };
-
         private readonly long[] Cost = new long[] { 750, 750, 750, 750 };
         private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;

@@ -51,7 +51,14 @@ namespace MainCore.Notification.Handlers.Trigger
             if (_unitOfRepository.VillageRepository.GetSettlers(villageId) < 3) return;
 
             if (_taskManager.IsExist<SendSettlerTask>(accountId, villageId)) return;
-            await _taskManager.Add<SendSettlerTask>(accountId, villageId);
+            var now = DateTime.Now;
+
+            if (_taskManager.IsExist<UpgradeBuildingTask>(accountId, villageId))
+            {
+                var task = _taskManager.Get<UpgradeBuildingTask>(accountId, villageId);
+                task.ExecuteAt = now.AddSeconds(1);
+            }
+            await _taskManager.Add<SendSettlerTask>(accountId, villageId, executeTime: now);
         }
     }
 }
