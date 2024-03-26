@@ -92,6 +92,8 @@ namespace MainCore.Tasks
             var settleButton = _unitOfParser.SettleParser.GetSettleButton(html);
             if (settleButton is null) return Result.Fail(Retry.ButtonNotFound("settle"));
 
+            _unitOfRepository.NewVillageRepository.Delete(newVillage.Id);
+
             result = await chromeBrowser.Click(By.XPath(settleButton.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
