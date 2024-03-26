@@ -103,6 +103,16 @@ namespace MainCore.Repositories
             return villages;
         }
 
+        public bool IsMissingBuilding(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var missingBuildingVillages = context.Villages
+                .Where(x => x.Id == villageId.Value)
+                .Any(x => x.Buildings.Count() != 40);
+            return missingBuildingVillages;
+        }
+
         public List<VillageId> GetMissingBuildingVillages(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();
