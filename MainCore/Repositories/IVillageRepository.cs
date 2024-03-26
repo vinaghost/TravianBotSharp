@@ -7,13 +7,26 @@ namespace MainCore.Repositories
     public interface IVillageRepository
     {
         List<VillageId> Get(AccountId accountId);
+
         VillageId GetActiveVillages(AccountId accountId);
+
         List<VillageId> GetHasBuildingJobVillages(AccountId accountId);
+
         List<VillageId> GetInactiveVillages(AccountId accountId);
+
         List<VillageId> GetMissingBuildingVillages(AccountId accountId);
+
         List<ListBoxItem> GetItems(AccountId accountId);
+
         string GetVillageName(VillageId villageId);
+
         void Update(AccountId accountId, List<VillageDto> dtos);
+
         VillageId GetVillageHasRallypoint(AccountId accountId);
+
+        int GetSettlers(VillageId villageId);
+
+        void SetSettlers(VillageId villageId, int settlers);
+        bool IsMissingBuilding(VillageId villageId);
     }
 }

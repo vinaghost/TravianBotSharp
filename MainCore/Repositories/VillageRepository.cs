@@ -28,6 +28,24 @@ namespace MainCore.Repositories
             return villageName;
         }
 
+        public int GetSettlers(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var settlers = context.Villages
+                .Where(x => x.Id == villageId.Value)
+                .Select(x => x.Settlers)
+                .FirstOrDefault();
+            return settlers;
+        }
+
+        public void SetSettlers(VillageId villageId, int settlers)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            context.Villages
+                .Where(x => x.Id == villageId.Value)
+                .ExecuteUpdate(x => x.SetProperty(x => x.Settlers, x => settlers));
+        }
+
         public VillageId GetActiveVillages(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -83,6 +101,16 @@ namespace MainCore.Repositories
                 .Select(x => new VillageId(x))
                 .ToList();
             return villages;
+        }
+
+        public bool IsMissingBuilding(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var missingBuildingVillages = context.Villages
+                .Where(x => x.Id == villageId.Value)
+                .Any(x => x.Buildings.Count() != 40);
+            return missingBuildingVillages;
         }
 
         public List<VillageId> GetMissingBuildingVillages(AccountId accountId)

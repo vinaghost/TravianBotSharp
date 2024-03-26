@@ -27,7 +27,7 @@ namespace MainCore.Parsers.QuestParser
         {
             var taskTable = doc.DocumentNode
                 .Descendants("div")
-                .Where(x => x.HasClass("tasks") && x.HasClass("tasksVillage"))
+                .Where(x => x.HasClass("taskOverview"))
                 .FirstOrDefault();
             if (taskTable is null) return null;
 
