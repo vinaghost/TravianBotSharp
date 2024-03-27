@@ -215,5 +215,19 @@ namespace MainCore.Repositories
 
             return queue;
         }
+
+        public QueueBuilding GetSettleBuilding(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var settleBuildings = new List<BuildingEnums>() { BuildingEnums.Residence, BuildingEnums.Palace, BuildingEnums.CommandCenter };
+
+            var queue = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => settleBuildings.Contains(x.Type))
+                .Where(x => x.Level == 10 || x.Level == 15 || x.Level == 20)
+                .FirstOrDefault();
+
+            return queue;
+        }
     }
 }
