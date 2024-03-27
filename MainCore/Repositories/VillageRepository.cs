@@ -38,12 +38,15 @@ namespace MainCore.Repositories
             return settlers;
         }
 
-        public void SetSettlers(VillageId villageId, int settlers)
+        public void SetSettlers(VillageId villageId, int settlers, int progressingSettlers)
         {
             using var context = _contextFactory.CreateDbContext();
             context.Villages
                 .Where(x => x.Id == villageId.Value)
-                .ExecuteUpdate(x => x.SetProperty(x => x.Settlers, x => settlers));
+                .ExecuteUpdate(x => x
+                    .SetProperty(x => x.Settlers, x => settlers)
+                    .SetProperty(x => x.ProgressingSettlers, x => progressingSettlers)
+                );
         }
 
         public VillageId GetActiveVillages(AccountId accountId)

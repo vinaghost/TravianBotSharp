@@ -36,7 +36,7 @@ namespace MainCore.Commands.UI.Village
                 return;
             }
             var villageId = new VillageId(villages.SelectedItemId);
-            _unitOfRepository.VillageRepository.SetSettlers(villageId, 0);
+            _unitOfRepository.VillageRepository.SetSettlers(villageId, 0, 0);
             _dialogService.ShowMessageBox("Information", $"Complete set settler to 0");
             await Task.CompletedTask;
         }
