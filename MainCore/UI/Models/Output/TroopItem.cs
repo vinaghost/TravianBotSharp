@@ -1,4 +1,5 @@
-﻿using MainCore.Common.Enums;
+﻿using Humanizer;
+using MainCore.Common.Enums;
 using MainCore.Common.Extensions;
 using ReactiveUI;
 using System.Drawing;
@@ -52,6 +53,8 @@ namespace MainCore.UI.Models.Output
         }
 
         public TroopEnums Troop { get; }
+
+        public string TroopName => Troop.Humanize();
 
         public string ImageSource => GetImageSource(Troop);
         public Rectangle ImageMask => GetImageMask(Troop);

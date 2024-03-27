@@ -49,6 +49,15 @@ namespace WPFUI.Views.Tabs.Villages
                 this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.AutoRefreshTime, v => v.AutoRefreshTime.ViewModel).DisposeWith(d);
 
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.AutoClaimQuestEnable, v => v.AutoClaimQuestEnable.IsChecked).DisposeWith(d);
+
+                this.Bind(ViewModel, vm => vm.VillageSettingInput.TrainTroopBatch, v => v.TrainTroopBatch.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.VillageSettingInput.TrainTroopBatchSize, v => v.TrainTroopBatchSize.Text).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.VillageSettingInput.TrainTroopWaitBuilding, v => v.TrainTroopWaitBuilding.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.VillageSettingInput.ResearchTroopWaitBuilding, v => v.ResearchTroopWaitBuilding.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.VillageSettingInput.CelebrationWaitBuilding, v => v.CelebrationWaitBuilding.IsChecked).DisposeWith(d);
+
+                this.Bind(ViewModel, vm => vm.VillageSettingInput.AutoTrainSettle, v => v.AutoTrainSettle.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.VillageSettingInput.AutoSendSettle, v => v.AutoSendSettle.IsChecked).DisposeWith(d);
             });
         }
     }
