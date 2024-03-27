@@ -49,6 +49,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
             if (!_unitOfRepository.AccountInfoRepository.IsEnoughCP(accountId)) return;
             if (_unitOfRepository.VillageRepository.GetSettlers(villageId) < 3) return;
+            if (_unitOfRepository.NewVillageRepository.IsSettling(accountId, villageId)) return;
 
             if (_taskManager.IsExist<SendSettlerTask>(accountId, villageId)) return;
             var now = DateTime.Now;

@@ -44,12 +44,24 @@ namespace MainCore.Repositories
                 .ExecuteUpdate(x => x.SetProperty(x => x.VillageId, x => 0));
         }
 
-        public void Delete(int id)
+        public void Delete(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();
-            context.NewVillages
-                .Where(x => x.Id == id)
-                .ExecuteDelete();
+            var coordinates = context.Villages
+                .Where(x => x.AccountId == accountId.Value)
+                .Select(x => new { x.X, x.Y })
+                .ToList();
+
+            var newVillages = context.NewVillages
+                .Where(x => x.AccountId == accountId.Value)
+                .ToList();
+
+            foreach (var newVillage in newVillages)
+            {
+                if (coordinates.Any(x => x.X == newVillage.X && x.Y == newVillage.Y)) context.Remove(newVillage);
+            }
+
+            context.SaveChanges();
         }
 
         public void SetVillage(int id, VillageId villageId)
@@ -69,6 +81,15 @@ namespace MainCore.Repositories
                 .Where(x => x.VillageId == 0)
                 .FirstOrDefault();
             return newVillage;
+        }
+
+        public bool IsSettling(AccountId accountId, VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            return context.NewVillages
+                .Where(x => x.AccountId == accountId.Value)
+                .Any(x => x.VillageId == villageId.Value);
         }
 
         public List<NewVillage> GetAll(AccountId accountId)

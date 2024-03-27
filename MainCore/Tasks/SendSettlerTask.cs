@@ -37,6 +37,7 @@ namespace MainCore.Tasks
         protected override async Task<Result> Execute()
         {
             Result result;
+            if (_unitOfRepository.NewVillageRepository.IsSettling(AccountId, VillageId)) return Result.Ok();
 
             result = await _unitOfCommand.UpdateAccountInfoCommand.Handle(new(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
