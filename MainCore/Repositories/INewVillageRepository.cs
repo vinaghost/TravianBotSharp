@@ -11,5 +11,6 @@ namespace MainCore.Repositories
         NewVillage Get(AccountId accountId);
 
         List<NewVillage> GetAll(AccountId accountId);
+        void SetVillage(int id, VillageId villageId);
     }
 }

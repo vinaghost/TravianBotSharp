@@ -35,12 +35,21 @@ namespace MainCore.Repositories
                 .ExecuteDelete();
         }
 
+        public void SetVillage(int id, VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            context.NewVillages
+                .Where(x => x.Id == id)
+                .ExecuteUpdate(x => x.SetProperty(x => x.VillageId, x => villageId.Value));
+        }
+
         public NewVillage Get(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();
 
             var newVillage = context.NewVillages
                 .Where(x => x.AccountId == accountId.Value)
+                .Where(x => x.VillageId == 0)
                 .FirstOrDefault();
             return newVillage;
         }
