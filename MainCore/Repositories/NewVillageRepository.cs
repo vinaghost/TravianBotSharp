@@ -44,6 +44,14 @@ namespace MainCore.Repositories
                 .ExecuteUpdate(x => x.SetProperty(x => x.VillageId, x => 0));
         }
 
+        public void Delete(int id)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            context.NewVillages
+                .Where(x => x.Id == id)
+                .ExecuteDelete();
+        }
+
         public void Delete(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();

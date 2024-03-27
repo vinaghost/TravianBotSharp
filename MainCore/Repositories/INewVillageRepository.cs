@@ -8,6 +8,8 @@ namespace MainCore.Repositories
 
         void Delete(AccountId accountId);
 
+        void Delete(int id);
+
         NewVillage Get(AccountId accountId);
 
         List<NewVillage> GetAll(AccountId accountId);
