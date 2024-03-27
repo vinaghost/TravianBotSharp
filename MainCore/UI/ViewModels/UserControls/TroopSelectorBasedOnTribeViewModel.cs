@@ -28,6 +28,9 @@ namespace MainCore.UI.ViewModels.UserControls
                     TroopEnums.EquitesLegati,
                     TroopEnums.EquitesImperatoris,
                     TroopEnums.EquitesCaesaris,
+                    TroopEnums.RomanRam,
+                    TroopEnums.RomanCatapult,
+                    TroopEnums.RomanChief,
                 },
                 TribeEnums.Teutons => new()
                 {
@@ -37,6 +40,9 @@ namespace MainCore.UI.ViewModels.UserControls
                     TroopEnums.Scout,
                     TroopEnums.Paladin,
                     TroopEnums.TeutonicKnight,
+                    TroopEnums.TeutonRam,
+                    TroopEnums.TeutonCatapult,
+                    TroopEnums.TeutonChief,
                 },
                 TribeEnums.Gauls => new()
                 {
@@ -46,6 +52,9 @@ namespace MainCore.UI.ViewModels.UserControls
                     TroopEnums.TheutatesThunder,
                     TroopEnums.Druidrider,
                     TroopEnums.Haeduan,
+                    TroopEnums.GaulRam,
+                    TroopEnums.GaulCatapult,
+                    TroopEnums.GaulChief
                 },
                 TribeEnums.Nature => new(),
                 TribeEnums.Natars => new(),
@@ -57,6 +66,9 @@ namespace MainCore.UI.ViewModels.UserControls
                     TroopEnums.SopduExplorer,
                     TroopEnums.AnhurGuard,
                     TroopEnums.ReshephChariot,
+                    TroopEnums.EgyptianRam,
+                    TroopEnums.EgyptianCatapult,
+                    TroopEnums.EgyptianChief
                 },
                 TribeEnums.Huns => new()
                 {
@@ -66,6 +78,9 @@ namespace MainCore.UI.ViewModels.UserControls
                     TroopEnums.SteppeRider,
                     TroopEnums.Marksman,
                     TroopEnums.Marauder,
+                    TroopEnums.HunRam,
+                    TroopEnums.HunCatapult,
+                    TroopEnums.HunChief
                 },
                 _ => new(),
             };

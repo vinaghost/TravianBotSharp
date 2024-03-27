@@ -113,9 +113,32 @@ namespace MainCore.Tasks
                         return heroResourceResult.WithError(new TraceMessage(TraceMessage.Line()));
                     }
                 }
+                var currentSettler = _unitOfParser.SettleParser.GetSettlerAmount(html, settler);
+                var progressSettler = _unitOfParser.SettleParser.GetProgressingSettlerAmount(html, settler);
+                var totalSettler = currentSettler + progressSettler;
 
-                result = await _inputAmountTroopCommand.Handle(new(AccountId, settler, 1), CancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                var validNum = 0;
+                for (var i = 3 - totalSettler; i > 0; i--)
+                {
+                    cost = settler.GetTrainCost().Select(x => x * i).ToArray();
+                    result = _unitOfRepository.StorageRepository.IsEnoughResource(VillageId, cost);
+                    if (result.IsSuccess)
+                    {
+                        validNum = i;
+                        break;
+                    }
+                }
+
+                if (validNum != 0)
+                {
+                    result = await _inputAmountTroopCommand.Handle(new(AccountId, settler, validNum), CancellationToken);
+                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                }
+                else
+                {
+                    result = await _inputAmountTroopCommand.Handle(new(AccountId, settler, 1), CancellationToken);
+                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                }
 
                 result = await _unitOfCommand.DelayClickCommand.Handle(new(AccountId), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
@@ -125,10 +148,10 @@ namespace MainCore.Tasks
 
                 html = chromeBrowser.Html;
 
-                var currentSettler = _unitOfParser.SettleParser.GetSettlerAmount(html, settler);
-                var progressSettler = _unitOfParser.SettleParser.GetProgressingSettlerAmount(html, settler);
+                currentSettler = _unitOfParser.SettleParser.GetSettlerAmount(html, settler);
+                progressSettler = _unitOfParser.SettleParser.GetProgressingSettlerAmount(html, settler);
                 _unitOfRepository.VillageRepository.SetSettlers(VillageId, currentSettler, progressSettler);
-                var totalSettler = currentSettler + progressSettler;
+                totalSettler = currentSettler + progressSettler;
 
                 if (totalSettler >= 3) break;
             }
