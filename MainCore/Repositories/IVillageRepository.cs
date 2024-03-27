@@ -27,6 +27,9 @@ namespace MainCore.Repositories
         int GetSettlers(VillageId villageId);
 
         void SetSettlers(VillageId villageId, int settlers, int progressingSettlers);
+
         bool IsMissingBuilding(VillageId villageId);
+
+        int GetProgressingSettlers(VillageId villageId);
     }
 }

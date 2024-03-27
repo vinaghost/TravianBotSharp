@@ -5,6 +5,7 @@ using MainCore.Commands.Features.Step.UpgradeBuilding;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Common.Errors.Storage;
+using MainCore.Common.Extensions;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Notification.Message;
 using MainCore.Parsers;
@@ -43,11 +44,18 @@ namespace MainCore.Tasks
             var enoughCP = _unitOfRepository.AccountInfoRepository.IsEnoughCP(AccountId);
             if (!enoughCP) return Result.Fail(new Skip("Not enough CP for settling"));
 
-            var chromeBrowser = _chromeManager.Get(AccountId);
-            var account = _unitOfRepository.AccountRepository.Get(AccountId);
-
             var newVillage = _unitOfRepository.NewVillageRepository.Get(AccountId);
             if (newVillage is null) return Result.Fail(new Skip("There is no new village in Settle tab"));
+
+            var progressingSettler = _unitOfRepository.VillageRepository.GetProgressingSettlers(VillageId);
+            if (progressingSettler > 0)
+            {
+                result = await UpdateProgressingSettle();
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            }
+
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            var account = _unitOfRepository.AccountRepository.Get(AccountId);
             var (x, y) = (newVillage.X, newVillage.Y);
             var kid = 1 + ((200 - y) * (200 * 2 + 1)) + 200 + x;
             result = await chromeBrowser.Navigate($"{account.Server}build.php?gid=16&tt=2&eventType=10&targetMapId={kid}", CancellationToken);
@@ -107,6 +115,52 @@ namespace MainCore.Tasks
         {
             var name = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
             _name = $"Send settle in {name}";
+        }
+
+        private async Task<Result> UpdateProgressingSettle()
+        {
+            Result result;
+            result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line())); result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            var location = _unitOfRepository.BuildingRepository.GetSettleLocation(VillageId);
+            if (location == default)
+            {
+                return Result.Fail(new Skip("There is no building for settle"));
+            }
+
+            result = await _unitOfCommand.ToBuildingCommand.Handle(new(AccountId, location), CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await _unitOfCommand.SwitchTabCommand.Handle(new(AccountId, 1), CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            var html = chromeBrowser.Html;
+
+            var tribe = (TribeEnums)_unitOfRepository.AccountSettingRepository.GetByName(AccountId, AccountSettingEnums.Tribe);
+            var settler = tribe.GetSettle();
+
+            var currentSettler = _unitOfParser.SettleParser.GetSettlerAmount(html, settler);
+            var progressSettler = _unitOfParser.SettleParser.GetProgressingSettlerAmount(html, settler);
+            _unitOfRepository.VillageRepository.SetSettlers(VillageId, currentSettler, progressSettler);
+
+            if (progressSettler > 0)
+            {
+                var time = _unitOfParser.SettleParser.GetProgressingSettlerCompleteTime(html, settler);
+
+                ExecuteAt = DateTime.Now.Add(time);
+                if (_taskManager.IsExist<UpgradeBuildingTask>(AccountId, VillageId))
+                {
+                    var task = _taskManager.Get<UpgradeBuildingTask>(AccountId, VillageId);
+                    task.ExecuteAt = ExecuteAt.AddSeconds(1);
+                }
+                await _taskManager.ReOrder(AccountId);
+                return Result.Fail(new Skip("Wait training settler complete"));
+            }
+
+            return Result.Ok();
         }
 
         private bool IsUseHeroResource()

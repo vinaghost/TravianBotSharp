@@ -33,7 +33,17 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
             var settlers = context.Villages
                 .Where(x => x.Id == villageId.Value)
-                .Select(x => x.Settlers)
+                .Select(x => x.Settlers + x.ProgressingSettlers)
+                .FirstOrDefault();
+            return settlers;
+        }
+
+        public int GetProgressingSettlers(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var settlers = context.Villages
+                .Where(x => x.Id == villageId.Value)
+                .Select(x => x.ProgressingSettlers)
                 .FirstOrDefault();
             return settlers;
         }

@@ -69,7 +69,9 @@ namespace MainCore.Tasks
 
             if (_unitOfParser.SettleParser.IsSettlerEnough(html, settler))
             {
-                _unitOfRepository.VillageRepository.SetSettlers(VillageId, _unitOfParser.SettleParser.GetSettlerAmount(html, settler), _unitOfParser.SettleParser.GetProgressingSettlerAmount(html, settler));
+                var currentSettler = _unitOfParser.SettleParser.GetSettlerAmount(html, settler);
+                var progressSettler = _unitOfParser.SettleParser.GetProgressingSettlerAmount(html, settler);
+                _unitOfRepository.VillageRepository.SetSettlers(VillageId, currentSettler, progressSettler);
                 return Result.Fail(new Skip("Village has enough settlers"));
             }
 
@@ -125,8 +127,8 @@ namespace MainCore.Tasks
 
                 var currentSettler = _unitOfParser.SettleParser.GetSettlerAmount(html, settler);
                 var progressSettler = _unitOfParser.SettleParser.GetProgressingSettlerAmount(html, settler);
+                _unitOfRepository.VillageRepository.SetSettlers(VillageId, currentSettler, progressSettler);
                 var totalSettler = currentSettler + progressSettler;
-                _unitOfRepository.VillageRepository.SetSettlers(VillageId, totalSettler, progressSettler);
 
                 if (totalSettler >= 3) break;
             }

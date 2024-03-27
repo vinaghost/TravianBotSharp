@@ -9,7 +9,7 @@ namespace MainCore.Parsers
         IEnumerable<ExpansionSlotDto> Get(HtmlDocument doc);
 
         int GetProgressingSettlerAmount(HtmlDocument doc, TroopEnums troop);
-
+        TimeSpan GetProgressingSettlerCompleteTime(HtmlDocument doc, TroopEnums troop);
         HtmlNode GetSettleButton(HtmlDocument doc);
 
         int GetSettlerAmount(HtmlDocument doc, TroopEnums troop);

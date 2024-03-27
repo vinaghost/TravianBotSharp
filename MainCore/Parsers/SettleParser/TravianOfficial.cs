@@ -125,6 +125,37 @@ namespace MainCore.Parsers.SettleParser
             return sum;
         }
 
+        public TimeSpan GetProgressingSettlerCompleteTime(HtmlDocument doc, TroopEnums troop)
+        {
+            var table = doc.DocumentNode
+                .Descendants("table")
+                .FirstOrDefault(x => x.HasClass("under_progress"));
+            if (table is null) return TimeSpan.MaxValue;
+            var tbody = table
+                .Descendants("tbody")
+                .FirstOrDefault();
+
+            var troops = tbody.Descendants("img").Where(x => x.HasClass("unit")).ToList();
+
+            var max = TimeSpan.MinValue;
+            for (int i = 0; i < troops.Count; i++)
+            {
+                var cls = troops[i].GetClasses().FirstOrDefault(x => x != "unit");
+                var progressingTroop = (TroopEnums)cls.ToInt();
+                if (troop != progressingTroop) continue;
+                var dur = troops[i].ParentNode.NextSibling;
+                if (dur is null) return TimeSpan.MaxValue;
+                if (!dur.HasClass("dur")) return TimeSpan.MaxValue;
+                var timer = dur.Descendants("span").FirstOrDefault(x => x.HasClass("timer"));
+                if (timer is null) return TimeSpan.MaxValue;
+
+                var value = timer.GetAttributeValue("value", 0);
+                var time = TimeSpan.FromSeconds(value);
+                if (max < time) max = time;
+            }
+            return max;
+        }
+
         public HtmlNode GetSettleButton(HtmlDocument doc)
         {
             var settleVillageForm = doc.DocumentNode
