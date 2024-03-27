@@ -74,11 +74,17 @@ namespace MainCore.UI.ViewModels.Tabs
         private List<ListBoxItem> LoadNewVillagesHandler()
         {
             var items = _unitOfrepository.NewVillageRepository.GetAll(AccountId);
+            string Content(NewVillage village)
+            {
+                var villageName = _unitOfrepository.VillageRepository.GetVillageName(new VillageId(village.VillageId));
+                if (string.IsNullOrEmpty(villageName)) villageName = "available";
+                return $"{village.X} | {village.Y} [{villageName}]";
+            }
             return items
                 .Select(x => new ListBoxItem()
                 {
                     Id = x.Id,
-                    Content = $"{x.X} | {x.Y}"
+                    Content = Content(x),
                 })
                 .ToList();
         }
@@ -90,7 +96,16 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task AddHandler()
         {
-            _unitOfrepository.NewVillageRepository.Add(AccountId, X, Y);
+            if (!_unitOfrepository.NewVillageRepository.IsExist(AccountId, X, Y))
+            {
+                var result = _dialogService.ShowConfirmBox("Warning", "Duplicate coordinate, do you want to reset village");
+                if (!result) return;
+                _unitOfrepository.NewVillageRepository.Reset(AccountId, X, Y);
+            }
+            else
+            {
+                _unitOfrepository.NewVillageRepository.Add(AccountId, X, Y);
+            }
             await LoadNewVillages.Execute();
         }
 

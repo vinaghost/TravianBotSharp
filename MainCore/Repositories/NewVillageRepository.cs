@@ -27,6 +27,23 @@ namespace MainCore.Repositories
             context.SaveChanges();
         }
 
+        public bool IsExist(AccountId accountId, int x, int y)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return context.NewVillages
+                .Where(x => x.AccountId == accountId.Value)
+                .Any(v => v.X == x && v.Y == y);
+        }
+
+        public void Reset(AccountId accountId, int x, int y)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            context.NewVillages
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(v => v.X == x && v.Y == y)
+                .ExecuteUpdate(x => x.SetProperty(x => x.VillageId, x => 0));
+        }
+
         public void Delete(int id)
         {
             using var context = _contextFactory.CreateDbContext();

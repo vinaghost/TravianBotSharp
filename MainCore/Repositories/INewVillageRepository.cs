@@ -11,6 +11,8 @@ namespace MainCore.Repositories
         NewVillage Get(AccountId accountId);
 
         List<NewVillage> GetAll(AccountId accountId);
+        bool IsExist(AccountId accountId, int x, int y);
+        void Reset(AccountId accountId, int x, int y);
         void SetVillage(int id, VillageId villageId);
     }
 }
