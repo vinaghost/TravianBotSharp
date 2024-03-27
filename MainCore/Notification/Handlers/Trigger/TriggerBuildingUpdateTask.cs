@@ -28,6 +28,8 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId)
         {
+            _unitOfRepository.NewVillageRepository.Delete(accountId);
+
             var autoLoadVillageBuilding = _unitOfRepository.AccountSettingRepository.GetBooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             if (!autoLoadVillageBuilding) return;
 

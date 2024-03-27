@@ -27,6 +27,8 @@ namespace MainCore.UI.ViewModels.Tabs
         public ReactiveCommand<Unit, Unit> LoadCurrent { get; }
         public ReactiveCommand<Unit, Unit> LoadUnload { get; }
         public ReactiveCommand<Unit, Unit> LoadAll { get; }
+        public ReactiveCommand<Unit, Unit> ResetSettle { get; }
+        public ReactiveCommand<Unit, Unit> UpdateExpansionSlot { get; }
         public ReactiveCommand<AccountId, List<ListBoxItem>> LoadVillage { get; }
 
         public VillageViewModel(VillageTabStore villageTabStore, IMediator mediator, UnitOfRepository unitOfRepository)
@@ -38,6 +40,8 @@ namespace MainCore.UI.ViewModels.Tabs
             LoadCurrent = ReactiveCommand.CreateFromTask(LoadCurrentHandler);
             LoadUnload = ReactiveCommand.CreateFromTask(LoadUnloadHandler);
             LoadAll = ReactiveCommand.CreateFromTask(LoadAllHandler);
+            ResetSettle = ReactiveCommand.CreateFromTask(ResetSettleHandler);
+            UpdateExpansionSlot = ReactiveCommand.CreateFromTask(UpdateExpansionSlotHandler);
             LoadVillage = ReactiveCommand.Create<AccountId, List<ListBoxItem>>(LoadVillageHandler);
 
             var villageObservable = this.WhenAnyValue(x => x.Villages.SelectedItem);
@@ -69,6 +73,11 @@ namespace MainCore.UI.ViewModels.Tabs
             await _mediator.Send(new LoadCurrentCommand(AccountId, Villages));
         }
 
+        private async Task ResetSettleHandler()
+        {
+            await _mediator.Send(new ResetSettlerCommand(Villages));
+        }
+
         private async Task LoadUnloadHandler()
         {
             await _mediator.Send(new LoadUnloadCommand(AccountId));
@@ -77,6 +86,11 @@ namespace MainCore.UI.ViewModels.Tabs
         private async Task LoadAllHandler()
         {
             await _mediator.Send(new LoadAllCommand(AccountId));
+        }
+
+        private async Task UpdateExpansionSlotHandler()
+        {
+            await _mediator.Send(new UpdateExpansionSlotCommand(AccountId, Villages));
         }
 
         private List<ListBoxItem> LoadVillageHandler(AccountId accountId)

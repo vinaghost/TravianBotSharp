@@ -52,6 +52,17 @@ namespace WPFUI.Views.Tabs.Villages
                 this.OneWayBind(ViewModel, vm => vm.ResourceBuildInput.Plans, v => v.ResType.ItemsSource).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.ResourceBuildInput.SelectedPlan, v => v.ResType.SelectedItem).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.ResourceBuildInput.Level, v => v.ResourceLevel.Text).DisposeWith(d);
+
+                this.BindCommand(ViewModel, vm => vm.TrainTroop, v => v.TrainTroop).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.TrainTroopInput.Type, v => v.TrainTroopType.ViewModel).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.TrainTroopInput.Great, v => v.TrainTroopGreat.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.TrainTroopInput.Amount, v => v.TrainTroopAmount.Text).DisposeWith(d);
+
+                this.BindCommand(ViewModel, vm => vm.ResearchTroop, v => v.ResearchTroop).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.ResearchTroopInput.Type, v => v.ResearchTroopType.ViewModel).DisposeWith(d);
+
+                this.BindCommand(ViewModel, vm => vm.Celebration, v => v.Celebration).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.CelebrationInput.Great, v => v.CelebrationGreat.IsChecked).DisposeWith(d);
             });
         }
     }
