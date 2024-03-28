@@ -96,7 +96,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task AddHandler()
         {
-            if (!_unitOfrepository.NewVillageRepository.IsExist(AccountId, X, Y))
+            if (_unitOfrepository.NewVillageRepository.IsExist(AccountId, X, Y))
             {
                 var result = _dialogService.ShowConfirmBox("Warning", "Duplicate coordinate, do you want to reset village");
                 if (!result) return;
