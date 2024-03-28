@@ -44,6 +44,21 @@ namespace MainCore.Repositories
                 .ExecuteUpdate(x => x.SetProperty(x => x.VillageId, x => 0));
         }
 
+        public void SetTemplatePath(int id, string path)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var newVillage = context.NewVillages
+                .Where(x => x.Id == id)
+                .FirstOrDefault();
+
+            if (newVillage is null) return;
+
+            newVillage.NewVillageTemplatePath = path;
+            context.Update(newVillage);
+            context.SaveChanges();
+        }
+
         public void Delete(int id)
         {
             using var context = _contextFactory.CreateDbContext();

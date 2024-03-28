@@ -21,7 +21,8 @@ namespace WPFUI.Views.Tabs
             {
                 this.BindCommand(ViewModel, vm => vm.Add, v => v.AddButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.Delete, v => v.DeleteButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.Import, v => v.ImportButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.AccountImport, v => v.ImportButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.VillageImport, v => v.VillageImportButton).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.X, v => v.X.Text).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.Y, v => v.Y.Text).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.Path, v => v.Path.Text).DisposeWith(d);

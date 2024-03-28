@@ -23,7 +23,8 @@ namespace MainCore.UI.ViewModels.Tabs
         public ReactiveCommand<Unit, string> LoadPath { get; }
         public ReactiveCommand<Unit, Unit> Add { get; }
         public ReactiveCommand<Unit, Unit> Delete { get; }
-        public ReactiveCommand<Unit, Unit> Import { get; }
+        public ReactiveCommand<Unit, Unit> AccountImport { get; }
+        public ReactiveCommand<Unit, Unit> VillageImport { get; }
 
         public SettleViewModel(UnitOfRepository unitOfrepository, IDialogService dialogService)
         {
@@ -34,7 +35,8 @@ namespace MainCore.UI.ViewModels.Tabs
             LoadPath = ReactiveCommand.Create(LoadPathHandler);
             Add = ReactiveCommand.CreateFromTask(AddHandler);
             Delete = ReactiveCommand.CreateFromTask(DeleteHandler);
-            Import = ReactiveCommand.CreateFromTask(ImportHandler);
+            AccountImport = ReactiveCommand.CreateFromTask(AccountImportHandler);
+            VillageImport = ReactiveCommand.CreateFromTask(VillageImportHandler);
 
             LoadNewVillages.Subscribe(x =>
             {
@@ -78,7 +80,8 @@ namespace MainCore.UI.ViewModels.Tabs
             {
                 var villageName = _unitOfrepository.VillageRepository.GetVillageName(new VillageId(village.VillageId));
                 if (string.IsNullOrEmpty(villageName)) villageName = "available";
-                return $"{village.X} | {village.Y} [{villageName}]";
+                var path = string.IsNullOrEmpty(village.NewVillageTemplatePath) ? "no template" : village.NewVillageTemplatePath;
+                return $"{village.X} | {village.Y} [{villageName}] [{path}]";
             }
             return items
                 .Select(x => new ListBoxItem()
@@ -115,7 +118,7 @@ namespace MainCore.UI.ViewModels.Tabs
             await LoadNewVillages.Execute();
         }
 
-        private async Task ImportHandler()
+        private async Task AccountImportHandler()
         {
             var path = _dialogService.OpenFileDialog();
             List<JobDto> jobs;
@@ -135,6 +138,28 @@ namespace MainCore.UI.ViewModels.Tabs
 
             _unitOfrepository.AccountInfoRepository.SetTemplatePath(AccountId, path);
             await LoadPath.Execute();
+        }
+
+        private async Task VillageImportHandler()
+        {
+            var path = _dialogService.OpenFileDialog();
+            List<JobDto> jobs;
+            try
+            {
+                var jsonString = await File.ReadAllTextAsync(path);
+                jobs = JsonSerializer.Deserialize<List<JobDto>>(jsonString);
+            }
+            catch
+            {
+                _dialogService.ShowMessageBox("Warning", "Invalid file.");
+                return;
+            }
+
+            var confirm = _dialogService.ShowConfirmBox("Warning", "TBS will remove resource field build job if its position doesn't match with current village.");
+            if (!confirm) return;
+
+            _unitOfrepository.NewVillageRepository.SetTemplatePath(NewVillages.SelectedItemId, path);
+            await LoadNewVillages.Execute();
         }
 
         protected override async Task Load(AccountId accountId)

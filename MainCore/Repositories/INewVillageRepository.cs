@@ -20,6 +20,8 @@ namespace MainCore.Repositories
 
         void Reset(AccountId accountId, int x, int y);
 
+        void SetTemplatePath(int id, string path);
+
         void SetVillage(int id, VillageId villageId);
     }
 }

@@ -35,6 +35,11 @@
                                         <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Delete" />
                                     </MenuItem.Icon>
                                 </MenuItem>
+                                <MenuItem x:Name="VillageImportButton" Header="Import">
+                                    <MenuItem.Icon>
+                                        <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="BriefcaseUpload" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
                             </ContextMenu>
                         </ListBox.ContextMenu>
                     </ListBox>
