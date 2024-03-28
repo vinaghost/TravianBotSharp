@@ -21,6 +21,19 @@ namespace MainCore.Parsers.VillagePanelParser
             return village;
         }
 
+        public VillageId GetCurrentVillageId(HtmlDocument doc)
+        {
+            var villageBox = doc.GetElementbyId("sidebarBoxVillagelist");
+            if (villageBox is null) return VillageId.Empty;
+            var village = villageBox
+                .Descendants("div")
+                .Where(x => x.HasClass("listEntry"))
+                .Where(x => IsActive(x))
+                .Select(x => GetId(x))
+                .FirstOrDefault();
+            return village;
+        }
+
         public bool IsActive(HtmlNode node)
         {
             return node.HasClass("active");
