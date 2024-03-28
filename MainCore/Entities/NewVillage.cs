@@ -9,5 +9,7 @@
         public int Y { get; set; }
 
         public int VillageId { get; set; }
+
+        public string NewVillageTemplatePath { get; set; } = "";
     }
 }

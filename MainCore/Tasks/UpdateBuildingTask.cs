@@ -33,7 +33,17 @@ namespace MainCore.Tasks
 
             if (!isMissingBuilding) return Result.Ok();
 
-            var path = _unitOfRepository.AccountInfoRepository.GetTemplatePath(AccountId);
+            string path;
+            var newVillage = _unitOfRepository.NewVillageRepository.Get(AccountId, VillageId);
+            if (newVillage is not null)
+            {
+                path = newVillage.NewVillageTemplatePath;
+                _unitOfRepository.NewVillageRepository.Delete(newVillage.Id);
+            }
+            else
+            {
+                path = _unitOfRepository.AccountInfoRepository.GetTemplatePath(AccountId);
+            }
             if (string.IsNullOrEmpty(path)) return Result.Ok();
 
             List<JobDto> jobs;

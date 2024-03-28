@@ -6,11 +6,11 @@ namespace MainCore.Repositories
     {
         void Add(AccountId accountId, int x, int y);
 
-        void Delete(AccountId accountId);
-
         void Delete(int id);
 
         NewVillage Get(AccountId accountId);
+
+        NewVillage Get(AccountId accountId, VillageId villageId);
 
         List<NewVillage> GetAll(AccountId accountId);
 

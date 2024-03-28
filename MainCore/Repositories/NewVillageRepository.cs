@@ -52,26 +52,6 @@ namespace MainCore.Repositories
                 .ExecuteDelete();
         }
 
-        public void Delete(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var coordinates = context.Villages
-                .Where(x => x.AccountId == accountId.Value)
-                .Select(x => new { x.X, x.Y })
-                .ToList();
-
-            var newVillages = context.NewVillages
-                .Where(x => x.AccountId == accountId.Value)
-                .ToList();
-
-            foreach (var newVillage in newVillages)
-            {
-                if (coordinates.Any(x => x.X == newVillage.X && x.Y == newVillage.Y)) context.Remove(newVillage);
-            }
-
-            context.SaveChanges();
-        }
-
         public void SetVillage(int id, VillageId villageId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -87,6 +67,21 @@ namespace MainCore.Repositories
             var newVillage = context.NewVillages
                 .Where(x => x.AccountId == accountId.Value)
                 .Where(x => x.VillageId == 0)
+                .FirstOrDefault();
+            return newVillage;
+        }
+
+        public NewVillage Get(AccountId accountId, VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var village = context.Villages
+                .Where(x => x.Id == villageId.Value)
+                .FirstOrDefault();
+            if (village is null) return null;
+            var newVillage = context.NewVillages
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => x.X == village.X && x.Y == village.Y)
                 .FirstOrDefault();
             return newVillage;
         }
