@@ -32,6 +32,8 @@ namespace MainCore.Tasks
 
         private async Task SetNextExecute()
         {
+            var autoRefresh = _unitOfRepository.VillageSettingRepository.GetBooleanByName(VillageId, VillageSettingEnums.AutoRefreshEnable);
+            if (!autoRefresh) return;
             var seconds = _unitOfRepository.VillageSettingRepository.GetByName(VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
