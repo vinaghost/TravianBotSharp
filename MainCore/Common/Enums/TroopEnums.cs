@@ -95,6 +95,19 @@
         HunChief,
         HunSettler,
 
+        //SPARTANS//,   //REGE
+        Hoplite,
+
+        Sentinel,
+        Shieldsman,
+        TwinsteelTherion,
+        ElpidaRider,
+        CorinthianCrusher,
+        SpartanRam,
+        SpartanBallista,
+        SpartanChief,
+        SpartanSettler,
+
         //Hero
         Hero
     }

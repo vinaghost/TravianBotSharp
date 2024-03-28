@@ -421,6 +421,7 @@ namespace MainCore.Repositories
             BuildingEnums.WW,
             BuildingEnums.StoneWall,
             BuildingEnums.MakeshiftWall,
+            BuildingEnums.DefensiveWall,   //REGE
         };
 
         private static readonly List<BuildingEnums> MultipleBuildings = new()

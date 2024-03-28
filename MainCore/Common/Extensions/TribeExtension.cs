@@ -13,6 +13,7 @@ namespace MainCore.Common.Extensions
                 TribeEnums.Gauls => TroopEnums.GaulSettler,
                 TribeEnums.Egyptians => TroopEnums.EgyptianSettler,
                 TribeEnums.Huns => TroopEnums.HunSettler,
+                TribeEnums.Spartan => TroopEnums.SpartanSettler,
                 _ => TroopEnums.None,
             };
         }
@@ -105,6 +106,23 @@ namespace MainCore.Common.Extensions
                         HeroItemEnums.WeaponMarauder1,
                         HeroItemEnums.WeaponMarauder2,
                         HeroItemEnums.WeaponMarauder3,
+                    },
+                TribeEnums.Spartan => new List<HeroItemEnums>() {
+                        HeroItemEnums.WeaponHoplite1,
+                        HeroItemEnums.WeaponHoplite2,
+                        HeroItemEnums.WeaponHoplite3,
+                        HeroItemEnums.WeaponShieldsman1,
+                        HeroItemEnums.WeaponShieldsman2,
+                        HeroItemEnums.WeaponShieldsman3,
+                        HeroItemEnums.WeaponTwinsteelTherion1,
+                        HeroItemEnums.WeaponTwinsteelTherion2,
+                        HeroItemEnums.WeaponTwinsteelTherion3,
+                        HeroItemEnums.WeaponElpidaRider1,
+                        HeroItemEnums.WeaponElpidaRider2,
+                        HeroItemEnums.WeaponElpidaRider3,
+                        HeroItemEnums.WeaponCorinthianCrusher1,
+                        HeroItemEnums.WeaponCorinthianCrusher2,
+                        HeroItemEnums.WeaponCorinthianCrusher3,
                     },
                 _ => new List<HeroItemEnums>(),
             };

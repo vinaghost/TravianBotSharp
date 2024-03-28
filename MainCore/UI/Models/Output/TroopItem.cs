@@ -31,6 +31,7 @@ namespace MainCore.UI.Models.Output
             {TribeEnums.Natars, "natar.png" },
             {TribeEnums.Egyptians, "egyptian.png" },
             {TribeEnums.Huns, "hun.png" },
+            {TribeEnums.Spartan, "spartan.png" },  //REGE
         };
 
         public TroopItem(TroopEnums troop)

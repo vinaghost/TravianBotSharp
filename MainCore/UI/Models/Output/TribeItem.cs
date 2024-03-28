@@ -16,6 +16,7 @@ namespace MainCore.UI.Models.Output
             {TribeEnums.Natars, "natar_big.png" },
             {TribeEnums.Egyptians, "egyptian_big.png" },
             {TribeEnums.Huns, "hun_big.png" },
+            {TribeEnums.Spartan, "spartans_big.png" }, //REGE
         };
 
         public TribeItem(TribeEnums tribe)

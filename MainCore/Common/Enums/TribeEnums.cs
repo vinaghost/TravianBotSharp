@@ -10,5 +10,6 @@
         Natars,
         Egyptians,
         Huns,
+        Spartan,
     }
 }

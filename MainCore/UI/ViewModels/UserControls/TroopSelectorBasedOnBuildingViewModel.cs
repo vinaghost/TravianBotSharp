@@ -73,6 +73,13 @@ namespace MainCore.UI.ViewModels.UserControls
                     TroopEnums.Mercenary,
                     TroopEnums.Bowman,
                 },
+                TribeEnums.Spartan => new()    //REGE
+                {
+                    TroopEnums.Hoplite,
+                    TroopEnums.Sentinel,
+                    TroopEnums.Shieldsman,
+                    TroopEnums.TwinsteelTherion,
+                },
                 _ => new(),
             };
         }
@@ -114,6 +121,11 @@ namespace MainCore.UI.ViewModels.UserControls
                     TroopEnums.Marksman,
                     TroopEnums.Marauder,
                 },
+                TribeEnums.Spartan => new()    //REGE
+                {
+                    TroopEnums.ElpidaRider,
+                    TroopEnums.CorinthianCrusher,
+                },
                 _ => new(),
             };
         }
@@ -148,6 +160,11 @@ namespace MainCore.UI.ViewModels.UserControls
                 {
                     TroopEnums.HunRam,
                     TroopEnums.HunCatapult,
+                },
+                TribeEnums.Spartan => new()    //REGE
+                {
+                    TroopEnums.SpartanRam,
+                    TroopEnums.SpartanBallista,
                 },
                 _ => new(),
             };

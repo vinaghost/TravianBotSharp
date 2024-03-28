@@ -14,6 +14,7 @@ namespace MainCore.Common.Extensions
                 BuildingEnums.Palisade => true,
                 BuildingEnums.StoneWall => true,
                 BuildingEnums.MakeshiftWall => true,
+                BuildingEnums.DefensiveWall => true,
                 _ => false,
             };
         }
@@ -27,6 +28,7 @@ namespace MainCore.Common.Extensions
                 TribeEnums.Gauls => BuildingEnums.Palisade,
                 TribeEnums.Egyptians => BuildingEnums.StoneWall,
                 TribeEnums.Huns => BuildingEnums.MakeshiftWall,
+                TribeEnums.Spartan => BuildingEnums.DefensiveWall,
                 _ => BuildingEnums.Site,
             };
         }
@@ -293,6 +295,7 @@ namespace MainCore.Common.Extensions
                 BuildingEnums.CommandCenter => new long[] { 1600, 1250, 1050, 200 },
                 BuildingEnums.Waterworks => new long[] { 910, 945, 910, 340 },
                 BuildingEnums.Hospital => new long[] { 320, 280, 420, 360 },
+                BuildingEnums.Asclepeion => new long[] { 320, 280, 420, 360 },
                 _ => new long[] { 0, 0, 0, 0 },
             };
         }
@@ -347,6 +350,7 @@ namespace MainCore.Common.Extensions
                 BuildingEnums.CommandCenter => 1.22,
                 BuildingEnums.Waterworks => 1.31,
                 BuildingEnums.Hospital => 1.28,
+                BuildingEnums.Asclepeion => 1.28,
                 BuildingEnums.Site => 1.28,
                 _ => 1,
             };

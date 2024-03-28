@@ -15,6 +15,7 @@ namespace MainCore.Common.Extensions
                 >= (int)TroopEnums.Pikeman and <= (int)TroopEnums.Settler => TribeEnums.Natars,
                 >= (int)TroopEnums.SlaveMilitia and <= (int)TroopEnums.EgyptianSettler => TribeEnums.Egyptians,
                 >= (int)TroopEnums.Mercenary and <= (int)TroopEnums.HunSettler => TribeEnums.Huns,
+                >= (int)TroopEnums.Hoplite and <= (int)TroopEnums.SpartanSettler => TribeEnums.Spartan,   //REGE
                 _ => TribeEnums.Any,
             };
         }
@@ -38,6 +39,9 @@ namespace MainCore.Common.Extensions
                 TroopEnums.Mercenary or TroopEnums.Bowman => BuildingEnums.Barracks,
                 TroopEnums.Spotter or TroopEnums.SteppeRider or TroopEnums.Marksman or TroopEnums.Marauder => BuildingEnums.Stable,
                 TroopEnums.HunRam or TroopEnums.HunCatapult => BuildingEnums.Workshop,
+                TroopEnums.Hoplite or TroopEnums.Sentinel or TroopEnums.Shieldsman or TroopEnums.TwinsteelTherion => BuildingEnums.Barracks,
+                TroopEnums.ElpidaRider or TroopEnums.CorinthianCrusher => BuildingEnums.Stable,
+                TroopEnums.SpartanRam or TroopEnums.SpartanBallista => BuildingEnums.Workshop,
                 _ => BuildingEnums.Site,
             };
         }
@@ -96,6 +100,16 @@ namespace MainCore.Common.Extensions
                 TroopEnums.HunCatapult => new long[] { 950, 1280, 620, 60 },
                 TroopEnums.HunChief => new long[] { 37200, 27600, 25200, 27600 },
                 TroopEnums.HunSettler => new long[] { 6100, 4600, 4800, 5400 },
+                TroopEnums.Hoplite => new long[] { 110, 185, 110, 35 },
+                TroopEnums.Sentinel => new long[] { 185, 150, 35, 75 },
+                TroopEnums.Shieldsman => new long[] { 145, 95, 245, 45 },
+                TroopEnums.TwinsteelTherion => new long[] { 130, 200, 400, 65 },
+                TroopEnums.ElpidaRider => new long[] { 555, 445, 330, 110 },
+                TroopEnums.CorinthianCrusher => new long[] { 660, 495, 995, 165 },
+                TroopEnums.SpartanRam => new long[] { 525, 260, 790, 130 },
+                TroopEnums.SpartanBallista => new long[] { 550, 1240, 825, 135 },
+                TroopEnums.SpartanChief => new long[] { 33450, 30665, 36240, 13935 },
+                TroopEnums.SpartanSettler => new long[] { 5115, 5580, 6045, 3255 },
                 _ => Array.Empty<long>(),
             };
         }

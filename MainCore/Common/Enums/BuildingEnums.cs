@@ -49,5 +49,7 @@
         CommandCenter,
         Waterworks,
         Hospital,
+        DefensiveWall,   //REGE
+        Asclepeion,   //REGE
     }
 }

@@ -82,6 +82,19 @@ namespace MainCore.UI.ViewModels.UserControls
                     TroopEnums.HunCatapult,
                     TroopEnums.HunChief
                 },
+                TribeEnums.Spartan => new()    //REGE
+                {
+                    TroopEnums.Hoplite,
+                    TroopEnums.Sentinel,
+                    TroopEnums.Shieldsman,
+                    TroopEnums.TwinsteelTherion,
+                    TroopEnums.ElpidaRider,
+                    TroopEnums.CorinthianCrusher,
+                    TroopEnums.SpartanRam,
+                    TroopEnums.SpartanBallista,
+                    TroopEnums.SpartanChief,
+                    TroopEnums.SpartanSettler,
+                },
                 _ => new(),
             };
         }
