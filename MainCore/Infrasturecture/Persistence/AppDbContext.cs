@@ -296,7 +296,7 @@ namespace MainCore.Infrasturecture.Persistence
                 KeyValuePair.Create(202422032353,"AddSettlerToVillageTabel"),
                 KeyValuePair.Create(202403232304,"AddMaximumVillageToAccountInfoTable"),
                 KeyValuePair.Create(202403252026,"AddNewVillagesTable"),
-                KeyValuePair.Create(202403232304,"AddMaximumVillageToAccountInfoTable"),
+                KeyValuePair.Create(202403252104,"AddNewVillageTemplatePathToAccountInfoTable"),
                 KeyValuePair.Create(202403271931,"AddVillageIdToNewVillageTable"),
                 KeyValuePair.Create(202403282055,"AddNewVillageTemplatePathToNewVillageTable"),
             };
