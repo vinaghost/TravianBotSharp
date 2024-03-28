@@ -20,12 +20,15 @@ namespace MainCore.DTO
         {
             var entity = dto.ToEntity();
             entity.VillageId = villageId.Value;
+
             return entity;
         }
 
         public static partial void To(this QueueBuildingDto dto, QueueBuilding entity);
 
         private static partial QueueBuilding ToEntity(this QueueBuildingDto dto);
+
+        public static partial IQueryable<QueueBuildingDto> ToDto(this IQueryable<QueueBuilding> entities);
 
         private static BuildingEnums ToBuildingEnums(string str) => Enum.Parse<BuildingEnums>(str);
     }

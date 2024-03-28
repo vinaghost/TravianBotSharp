@@ -2,27 +2,11 @@
 using MainCore.Common.Enums;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
-using System.Collections.ObjectModel;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
-    public class TroopSelectorViewModel : ViewModelBase
+    public class TroopSelectorBasedOnBuildingViewModel : TroopSelectorViewModel
     {
-        public ObservableCollection<TroopItem> Items { get; } = new();
-        private TroopItem _selectedItem;
-
-        public TroopItem SelectedItem
-        {
-            get => _selectedItem;
-            set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
-        }
-
-        public TroopEnums Get()
-        {
-            return SelectedItem.Troop;
-        }
-
         public void ChangeTribe(BuildingEnums building, TribeEnums tribe)
         {
             var selectedItem = SelectedItem;

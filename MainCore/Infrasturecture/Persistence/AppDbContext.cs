@@ -32,6 +32,9 @@ namespace MainCore.Infrasturecture.Persistence
         public DbSet<Farm> FarmLists { get; set; }
         public DbSet<Hero> Heroes { get; set; }
         public DbSet<Adventure> Adventures { get; set; }
+        public DbSet<Troop> Troops { get; set; }
+        public DbSet<ExpansionSlot> ExpansionSlots { get; set; }
+        public DbSet<NewVillage> NewVillages { get; set; }
 
         #endregion table
 
@@ -187,6 +190,14 @@ namespace MainCore.Infrasturecture.Persistence
 
             {VillageSettingEnums.AutoClaimQuestEnable, 0 },
             {VillageSettingEnums.CompleteImmediatelyTime, 180 },
+            {VillageSettingEnums.TrainTroopBatch, 0 },
+            {VillageSettingEnums.TrainTroopBatchSize, 0 },
+            {VillageSettingEnums.TrainTroopWaitBuilding, 0 },
+            {VillageSettingEnums.ResearchTroopWaitBuilding, 0 },
+            {VillageSettingEnums.CelebrationWaitBuilding, 0 },
+
+            {VillageSettingEnums.AutoTrainSettle, 0 },
+            {VillageSettingEnums.AutoSendSettle, 0 },
         };
 
         private List<VillageSettingEnums> GetMissingVillageSettings()
@@ -280,6 +291,15 @@ namespace MainCore.Infrasturecture.Persistence
             {
                 KeyValuePair.Create(202303071943,"AddHeroTable"),
                 KeyValuePair.Create(202303072023,"AddAdventureTable"),
+                KeyValuePair.Create(202403151103,"AddTroopTable"),
+                KeyValuePair.Create(202403221509,"AddExpansionSlotTable"),
+                KeyValuePair.Create(202422032353,"AddSettlerToVillageTabel"),
+                KeyValuePair.Create(202403232304,"AddMaximumVillageToAccountInfoTable"),
+                KeyValuePair.Create(202403252026,"AddNewVillagesTable"),
+                KeyValuePair.Create(202403252104,"AddNewVillageTemplatePathToAccountInfoTable"),
+                KeyValuePair.Create(202403271931,"AddVillageIdToNewVillageTable"),
+                KeyValuePair.Create(202403272006,"AddProgressingSettlersToVillageTable"),
+                KeyValuePair.Create(202403282055,"AddNewVillageTemplatePathToNewVillageTable"),
             };
             foreach (var migration in migrations)
             {

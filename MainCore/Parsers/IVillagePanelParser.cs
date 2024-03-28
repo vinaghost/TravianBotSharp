@@ -11,5 +11,7 @@ namespace MainCore.Parsers
         bool IsActive(HtmlNode node);
 
         IEnumerable<VillageDto> Get(HtmlDocument doc);
+
+        VillageId GetCurrentVillageId(HtmlDocument doc);
     }
 }
