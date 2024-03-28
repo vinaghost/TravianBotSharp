@@ -12,6 +12,9 @@ namespace MainCore.Entities
         public int Gold { get; set; }
         public int Silver { get; set; }
         public bool HasPlusAccount { get; set; }
+        public int MaximumVillage { get; set; }
+
+        public string NewVillageTemplatePath { get; set; } = "";
         public int AccountId { get; set; }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using HtmlAgilityPack;
 using MainCore.Common.Enums;
+using MainCore.Common.Extensions;
 using MainCore.DTO;
 using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
 using System.Net;
 
 namespace MainCore.Parsers.AccountInfoParser
@@ -18,7 +18,9 @@ namespace MainCore.Parsers.AccountInfoParser
                 Silver = GetSilver(doc),
                 HasPlusAccount = HasPlusAccount(doc),
                 Tribe = TribeEnums.Any,
+                MaximumVillage = GetMaximumVillage(doc),
             };
+
             return dto;
         }
 
@@ -28,9 +30,7 @@ namespace MainCore.Parsers.AccountInfoParser
             if (goldNode is null) return -1;
             var valueStrFixed = WebUtility.HtmlDecode(goldNode.InnerText);
             if (string.IsNullOrEmpty(valueStrFixed)) return -1;
-            var valueStr = new string(valueStrFixed.Where(c => char.IsDigit(c)).ToArray());
-            if (string.IsNullOrEmpty(valueStr)) return -1;
-            return int.Parse(valueStr);
+            return valueStrFixed.ToInt();
         }
 
         private static int GetSilver(HtmlDocument doc)
@@ -39,9 +39,7 @@ namespace MainCore.Parsers.AccountInfoParser
             if (silverNode is null) return -1;
             var valueStrFixed = WebUtility.HtmlDecode(silverNode.InnerText);
             if (string.IsNullOrEmpty(valueStrFixed)) return -1;
-            var valueStr = new string(valueStrFixed.Where(c => char.IsDigit(c)).ToArray());
-            if (string.IsNullOrEmpty(valueStr)) return -1;
-            return int.Parse(valueStr);
+            return valueStrFixed.ToInt();
         }
 
         private static bool HasPlusAccount(HtmlDocument doc)
@@ -52,6 +50,22 @@ namespace MainCore.Parsers.AccountInfoParser
             if (market.HasClass("green")) return true;
             if (market.HasClass("gold")) return false;
             return false;
+        }
+
+        private static int GetMaximumVillage(HtmlDocument doc)
+        {
+            var sidebarBoxVillagelist = doc.GetElementbyId("sidebarBoxVillagelist");
+            if (sidebarBoxVillagelist is null) return 0;
+
+            var expansionSlotInfo = sidebarBoxVillagelist.Descendants("div").FirstOrDefault(x => x.HasClass("expansionSlotInfo"));
+            if (expansionSlotInfo is null) return 0;
+
+            var slots = expansionSlotInfo.Descendants("span").FirstOrDefault(x => x.HasClass("slots"));
+            if (slots is null) return 0;
+            var valueStrFixed = WebUtility.HtmlDecode(slots.InnerText);
+            if (string.IsNullOrEmpty(valueStrFixed)) return -1;
+            valueStrFixed = valueStrFixed.Split('/')[1];
+            return valueStrFixed.ToInt();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using MainCore.UI.ViewModels.Tabs.Villages;
 using ReactiveUI;
+using System.Reactive.Disposables;
 
 namespace WPFUI.Views.Tabs.Villages
 {
@@ -15,6 +16,12 @@ namespace WPFUI.Views.Tabs.Villages
         public InfoTab()
         {
             InitializeComponent();
+
+            this.WhenActivated(d =>
+            {
+                this.Bind(ViewModel, vm => vm.SettleAmount, v => v.SettleAmount.Text).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.ExpansionSlot, v => v.ExpansionSlot.Text).DisposeWith(d);
+            });
         }
     }
 }

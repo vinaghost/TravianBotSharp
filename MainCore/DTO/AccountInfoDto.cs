@@ -10,6 +10,7 @@ namespace MainCore.DTO
         public int Gold { get; set; }
         public int Silver { get; set; }
         public bool HasPlusAccount { get; set; }
+        public int MaximumVillage { get; set; }
     }
 
     [Mapper]
