@@ -298,6 +298,7 @@ namespace MainCore.Infrasturecture.Persistence
                 KeyValuePair.Create(202403252026,"AddNewVillagesTable"),
                 KeyValuePair.Create(202403252104,"AddNewVillageTemplatePathToAccountInfoTable"),
                 KeyValuePair.Create(202403271931,"AddVillageIdToNewVillageTable"),
+                KeyValuePair.Create(202403272006,"AddProgressingSettlersToVillageTable"),
                 KeyValuePair.Create(202403282055,"AddNewVillageTemplatePathToNewVillageTable"),
             };
             foreach (var migration in migrations)
