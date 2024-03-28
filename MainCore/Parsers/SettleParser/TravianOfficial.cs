@@ -167,5 +167,17 @@ namespace MainCore.Parsers.SettleParser
                 .FirstOrDefault(x => x.HasClass("green"));
             return button;
         }
+
+        public DateTime GetSettleArrivalTime(HtmlDocument doc)
+        {
+            var arrivalTime = doc.GetElementbyId("at");
+            if (arrivalTime is null) return DateTime.MaxValue;
+            var unixTime = arrivalTime.GetAttributeValue("value", 0);
+
+            var offsetTime = DateTimeOffset.FromUnixTimeSeconds(unixTime);
+            var dateTime = offsetTime.UtcDateTime;
+
+            return dateTime.AddMinutes(1);
+        }
     }
 }

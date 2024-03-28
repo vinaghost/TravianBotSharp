@@ -23,6 +23,11 @@ namespace MainCore.Parsers.SettleParser
             throw new NotImplementedException();
         }
 
+        public DateTime GetSettleArrivalTime(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
+
         public HtmlNode GetSettleButton(HtmlDocument doc)
         {
             throw new NotImplementedException();

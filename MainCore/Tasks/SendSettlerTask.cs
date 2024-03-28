@@ -101,6 +101,8 @@ namespace MainCore.Tasks
             var settleButton = _unitOfParser.SettleParser.GetSettleButton(html);
             if (settleButton is null) return Result.Fail(Retry.ButtonNotFound("settle"));
 
+            var timeArrvial = _unitOfParser.SettleParser.GetSettleArrivalTime(html);
+
             result = await chromeBrowser.Click(By.XPath(settleButton.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
@@ -109,6 +111,7 @@ namespace MainCore.Tasks
 
             _unitOfRepository.NewVillageRepository.SetVillage(newVillage.Id, VillageId);
 
+            await _taskManager.Add<UpdateVillageTask>(AccountId, VillageId, executeTime: timeArrvial);
             return Result.Ok();
         }
 
