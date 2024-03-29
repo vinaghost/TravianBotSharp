@@ -88,6 +88,7 @@ namespace MainCore.Repositories
                 };
 
                 jobs.Add(job);
+                count++;
             }
 
             context.AddRange(jobs);
