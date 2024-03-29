@@ -24,7 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
-    <PackageReference Include="ReactiveUI.WPF" Version="18.4.1" />    
+    <PackageReference Include="ReactiveUI.WPF" Version="19.6.1" />    
   </ItemGroup>
 
   <ItemGroup>
