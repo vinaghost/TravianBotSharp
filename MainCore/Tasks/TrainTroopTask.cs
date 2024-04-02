@@ -17,7 +17,9 @@ namespace MainCore.Tasks
         private static readonly Dictionary<BuildingEnums, VillageSettingEnums> _settings = new()
         {
             {BuildingEnums.Barracks, VillageSettingEnums.BarrackTroop },
+            {BuildingEnums.GreatBarracks, VillageSettingEnums.GreatBarracksTroop },
             {BuildingEnums.Stable, VillageSettingEnums.StableTroop },
+            {BuildingEnums.GreatStable, VillageSettingEnums.GreatStableTroop },
             {BuildingEnums.Workshop, VillageSettingEnums.WorkshopTroop },
         };
 

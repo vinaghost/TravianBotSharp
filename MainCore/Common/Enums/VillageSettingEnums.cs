@@ -25,9 +25,17 @@
         BarrackAmountMin,
         BarrackAmountMax,
 
+        GreatBarracksTroop,
+        GreatBarracksAmountMin,
+        GreatBarracksAmountMax,
+
         StableTroop,
         StableAmountMin,
         StableAmountMax,
+
+        GreatStableTroop,
+        GreatStableAmountMin,
+        GreatStableAmountMax,
 
         WorkshopTroop,
         WorkshopAmountMin,

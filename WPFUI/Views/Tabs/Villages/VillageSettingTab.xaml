@@ -94,8 +94,16 @@
                             <uc:RangeInputUc x:Name="BarrackAmount" Text="for" Unit="units" Margin="10,0,0,0" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
+                            <uc:TroopSelectorUc x:Name="GreatBarracksTroop" Text="Train in Great Barracks" />
+                            <uc:RangeInputUc x:Name="GreatBarracksAmount" Text="for" Unit="units" Margin="10,0,0,0" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
                             <uc:TroopSelectorUc x:Name="StableTroop" Text="Train in stable" />
                             <uc:RangeInputUc x:Name="StableAmount" Text="for" Unit="units" Margin="10,0,0,0" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <uc:TroopSelectorUc x:Name="GreatStableTroop" Text="Train in Great Stable" />
+                            <uc:RangeInputUc x:Name="GreatStableAmount" Text="for" Unit="units" Margin="10,0,0,0" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <uc:TroopSelectorUc x:Name="WorkshopTroop" Text="Train in workshop" />

@@ -304,7 +304,9 @@ namespace MainCore.Repositories
             using var context = _contextFactory.CreateDbContext();
             var settings = new List<VillageSettingEnums>() {
                 VillageSettingEnums.BarrackTroop,
+                VillageSettingEnums.GreatBarracksTroop,
                 VillageSettingEnums.StableTroop,
+                VillageSettingEnums.GreatStableTroop,
                 VillageSettingEnums.WorkshopTroop,
             };
 
@@ -321,9 +323,17 @@ namespace MainCore.Repositories
             {
                 buildings.Add(BuildingEnums.Barracks);
             }
+            if (filterdSettings.Contains(VillageSettingEnums.GreatBarracksTroop))
+            {
+                buildings.Add(BuildingEnums.GreatBarracks);
+            }
             if (filterdSettings.Contains(VillageSettingEnums.StableTroop))
             {
                 buildings.Add(BuildingEnums.Stable);
+            }
+            if (filterdSettings.Contains(VillageSettingEnums.GreatStableTroop))
+            {
+                buildings.Add(BuildingEnums.GreatStable);
             }
             if (filterdSettings.Contains(VillageSettingEnums.WorkshopTroop))
             {

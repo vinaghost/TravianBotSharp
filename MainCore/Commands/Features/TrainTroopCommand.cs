@@ -29,14 +29,18 @@ namespace MainCore.Commands.Features
         private static readonly Dictionary<BuildingEnums, VillageSettingEnums> _settings = new()
         {
             {BuildingEnums.Barracks, VillageSettingEnums.BarrackTroop },
+            {BuildingEnums.GreatBarracks, VillageSettingEnums.GreatBarracksTroop },
             {BuildingEnums.Stable, VillageSettingEnums.StableTroop },
+            {BuildingEnums.GreatStable, VillageSettingEnums.GreatStableTroop },
             {BuildingEnums.Workshop, VillageSettingEnums.WorkshopTroop },
         };
 
         private static readonly Dictionary<BuildingEnums, (VillageSettingEnums, VillageSettingEnums)> _amountSettings = new()
         {
             {BuildingEnums.Barracks, (VillageSettingEnums.BarrackAmountMin,VillageSettingEnums.BarrackAmountMax )},
+            {BuildingEnums.GreatBarracks, (VillageSettingEnums.GreatBarracksAmountMin,VillageSettingEnums.GreatBarracksAmountMax )},
             {BuildingEnums.Stable, (VillageSettingEnums.StableAmountMin,VillageSettingEnums.StableAmountMax ) },
+            {BuildingEnums.GreatStable, (VillageSettingEnums.GreatStableAmountMin,VillageSettingEnums.GreatStableAmountMax ) },
             {BuildingEnums.Workshop, (VillageSettingEnums.WorkshopAmountMin,VillageSettingEnums.WorkshopAmountMax ) },
         };
 
