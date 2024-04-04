@@ -75,7 +75,7 @@ namespace MainCore.Commands.UI.Build
 
         private async Task NormalBuild(AccountId accountId, VillageId villageId, NormalBuildPlan plan, CancellationToken cancellationToken)
         {
-            var buildings = _unitOfRepository.BuildingRepository.GetBuildingItems(villageId);
+            var buildings = _unitOfRepository.BuildingRepository.GetBuildings(villageId);
             var result = CheckRequirements(buildings, plan);
             if (result.IsFailed)
             {
@@ -95,9 +95,11 @@ namespace MainCore.Commands.UI.Build
             if (prerequisiteBuildings.Count == 0) return Result.Ok();
             foreach (var prerequisiteBuilding in prerequisiteBuildings)
             {
-                var building = buildings.Where(x => x.Type == prerequisiteBuilding.Type).OrderByDescending(x => x.Level).FirstOrDefault();
-                if (building is null) return Result.Fail($"Required {prerequisiteBuilding.Type.Humanize()} lvl {prerequisiteBuilding.Level}");
-                if (building.Level < prerequisiteBuilding.Level) return Result.Fail($"Required {prerequisiteBuilding.Type.Humanize()} lvl {prerequisiteBuilding.Level}");
+                var valid = buildings
+                    .Where(x => x.Type == prerequisiteBuilding.Type)
+                    .Any(x => x.Level >= prerequisiteBuilding.Level);
+
+                if (!valid) return Result.Fail($"Required {prerequisiteBuilding.Type.Humanize()} lvl {prerequisiteBuilding.Level}");
             }
             return Result.Ok();
         }

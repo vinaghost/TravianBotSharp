@@ -16,7 +16,9 @@ namespace MainCore.Services
         Task<Result> Click(By by);
 
         Task Close();
-
+        long[] GetProduction();
+        long[] GetStorage();
+        TimeSpan GetTimeEnoughResource(long[] required);
         Task<Result> InputTextbox(By by, string content);
 
         bool IsOpen();

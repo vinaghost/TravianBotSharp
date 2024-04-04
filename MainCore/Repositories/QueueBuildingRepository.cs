@@ -86,6 +86,17 @@ namespace MainCore.Repositories
                 .ExecuteUpdate(x => x.SetProperty(x => x.Type, BuildingEnums.Site));
         }
 
+        public bool IsTownHall(VillageId villageId, bool great)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var level = great ? 10 : 1;
+
+            return context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Any(x => x.Type == BuildingEnums.TownHall && x.Level >= level);
+        }
+
         public int Count(VillageId villageId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -201,6 +212,20 @@ namespace MainCore.Repositories
             var count = 2;
             if (tribe == TribeEnums.Romans) count = 3;
             queue.AddRange(Enumerable.Range(0, count - queue.Count).Select(x => new ListBoxItem()));
+
+            return queue;
+        }
+
+        public QueueBuilding GetSettleBuilding(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var settleBuildings = new List<BuildingEnums>() { BuildingEnums.Residence, BuildingEnums.Palace, BuildingEnums.CommandCenter };
+
+            var queue = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => settleBuildings.Contains(x.Type))
+                .Where(x => x.Level == 10 || x.Level == 15 || x.Level == 20)
+                .FirstOrDefault();
 
             return queue;
         }
