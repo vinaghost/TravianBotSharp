@@ -6,6 +6,7 @@ using MainCore.Infrasturecture.AutoRegisterDi;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Chrome.ChromeDriverExtensions;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Polly;
 
@@ -197,7 +198,11 @@ namespace MainCore.Services
             var element = elements[0];
             if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable();
 
-            await Task.Run(element.Click);
+            var click = new Actions(_driver)
+                   .Click(element)
+                   .Perform;
+
+            await Task.Run(click);
 
             return Result.Ok();
         }
