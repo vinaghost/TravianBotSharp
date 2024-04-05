@@ -42,7 +42,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
 
                 if (countJob == 0)
                 {
-                    return Result.Fail(Skip.BuildingJobQueueEmpty);
+                    return Result.Fail(Skip.AutoBuilderJobQueueEmpty);
                 }
 
                 var countQueueBuilding = _unitOfRepository.BuildingRepository.CountQueueBuilding(command.VillageId);
