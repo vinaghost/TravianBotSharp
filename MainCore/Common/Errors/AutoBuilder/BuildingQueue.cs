@@ -1,7 +1,7 @@
 ﻿using FluentResults;
 using MainCore.Common.Enums;
 
-namespace MainCore.Common.Errors
+namespace MainCore.Common.Errors.AutoBuilder
 {
     public class BuildingQueue : Error
     {
@@ -11,7 +11,7 @@ namespace MainCore.Common.Errors
 
         public static BuildingQueue NotTaskInqueue => new($"There is no suitable task available in job queue");
 
-        public static BuildingQueue Full => new("Amount of currently building is equal with maximum building can build in same time");
+        public static Result Full => Result.Fail(new BuildingQueue("Amount of currently building is equal with maximum building can build in same time"));
 
         public static BuildingQueue NotEnoughPrerequisiteBuilding(BuildingEnums building, BuildingEnums prerequisiteBuilding, int level) => new($"{prerequisiteBuilding} [{level}] is missing when constructing {building}");
 
