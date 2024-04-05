@@ -240,7 +240,7 @@ namespace MainCore.Services
                 }
                 catch (WebDriverTimeoutException)
                 {
-                    return Result.Fail(new Stop("Page not loaded in 3 mins"));
+                    return new Retry("Page not loaded in 3 mins");
                 }
                 if (cancellationToken.IsCancellationRequested) return Result.Fail(new Cancel());
                 return Result.Ok();
