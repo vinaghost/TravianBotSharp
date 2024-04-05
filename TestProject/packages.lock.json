@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    "net6.0-windows7.0": {
+    "net6.0-windows10.0.19041": {
       "coverlet.collector": {
         "type": "Direct",
         "requested": "[6.0.0, )",
@@ -552,8 +552,7 @@
           "ReactiveUI": "19.6.1",
           "Splat": "14.8.12",
           "System.ComponentModel.Annotations": "5.0.0",
-          "System.Text.Json": "8.0.3",
-          "System.ValueTuple": "4.5.0"
+          "System.Text.Json": "8.0.3"
         }
       },
       "RestSharp": {
@@ -744,11 +743,6 @@
         "resolved": "4.5.4",
         "contentHash": "zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg=="
       },
-      "System.ValueTuple": {
-        "type": "Transitive",
-        "resolved": "4.5.0",
-        "contentHash": "okurQJO6NRE/apDIP23ajJ0hpiNmJ+f0BwOlB/cSqTLQlw5upkf+5+96+iG2Jw40G1fCVCyPz/FhIABUjMR+RQ=="
-      },
       "maincore": {
         "type": "Project",
         "dependencies": {
@@ -784,7 +778,7 @@
         }
       }
     },
-    "net6.0-windows7.0/win-x64": {
+    "net6.0-windows10.0.19041/win-x64": {
       "SQLitePCLRaw.lib.e_sqlite3": {
         "type": "Transitive",
         "resolved": "2.1.4",
