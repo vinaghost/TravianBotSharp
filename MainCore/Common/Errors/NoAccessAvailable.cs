@@ -8,7 +8,7 @@ namespace MainCore.Common.Errors
         {
         }
 
-        public static NoAccessAvailable AllAccessNotWorking => new("All accesses not working");
-        public static NoAccessAvailable LackOfAccess => new("Last access is reused , it may get MH's attention");
+        public static Result AllAccessNotWorking => new NoAccessAvailable("All accesses not working");
+        public static Result LackOfAccess => new NoAccessAvailable("Last access is reused , it may get MH's attention");
     }
 }
