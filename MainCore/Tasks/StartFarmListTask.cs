@@ -4,10 +4,12 @@ using MainCore.Commands.Features;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Infrasturecture.AutoRegisterDi;
+using MainCore.Parsers;
 using MainCore.Repositories;
 using MainCore.Services;
 using MainCore.Tasks.Base;
 using MediatR;
+using OpenQA.Selenium;
 
 namespace MainCore.Tasks
 {
@@ -16,9 +18,14 @@ namespace MainCore.Tasks
     {
         private readonly ITaskManager _taskManager;
 
-        public StartFarmListTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager) : base(unitOfCommand, unitOfRepository, mediator)
+        private readonly IChromeManager _chromeManager;
+        private readonly UnitOfParser _unitOfParser;
+
+        public StartFarmListTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager, IChromeManager chromeManager, UnitOfParser unitOfParser) : base(unitOfCommand, unitOfRepository, mediator)
         {
             _taskManager = taskManager;
+            _chromeManager = chromeManager;
+            _unitOfParser = unitOfParser;
         }
 
         protected override async Task<Result> Execute()
@@ -26,8 +33,35 @@ namespace MainCore.Tasks
             Result result;
             result = await _mediator.Send(new ToFarmListPageCommand(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = await _mediator.Send(new StartFarmListCommand(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            var html = chromeBrowser.Html;
+
+            var useStartAllButton = _unitOfRepository.AccountSettingRepository.GetBooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
+            if (useStartAllButton)
+            {
+                var startAllButton = _unitOfParser.FarmParser.GetStartAllButton(html);
+                if (startAllButton is null) return Result.Fail(Retry.ButtonNotFound("Start all farms"));
+
+                result = await chromeBrowser.Click(By.XPath(startAllButton.XPath));
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            }
+            else
+            {
+                var farmLists = _unitOfRepository.FarmRepository.GetActive(AccountId);
+                if (farmLists.Count == 0) return Result.Fail(new Skip("No farmlist is active"));
+
+                foreach (var farmList in farmLists)
+                {
+                    var startButton = _unitOfParser.FarmParser.GetStartButton(html, farmList);
+                    if (startButton is null) return Result.Fail(Retry.ButtonNotFound($"Start farm {farmList}"));
+
+                    result = await chromeBrowser.Click(By.XPath(startButton.XPath));
+                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                    await _unitOfCommand.DelayClickCommand.Handle(new(AccountId), CancellationToken);
+                }
+            }
             await SetNextExecute();
             return Result.Ok();
         }
