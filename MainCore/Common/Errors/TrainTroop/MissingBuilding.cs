@@ -5,8 +5,10 @@ namespace MainCore.Common.Errors.TrainTroop
 {
     public class MissingBuilding : Error
     {
-        public MissingBuilding(BuildingEnums building) : base($"{building} is missing. Disable train troop on this building")
+        private MissingBuilding(BuildingEnums building) : base($"{building} is missing. Disable train troop on this building")
         {
         }
+
+        public static MissingBuilding Error(BuildingEnums building) => new(building);
     }
 }

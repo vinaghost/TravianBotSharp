@@ -37,12 +37,12 @@ namespace MainCore.Commands.Update
         {
             Result result;
             result = await _updateAccountInfoCommand.Handle(new(command.AccountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _updateDorfCommand.Handle(new(command.AccountId, command.VillageId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await _validateQuestCommand.Handle(new(command.AccountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             if (_validateQuestCommand.Value)
             {

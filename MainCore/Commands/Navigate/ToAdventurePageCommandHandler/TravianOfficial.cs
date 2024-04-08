@@ -27,14 +27,14 @@ namespace MainCore.Commands.Navigate.ToAdventurePageCommandHandler
             var html = chromeBrowser.Html;
 
             var adventure = _unitOfParser.HeroParser.GetHeroAdventure(html);
-            if (adventure is null) return Result.Fail(Retry.ButtonNotFound("hero adventure"));
+            if (adventure is null) return Retry.ButtonNotFound("hero adventure");
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(adventure.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await chromeBrowser.WaitPageChanged("adventures", cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             bool tableShow(IWebDriver driver)
             {
@@ -48,7 +48,7 @@ namespace MainCore.Commands.Navigate.ToAdventurePageCommandHandler
             };
 
             result = await chromeBrowser.Wait(tableShow, cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
     }

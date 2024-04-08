@@ -230,6 +230,37 @@ namespace MainCore.Common.Extensions
                 _ => Color.LightCyan,
             };
         }
+
+        public static int GetBuildingsCategory(this BuildingEnums building) => building switch
+        {
+            BuildingEnums.GrainMill => 2,
+            BuildingEnums.Sawmill => 2,
+            BuildingEnums.Brickyard => 2,
+            BuildingEnums.IronFoundry => 2,
+            BuildingEnums.Bakery => 2,
+            BuildingEnums.Barracks => 1,
+            BuildingEnums.HerosMansion => 1,
+            BuildingEnums.Academy => 1,
+            BuildingEnums.Smithy => 1,
+            BuildingEnums.Stable => 1,
+            BuildingEnums.GreatBarracks => 1,
+            BuildingEnums.GreatStable => 1,
+            BuildingEnums.Workshop => 1,
+            BuildingEnums.TournamentSquare => 1,
+            BuildingEnums.Trapper => 1,
+            _ => 0,
+        };
+
+        public static bool HasMultipleTabs(this BuildingEnums building) => building switch
+        {
+            BuildingEnums.RallyPoint => true,
+            BuildingEnums.CommandCenter => true,
+            BuildingEnums.Residence => true,
+            BuildingEnums.Palace => true,
+            BuildingEnums.Marketplace => true,
+            BuildingEnums.Treasury => true,
+            _ => false,
+        };
     }
 }
 

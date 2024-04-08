@@ -31,17 +31,17 @@ namespace MainCore.Commands.Features.Step.ClaimQuest.CollectRewardCommandHandler
             Result result;
             do
             {
-                if (cancellationToken.IsCancellationRequested) return Result.Fail(new Cancel());
+                if (cancellationToken.IsCancellationRequested) return Cancel.Error;
                 html = chromeBrowser.Html;
                 var quest = GetQuestLine(html);
 
                 if (quest is null) return Result.Ok();
 
                 result = await chromeBrowser.Click(By.XPath(quest.XPath));
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 bool collectShow(IWebDriver driver)
                 {
@@ -51,22 +51,22 @@ namespace MainCore.Commands.Features.Step.ClaimQuest.CollectRewardCommandHandler
                     return collect is not null;
                 };
                 result = await chromeBrowser.Wait(collectShow, cancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 html = chromeBrowser.Html;
                 var collect = _unitOfParser.QuestParser.GetQuestCollectButton(html);
 
                 result = await chromeBrowser.Click(By.XPath(collect.XPath));
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 result = await chromeBrowser.WaitPageLoaded(cancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             while (_unitOfParser.QuestParser.IsQuestClaimable(html));
             return Result.Ok();

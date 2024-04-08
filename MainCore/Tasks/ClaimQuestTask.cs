@@ -26,15 +26,15 @@ namespace MainCore.Tasks
         {
             Result result;
             result = await _unitOfCommand.UpdateAccountInfoCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await _validateQuestCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var isClaimable = _validateQuestCommand.Value;
             if (!isClaimable) return Result.Ok();
 
             result = await _mediator.Send(new ClaimQuestCommand(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await _mediator.Publish(new StorageUpdated(AccountId, VillageId), CancellationToken);
             return Result.Ok();

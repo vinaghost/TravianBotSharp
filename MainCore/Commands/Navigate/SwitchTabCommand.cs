@@ -39,14 +39,14 @@ namespace MainCore.Commands.Navigate
             var html = chromeBrowser.Html;
 
             var count = _unitOfParser.NavigationTabParser.CountTab(html);
-            if (command.Index > count) return Result.Fail(new Retry($"Found {count} tabs but need tab {command.Index} active"));
+            if (command.Index > count) return Retry.OutOfIndexTab(command.Index, count);
             var tab = _unitOfParser.NavigationTabParser.GetTab(html, command.Index);
-            if (tab is null) return Result.Fail(Retry.NotFound($"{command.Index}", "tab"));
+            if (tab is null) return Retry.NotFound($"{command.Index}", "tab");
             if (_unitOfParser.NavigationTabParser.IsTabActive(tab)) return Result.Ok();
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(tab.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             bool tabActived(IWebDriver driver)
             {
@@ -61,7 +61,7 @@ namespace MainCore.Commands.Navigate
             };
 
             result = await chromeBrowser.Wait(tabActived, cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
     }

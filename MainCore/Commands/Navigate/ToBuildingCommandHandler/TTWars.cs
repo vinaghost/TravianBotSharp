@@ -24,9 +24,9 @@ namespace MainCore.Commands.Navigate.ToBuildingCommandHandler
             var host = currentUrl.GetLeftPart(UriPartial.Authority);
             Result result;
             result = await chromeBrowser.Navigate($"{host}/build.php?id={command.Location}", cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await chromeBrowser.WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
     }

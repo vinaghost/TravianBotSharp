@@ -34,7 +34,7 @@ namespace MainCore.Commands.General
         {
             Result result;
             result = await _closeCommand.Handle(new CloseBrowserCommand(command.AccountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var sleepEnd = DateTime.Now.Add(command.SleepTime);
             result = await Sleep(command.AccountId, sleepEnd, cancellationToken);
@@ -47,7 +47,7 @@ namespace MainCore.Commands.General
             int lastMinute = 0;
             while (true)
             {
-                if (cancellationToken.IsCancellationRequested) return new Cancel();
+                if (cancellationToken.IsCancellationRequested) return Cancel.Error;
                 var timeRemaining = sleepEnd - DateTime.Now;
                 if (timeRemaining < TimeSpan.Zero) return Result.Ok();
                 await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
