@@ -41,16 +41,16 @@ namespace MainCore.Commands.Features.Step.TrainTroop
             var html = chromeBrowser.Html;
 
             var inputBox = _unitOfParser.TroopPageParser.GetInputBox(html, command.Troop);
-            if (inputBox is null) return Result.Fail(Retry.TextboxNotFound("troop amount input"));
+            if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
             Result result;
             result = await chromeBrowser.InputTextbox(By.XPath(inputBox.XPath), $"{command.Amount}");
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var trainButton = _unitOfParser.TroopPageParser.GetTrainButton(html);
-            if (trainButton is null) return Result.Fail(Retry.ButtonNotFound("train troop"));
+            if (trainButton is null) return Retry.ButtonNotFound("train troop");
 
             result = await chromeBrowser.Click(By.XPath(trainButton.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
     }

@@ -31,9 +31,9 @@ namespace MainCore.Commands.Features
         {
             Result result;
             result = await _toQuestPageCommand.Handle(new(request.AccountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await _collectRewardCommand.Handle(new(request.AccountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
     }
