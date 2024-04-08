@@ -55,10 +55,10 @@ namespace MainCore.Commands.General
                 IsHeadless = headlessChrome,
             };
             var result = await chromeBrowser.Setup(chromeSetting);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await chromeBrowser.Navigate($"{account.Server}dorf1.php", cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
     }

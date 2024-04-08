@@ -44,7 +44,7 @@ namespace MainCore.Commands.General
             var accesses = _unitOfRepository.AccountRepository.GetAccesses(command.AccountId);
 
             var access = await GetValidAccess(accesses, logger, cancellationToken);
-            if (access is null) return Result.Fail(NoAccessAvailable.AllAccessNotWorking);
+            if (access is null) return NoAccessAvailable.AllAccessNotWorking;
 
             _unitOfRepository.AccountRepository.UpdateAccessLastUsed(access.Id);
 
@@ -62,7 +62,7 @@ namespace MainCore.Commands.General
             var minSleep = _unitOfRepository.AccountSettingRepository.GetByName(command.AccountId, AccountSettingEnums.SleepTimeMin);
 
             var timeValid = DateTime.Now.AddMinutes(-minSleep);
-            if (access.LastUsed > timeValid) return Result.Fail(NoAccessAvailable.LackOfAccess);
+            if (access.LastUsed > timeValid) return NoAccessAvailable.LackOfAccess;
 
             Value = access;
             return Result.Ok();

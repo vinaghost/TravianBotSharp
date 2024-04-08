@@ -1,6 +1,5 @@
 ﻿using FluentResults;
 using MainCore.Common.Errors;
-using MainCore.Common.Errors.Farming;
 using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Repositories;
@@ -31,31 +30,31 @@ namespace MainCore.Commands.Features
             var accountId = request.AccountId;
             Result result;
             result = await _unitOfCommand.UpdateVillageListCommand.Handle(new(accountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var rallypointVillageId = _unitOfRepository.VillageRepository.GetVillageHasRallypoint(accountId);
-            if (rallypointVillageId == VillageId.Empty) return Result.Fail(new NoRallypoint());
+            if (rallypointVillageId == VillageId.Empty) return Skip.NoRallypoint;
 
             result = await _unitOfCommand.SwitchVillageCommand.Handle(new(accountId, rallypointVillageId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.ToDorfCommand.Handle(new(accountId, 2), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(accountId, rallypointVillageId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.ToBuildingCommand.Handle(new(accountId, 39), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.SwitchTabCommand.Handle(new(accountId, 4), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.DelayClickCommand.Handle(new(accountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateFarmListCommand.Handle(new(accountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
     }

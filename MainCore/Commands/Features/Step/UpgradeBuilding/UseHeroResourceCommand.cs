@@ -47,10 +47,10 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             var currentUrl = chromeBrowser.CurrentUrl;
             Result result;
             result = await _unitOfCommand.ToHeroInventoryCommand.Handle(new(command.AccountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateHeroItemsCommand.Handle(new(command.AccountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var requiredResource = command.RequiredResource;
             for (var i = 0; i < 4; i++)
@@ -64,9 +64,9 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
                 if (!result.HasError<Retry>())
                 {
                     var chromeResult = await chromeBrowser.Navigate(currentUrl, cancellationToken);
-                    if (chromeResult.IsFailed) return chromeResult.WithError(new TraceMessage(TraceMessage.Line()));
+                    if (chromeResult.IsFailed) return chromeResult.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
-                return result.WithError(new TraceMessage(TraceMessage.Line()));
+                return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
 
             var items = new List<(HeroItemEnums, long)>()
@@ -81,11 +81,11 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             foreach (var item in items)
             {
                 result = await UseResource(chromeBrowser, item.Item1, item.Item2, delayClickCommand, cancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
 
             result = await chromeBrowser.Navigate(currentUrl, cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 
@@ -94,20 +94,20 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             if (amount == 0) return Result.Ok();
             Result result;
             result = await ClickItem(chromeBrowser, item, cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.DelayClickCommand.Handle(delayClickCommand, cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await EnterAmount(chromeBrowser, amount);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.DelayClickCommand.Handle(delayClickCommand, cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await Confirm(chromeBrowser, cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.DelayClickCommand.Handle(delayClickCommand, cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 
@@ -115,11 +115,11 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
         {
             var html = chromeBrowser.Html;
             var node = _unitOfParser.HeroParser.GetItemSlot(html, item);
-            if (node is null) return Result.Fail(Retry.NotFound($"{item}", "item"));
+            if (node is null) return Retry.NotFound($"{item}", "item");
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(node.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             bool loadingCompleted(IWebDriver driver)
             {
@@ -129,7 +129,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             };
 
             result = await chromeBrowser.Wait(loadingCompleted, cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }
@@ -138,10 +138,10 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
         {
             var html = chromeBrowser.Html;
             var node = _unitOfParser.HeroParser.GetAmountBox(html);
-            if (node is null) return Result.Fail(Retry.TextboxNotFound("amount resource input"));
+            if (node is null) return Retry.TextboxNotFound("amount resource input");
             Result result;
             result = await chromeBrowser.InputTextbox(By.XPath(node.XPath), amount.ToString());
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 
@@ -149,11 +149,11 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
         {
             var html = chromeBrowser.Html;
             var node = _unitOfParser.HeroParser.GetConfirmButton(html);
-            if (node is null) return Result.Fail(Retry.ButtonNotFound("confirm use resource"));
+            if (node is null) return Retry.ButtonNotFound("confirm use resource");
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(node.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             bool loadingCompleted(IWebDriver driver)
             {
@@ -163,7 +163,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             };
 
             result = await chromeBrowser.Wait(loadingCompleted, cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }

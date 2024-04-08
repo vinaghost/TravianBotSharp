@@ -4,7 +4,7 @@ namespace MainCore.Common.Errors
 {
     public class Retry : Error
     {
-        public Retry(string message) : base($"{message}. Bot must retry")
+        private Retry(string message) : base($"{message}. Bot must retry")
         {
         }
 
@@ -17,5 +17,7 @@ namespace MainCore.Common.Errors
         public static Retry ElementNotFound() => new("Element not found");
 
         public static Retry ElementNotClickable() => new("Element not clickable");
+
+        public static Retry OutOfIndexTab(int index, int count) => new($"Found {count} tabs but need tab {index} active");
     }
 }
