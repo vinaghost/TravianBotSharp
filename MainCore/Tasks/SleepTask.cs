@@ -40,14 +40,14 @@ namespace MainCore.Tasks
 
             Result result;
             result = await Sleep();
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var accessResult = await GetAccess();
-            if (accessResult.IsFailed) return Result.Fail(accessResult.Errors).WithError(new TraceMessage(TraceMessage.Line()));
+            if (accessResult.IsFailed) return Result.Fail(accessResult.Errors).WithError(TraceMessage.Error(TraceMessage.Line()));
             var access = accessResult.Value;
 
             result = await _openBrowserCommand.Handle(new(AccountId, access), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             await SetNextExecute();
 
             return Result.Ok();
@@ -72,7 +72,7 @@ namespace MainCore.Tasks
             int lastMinute = 0;
             while (true)
             {
-                if (CancellationToken.IsCancellationRequested) return new Cancel();
+                if (CancellationToken.IsCancellationRequested) return Cancel.Error;
                 var timeRemaining = sleepEnd - DateTime.Now;
                 if (timeRemaining < TimeSpan.Zero) return Result.Ok();
                 await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);

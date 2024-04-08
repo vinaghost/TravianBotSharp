@@ -30,16 +30,16 @@ namespace MainCore.Tasks
             Result result;
 
             result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 0), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await CompleteImmediately();
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await _mediator.Publish(new CompleteImmediatelyMessage(AccountId, VillageId), CancellationToken);
             return Result.Ok();
@@ -58,12 +58,12 @@ namespace MainCore.Tasks
             var html = chromeBrowser.Html;
 
             var completeNowButton = _unitOfParser.CompleteImmediatelyParser.GetCompleteButton(html);
-            if (completeNowButton is null) return Result.Fail(Retry.ButtonNotFound("complete now"));
+            if (completeNowButton is null) return Retry.ButtonNotFound("complete now");
 
             Result result;
 
             result = await chromeBrowser.Click(By.XPath(completeNowButton.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             bool confirmShown(IWebDriver driver)
             {
@@ -74,18 +74,18 @@ namespace MainCore.Tasks
             };
 
             result = await chromeBrowser.Wait(confirmShown, CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             html = chromeBrowser.Html;
             var confirmButton = _unitOfParser.CompleteImmediatelyParser.GetConfirmButton(html);
-            if (confirmButton is null) return Result.Fail(Retry.ButtonNotFound("complete now"));
+            if (confirmButton is null) return Retry.ButtonNotFound("complete now");
 
             var oldQueueCount = _unitOfParser.QueueBuildingParser.Get(html)
                 .Where(x => x.Level != -1)
                 .Count();
 
             result = await chromeBrowser.Click(By.XPath(confirmButton.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             bool queueDifferent(IWebDriver driver)
             {
@@ -97,7 +97,7 @@ namespace MainCore.Tasks
                 return oldQueueCount != newQueueCount;
             };
             result = await chromeBrowser.Wait(queueDifferent, CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }

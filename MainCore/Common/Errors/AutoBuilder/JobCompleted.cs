@@ -4,6 +4,6 @@ namespace MainCore.Common.Errors.AutoBuilder
 {
     public class JobCompleted : Error
     {
-        public static Result Removed => Result.Fail(new JobCompleted());
+        public static JobCompleted Error => new();
     }
 }

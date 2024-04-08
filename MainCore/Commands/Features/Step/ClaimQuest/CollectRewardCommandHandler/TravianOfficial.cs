@@ -31,25 +31,25 @@ namespace MainCore.Commands.Features.Step.ClaimQuest.CollectRewardCommandHandler
             Result result;
             do
             {
-                if (cancellationToken.IsCancellationRequested) return Result.Fail(new Cancel());
+                if (cancellationToken.IsCancellationRequested) return Cancel.Error;
                 html = chromeBrowser.Html;
                 var quest = _unitOfParser.QuestParser.GetQuestCollectButton(html);
 
                 if (quest is null)
                 {
                     result = await Handle(chromeBrowser);
-                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                     result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
-                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     continue;
                 }
 
                 result = await chromeBrowser.Click(By.XPath(quest.XPath));
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             while (_unitOfParser.QuestParser.IsQuestClaimable(html));
             return Result.Ok();
@@ -59,7 +59,7 @@ namespace MainCore.Commands.Features.Step.ClaimQuest.CollectRewardCommandHandler
         {
             var html = chromeBrowser.Html;
             var firstTab = _unitOfParser.NavigationTabParser.GetTab(html, 0);
-            if (firstTab is null) return Result.Fail(Retry.NotFound("tasks", "tab"));
+            if (firstTab is null) return Retry.NotFound("tasks", "tab");
 
             var firstTabActive = _unitOfParser.NavigationTabParser.IsTabActive(firstTab);
 
@@ -68,12 +68,12 @@ namespace MainCore.Commands.Features.Step.ClaimQuest.CollectRewardCommandHandler
             {
                 var secondTab = _unitOfParser.NavigationTabParser.GetTab(html, 1);
                 result = await chromeBrowser.Click(By.XPath(secondTab.XPath));
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else
             {
                 result = await chromeBrowser.Click(By.XPath(firstTab.XPath));
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
 
             return Result.Ok();

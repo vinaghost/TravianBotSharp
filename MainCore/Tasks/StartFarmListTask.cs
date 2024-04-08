@@ -32,7 +32,7 @@ namespace MainCore.Tasks
         {
             Result result;
             result = await _mediator.Send(new ToFarmListPageCommand(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
@@ -41,23 +41,23 @@ namespace MainCore.Tasks
             if (useStartAllButton)
             {
                 var startAllButton = _unitOfParser.FarmParser.GetStartAllButton(html);
-                if (startAllButton is null) return Result.Fail(Retry.ButtonNotFound("Start all farms"));
+                if (startAllButton is null) return Retry.ButtonNotFound("Start all farms");
 
                 result = await chromeBrowser.Click(By.XPath(startAllButton.XPath));
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else
             {
                 var farmLists = _unitOfRepository.FarmRepository.GetActive(AccountId);
-                if (farmLists.Count == 0) return Result.Fail(new Skip("No farmlist is active"));
+                if (farmLists.Count == 0) return Result.Fail(Skip.NoActiveFarmlist);
 
                 foreach (var farmList in farmLists)
                 {
                     var startButton = _unitOfParser.FarmParser.GetStartButton(html, farmList);
-                    if (startButton is null) return Result.Fail(Retry.ButtonNotFound($"Start farm {farmList}"));
+                    if (startButton is null) return Retry.ButtonNotFound($"Start farm {farmList}");
 
                     result = await chromeBrowser.Click(By.XPath(startButton.XPath));
-                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                     await _unitOfCommand.DelayClickCommand.Handle(new(AccountId), CancellationToken);
                 }

@@ -86,17 +86,17 @@ namespace MainCore.Tasks
         {
             Result result;
             result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var buildingLocation = _unitOfRepository.BuildingRepository.GetBuildingLocation(VillageId, buildingType);
             if (buildingLocation == default)
             {
-                return Result.Fail(new MissingBuilding(buildingType));
+                return MissingBuilding.Error(buildingType);
             }
             result = await _unitOfCommand.ToBuildingCommand.Handle(new(AccountId, buildingLocation), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var troopSeting = _settings[buildingType];
             var troop = (TroopEnums)_unitOfRepository.VillageSettingRepository.GetByName(VillageId, troopSeting);
@@ -110,7 +110,7 @@ namespace MainCore.Tasks
 
             if (maxAmount == 0)
             {
-                return Result.Fail(new MissingResource(buildingType));
+                return MissingResource.Error(buildingType);
             }
 
             if (amount > maxAmount)
@@ -122,26 +122,26 @@ namespace MainCore.Tasks
                 }
                 else
                 {
-                    return Result.Fail(new MissingResource(buildingType));
+                    return MissingResource.Error(buildingType);
                 }
             }
 
             html = chromeBrowser.Html;
 
             var inputBox = _unitOfParser.TroopPageParser.GetInputBox(html, troop);
-            if (inputBox is null) return Result.Fail(Retry.TextboxNotFound("troop amount input"));
+            if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
 
             result = await chromeBrowser.InputTextbox(By.XPath(inputBox.XPath), $"{amount}");
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var trainButton = _unitOfParser.TroopPageParser.GetTrainButton(html);
-            if (trainButton is null) return Result.Fail(Retry.ButtonNotFound("train troop"));
+            if (trainButton is null) return Retry.ButtonNotFound("train troop");
 
             result = await chromeBrowser.Click(By.XPath(trainButton.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.DelayClickCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }

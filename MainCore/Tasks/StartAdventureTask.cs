@@ -36,10 +36,10 @@ namespace MainCore.Tasks
             Result result;
 
             result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 1, true), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateAccountInfoCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var chromeBrowser = _chromeManager.Get(AccountId);
 
@@ -49,10 +49,10 @@ namespace MainCore.Tasks
             if (!canStartAdventure) return Result.Ok();
 
             result = await _toAdventurePageCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _exploreAdventureCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             html = chromeBrowser.Html;
             var adventureDuration = _unitOfParser.HeroParser.GetAdventureDuration(html);

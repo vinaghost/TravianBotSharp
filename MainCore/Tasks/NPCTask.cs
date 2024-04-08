@@ -30,30 +30,30 @@ namespace MainCore.Tasks
             Result result;
 
             result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var market = _unitOfRepository.BuildingRepository.GetBuildingLocation(VillageId, BuildingEnums.Marketplace);
 
             result = await _unitOfCommand.ToBuildingCommand.Handle(new(AccountId, market), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.SwitchTabCommand.Handle(new(AccountId, 0), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await OpenNPCDialog();
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await InputAmount();
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await Redeem();
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 
@@ -69,10 +69,10 @@ namespace MainCore.Tasks
             var html = chromeBrowser.Html;
 
             var button = _unitOfParser.MarketParser.GetExchangeResourcesButton(html);
-            if (button is null) return Result.Fail(Retry.ButtonNotFound("Exchange resources"));
+            if (button is null) return Retry.ButtonNotFound("Exchange resources");
             Result result;
             result = await chromeBrowser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             bool dialogShown(IWebDriver driver)
             {
@@ -83,7 +83,7 @@ namespace MainCore.Tasks
             }
 
             result = await chromeBrowser.Wait(dialogShown, CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }
@@ -111,7 +111,7 @@ namespace MainCore.Tasks
             for (var i = 0; i < 4; i++)
             {
                 result = await chromeBrowser.InputTextbox(By.XPath(inputs[i].XPath), $"{values[i]}");
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             return Result.Ok();
         }
@@ -148,14 +148,14 @@ namespace MainCore.Tasks
             var html = chromeBrowser.Html;
 
             var button = _unitOfParser.MarketParser.GetRedeemButton(html);
-            if (button is null) return Result.Fail(Retry.ButtonNotFound("redeem"));
+            if (button is null) return Retry.ButtonNotFound("redeem");
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await chromeBrowser.WaitPageLoaded(CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
     }

@@ -48,12 +48,12 @@ namespace MainCore.Tasks
             Result result;
             while (true)
             {
-                if (CancellationToken.IsCancellationRequested) return new Cancel();
+                if (CancellationToken.IsCancellationRequested) return Cancel.Error;
                 result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 0), CancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 var resultJob = await GetBuildingJob();
                 if (resultJob.IsFailed)
@@ -63,7 +63,7 @@ namespace MainCore.Tasks
                         await SetTimeQueueBuildingComplete();
                     }
                     return Result.Fail(resultJob.Errors)
-                        .WithError(new TraceMessage(TraceMessage.Line()));
+                        .WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
 
                 var job = resultJob.Value;
@@ -71,7 +71,7 @@ namespace MainCore.Tasks
                 if (job.Type == JobTypeEnums.ResourceBuild)
                 {
                     result = await ExtractResourceField(job);
-                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     continue;
                 }
 
@@ -79,10 +79,10 @@ namespace MainCore.Tasks
 
                 var dorf = plan.Location < 19 ? 1 : 2;
                 result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, dorf), CancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 if (await JobComplete(job))
                 {
@@ -92,7 +92,7 @@ namespace MainCore.Tasks
                 logger.Information("Build {type} to level {level} at location {location}", plan.Type, plan.Level, plan.Location);
 
                 result = await ToBuildingPage(plan);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 var requiredResource = GetRequiredResource(plan);
 
@@ -101,17 +101,15 @@ namespace MainCore.Tasks
                 {
                     if (result.HasError<FreeCrop>())
                     {
-                        result = await AddCropland();
-                        if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                        await AddCropland();
                         continue;
                     }
-                    else if (result.HasError<GranaryLimit>())
+
+                    if (result.HasError<GranaryLimit>() || result.HasError<WarehouseLimit>())
                     {
-                        return result.WithError(new Stop("Please take a look on building job queue")).WithError(new TraceMessage(TraceMessage.Line()));
-                    }
-                    else if (result.HasError<WarehouseLimit>())
-                    {
-                        return result.WithError(new Stop("Please take a look on building job queue")).WithError(new TraceMessage(TraceMessage.Line()));
+                        return result
+                            .WithError(Stop.NotEnoughStorageCapacity)
+                            .WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
 
                     if (IsUseHeroResource())
@@ -122,25 +120,16 @@ namespace MainCore.Tasks
                         {
                             if (!heroResourceResult.HasError<Retry>())
                             {
-                                var timeResult = await SetEnoughResourcesTime(plan);
-                                if (timeResult.IsFailed)
-                                {
-                                    return timeResult.WithError(new TraceMessage(TraceMessage.Line()));
-                                }
+                                await SetEnoughResourcesTime(plan);
                             }
 
-                            return heroResourceResult.WithError(new TraceMessage(TraceMessage.Line()));
+                            return heroResourceResult.WithError(TraceMessage.Error(TraceMessage.Line()));
                         }
                     }
                     else
                     {
-                        var timeResult = await SetEnoughResourcesTime(plan);
-                        if (timeResult.IsFailed)
-                        {
-                            return timeResult.WithError(new TraceMessage(TraceMessage.Line()));
-                        }
-
-                        return result.WithError(new TraceMessage(TraceMessage.Line()));
+                        await SetEnoughResourcesTime(plan);
+                        return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
                 }
 
@@ -149,18 +138,18 @@ namespace MainCore.Tasks
                     if (IsSpecialUpgrade() && IsSpecialUpgradeable(plan))
                     {
                         result = await _specialUpgradeCommand.Handle(new(AccountId), CancellationToken);
-                        if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                        if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
                     else
                     {
                         result = await Upgrade();
-                        if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                        if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
                 }
                 else
                 {
                     result = await Construct(plan);
-                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
             }
         }
@@ -208,12 +197,11 @@ namespace MainCore.Tasks
             return useHeroResource;
         }
 
-        private async Task<Result> SetEnoughResourcesTime(NormalBuildPlan plan)
+        private async Task SetEnoughResourcesTime(NormalBuildPlan plan)
         {
             var time = GetTimeWhenEnoughResource(plan);
             ExecuteAt = DateTime.Now.Add(time);
             await _taskManager.ReOrder(AccountId);
-            return Result.Ok();
         }
 
         private async Task SetTimeQueueBuildingComplete()
@@ -263,7 +251,7 @@ namespace MainCore.Tasks
                     {
                         if (job.HasError<JobCompleted>()) continue;
                         return Result.Fail(job.Errors)
-                            .WithError(new TraceMessage(TraceMessage.Line()));
+                            .WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
                     return job;
                 }
@@ -280,7 +268,7 @@ namespace MainCore.Tasks
                         {
                             if (job.HasError<JobCompleted>()) continue;
                             return Result.Fail(job.Errors)
-                                .WithError(new TraceMessage(TraceMessage.Line()));
+                                .WithError(TraceMessage.Error(TraceMessage.Line()));
                         }
                         return job;
                     }
@@ -291,7 +279,7 @@ namespace MainCore.Tasks
                         {
                             if (job.HasError<JobCompleted>()) continue;
                             return Result.Fail(job.Errors)
-                                .WithError(new TraceMessage(TraceMessage.Line()));
+                                .WithError(TraceMessage.Error(TraceMessage.Line()));
                         }
                         return job;
                     }
@@ -307,7 +295,7 @@ namespace MainCore.Tasks
                         {
                             if (job.HasError<JobCompleted>()) continue;
                             return Result.Fail(job.Errors)
-                                .WithError(new TraceMessage(TraceMessage.Line()));
+                                .WithError(TraceMessage.Error(TraceMessage.Line()));
                         }
                         return job;
                     }
@@ -333,7 +321,7 @@ namespace MainCore.Tasks
 
             if (await JobComplete(job))
             {
-                return JobCompleted.Removed;
+                return JobCompleted.Error;
             }
 
             return job;
@@ -372,7 +360,7 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        public async Task<Result> AddCropland()
+        public async Task AddCropland()
         {
             var cropland = _unitOfRepository.BuildingRepository.GetCropland(VillageId);
 
@@ -385,7 +373,6 @@ namespace MainCore.Tasks
 
             _unitOfRepository.JobRepository.AddToTop(VillageId, plan);
             await _mediator.Publish(new JobUpdated(AccountId, VillageId));
-            return Result.Ok();
         }
 
         public async Task<Result> Construct(NormalBuildPlan plan)
@@ -394,13 +381,13 @@ namespace MainCore.Tasks
             var html = chromeBrowser.Html;
 
             var button = _unitOfParser.UpgradeBuildingParser.GetConstructButton(html, plan.Type);
-            if (button is null) return Result.Fail(Retry.ButtonNotFound("construct"));
+            if (button is null) return Retry.ButtonNotFound("construct");
 
             var result = await chromeBrowser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await chromeBrowser.WaitPageChanged("dorf", CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 
@@ -410,13 +397,13 @@ namespace MainCore.Tasks
             var html = chromeBrowser.Html;
 
             var button = _unitOfParser.UpgradeBuildingParser.GetUpgradeButton(html);
-            if (button is null) return Result.Fail(Retry.ButtonNotFound("upgrade"));
+            if (button is null) return Retry.ButtonNotFound("upgrade");
 
             var result = await chromeBrowser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await chromeBrowser.WaitPageChanged("dorf", CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }
@@ -426,21 +413,21 @@ namespace MainCore.Tasks
             Result result;
 
             result = await _unitOfCommand.ToBuildingCommand.Handle(new(AccountId, plan.Location), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var building = _unitOfRepository.BuildingRepository.GetBuilding(VillageId, plan.Location);
             if (building.Type == BuildingEnums.Site)
             {
                 var tabIndex = plan.Type.GetBuildingsCategory();
                 result = await _unitOfCommand.SwitchTabCommand.Handle(new(AccountId, tabIndex), CancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else
             {
                 if (building.Level == 0) return Result.Ok();
                 if (!building.Type.HasMultipleTabs()) return Result.Ok();
                 result = await _unitOfCommand.SwitchTabCommand.Handle(new(AccountId, 0), CancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             return Result.Ok();
         }

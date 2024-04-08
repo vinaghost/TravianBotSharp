@@ -27,13 +27,13 @@ namespace MainCore.Tasks
         {
             Result result;
             result = await Login();
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await DisableContextualHelp();
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateVillageListCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 
@@ -58,14 +58,14 @@ namespace MainCore.Tasks
 
             Result result;
             result = await chromeBrowser.InputTextbox(By.XPath(usernameNode.XPath), username);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await chromeBrowser.InputTextbox(By.XPath(passwordNode.XPath), password);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await chromeBrowser.Click(By.XPath(buttonNode.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await chromeBrowser.WaitPageChanged("dorf", CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }
@@ -77,14 +77,14 @@ namespace MainCore.Tasks
 
             Result result;
             result = await ToOptionsPage();
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await DisableOption();
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await Submit();
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 1), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 
@@ -103,7 +103,7 @@ namespace MainCore.Tasks
             var button = _unitOfParser.OptionPageParser.GetOptionButton(html);
             Result result;
             result = await chromeBrowser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 
@@ -113,10 +113,10 @@ namespace MainCore.Tasks
             var html = chromeBrowser.Html;
 
             var option = _unitOfParser.OptionPageParser.GetHideContextualHelpOption(html);
-            if (option is null) return Result.Fail(Retry.NotFound("hide contextual help", "option"));
+            if (option is null) return Retry.NotFound("hide contextual help", "option");
             Result result;
             result = await chromeBrowser.Click(By.XPath(option.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 
@@ -128,7 +128,7 @@ namespace MainCore.Tasks
             var option = _unitOfParser.OptionPageParser.GetSubmitButton(html);
             Result result;
             result = await chromeBrowser.Click(By.XPath(option.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 

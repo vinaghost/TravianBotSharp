@@ -20,7 +20,7 @@ namespace MainCore.Tasks
         {
             Result result;
             result = await _mediator.Send(new ToFarmListPageCommand(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 

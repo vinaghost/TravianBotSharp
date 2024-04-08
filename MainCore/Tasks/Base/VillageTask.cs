@@ -30,7 +30,7 @@ namespace MainCore.Tasks.Base
             if (result.IsFailed) return result;
 
             result = await _unitOfCommand.SwitchVillageCommand.Handle(new(AccountId, VillageId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
     }
