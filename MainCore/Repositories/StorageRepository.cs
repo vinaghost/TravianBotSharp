@@ -25,6 +25,8 @@ namespace MainCore.Repositories
                 .Where(x => x.VillageId == villageId.Value)
                 .FirstOrDefault();
 
+            if (storage is null) return Result.Ok();
+
             var result = Result.Ok();
             if (storage.Wood < requiredResource[0]) result.WithError(Resource.Error("wood", storage.Wood, requiredResource[0]));
             if (storage.Clay < requiredResource[1]) result.WithError(Resource.Error("clay", storage.Clay, requiredResource[1]));
