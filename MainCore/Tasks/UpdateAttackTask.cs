@@ -37,7 +37,7 @@ namespace MainCore.Tasks
         protected override void SetName()
         {
             var village = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
-            _name = $"Update village in {village}";
+            _name = $"Update attack in {village}";
         }
     }
 }
