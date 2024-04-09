@@ -1,18 +1,18 @@
 ﻿using FluentResults;
 using HtmlAgilityPack;
-using MainCore.Commands.Base;
 using MainCore.Common.Errors;
 using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Parsers;
 using MainCore.Services;
+using MediatR;
 using OpenQA.Selenium;
 using Polly;
 
 namespace MainCore.Commands.Navigate
 {
-    public class SwitchVillageCommand : ByAccountVillageIdBase, ICommand
+    public class SwitchVillageCommand : ByAccountVillageIdBase, IRequest<Result>
     {
         public SwitchVillageCommand(AccountId accountId, VillageId villageId) : base(accountId, villageId)
         {
@@ -20,7 +20,7 @@ namespace MainCore.Commands.Navigate
     }
 
     [RegisterAsTransient]
-    public class SwitchVillageCommandHandler : ICommandHandler<SwitchVillageCommand>
+    public class SwitchVillageCommandHandler : IRequestHandler<SwitchVillageCommand, Result>
     {
         private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;

@@ -1,14 +1,13 @@
-﻿using FluentResults;
-using MainCore.Commands.Base;
-using MainCore.Common.Enums;
+﻿using MainCore.Common.Enums;
 using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Repositories;
+using MediatR;
 
 namespace MainCore.Commands.General
 {
-    public class DelayTaskCommand : ByAccountIdBase, ICommand
+    public class DelayTaskCommand : ByAccountIdBase, IRequest
     {
         public DelayTaskCommand(AccountId accountId) : base(accountId)
         {
@@ -16,7 +15,7 @@ namespace MainCore.Commands.General
     }
 
     [RegisterAsTransient]
-    public class DelayTaskCommandHandler : ICommandHandler<DelayTaskCommand>
+    public class DelayTaskCommandHandler : IRequestHandler<DelayTaskCommand>
     {
         private readonly UnitOfRepository _unitOfRepository;
 
@@ -25,11 +24,10 @@ namespace MainCore.Commands.General
             _unitOfRepository = unitOfRepository;
         }
 
-        public async Task<Result> Handle(DelayTaskCommand command, CancellationToken cancellationToken)
+        public async Task Handle(DelayTaskCommand command, CancellationToken cancellationToken)
         {
             var delay = _unitOfRepository.AccountSettingRepository.GetByName(command.AccountId, AccountSettingEnums.TaskDelayMin, AccountSettingEnums.TaskDelayMax);
             await Task.Delay(delay, CancellationToken.None);
-            return Result.Ok();
         }
     }
 }

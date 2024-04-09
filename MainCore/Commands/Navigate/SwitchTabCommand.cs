@@ -1,17 +1,17 @@
 ﻿using FluentResults;
 using HtmlAgilityPack;
-using MainCore.Commands.Base;
 using MainCore.Common.Errors;
 using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Parsers;
 using MainCore.Services;
+using MediatR;
 using OpenQA.Selenium;
 
 namespace MainCore.Commands.Navigate
 {
-    public class SwitchTabCommand : ByAccountIdBase, ICommand
+    public class SwitchTabCommand : ByAccountIdBase, IRequest<Result>
     {
         public int Index { get; }
 
@@ -22,7 +22,7 @@ namespace MainCore.Commands.Navigate
     }
 
     [RegisterAsTransient]
-    public class SwitchTabCommandHandler : ICommandHandler<SwitchTabCommand>
+    public class SwitchTabCommandHandler : IRequestHandler<SwitchTabCommand, Result>
     {
         private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;

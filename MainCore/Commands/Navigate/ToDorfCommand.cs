@@ -1,17 +1,17 @@
 ﻿using FluentResults;
 using HtmlAgilityPack;
-using MainCore.Commands.Base;
 using MainCore.Common.Errors;
 using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Parsers;
 using MainCore.Services;
+using MediatR;
 using OpenQA.Selenium;
 
 namespace MainCore.Commands.Navigate
 {
-    public class ToDorfCommand : ByAccountIdBase, ICommand
+    public class ToDorfCommand : ByAccountIdBase, IRequest<Result>
     {
         public int Dorf { get; }
         public bool IsForceReload { get; }
@@ -24,7 +24,7 @@ namespace MainCore.Commands.Navigate
     }
 
     [RegisterAsTransient]
-    public class ToDorfCommandHandler : ICommandHandler<ToDorfCommand>
+    public class ToDorfCommandHandler : IRequestHandler<ToDorfCommand, Result>
     {
         private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;

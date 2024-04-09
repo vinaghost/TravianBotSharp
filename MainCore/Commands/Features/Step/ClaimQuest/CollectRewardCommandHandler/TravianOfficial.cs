@@ -1,10 +1,12 @@
 ﻿using FluentResults;
 using HtmlAgilityPack;
 using MainCore.Commands.Base;
+using MainCore.Commands.General;
 using MainCore.Common.Errors;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Parsers;
 using MainCore.Services;
+using MediatR;
 using OpenQA.Selenium;
 
 namespace MainCore.Commands.Features.Step.ClaimQuest.CollectRewardCommandHandler
@@ -14,13 +16,13 @@ namespace MainCore.Commands.Features.Step.ClaimQuest.CollectRewardCommandHandler
     {
         private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;
-        private readonly UnitOfCommand _unitOfCommand;
+        private readonly IMediator _mediator;
 
-        public TravianOfficial(IChromeManager chromeManager, UnitOfParser unitOfParser, UnitOfCommand unitOfCommand)
+        public TravianOfficial(IChromeManager chromeManager, UnitOfParser unitOfParser, IMediator mediator)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
-            _unitOfCommand = unitOfCommand;
+            _mediator = mediator;
         }
 
         public async Task<Result> Handle(CollectRewardCommand command, CancellationToken cancellationToken)
@@ -40,16 +42,14 @@ namespace MainCore.Commands.Features.Step.ClaimQuest.CollectRewardCommandHandler
                     result = await Handle(chromeBrowser);
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                    result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
-                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                    await _mediator.Send(new DelayClickCommand(command.AccountId), cancellationToken);
                     continue;
                 }
 
                 result = await chromeBrowser.Click(By.XPath(quest.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                await _mediator.Send(new DelayClickCommand(command.AccountId), cancellationToken);
             }
             while (_unitOfParser.QuestParser.IsQuestClaimable(html));
             return Result.Ok();

@@ -1,5 +1,4 @@
 ﻿using FluentResults;
-using MainCore.Commands.Base;
 using MainCore.Common.Errors;
 using MainCore.Common.MediatR;
 using MainCore.Common.Models;
@@ -8,10 +7,11 @@ using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Repositories;
 using MainCore.Services;
+using MediatR;
 
 namespace MainCore.Commands.General
 {
-    public class OpenBrowserCommand : ByAccountIdBase, ICommand
+    public class OpenBrowserCommand : ByAccountIdBase, IRequest<Result>
     {
         public AccessDto Access { get; }
 
@@ -22,7 +22,7 @@ namespace MainCore.Commands.General
     }
 
     [RegisterAsTransient]
-    public class OpenBrowserCommandHandler : ICommandHandler<OpenBrowserCommand>
+    public class OpenBrowserCommandHandler : IRequestHandler<OpenBrowserCommand, Result>
     {
         private readonly IChromeManager _chromeManager;
         private readonly UnitOfRepository _unitOfRepository;
@@ -54,6 +54,7 @@ namespace MainCore.Commands.General
                 ProxyPassword = command.Access.ProxyPassword,
                 IsHeadless = headlessChrome,
             };
+
             var result = await chromeBrowser.Setup(chromeSetting);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 

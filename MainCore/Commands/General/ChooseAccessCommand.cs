@@ -8,6 +8,9 @@ using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Repositories;
 using MainCore.Services;
+using Polly;
+using Polly.Retry;
+using RestSharp;
 using Serilog;
 
 namespace MainCore.Commands.General
@@ -28,14 +31,20 @@ namespace MainCore.Commands.General
         public AccessDto Value { get; private set; }
 
         private readonly UnitOfRepository _unitOfRepository;
-        private readonly UnitOfCommand _unitOfCommand;
         private readonly ILogService _logService;
+        private readonly IRestClientManager _restClientManager;
 
-        public ChooseAccessCommandHandler(UnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, ILogService logService)
+        private static readonly AsyncRetryPolicy<bool> _retryPolicy = Policy<bool>
+                .Handle<Exception>()
+                .WaitAndRetryAsync(
+                    retryCount: 3,
+                    sleepDurationProvider: times => TimeSpan.FromSeconds(10 * times));
+
+        public ChooseAccessCommandHandler(UnitOfRepository unitOfRepository, ILogService logService, IRestClientManager restClientManager)
         {
             _unitOfRepository = unitOfRepository;
-            _unitOfCommand = unitOfCommand;
             _logService = logService;
+            _restClientManager = restClientManager;
         }
 
         public async Task<Result> Handle(ChooseAccessCommand command, CancellationToken cancellationToken)
@@ -73,9 +82,11 @@ namespace MainCore.Commands.General
             foreach (var access in accesses)
             {
                 logger.Information("Check connection {proxy}", access.Proxy);
-                var result = await _unitOfCommand.ValidateProxyCommand.Handle(new(access), cancellationToken);
-                if (result.IsFailed) return null;
-                if (!_unitOfCommand.ValidateProxyCommand.Value)
+
+                var poliResult = await _retryPolicy
+                    .ExecuteAndCaptureAsync(() => Validate(access));
+
+                if (!poliResult.Result)
                 {
                     logger.Warning("Connection {proxy} cannot connect to travian.com", access.Proxy);
                     continue;
@@ -84,6 +95,18 @@ namespace MainCore.Commands.General
                 return access;
             }
             return null;
+        }
+
+        private async Task<bool> Validate(AccessDto access)
+        {
+            var request = new RestRequest
+            {
+                Method = Method.Get,
+            };
+            var client = _restClientManager.Get(access);
+            var response = await client.ExecuteAsync(request);
+            if (!response.IsSuccessful) throw new Exception("Proxy failed");
+            return true;
         }
     }
 }
