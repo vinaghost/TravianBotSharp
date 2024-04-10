@@ -300,6 +300,7 @@ namespace MainCore.Infrasturecture.Persistence
                 KeyValuePair.Create(202403271931,"AddVillageIdToNewVillageTable"),
                 KeyValuePair.Create(202403272006,"AddProgressingSettlersToVillageTable"),
                 KeyValuePair.Create(202403282055,"AddNewVillageTemplatePathToNewVillageTable"),
+                KeyValuePair.Create(202404101706,"AddDiscordWebhookUrlToAccountInfoTable"),
             };
             foreach (var migration in migrations)
             {

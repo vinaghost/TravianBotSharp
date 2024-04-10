@@ -15,6 +15,7 @@ namespace MainCore.Entities
         public int MaximumVillage { get; set; }
 
         public string NewVillageTemplatePath { get; set; } = "";
+        public string DiscordWebhookUrl { get; set; } = "";
         public int AccountId { get; set; }
     }
 }
