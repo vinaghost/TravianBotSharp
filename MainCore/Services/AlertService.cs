@@ -23,6 +23,8 @@ namespace MainCore.Services
             }
 
             var source = _attacksDict[accountId];
+
+            source = source.Where(x => x.ArrivalTime > DateTime.Now).ToList();
             if (IsSame(source, attacks)) return false;
 
             _attacksDict[accountId] = attacks;
@@ -35,7 +37,7 @@ namespace MainCore.Services
 
             foreach (var attack in target)
             {
-                var srcAttack = source.FirstOrDefault(x => x.PlayerName == attack.PlayerName);
+                var srcAttack = source.FirstOrDefault(x => x.VillageName == attack.VillageName);
                 if (srcAttack is null) return false;
                 if (srcAttack.WaveCount != attack.WaveCount) return false;
             }

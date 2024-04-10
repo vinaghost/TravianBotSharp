@@ -67,25 +67,6 @@ namespace MainCore.UI.ViewModels.Tabs
                     Title = $"Server: {account.Server}",
                     Description = $"Username: {account.Username}",
                 };
-                //for (var i = 0; i < 20; i++)
-                //{
-                //    if (i % 2 == 0)
-                //    {
-                //        embed.AddField(new EmbedFieldBuilder()
-                //        {
-                //            Name = "[toprakzemin] toprakzemin Köyü (29 | 43)",
-                //            Value = "attacks 4 waves at 22:08:25 09/04/2024 (and 2 seconds)",
-                //        });
-                //    }
-                //    else
-                //    {
-                //        embed.AddField(new EmbedFieldBuilder()
-                //        {
-                //            Name = "[xShou] New village (13 | 39)",
-                //            Value = "**[NEW]** attacks **5** waves at 22:08:20 09/04/2024 (and 1 seconds)",
-                //        });
-                //    }
-                //}
 
                 await _discordWebhookClient.SendMessageAsync(text: "This is test message", embeds: new[] { embed.Build() });
             }

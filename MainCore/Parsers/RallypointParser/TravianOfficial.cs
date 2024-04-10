@@ -1,11 +1,14 @@
 ﻿using HtmlAgilityPack;
+using MainCore.Common.Enums;
 using MainCore.Common.Extensions;
 using MainCore.Common.Models;
+using MainCore.Infrasturecture.AutoRegisterDi;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
 namespace MainCore.Parsers.RallypointParser
 {
-    public class RallypointParser
+    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    public class TravianOfficial : IRallypointParser
     {
         public List<IncomingAttack> GetIncomingAttacks(HtmlDocument doc)
         {
@@ -20,17 +23,18 @@ namespace MainCore.Parsers.RallypointParser
                 var y = GetY(table);
                 var arrival = now.Add(GetArrivalTime(table));
 
-                var attack = attacks.FirstOrDefault(x => x.PlayerName == name);
+                var attack = attacks.LastOrDefault(x => x.VillageName == name);
 
                 if (attack is null)
                 {
                     attacks.Add(new()
                     {
-                        PlayerName = name,
+                        VillageName = name,
                         X = x,
                         Y = y,
                         ArrivalTime = arrival,
                         WaveCount = 1,
+                        Type = table.HasClass("inAttack") ? TroopMovementEnums.Attack : TroopMovementEnums.Raid,
                     });
                 }
                 else
@@ -40,7 +44,7 @@ namespace MainCore.Parsers.RallypointParser
                     {
                         attacks.Add(new()
                         {
-                            PlayerName = name,
+                            VillageName = name,
                             X = x,
                             Y = y,
                             ArrivalTime = arrival,
@@ -59,7 +63,7 @@ namespace MainCore.Parsers.RallypointParser
             return attacks;
         }
 
-        private List<HtmlNode> GetTables(HtmlDocument doc)
+        private static List<HtmlNode> GetTables(HtmlDocument doc)
         {
             var tables = doc.DocumentNode
                 .Descendants("table")
@@ -68,13 +72,13 @@ namespace MainCore.Parsers.RallypointParser
             return tables;
         }
 
-        private string GetNameAttacker(HtmlNode node)
+        private static string GetNameAttacker(HtmlNode node)
         {
             var td = node
                 .Descendants("td")
                 .FirstOrDefault(x => x.HasClass("role"));
             if (td is null) return "?";
-            return td.InnerText;
+            return td.InnerText.Trim();
         }
 
         private static int GetX(HtmlNode node)
@@ -100,7 +104,7 @@ namespace MainCore.Parsers.RallypointParser
             return timer.InnerText.ToDuration();
         }
 
-        private DateTime GetServerTime(HtmlDocument doc)
+        private static DateTime GetServerTime(HtmlDocument doc)
         {
             var serverTime = doc.GetElementbyId("servertime");
             var timer = serverTime
