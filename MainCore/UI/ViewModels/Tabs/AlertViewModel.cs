@@ -1,13 +1,16 @@
 ﻿using Discord;
 using Discord.Net;
 using Discord.Webhook;
+using MainCore.Common.Enums;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
+using MainCore.Repositories;
 using MainCore.Services;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
 using Serilog;
 using System.Reactive;
+using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
@@ -15,22 +18,33 @@ namespace MainCore.UI.ViewModels.Tabs
     public class AlertViewModel : AccountTabViewModelBase
     {
         public ReactiveCommand<Unit, Unit> Test { get; }
+        public ReactiveCommand<AccountId, string> LoadDiscordWebhookUrl { get; }
         private DiscordWebhookClient _discordWebhookClient;
         private readonly IDialogService _dialogService;
+        private readonly UnitOfRepository _unitOfRepository;
 
-        protected override Task Load(AccountId accountId)
+        protected override async Task Load(AccountId accountId)
         {
-            return Task.CompletedTask;
+            await LoadDiscordWebhookUrl.Execute(accountId);
         }
 
         private bool _discordEnable;
         private string _discordWebhookUrl;
 
-        public AlertViewModel(IDialogService dialogService)
+        public AlertViewModel(IDialogService dialogService, UnitOfRepository unitOfRepository)
         {
             _dialogService = dialogService;
+            _unitOfRepository = unitOfRepository;
 
             Test = ReactiveCommand.CreateFromTask(TestHandler);
+            LoadDiscordWebhookUrl = ReactiveCommand.Create<AccountId, string>(LoadDiscordWebhookUrlHandler);
+
+            LoadDiscordWebhookUrl.Subscribe(x => DiscordWebhookUrl = x);
+        }
+
+        private string LoadDiscordWebhookUrlHandler(AccountId accountId)
+        {
+            return _unitOfRepository.AccountInfoRepository.GetDiscordWebhookUrl(accountId);
         }
 
         private async Task TestHandler()
@@ -85,6 +99,12 @@ namespace MainCore.UI.ViewModels.Tabs
                 _dialogService.ShowMessageBox("Warning", error.Message);
                 Log.Error("{Message}", error.Message);
             }
+
+            var settings = new Dictionary<AccountSettingEnums, int> {
+                { AccountSettingEnums.EnableDiscordAlert, DiscordEnable ? 1 : 0 }
+            };
+            _unitOfRepository.AccountSettingRepository.Update(AccountId, settings);
+            _unitOfRepository.AccountInfoRepository.SetDiscordWebhookUrl(AccountId, DiscordWebhookUrl);
         }
 
         public bool DiscordEnable
