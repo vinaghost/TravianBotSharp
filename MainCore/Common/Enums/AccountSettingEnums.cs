@@ -31,5 +31,7 @@
         EquipGearBeforeStartAdventure,
         HealingBeforeStartAdventure,
         HealthBeforeStartAdventure,
+
+        EnableDiscordAlert,
     }
 }

@@ -33,6 +33,7 @@ namespace MainCore.UI.Models.Input
 
             HealingBeforeStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.HealingBeforeStartAdventure) == 1;
             HealthBeforeStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.HealthBeforeStartAdventure);
+            EnableDiscordAlert = settings.GetValueOrDefault(AccountSettingEnums.EnableDiscordAlert) == 1;
         }
 
         public Dictionary<AccountSettingEnums, int> Get()
@@ -59,6 +60,7 @@ namespace MainCore.UI.Models.Input
 
             var healingBeforeStartAdventure = HealingBeforeStartAdventure ? 1 : 0;
             var healthBeforeStartAdventure = HealthBeforeStartAdventure;
+            var enableDiscordAlert = EnableDiscordAlert ? 1 : 0;
 
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
@@ -85,6 +87,7 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.EquipGearBeforeStartAdventure, equipGearBeforeStartAdventure },
                 { AccountSettingEnums.HealingBeforeStartAdventure, healingBeforeStartAdventure },
                 { AccountSettingEnums.HealthBeforeStartAdventure,  healthBeforeStartAdventure},
+                { AccountSettingEnums.EnableDiscordAlert, enableDiscordAlert},
             };
             return settings;
         }
@@ -200,6 +203,14 @@ namespace MainCore.UI.Models.Input
         {
             get => _healingBeforeStartAdventure;
             set => this.RaiseAndSetIfChanged(ref _healingBeforeStartAdventure, value);
+        }
+
+        private bool _enableDiscordAlert;
+
+        public bool EnableDiscordAlert
+        {
+            get => _enableDiscordAlert;
+            set => this.RaiseAndSetIfChanged(ref _enableDiscordAlert, value);
         }
     }
 }
