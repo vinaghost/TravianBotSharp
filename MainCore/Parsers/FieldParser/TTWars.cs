@@ -75,5 +75,10 @@ namespace MainCore.Parsers.FieldParser
             return node.GetClasses()
                 .Contains("underConstruction");
         }
+
+        public bool IsUnderAttack(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

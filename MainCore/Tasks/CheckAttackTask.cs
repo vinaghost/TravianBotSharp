@@ -1,0 +1,111 @@
+﻿using Discord;
+using Discord.Webhook;
+using FluentResults;
+using Humanizer;
+using MainCore.Commands;
+using MainCore.Common.Errors;
+using MainCore.Infrasturecture.AutoRegisterDi;
+using MainCore.Parsers;
+using MainCore.Repositories;
+using MainCore.Services;
+using MainCore.Tasks.Base;
+using MediatR;
+
+namespace MainCore.Tasks
+{
+    [RegisterAsTransient(withoutInterface: true)]
+    public class CheckAttackTask : VillageTask
+    {
+        private readonly IRallypointParser _rallypointParser;
+        private readonly IAlertService _alertService;
+        private readonly IChromeManager _chromeManager;
+        private readonly ITaskManager _taskManager;
+
+        public CheckAttackTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IRallypointParser rallypointParser, IAlertService alertService, IChromeManager chromeManager, ITaskManager taskManager) : base(unitOfCommand, unitOfRepository, mediator)
+        {
+            _rallypointParser = rallypointParser;
+            _alertService = alertService;
+            _chromeManager = chromeManager;
+            _taskManager = taskManager;
+        }
+
+        protected override async Task<Result> Execute()
+        {
+            Result result;
+            result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await _unitOfCommand.ToBuildingCommand.Handle(new(AccountId, 39), CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await _unitOfCommand.SwitchTabCommand.Handle(new(AccountId, 1), CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await _unitOfCommand.DelayClickCommand.Handle(new(AccountId), CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            await CheckAttacks();
+
+            return Result.Ok();
+        }
+
+        private async Task CheckAttacks()
+        {
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            var html = chromeBrowser.Html;
+
+            var attacks = _rallypointParser.GetIncomingAttacks(html);
+
+            var isAlert = _alertService.Update(AccountId, attacks);
+
+            if (attacks.Count != 0)
+            {
+                await SetNextExecute();
+            }
+
+            if (!isAlert) return;
+
+            await AlertDiscord();
+        }
+
+        private async Task AlertDiscord()
+        {
+            var account = _unitOfRepository.AccountRepository.Get(AccountId);
+            var webhookUrl = _unitOfRepository.AccountInfoRepository.GetDiscordWebhookUrl(AccountId);
+            var client = new DiscordWebhookClient(webhookUrl);
+            var embed = new EmbedBuilder
+            {
+                Title = $"Server: {account.Server}",
+                Description = $"Username: {account.Username}",
+            };
+
+            var attacks = _alertService.Get(AccountId);
+            foreach (var attack in attacks)
+            {
+                var sec = attack.DelaySecond == 0 ? "" : $"(and {attack.DelaySecond} seconds)";
+                embed.AddField(new EmbedFieldBuilder()
+                {
+                    Name = $"[{attack.VillageName}] ({attack.X} | {attack.Y})",
+                    Value = $"{attack.Type.Humanize()} {attack.WaveCount} waves at {attack.ArrivalTime:yyyy-MM-dd HH:mm:ss} {sec}",
+                });
+            }
+
+            await client.SendMessageAsync(text: "@here Attack alert", embeds: new[] { embed.Build() });
+        }
+
+        private async Task SetNextExecute()
+        {
+            const int MIN = 60 * 4;
+            const int MAX = 60 * 6;
+            var sec = Random.Shared.Next(MIN, MAX);
+            ExecuteAt = DateTime.Now.AddSeconds(sec);
+            await _taskManager.ReOrder(AccountId);
+        }
+
+        protected override void SetName()
+        {
+            var village = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
+            _name = $"Check attack in {village}";
+        }
+    }
+}
