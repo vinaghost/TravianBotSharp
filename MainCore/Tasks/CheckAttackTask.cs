@@ -68,13 +68,13 @@ namespace MainCore.Tasks
             var account = _unitOfRepository.AccountRepository.Get(AccountId);
             var webhookUrl = _unitOfRepository.AccountInfoRepository.GetDiscordWebhookUrl(AccountId);
             var client = new DiscordWebhookClient(webhookUrl);
+            var attacks = _alertService.Get(AccountId);
             var embed = new EmbedBuilder
             {
                 Title = $"Server: {account.Server}",
-                Description = $"Username: {account.Username}",
+                Description = $"Username: {account.Username} got {attacks.Sum(x => x.WaveCount)} attack",
             };
 
-            var attacks = _alertService.Get(AccountId);
             foreach (var attack in attacks)
             {
                 var sec = attack.DelaySecond == 0 ? "" : $"(and {attack.DelaySecond} seconds)";
