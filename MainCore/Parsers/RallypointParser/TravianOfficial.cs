@@ -35,6 +35,7 @@ namespace MainCore.Parsers.RallypointParser
                         ArrivalTime = arrival,
                         WaveCount = 1,
                         Type = table.HasClass("inAttack") ? TroopMovementEnums.Attack : TroopMovementEnums.Raid,
+                        IsNew = true,
                     });
                 }
                 else

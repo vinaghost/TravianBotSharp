@@ -58,11 +58,6 @@ namespace MainCore.Tasks
 
             var isAlert = _alertService.Update(AccountId, attacks);
 
-            if (attacks.Count != 0)
-            {
-                await SetNextExecute();
-            }
-
             if (!isAlert) return;
 
             await AlertDiscord();
@@ -83,24 +78,25 @@ namespace MainCore.Tasks
             foreach (var attack in attacks)
             {
                 var sec = attack.DelaySecond == 0 ? "" : $"(and {attack.DelaySecond} seconds)";
+                var tag = attack.IsNew ? "[NEW]" : "";
                 embed.AddField(new EmbedFieldBuilder()
                 {
                     Name = $"[{attack.VillageName}] ({attack.X} | {attack.Y})",
-                    Value = $"{attack.Type.Humanize()} {attack.WaveCount} waves at {attack.ArrivalTime:yyyy-MM-dd HH:mm:ss} {sec}",
+                    Value = $"{tag} {attack.Type.Humanize()} {attack.WaveCount} waves at {attack.ArrivalTime:yyyy-MM-dd HH:mm:ss} {sec} (servertime)",
                 });
             }
 
             await client.SendMessageAsync(text: "@here Attack alert", embeds: new[] { embed.Build() });
         }
 
-        private async Task SetNextExecute()
-        {
-            const int MIN = 60 * 4;
-            const int MAX = 60 * 6;
-            var sec = Random.Shared.Next(MIN, MAX);
-            ExecuteAt = DateTime.Now.AddSeconds(sec);
-            await _taskManager.ReOrder(AccountId);
-        }
+        //private async Task SetNextExecute()
+        //{
+        //    const int MIN = 60 * 4;
+        //    const int MAX = 60 * 6;
+        //    var sec = Random.Shared.Next(MIN, MAX);
+        //    ExecuteAt = DateTime.Now.AddSeconds(sec);
+        //    await _taskManager.ReOrder(AccountId);
+        //}
 
         protected override void SetName()
         {

@@ -11,5 +11,6 @@ namespace MainCore.Common.Models
         public DateTime ArrivalTime { get; set; }
         public int DelaySecond { get; set; }
         public TroopMovementEnums Type { get; set; }
+        public bool IsNew { get; set; }
     }
 }
