@@ -53,6 +53,17 @@ namespace MainCore.Repositories
             return path;
         }
 
+        public string GetDiscordWebhookUrl(AccountId accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var path = context.AccountsInfo
+                .Where(x => x.AccountId == accountId.Value)
+                .Select(x => x.DiscordWebhookUrl)
+                .FirstOrDefault();
+            return path;
+        }
+
         public void SetTemplatePath(AccountId accountId, string path)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -73,6 +84,31 @@ namespace MainCore.Repositories
             else
             {
                 dbAccountInfo.NewVillageTemplatePath = path;
+                context.Update(dbAccountInfo);
+            }
+            context.SaveChanges();
+        }
+
+        public void SetDiscordWebhookUrl(AccountId accountId, string url)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var dbAccountInfo = context.AccountsInfo
+                .Where(x => x.AccountId == accountId.Value)
+                .FirstOrDefault();
+
+            if (dbAccountInfo is null)
+            {
+                var accountInfo = new AccountInfo()
+                {
+                    AccountId = accountId.Value,
+                    DiscordWebhookUrl = url,
+                };
+                context.Add(accountInfo);
+            }
+            else
+            {
+                dbAccountInfo.DiscordWebhookUrl = url;
                 context.Update(dbAccountInfo);
             }
             context.SaveChanges();

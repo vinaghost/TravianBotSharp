@@ -6,5 +6,6 @@ namespace MainCore.Parsers
     public interface IFieldParser
     {
         IEnumerable<BuildingDto> Get(HtmlDocument doc);
+        bool IsUnderAttack(HtmlDocument doc);
     }
 }
