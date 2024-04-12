@@ -61,6 +61,7 @@ namespace MainCore.Tasks
             if (!isAlert) return;
 
             await AlertDiscord();
+            await DonateResource();
         }
 
         private async Task AlertDiscord()
@@ -91,6 +92,19 @@ namespace MainCore.Tasks
             }
 
             await client.SendMessageAsync(text: "@here Attack alert", embeds: new[] { embed.Build() });
+        }
+
+        private async Task DonateResource()
+        {
+            var enable = _unitOfRepository.AccountSettingRepository.GetBooleanByName(AccountId, Common.Enums.AccountSettingEnums.EnableDonateResource);
+            if (!enable) return;
+            if (_taskManager.IsExist<DonateResourceTask>(AccountId, VillageId)) return;
+
+            var attacks = _alertService.Get(AccountId);
+
+            var firstAttacks = attacks.FirstOrDefault();
+
+            await _taskManager.Add<DonateResourceTask>(AccountId, VillageId, executeTime: firstAttacks.ArrivalTime.AddMinutes(-1));
         }
 
         //private async Task SetNextExecute()
