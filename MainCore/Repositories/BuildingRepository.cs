@@ -33,6 +33,21 @@ namespace MainCore.Repositories
                 BuildingEnums.Cropland,}},
         };
 
+        private static readonly List<int> _normalCrannyCapacity = new()
+        {
+            0,
+            100,
+            130,
+            170,
+            220,
+            280,
+            360,
+            460,
+            600,
+            770,
+            1000,
+        };
+
         public BuildingRepository(IDbContextFactory<AppDbContext> contextFactory)
         {
             _contextFactory = contextFactory;
@@ -58,6 +73,26 @@ namespace MainCore.Repositories
             return context.Buildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Any(x => x.Type == BuildingEnums.TownHall && x.Level >= level);
+        }
+
+        public int GetCrannyCapacity(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var tribe = (TribeEnums)context.VillagesSetting
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Setting == VillageSettingEnums.Tribe)
+                .Select(x => x.Value)
+                .FirstOrDefault();
+
+            var capacity = tribe == TribeEnums.Gauls ? _normalCrannyCapacity.Select(x => x * 2).ToList() : _normalCrannyCapacity;
+
+            var cannies = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type == BuildingEnums.Cranny)
+                .AsEnumerable()
+                .Select(x => capacity[x.Level])
+                .Sum();
+            return cannies;
         }
 
         public int CountQueueBuilding(VillageId villageId)
