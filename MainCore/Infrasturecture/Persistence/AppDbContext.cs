@@ -69,6 +69,8 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.HealingBeforeStartAdventure, 0 },
             {AccountSettingEnums.HealthBeforeStartAdventure, 40 },
             {AccountSettingEnums.EnableDiscordAlert, 0 },
+            {AccountSettingEnums.EnableDonateResource, 0 },
+            {AccountSettingEnums.DonateResourceType, 0 },
         };
 
         public void FillHero()

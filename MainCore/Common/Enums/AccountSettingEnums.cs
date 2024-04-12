@@ -33,5 +33,8 @@
         HealthBeforeStartAdventure,
 
         EnableDiscordAlert,
+
+        EnableDonateResource,
+        DonateResourceType,
     }
 }

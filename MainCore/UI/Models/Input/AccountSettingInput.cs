@@ -34,6 +34,9 @@ namespace MainCore.UI.Models.Input
             HealingBeforeStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.HealingBeforeStartAdventure) == 1;
             HealthBeforeStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.HealthBeforeStartAdventure);
             EnableDiscordAlert = settings.GetValueOrDefault(AccountSettingEnums.EnableDiscordAlert) == 1;
+
+            EnableDonateResource = settings.GetValueOrDefault(AccountSettingEnums.EnableDonateResource) == 1;
+            Bonus.Set((AllianceBonusEnums)settings.GetValueOrDefault(AccountSettingEnums.DonateResourceType));
         }
 
         public Dictionary<AccountSettingEnums, int> Get()
@@ -61,7 +64,8 @@ namespace MainCore.UI.Models.Input
             var healingBeforeStartAdventure = HealingBeforeStartAdventure ? 1 : 0;
             var healthBeforeStartAdventure = HealthBeforeStartAdventure;
             var enableDiscordAlert = EnableDiscordAlert ? 1 : 0;
-
+            var enableDonateResource = EnableDonateResource ? 1 : 0;
+            var donateResourceType = (int)Bonus.Get();
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
                 { AccountSettingEnums.ClickDelayMin, clickDelayMin },
@@ -88,11 +92,14 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.HealingBeforeStartAdventure, healingBeforeStartAdventure },
                 { AccountSettingEnums.HealthBeforeStartAdventure,  healthBeforeStartAdventure},
                 { AccountSettingEnums.EnableDiscordAlert, enableDiscordAlert},
+                { AccountSettingEnums.EnableDonateResource, enableDonateResource},
+                { AccountSettingEnums.DonateResourceType, donateResourceType},
             };
             return settings;
         }
 
         public TribeSelectorViewModel Tribe { get; } = new();
+        public BonusSelectorViewModel Bonus { get; } = new();
         public RangeInputViewModel ClickDelay { get; } = new();
         public RangeInputViewModel TaskDelay { get; } = new();
 
@@ -211,6 +218,14 @@ namespace MainCore.UI.Models.Input
         {
             get => _enableDiscordAlert;
             set => this.RaiseAndSetIfChanged(ref _enableDiscordAlert, value);
+        }
+
+        private bool _enableDonateResource;
+
+        public bool EnableDonateResource
+        {
+            get => _enableDonateResource;
+            set => this.RaiseAndSetIfChanged(ref _enableDonateResource, value);
         }
     }
 }
