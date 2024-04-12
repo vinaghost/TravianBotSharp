@@ -8,6 +8,18 @@ namespace MainCore.Parsers.FieldParser
     [RegisterAsTransient(ServerEnums.TravianOfficial)]
     public class TravianOfficial : IFieldParser
     {
+        public bool IsUnderAttack(HtmlDocument doc)
+        {
+            var villageInfobox = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("villageInfobox"));
+            if (villageInfobox is null) return false;
+
+            return villageInfobox
+                .Descendants("img")
+                .Any(x => x.HasClass("att1") || x.HasClass("att3"));
+        }
+
         public IEnumerable<BuildingDto> Get(HtmlDocument doc)
         {
             var nodes = GetNodes(doc);
