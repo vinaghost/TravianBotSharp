@@ -65,7 +65,11 @@ namespace MainCore.Tasks
 
         private async Task AlertDiscord()
         {
+            var enable = _unitOfRepository.AccountSettingRepository.GetBooleanByName(AccountId, Common.Enums.AccountSettingEnums.EnableDiscordAlert);
+            if (!enable) return;
+
             var account = _unitOfRepository.AccountRepository.Get(AccountId);
+
             var webhookUrl = _unitOfRepository.AccountInfoRepository.GetDiscordWebhookUrl(AccountId);
             var client = new DiscordWebhookClient(webhookUrl);
             var attacks = _alertService.Get(AccountId);
