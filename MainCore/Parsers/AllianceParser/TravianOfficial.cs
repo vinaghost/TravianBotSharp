@@ -25,12 +25,14 @@ namespace MainCore.Parsers.AllianceParser
 
         public HtmlNode GetBonusSelector(HtmlDocument doc, AllianceBonusEnums bonus)
         {
-            return doc.GetElementbyId(_allianceBonusInput[bonus]);
+            return doc.DocumentNode
+                .Descendants("label")
+                .FirstOrDefault(x => x.GetAttributeValue("for", "") == _allianceBonusInput[bonus]);
         }
 
         public IEnumerable<HtmlNode> GetBonusInputs(HtmlDocument doc)
         {
-            for (int i = 0; i < 4; i++)
+            for (int i = 1; i < 5; i++)
             {
                 var node = doc.GetElementbyId($"donate{i}");
                 yield return node;

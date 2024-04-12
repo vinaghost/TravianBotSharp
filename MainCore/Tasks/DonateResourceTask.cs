@@ -18,8 +18,10 @@ namespace MainCore.Tasks
         private readonly IChromeManager _chromeManager;
         private readonly IAllianceParser _allianceParser;
 
-        public DonateResourceTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        public DonateResourceTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IChromeManager chromeManager, IAllianceParser allianceParser) : base(unitOfCommand, unitOfRepository, mediator)
         {
+            _chromeManager = chromeManager;
+            _allianceParser = allianceParser;
         }
 
         protected override async Task<Result> Execute()
@@ -61,17 +63,13 @@ namespace MainCore.Tasks
 
             var cannies = _unitOfRepository.BuildingRepository.GetCrannyCapacity(VillageId);
 
-            for (int i = 0; i < 4; i++)
-            {
-                storage[i] = RoundUpTo100(Math.Min(storage[i] - cannies, 0));
-            }
-
             var html = chromeBrowser.Html;
             var inputs = _allianceParser.GetBonusInputs(html).ToArray();
-
             Result result;
-            for (var i = 0; i < 4; i++)
+
+            for (int i = 0; i < 4; i++)
             {
+                storage[i] = RoundUpTo100(Math.Max(storage[i] - cannies, 0));
                 result = await chromeBrowser.InputTextbox(By.XPath(inputs[i].XPath), $"{storage[i]}");
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
@@ -97,6 +95,10 @@ namespace MainCore.Tasks
             var contribute = _allianceParser.GetContributeButton(html);
 
             result = await chromeBrowser.Click(By.XPath(contribute.XPath));
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+
+            result = await _unitOfCommand.DelayClickCommand.Handle(new(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             return Result.Ok();

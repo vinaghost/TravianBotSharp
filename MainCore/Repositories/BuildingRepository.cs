@@ -36,16 +36,16 @@ namespace MainCore.Repositories
         private static readonly List<int> _normalCrannyCapacity = new()
         {
             0,
-            100,
-            130,
-            170,
-            220,
-            280,
-            360,
-            460,
-            600,
-            770,
-            1000,
+            200,
+            260,
+            340,
+            440,
+            560,
+            720,
+            920,
+            1200,
+            1540,
+            2000,
         };
 
         public BuildingRepository(IDbContextFactory<AppDbContext> contextFactory)
@@ -84,7 +84,7 @@ namespace MainCore.Repositories
                 .Select(x => x.Value)
                 .FirstOrDefault();
 
-            var capacity = tribe == TribeEnums.Gauls ? _normalCrannyCapacity.Select(x => x * 2).ToList() : _normalCrannyCapacity;
+            var capacity = tribe == TribeEnums.Gauls ? _normalCrannyCapacity.Select(x => (int)(x * 1.5)).ToList() : _normalCrannyCapacity;
 
             var cannies = context.Buildings
                 .Where(x => x.VillageId == villageId.Value)
