@@ -72,7 +72,7 @@ namespace MainCore.Tasks
             var account = _unitOfRepository.AccountRepository.Get(AccountId);
 
             var webhookUrl = _unitOfRepository.AccountInfoRepository.GetDiscordWebhookUrl(AccountId);
-            var client = new DiscordWebhookClient(webhookUrl);
+            using var client = new DiscordWebhookClient(webhookUrl);
             var attacks = _alertService.Get(AccountId);
             var embed = new EmbedBuilder
             {
