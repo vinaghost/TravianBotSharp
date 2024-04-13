@@ -100,11 +100,7 @@ namespace MainCore.Tasks
             if (!enable) return;
             if (_taskManager.IsExist<DonateResourceTask>(AccountId, VillageId)) return;
 
-            var attacks = _alertService.Get(AccountId);
-
-            var firstAttacks = attacks.FirstOrDefault();
-
-            await _taskManager.Add<DonateResourceTask>(AccountId, VillageId, executeTime: firstAttacks.ArrivalTime.AddMinutes(-1));
+            await _taskManager.Add<DonateResourceTask>(AccountId, VillageId, first: true);
         }
 
         //private async Task SetNextExecute()
