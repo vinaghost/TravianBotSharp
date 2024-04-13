@@ -61,8 +61,7 @@ namespace MainCore.Tasks
             while (true)
             {
                 if (CancellationToken.IsCancellationRequested) return new Cancel();
-
-                result = await NavigateDorf();
+                result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 0), CancellationToken);
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
                 result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
@@ -181,26 +180,6 @@ namespace MainCore.Tasks
         {
             var village = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
             _name = $"Upgrade building in {village}";
-        }
-
-        private async Task<Result> NavigateDorf()
-        {
-            var building = _unitOfRepository.JobRepository.GetBuildingJob(VillageId);
-            if (building is null) return Result.Ok();
-
-            if (building.Type == JobTypeEnums.ResourceBuild)
-            {
-                var result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 0), CancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            }
-            else
-            {
-                var content = JsonSerializer.Deserialize<NormalBuildPlan>(building.Content);
-
-                var result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, content.Location < 19 ? 1 : 2), CancellationToken);
-                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            }
-            return Result.Ok();
         }
 
         private bool IsUpgradeable(NormalBuildPlan plan)
