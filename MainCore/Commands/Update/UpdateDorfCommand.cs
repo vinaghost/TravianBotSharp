@@ -35,25 +35,30 @@ namespace MainCore.Commands.Update
             var html = chromeBrowser.Html;
 
             var dtoBuilding = GetBuildings(chromeBrowser.CurrentUrl, html);
-            if (!dtoBuilding.Any()) return Result.Ok();
+            if (dtoBuilding.Any())
+            {
+                var dtoQueueBuilding = _unitOfParser.QueueBuildingParser.Get(html);
+                var queueBuildings = dtoQueueBuilding.ToList();
+                var result = IsVaild(queueBuildings);
+                if (result.IsFailed) return result;
 
-            var dtoQueueBuilding = _unitOfParser.QueueBuildingParser.Get(html);
+                _unitOfRepository.QueueBuildingRepository.Update(command.VillageId, queueBuildings);
+
+                _unitOfRepository.BuildingRepository.Update(command.VillageId, dtoBuilding.ToList());
+
+                var dtoUnderConstructionBuildings = dtoBuilding.Where(x => x.IsUnderConstruction).ToList();
+                _unitOfRepository.QueueBuildingRepository.Update(command.VillageId, dtoUnderConstructionBuildings);
+                await _mediator.Publish(new QueueBuildingUpdated(command.AccountId, command.VillageId), cancellationToken);
+            }
+
             var dtoStorage = _unitOfParser.StockBarParser.Get(html);
-
-            var queueBuildings = dtoQueueBuilding.ToList();
-            var result = IsVaild(queueBuildings);
-            if (result.IsFailed) return result;
-
-            _unitOfRepository.QueueBuildingRepository.Update(command.VillageId, queueBuildings);
-
-            _unitOfRepository.BuildingRepository.Update(command.VillageId, dtoBuilding.ToList());
-
-            var dtoUnderConstructionBuildings = dtoBuilding.Where(x => x.IsUnderConstruction).ToList();
-            _unitOfRepository.QueueBuildingRepository.Update(command.VillageId, dtoUnderConstructionBuildings);
-            await _mediator.Publish(new QueueBuildingUpdated(command.AccountId, command.VillageId), cancellationToken);
-
             _unitOfRepository.StorageRepository.Update(command.VillageId, dtoStorage);
             await _mediator.Publish(new StorageUpdated(command.AccountId, command.VillageId), cancellationToken);
+
+            if (_unitOfParser.FieldParser.IsUnderAttack(html))
+            {
+                await _mediator.Publish(new AttackFound(command.AccountId, command.VillageId), cancellationToken);
+            }
 
             return Result.Ok();
         }
