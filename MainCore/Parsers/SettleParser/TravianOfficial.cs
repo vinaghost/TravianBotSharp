@@ -83,7 +83,7 @@ namespace MainCore.Parsers.SettleParser
         {
             var troopBox = doc.DocumentNode
                 .Descendants("div")
-                .FirstOrDefault(x => x.HasClass($"troop{(int)troop}") && x.HasClass("innerTroopWrapper"));
+                .FirstOrDefault(x => x.HasClass($"troopt10") && x.HasClass("innerTroopWrapper"));
 
             if (troopBox is null) return 0;
 
