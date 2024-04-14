@@ -98,15 +98,27 @@ namespace MainCore.Tasks
         {
             var enable = _unitOfRepository.VillageSettingRepository.GetBooleanByName(VillageId, Common.Enums.VillageSettingEnums.EnableDonateResource);
             if (!enable) return;
-            if (_taskManager.IsExist<DonateResourceTask>(AccountId, VillageId)) return;
 
             var attacks = _alertService.Get(AccountId);
 
             var firstAttacks = attacks.FirstOrDefault();
 
-            var time = firstAttacks.ArrivalTime.AddMinutes(-1);
+            var time = firstAttacks.LocalTime.AddMinutes(-1);
 
-            await _taskManager.Add<DonateResourceTask>(AccountId, VillageId, executeTime: time);
+            if (_taskManager.IsExist<DonateResourceTask>(AccountId, VillageId))
+            {
+                var task = _taskManager.Get<DonateResourceTask>(AccountId, VillageId);
+
+                if (task.ExecuteAt > time)
+                {
+                    task.ExecuteAt = time;
+                    await _taskManager.ReOrder(AccountId);
+                }
+            }
+            else
+            {
+                await _taskManager.Add<DonateResourceTask>(AccountId, VillageId, executeTime: time);
+            }
         }
 
         //private async Task SetNextExecute()

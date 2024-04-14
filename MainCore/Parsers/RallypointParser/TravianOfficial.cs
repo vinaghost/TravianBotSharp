@@ -13,6 +13,7 @@ namespace MainCore.Parsers.RallypointParser
         public List<IncomingAttack> GetIncomingAttacks(HtmlDocument doc)
         {
             var now = GetServerTime(doc);
+            var local = DateTime.Now;
             var tables = GetTables(doc);
 
             var attacks = new List<IncomingAttack>();
@@ -21,7 +22,9 @@ namespace MainCore.Parsers.RallypointParser
                 var name = GetNameAttacker(table);
                 var x = GetX(table);
                 var y = GetY(table);
-                var arrival = now.Add(GetArrivalTime(table));
+                var arrivalTime = GetArrivalTime(table);
+                var arrival = now.Add(arrivalTime);
+                var localArrival = local.Add(arrivalTime);
 
                 var attack = attacks.LastOrDefault(x => x.VillageName == name);
 
@@ -33,6 +36,7 @@ namespace MainCore.Parsers.RallypointParser
                         X = x,
                         Y = y,
                         ArrivalTime = arrival,
+                        LocalTime = localArrival,
                         WaveCount = 1,
                         Type = table.HasClass("inAttack") ? TroopMovementEnums.Attack : TroopMovementEnums.Raid,
                         IsNew = true,
@@ -49,7 +53,10 @@ namespace MainCore.Parsers.RallypointParser
                             X = x,
                             Y = y,
                             ArrivalTime = arrival,
+                            LocalTime = localArrival,
                             WaveCount = 1,
+                            Type = table.HasClass("inAttack") ? TroopMovementEnums.Attack : TroopMovementEnums.Raid,
+                            IsNew = true,
                         });
                     }
                     else
@@ -57,6 +64,7 @@ namespace MainCore.Parsers.RallypointParser
                         attack.WaveCount++;
                         var diffSecond = (int)diff.TotalSeconds;
                         attack.ArrivalTime = attack.ArrivalTime < arrival ? attack.ArrivalTime : arrival;
+                        attack.LocalTime = attack.LocalTime < localArrival ? attack.LocalTime : localArrival;
                         attack.DelaySecond = attack.DelaySecond < diffSecond ? diffSecond : attack.DelaySecond;
                     }
                 }

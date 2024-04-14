@@ -22,11 +22,11 @@ namespace MainCore.Services
                 return true;
             }
 
-            var source = _attacksDict[accountId];
-
-            source = source
+            var source = _attacksDict[accountId]
                 .Where(x => x.ArrivalTime < DateTime.Now)
                 .ToList();
+            source
+                .ForEach(x => x.IsNew = false);
             if (IsSame(source, attacks)) return false;
 
             _attacksDict[accountId] = attacks;
