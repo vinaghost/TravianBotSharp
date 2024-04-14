@@ -25,11 +25,13 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
         private readonly UnitOfRepository _unitOfRepository;
 
         private readonly IMediator _mediator;
+        private readonly UnitOfCommand _unitOfCommand;
 
-        public ChooseBuildingJobCommandHandler(UnitOfRepository unitOfRepository, IMediator mediator)
+        public ChooseBuildingJobCommandHandler(UnitOfRepository unitOfRepository, IMediator mediator, UnitOfCommand unitOfCommand)
         {
             _unitOfRepository = unitOfRepository;
             _mediator = mediator;
+            _unitOfCommand = unitOfCommand;
         }
 
         public JobDto Value { get; private set; }
@@ -54,7 +56,14 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
                     var result = _unitOfRepository.JobRepository.JobValid(command.VillageId, job);
                     if (result.IsFailed)
                     {
-                        return result
+                        result = await _unitOfCommand.ToDorfCommand.Handle(new(command.AccountId, 2), cancellationToken);
+                        if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                        result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(command.AccountId, command.VillageId), cancellationToken);
+                        if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                        result = _unitOfRepository.JobRepository.JobValid(command.VillageId, job);
+                        if (result.IsFailed) return result
                             .WithError(new Stop("order building in queue building is not correct, please check"));
                     }
                     Value = job;
