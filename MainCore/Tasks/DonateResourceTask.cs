@@ -69,8 +69,10 @@ namespace MainCore.Tasks
 
             for (int i = 0; i < 4; i++)
             {
-                storage[i] = RoundUpTo100(Math.Max(storage[i] - cannies, 0));
-                result = await chromeBrowser.InputTextbox(By.XPath(inputs[i].XPath), $"{storage[i]}");
+                var resource = RoundUpTo100(Math.Max(storage[i] - cannies + Random.Shared.Next(500, 1000), 0));
+                resource = storage[i] < resource ? storage[i] : resource;
+
+                result = await chromeBrowser.InputTextbox(By.XPath(inputs[i].XPath), $"{resource}");
                 if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             }
 
@@ -96,7 +98,6 @@ namespace MainCore.Tasks
 
             result = await chromeBrowser.Click(By.XPath(contribute.XPath));
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
 
             result = await _unitOfCommand.DelayClickCommand.Handle(new(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
