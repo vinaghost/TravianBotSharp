@@ -18,10 +18,15 @@ namespace MainCore.Notification.Handlers.Trigger
 
         public async Task Handle(StatusUpdated notification, CancellationToken cancellationToken)
         {
-            if (notification.Status == Common.Enums.StatusEnums.Paused)
+            if (notification.Status != Common.Enums.StatusEnums.Paused)
             {
-                await AlertDiscord(notification.AccountId);
+                return;
             }
+
+            var enable = _unitOfRepository.AccountSettingRepository.GetBooleanByName(notification.AccountId, Common.Enums.AccountSettingEnums.EnableStopAlert);
+            if (!enable) return;
+
+            await AlertDiscord(notification.AccountId);
         }
 
         private async Task AlertDiscord(AccountId accountId)
