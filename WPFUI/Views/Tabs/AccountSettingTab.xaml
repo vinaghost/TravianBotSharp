@@ -56,6 +56,10 @@
                     <StackPanel>
                         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Feature settings" VerticalAlignment="Center" FontWeight="Bold" />
                         <CheckBox x:Name="EnableAutoLoadVillage" Content="Enable auto load village's building" />
+
+                        <uc:BonusSelectorUc x:Name="DonateResourceType" Text="Donate bonus type" />
+
+                        <CheckBox x:Name="EnableDonateResource" Content="Alert if account stopped" />
                     </StackPanel>
                 </Border>
                 <Border Style="{DynamicResource Box}">
@@ -81,14 +85,6 @@
                     <StackPanel>
                         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Chrome settings" VerticalAlignment="Center" FontWeight="Bold" />
                         <CheckBox x:Name="HeadlessChrome" Content="Use headless chrome" />
-                    </StackPanel>
-                </Border>
-
-                <Border Style="{DynamicResource Box}">
-                    <StackPanel>
-                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Donate resource to alliance" VerticalAlignment="Center" FontWeight="Bold" />
-                        <CheckBox x:Name="EnableDonateResource" Content="Enable auto donate resource when village got alert" />
-                        <uc:BonusSelectorUc x:Name="DonateResourceType" Text="Type" />
                     </StackPanel>
                 </Border>
             </StackPanel>

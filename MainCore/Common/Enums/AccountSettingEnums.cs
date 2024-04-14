@@ -34,7 +34,7 @@
 
         EnableDiscordAlert,
 
-        EnableDonateResource,
+        EnableStopAlert,
         DonateResourceType,
     }
 }

@@ -7,7 +7,7 @@ using MediatR;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
-    public class TriggerDonateResourceTask : INotificationHandler<AccountSettingUpdated>
+    public class TriggerDonateResourceTask : INotificationHandler<VillageSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
         private readonly UnitOfRepository _unitOfRepository;
@@ -18,17 +18,13 @@ namespace MainCore.Notification.Handlers.Trigger
             _unitOfRepository = unitOfRepository;
         }
 
-        public async Task Handle(AccountSettingUpdated notification, CancellationToken cancellationToken)
+        public async Task Handle(VillageSettingUpdated notification, CancellationToken cancellationToken)
         {
-            var enableDonateResource = _unitOfRepository.AccountSettingRepository.GetBooleanByName(notification.AccountId, AccountSettingEnums.EnableDonateResource);
-
+            var enableDonateResource = _unitOfRepository.VillageSettingRepository.GetBooleanByName(notification.VillageId, VillageSettingEnums.EnableDonateResource);
             if (enableDonateResource) return;
-            var villages = _unitOfRepository.VillageRepository.Get(notification.AccountId);
-            foreach (var village in villages)
-            {
-                var task = _taskManager.Get<DonateResourceTask>(notification.AccountId, village);
-                await _taskManager.Remove(notification.AccountId, task);
-            }
+
+            var task = _taskManager.Get<DonateResourceTask>(notification.AccountId, notification.VillageId);
+            await _taskManager.Remove(notification.AccountId, task);
         }
     }
 }

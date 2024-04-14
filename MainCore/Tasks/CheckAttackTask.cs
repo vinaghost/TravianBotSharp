@@ -96,7 +96,7 @@ namespace MainCore.Tasks
 
         private async Task DonateResource()
         {
-            var enable = _unitOfRepository.AccountSettingRepository.GetBooleanByName(AccountId, Common.Enums.AccountSettingEnums.EnableDonateResource);
+            var enable = _unitOfRepository.VillageSettingRepository.GetBooleanByName(VillageId, Common.Enums.VillageSettingEnums.EnableDonateResource);
             if (!enable) return;
             if (_taskManager.IsExist<DonateResourceTask>(AccountId, VillageId)) return;
 

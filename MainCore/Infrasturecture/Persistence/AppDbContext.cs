@@ -69,7 +69,7 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.HealingBeforeStartAdventure, 0 },
             {AccountSettingEnums.HealthBeforeStartAdventure, 40 },
             {AccountSettingEnums.EnableDiscordAlert, 0 },
-            {AccountSettingEnums.EnableDonateResource, 0 },
+            {AccountSettingEnums.EnableStopAlert, 0 },
             {AccountSettingEnums.DonateResourceType, 0 },
         };
 
@@ -201,6 +201,7 @@ namespace MainCore.Infrasturecture.Persistence
 
             {VillageSettingEnums.AutoTrainSettle, 0 },
             {VillageSettingEnums.AutoSendSettle, 0 },
+            {VillageSettingEnums.EnableDonateResource, 0 },
         };
 
         private List<VillageSettingEnums> GetMissingVillageSettings()

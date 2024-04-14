@@ -35,7 +35,7 @@ namespace MainCore.UI.Models.Input
             HealthBeforeStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.HealthBeforeStartAdventure);
             EnableDiscordAlert = settings.GetValueOrDefault(AccountSettingEnums.EnableDiscordAlert) == 1;
 
-            EnableDonateResource = settings.GetValueOrDefault(AccountSettingEnums.EnableDonateResource) == 1;
+            EnableStopAlert = settings.GetValueOrDefault(AccountSettingEnums.EnableStopAlert) == 1;
             Bonus.Set((AllianceBonusEnums)settings.GetValueOrDefault(AccountSettingEnums.DonateResourceType));
         }
 
@@ -64,7 +64,7 @@ namespace MainCore.UI.Models.Input
             var healingBeforeStartAdventure = HealingBeforeStartAdventure ? 1 : 0;
             var healthBeforeStartAdventure = HealthBeforeStartAdventure;
             var enableDiscordAlert = EnableDiscordAlert ? 1 : 0;
-            var enableDonateResource = EnableDonateResource ? 1 : 0;
+            var enableStopAlert = EnableStopAlert ? 1 : 0;
             var donateResourceType = (int)Bonus.Get();
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
@@ -92,7 +92,7 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.HealingBeforeStartAdventure, healingBeforeStartAdventure },
                 { AccountSettingEnums.HealthBeforeStartAdventure,  healthBeforeStartAdventure},
                 { AccountSettingEnums.EnableDiscordAlert, enableDiscordAlert},
-                { AccountSettingEnums.EnableDonateResource, enableDonateResource},
+                { AccountSettingEnums.EnableStopAlert, enableStopAlert},
                 { AccountSettingEnums.DonateResourceType, donateResourceType},
             };
             return settings;
@@ -222,7 +222,7 @@ namespace MainCore.UI.Models.Input
 
         private bool _enableDonateResource;
 
-        public bool EnableDonateResource
+        public bool EnableStopAlert
         {
             get => _enableDonateResource;
             set => this.RaiseAndSetIfChanged(ref _enableDonateResource, value);
