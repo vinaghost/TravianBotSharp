@@ -63,5 +63,7 @@
 
         AutoTrainSettle,
         AutoSendSettle,
+
+        EnableDonateResource,
     }
 }

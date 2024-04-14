@@ -111,6 +111,13 @@
                         <CheckBox x:Name="AutoSendSettle" Content="Enable send settle" />
                     </StackPanel>
                 </Border>
+
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Under attack setting" VerticalAlignment="Center" FontWeight="Bold" />
+                        <CheckBox x:Name="EnableDonateResource" Content="Enable auto donate resource" />
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
     </Grid>
