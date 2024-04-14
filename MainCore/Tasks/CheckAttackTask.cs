@@ -104,7 +104,9 @@ namespace MainCore.Tasks
 
             var firstAttacks = attacks.FirstOrDefault();
 
-            await _taskManager.Add<DonateResourceTask>(AccountId, VillageId, executeTime: firstAttacks.ArrivalTime.AddMinutes(-1));
+            var time = firstAttacks.ArrivalTime.AddMinutes(-1);
+
+            await _taskManager.Add<DonateResourceTask>(AccountId, VillageId, executeTime: time);
         }
 
         //private async Task SetNextExecute()
