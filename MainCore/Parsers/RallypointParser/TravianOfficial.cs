@@ -123,5 +123,69 @@ namespace MainCore.Parsers.RallypointParser
             var dur = timer.InnerText.ToDuration();
             return DateTime.Today.Add(dur);
         }
+
+        public IEnumerable<HtmlNode> GetTroopInput(HtmlDocument doc)
+        {
+            var inputs = doc.DocumentNode
+                .Descendants("input")
+                .Where(x => x.GetAttributeValue("disabled", "_") != "");
+
+            for (var i = 1; i <= 11; i++)
+            {
+                var node = inputs.FirstOrDefault(x => x.GetAttributeValue("name", "") == $"troop[t{i}]");
+                if (node is null) continue;
+                yield return node;
+            }
+        }
+
+        public int GetTroopAmount(HtmlNode input)
+        {
+            var a = input.NextSibling.NextSibling;
+            if (a.Name != "a") return 0;
+
+            return a.InnerText.ToInt();
+        }
+
+        public HtmlNode GetConfirmButton(HtmlDocument doc)
+        {
+            var button = doc.DocumentNode
+                .Descendants("button")
+                .FirstOrDefault(x => x.HasClass("rallyPointConfirm"));
+            return button;
+        }
+
+        public HtmlNode GetCancelButton(HtmlDocument doc)
+        {
+            var div = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("abort"));
+            if (div is null) return null;
+
+            return div
+                .Descendants("button")
+                .FirstOrDefault(x => x.HasClass("icon"));
+        }
+
+        public HtmlNode GetXInput(HtmlDocument doc)
+        {
+            return doc.GetElementbyId("xCoordInput");
+        }
+
+        public HtmlNode GetYInput(HtmlDocument doc)
+        {
+            return doc.GetElementbyId("yCoordInput");
+        }
+
+        public HtmlNode GetRaidInput(HtmlDocument doc)
+        {
+            return doc.DocumentNode
+                .Descendants("input")
+                .FirstOrDefault(x => x.GetAttributeValue("name", "") == "eventType" && x.GetAttributeValue("value", 0) == 4);
+        }
+
+        public HtmlNode GetSendButton(HtmlDocument doc)
+        {
+            return doc.GetElementbyId("ok");
+        }
     }
 }

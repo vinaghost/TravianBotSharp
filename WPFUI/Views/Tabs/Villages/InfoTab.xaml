@@ -20,7 +20,7 @@
             <Border Style="{DynamicResource Box}">
                 <StackPanel>
                     <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Test" VerticalAlignment="Center" FontWeight="Bold" />
-                    <Button x:Name="Test" Content="Donate resource" />
+                    <Button x:Name="Test" Content="Evade troop" />
                 </StackPanel>
             </Border>
         </StackPanel>
