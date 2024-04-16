@@ -62,6 +62,7 @@ namespace MainCore.Tasks
 
             await AlertDiscord();
             await DonateResource();
+            await EvadeTroop();
         }
 
         private async Task AlertDiscord()
@@ -103,7 +104,7 @@ namespace MainCore.Tasks
 
             var firstAttacks = attacks.FirstOrDefault();
 
-            var time = firstAttacks.LocalTime.AddMinutes(-1);
+            var time = firstAttacks.LocalTime.AddMinutes(-2);
 
             if (_taskManager.IsExist<DonateResourceTask>(AccountId, VillageId))
             {
@@ -118,6 +119,33 @@ namespace MainCore.Tasks
             else
             {
                 await _taskManager.Add<DonateResourceTask>(AccountId, VillageId, executeTime: time);
+            }
+        }
+
+        private async Task EvadeTroop()
+        {
+            var enable = _unitOfRepository.VillageSettingRepository.GetBooleanByName(VillageId, Common.Enums.VillageSettingEnums.EnableEvadeTroop);
+            if (!enable) return;
+
+            var attacks = _alertService.Get(AccountId);
+
+            var firstAttacks = attacks.FirstOrDefault();
+
+            var time = firstAttacks.LocalTime.AddMinutes(-1);
+
+            if (_taskManager.IsExist<EvadeTroopTask>(AccountId, VillageId))
+            {
+                var task = _taskManager.Get<EvadeTroopTask>(AccountId, VillageId);
+
+                if (task.ExecuteAt > time)
+                {
+                    task.ExecuteAt = time;
+                    await _taskManager.ReOrder(AccountId);
+                }
+            }
+            else
+            {
+                await _taskManager.Add<EvadeTroopTask>(AccountId, VillageId, executeTime: time);
             }
         }
 

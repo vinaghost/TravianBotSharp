@@ -40,6 +40,7 @@ namespace MainCore.UI.Models.Input
         private bool _autoSendSettle;
 
         private bool _enableDonateResource;
+        private bool _enableEvadeTroop;
 
         public void Set(Dictionary<VillageSettingEnums, int> settings)
         {
@@ -99,6 +100,7 @@ namespace MainCore.UI.Models.Input
             AutoSendSettle = settings.GetValueOrDefault(VillageSettingEnums.AutoSendSettle) == 1;
 
             EnableDonateResource = settings.GetValueOrDefault(VillageSettingEnums.EnableDonateResource) == 1;
+            EnableEvadeTroop = settings.GetValueOrDefault(VillageSettingEnums.EnableEvadeTroop) == 1;
         }
 
         public Dictionary<VillageSettingEnums, int> Get()
@@ -141,6 +143,7 @@ namespace MainCore.UI.Models.Input
             var autoSendSettle = AutoSendSettle ? 1 : 0;
 
             var enableDonateResource = EnableDonateResource ? 1 : 0;
+            var enableEvadeTroop = EnableEvadeTroop ? 1 : 0;
 
             var settings = new Dictionary<VillageSettingEnums, int>()
             {
@@ -182,6 +185,7 @@ namespace MainCore.UI.Models.Input
                 { VillageSettingEnums.AutoTrainSettle, autoTrainSettle },
                 { VillageSettingEnums.AutoSendSettle, autoSendSettle },
                 { VillageSettingEnums.EnableDonateResource, enableDonateResource },
+                { VillageSettingEnums.EnableEvadeTroop, enableEvadeTroop },
             };
             return settings;
         }
@@ -320,6 +324,12 @@ namespace MainCore.UI.Models.Input
         {
             get => _enableDonateResource;
             set => this.RaiseAndSetIfChanged(ref _enableDonateResource, value);
+        }
+
+        public bool EnableEvadeTroop
+        {
+            get => _enableEvadeTroop;
+            set => this.RaiseAndSetIfChanged(ref _enableEvadeTroop, value);
         }
     }
 }

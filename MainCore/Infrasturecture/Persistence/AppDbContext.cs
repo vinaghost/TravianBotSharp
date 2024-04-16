@@ -202,6 +202,7 @@ namespace MainCore.Infrasturecture.Persistence
             {VillageSettingEnums.AutoTrainSettle, 0 },
             {VillageSettingEnums.AutoSendSettle, 0 },
             {VillageSettingEnums.EnableDonateResource, 0 },
+            {VillageSettingEnums.EnableEvadeTroop, 0 },
         };
 
         private List<VillageSettingEnums> GetMissingVillageSettings()

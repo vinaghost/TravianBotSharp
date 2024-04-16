@@ -65,5 +65,6 @@
         AutoSendSettle,
 
         EnableDonateResource,
+        EnableEvadeTroop,
     }
 }

@@ -58,7 +58,9 @@ namespace WPFUI.Views.Tabs.Villages
 
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.AutoTrainSettle, v => v.AutoTrainSettle.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.AutoSendSettle, v => v.AutoSendSettle.IsChecked).DisposeWith(d);
+
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.EnableDonateResource, v => v.EnableDonateResource.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.VillageSettingInput.EnableEvadeTroop, v => v.EnableEvadeTroop.IsChecked).DisposeWith(d);
             });
         }
     }
