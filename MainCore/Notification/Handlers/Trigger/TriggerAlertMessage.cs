@@ -7,7 +7,7 @@ using MediatR;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
-    public class TriggerAlertMessage : INotificationHandler<StatusUpdated>
+    public class TriggerAlertMessage : INotificationHandler<AccountStop>
     {
         private readonly UnitOfRepository _unitOfRepository;
 
@@ -16,13 +16,8 @@ namespace MainCore.Notification.Handlers.Trigger
             _unitOfRepository = unitOfRepository;
         }
 
-        public async Task Handle(StatusUpdated notification, CancellationToken cancellationToken)
+        public async Task Handle(AccountStop notification, CancellationToken cancellationToken)
         {
-            if (notification.Status != Common.Enums.StatusEnums.Paused)
-            {
-                return;
-            }
-
             var enable = _unitOfRepository.AccountSettingRepository.GetBooleanByName(notification.AccountId, Common.Enums.AccountSettingEnums.EnableStopAlert);
             if (!enable) return;
 
