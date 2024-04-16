@@ -44,6 +44,9 @@ namespace WPFUI.Views.Tabs
 
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.HealingBeforeStartAdventure, v => v.HealingBeforeStartAdventure.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.HealthBeforeStartAdventure, v => v.HealthBeforeStartAdventure.Text).DisposeWith(d);
+
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.EnableStopAlert, v => v.EnableDonateResource.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.Bonus, v => v.DonateResourceType.ViewModel).DisposeWith(d);
             });
         }
     }

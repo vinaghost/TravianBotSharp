@@ -63,5 +63,8 @@
 
         AutoTrainSettle,
         AutoSendSettle,
+
+        EnableDonateResource,
+        EnableEvadeTroop,
     }
 }

@@ -21,6 +21,7 @@ namespace WPFUI.Views.Tabs.Villages
             {
                 this.Bind(ViewModel, vm => vm.SettleAmount, v => v.SettleAmount.Text).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.ExpansionSlot, v => v.ExpansionSlot.Text).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.Test, v => v.Test).DisposeWith(d);
             });
         }
     }

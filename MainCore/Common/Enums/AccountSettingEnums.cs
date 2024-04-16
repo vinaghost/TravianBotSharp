@@ -31,5 +31,10 @@
         EquipGearBeforeStartAdventure,
         HealingBeforeStartAdventure,
         HealthBeforeStartAdventure,
+
+        EnableDiscordAlert,
+
+        EnableStopAlert,
+        DonateResourceType,
     }
 }
