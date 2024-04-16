@@ -8,7 +8,7 @@ using MediatR;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
-    public class TriggerTrainSettleTask : INotificationHandler<VillageSettingUpdated>, INotificationHandler<BuildingUpdated>, INotificationHandler<ExpansionSlotUpdated>
+    public class TriggerTrainSettleTask : INotificationHandler<ExpansionSlotUpdated>
     {
         private readonly ITaskManager _taskManager;
         private readonly UnitOfRepository _unitOfRepository;
@@ -17,16 +17,6 @@ namespace MainCore.Notification.Handlers.Trigger
         {
             _taskManager = taskManager;
             _unitOfRepository = unitOfRepository;
-        }
-
-        public async Task Handle(VillageSettingUpdated notification, CancellationToken cancellationToken)
-        {
-            await Trigger(notification.AccountId, notification.VillageId);
-        }
-
-        public async Task Handle(BuildingUpdated notification, CancellationToken cancellationToken)
-        {
-            await Trigger(notification.AccountId, notification.VillageId);
         }
 
         public async Task Handle(ExpansionSlotUpdated notification, CancellationToken cancellationToken)
