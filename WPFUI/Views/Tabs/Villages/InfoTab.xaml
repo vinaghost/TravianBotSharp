@@ -17,6 +17,12 @@
                     <TextBox x:Name="ExpansionSlot" IsReadOnly="True" materialDesign:HintAssist.Hint="ExpansionSlot" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="350" HorizontalAlignment="Left" Margin="5,0,0,0" />
                 </StackPanel>
             </Border>
+            <Border Style="{DynamicResource Box}">
+                <StackPanel>
+                    <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Test" VerticalAlignment="Center" FontWeight="Bold" />
+                    <Button x:Name="Test" Content="Evade troop" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </v:InfoTabBase>

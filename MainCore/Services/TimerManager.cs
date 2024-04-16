@@ -5,6 +5,8 @@ using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
+using MainCore.Notification.Message;
+using MediatR;
 using Polly;
 using Timer = System.Timers.Timer;
 
@@ -21,13 +23,15 @@ namespace MainCore.Services
         private readonly IChromeManager _chromeManager;
         private readonly ILogService _logService;
         private readonly ICommandHandler<DelayTaskCommand> _delayTaskCommand;
+        private readonly IMediator _mediator;
 
-        public TimerManager(ITaskManager taskManager, IChromeManager chromeManager, ILogService logService, ICommandHandler<DelayTaskCommand> delayTaskCommand)
+        public TimerManager(ITaskManager taskManager, IChromeManager chromeManager, ILogService logService, ICommandHandler<DelayTaskCommand> delayTaskCommand, IMediator mediator)
         {
             _taskManager = taskManager;
             _chromeManager = chromeManager;
             _logService = logService;
             _delayTaskCommand = delayTaskCommand;
+            _mediator = mediator;
         }
 
         public async Task Execute(AccountId accountId)
@@ -102,6 +106,7 @@ namespace MainCore.Services
                     if (result.HasError<Stop>())
                     {
                         await _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                        await _mediator.Publish(new AccountStop(accountId));
                     }
                     else if (result.HasError<Skip>())
                     {
@@ -117,6 +122,7 @@ namespace MainCore.Services
                     else if (result.HasError<Retry>())
                     {
                         await _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                        await _mediator.Publish(new AccountStop(accountId));
                     }
                 }
                 else
