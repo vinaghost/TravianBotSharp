@@ -20,13 +20,15 @@ namespace MainCore.Tasks
         private readonly IAlertService _alertService;
         private readonly IChromeManager _chromeManager;
         private readonly ITaskManager _taskManager;
+        private readonly ILogService _logService;
 
-        public CheckAttackTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IRallypointParser rallypointParser, IAlertService alertService, IChromeManager chromeManager, ITaskManager taskManager) : base(unitOfCommand, unitOfRepository, mediator)
+        public CheckAttackTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IRallypointParser rallypointParser, IAlertService alertService, IChromeManager chromeManager, ITaskManager taskManager, ILogService logService) : base(unitOfCommand, unitOfRepository, mediator)
         {
             _rallypointParser = rallypointParser;
             _alertService = alertService;
             _chromeManager = chromeManager;
             _taskManager = taskManager;
+            _logService = logService;
         }
 
         protected override async Task<Result> Execute()
@@ -63,6 +65,7 @@ namespace MainCore.Tasks
             await AlertDiscord();
             await DonateResource();
             await EvadeTroop();
+            await SetNextExecute();
         }
 
         private async Task AlertDiscord()
@@ -149,14 +152,20 @@ namespace MainCore.Tasks
             }
         }
 
-        //private async Task SetNextExecute()
-        //{
-        //    const int MIN = 60 * 4;
-        //    const int MAX = 60 * 6;
-        //    var sec = Random.Shared.Next(MIN, MAX);
-        //    ExecuteAt = DateTime.Now.AddSeconds(sec);
-        //    await _taskManager.ReOrder(AccountId);
-        //}
+        private async Task SetNextExecute()
+        {
+            var attacks = _alertService.Get(AccountId);
+            if (attacks.Count == 0) return;
+            const int MIN = 60 * 10;
+            const int MAX = 60 * 20;
+            var sec = Random.Shared.Next(MIN, MAX);
+
+            var logger = _logService.GetLogger(AccountId);
+            logger.Information("Will recheck rallypoint after {mins} mins.", sec / 60);
+
+            ExecuteAt = DateTime.Now.AddSeconds(sec);
+            await _taskManager.ReOrder(AccountId);
+        }
 
         protected override void SetName()
         {
