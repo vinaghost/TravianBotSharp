@@ -21,22 +21,27 @@ namespace MainCore.Commands.Update
     public class UpdateVillageInfoCommandHandler : ICommandHandler<UpdateVillageInfoCommand>
     {
         private readonly ICommandHandler<UpdateAccountInfoCommand> _updateAccountInfoCommand;
+        private readonly ICommandHandler<UpdateVillageListCommand> _updateVillageListCommand;
         private readonly ICommandHandler<UpdateDorfCommand> _updateDorfCommand;
         private readonly ICommandHandler<ValidateQuestCommand, bool> _validateQuestCommand;
         private readonly IMediator _mediator;
 
-        public UpdateVillageInfoCommandHandler(ICommandHandler<UpdateDorfCommand> updateDorfCommand, ICommandHandler<UpdateAccountInfoCommand> updateAccountInfoCommand, ICommandHandler<ValidateQuestCommand, bool> validateQuestCommand, IMediator mediator)
+        public UpdateVillageInfoCommandHandler(ICommandHandler<UpdateDorfCommand> updateDorfCommand, ICommandHandler<UpdateAccountInfoCommand> updateAccountInfoCommand, ICommandHandler<ValidateQuestCommand, bool> validateQuestCommand, IMediator mediator, ICommandHandler<UpdateVillageListCommand> updateVillageListCommand)
         {
             _updateDorfCommand = updateDorfCommand;
             _updateAccountInfoCommand = updateAccountInfoCommand;
             _validateQuestCommand = validateQuestCommand;
             _mediator = mediator;
+            _updateVillageListCommand = updateVillageListCommand;
         }
 
         public async Task<Result> Handle(UpdateVillageInfoCommand command, CancellationToken cancellationToken)
         {
             Result result;
             result = await _updateAccountInfoCommand.Handle(new(command.AccountId), cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await _updateVillageListCommand.Handle(new(command.AccountId), cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await _updateDorfCommand.Handle(new(command.AccountId, command.VillageId), cancellationToken);
