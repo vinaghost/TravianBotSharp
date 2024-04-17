@@ -42,7 +42,7 @@ namespace MainCore.Commands.Update
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _updateVillageListCommand.Handle(new(command.AccountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _updateDorfCommand.Handle(new(command.AccountId, command.VillageId), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
