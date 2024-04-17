@@ -246,12 +246,28 @@ namespace MainCore.Tasks
 
                 if (countQueueBuilding == 0)
                 {
-                    var job = await GetBuildingJob();
+                    var job = await GetBuildingJob(false);
                     if (job.IsFailed)
                     {
                         if (job.HasError<JobCompleted>()) continue;
+
                         return Result.Fail(job.Errors)
                             .WithError(TraceMessage.Error(TraceMessage.Line()));
+                    }
+
+                    Result result;
+                    result = _unitOfRepository.JobRepository.JobValid(VillageId, job.Value);
+                    if (result.IsFailed)
+                    {
+                        result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
+                        if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                        result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+                        if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                        result = _unitOfRepository.JobRepository.JobValid(VillageId, job.Value);
+                        if (result.IsFailed) return Result.Fail(job.Errors)
+                            .WithError(TraceMessage.Error(TraceMessage.Line()))
+                            .WithError(Stop.AutoBuilderQueueInvalid);
                     }
                     return job;
                 }
@@ -263,13 +279,21 @@ namespace MainCore.Tasks
                 {
                     if (plusActive)
                     {
-                        var job = await GetBuildingJob();
+                        var job = await GetBuildingJob(false);
                         if (job.IsFailed)
                         {
                             if (job.HasError<JobCompleted>()) continue;
                             return Result.Fail(job.Errors)
                                 .WithError(TraceMessage.Error(TraceMessage.Line()));
                         }
+
+                        var result = _unitOfRepository.JobRepository.JobValid(VillageId, job.Value);
+                        if (result.IsFailed)
+                        {
+                            job = _unitOfRepository.JobRepository.GetResourceBuildingJob(VillageId);
+                            if (job is null) return result;
+                        }
+
                         return job;
                     }
                     if (applyRomanQueueLogic)
@@ -281,6 +305,14 @@ namespace MainCore.Tasks
                             return Result.Fail(job.Errors)
                                 .WithError(TraceMessage.Error(TraceMessage.Line()));
                         }
+
+                        var result = _unitOfRepository.JobRepository.JobValid(VillageId, job.Value);
+                        if (result.IsFailed)
+                        {
+                            job = _unitOfRepository.JobRepository.GetResourceBuildingJob(VillageId);
+                            if (job is null) return result;
+                        }
+
                         return job;
                     }
                     return BuildingQueue.Full;
@@ -290,7 +322,7 @@ namespace MainCore.Tasks
                 {
                     if (plusActive && applyRomanQueueLogic)
                     {
-                        var job = await GetBuildingJob();
+                        var job = await GetBuildingJob(false);
                         if (job.IsFailed)
                         {
                             if (job.HasError<JobCompleted>()) continue;
@@ -306,7 +338,7 @@ namespace MainCore.Tasks
             while (true);
         }
 
-        private async Task<Result<JobDto>> GetBuildingJob(bool romanLogic = false)
+        private async Task<Result<JobDto>> GetBuildingJob(bool romanLogic)
         {
             JobDto job;
 
