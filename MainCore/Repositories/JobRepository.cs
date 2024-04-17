@@ -355,9 +355,9 @@ namespace MainCore.Repositories
 
             if (building is null) return Result.Ok();
 
-            if (building.Level == building.Type.GetMaxLevel()) Result.Ok();
+            if (building.Level == building.Type.GetMaxLevel()) return Result.Ok();
 
-            return Result.Fail(BuildingQueue.NotEnoughPrerequisiteBuilding(building.Type, building.Level)); ;
+            return Result.Fail(BuildingQueue.NotEnoughPrerequisiteBuilding(building.Type, building.Level));
         }
     }
 }
