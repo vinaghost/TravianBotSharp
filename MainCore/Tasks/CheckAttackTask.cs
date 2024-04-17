@@ -62,6 +62,8 @@ namespace MainCore.Tasks
 
             if (!isAlert) return;
 
+            if (attacks.Count == 0) return;
+
             await AlertDiscord();
             await DonateResource();
             await EvadeTroop();
