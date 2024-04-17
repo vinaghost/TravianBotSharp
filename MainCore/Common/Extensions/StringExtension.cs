@@ -1,4 +1,6 @@
-﻿namespace MainCore.Common.Extensions
+﻿using System.Web;
+
+namespace MainCore.Common.Extensions
 {
     public static class StringExtension
     {
@@ -22,14 +24,18 @@
 
         public static int ToInt(this string value)
         {
-            var valueStr = new string(value.Where(c => char.IsDigit(c) || c == '-').ToArray());
+            value = HttpUtility.HtmlDecode(value);
+            var valueStr = new string(value.Where(c => char.IsDigit(c) || c == '-' || c == '−').ToArray());
+            valueStr = valueStr.Replace('−', '-');
             if (string.IsNullOrEmpty(valueStr)) return 0;
             return int.Parse(valueStr);
         }
 
         public static long ToLong(this string value)
         {
-            var valueStr = new string(value.Where(c => char.IsDigit(c) || c == '-').ToArray());
+            value = HttpUtility.HtmlDecode(value);
+            var valueStr = new string(value.Where(c => char.IsDigit(c) || c == '-' || c == '−').ToArray());
+            valueStr = valueStr.Replace('−', '-');
             if (string.IsNullOrEmpty(valueStr)) return 0;
             return long.Parse(valueStr);
         }
