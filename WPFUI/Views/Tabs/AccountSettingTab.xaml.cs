@@ -50,6 +50,7 @@ namespace WPFUI.Views.Tabs
 
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.EvadeTroopX, v => v.EvadeTroopX.Text).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.EvadeTroopY, v => v.EvadeTroopY.Text).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.CheckAttackDelay, v => v.CheckAttackDelay.ViewModel).DisposeWith(d);
             });
         }
     }

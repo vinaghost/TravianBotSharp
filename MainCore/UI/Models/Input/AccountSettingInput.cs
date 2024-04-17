@@ -40,6 +40,8 @@ namespace MainCore.UI.Models.Input
 
             EvadeTroopX = settings.GetValueOrDefault(AccountSettingEnums.EvadeTroopX);
             EvadeTroopY = settings.GetValueOrDefault(AccountSettingEnums.EvadeTroopX);
+
+            CheckAttackDelay.Set(settings.GetValueOrDefault(AccountSettingEnums.CheckAttackDelayMin), settings.GetValueOrDefault(AccountSettingEnums.CheckAttackDelayMax));
         }
 
         public Dictionary<AccountSettingEnums, int> Get()
@@ -72,6 +74,7 @@ namespace MainCore.UI.Models.Input
 
             var evadeTroopX = EvadeTroopX;
             var evadeTroopY = EvadeTroopY;
+            var (checkAttackDelayMin, checkAttackDelayMax) = CheckAttackDelay.Get();
 
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
@@ -103,6 +106,8 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.DonateResourceType, donateResourceType},
                 { AccountSettingEnums.EvadeTroopX, evadeTroopX},
                 { AccountSettingEnums.EvadeTroopY, evadeTroopY},
+                { AccountSettingEnums.CheckAttackDelayMin, checkAttackDelayMin},
+                { AccountSettingEnums.CheckAttackDelayMax, checkAttackDelayMax},
             };
             return settings;
         }
@@ -111,6 +116,7 @@ namespace MainCore.UI.Models.Input
         public BonusSelectorViewModel Bonus { get; } = new();
         public RangeInputViewModel ClickDelay { get; } = new();
         public RangeInputViewModel TaskDelay { get; } = new();
+        public RangeInputViewModel CheckAttackDelay { get; } = new();
 
         public RangeInputViewModel WorkTime { get; } = new();
         public RangeInputViewModel SleepTime { get; } = new();

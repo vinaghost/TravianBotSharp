@@ -65,6 +65,7 @@
                             <TextBox x:Name="EvadeTroopX" materialDesign:HintAssist.Hint="Evade Troop X" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="100" />
                             <TextBox x:Name="EvadeTroopY" materialDesign:HintAssist.Hint="Evade Troop Y" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="100" Margin="50,0,0,0" />
                         </StackPanel>
+                        <uc:RangeInputUc x:Name="CheckAttackDelay" Text="Check attack delay" Unit="minutes" />
                     </StackPanel>
                 </Border>
                 <Border Style="{DynamicResource Box}">

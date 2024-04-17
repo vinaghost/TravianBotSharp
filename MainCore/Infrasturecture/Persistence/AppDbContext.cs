@@ -72,6 +72,9 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.EnableStopAlert, 0 },
             {AccountSettingEnums.EvadeTroopX, 50 },
             {AccountSettingEnums.EvadeTroopY, 50 },
+
+            {AccountSettingEnums.CheckAttackDelayMin, 10 },
+            {AccountSettingEnums.CheckAttackDelayMax, 20 },
         };
 
         public void FillHero()

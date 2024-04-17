@@ -38,5 +38,7 @@
         DonateResourceType,
         EvadeTroopX,
         EvadeTroopY,
+        CheckAttackDelayMin,
+        CheckAttackDelayMax,
     }
 }

@@ -158,9 +158,11 @@ namespace MainCore.Tasks
         {
             var attacks = _alertService.Get(VillageId);
             if (attacks.Count == 0) return;
-            const int MIN = 60 * 10;
-            const int MAX = 60 * 20;
-            var sec = Random.Shared.Next(MIN, MAX);
+
+            var min = _unitOfRepository.AccountSettingRepository.GetByName(AccountId, Common.Enums.AccountSettingEnums.CheckAttackDelayMin) * 60;
+            var max = _unitOfRepository.AccountSettingRepository.GetByName(AccountId, Common.Enums.AccountSettingEnums.CheckAttackDelayMax) * 60;
+
+            var sec = Random.Shared.Next(min, max);
 
             var logger = _logService.GetLogger(AccountId);
             logger.Information("Will recheck rallypoint after {mins} mins.", sec / 60);
