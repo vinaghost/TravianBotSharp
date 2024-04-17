@@ -14,7 +14,7 @@ namespace MainCore.Tasks.Base
 
         protected TaskBase(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator)
         {
-            
+            _unitOfCommand = unitOfCommand;
             _unitOfRepository = unitOfRepository;
             _mediator = mediator;
         }

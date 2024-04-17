@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using HtmlAgilityPack;
+using MainCore.Commands.Base;
 using MainCore.Common.Enums;
 using MainCore.Common.Errors;
 using MainCore.Common.MediatR;
@@ -14,7 +15,7 @@ using MediatR;
 
 namespace MainCore.Commands.Update
 {
-    public class UpdateDorfCommand : ByAccountVillageIdBase, IRequest<Result>
+    public class UpdateDorfCommand : ByAccountVillageIdBase, ICommand
     {
         public UpdateDorfCommand(AccountId accountId, VillageId villageId) : base(accountId, villageId)
         {
@@ -22,7 +23,7 @@ namespace MainCore.Commands.Update
     }
 
     [RegisterAsTransient]
-    public class UpdateDorfCommandHandler : UpdateCommandHandlerBase, IRequestHandler<UpdateDorfCommand, Result>
+    public class UpdateDorfCommandHandler : UpdateCommandHandlerBase, ICommandHandler<UpdateDorfCommand>
     {
         public UpdateDorfCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, UnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
         {
@@ -53,6 +54,7 @@ namespace MainCore.Commands.Update
 
             _unitOfRepository.StorageRepository.Update(command.VillageId, dtoStorage);
             await _mediator.Publish(new StorageUpdated(command.AccountId, command.VillageId), cancellationToken);
+
             return Result.Ok();
         }
 

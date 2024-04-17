@@ -1,4 +1,6 @@
-﻿using MainCore.Common.MediatR;
+﻿using FluentResults;
+using MainCore.Commands.Base;
+using MainCore.Common.MediatR;
 using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Notification.Message;
@@ -9,7 +11,7 @@ using MediatR;
 
 namespace MainCore.Commands.Update
 {
-    public class UpdateAccountInfoCommand : ByAccountIdBase, IRequest
+    public class UpdateAccountInfoCommand : ByAccountIdBase, ICommand
     {
         public UpdateAccountInfoCommand(AccountId accountId) : base(accountId)
         {
@@ -17,13 +19,13 @@ namespace MainCore.Commands.Update
     }
 
     [RegisterAsTransient]
-    public class UpdateAccountInfoCommandHandler : UpdateCommandHandlerBase, IRequestHandler<UpdateAccountInfoCommand>
+    public class UpdateAccountInfoCommandHandler : UpdateCommandHandlerBase, ICommandHandler<UpdateAccountInfoCommand>
     {
         public UpdateAccountInfoCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, UnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
         {
         }
 
-        public async Task Handle(UpdateAccountInfoCommand command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(UpdateAccountInfoCommand command, CancellationToken cancellationToken)
         {
             var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
@@ -35,6 +37,8 @@ namespace MainCore.Commands.Update
             {
                 await _mediator.Publish(new AdventureUpdated(command.AccountId), cancellationToken);
             }
+
+            return Result.Ok();
         }
     }
 }

@@ -15,13 +15,13 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandH
     {
         private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;
-        
+        private readonly UnitOfCommand _unitOfCommand;
 
-        public TravianOfficial(IChromeManager chromeManager, UnitOfParser unitOfParser)
+        public TravianOfficial(IChromeManager chromeManager, UnitOfParser unitOfParser, UnitOfCommand unitOfCommand)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
-            
+            _unitOfCommand = unitOfCommand;
         }
 
         public async Task<Result> Handle(SpecialUpgradeCommand command, CancellationToken cancellationToken)
