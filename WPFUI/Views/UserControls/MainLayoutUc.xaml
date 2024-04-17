@@ -76,6 +76,9 @@
                 <TabItem x:Name="FarmingTab" Header="Farming">
                     <v_tab:FarmingTab x:Name="Farming" />
                 </TabItem>
+                <TabItem x:Name="AlertTab" Header="Alert">
+                    <v_tab:AlertTab x:Name="Alert" />
+                </TabItem>
                 <TabItem x:Name="EditAccountTab" Header="Edit account">
                     <v_tab:EditAccountTab x:Name="EditAccount" />
                 </TabItem>

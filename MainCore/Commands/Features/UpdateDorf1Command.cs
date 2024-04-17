@@ -36,6 +36,7 @@ namespace MainCore.Commands.Features
             var url = chromeBrowser.CurrentUrl;
             Result result;
             await chromeBrowser.Refresh(cancellationToken);
+
             if (url.Contains("dorf1"))
             {
                 result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(accountId, villageId), cancellationToken);
