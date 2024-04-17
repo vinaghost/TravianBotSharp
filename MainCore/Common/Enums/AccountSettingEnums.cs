@@ -36,5 +36,7 @@
 
         EnableStopAlert,
         DonateResourceType,
+        EvadeTroopX,
+        EvadeTroopY,
     }
 }

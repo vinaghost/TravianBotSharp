@@ -7,29 +7,29 @@ namespace MainCore.Services
     [RegisterAsSingleton]
     public class AlertService : IAlertService
     {
-        private readonly Dictionary<AccountId, List<IncomingAttack>> _attacksDict = new();
+        private readonly Dictionary<VillageId, List<IncomingAttack>> _attacksDict = new();
 
-        public List<IncomingAttack> Get(AccountId accountId)
+        public List<IncomingAttack> Get(VillageId villageId)
         {
-            return _attacksDict[accountId];
+            return _attacksDict[villageId];
         }
 
-        public bool Update(AccountId accountId, List<IncomingAttack> attacks)
+        public bool Update(VillageId villageId, List<IncomingAttack> attacks)
         {
-            if (!_attacksDict.ContainsKey(accountId))
+            if (!_attacksDict.ContainsKey(villageId))
             {
-                _attacksDict.Add(accountId, attacks);
+                _attacksDict.Add(villageId, attacks);
                 return true;
             }
 
-            var source = _attacksDict[accountId]
+            var source = _attacksDict[villageId]
                 .Where(x => x.ArrivalTime < DateTime.Now)
                 .ToList();
             source
                 .ForEach(x => x.IsNew = false);
             if (IsSame(source, attacks)) return false;
 
-            _attacksDict[accountId] = attacks;
+            _attacksDict[villageId] = attacks;
             return true;
         }
 

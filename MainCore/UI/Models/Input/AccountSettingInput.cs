@@ -37,6 +37,9 @@ namespace MainCore.UI.Models.Input
 
             EnableStopAlert = settings.GetValueOrDefault(AccountSettingEnums.EnableStopAlert) == 1;
             Bonus.Set((AllianceBonusEnums)settings.GetValueOrDefault(AccountSettingEnums.DonateResourceType));
+
+            EvadeTroopX = settings.GetValueOrDefault(AccountSettingEnums.EvadeTroopX);
+            EvadeTroopY = settings.GetValueOrDefault(AccountSettingEnums.EvadeTroopX);
         }
 
         public Dictionary<AccountSettingEnums, int> Get()
@@ -66,6 +69,10 @@ namespace MainCore.UI.Models.Input
             var enableDiscordAlert = EnableDiscordAlert ? 1 : 0;
             var enableStopAlert = EnableStopAlert ? 1 : 0;
             var donateResourceType = (int)Bonus.Get();
+
+            var evadeTroopX = EvadeTroopX;
+            var evadeTroopY = EvadeTroopY;
+
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
                 { AccountSettingEnums.ClickDelayMin, clickDelayMin },
@@ -94,6 +101,8 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.EnableDiscordAlert, enableDiscordAlert},
                 { AccountSettingEnums.EnableStopAlert, enableStopAlert},
                 { AccountSettingEnums.DonateResourceType, donateResourceType},
+                { AccountSettingEnums.EvadeTroopX, evadeTroopX},
+                { AccountSettingEnums.EvadeTroopY, evadeTroopY},
             };
             return settings;
         }
@@ -220,12 +229,28 @@ namespace MainCore.UI.Models.Input
             set => this.RaiseAndSetIfChanged(ref _enableDiscordAlert, value);
         }
 
-        private bool _enableDonateResource;
+        private bool _enableStopAlert;
 
         public bool EnableStopAlert
         {
-            get => _enableDonateResource;
-            set => this.RaiseAndSetIfChanged(ref _enableDonateResource, value);
+            get => _enableStopAlert;
+            set => this.RaiseAndSetIfChanged(ref _enableStopAlert, value);
+        }
+
+        private int _evadeTroopX;
+
+        public int EvadeTroopX
+        {
+            get => _evadeTroopX;
+            set => this.RaiseAndSetIfChanged(ref _evadeTroopX, value);
+        }
+
+        private int _evadeTroopY;
+
+        public int EvadeTroopY
+        {
+            get => _evadeTroopY;
+            set => this.RaiseAndSetIfChanged(ref _evadeTroopY, value);
         }
     }
 }

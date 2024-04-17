@@ -58,7 +58,7 @@ namespace MainCore.Tasks
 
             var attacks = _rallypointParser.GetIncomingAttacks(html);
 
-            var isAlert = _alertService.Update(AccountId, attacks);
+            var isAlert = _alertService.Update(VillageId, attacks);
 
             if (!isAlert) return;
 
@@ -76,14 +76,14 @@ namespace MainCore.Tasks
             if (!enable) return;
 
             var account = _unitOfRepository.AccountRepository.Get(AccountId);
-
+            var village = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
             var webhookUrl = _unitOfRepository.AccountInfoRepository.GetDiscordWebhookUrl(AccountId);
             using var client = new DiscordWebhookClient(webhookUrl);
-            var attacks = _alertService.Get(AccountId);
+            var attacks = _alertService.Get(VillageId);
             var embed = new EmbedBuilder
             {
                 Title = $"Server: {account.Server}",
-                Description = $"Username: {account.Username} got {attacks.Sum(x => x.WaveCount)} attack",
+                Description = $"Account {account.Username} - village [{village}] is under {attacks.Sum(x => x.WaveCount)} attacks",
             };
 
             foreach (var attack in attacks)
@@ -105,7 +105,7 @@ namespace MainCore.Tasks
             var enable = _unitOfRepository.VillageSettingRepository.GetBooleanByName(VillageId, Common.Enums.VillageSettingEnums.EnableDonateResource);
             if (!enable) return;
 
-            var attacks = _alertService.Get(AccountId);
+            var attacks = _alertService.Get(VillageId);
 
             var firstAttacks = attacks.FirstOrDefault();
 
@@ -132,7 +132,7 @@ namespace MainCore.Tasks
             var enable = _unitOfRepository.VillageSettingRepository.GetBooleanByName(VillageId, Common.Enums.VillageSettingEnums.EnableEvadeTroop);
             if (!enable) return;
 
-            var attacks = _alertService.Get(AccountId);
+            var attacks = _alertService.Get(VillageId);
 
             var firstAttacks = attacks.FirstOrDefault();
 
@@ -156,7 +156,7 @@ namespace MainCore.Tasks
 
         private async Task SetNextExecute()
         {
-            var attacks = _alertService.Get(AccountId);
+            var attacks = _alertService.Get(VillageId);
             if (attacks.Count == 0) return;
             const int MIN = 60 * 10;
             const int MAX = 60 * 20;

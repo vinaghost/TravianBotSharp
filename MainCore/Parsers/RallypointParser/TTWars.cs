@@ -52,5 +52,10 @@ namespace MainCore.Parsers.RallypointParser
         {
             throw new NotImplementedException();
         }
+
+        public bool IsInvalidCoordinate(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

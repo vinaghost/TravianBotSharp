@@ -30,7 +30,13 @@ namespace MainCore.Tasks
             result = await ToRallyPoint();
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            result = await Input();
+            result = await InputTroop();
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await InputCoord();
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await Send();
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             result = await Confirm();
@@ -59,7 +65,98 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        private async Task<Result> Input()
+        private async Task<Result> InputTroop()
+        {
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            var html = chromeBrowser.Html;
+
+            var inputs = _rallypointParser.GetTroopInput(html).ToList();
+            Result result;
+            foreach (var input in inputs)
+            {
+                var amount = _rallypointParser.GetTroopAmount(input);
+
+                result = await chromeBrowser.InputTextbox(By.XPath(input.XPath), $"{amount}");
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            }
+
+            var raidButton = _rallypointParser.GetRaidInput(html);
+            if (raidButton is null) return Result.Fail(Retry.ButtonNotFound("raid"));
+
+            result = await chromeBrowser.Click(By.XPath(raidButton.XPath));
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            return Result.Ok();
+        }
+
+        private async Task<Result> InputCoord()
+        {
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            var html = chromeBrowser.Html;
+            var xInput = _rallypointParser.GetXInput(html);
+            if (xInput is null) return Result.Fail(Retry.TextboxNotFound("x input"));
+
+            var yInput = _rallypointParser.GetYInput(html);
+            if (yInput is null) return Result.Fail(Retry.TextboxNotFound("y input"));
+
+            var x = _unitOfRepository.AccountSettingRepository.GetByName(AccountId, Common.Enums.AccountSettingEnums.EvadeTroopX);
+            var y = _unitOfRepository.AccountSettingRepository.GetByName(AccountId, Common.Enums.AccountSettingEnums.EvadeTroopY);
+
+            Result result;
+            result = await chromeBrowser.InputTextbox(By.XPath(xInput.XPath), $"{x}");
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await chromeBrowser.InputTextbox(By.XPath(yInput.XPath), $"{y}");
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            return Result.Ok();
+        }
+
+        private async Task<Result> Send()
+        {
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            var html = chromeBrowser.Html;
+            var sendButton = _rallypointParser.GetSendButton(html);
+            if (sendButton is null) return Result.Fail(Retry.ButtonNotFound("send"));
+            Result result;
+            result = await chromeBrowser.Click(By.XPath(sendButton.XPath));
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await chromeBrowser.WaitPageLoaded(CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            return Result.Ok();
+        }
+
+        private async Task<Result> Confirm()
+        {
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            var html = chromeBrowser.Html;
+
+            html = chromeBrowser.Html;
+            Result result;
+            if (_rallypointParser.IsInvalidCoordinate(html))
+            {
+                result = await InputDefaultCoord();
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+                result = await Send();
+                if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            }
+
+            html = chromeBrowser.Html;
+            var confirmButton = _rallypointParser.GetConfirmButton(html);
+
+            result = await chromeBrowser.Click(By.XPath(confirmButton.XPath));
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await chromeBrowser.WaitPageLoaded(CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            return Result.Ok();
+        }
+
+        private async Task<Result> InputDefaultCoord()
         {
             var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
@@ -90,31 +187,6 @@ namespace MainCore.Tasks
             if (raidButton is null) return Result.Fail(Retry.ButtonNotFound("raid"));
 
             result = await chromeBrowser.Click(By.XPath(raidButton.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
-            return Result.Ok();
-        }
-
-        private async Task<Result> Confirm()
-        {
-            var chromeBrowser = _chromeManager.Get(AccountId);
-            var html = chromeBrowser.Html;
-            var sendButton = _rallypointParser.GetSendButton(html);
-            if (sendButton is null) return Result.Fail(Retry.ButtonNotFound("send"));
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(sendButton.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
-            result = await chromeBrowser.WaitPageLoaded(CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
-            html = chromeBrowser.Html;
-            var confirmButton = _rallypointParser.GetConfirmButton(html);
-
-            result = await chromeBrowser.Click(By.XPath(confirmButton.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
-            result = await chromeBrowser.WaitPageLoaded(CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             return Result.Ok();

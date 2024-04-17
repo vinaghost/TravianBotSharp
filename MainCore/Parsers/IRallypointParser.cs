@@ -22,5 +22,6 @@ namespace MainCore.Parsers
         HtmlNode GetYInput(HtmlDocument doc);
 
         HtmlNode GetSendButton(HtmlDocument doc);
+        bool IsInvalidCoordinate(HtmlDocument doc);
     }
 }

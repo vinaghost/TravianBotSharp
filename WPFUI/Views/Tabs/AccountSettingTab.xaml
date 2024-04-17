@@ -59,7 +59,12 @@
 
                         <uc:BonusSelectorUc x:Name="DonateResourceType" Text="Donate bonus type" />
 
-                        <CheckBox x:Name="EnableDonateResource" Content="Alert if account stopped" />
+                        <CheckBox x:Name="EnableStopAlert" Content="Alert if account stopped" />
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox x:Name="EvadeTroopX" materialDesign:HintAssist.Hint="Evade Troop X" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="100" />
+                            <TextBox x:Name="EvadeTroopY" materialDesign:HintAssist.Hint="Evade Troop Y" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="100" Margin="50,0,0,0" />
+                        </StackPanel>
                     </StackPanel>
                 </Border>
                 <Border Style="{DynamicResource Box}">

@@ -187,5 +187,12 @@ namespace MainCore.Parsers.RallypointParser
         {
             return doc.GetElementbyId("ok");
         }
+
+        public bool IsInvalidCoordinate(HtmlDocument doc)
+        {
+            return doc.DocumentNode
+                .Descendants("p")
+                .Any(x => x.HasClass("error"));
+        }
     }
 }

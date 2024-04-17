@@ -5,7 +5,8 @@ namespace MainCore.Services
 {
     public interface IAlertService
     {
-        List<IncomingAttack> Get(AccountId accountId);
-        bool Update(AccountId accountId, List<IncomingAttack> attacks);
+        List<IncomingAttack> Get(VillageId villageId);
+
+        bool Update(VillageId villageId, List<IncomingAttack> attacks);
     }
 }

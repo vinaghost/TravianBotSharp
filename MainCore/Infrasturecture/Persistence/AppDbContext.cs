@@ -70,7 +70,8 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.HealthBeforeStartAdventure, 40 },
             {AccountSettingEnums.EnableDiscordAlert, 0 },
             {AccountSettingEnums.EnableStopAlert, 0 },
-            {AccountSettingEnums.DonateResourceType, 0 },
+            {AccountSettingEnums.EvadeTroopX, 50 },
+            {AccountSettingEnums.EvadeTroopY, 50 },
         };
 
         public void FillHero()
