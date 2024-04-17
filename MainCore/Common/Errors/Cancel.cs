@@ -4,8 +4,10 @@ namespace MainCore.Common.Errors
 {
     public class Cancel : Error
     {
-        public Cancel() : base("Pause button is pressed")
+        private Cancel() : base("Pause button is pressed")
         {
         }
+
+        public static Cancel Error => new();
     }
 }

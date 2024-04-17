@@ -59,9 +59,9 @@ namespace MainCore.Commands.Navigate
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await chromeBrowser.WaitPageChanged($"dorf{dorf}", cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 

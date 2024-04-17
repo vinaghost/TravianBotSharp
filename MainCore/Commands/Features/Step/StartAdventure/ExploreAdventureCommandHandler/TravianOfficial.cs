@@ -27,11 +27,11 @@ namespace MainCore.Commands.Features.Step.StartAdventure.ExploreAdventureCommand
             var html = chromeBrowser.Html;
 
             var adventure = _unitOfParser.HeroParser.GetAdventure(html);
-            if (adventure is null) return Result.Fail(Retry.ButtonNotFound("adventure place"));
+            if (adventure is null) return Retry.ButtonNotFound("adventure place");
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(adventure.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             bool continueShow(IWebDriver driver)
             {
@@ -42,7 +42,7 @@ namespace MainCore.Commands.Features.Step.StartAdventure.ExploreAdventureCommand
             };
 
             result = await chromeBrowser.Wait(continueShow, cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
     }

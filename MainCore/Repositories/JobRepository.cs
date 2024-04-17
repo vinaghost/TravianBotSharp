@@ -1,7 +1,7 @@
 ﻿using FluentResults;
 using Humanizer;
 using MainCore.Common.Enums;
-using MainCore.Common.Errors;
+using MainCore.Common.Errors.AutoBuilder;
 using MainCore.Common.Extensions;
 using MainCore.Common.Models;
 using MainCore.DTO;

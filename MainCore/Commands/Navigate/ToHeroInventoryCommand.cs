@@ -35,14 +35,14 @@ namespace MainCore.Commands.Navigate
             var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
             var avatar = _unitOfParser.HeroParser.GetHeroAvatar(html);
-            if (avatar is null) return Result.Fail(Retry.ButtonNotFound("avatar hero"));
+            if (avatar is null) return Retry.ButtonNotFound("avatar hero");
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(avatar.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await chromeBrowser.WaitPageChanged("hero", cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             bool tabActived(IWebDriver driver)
             {
@@ -52,7 +52,7 @@ namespace MainCore.Commands.Navigate
             };
 
             result = await chromeBrowser.Wait(tabActived, cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }

@@ -44,7 +44,7 @@ namespace MainCore.Commands.Navigate
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(node.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var logger = _logService.GetLogger(command.AccountId);
             var retryPolicy = Policy
@@ -77,7 +77,7 @@ namespace MainCore.Commands.Navigate
 
                 return result
                     .WithError(new Error($"page stuck at changing village stage [Current: {current}] [Expected: {command.VillageId}]"))
-                    .WithError(new TraceMessage(TraceMessage.Line()));
+                    .WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             return Result.Ok();
         }

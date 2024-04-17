@@ -27,7 +27,7 @@ namespace MainCore.Commands.Navigate.ToBuildingCommandHandler
             var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
             var node = _unitOfParser.BuildingParser.GetBuilding(html, command.Location);
-            if (node is null) return Result.Fail(Retry.NotFound($"{command.Location}", "nodeBuilding"));
+            if (node is null) return Retry.NotFound($"{command.Location}", "nodeBuilding");
 
             Result result;
             if (command.Location > 18 && node.HasClass("g0"))
@@ -37,13 +37,13 @@ namespace MainCore.Commands.Navigate.ToBuildingCommandHandler
                     var currentUrl = new Uri(chromeBrowser.CurrentUrl);
                     var host = currentUrl.GetLeftPart(UriPartial.Authority);
                     result = await chromeBrowser.Navigate($"{host}/build.php?id={command.Location}", cancellationToken);
-                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
                 else
                 {
                     var css = $"#villageContent > div.buildingSlot.a{command.Location} > svg > path";
                     result = await chromeBrowser.Click(By.CssSelector(css));
-                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
             }
             else
@@ -51,26 +51,26 @@ namespace MainCore.Commands.Navigate.ToBuildingCommandHandler
                 if (command.Location == 40) // wall
                 {
                     var path = node.Descendants("path").FirstOrDefault();
-                    if (path is null) return Result.Fail(Retry.NotFound($"{command.Location}", "wall bottom path"));
+                    if (path is null) return Retry.NotFound($"{command.Location}", "wall bottom path");
 
                     var javascript = path.GetAttributeValue("onclick", "");
-                    if (string.IsNullOrEmpty(javascript)) return Result.Fail(Retry.NotFound($"{command.Location}", "JavaScriptExecutor onclick wall"));
+                    if (string.IsNullOrEmpty(javascript)) return Retry.NotFound($"{command.Location}", "JavaScriptExecutor onclick wall");
 
                     var decodedJs = HttpUtility.HtmlDecode(javascript);
                     var js = chromeBrowser.Driver as IJavaScriptExecutor;
                     js.ExecuteScript(decodedJs);
 
                     result = await chromeBrowser.WaitPageChanged("build.php", cancellationToken);
-                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
                 else
                 {
                     result = await chromeBrowser.Click(By.XPath(node.XPath));
-                    if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
             }
             result = await chromeBrowser.WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
     }

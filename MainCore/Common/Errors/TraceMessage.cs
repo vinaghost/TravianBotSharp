@@ -5,7 +5,7 @@ namespace MainCore.Common.Errors
 {
     public class TraceMessage : Error
     {
-        public TraceMessage(string message) : base(message)
+        private TraceMessage(string message) : base(message)
         {
         }
 
@@ -15,5 +15,7 @@ namespace MainCore.Common.Errors
         {
             return $"from file: {sourceFilePath} [{sourceLineNumber - 1}]";
         }
+
+        public static TraceMessage Error(string message) => new(message);
     }
 }

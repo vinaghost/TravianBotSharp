@@ -24,18 +24,18 @@ namespace MainCore.Tasks.Base
 
         protected override async Task<Result> PreExecute()
         {
-            if (CancellationToken.IsCancellationRequested) return new Cancel();
+            if (CancellationToken.IsCancellationRequested) return Cancel.Error;
 
             Result result;
             result = await _unitOfCommand.ValidateIngameCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var inGame = _unitOfCommand.ValidateIngameCommand.Value;
 
             if (inGame) return Result.Ok();
 
             result = await _unitOfCommand.ValidateLoginCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var login = _unitOfCommand.ValidateLoginCommand.Value;
 
