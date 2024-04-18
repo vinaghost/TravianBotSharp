@@ -31,5 +31,14 @@
         EquipGearBeforeStartAdventure,
         HealingBeforeStartAdventure,
         HealthBeforeStartAdventure,
+
+        EnableDiscordAlert,
+
+        EnableStopAlert,
+        DonateResourceType,
+        EvadeTroopX,
+        EvadeTroopY,
+        CheckAttackDelayMin,
+        CheckAttackDelayMax,
     }
 }

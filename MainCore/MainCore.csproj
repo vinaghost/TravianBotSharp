@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Discord.Net.Webhook" Version="3.14.1" />
     <PackageReference Include="FluentMigrator" Version="5.1.0" />
     <PackageReference Include="FluentMigrator.Runner.Core" Version="5.1.0" />
     <PackageReference Include="FluentMigrator.Runner.SQLite" Version="5.1.0" />

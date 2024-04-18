@@ -111,7 +111,7 @@ namespace MainCore.Tasks
 
             _unitOfRepository.NewVillageRepository.SetVillage(newVillage.Id, VillageId);
 
-            await _taskManager.Add<UpdateVillageTask>(AccountId, VillageId, executeTime: timeArrvial);
+            await _taskManager.AddOrUpdate<UpdateVillageTask>(AccountId, VillageId, executeTime: timeArrvial);
             return Result.Ok();
         }
 
@@ -125,7 +125,9 @@ namespace MainCore.Tasks
         {
             Result result;
             result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line())); result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
             var location = _unitOfRepository.BuildingRepository.GetSettleLocation(VillageId);
