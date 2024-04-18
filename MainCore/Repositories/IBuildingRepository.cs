@@ -39,5 +39,6 @@ namespace MainCore.Repositories
         bool IsTownHall(VillageId villageId, bool great);
 
         int GetSettleLocation(VillageId villageId);
+        int GetCrannyCapacity(VillageId villageId);
     }
 }

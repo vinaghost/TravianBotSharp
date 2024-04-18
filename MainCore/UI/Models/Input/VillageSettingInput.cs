@@ -39,6 +39,9 @@ namespace MainCore.UI.Models.Input
         private bool _autoTrainSettle;
         private bool _autoSendSettle;
 
+        private bool _enableDonateResource;
+        private bool _enableEvadeTroop;
+
         public void Set(Dictionary<VillageSettingEnums, int> settings)
         {
             var tribe = (TribeEnums)settings.GetValueOrDefault(VillageSettingEnums.Tribe);
@@ -95,6 +98,9 @@ namespace MainCore.UI.Models.Input
 
             AutoTrainSettle = settings.GetValueOrDefault(VillageSettingEnums.AutoTrainSettle) == 1;
             AutoSendSettle = settings.GetValueOrDefault(VillageSettingEnums.AutoSendSettle) == 1;
+
+            EnableDonateResource = settings.GetValueOrDefault(VillageSettingEnums.EnableDonateResource) == 1;
+            EnableEvadeTroop = settings.GetValueOrDefault(VillageSettingEnums.EnableEvadeTroop) == 1;
         }
 
         public Dictionary<VillageSettingEnums, int> Get()
@@ -135,6 +141,10 @@ namespace MainCore.UI.Models.Input
 
             var autoTrainSettle = AutoTrainSettle ? 1 : 0;
             var autoSendSettle = AutoSendSettle ? 1 : 0;
+
+            var enableDonateResource = EnableDonateResource ? 1 : 0;
+            var enableEvadeTroop = EnableEvadeTroop ? 1 : 0;
+
             var settings = new Dictionary<VillageSettingEnums, int>()
             {
                 { VillageSettingEnums.UseHeroResourceForBuilding, useHeroResourceForBuilding },
@@ -174,6 +184,8 @@ namespace MainCore.UI.Models.Input
                 { VillageSettingEnums.CelebrationWaitBuilding, celebrationWaitBuilding },
                 { VillageSettingEnums.AutoTrainSettle, autoTrainSettle },
                 { VillageSettingEnums.AutoSendSettle, autoSendSettle },
+                { VillageSettingEnums.EnableDonateResource, enableDonateResource },
+                { VillageSettingEnums.EnableEvadeTroop, enableEvadeTroop },
             };
             return settings;
         }
@@ -306,6 +318,18 @@ namespace MainCore.UI.Models.Input
         {
             get => _autoSendSettle;
             set => this.RaiseAndSetIfChanged(ref _autoSendSettle, value);
+        }
+
+        public bool EnableDonateResource
+        {
+            get => _enableDonateResource;
+            set => this.RaiseAndSetIfChanged(ref _enableDonateResource, value);
+        }
+
+        public bool EnableEvadeTroop
+        {
+            get => _enableEvadeTroop;
+            set => this.RaiseAndSetIfChanged(ref _enableEvadeTroop, value);
         }
     }
 }

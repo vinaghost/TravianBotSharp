@@ -68,6 +68,13 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.EquipGearBeforeStartAdventure, 0 },
             {AccountSettingEnums.HealingBeforeStartAdventure, 0 },
             {AccountSettingEnums.HealthBeforeStartAdventure, 40 },
+            {AccountSettingEnums.EnableDiscordAlert, 0 },
+            {AccountSettingEnums.EnableStopAlert, 0 },
+            {AccountSettingEnums.EvadeTroopX, 50 },
+            {AccountSettingEnums.EvadeTroopY, 50 },
+
+            {AccountSettingEnums.CheckAttackDelayMin, 10 },
+            {AccountSettingEnums.CheckAttackDelayMax, 20 },
         };
 
         public void FillHero()
@@ -198,6 +205,8 @@ namespace MainCore.Infrasturecture.Persistence
 
             {VillageSettingEnums.AutoTrainSettle, 0 },
             {VillageSettingEnums.AutoSendSettle, 0 },
+            {VillageSettingEnums.EnableDonateResource, 0 },
+            {VillageSettingEnums.EnableEvadeTroop, 0 },
         };
 
         private List<VillageSettingEnums> GetMissingVillageSettings()
@@ -300,6 +309,7 @@ namespace MainCore.Infrasturecture.Persistence
                 KeyValuePair.Create(202403271931,"AddVillageIdToNewVillageTable"),
                 KeyValuePair.Create(202403272006,"AddProgressingSettlersToVillageTable"),
                 KeyValuePair.Create(202403282055,"AddNewVillageTemplatePathToNewVillageTable"),
+                KeyValuePair.Create(202404101706,"AddDiscordWebhookUrlToAccountInfoTable"),
             };
             foreach (var migration in migrations)
             {
