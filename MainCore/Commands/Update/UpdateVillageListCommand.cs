@@ -32,6 +32,12 @@ namespace MainCore.Commands.Update
             var dtos = _unitOfParser.VillagePanelParser.Get(html);
             _unitOfRepository.VillageRepository.Update(command.AccountId, dtos.ToList());
             await _mediator.Publish(new VillageUpdated(command.AccountId), cancellationToken);
+
+            foreach (var dto in dtos)
+            {
+                if (!dto.IsUnderAttack) continue;
+                await _mediator.Publish(new AttackFound(command.AccountId, dto.Id), cancellationToken);
+            }
             return Result.Ok();
         }
     }

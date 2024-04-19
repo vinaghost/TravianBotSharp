@@ -105,6 +105,12 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandH
             result = await chromeBrowser.WaitPageChanged("dorf", cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
+            result = await chromeBrowser.WaitPageLoaded(cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
             html = chromeBrowser.Html;
             var dontShowThisAgain = html.GetElementbyId("dontShowThisAgain");
             if (dontShowThisAgain is not null)
