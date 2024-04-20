@@ -21,6 +21,15 @@ namespace MainCore.Notification.Handlers.Trigger
 
         public async Task Handle(VillageSettingUpdated notification, CancellationToken cancellationToken)
         {
+            var accountId = notification.AccountId;
+            var freeSlotCP = _unitOfRepository.AccountInfoRepository.GetFreeSlotCP(accountId);
+
+            var checkNewVillagesTaskCount = _taskManager.GetTaskList(accountId).OfType<CheckNewVillageTask>().Count();
+
+            freeSlotCP -= checkNewVillagesTaskCount;
+
+            if (freeSlotCP <= 0) return;
+
             await Trigger(notification.AccountId, notification.VillageId);
         }
 
@@ -28,8 +37,13 @@ namespace MainCore.Notification.Handlers.Trigger
         {
             var accountId = notification.AccountId;
             var villages = _unitOfRepository.VillageRepository.Get(accountId);
+            var freeSlotCP = _unitOfRepository.AccountInfoRepository.GetFreeSlotCP(accountId);
 
-            if (!_unitOfRepository.AccountInfoRepository.IsEnoughCP(accountId)) return;
+            var checkNewVillagesTaskCount = _taskManager.GetTaskList(accountId).OfType<CheckNewVillageTask>().Count();
+
+            freeSlotCP -= checkNewVillagesTaskCount;
+
+            if (freeSlotCP <= 0) return;
 
             foreach (var village in villages)
             {
@@ -47,7 +61,6 @@ namespace MainCore.Notification.Handlers.Trigger
                 return;
             }
 
-            if (!_unitOfRepository.AccountInfoRepository.IsEnoughCP(accountId)) return;
             if (_unitOfRepository.VillageRepository.GetSettlers(villageId) < 3) return;
             if (_unitOfRepository.NewVillageRepository.IsSettling(accountId, villageId)) return;
 
