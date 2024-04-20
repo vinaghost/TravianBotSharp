@@ -42,9 +42,6 @@ namespace MainCore.Tasks
             result = await _unitOfCommand.UpdateAccountInfoCommand.Handle(new(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            var enoughCP = _unitOfRepository.AccountInfoRepository.IsEnoughCP(AccountId);
-            if (!enoughCP) return Result.Fail(new Skip("Not enough CP for settling"));
-
             var newVillage = _unitOfRepository.NewVillageRepository.Get(AccountId);
             if (newVillage is null) return Result.Fail(new Skip("There is no new village in Settle tab"));
 
