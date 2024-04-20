@@ -103,6 +103,8 @@ namespace MainCore.Services
             get
             {
                 UpdateHtml();
+
+                if (_htmlDoc.GetElementbyId("pageLinks") is null) throw new Exception("Not travian page game");
                 return _htmlDoc;
             }
         }
