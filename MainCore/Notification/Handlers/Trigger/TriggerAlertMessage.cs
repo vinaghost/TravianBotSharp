@@ -3,21 +3,42 @@ using Discord.Webhook;
 using MainCore.Entities;
 using MainCore.Notification.Message;
 using MainCore.Repositories;
+using MainCore.Services;
 using MediatR;
+using RestSharp;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
     public class TriggerAlertMessage : INotificationHandler<AccountStop>
     {
         private readonly UnitOfRepository _unitOfRepository;
+        private readonly IRestClientManager _restClientManager;
+        private readonly ILogService _logService;
 
-        public TriggerAlertMessage(UnitOfRepository unitOfRepository)
+        public TriggerAlertMessage(UnitOfRepository unitOfRepository, IRestClientManager restClientManager, ILogService logService)
         {
             _unitOfRepository = unitOfRepository;
+            _restClientManager = restClientManager;
+            _logService = logService;
         }
 
         public async Task Handle(AccountStop notification, CancellationToken cancellationToken)
         {
+            var access = _unitOfRepository.AccountRepository.GetAccess(notification.AccountId);
+            var client = _restClientManager.Get(access);
+
+            do
+            {
+                var request = new RestRequest
+                {
+                    Method = Method.Get,
+                };
+
+                var response = await client.ExecuteAsync(request, cancellationToken);
+                if (!response.IsSuccessful) continue;
+                break;
+            } while (true);
+
             var enable = _unitOfRepository.AccountSettingRepository.GetBooleanByName(notification.AccountId, Common.Enums.AccountSettingEnums.EnableStopAlert);
             if (!enable) return;
 
