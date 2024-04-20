@@ -111,7 +111,7 @@ namespace MainCore.Tasks
 
             _unitOfRepository.NewVillageRepository.SetVillage(newVillage.Id, VillageId);
 
-            await _taskManager.AddOrUpdate<UpdateVillageTask>(AccountId, VillageId, executeTime: timeArrvial);
+            await _taskManager.Add<CheckNewVillageTask>(AccountId, executeTime: timeArrvial);
             return Result.Ok();
         }
 
