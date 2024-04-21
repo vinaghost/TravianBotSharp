@@ -55,7 +55,7 @@ namespace MainCore.Tasks
             var currentHealth = _unitOfRepository.HeroRepository.GetHealth(AccountId);
             var requiredHealth = _unitOfRepository.AccountSettingRepository.GetByName(AccountId, AccountSettingEnums.HealthBeforeStartAdventure);
 
-            if (requiredHealth >= currentHealth)
+            if (requiredHealth > currentHealth)
             {
                 var healing = _unitOfRepository.AccountSettingRepository.GetBooleanByName(AccountId, AccountSettingEnums.HealingBeforeStartAdventure);
 
