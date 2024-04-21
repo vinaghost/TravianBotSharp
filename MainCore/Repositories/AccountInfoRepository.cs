@@ -26,20 +26,20 @@ namespace MainCore.Repositories
             return accountInfo.HasPlusAccount;
         }
 
-        public bool IsEnoughCP(AccountId accountId)
+        public int GetFreeSlotCP(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();
 
             var accountInfo = context.AccountsInfo
                 .Where(x => x.AccountId == accountId.Value)
                 .FirstOrDefault();
-            if (accountInfo is null) return false;
+            if (accountInfo is null) return 0;
 
             var villageCount = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .Count();
 
-            return accountInfo.MaximumVillage > villageCount;
+            return accountInfo.MaximumVillage - villageCount;
         }
 
         public string GetTemplatePath(AccountId accountId)

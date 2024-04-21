@@ -94,6 +94,7 @@ namespace MainCore.Services
                 var ex = poliResult.FinalException;
                 logger.Error(ex, "{message}", ex.Message);
                 await _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                await _mediator.Publish(new AccountStop(accountId));
             }
             else
             {

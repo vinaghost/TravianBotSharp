@@ -91,7 +91,7 @@ namespace MainCore.Services
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(3);
             _driver.GetDevToolsSession();
-            _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3)); // watch ads
+            _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(10)); // watch ads
 
             return Result.Ok();
         }
@@ -103,6 +103,8 @@ namespace MainCore.Services
             get
             {
                 UpdateHtml();
+
+                if (_htmlDoc.GetElementbyId("pageLinks") is null) throw new Exception("Not travian page game");
                 return _htmlDoc;
             }
         }
