@@ -1,6 +1,7 @@
 ﻿using FluentResults;
 using MainCore.Commands.Base;
 using MainCore.DTO;
+using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Services;
 using Polly;
@@ -11,11 +12,13 @@ namespace MainCore.Commands.Validate
 {
     public class ValidateProxyCommand : ICommand<bool>
     {
+        public AccountId AccountId { get; }
         public AccessDto Access { get; }
 
-        public ValidateProxyCommand(AccessDto access)
+        public ValidateProxyCommand(AccountId accountId, AccessDto access)
         {
             Access = access;
+            AccountId = accountId;
         }
     }
 
@@ -37,13 +40,13 @@ namespace MainCore.Commands.Validate
 
         public bool Value { get; private set; }
 
-        private async Task<bool> Validate(AccessDto access)
+        private async Task<bool> Validate(AccountId accountId, AccessDto access)
         {
             var request = new RestRequest
             {
                 Method = Method.Get,
             };
-            var client = _restClientManager.Get(access);
+            var client = _restClientManager.Get(accountId, access);
             var response = await client.ExecuteAsync(request);
             if (!response.IsSuccessful) throw new Exception("Proxy failed");
             return true;
@@ -52,7 +55,7 @@ namespace MainCore.Commands.Validate
         public async Task<Result> Handle(ValidateProxyCommand command, CancellationToken cancellationToken)
         {
             var poliResult = await _retryPolicy
-                    .ExecuteAndCaptureAsync(() => Validate(command.Access));
+                    .ExecuteAndCaptureAsync(() => Validate(command.AccountId, command.Access));
             Value = poliResult.Result;
             return Result.Ok();
         }

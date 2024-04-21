@@ -1,4 +1,5 @@
 ﻿using MainCore.DTO;
+using MainCore.Entities;
 using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Infrasturecture.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +19,7 @@ namespace MainCore.Services
             _contextFactory = contextFactory;
         }
 
-        public RestClient Get(AccessDto access)
+        public RestClient Get(AccountId accountId, AccessDto access)
         {
             if (_database.TryGetValue(access.Id.Value, out RestClient client))
             {
@@ -41,10 +42,16 @@ namespace MainCore.Services
                 }
             }
 
+            using var context = _contextFactory.CreateDbContext();
+            var url = context.Accounts
+                .Where(x => x.Id == accountId.Value)
+                .Select(x => $"{x.Server}dorf1.php")
+                .FirstOrDefault();
+
             var clientOptions = new RestClientOptions
             {
                 MaxTimeout = 30000,
-                BaseUrl = new Uri("https://google.com/"),
+                BaseUrl = new Uri(url),
                 Proxy = proxy,
             };
 
