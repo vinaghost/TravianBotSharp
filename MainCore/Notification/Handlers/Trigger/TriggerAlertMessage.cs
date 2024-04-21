@@ -1,28 +1,24 @@
 ﻿using Discord;
 using Discord.Webhook;
-using HtmlAgilityPack;
 using MainCore.Entities;
 using MainCore.Notification.Message;
 using MainCore.Repositories;
 using MainCore.Services;
 using MediatR;
 using Polly;
-using RestSharp;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
     public class TriggerAlertMessage : INotificationHandler<AccountStop>
     {
         private readonly UnitOfRepository _unitOfRepository;
-        private readonly IRestClientManager _restClientManager;
         private readonly ILogService _logService;
         private readonly ITaskManager _taskManager;
         private readonly IChromeManager _chromeManager;
 
-        public TriggerAlertMessage(UnitOfRepository unitOfRepository, IRestClientManager restClientManager, ILogService logService, ITaskManager taskManager, IChromeManager chromeManager)
+        public TriggerAlertMessage(UnitOfRepository unitOfRepository, ILogService logService, ITaskManager taskManager, IChromeManager chromeManager)
         {
             _unitOfRepository = unitOfRepository;
-            _restClientManager = restClientManager;
             _logService = logService;
             _taskManager = taskManager;
             _chromeManager = chromeManager;
@@ -31,11 +27,11 @@ namespace MainCore.Notification.Handlers.Trigger
         public async Task Handle(AccountStop notification, CancellationToken cancellationToken)
         {
             var access = _unitOfRepository.AccountRepository.GetAccess(notification.AccountId);
-            var client = _restClientManager.Get(notification.AccountId, access);
-
+            var chromeBrowser = _chromeManager.Get(notification.AccountId);
+            var account = _unitOfRepository.AccountRepository.Get(notification.AccountId);
             try
             {
-                await Excute(client);
+                _ = chromeBrowser.Html;
             }
             catch
             {
@@ -50,14 +46,12 @@ namespace MainCore.Notification.Handlers.Trigger
                        logger.Warning("There is no internet connection. Retry after {time} mins", 2 * retryCount);
                    });
 
+                var url = $"{account.Server}dorf1.php";
                 await retryPolicy
-                    .ExecuteAndCaptureAsync(() => Excute(client));
+                    .ExecuteAndCaptureAsync(() => Excute(chromeBrowser, url));
 
+                await chromeBrowser.Navigate(url, default);
                 logger.Information("Internet connection is back");
-                var chromeBrowser = _chromeManager.Get(notification.AccountId);
-
-                var account = _unitOfRepository.AccountRepository.Get(notification.AccountId);
-                await chromeBrowser.Navigate($"{account.Server}dorf1.php", cancellationToken);
                 await _taskManager.SetStatus(notification.AccountId, Common.Enums.StatusEnums.Online);
                 return;
             }
@@ -86,21 +80,13 @@ namespace MainCore.Notification.Handlers.Trigger
             await client.SendMessageAsync(text: "@here Account is stopping", embeds: new[] { embed.Build() });
         }
 
-        private static async Task Excute(RestClient client)
+        private static async Task Excute(IChromeBrowser chromeBrowser, string url)
         {
-            var request = new RestRequest
-            {
-                Method = Method.Get,
-            };
-
-            var response = await client.ExecuteAsync(request);
-            if (!response.IsSuccessful) throw new Exception();
-
-            var content = response.Content;
-            var html = new HtmlDocument();
-            html.LoadHtml(content);
-
-            if (html.GetElementbyId("pageLinks") is null) throw new Exception();
+            var result = await chromeBrowser.Navigate(url, default);
+            if (result.IsFailed) throw new Exception();
+            result = await chromeBrowser.WaitPageLoaded(default);
+            if (result.IsFailed) throw new Exception();
+            _ = chromeBrowser.Html;
         }
     }
 }
