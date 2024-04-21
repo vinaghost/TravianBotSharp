@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Webhook;
+using HtmlAgilityPack;
 using MainCore.Entities;
 using MainCore.Notification.Message;
 using MainCore.Repositories;
@@ -30,7 +31,7 @@ namespace MainCore.Notification.Handlers.Trigger
         public async Task Handle(AccountStop notification, CancellationToken cancellationToken)
         {
             var access = _unitOfRepository.AccountRepository.GetAccess(notification.AccountId);
-            var client = _restClientManager.Get(access);
+            var client = _restClientManager.Get(notification.AccountId, access);
 
             try
             {
@@ -54,6 +55,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
                 logger.Information("Internet connection is back");
                 var chromeBrowser = _chromeManager.Get(notification.AccountId);
+
                 var account = _unitOfRepository.AccountRepository.Get(notification.AccountId);
                 await chromeBrowser.Navigate($"{account.Server}dorf1.php", cancellationToken);
                 await _taskManager.SetStatus(notification.AccountId, Common.Enums.StatusEnums.Online);
@@ -84,7 +86,7 @@ namespace MainCore.Notification.Handlers.Trigger
             await client.SendMessageAsync(text: "@here Account is stopping", embeds: new[] { embed.Build() });
         }
 
-        private async Task Excute(RestClient client)
+        private static async Task Excute(RestClient client)
         {
             var request = new RestRequest
             {
@@ -93,6 +95,12 @@ namespace MainCore.Notification.Handlers.Trigger
 
             var response = await client.ExecuteAsync(request);
             if (!response.IsSuccessful) throw new Exception();
+
+            var content = response.Content;
+            var html = new HtmlDocument();
+            html.LoadHtml(content);
+
+            if (html.GetElementbyId("pageLinks") is null) throw new Exception();
         }
     }
 }
