@@ -75,6 +75,11 @@ namespace MainCore.Tasks
                 return Result.Fail(new Skip("Village has enough settlers"));
             }
 
+            if (_unitOfParser.SettleParser.NoExpansionSlot(html))
+            {
+                return Result.Fail(new Skip("Expansion slot needed"));
+            }
+
             var cost = settler.GetTrainCost();
 
             do

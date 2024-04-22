@@ -16,12 +16,14 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandH
         private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;
         private readonly UnitOfCommand _unitOfCommand;
+        private readonly ICommandHandler<UpgradeCommand> _upgradeCommand;
 
-        public TravianOfficial(IChromeManager chromeManager, UnitOfParser unitOfParser, UnitOfCommand unitOfCommand)
+        public TravianOfficial(IChromeManager chromeManager, UnitOfParser unitOfParser, UnitOfCommand unitOfCommand, ICommandHandler<UpgradeCommand> upgradeCommand)
         {
             _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
             _unitOfCommand = unitOfCommand;
+            _upgradeCommand = upgradeCommand;
         }
 
         public async Task<Result> Handle(SpecialUpgradeCommand command, CancellationToken cancellationToken)
@@ -103,7 +105,16 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandH
             while (true);
 
             result = await chromeBrowser.WaitPageChanged("dorf", cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed)
+            {
+                if (chromeBrowser.CurrentUrl.Contains("build.php"))
+                {
+                    await chromeBrowser.Refresh(cancellationToken);
+                    return await _upgradeCommand.Handle(new(command.AccountId), cancellationToken);
+                }
+
+                return result.WithError(new TraceMessage(TraceMessage.Line()));
+            }
 
             result = await chromeBrowser.WaitPageLoaded(cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));

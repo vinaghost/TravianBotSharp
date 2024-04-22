@@ -42,5 +42,10 @@ namespace MainCore.Parsers.SettleParser
         {
             throw new NotImplementedException();
         }
+
+        public bool NoExpansionSlot(HtmlDocument doc)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

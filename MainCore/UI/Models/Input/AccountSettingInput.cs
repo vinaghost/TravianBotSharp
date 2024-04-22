@@ -39,7 +39,7 @@ namespace MainCore.UI.Models.Input
             Bonus.Set((AllianceBonusEnums)settings.GetValueOrDefault(AccountSettingEnums.DonateResourceType));
 
             EvadeTroopX = settings.GetValueOrDefault(AccountSettingEnums.EvadeTroopX);
-            EvadeTroopY = settings.GetValueOrDefault(AccountSettingEnums.EvadeTroopX);
+            EvadeTroopY = settings.GetValueOrDefault(AccountSettingEnums.EvadeTroopY);
 
             CheckAttackDelay.Set(settings.GetValueOrDefault(AccountSettingEnums.CheckAttackDelayMin), settings.GetValueOrDefault(AccountSettingEnums.CheckAttackDelayMax));
         }
