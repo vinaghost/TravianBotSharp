@@ -62,6 +62,8 @@ namespace MainCore.Commands.Navigate
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             result = await chromeBrowser.WaitPageChanged($"dorf{dorf}", cancellationToken);
             if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            result = await chromeBrowser.WaitPageLoaded(cancellationToken);
+            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
             return Result.Ok();
         }
 

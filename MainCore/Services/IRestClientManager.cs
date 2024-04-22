@@ -1,11 +1,13 @@
 ﻿using MainCore.DTO;
+using MainCore.Entities;
 using RestSharp;
 
 namespace MainCore.Services
 {
     public interface IRestClientManager
     {
-        RestClient Get(AccessDto access);
+        RestClient Get(AccountId accountId, AccessDto access);
+
         void Shutdown();
     }
 }

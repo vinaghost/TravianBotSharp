@@ -43,7 +43,7 @@ namespace MainCore.Commands.General
             var logger = _logService.GetLogger(command.AccountId);
             var accesses = _unitOfRepository.AccountRepository.GetAccesses(command.AccountId);
 
-            var access = await GetValidAccess(accesses, logger, cancellationToken);
+            var access = await GetValidAccess(command.AccountId, accesses, logger, cancellationToken);
             if (access is null) return Result.Fail(NoAccessAvailable.AllAccessNotWorking);
 
             _unitOfRepository.AccountRepository.UpdateAccessLastUsed(access.Id);
@@ -68,12 +68,12 @@ namespace MainCore.Commands.General
             return Result.Ok();
         }
 
-        private async Task<AccessDto> GetValidAccess(List<AccessDto> accesses, ILogger logger, CancellationToken cancellationToken)
+        private async Task<AccessDto> GetValidAccess(AccountId accountId, List<AccessDto> accesses, ILogger logger, CancellationToken cancellationToken)
         {
             foreach (var access in accesses)
             {
                 logger.Information("Check connection {proxy}", access.Proxy);
-                var result = await _unitOfCommand.ValidateProxyCommand.Handle(new(access), cancellationToken);
+                var result = await _unitOfCommand.ValidateProxyCommand.Handle(new(accountId, access), cancellationToken);
                 if (result.IsFailed) return null;
                 if (!_unitOfCommand.ValidateProxyCommand.Value)
                 {
