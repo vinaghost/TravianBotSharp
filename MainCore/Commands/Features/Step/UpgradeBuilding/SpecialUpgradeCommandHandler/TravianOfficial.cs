@@ -109,6 +109,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandH
             {
                 if (chromeBrowser.CurrentUrl.Contains("build.php"))
                 {
+                    await chromeBrowser.Refresh(cancellationToken);
                     return await _upgradeCommand.Handle(new(command.AccountId), cancellationToken);
                 }
 
