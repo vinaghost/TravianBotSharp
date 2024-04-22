@@ -91,7 +91,7 @@ namespace MainCore.Services
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(3);
             _driver.GetDevToolsSession();
-            _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(10)); // watch ads
+            _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(5)); // watch ads
 
             return Result.Ok();
         }
@@ -276,7 +276,7 @@ namespace MainCore.Services
                 }
                 catch (WebDriverTimeoutException)
                 {
-                    return Result.Fail(new Stop("Page not loaded in 3 mins"));
+                    return Result.Fail(new Stop("Page not loaded in 5 mins"));
                 }
                 if (cancellationToken.IsCancellationRequested) return Result.Fail(new Cancel());
                 return Result.Ok();
