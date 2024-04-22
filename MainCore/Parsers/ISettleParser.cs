@@ -19,5 +19,7 @@ namespace MainCore.Parsers
         int GetSettlerAmount(HtmlDocument doc, TroopEnums troop);
 
         bool IsSettlerEnough(HtmlDocument doc, TroopEnums troop);
+
+        bool NoExpansionSlot(HtmlDocument doc);
     }
 }

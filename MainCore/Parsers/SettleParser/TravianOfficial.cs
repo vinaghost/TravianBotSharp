@@ -74,6 +74,13 @@ namespace MainCore.Parsers.SettleParser
             }
         }
 
+        public bool NoExpansionSlot(HtmlDocument doc)
+        {
+            return doc.DocumentNode
+                .Descendants("div")
+                .Any(x => x.HasClass("noExpansionSlot"));
+        }
+
         public bool IsSettlerEnough(HtmlDocument doc, TroopEnums troop)
         {
             return GetSettlerAmount(doc, troop) + GetProgressingSettlerAmount(doc, troop) >= 3;

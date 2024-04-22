@@ -69,7 +69,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task TestHandler()
         {
-            await _taskManager.Add<EvadeTroopTask>(AccountId, VillageId, first: true);
+            await _taskManager.Add<TrainSettlerTask>(AccountId, VillageId, first: true);
         }
     }
 }
