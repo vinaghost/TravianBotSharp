@@ -124,7 +124,7 @@ namespace MainCore.Tasks
                         return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
                 }
-
+                var chromeBrowser = _chromeManager.Get(AccountId);
                 if (IsUpgradeable(plan))
                 {
                     if (IsSpecialUpgrade() && IsSpecialUpgradeable(plan))
@@ -134,13 +134,13 @@ namespace MainCore.Tasks
                     }
                     else
                     {
-                        result = await Upgrade();
+                        result = await _mediator.Send(new UpgradeCommand(chromeBrowser), CancellationToken);
                         if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
                 }
                 else
                 {
-                    result = await Construct(plan);
+                    result = await _mediator.Send(new ConstructCommand(chromeBrowser, plan.Type), CancellationToken);
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
             }
@@ -234,39 +234,6 @@ namespace MainCore.Tasks
 
             _unitOfRepository.JobRepository.AddToTop(VillageId, plan);
             await _mediator.Publish(new JobUpdated(AccountId, VillageId));
-        }
-
-        public async Task<Result> Construct(NormalBuildPlan plan)
-        {
-            var chromeBrowser = _chromeManager.Get(AccountId);
-            var html = chromeBrowser.Html;
-
-            var button = _unitOfParser.UpgradeBuildingParser.GetConstructButton(html, plan.Type);
-            if (button is null) return Retry.ButtonNotFound("construct");
-
-            var result = await chromeBrowser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await chromeBrowser.WaitPageChanged("dorf", CancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            return Result.Ok();
-        }
-
-        public async Task<Result> Upgrade()
-        {
-            var chromeBrowser = _chromeManager.Get(AccountId);
-            var html = chromeBrowser.Html;
-
-            var button = _unitOfParser.UpgradeBuildingParser.GetUpgradeButton(html);
-            if (button is null) return Retry.ButtonNotFound("upgrade");
-
-            var result = await chromeBrowser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await chromeBrowser.WaitPageChanged("dorf", CancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            return Result.Ok();
         }
 
         public async Task<Result> ToBuildingPage(NormalBuildPlan plan)
