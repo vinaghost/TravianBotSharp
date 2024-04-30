@@ -1,5 +1,4 @@
 ﻿using MainCore.Common.Extensions;
-using MainCore.Common.MediatR;
 using MainCore.Common.Models;
 
 namespace MainCore.Commands.UI.Build

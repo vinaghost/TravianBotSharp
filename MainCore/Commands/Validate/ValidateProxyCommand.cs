@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.Base;
-using MainCore.DTO;
+﻿using MainCore.DTO;
 using Polly;
 using Polly.Retry;
 using RestSharp;

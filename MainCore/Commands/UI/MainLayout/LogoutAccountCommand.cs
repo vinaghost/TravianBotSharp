@@ -1,6 +1,4 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Commands.General;
-using MainCore.Common.MediatR;
+﻿using MainCore.Commands.General;
 using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Commands.UI.MainLayout

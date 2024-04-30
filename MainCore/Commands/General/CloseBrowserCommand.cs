@@ -1,7 +1,4 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Common.MediatR;
-
-namespace MainCore.Commands.General
+﻿namespace MainCore.Commands.General
 {
     public class CloseBrowserCommand : ByAccountIdBase, ICommand
     {

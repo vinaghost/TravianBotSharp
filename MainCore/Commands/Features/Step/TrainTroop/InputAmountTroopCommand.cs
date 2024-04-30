@@ -1,7 +1,4 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Common.MediatR;
-
-namespace MainCore.Commands.Features.Step.TrainTroop
+﻿namespace MainCore.Commands.Features.Step.TrainTroop
 {
     public class InputAmountTroopCommand : ByAccountIdBase, ICommand
     {

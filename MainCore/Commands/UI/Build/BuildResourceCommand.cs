@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using MainCore.Common.MediatR;
 using MainCore.Common.Models;
 using MainCore.UI.Models.Input;
 

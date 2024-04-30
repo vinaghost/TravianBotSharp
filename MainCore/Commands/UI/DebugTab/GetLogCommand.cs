@@ -1,5 +1,4 @@
-﻿using MainCore.Common.MediatR;
-using Serilog.Core;
+﻿using Serilog.Core;
 using Serilog.Formatting.Display;
 using System.Text;
 

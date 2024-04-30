@@ -1,5 +1,5 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Commands.Features.Step.UpgradeBuilding;
+﻿using MainCore.Commands.Features.Step.UpgradeBuilding;
+using MainCore.Commands.Features.UpgradeBuilding;
 using MainCore.Common.Errors.AutoBuilder;
 using MainCore.Common.Errors.Storage;
 using MainCore.Common.Extensions;
@@ -43,22 +43,26 @@ namespace MainCore.Tasks
                 result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                var resultJob = await GetBuildingJob();
-                if (resultJob.IsFailed)
+                var jobResult = await _mediator.Send(new GetJobCommand(AccountId, VillageId), CancellationToken);
+
+                if (jobResult.IsFailed)
                 {
-                    if (resultJob.HasError<BuildingQueue>())
+                    if (jobResult.HasError<BuildingQueue>())
                     {
                         await SetTimeQueueBuildingComplete();
+                        return Skip.BuildingQueueFull;
                     }
-                    return Result.Fail(resultJob.Errors)
+
+                    return Result.Fail(jobResult.Errors)
+                        .WithError(Skip.Cancel)
                         .WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
 
-                var job = resultJob.Value;
+                var job = jobResult.Value;
 
                 if (job.Type == JobTypeEnums.ResourceBuild)
                 {
-                    result = await ExtractResourceField(job);
+                    result = await _mediator.Send(new ExtractResourceFieldJobCommand(AccountId, VillageId, job));
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     continue;
                 }
@@ -215,169 +219,6 @@ namespace MainCore.Tasks
                 return true;
             }
             return false;
-        }
-
-        #region get building job
-
-        private async Task<Result<JobDto>> GetBuildingJob()
-        {
-            do
-            {
-                var countJob = _unitOfRepository.JobRepository.CountBuildingJob(VillageId);
-
-                if (countJob == 0)
-                {
-                    return Skip.AutoBuilderJobQueueEmpty;
-                }
-
-                var countQueueBuilding = _unitOfRepository.BuildingRepository.CountQueueBuilding(VillageId);
-
-                if (countQueueBuilding == 0)
-                {
-                    var job = await GetBuildingJob(false);
-                    if (job.IsFailed)
-                    {
-                        if (job.HasError<JobCompleted>()) continue;
-
-                        return Result.Fail(job.Errors)
-                            .WithError(TraceMessage.Error(TraceMessage.Line()));
-                    }
-
-                    Result result;
-                    result = _unitOfRepository.JobRepository.JobValid(VillageId, job.Value);
-                    if (result.IsFailed)
-                    {
-                        result = await _mediator.Send(ToDorfCommand.ToDorf2(AccountId), CancellationToken);
-                        if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                        result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
-                        if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-                        result = _unitOfRepository.JobRepository.JobValid(VillageId, job.Value);
-                        if (result.IsFailed) return Result.Fail(job.Errors)
-                            .WithError(TraceMessage.Error(TraceMessage.Line()))
-                            .WithError(Stop.AutoBuilderQueueInvalid);
-                    }
-                    return job;
-                }
-
-                var plusActive = _unitOfRepository.AccountInfoRepository.IsPlusActive(AccountId);
-                var applyRomanQueueLogic = _unitOfRepository.VillageSettingRepository.GetBooleanByName(VillageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
-
-                if (countQueueBuilding == 1)
-                {
-                    if (plusActive)
-                    {
-                        var job = await GetBuildingJob(false);
-                        if (job.IsFailed)
-                        {
-                            if (job.HasError<JobCompleted>()) continue;
-                            return Result.Fail(job.Errors)
-                                .WithError(TraceMessage.Error(TraceMessage.Line()));
-                        }
-
-                        var result = _unitOfRepository.JobRepository.JobValid(VillageId, job.Value);
-                        if (result.IsFailed)
-                        {
-                            job = _unitOfRepository.JobRepository.GetResourceBuildingJob(VillageId);
-                            if (job is null) return result;
-                        }
-
-                        return job;
-                    }
-                    if (applyRomanQueueLogic)
-                    {
-                        var job = await GetBuildingJob(true);
-                        if (job.IsFailed)
-                        {
-                            if (job.HasError<JobCompleted>()) continue;
-                            return Result.Fail(job.Errors)
-                                .WithError(TraceMessage.Error(TraceMessage.Line()));
-                        }
-
-                        var result = _unitOfRepository.JobRepository.JobValid(VillageId, job.Value);
-                        if (result.IsFailed)
-                        {
-                            job = _unitOfRepository.JobRepository.GetResourceBuildingJob(VillageId);
-                            if (job is null) return result;
-                        }
-
-                        return job;
-                    }
-                    return BuildingQueue.Full;
-                }
-
-                if (countQueueBuilding == 2)
-                {
-                    if (plusActive && applyRomanQueueLogic)
-                    {
-                        var job = await GetBuildingJob(false);
-                        if (job.IsFailed)
-                        {
-                            if (job.HasError<JobCompleted>()) continue;
-                            return Result.Fail(job.Errors)
-                                .WithError(TraceMessage.Error(TraceMessage.Line()));
-                        }
-                        return job;
-                    }
-                    return BuildingQueue.Full;
-                }
-                return BuildingQueue.Full;
-            }
-            while (true);
-        }
-
-        private async Task<Result<JobDto>> GetBuildingJob(bool romanLogic)
-        {
-            JobDto job;
-
-            if (romanLogic)
-            {
-                job = GetJobBasedOnRomanLogic();
-            }
-            else
-            {
-                job = _unitOfRepository.JobRepository.GetBuildingJob(VillageId);
-            }
-
-            if (await JobComplete(job))
-            {
-                return JobCompleted.Error;
-            }
-
-            return job;
-        }
-
-        private JobDto GetJobBasedOnRomanLogic()
-        {
-            var countQueueBuilding = _unitOfRepository.BuildingRepository.CountQueueBuilding(VillageId);
-            var countResourceQueueBuilding = _unitOfRepository.BuildingRepository.CountResourceQueueBuilding(VillageId);
-            var countInfrastructureQueueBuilding = countQueueBuilding - countResourceQueueBuilding;
-            if (countResourceQueueBuilding > countInfrastructureQueueBuilding)
-            {
-                return _unitOfRepository.JobRepository.GetInfrastructureBuildingJob(VillageId);
-            }
-            else
-            {
-                return _unitOfRepository.JobRepository.GetResourceBuildingJob(VillageId);
-            }
-        }
-
-        #endregion get building job
-
-        public async Task<Result> ExtractResourceField(JobDto job)
-        {
-            var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content);
-            var normalBuildPlan = _unitOfRepository.BuildingRepository.GetNormalBuildPlan(VillageId, resourceBuildPlan);
-            if (normalBuildPlan is null)
-            {
-                _unitOfRepository.JobRepository.Delete(job.Id);
-            }
-            else
-            {
-                _unitOfRepository.JobRepository.AddToTop(VillageId, normalBuildPlan);
-            }
-            await _mediator.Publish(new JobUpdated(AccountId, VillageId));
-            return Result.Ok();
         }
 
         public async Task AddCropland()

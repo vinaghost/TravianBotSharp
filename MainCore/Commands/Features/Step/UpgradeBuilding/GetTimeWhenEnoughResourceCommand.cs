@@ -1,6 +1,4 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Common.MediatR;
-using MainCore.Common.Models;
+﻿using MainCore.Common.Models;
 
 namespace MainCore.Commands.Features.Step.UpgradeBuilding
 {

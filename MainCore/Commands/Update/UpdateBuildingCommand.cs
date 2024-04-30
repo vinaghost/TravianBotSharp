@@ -1,6 +1,4 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Commands.Base;
-using MainCore.Common.MediatR;
 using MainCore.DTO;
 
 namespace MainCore.Commands.Update

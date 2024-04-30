@@ -1,6 +1,4 @@
-﻿using MainCore.Common.MediatR;
-
-namespace MainCore.Commands.Features
+﻿namespace MainCore.Commands.Features
 {
     public class ToFarmListPageCommand : ByAccountIdBase, IRequest<Result>
     {

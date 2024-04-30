@@ -1,7 +1,4 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Common.MediatR;
-
-namespace MainCore.Commands.Features.Step.StartAdventure
+﻿namespace MainCore.Commands.Features.Step.StartAdventure
 {
     public class ExploreAdventureCommand : ByAccountIdBase, ICommand
     {

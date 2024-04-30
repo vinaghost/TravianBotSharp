@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Commands.Features.Step.StartAdventure;
+﻿using MainCore.Commands.Features.Step.StartAdventure;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks

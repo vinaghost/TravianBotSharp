@@ -1,7 +1,4 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Common.MediatR;
-
-namespace MainCore.Commands.Misc
+﻿namespace MainCore.Commands.Misc
 {
     public class CheckQuestCommand : ByAccountVillageIdBase, ICommand
     {

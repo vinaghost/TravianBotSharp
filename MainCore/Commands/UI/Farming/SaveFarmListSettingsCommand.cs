@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using MainCore.Common.MediatR;
 using MainCore.UI.Models.Input;
 
 namespace MainCore.Commands.UI.Farming

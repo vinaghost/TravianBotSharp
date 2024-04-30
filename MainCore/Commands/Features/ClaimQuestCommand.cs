@@ -1,6 +1,4 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Commands.Features.Step.ClaimQuest;
-using MainCore.Common.MediatR;
+﻿using MainCore.Commands.Features.Step.ClaimQuest;
 
 namespace MainCore.Commands.Features
 {

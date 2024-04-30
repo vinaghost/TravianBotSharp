@@ -1,5 +1,4 @@
-﻿using MainCore.Common.MediatR;
-using MainCore.UI.ViewModels.UserControls;
+﻿using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Commands.UI.MainLayout
 {

@@ -1,6 +1,4 @@
-﻿using MainCore.Commands.Base;
-
-namespace MainCore.Commands.Navigate.ToQuestPageCommandHandler
+﻿namespace MainCore.Commands.Navigate.ToQuestPageCommandHandler
 {
     [RegisterAsTransient(Common.Enums.ServerEnums.TTWars)]
     public class TTWars : ICommandHandler<ToQuestPageCommand>

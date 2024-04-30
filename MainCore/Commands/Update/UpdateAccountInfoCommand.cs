@@ -1,7 +1,4 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Common.MediatR;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
     public class UpdateAccountInfoCommand : ByAccountIdBase, ICommand
     {

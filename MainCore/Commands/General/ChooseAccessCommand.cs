@@ -1,6 +1,4 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Common.MediatR;
-using MainCore.DTO;
+﻿using MainCore.DTO;
 using Serilog;
 
 namespace MainCore.Commands.General

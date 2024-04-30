@@ -1,6 +1,4 @@
-﻿using MainCore.Commands.Base;
-
-namespace MainCore.Commands.Navigate.ToBuildingCommandHandler
+﻿namespace MainCore.Commands.Navigate.ToBuildingCommandHandler
 {
     [RegisterAsTransient(ServerEnums.TTWars)]
     public class TTWars : ICommandHandler<ToBuildingCommand>

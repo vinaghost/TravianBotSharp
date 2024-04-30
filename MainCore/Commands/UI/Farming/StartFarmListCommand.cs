@@ -1,5 +1,4 @@
-﻿using MainCore.Common.MediatR;
-using MainCore.Tasks;
+﻿using MainCore.Tasks;
 
 namespace MainCore.Commands.UI.Farming
 {

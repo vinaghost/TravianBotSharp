@@ -1,5 +1,4 @@
-﻿using MainCore.Common.MediatR;
-using MainCore.Tasks;
+﻿using MainCore.Tasks;
 using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Commands.UI.Village

@@ -1,6 +1,4 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Common.Extensions;
-using MainCore.Common.MediatR;
+﻿using MainCore.Common.Extensions;
 using MainCore.Common.Models;
 using MainCore.DTO;
 using System.Text.Json;

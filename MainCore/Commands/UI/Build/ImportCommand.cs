@@ -1,6 +1,4 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Commands.UI.Step;
-using MainCore.Common.MediatR;
+﻿using MainCore.Commands.UI.Step;
 using MainCore.DTO;
 using System.Text.Json;
 

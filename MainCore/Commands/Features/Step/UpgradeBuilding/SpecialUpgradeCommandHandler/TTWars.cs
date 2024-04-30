@@ -1,6 +1,4 @@
-﻿using MainCore.Commands.Base;
-
-namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandHandler
+﻿namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandHandler
 {
     [RegisterAsTransient(ServerEnums.TTWars)]
     public class TTWars : ICommandHandler<SpecialUpgradeCommand>

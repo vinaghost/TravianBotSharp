@@ -1,5 +1,4 @@
-﻿using MainCore.Common.MediatR;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace MainCore.Commands.UI.VillageSetting
 {

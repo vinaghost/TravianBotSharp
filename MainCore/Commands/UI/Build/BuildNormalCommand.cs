@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Humanizer;
 using MainCore.Common.Extensions;
-using MainCore.Common.MediatR;
 using MainCore.Common.Models;
 using MainCore.UI.Models.Input;
 
