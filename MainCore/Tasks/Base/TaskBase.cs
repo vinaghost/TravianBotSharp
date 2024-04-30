@@ -23,7 +23,10 @@
             result = await PreExecute();
             if (result.IsFailed) return result;
             result = await Execute();
-            if (result.IsFailed) return result;
+            if (result.IsFailed)
+            {
+                if (!result.HasError<Skip>()) return result;
+            }
             result = await PostExecute();
             if (result.IsFailed) return result;
             return Result.Ok();

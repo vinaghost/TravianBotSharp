@@ -1,4 +1,6 @@
-﻿namespace MainCore.Tasks.Base
+﻿using Splat;
+
+namespace MainCore.Tasks.Base
 {
     public abstract class AccountTask : TaskBase
     {
@@ -7,6 +9,10 @@
         }
 
         public AccountId AccountId { get; protected set; }
+
+        private INavigationBarParser _navigationBarParser;
+        private ILoginPageParser _loginPageParser;
+        protected IChromeManager ChromeManager { get; private set; }
 
         public void Setup(AccountId accountId, CancellationToken cancellationToken = default)
         {
@@ -18,31 +24,53 @@
         {
             if (CancellationToken.IsCancellationRequested) return Cancel.Error;
 
-            Result result;
-            result = await _unitOfCommand.ValidateIngameCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            ChromeManager ??= Locator.Current.GetService<IChromeManager>();
+            _navigationBarParser ??= Locator.Current.GetService<INavigationBarParser>();
 
-            var inGame = _unitOfCommand.ValidateIngameCommand.Value;
+            if (IsIngame())
+            {
+                Result result;
+                result = await _mediator.Send(new UpdateAccountInfoCommand(AccountId));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await _mediator.Send(new UpdateVillageListCommand(AccountId));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                return Result.Ok();
+            }
 
-            if (inGame) return Result.Ok();
+            _loginPageParser ??= Locator.Current.GetService<ILoginPageParser>();
 
-            result = await _unitOfCommand.ValidateLoginCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var login = _unitOfCommand.ValidateLoginCommand.Value;
-
-            if (login)
+            if (IsLogin())
             {
                 if (this is not LoginTask)
                 {
                     ExecuteAt = ExecuteAt.AddMilliseconds(1975);
                     await _mediator.Publish(new AccountLogout(AccountId), CancellationToken);
-                    return Result.Fail(Skip.AccountLogout);
+                    return Skip.AccountLogout;
                 }
                 return Result.Ok();
             }
 
-            return Result.Fail(Stop.TravianPage);
+            return Stop.NotTravianPage;
+        }
+
+        private bool IsIngame()
+        {
+            var chromeBrowser = ChromeManager.Get(AccountId);
+            var html = chromeBrowser.Html;
+
+            var fieldButton = _navigationBarParser.GetResourceButton(html);
+
+            return fieldButton is not null;
+        }
+
+        private bool IsLogin()
+        {
+            var chromeBrowser = ChromeManager.Get(AccountId);
+            var html = chromeBrowser.Html;
+
+            var loginButton = _loginPageParser.GetLoginButton(html);
+
+            return loginButton is not null;
         }
     }
 }
