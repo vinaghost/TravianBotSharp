@@ -1,4 +1,5 @@
-﻿using Splat;
+﻿using MainCore.Commands.Misc;
+using Splat;
 
 namespace MainCore.Tasks.Base
 {
@@ -51,6 +52,14 @@ namespace MainCore.Tasks.Base
             }
 
             return Stop.NotTravianPage;
+        }
+
+        protected override async Task<Result> PostExecute()
+        {
+            Result result;
+            result = await _mediator.Send(new CheckAdventureCommand(AccountId));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            return Result.Ok();
         }
 
         private bool IsIngame()
