@@ -6,12 +6,10 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class CompleteImmediatelyTask : VillageTask
     {
-        private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;
 
-        public CompleteImmediatelyTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IChromeManager chromeManager, UnitOfParser unitOfParser) : base(unitOfCommand, unitOfRepository, mediator)
+        public CompleteImmediatelyTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, UnitOfParser unitOfParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
         {
-            _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
         }
 

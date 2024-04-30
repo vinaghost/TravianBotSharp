@@ -1,8 +1,10 @@
-﻿namespace MainCore.Tasks.Base
+﻿using MainCore.Commands.Misc;
+
+namespace MainCore.Tasks.Base
 {
     public abstract class VillageTask : AccountTask
     {
-        protected VillageTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        protected VillageTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(chromeManager,unitOfCommand, unitOfRepository, mediator)
         {
         }
 
@@ -18,11 +20,18 @@
         protected override async Task<Result> PreExecute()
         {
             Result result;
-
             result = await base.PreExecute();
-            if (result.IsFailed) return result;
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.SwitchVillageCommand.Handle(new(AccountId, VillageId), CancellationToken);
+            result = await _mediator.Send(new SwitchVillageCommand(AccountId, VillageId), CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            return Result.Ok();
+        }
+
+        protected override async Task<Result> PostExecute()
+        {
+            Result result;
+            result = await _mediator.Send(new CheckQuestCommand(AccountId, VillageId));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }

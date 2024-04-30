@@ -11,15 +11,13 @@ namespace MainCore.Tasks
     {
         private readonly ITaskManager _taskManager;
         private readonly ILogService _logService;
-        private readonly IChromeManager _chromeManager;
         private ILogger _logger;
         private readonly ICommandHandler<OpenBrowserCommand> _openBrowserCommand;
 
-        public SleepTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager, ILogService logService, IChromeManager chromeManager, ICommandHandler<OpenBrowserCommand> openBrowserCommand) : base(unitOfCommand, unitOfRepository, mediator)
+        public SleepTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager, ILogService logService, ICommandHandler<OpenBrowserCommand> openBrowserCommand) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
         {
             _taskManager = taskManager;
             _logService = logService;
-            _chromeManager = chromeManager;
             _openBrowserCommand = openBrowserCommand;
         }
 

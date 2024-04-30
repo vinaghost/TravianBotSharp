@@ -26,7 +26,7 @@ namespace MainCore.Commands.Update
         private readonly IQueueBuildingRepository _queueBuildingRepository;
         private readonly IBuildingRepository _buildingRepository;
 
-        public UpdateBuildingCommandHandler(IMediator mediator, IChromeManager chromeManager, IQueueBuildingParser queueBuildingParser, IStockBarParser stockBarParser, IInfrastructureParser infrastructureParser, IFieldParser fieldParser, IStorageRepository storageRepository, IQueueBuildingRepository queueBuildingRepository, IBuildingRepository buildingRepository)
+        public UpdateBuildingCommandHandler(IMediator mediator, IQueueBuildingParser queueBuildingParser, IStockBarParser stockBarParser, IInfrastructureParser infrastructureParser, IFieldParser fieldParser, IStorageRepository storageRepository, IQueueBuildingRepository queueBuildingRepository, IBuildingRepository buildingRepository, IChromeManager chromeManager)
         {
             _mediator = mediator;
             _chromeManager = chromeManager;
@@ -37,6 +37,7 @@ namespace MainCore.Commands.Update
             _storageRepository = storageRepository;
             _queueBuildingRepository = queueBuildingRepository;
             _buildingRepository = buildingRepository;
+            _chromeManager = chromeManager;
         }
 
         public async Task<Result> Handle(UpdateBuildingCommand request, CancellationToken cancellationToken)

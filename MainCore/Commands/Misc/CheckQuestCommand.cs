@@ -17,11 +17,12 @@ namespace MainCore.Commands.Misc
 
         private readonly IQuestParser _questParser;
 
-        public CheckQuestCommandHandler(IMediator mediator, IChromeManager chromeManager, IQuestParser questParser)
+        public CheckQuestCommandHandler(IMediator mediator, IQuestParser questParser, IChromeManager chromeManager)
         {
             _mediator = mediator;
             _chromeManager = chromeManager;
             _questParser = questParser;
+            _chromeManager = chromeManager;
         }
 
         public async Task<Result> Handle(CheckQuestCommand request, CancellationToken cancellationToken)

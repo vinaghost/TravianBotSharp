@@ -18,16 +18,14 @@ namespace MainCore.Tasks
 
         private readonly ILogService _logService;
         private readonly ITaskManager _taskManager;
-        private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;
 
-        public UpgradeBuildingTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ICommandHandler<SpecialUpgradeCommand> specialUpgradeCommand, ICommandHandler<UseHeroResourceCommand> useHeroResourceCommand, ILogService logService, ITaskManager taskManager, IChromeManager chromeManager, UnitOfParser unitOfParser) : base(unitOfCommand, unitOfRepository, mediator)
+        public UpgradeBuildingTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ICommandHandler<SpecialUpgradeCommand> specialUpgradeCommand, ICommandHandler<UseHeroResourceCommand> useHeroResourceCommand, ILogService logService, ITaskManager taskManager, UnitOfParser unitOfParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
         {
             _specialUpgradeCommand = specialUpgradeCommand;
             _useHeroResourceCommand = useHeroResourceCommand;
             _logService = logService;
             _taskManager = taskManager;
-            _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
         }
 

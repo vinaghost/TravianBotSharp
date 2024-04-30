@@ -6,7 +6,7 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class ClaimQuestTask : VillageTask
     {
-        public ClaimQuestTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        public ClaimQuestTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(chromeManager,unitOfCommand, unitOfRepository, mediator)
         {
         }
 

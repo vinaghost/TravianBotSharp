@@ -5,11 +5,8 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateBuildingTask : VillageTask
     {
-        private readonly IChromeManager _chromeManager;
-
-        public UpdateBuildingTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IChromeManager chromeManager) : base(unitOfCommand, unitOfRepository, mediator)
+        public UpdateBuildingTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
         {
-            _chromeManager = chromeManager;
         }
 
         protected override async Task<Result> Execute()

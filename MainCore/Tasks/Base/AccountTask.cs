@@ -5,7 +5,7 @@ namespace MainCore.Tasks.Base
 {
     public abstract class AccountTask : TaskBase
     {
-        protected AccountTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        protected AccountTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
         {
         }
 
@@ -13,7 +13,6 @@ namespace MainCore.Tasks.Base
 
         private INavigationBarParser _navigationBarParser;
         private ILoginPageParser _loginPageParser;
-        protected IChromeManager ChromeManager { get; private set; }
 
         public void Setup(AccountId accountId, CancellationToken cancellationToken = default)
         {
@@ -25,7 +24,6 @@ namespace MainCore.Tasks.Base
         {
             if (CancellationToken.IsCancellationRequested) return Cancel.Error;
 
-            ChromeManager ??= Locator.Current.GetService<IChromeManager>();
             _navigationBarParser ??= Locator.Current.GetService<INavigationBarParser>();
 
             if (IsIngame())
@@ -64,7 +62,7 @@ namespace MainCore.Tasks.Base
 
         private bool IsIngame()
         {
-            var chromeBrowser = ChromeManager.Get(AccountId);
+            var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
 
             var fieldButton = _navigationBarParser.GetResourceButton(html);
@@ -74,7 +72,7 @@ namespace MainCore.Tasks.Base
 
         private bool IsLogin()
         {
-            var chromeBrowser = ChromeManager.Get(AccountId);
+            var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
 
             var loginButton = _loginPageParser.GetLoginButton(html);

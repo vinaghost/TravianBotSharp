@@ -8,13 +8,11 @@ namespace MainCore.Tasks
     {
         private readonly ITaskManager _taskManager;
 
-        private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;
 
-        public StartFarmListTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager, IChromeManager chromeManager, UnitOfParser unitOfParser) : base(unitOfCommand, unitOfRepository, mediator)
+        public StartFarmListTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager, UnitOfParser unitOfParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
         {
             _taskManager = taskManager;
-            _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
         }
 

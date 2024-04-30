@@ -17,8 +17,5 @@ namespace MainCore.Commands
                                 ICommandHandler<UpdateAccountInfoCommand> UpdateAccountInfoCommand,
                                 ICommandHandler<UpdateFarmListCommand> UpdateFarmListCommand,
                                 ICommandHandler<UpdateHeroItemsCommand> UpdateHeroItemsCommand,
-                                ICommandHandler<UpdateVillageListCommand> UpdateVillageListCommand,
-                                ICommandHandler<ValidateIngameCommand, bool> ValidateIngameCommand,
-                                ICommandHandler<ValidateLoginCommand, bool> ValidateLoginCommand,
                                 ICommandHandler<ValidateProxyCommand, bool> ValidateProxyCommand);
 }

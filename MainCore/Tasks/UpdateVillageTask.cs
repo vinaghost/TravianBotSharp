@@ -5,12 +5,10 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateVillageTask : VillageTask
     {
-        private readonly IChromeManager _chromeManager;
         private readonly ITaskManager _taskManager;
 
-        public UpdateVillageTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IChromeManager chromeManager, ITaskManager taskManager) : base(unitOfCommand, unitOfRepository, mediator)
+        public UpdateVillageTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
         {
-            _chromeManager = chromeManager;
             _taskManager = taskManager;
         }
 

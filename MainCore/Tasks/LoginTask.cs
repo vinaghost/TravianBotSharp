@@ -5,12 +5,10 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public sealed class LoginTask : AccountTask
     {
-        private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;
 
-        public LoginTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IChromeManager chromeManager, UnitOfParser unitOfParser) : base(unitOfCommand, unitOfRepository, mediator)
+        public LoginTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, UnitOfParser unitOfParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
         {
-            _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
         }
 
@@ -23,7 +21,7 @@ namespace MainCore.Tasks
             result = await DisableContextualHelp();
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateVillageListCommand.Handle(new(AccountId), CancellationToken);
+            result = await _mediator.Send(new UpdateVillageListCommand(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }

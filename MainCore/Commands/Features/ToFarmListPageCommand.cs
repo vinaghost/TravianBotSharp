@@ -26,7 +26,7 @@ namespace MainCore.Commands.Features
         {
             var accountId = request.AccountId;
             Result result;
-            result = await _unitOfCommand.UpdateVillageListCommand.Handle(new(accountId), cancellationToken);
+            result = await _mediator.Send(new UpdateVillageListCommand(accountId), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var rallypointVillageId = _unitOfRepository.VillageRepository.GetVillageHasRallypoint(accountId);

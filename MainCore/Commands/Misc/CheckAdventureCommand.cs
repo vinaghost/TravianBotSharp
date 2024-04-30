@@ -17,7 +17,7 @@ namespace MainCore.Commands.Misc
 
         private readonly IHeroParser _heroParser;
 
-        public CheckAdventureCommandHandler(IMediator mediator, IChromeManager chromeManager, IHeroParser heroParser)
+        public CheckAdventureCommandHandler(IMediator mediator, IHeroParser heroParser, IChromeManager chromeManager)
         {
             _mediator = mediator;
             _chromeManager = chromeManager;

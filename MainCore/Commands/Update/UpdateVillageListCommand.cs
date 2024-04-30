@@ -17,12 +17,13 @@ namespace MainCore.Commands.Update
         private readonly IVillagePanelParser _villagePanelParser;
         private readonly IVillageRepository _villageRepository;
 
-        public UpdateVillageListCommandHandler(IMediator mediator, IChromeManager chromeManager, IVillagePanelParser villagePanelParser, IVillageRepository villageRepository)
+        public UpdateVillageListCommandHandler(IMediator mediator, IVillagePanelParser villagePanelParser, IVillageRepository villageRepository, IChromeManager chromeManager)
         {
             _mediator = mediator;
             _chromeManager = chromeManager;
             _villagePanelParser = villagePanelParser;
             _villageRepository = villageRepository;
+            _chromeManager = chromeManager;
         }
 
         public async Task<Result> Handle(UpdateVillageListCommand request, CancellationToken cancellationToken)

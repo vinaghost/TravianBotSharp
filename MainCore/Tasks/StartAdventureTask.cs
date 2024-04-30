@@ -10,13 +10,11 @@ namespace MainCore.Tasks
         private readonly ICommandHandler<ToAdventurePageCommand> _toAdventurePageCommand;
         private readonly ICommandHandler<ExploreAdventureCommand> _exploreAdventureCommand;
         private readonly ITaskManager _taskManager;
-        private readonly IChromeManager _chromeManager;
         private readonly UnitOfParser _unitOfParser;
 
-        public StartAdventureTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager, IChromeManager chromeManager, UnitOfParser unitOfParser, ICommandHandler<ToAdventurePageCommand> toAdventurePageCommand, ICommandHandler<ExploreAdventureCommand> exploreAdventureCommand) : base(unitOfCommand, unitOfRepository, mediator)
+        public StartAdventureTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager, UnitOfParser unitOfParser, ICommandHandler<ToAdventurePageCommand> toAdventurePageCommand, ICommandHandler<ExploreAdventureCommand> exploreAdventureCommand) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
         {
             _taskManager = taskManager;
-            _chromeManager = chromeManager;
             _unitOfParser = unitOfParser;
             _toAdventurePageCommand = toAdventurePageCommand;
             _exploreAdventureCommand = exploreAdventureCommand;

@@ -17,7 +17,7 @@ namespace MainCore.Services
         private readonly ILogService _logService;
         private readonly ICommandHandler<DelayTaskCommand> _delayTaskCommand;
 
-        public TimerManager(ITaskManager taskManager, IChromeManager chromeManager, ILogService logService, ICommandHandler<DelayTaskCommand> delayTaskCommand)
+        public TimerManager(ITaskManager taskManager, ILogService logService, ICommandHandler<DelayTaskCommand> delayTaskCommand, IChromeManager chromeManager)
         {
             _taskManager = taskManager;
             _chromeManager = chromeManager;
