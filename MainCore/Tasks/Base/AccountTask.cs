@@ -31,6 +31,7 @@ namespace MainCore.Tasks.Base
                 Result result;
                 result = await _mediator.Send(new UpdateAccountInfoCommand(AccountId));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
                 result = await _mediator.Send(new UpdateVillageListCommand(AccountId));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 return Result.Ok();
@@ -55,6 +56,12 @@ namespace MainCore.Tasks.Base
         protected override async Task<Result> PostExecute()
         {
             Result result;
+            result = await _mediator.Send(new UpdateAccountInfoCommand(AccountId));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await _mediator.Send(new UpdateVillageListCommand(AccountId));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
             result = await _mediator.Send(new CheckAdventureCommand(AccountId));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
