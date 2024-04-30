@@ -272,22 +272,22 @@ namespace MainCore.Tasks
         public async Task<Result> ToBuildingPage(NormalBuildPlan plan)
         {
             Result result;
-
-            result = await _unitOfCommand.ToBuildingCommand.Handle(new(AccountId, plan.Location), CancellationToken);
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            result = await _mediator.Send(new ToBuildingCommand(chromeBrowser, plan.Location), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var building = _unitOfRepository.BuildingRepository.GetBuilding(VillageId, plan.Location);
             if (building.Type == BuildingEnums.Site)
             {
                 var tabIndex = plan.Type.GetBuildingsCategory();
-                result = await _unitOfCommand.SwitchTabCommand.Handle(new(AccountId, tabIndex), CancellationToken);
+                result = await _mediator.Send(new SwitchTabCommand(chromeBrowser, tabIndex), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else
             {
-                if (building.Level == 0) return Result.Ok();
+                if (building.Level <= 0) return Result.Ok();
                 if (!building.Type.HasMultipleTabs()) return Result.Ok();
-                result = await _unitOfCommand.SwitchTabCommand.Handle(new(AccountId, 0), CancellationToken);
+                result = await _mediator.Send(new SwitchTabCommand(chromeBrowser, 0), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             return Result.Ok();

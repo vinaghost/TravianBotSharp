@@ -4,7 +4,7 @@ namespace MainCore.Commands.Navigate
 {
     public class ToBuildingCommand : ICommand
     {
-        public ToBuildingCommand(int location, IChromeBrowser chromeBrowser)
+        public ToBuildingCommand(IChromeBrowser chromeBrowser, int location)
         {
             Location = location;
             ChromeBrowser = chromeBrowser;
