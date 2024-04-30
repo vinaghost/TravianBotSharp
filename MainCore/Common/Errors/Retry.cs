@@ -1,12 +1,12 @@
-﻿using FluentResults;
-
-namespace MainCore.Common.Errors
+﻿namespace MainCore.Common.Errors
 {
     public class Retry : Error
     {
         private Retry(string message) : base($"{message}. Bot must retry")
         {
         }
+
+        public static Retry VillageListEmpty() => new("Village list is empty");
 
         public static Retry NotFound(string name, string type) => new($"Cannot find {type} [{name}] ");
 

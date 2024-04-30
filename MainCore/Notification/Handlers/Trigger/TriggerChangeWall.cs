@@ -1,8 +1,4 @@
-﻿using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MediatR;
-
-namespace MainCore.Notification.Handlers.Trigger
+﻿namespace MainCore.Notification.Handlers.Trigger
 {
     public class TriggerChangeWall : INotificationHandler<VillageSettingUpdated>
     {

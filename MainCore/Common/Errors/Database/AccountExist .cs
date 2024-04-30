@@ -1,6 +1,4 @@
-﻿using FluentResults;
-
-namespace MainCore.Common.Errors.Database
+﻿namespace MainCore.Common.Errors.Database
 {
     public class AccountExist : Error
     {

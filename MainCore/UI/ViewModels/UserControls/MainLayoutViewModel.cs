@@ -1,21 +1,14 @@
 ﻿using MainCore.Commands.UI.MainLayout;
 using MainCore.Common;
-using MainCore.Common.Enums;
 using MainCore.Common.Extensions;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.Enums;
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
-using MediatR;
 using ReactiveUI;
 using Serilog;
 using System.Reactive.Linq;
 using System.Reflection;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.UserControls
 {

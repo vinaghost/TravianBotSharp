@@ -1,7 +1,4 @@
 ﻿using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Services;
-using MediatR;
 
 namespace MainCore.Commands.UI.DebugTab
 {

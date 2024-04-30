@@ -1,14 +1,8 @@
 ﻿using MainCore.Commands.UI.AccountSetting;
-using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
-using MediatR;
 using ReactiveUI;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs
 {

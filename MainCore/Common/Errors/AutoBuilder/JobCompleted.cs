@@ -1,6 +1,4 @@
-﻿using FluentResults;
-
-namespace MainCore.Common.Errors.AutoBuilder
+﻿namespace MainCore.Common.Errors.AutoBuilder
 {
     public class JobCompleted : Error
     {

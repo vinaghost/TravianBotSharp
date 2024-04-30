@@ -1,17 +1,12 @@
 ﻿using MainCore.Commands.UI.Farming;
-using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
+
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using MediatR;
 using ReactiveUI;
 using System.Drawing;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
@@ -87,7 +82,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task UpdateFarmListHandler()
         {
-            await _mediator.Send(new UpdateFarmListCommand(AccountId));
+            await _mediator.Send(new Commands.UI.Farming.UpdateFarmListCommand(AccountId));
         }
 
         private async Task StartHandler()

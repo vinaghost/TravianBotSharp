@@ -1,16 +1,7 @@
-﻿using FluentResults;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using MainCore.Commands.Base;
 using MainCore.Commands.General;
-using MainCore.Common.Enums;
-using MainCore.Common.Errors;
 using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
-using MainCore.Repositories;
-using MainCore.Services;
-using OpenQA.Selenium;
 
 namespace MainCore.Commands.Features.Step.UpgradeBuilding
 {

@@ -1,10 +1,4 @@
-﻿using FluentResults;
-using MainCore.Commands.Base;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
-using MainCore.Services;
-using OpenQA.Selenium;
+﻿using MainCore.Commands.Base;
 
 namespace MainCore.Commands.Navigate.ToAdventurePageCommandHandler
 {

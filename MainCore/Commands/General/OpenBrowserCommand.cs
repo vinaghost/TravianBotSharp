@@ -1,13 +1,7 @@
-﻿using FluentResults;
-using MainCore.Commands.Base;
-using MainCore.Common.Errors;
+﻿using MainCore.Commands.Base;
 using MainCore.Common.MediatR;
 using MainCore.Common.Models;
 using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
-using MainCore.Services;
 
 namespace MainCore.Commands.General
 {

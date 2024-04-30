@@ -1,5 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Common.Extensions;
+﻿using MainCore.Common.Extensions;
 using ReactiveUI;
 using System.Drawing;
 

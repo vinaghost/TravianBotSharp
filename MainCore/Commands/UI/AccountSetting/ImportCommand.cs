@@ -1,12 +1,6 @@
 ﻿using FluentValidation;
-using MainCore.Common.Enums;
 using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.Models.Input;
-using MediatR;
 using System.Text.Json;
 
 namespace MainCore.Commands.UI.AccountSetting

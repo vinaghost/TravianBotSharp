@@ -1,7 +1,4 @@
-﻿using FluentResults;
-using MainCore.Common.Enums;
-
-namespace MainCore.Common.Errors.TrainTroop
+﻿namespace MainCore.Common.Errors.TrainTroop
 {
     public class MissingResource : Error
     {

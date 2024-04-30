@@ -1,12 +1,8 @@
-﻿using FluentResults;
-using Humanizer;
-using MainCore.Common.Enums;
+﻿using Humanizer;
 using MainCore.Common.Errors.AutoBuilder;
 using MainCore.Common.Extensions;
 using MainCore.Common.Models;
 using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Infrasturecture.Persistence;
 using MainCore.UI.Models.Output;
 using Microsoft.EntityFrameworkCore;

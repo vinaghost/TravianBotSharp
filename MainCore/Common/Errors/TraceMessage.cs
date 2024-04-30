@@ -1,5 +1,4 @@
-﻿using FluentResults;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace MainCore.Common.Errors
 {

@@ -2,11 +2,6 @@
 using MainCore.Commands.UI.Step;
 using MainCore.Common.MediatR;
 using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
-using MediatR;
 using System.Text.Json;
 
 namespace MainCore.Commands.UI.Build

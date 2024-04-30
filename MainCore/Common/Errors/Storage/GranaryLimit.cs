@@ -1,6 +1,4 @@
-﻿using FluentResults;
-
-namespace MainCore.Common.Errors.Storage
+﻿namespace MainCore.Common.Errors.Storage
 {
     public class GranaryLimit : Error
     {

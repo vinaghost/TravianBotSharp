@@ -1,10 +1,6 @@
 ﻿using FluentValidation;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.UserControls;
-using MediatR;
 
 namespace MainCore.Commands.UI.Account
 {

@@ -1,10 +1,4 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Common.Enums;
-using MainCore.Repositories;
-using MediatR;
-
-namespace MainCore.Tasks.Base
+﻿namespace MainCore.Tasks.Base
 {
     public abstract class TaskBase
     {

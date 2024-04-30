@@ -1,13 +1,8 @@
-﻿using FluentResults;
-using MainCore.Commands.Base;
-using MainCore.Common.Enums;
+﻿using MainCore.Commands.Base;
 using MainCore.Common.Extensions;
 using MainCore.Common.MediatR;
 using MainCore.Common.Models;
 using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
 using System.Text.Json;
 
 namespace MainCore.Commands.UI.Step

@@ -1,6 +1,4 @@
-﻿using FluentResults;
-
-namespace MainCore.Common.Errors
+﻿namespace MainCore.Common.Errors
 {
     public class NoAccessAvailable : Error
     {

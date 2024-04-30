@@ -1,11 +1,4 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.Tasks.Base;
-using MediatR;
+﻿using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -26,31 +19,31 @@ namespace MainCore.Tasks
             Result result;
             if (url.Contains("dorf1"))
             {
-                result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
+                result = await _mediator.Send(ToDorfCommand.ToDorf2(AccountId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else if (url.Contains("dorf2"))
             {
-                result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 1), CancellationToken);
+                result = await _mediator.Send(ToDorfCommand.ToDorf1(AccountId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else
             {
-                result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
+                result = await _mediator.Send(ToDorfCommand.ToDorf2(AccountId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 1), CancellationToken);
+                result = await _mediator.Send(ToDorfCommand.ToDorf1(AccountId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
 

@@ -1,9 +1,4 @@
-﻿using FluentResults;
-using MainCore.Common.Errors;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Repositories;
-using MediatR;
+﻿using MainCore.Common.MediatR;
 
 namespace MainCore.Commands.Features
 {
@@ -18,11 +13,13 @@ namespace MainCore.Commands.Features
     {
         private readonly UnitOfRepository _unitOfRepository;
         private readonly UnitOfCommand _unitOfCommand;
+        private readonly IMediator _mediator;
 
-        public ToFarmListPageCommandHandler(UnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand)
+        public ToFarmListPageCommandHandler(UnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, IMediator mediator)
         {
             _unitOfRepository = unitOfRepository;
             _unitOfCommand = unitOfCommand;
+            _mediator = mediator;
         }
 
         public async Task<Result> Handle(ToFarmListPageCommand request, CancellationToken cancellationToken)
@@ -38,10 +35,10 @@ namespace MainCore.Commands.Features
             result = await _unitOfCommand.SwitchVillageCommand.Handle(new(accountId, rallypointVillageId), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.ToDorfCommand.Handle(new(accountId, 2), cancellationToken);
+            result = await _mediator.Send(ToDorfCommand.ToDorf2(accountId), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(accountId, rallypointVillageId), cancellationToken);
+            result = await _mediator.Send(new UpdateBuildingCommand(accountId, rallypointVillageId), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.ToBuildingCommand.Handle(new(accountId, 39), cancellationToken);

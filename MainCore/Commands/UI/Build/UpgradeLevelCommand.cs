@@ -1,12 +1,6 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Common.Extensions;
+﻿using MainCore.Common.Extensions;
 using MainCore.Common.MediatR;
 using MainCore.Common.Models;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
-using MediatR;
 
 namespace MainCore.Commands.UI.Build
 {

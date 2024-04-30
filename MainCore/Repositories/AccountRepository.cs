@@ -1,9 +1,6 @@
 ﻿using MainCore.Common.Extensions;
 using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Infrasturecture.Persistence;
-using MainCore.Services;
 using MainCore.UI.Models.Output;
 using Microsoft.EntityFrameworkCore;
 
@@ -167,13 +164,13 @@ namespace MainCore.Repositories
                     access.Useragent = _useragentManager.Get();
                 }
             }
-            
+
             // Remove accesses not present in the DTO
             var existingAccessIds = dto.Accesses.Select(a => a.Id.Value).ToList();
             context.Accesses
                 .Where(a => a.AccountId == account.Id && !existingAccessIds.Contains(a.Id))
                 .ExecuteDelete();
-            
+
             context.Update(account);
             context.SaveChanges();
         }

@@ -1,7 +1,4 @@
-﻿using FluentResults;
-using MainCore.Common.Enums;
-
-namespace MainCore.Common.Errors.AutoBuilder
+﻿namespace MainCore.Common.Errors.AutoBuilder
 {
     public class BuildingQueue : Error
     {

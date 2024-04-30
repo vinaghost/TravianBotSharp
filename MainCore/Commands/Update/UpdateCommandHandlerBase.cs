@@ -1,9 +1,4 @@
-﻿using MainCore.Parsers;
-using MainCore.Repositories;
-using MainCore.Services;
-using MediatR;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
     public class UpdateCommandHandlerBase
     {

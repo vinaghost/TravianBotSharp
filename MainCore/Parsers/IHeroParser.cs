@@ -1,5 +1,4 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
 using MainCore.DTO;
 
 namespace MainCore.Parsers

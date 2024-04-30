@@ -1,22 +1,11 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Commands.Base;
+﻿using MainCore.Commands.Base;
 using MainCore.Commands.Features.Step.UpgradeBuilding;
-using MainCore.Common.Enums;
-using MainCore.Common.Errors;
 using MainCore.Common.Errors.AutoBuilder;
 using MainCore.Common.Errors.Storage;
 using MainCore.Common.Extensions;
 using MainCore.Common.Models;
 using MainCore.DTO;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Notification.Message;
-using MainCore.Parsers;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.Tasks.Base;
-using MediatR;
-using OpenQA.Selenium;
 using System.Text.Json;
 
 namespace MainCore.Tasks
@@ -49,10 +38,11 @@ namespace MainCore.Tasks
             while (true)
             {
                 if (CancellationToken.IsCancellationRequested) return Cancel.Error;
-                result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 0), CancellationToken);
+
+                result = await _mediator.Send(ToDorfCommand.ToDorf(AccountId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 var resultJob = await GetBuildingJob();
@@ -78,10 +68,10 @@ namespace MainCore.Tasks
                 var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
 
                 var dorf = plan.Location < 19 ? 1 : 2;
-                result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, dorf), CancellationToken);
+                result = await _mediator.Send(new ToDorfCommand(AccountId, dorf), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 if (await JobComplete(job))
@@ -259,9 +249,9 @@ namespace MainCore.Tasks
                     result = _unitOfRepository.JobRepository.JobValid(VillageId, job.Value);
                     if (result.IsFailed)
                     {
-                        result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
+                        result = await _mediator.Send(ToDorfCommand.ToDorf2(AccountId), CancellationToken);
                         if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                        result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+                        result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                         if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                         result = _unitOfRepository.JobRepository.JobValid(VillageId, job.Value);

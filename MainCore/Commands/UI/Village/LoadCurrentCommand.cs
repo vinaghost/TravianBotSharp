@@ -1,9 +1,6 @@
 ﻿using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Services;
 using MainCore.Tasks;
 using MainCore.UI.ViewModels.UserControls;
-using MediatR;
 
 namespace MainCore.Commands.UI.Village
 {

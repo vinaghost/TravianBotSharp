@@ -1,12 +1,4 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Common.Errors;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MediatR;
-
-namespace MainCore.Tasks.Base
+﻿namespace MainCore.Tasks.Base
 {
     public abstract class AccountTask : TaskBase
     {

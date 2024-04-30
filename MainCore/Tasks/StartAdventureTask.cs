@@ -1,15 +1,6 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Commands.Base;
+﻿using MainCore.Commands.Base;
 using MainCore.Commands.Features.Step.StartAdventure;
-using MainCore.Commands.Navigate;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.Tasks.Base;
-using MediatR;
 
 namespace MainCore.Tasks
 {
@@ -35,7 +26,7 @@ namespace MainCore.Tasks
         {
             Result result;
 
-            result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 1, true), CancellationToken);
+            result = await _mediator.Send(ToDorfCommand.ToDorf1(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.UpdateAccountInfoCommand.Handle(new(AccountId), CancellationToken);

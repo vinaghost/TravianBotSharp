@@ -1,6 +1,4 @@
-﻿using MainCore.Infrasturecture.AutoRegisterDi;
-
-namespace MainCore.Parsers
+﻿namespace MainCore.Parsers
 {
     [RegisterAsTransient(withoutInterface: true)]
     public record UnitOfParser(IAccountInfoParser AccountInfoParser,

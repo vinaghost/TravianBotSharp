@@ -1,6 +1,4 @@
-﻿using MainCore.Infrasturecture.AutoRegisterDi;
-
-namespace MainCore.Repositories
+﻿namespace MainCore.Repositories
 {
     [RegisterAsTransient(withoutInterface: true)]
     public record UnitOfRepository(IAccountInfoRepository AccountInfoRepository,

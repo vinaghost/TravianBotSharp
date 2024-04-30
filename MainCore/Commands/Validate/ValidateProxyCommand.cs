@@ -1,8 +1,5 @@
-﻿using FluentResults;
-using MainCore.Commands.Base;
+﻿using MainCore.Commands.Base;
 using MainCore.DTO;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Services;
 using Polly;
 using Polly.Retry;
 using RestSharp;

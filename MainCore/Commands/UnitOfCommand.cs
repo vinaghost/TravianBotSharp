@@ -1,9 +1,6 @@
 ﻿using MainCore.Commands.Base;
 using MainCore.Commands.General;
-using MainCore.Commands.Navigate;
-using MainCore.Commands.Update;
 using MainCore.Commands.Validate;
-using MainCore.Infrasturecture.AutoRegisterDi;
 
 namespace MainCore.Commands
 {
@@ -16,10 +13,8 @@ namespace MainCore.Commands
                                 ICommandHandler<SwitchTabCommand> SwitchTabCommand,
                                 ICommandHandler<SwitchVillageCommand> SwitchVillageCommand,
                                 ICommandHandler<ToBuildingCommand> ToBuildingCommand,
-                                ICommandHandler<ToDorfCommand> ToDorfCommand,
                                 ICommandHandler<ToHeroInventoryCommand> ToHeroInventoryCommand,
                                 ICommandHandler<UpdateAccountInfoCommand> UpdateAccountInfoCommand,
-                                ICommandHandler<UpdateVillageInfoCommand> UpdateVillageInfoCommand,
                                 ICommandHandler<UpdateFarmListCommand> UpdateFarmListCommand,
                                 ICommandHandler<UpdateHeroItemsCommand> UpdateHeroItemsCommand,
                                 ICommandHandler<UpdateVillageListCommand> UpdateVillageListCommand,

@@ -1,7 +1,5 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
 using MainCore.Common.Extensions;
-using MainCore.Infrasturecture.AutoRegisterDi;
 
 namespace MainCore.Parsers.MarketParser
 {

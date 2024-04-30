@@ -1,5 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.UI.ViewModels.Abstract;
+﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
 

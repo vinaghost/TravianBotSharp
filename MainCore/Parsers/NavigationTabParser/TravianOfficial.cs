@@ -1,7 +1,4 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
 
 namespace MainCore.Parsers.NavigationTabParser
 {

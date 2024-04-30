@@ -1,5 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Infrasturecture.Persistence;
+﻿using MainCore.Infrasturecture.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 

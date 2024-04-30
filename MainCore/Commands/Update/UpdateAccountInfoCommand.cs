@@ -1,13 +1,5 @@
-﻿using FluentResults;
-using MainCore.Commands.Base;
+﻿using MainCore.Commands.Base;
 using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Notification.Message;
-using MainCore.Parsers;
-using MainCore.Repositories;
-using MainCore.Services;
-using MediatR;
 
 namespace MainCore.Commands.Update
 {
@@ -18,22 +10,19 @@ namespace MainCore.Commands.Update
         }
     }
 
-    [RegisterAsTransient]
     public class UpdateAccountInfoCommandHandler : ICommandHandler<UpdateAccountInfoCommand>
     {
         private readonly IChromeManager _chromeManager;
         private readonly IMediator _mediator;
 
         private readonly IAccountInfoParser _accountInfoParser;
-        private readonly IHeroParser _heroParser;
         private readonly IAccountInfoRepository _accountInfoRepository;
 
-        public UpdateAccountInfoCommandHandler(IChromeManager chromeManager, IMediator mediator, IAccountInfoParser accountInfoParser, IHeroParser heroParser, IAccountInfoRepository accountInfoRepository)
+        public UpdateAccountInfoCommandHandler(IChromeManager chromeManager, IMediator mediator, IAccountInfoParser accountInfoParser, IAccountInfoRepository accountInfoRepository)
         {
             _chromeManager = chromeManager;
             _mediator = mediator;
             _accountInfoParser = accountInfoParser;
-            _heroParser = heroParser;
             _accountInfoRepository = accountInfoRepository;
         }
 
@@ -45,11 +34,6 @@ namespace MainCore.Commands.Update
             _accountInfoRepository.Update(command.AccountId, dto);
 
             await _mediator.Publish(new AccountInfoUpdated(command.AccountId), cancellationToken);
-
-            if (_heroParser.CanStartAdventure(html))
-            {
-                await _mediator.Publish(new AdventureUpdated(command.AccountId), cancellationToken);
-            }
 
             return Result.Ok();
         }

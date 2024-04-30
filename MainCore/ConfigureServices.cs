@@ -1,7 +1,5 @@
 ﻿using FluentValidation;
 using MainCore.Common;
-using MainCore.Common.Enums;
-using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Infrasturecture.Persistence;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Validators;

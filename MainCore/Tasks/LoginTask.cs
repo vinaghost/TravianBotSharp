@@ -1,13 +1,4 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.Tasks.Base;
-using MediatR;
-using OpenQA.Selenium;
+﻿using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -83,7 +74,7 @@ namespace MainCore.Tasks
             result = await Submit();
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 1), CancellationToken);
+            result = await _mediator.Send(ToDorfCommand.ToDorf1(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }

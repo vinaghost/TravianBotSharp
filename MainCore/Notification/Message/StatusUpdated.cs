@@ -1,7 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MediatR;
+﻿using MainCore.Common.MediatR;
 
 namespace MainCore.Notification.Message
 {

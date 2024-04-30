@@ -1,7 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
+﻿using MainCore.DTO;
 using MainCore.Infrasturecture.Persistence;
 using MainCore.UI.Models.Output;
 using Microsoft.EntityFrameworkCore;

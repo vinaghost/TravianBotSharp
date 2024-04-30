@@ -1,9 +1,5 @@
 ﻿using MainCore.DTO;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.ViewModels.UserControls;
-using MediatR;
 
 namespace MainCore.Commands.UI.AddAccounts
 {

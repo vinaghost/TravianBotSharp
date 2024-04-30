@@ -1,15 +1,5 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Commands.Features;
-using MainCore.Common.Enums;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
-using MainCore.Repositories;
-using MainCore.Services;
+﻿using MainCore.Commands.Features;
 using MainCore.Tasks.Base;
-using MediatR;
-using OpenQA.Selenium;
 
 namespace MainCore.Tasks
 {

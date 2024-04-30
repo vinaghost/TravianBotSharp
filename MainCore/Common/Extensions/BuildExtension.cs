@@ -1,5 +1,4 @@
-﻿using MainCore.Common.Enums;
-using System.Drawing;
+﻿using System.Drawing;
 
 namespace MainCore.Common.Extensions
 {

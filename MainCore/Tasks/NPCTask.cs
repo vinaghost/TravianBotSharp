@@ -1,15 +1,5 @@
-﻿using FluentResults;
-using HtmlAgilityPack;
-using MainCore.Commands;
-using MainCore.Common.Enums;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
-using MainCore.Repositories;
-using MainCore.Services;
+﻿using HtmlAgilityPack;
 using MainCore.Tasks.Base;
-using MediatR;
-using OpenQA.Selenium;
 
 namespace MainCore.Tasks
 {
@@ -29,10 +19,10 @@ namespace MainCore.Tasks
         {
             Result result;
 
-            result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
+            result = await _mediator.Send(ToDorfCommand.ToDorf2(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+            result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var market = _unitOfRepository.BuildingRepository.GetBuildingLocation(VillageId, BuildingEnums.Marketplace);
@@ -52,7 +42,7 @@ namespace MainCore.Tasks
             result = await Redeem();
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+            result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }

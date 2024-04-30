@@ -1,5 +1,4 @@
-﻿using MainCore.Entities;
-using Serilog;
+﻿using Serilog;
 using Serilog.Events;
 
 namespace MainCore.Services

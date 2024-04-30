@@ -1,11 +1,4 @@
-﻿using FluentResults;
-using MainCore.Commands.Base;
-using MainCore.Common.Enums;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
-using MainCore.Services;
-using OpenQA.Selenium;
+﻿using MainCore.Commands.Base;
 using System.Web;
 
 namespace MainCore.Commands.Navigate.ToBuildingCommandHandler

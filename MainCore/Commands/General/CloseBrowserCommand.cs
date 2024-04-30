@@ -1,9 +1,5 @@
-﻿using FluentResults;
-using MainCore.Commands.Base;
+﻿using MainCore.Commands.Base;
 using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Services;
 
 namespace MainCore.Commands.General
 {

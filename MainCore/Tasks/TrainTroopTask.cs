@@ -1,15 +1,5 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Common.Enums;
-using MainCore.Common.Errors;
-using MainCore.Common.Errors.TrainTroop;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
-using MainCore.Repositories;
-using MainCore.Services;
+﻿using MainCore.Common.Errors.TrainTroop;
 using MainCore.Tasks.Base;
-using MediatR;
-using OpenQA.Selenium;
 
 namespace MainCore.Tasks
 {
@@ -85,9 +75,9 @@ namespace MainCore.Tasks
         public async Task<Result> Train(BuildingEnums buildingType)
         {
             Result result;
-            result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 2), CancellationToken);
+            result = await _mediator.Send(ToDorfCommand.ToDorf2(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            result = await _unitOfCommand.UpdateVillageInfoCommand.Handle(new(AccountId, VillageId), CancellationToken);
+            result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var buildingLocation = _unitOfRepository.BuildingRepository.GetBuildingLocation(VillageId, buildingType);

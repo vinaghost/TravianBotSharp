@@ -1,8 +1,5 @@
 ﻿using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Services;
 using MainCore.UI.Models.Output;
-using MediatR;
 
 namespace MainCore.Commands.UI.Debug
 {

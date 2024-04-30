@@ -1,8 +1,4 @@
-﻿using MainCore.Notification.Message;
-using MainCore.Services;
-using MediatR;
-
-namespace MainCore.Notification.Handlers.MainWindowUnload
+﻿namespace MainCore.Notification.Handlers.MainWindowUnload
 {
     public class ChromeClean : INotificationHandler<MainWindowUnloaded>
     {

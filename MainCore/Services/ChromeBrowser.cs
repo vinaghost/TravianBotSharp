@@ -1,9 +1,5 @@
-﻿using FluentResults;
-using HtmlAgilityPack;
-using MainCore.Common.Errors;
+﻿using HtmlAgilityPack;
 using MainCore.Common.Models;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Chrome.ChromeDriverExtensions;
 using OpenQA.Selenium.Interactions;

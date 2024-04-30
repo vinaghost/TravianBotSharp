@@ -1,10 +1,5 @@
 ﻿using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.Models.Output;
-using MediatR;
 
 namespace MainCore.Commands.UI.Farming
 {

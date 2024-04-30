@@ -1,11 +1,5 @@
-﻿using FluentResults;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using MainCore.Commands.Base;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
-using MainCore.Services;
-using OpenQA.Selenium;
 
 namespace MainCore.Commands.Features.Step.StartAdventure.ExploreAdventureCommandHandler
 {
