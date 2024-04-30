@@ -1,26 +1,35 @@
 ﻿using HtmlAgilityPack;
 
-namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandHandler
+namespace MainCore.Commands.Features.UpgradeBuilding
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
-    public class TravianOfficial : ICommandHandler<SpecialUpgradeCommand>
+    public class SpecialUpgradeCommand : ByAccountIdBase, ICommand
     {
-        private readonly IChromeManager _chromeManager;
-        private readonly UnitOfParser _unitOfParser;
+        public IChromeBrowser ChromeBrowser { get; }
+
+        public SpecialUpgradeCommand(AccountId accountId, IChromeBrowser chromeBrowser) : base(accountId)
+        {
+            ChromeBrowser = chromeBrowser;
+        }
+    }
+
+    public class SpecialUpgradeCommandHandler : ICommandHandler<SpecialUpgradeCommand>
+    {
+        private readonly IUpgradeBuildingParser _upgradeBuildingParser;
         private readonly UnitOfCommand _unitOfCommand;
 
-        public TravianOfficial(IChromeManager chromeManager, UnitOfParser unitOfParser, UnitOfCommand unitOfCommand)
+        public SpecialUpgradeCommandHandler(IUpgradeBuildingParser upgradeBuildingParser, UnitOfCommand unitOfCommand)
         {
-            _chromeManager = chromeManager;
-            _unitOfParser = unitOfParser;
+            _upgradeBuildingParser = upgradeBuildingParser;
             _unitOfCommand = unitOfCommand;
         }
 
-        public async Task<Result> Handle(SpecialUpgradeCommand command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(SpecialUpgradeCommand request, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _chromeManager.Get(command.AccountId);
+            var chromeBrowser = request.ChromeBrowser;
+            var accountId = request.AccountId;
+
             var html = chromeBrowser.Html;
-            var button = _unitOfParser.UpgradeBuildingParser.GetSpecialUpgradeButton(html);
+            var button = _upgradeBuildingParser.GetSpecialUpgradeButton(html);
             if (button is null) return Retry.ButtonNotFound("Watch ads upgrade");
             var result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -54,7 +63,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandH
                 result = await chromeBrowser.Click(By.XPath(checkbox.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
+                result = await _unitOfCommand.DelayClickCommand.Handle(new(accountId), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 var watchButton = videoFeature.Descendants("button").FirstOrDefault(x => x.HasClass("green"));
@@ -97,6 +106,10 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandH
             result = await chromeBrowser.WaitPageChanged("dorf", cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
+            result = await chromeBrowser.WaitPageLoaded(cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            await Task.Delay(Random.Shared.Next(5_000, 10_000), CancellationToken.None);
+
             html = chromeBrowser.Html;
             var dontShowThisAgain = html.GetElementbyId("dontShowThisAgain");
             if (dontShowThisAgain is not null)
@@ -104,7 +117,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding.SpecialUpgradeCommandH
                 result = await chromeBrowser.Click(By.XPath(dontShowThisAgain.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
+                result = await _unitOfCommand.DelayClickCommand.Handle(new(accountId), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 var okButton = html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
