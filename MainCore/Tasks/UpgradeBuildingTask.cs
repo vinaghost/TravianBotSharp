@@ -13,16 +13,14 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpgradeBuildingTask : VillageTask
     {
-        private readonly ICommandHandler<SpecialUpgradeCommand> _specialUpgradeCommand;
         private readonly ICommandHandler<UseHeroResourceCommand> _useHeroResourceCommand;
 
         private readonly ILogService _logService;
         private readonly ITaskManager _taskManager;
         private readonly UnitOfParser _unitOfParser;
 
-        public UpgradeBuildingTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ICommandHandler<SpecialUpgradeCommand> specialUpgradeCommand, ICommandHandler<UseHeroResourceCommand> useHeroResourceCommand, ILogService logService, ITaskManager taskManager, UnitOfParser unitOfParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
+        public UpgradeBuildingTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ICommandHandler<UseHeroResourceCommand> useHeroResourceCommand, ILogService logService, ITaskManager taskManager, UnitOfParser unitOfParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
         {
-            _specialUpgradeCommand = specialUpgradeCommand;
             _useHeroResourceCommand = useHeroResourceCommand;
             _logService = logService;
             _taskManager = taskManager;
@@ -129,7 +127,7 @@ namespace MainCore.Tasks
                 {
                     if (IsSpecialUpgrade() && IsSpecialUpgradeable(plan))
                     {
-                        result = await _specialUpgradeCommand.Handle(new(AccountId), CancellationToken);
+                        result = await _mediator.Send(new SpecialUpgradeCommand(AccountId, chromeBrowser), CancellationToken);
                         if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
                     else
