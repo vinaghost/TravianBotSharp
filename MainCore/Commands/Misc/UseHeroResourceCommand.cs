@@ -1,53 +1,46 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Commands.General;
 
-namespace MainCore.Commands.Features.Step.UpgradeBuilding
+namespace MainCore.Commands.Misc
 {
     public class UseHeroResourceCommand : ByAccountIdBase, ICommand
     {
         public long[] RequiredResource { get; }
+        public IChromeBrowser ChromeBrowser { get; }
 
-        public UseHeroResourceCommand(AccountId accountId, long[] requiredResource) : base(accountId)
+        public UseHeroResourceCommand(AccountId accountId, IChromeBrowser chromeBrowser, long[] requiredResource) : base(accountId)
         {
             RequiredResource = requiredResource;
+            ChromeBrowser = chromeBrowser;
         }
     }
 
     [RegisterAsTransient]
-    public class UseHeroResourceCommandHandler : ICommandHandler<UseHeroResourceCommand>
+    public class UseHeroResourceCommandHandler : HeroInventoryCommandHandler, ICommandHandler<UseHeroResourceCommand>
     {
-        private readonly IChromeManager _chromeManager;
-        private readonly UnitOfRepository _unitOfRepository;
-        private readonly UnitOfCommand _unitOfCommand;
-        private readonly UnitOfParser _unitOfParser;
+        private readonly DelayClickCommand _delayClickCommand;
 
-        public UseHeroResourceCommandHandler(IChromeManager chromeManager, UnitOfRepository unitOfRepository, UnitOfCommand unitOfCommand, UnitOfParser unitOfParser)
+        public UseHeroResourceCommandHandler(IHeroParser heroParser, IHeroItemRepository heroItemRepository, IMediator mediator, DelayClickCommand delayClickCommand) : base(heroParser, heroItemRepository, mediator)
         {
-            _chromeManager = chromeManager;
-            _unitOfRepository = unitOfRepository;
-            _unitOfCommand = unitOfCommand;
-            _unitOfParser = unitOfParser;
+            _delayClickCommand = delayClickCommand;
         }
 
-        public async Task<Result> Handle(UseHeroResourceCommand command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(UseHeroResourceCommand request, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _chromeManager.Get(command.AccountId);
+            var accountId = request.AccountId;
+            var chromeBrowser = request.ChromeBrowser;
+            var requiredResource = request.RequiredResource;
 
             var currentUrl = chromeBrowser.CurrentUrl;
             Result result;
-            result = await _unitOfCommand.ToHeroInventoryCommand.Handle(new(command.AccountId), cancellationToken);
+            result = await ToHeroInventory(accountId, chromeBrowser, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateHeroItemsCommand.Handle(new(command.AccountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var requiredResource = command.RequiredResource;
             for (var i = 0; i < 4; i++)
             {
                 requiredResource[i] = RoundUpTo100(requiredResource[i]);
             }
 
-            result = _unitOfRepository.HeroItemRepository.IsEnoughResource(command.AccountId, requiredResource);
+            result = _heroItemRepository.IsEnoughResource(accountId, requiredResource);
             if (result.IsFailed)
             {
                 if (!result.HasError<Retry>())
@@ -66,10 +59,9 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
                 (HeroItemEnums.Crop, requiredResource[3]),
             };
 
-            var delayClickCommand = new DelayClickCommand(command.AccountId);
             foreach (var item in items)
             {
-                result = await UseResource(chromeBrowser, item.Item1, item.Item2, delayClickCommand, cancellationToken);
+                result = await UseResource(accountId, chromeBrowser, item.Item1, item.Item2, cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
 
@@ -78,32 +70,32 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             return Result.Ok();
         }
 
-        private async Task<Result> UseResource(IChromeBrowser chromeBrowser, HeroItemEnums item, long amount, DelayClickCommand delayClickCommand, CancellationToken cancellationToken)
+        private async Task<Result> UseResource(AccountId accountId, IChromeBrowser chromeBrowser, HeroItemEnums item, long amount, CancellationToken cancellationToken)
         {
             if (amount == 0) return Result.Ok();
             Result result;
             result = await ClickItem(chromeBrowser, item, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.DelayClickCommand.Handle(delayClickCommand, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            await _delayClickCommand.Execute(accountId);
+
             result = await EnterAmount(chromeBrowser, amount);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.DelayClickCommand.Handle(delayClickCommand, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            await _delayClickCommand.Execute(accountId);
+
             result = await Confirm(chromeBrowser, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.DelayClickCommand.Handle(delayClickCommand, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            await _delayClickCommand.Execute(accountId);
+
             return Result.Ok();
         }
 
         private async Task<Result> ClickItem(IChromeBrowser chromeBrowser, HeroItemEnums item, CancellationToken cancellationToken)
         {
             var html = chromeBrowser.Html;
-            var node = _unitOfParser.HeroParser.GetItemSlot(html, item);
+            var node = _heroParser.GetItemSlot(html, item);
             if (node is null) return Retry.NotFound($"{item}", "item");
 
             Result result;
@@ -114,7 +106,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                return !_unitOfParser.HeroParser.HeroInventoryLoading(doc);
+                return !_heroParser.HeroInventoryLoading(doc);
             };
 
             result = await chromeBrowser.Wait(loadingCompleted, cancellationToken);
@@ -126,7 +118,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
         private async Task<Result> EnterAmount(IChromeBrowser chromeBrowser, long amount)
         {
             var html = chromeBrowser.Html;
-            var node = _unitOfParser.HeroParser.GetAmountBox(html);
+            var node = _heroParser.GetAmountBox(html);
             if (node is null) return Retry.TextboxNotFound("amount resource input");
             Result result;
             result = await chromeBrowser.InputTextbox(By.XPath(node.XPath), amount.ToString());
@@ -137,7 +129,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
         private async Task<Result> Confirm(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
         {
             var html = chromeBrowser.Html;
-            var node = _unitOfParser.HeroParser.GetConfirmButton(html);
+            var node = _heroParser.GetConfirmButton(html);
             if (node is null) return Retry.ButtonNotFound("confirm use resource");
 
             Result result;
@@ -148,7 +140,7 @@ namespace MainCore.Commands.Features.Step.UpgradeBuilding
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                return !_unitOfParser.HeroParser.HeroInventoryLoading(doc);
+                return !_heroParser.HeroInventoryLoading(doc);
             };
 
             result = await chromeBrowser.Wait(loadingCompleted, cancellationToken);

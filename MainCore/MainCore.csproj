@@ -41,4 +41,8 @@
     <PackageReference Include="Splat.Microsoft.Extensions.DependencyInjection" Version="14.8.12" />
     <PackageReference Include="StronglyTypedId" Version="1.0.0-beta06" PrivateAssets="all" ExcludeAssets="runtime" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Commands\Features\Step\UpgradeBuilding\" />
+  </ItemGroup>
 </Project>
