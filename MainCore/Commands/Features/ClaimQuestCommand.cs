@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Features.Step.ClaimQuest;
+﻿using MainCore.Commands.Features.ClaimQuest;
 
 namespace MainCore.Commands.Features
 {

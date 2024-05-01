@@ -1,22 +1,29 @@
 ﻿using HtmlAgilityPack;
 
-namespace MainCore.Commands.Navigate.ToQuestPageCommandHandler
+namespace MainCore.Commands.Features.ClaimQuest
 {
-    [RegisterAsTransient(Common.Enums.ServerEnums.TravianOfficial)]
-    public class TravianOfficial : ICommandHandler<ToQuestPageCommand>
+    public class ToQuestPageCommand : ICommand
     {
-        private readonly IChromeManager _chromeManager;
-        private readonly UnitOfParser _unitOfParser;
-
-        public TravianOfficial(IChromeManager chromeManager, UnitOfParser unitOfParser)
+        public ToQuestPageCommand(IChromeBrowser chromeBrowser)
         {
-            _chromeManager = chromeManager;
-            _unitOfParser = unitOfParser;
+            ChromeBrowser = chromeBrowser;
         }
 
-        public async Task<Result> Handle(ToQuestPageCommand command, CancellationToken cancellationToken)
+        public IChromeBrowser ChromeBrowser { get; }
+    }
+
+    public class ToQuestPageCommandHandler : ICommandHandler<ToQuestPageCommand>
+    {
+        private readonly IQuestParser _questParser;
+
+        public ToQuestPageCommandHandler(IQuestParser questParser)
         {
-            var chromeBrowser = _chromeManager.Get(command.AccountId);
+            _questParser = questParser;
+        }
+
+        public async Task<Result> Handle(ToQuestPageCommand request, CancellationToken cancellationToken)
+        {
+            var chromeBrowser = request.ChromeBrowser;
             var html = chromeBrowser.Html;
 
             var adventure = _questParser.GetQuestMaster(html);
