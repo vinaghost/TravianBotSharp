@@ -13,18 +13,16 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpgradeBuildingTask : VillageTask
     {
-        private readonly ICommandHandler<UseHeroResourceCommand> _useHeroResourceCommand;
-
         private readonly ILogService _logService;
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfParser _unitOfParser;
 
-        public UpgradeBuildingTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ICommandHandler<UseHeroResourceCommand> useHeroResourceCommand, ILogService logService, ITaskManager taskManager, UnitOfParser unitOfParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
+        private readonly IUpgradeBuildingParser _upgradeBuildingParser;
+
+        public UpgradeBuildingTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ILogService logService, ITaskManager taskManager, IUpgradeBuildingParser upgradeBuildingParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
         {
-            _useHeroResourceCommand = useHeroResourceCommand;
             _logService = logService;
             _taskManager = taskManager;
-            _unitOfParser = unitOfParser;
+            _upgradeBuildingParser = upgradeBuildingParser;
         }
 
         protected override async Task<Result> Execute()
@@ -81,10 +79,12 @@ namespace MainCore.Tasks
 
                 logger.Information("Build {type} to level {level} at location {location}", plan.Type, plan.Level, plan.Location);
 
-                result = await ToBuildingPage(plan);
+                var chromeBrowser = _chromeManager.Get(AccountId);
+
+                result = await ToBuildingPage(chromeBrowser, plan);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                var requiredResource = GetRequiredResource(plan);
+                var requiredResource = GetRequiredResource(chromeBrowser, plan);
 
                 result = _unitOfRepository.StorageRepository.IsEnoughResource(VillageId, requiredResource);
                 if (result.IsFailed)
@@ -105,12 +105,12 @@ namespace MainCore.Tasks
                     if (IsUseHeroResource())
                     {
                         var missingResource = _unitOfRepository.StorageRepository.GetMissingResource(VillageId, requiredResource);
-                        var heroResourceResult = await _useHeroResourceCommand.Handle(new(AccountId, missingResource), CancellationToken);
+                        var heroResourceResult = await _mediator.Send(new UseHeroResourceCommand(AccountId, chromeBrowser, missingResource), CancellationToken);
                         if (heroResourceResult.IsFailed)
                         {
                             if (!heroResourceResult.HasError<Retry>())
                             {
-                                await SetEnoughResourcesTime(plan);
+                                await SetEnoughResourcesTime(chromeBrowser, plan);
                             }
 
                             return heroResourceResult.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -118,11 +118,10 @@ namespace MainCore.Tasks
                     }
                     else
                     {
-                        await SetEnoughResourcesTime(plan);
+                        await SetEnoughResourcesTime(chromeBrowser, plan);
                         return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
                 }
-                var chromeBrowser = _chromeManager.Get(AccountId);
                 if (IsUpgradeable(plan))
                 {
                     if (IsSpecialUpgrade() && IsSpecialUpgradeable(plan))
@@ -187,9 +186,9 @@ namespace MainCore.Tasks
             return useHeroResource;
         }
 
-        private async Task SetEnoughResourcesTime(NormalBuildPlan plan)
+        private async Task SetEnoughResourcesTime(IChromeBrowser chromeBrowser, NormalBuildPlan plan)
         {
-            var time = GetTimeWhenEnoughResource(plan);
+            var time = GetTimeWhenEnoughResource(chromeBrowser, plan);
             ExecuteAt = DateTime.Now.Add(time);
             await _taskManager.ReOrder(AccountId);
         }
@@ -234,10 +233,9 @@ namespace MainCore.Tasks
             await _mediator.Publish(new JobUpdated(AccountId, VillageId));
         }
 
-        public async Task<Result> ToBuildingPage(NormalBuildPlan plan)
+        public async Task<Result> ToBuildingPage(IChromeBrowser chromeBrowser, NormalBuildPlan plan)
         {
             Result result;
-            var chromeBrowser = _chromeManager.Get(AccountId);
             result = await _mediator.Send(new ToBuildingCommand(chromeBrowser, plan.Location), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
@@ -258,21 +256,19 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        public long[] GetRequiredResource(NormalBuildPlan plan)
+        public long[] GetRequiredResource(IChromeBrowser chromeBrowser, NormalBuildPlan plan)
         {
-            var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
 
             var isEmptySite = _unitOfRepository.BuildingRepository.EmptySite(VillageId, plan.Location);
-            return _unitOfParser.UpgradeBuildingParser.GetRequiredResource(html, isEmptySite, plan.Type);
+            return _upgradeBuildingParser.GetRequiredResource(html, isEmptySite, plan.Type);
         }
 
-        public TimeSpan GetTimeWhenEnoughResource(NormalBuildPlan plan)
+        public TimeSpan GetTimeWhenEnoughResource(IChromeBrowser chromeBrowser, NormalBuildPlan plan)
         {
-            var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
             var isEmptySite = _unitOfRepository.BuildingRepository.EmptySite(VillageId, plan.Location);
-            return _unitOfParser.UpgradeBuildingParser.GetTimeWhenEnoughResource(html, isEmptySite, plan.Type);
+            return _upgradeBuildingParser.GetTimeWhenEnoughResource(html, isEmptySite, plan.Type);
         }
     }
 }
