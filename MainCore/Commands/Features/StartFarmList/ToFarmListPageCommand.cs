@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Features
+﻿namespace MainCore.Commands.Features.StartFarmList
 {
     public class ToFarmListPageCommand : ByAccountIdBase, IRequest<Result>
     {

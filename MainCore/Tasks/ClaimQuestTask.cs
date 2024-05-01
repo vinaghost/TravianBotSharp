@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Features;
+﻿using MainCore.Commands.Features.ClaimQuest;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -12,9 +12,13 @@ namespace MainCore.Tasks
 
         protected override async Task<Result> Execute()
         {
+            var chromeBrowser = _chromeManager.Get(AccountId);
             Result result;
 
-            result = await _mediator.Send(new ClaimQuestCommand(AccountId), CancellationToken);
+            result = await _mediator.Send(new ToQuestPageCommand(chromeBrowser), CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await _mediator.Send(new CollectRewardCommand(AccountId, chromeBrowser), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await _mediator.Publish(new StorageUpdated(AccountId, VillageId), CancellationToken);
