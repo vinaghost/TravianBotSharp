@@ -9,32 +9,25 @@ namespace MainCore.Tasks
         private readonly ICommandHandler<ToAdventurePageCommand> _toAdventurePageCommand;
         private readonly ICommandHandler<ExploreAdventureCommand> _exploreAdventureCommand;
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfParser _unitOfParser;
+        private readonly IHeroParser _heroParser;
 
-        public StartAdventureTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager, UnitOfParser unitOfParser, ICommandHandler<ToAdventurePageCommand> toAdventurePageCommand, ICommandHandler<ExploreAdventureCommand> exploreAdventureCommand) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
+        public StartAdventureTask(IChromeManager chromeManager, IMediator mediator, ITaskManager taskManager, ICommandHandler<ToAdventurePageCommand> toAdventurePageCommand, ICommandHandler<ExploreAdventureCommand> exploreAdventureCommand, IHeroParser heroParser) : base(chromeManager, mediator)
         {
             _taskManager = taskManager;
-            _unitOfParser = unitOfParser;
             _toAdventurePageCommand = toAdventurePageCommand;
             _exploreAdventureCommand = exploreAdventureCommand;
+            _heroParser = heroParser;
         }
 
         protected override async Task<Result> Execute()
         {
             Result result;
+            var chromeBrowser = _chromeManager.Get(AccountId);
 
             result = await _mediator.Send(ToDorfCommand.ToDorf1(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateAccountInfoCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var chromeBrowser = _chromeManager.Get(AccountId);
-
             var html = chromeBrowser.Html;
-
-            var canStartAdventure = _unitOfParser.HeroParser.CanStartAdventure(html);
-            if (!canStartAdventure) return Result.Ok();
 
             result = await _toAdventurePageCommand.Handle(new(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -43,7 +36,7 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             html = chromeBrowser.Html;
-            var adventureDuration = _unitOfParser.HeroParser.GetAdventureDuration(html);
+            var adventureDuration = _heroParser.GetAdventureDuration(html);
 
             await SetNextExecute(adventureDuration);
 

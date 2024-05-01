@@ -45,7 +45,7 @@ namespace MainCore.Commands.UI.Account
             await _waitingOverlayViewModel.Show("editing account");
 
             var dto = accountInput.ToDto();
-            await Task.Run(() => _unitOfRepository.AccountRepository.Update(dto), cancellationToken);
+            await Task.Run(() => _accountRepository.Update(dto), cancellationToken);
             await _mediator.Publish(new AccountUpdated(), cancellationToken);
 
             await _waitingOverlayViewModel.Hide();

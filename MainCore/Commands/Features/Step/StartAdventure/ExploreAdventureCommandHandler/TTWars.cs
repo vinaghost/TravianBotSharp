@@ -19,7 +19,7 @@ namespace MainCore.Commands.Features.Step.StartAdventure.ExploreAdventureCommand
             var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
 
-            var adventure = _unitOfParser.HeroParser.GetAdventure(html);
+            var adventure = _heroParser.GetAdventure(html);
             if (adventure is null) return Retry.ButtonNotFound("adventure place");
 
             Result result;
@@ -30,7 +30,7 @@ namespace MainCore.Commands.Features.Step.StartAdventure.ExploreAdventureCommand
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                var startButton = _unitOfParser.HeroParser.GetContinueButton(doc);
+                var startButton = _heroParser.GetContinueButton(doc);
                 return startButton is not null;
             };
 
@@ -38,7 +38,7 @@ namespace MainCore.Commands.Features.Step.StartAdventure.ExploreAdventureCommand
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             html = chromeBrowser.Html;
-            var startAdventureButton = _unitOfParser.HeroParser.GetContinueButton(html);
+            var startAdventureButton = _heroParser.GetContinueButton(html);
 
             result = await chromeBrowser.Click(By.XPath(startAdventureButton.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -47,7 +47,7 @@ namespace MainCore.Commands.Features.Step.StartAdventure.ExploreAdventureCommand
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                var continueButton = _unitOfParser.HeroParser.GetContinueButton(doc);
+                var continueButton = _heroParser.GetContinueButton(doc);
                 return continueButton is not null;
             };
 

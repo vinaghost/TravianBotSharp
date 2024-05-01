@@ -19,7 +19,7 @@ namespace MainCore.Commands.Navigate.ToQuestPageCommandHandler
             var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
 
-            var adventure = _unitOfParser.QuestParser.GetQuestMaster(html);
+            var adventure = _questParser.GetQuestMaster(html);
             if (adventure is null) return Retry.ButtonNotFound("quest master");
 
             Result result;

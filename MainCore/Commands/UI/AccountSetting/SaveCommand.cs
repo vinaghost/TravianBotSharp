@@ -40,7 +40,7 @@ namespace MainCore.Commands.UI.AccountSetting
             }
 
             var settings = accountSettingInput.Get();
-            _unitOfRepository.AccountSettingRepository.Update(accountId, settings);
+            _accountSettingRepository.Update(accountId, settings);
             await _mediator.Publish(new AccountSettingUpdated(accountId), cancellationToken);
             _dialogService.ShowMessageBox("Information", message: "Settings saved");
         }

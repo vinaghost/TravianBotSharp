@@ -146,7 +146,7 @@ namespace MainCore.UI.ViewModels.UserControls
 
         private List<ListBoxItem> LoadAccountHandler()
         {
-            var items = _unitOfRepository.AccountRepository.GetItems();
+            var items = _accountRepository.GetItems();
             return items;
         }
 

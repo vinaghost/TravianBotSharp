@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.General;
+using MainCore.Commands.Misc;
 using MainCore.DTO;
 using MainCore.UI.ViewModels.UserControls;
 
@@ -48,7 +49,7 @@ namespace MainCore.Commands.UI.MainLayout
             }
             var accountId = new AccountId(accounts.SelectedItemId);
 
-            var tribe = (TribeEnums)_unitOfRepository.AccountSettingRepository.GetByName(accountId, AccountSettingEnums.Tribe);
+            var tribe = (TribeEnums)_accountSettingRepository.GetByName(accountId, AccountSettingEnums.Tribe);
             if (tribe == TribeEnums.Any)
             {
                 _dialogService.ShowMessageBox("Warning", "Choose tribe first");

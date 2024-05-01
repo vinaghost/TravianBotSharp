@@ -73,8 +73,8 @@ namespace MainCore.Commands.Navigate
         {
             return dorf switch
             {
-                1 => _unitOfParser.NavigationBarParser.GetResourceButton(doc),
-                2 => _unitOfParser.NavigationBarParser.GetBuildingButton(doc),
+                1 => _navigationBarParser.GetResourceButton(doc),
+                2 => _navigationBarParser.GetBuildingButton(doc),
                 _ => null,
             };
         }

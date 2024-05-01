@@ -44,7 +44,7 @@ namespace MainCore.Commands.UI.Account
             await _waitingOverlayViewModel.Show("adding account");
 
             var dto = accountInput.ToDto();
-            var success = await Task.Run(() => _unitOfRepository.AccountRepository.Add(dto));
+            var success = await Task.Run(() => _accountRepository.Add(dto));
             if (success) await _mediator.Publish(new AccountUpdated(), cancellationToken);
 
             await _waitingOverlayViewModel.Hide();

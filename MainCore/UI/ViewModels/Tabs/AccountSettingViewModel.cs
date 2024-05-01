@@ -61,7 +61,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private Dictionary<AccountSettingEnums, int> LoadSettingsHandler(AccountId accountId)
         {
-            var settings = _unitOfRepository.AccountSettingRepository.Get(accountId);
+            var settings = _accountSettingRepository.Get(accountId);
             return settings;
         }
     }

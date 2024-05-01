@@ -6,15 +6,13 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class ClaimQuestTask : VillageTask
     {
-        public ClaimQuestTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
+        public ClaimQuestTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository) : base(chromeManager, mediator, villageRepository)
         {
         }
 
         protected override async Task<Result> Execute()
         {
             Result result;
-            result = await _unitOfCommand.UpdateAccountInfoCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _mediator.Send(new ClaimQuestCommand(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));

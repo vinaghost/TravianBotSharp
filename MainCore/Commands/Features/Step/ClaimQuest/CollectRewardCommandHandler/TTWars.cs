@@ -40,14 +40,14 @@ namespace MainCore.Commands.Features.Step.ClaimQuest.CollectRewardCommandHandler
                 {
                     var doc = new HtmlDocument();
                     doc.LoadHtml(driver.PageSource);
-                    var collect = _unitOfParser.QuestParser.GetQuestCollectButton(doc);
+                    var collect = _questParser.GetQuestCollectButton(doc);
                     return collect is not null;
                 };
                 result = await chromeBrowser.Wait(collectShow, cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 html = chromeBrowser.Html;
-                var collect = _unitOfParser.QuestParser.GetQuestCollectButton(html);
+                var collect = _questParser.GetQuestCollectButton(html);
 
                 result = await chromeBrowser.Click(By.XPath(collect.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -61,7 +61,7 @@ namespace MainCore.Commands.Features.Step.ClaimQuest.CollectRewardCommandHandler
                 result = await _unitOfCommand.DelayClickCommand.Handle(new(command.AccountId), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
-            while (_unitOfParser.QuestParser.IsQuestClaimable(html));
+            while (_questParser.IsQuestClaimable(html));
             return Result.Ok();
         }
 

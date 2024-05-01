@@ -33,7 +33,7 @@ namespace MainCore.Commands.UI.AddAccounts
             await _waitingOverlayViewModel.Show("adding accounts");
 
             var accounts = request.Accounts;
-            _unitOfRepository.AccountRepository.Add(accounts);
+            _accountRepository.Add(accounts);
 
             await _mediator.Publish(new AccountUpdated(), cancellationToken);
 

@@ -34,7 +34,7 @@ namespace MainCore.Notification.Handlers.Trigger
             if (!completeImmediatelyEnable) return;
 
             var applyRomanQueueLogicWhenBuilding = _villageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
-            var plusActive = _unitOfRepository.AccountInfoRepository.IsPlusActive(accountId);
+            var plusActive = _accountInfoRepository.IsPlusActive(accountId);
 
             var countNeeded = 1;
             if (applyRomanQueueLogicWhenBuilding)

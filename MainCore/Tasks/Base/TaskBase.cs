@@ -2,15 +2,11 @@
 {
     public abstract class TaskBase
     {
-        protected readonly UnitOfCommand _unitOfCommand;
-        protected readonly UnitOfRepository _unitOfRepository;
         protected readonly IChromeManager _chromeManager;
         protected readonly IMediator _mediator;
 
-        protected TaskBase(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator)
+        protected TaskBase(IChromeManager chromeManager, IMediator mediator)
         {
-            _unitOfCommand = unitOfCommand;
-            _unitOfRepository = unitOfRepository;
             _mediator = mediator;
             _chromeManager = chromeManager;
         }

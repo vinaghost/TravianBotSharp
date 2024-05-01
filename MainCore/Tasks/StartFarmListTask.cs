@@ -25,7 +25,7 @@ namespace MainCore.Tasks
             var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
 
-            var useStartAllButton = _unitOfRepository.AccountSettingRepository.GetBooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
+            var useStartAllButton = _accountSettingRepository.GetBooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
             if (useStartAllButton)
             {
                 var startAllButton = _farmParser.GetStartAllButton(html);
@@ -56,7 +56,7 @@ namespace MainCore.Tasks
 
         private async Task SetNextExecute()
         {
-            var seconds = _unitOfRepository.AccountSettingRepository.GetByName(AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
+            var seconds = _accountSettingRepository.GetByName(AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
         }

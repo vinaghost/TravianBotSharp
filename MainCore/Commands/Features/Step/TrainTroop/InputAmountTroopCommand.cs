@@ -29,13 +29,13 @@
             var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
 
-            var inputBox = _unitOfParser.TroopPageParser.GetInputBox(html, command.Troop);
+            var inputBox = _troopPageParser.GetInputBox(html, command.Troop);
             if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
             Result result;
             result = await chromeBrowser.InputTextbox(By.XPath(inputBox.XPath), $"{command.Amount}");
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var trainButton = _unitOfParser.TroopPageParser.GetTrainButton(html);
+            var trainButton = _troopPageParser.GetTrainButton(html);
             if (trainButton is null) return Retry.ButtonNotFound("train troop");
 
             result = await chromeBrowser.Click(By.XPath(trainButton.XPath));

@@ -6,11 +6,13 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class CompleteImmediatelyTask : VillageTask
     {
-        private readonly UnitOfParser _unitOfParser;
+        private readonly ICompleteImmediatelyParser _completeImmediatelyParser;
+        private readonly IQueueBuildingParser _queueBuildingParser;
 
-        public CompleteImmediatelyTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, UnitOfParser unitOfParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
+        public CompleteImmediatelyTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, ICompleteImmediatelyParser completeImmediatelyParser, IQueueBuildingParser queueBuildingParser) : base(chromeManager, mediator, villageRepository)
         {
-            _unitOfParser = unitOfParser;
+            _completeImmediatelyParser = completeImmediatelyParser;
+            _queueBuildingParser = queueBuildingParser;
         }
 
         protected override async Task<Result> Execute()
@@ -42,7 +44,7 @@ namespace MainCore.Tasks
 
             var html = chromeBrowser.Html;
 
-            var completeNowButton = _unitOfParser.CompleteImmediatelyParser.GetCompleteButton(html);
+            var completeNowButton = _completeImmediatelyParser.GetCompleteButton(html);
             if (completeNowButton is null) return Retry.ButtonNotFound("complete now");
 
             Result result;
@@ -54,7 +56,7 @@ namespace MainCore.Tasks
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                var confirmButton = _unitOfParser.CompleteImmediatelyParser.GetConfirmButton(doc);
+                var confirmButton = _completeImmediatelyParser.GetConfirmButton(doc);
                 return confirmButton is not null;
             };
 
@@ -62,10 +64,10 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             html = chromeBrowser.Html;
-            var confirmButton = _unitOfParser.CompleteImmediatelyParser.GetConfirmButton(html);
+            var confirmButton = _completeImmediatelyParser.GetConfirmButton(html);
             if (confirmButton is null) return Retry.ButtonNotFound("complete now");
 
-            var oldQueueCount = _unitOfParser.QueueBuildingParser.Get(html)
+            var oldQueueCount = _queueBuildingParser.Get(html)
                 .Where(x => x.Level != -1)
                 .Count();
 
@@ -76,7 +78,7 @@ namespace MainCore.Tasks
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                var newQueueCount = _unitOfParser.QueueBuildingParser.Get(doc)
+                var newQueueCount = _queueBuildingParser.Get(doc)
                     .Where(x => x.Level != -1)
                     .Count();
                 return oldQueueCount != newQueueCount;

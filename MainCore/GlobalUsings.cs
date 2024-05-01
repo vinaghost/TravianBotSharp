@@ -1,6 +1,7 @@
 ﻿global using FluentResults;
 global using MainCore.Commands;
 global using MainCore.Commands.Base;
+global using MainCore.Commands.Misc;
 global using MainCore.Commands.Navigate;
 global using MainCore.Commands.Update;
 global using MainCore.Common.Enums;

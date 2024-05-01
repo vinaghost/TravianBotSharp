@@ -43,7 +43,7 @@ namespace MainCore.Commands.UI.MainLayout
             var result = _dialogService.ShowConfirmBox("Information", $"Are you sure want to delete \n {accounts.SelectedItem.Content}");
             if (!result) return;
 
-            await Task.Run(() => _unitOfRepository.AccountRepository.Delete(accountId), cancellationToken);
+            await Task.Run(() => _accountRepository.Delete(accountId), cancellationToken);
 
             await _mediator.Publish(new AccountUpdated(), cancellationToken);
         }

@@ -69,7 +69,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private AccountDto LoadAccountHandler(AccountId accountId)
         {
-            var account = _unitOfRepository.AccountRepository.Get(AccountId, true);
+            var account = _accountRepository.Get(AccountId, true);
             return account;
         }
 

@@ -17,7 +17,7 @@
             var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
 
-            var adventure = _unitOfParser.HeroParser.GetHeroAdventure(html);
+            var adventure = _heroParser.GetHeroAdventure(html);
             if (adventure is null) return Retry.ButtonNotFound("hero adventure");
 
             Result result;

@@ -39,7 +39,7 @@
             result = await _mediator.Send(new UpdateBuildingCommand(accountId, rallypointVillageId), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.ToBuildingCommand.Handle(new(accountId, 39), cancellationToken);
+            result = await _mediator.Send(new ToBuildingCommand(chromeBrowser, 39), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _unitOfCommand.SwitchTabCommand.Handle(new(accountId, 4), cancellationToken);

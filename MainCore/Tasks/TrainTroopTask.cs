@@ -1,4 +1,5 @@
-﻿using MainCore.Common.Errors.TrainTroop;
+﻿using MainCore.Commands.Misc;
+using MainCore.Common.Errors.TrainTroop;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -21,12 +22,18 @@ namespace MainCore.Tasks
         };
 
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfParser _unitOfParser;
+        private readonly IBuildingRepository _buildingRepository;
+        private readonly IVillageSettingRepository _villageSettingRepository;
+        private readonly ITroopPageParser _troopPageParser;
+        private readonly DelayClickCommand _delayClickCommand;
 
-        public TrainTroopTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager, UnitOfParser unitOfParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
+        public TrainTroopTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager, UnitOfParser unitOfParser, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, ITroopPageParser troopPageParser, DelayClickCommand delayClickCommand) : base(chromeManager, mediator, villageRepository)
         {
             _taskManager = taskManager;
-            _unitOfParser = unitOfParser;
+            _buildingRepository = buildingRepository;
+            _villageSettingRepository = villageSettingRepository;
+            _troopPageParser = troopPageParser;
+            _delayClickCommand = delayClickCommand;
         }
 
         protected override async Task<Result> Execute()
@@ -83,7 +90,9 @@ namespace MainCore.Tasks
             {
                 return MissingBuilding.Error(buildingType);
             }
-            result = await _unitOfCommand.ToBuildingCommand.Handle(new(AccountId, buildingLocation), CancellationToken);
+            var chromeBrowser = _chromeManager.Get(AccountId);
+
+            result = await _mediator.Send(new ToBuildingCommand(chromeBrowser, buildingLocation), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var troopSeting = _settings[buildingType];
@@ -91,10 +100,9 @@ namespace MainCore.Tasks
             var (minSetting, maxSetting) = _amountSettings[buildingType];
             var amount = _villageSettingRepository.GetByName(VillageId, minSetting, maxSetting);
 
-            var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
 
-            var maxAmount = _unitOfParser.TroopPageParser.GetMaxAmount(html, troop);
+            var maxAmount = _troopPageParser.GetMaxAmount(html, troop);
 
             if (maxAmount == 0)
             {
@@ -116,20 +124,19 @@ namespace MainCore.Tasks
 
             html = chromeBrowser.Html;
 
-            var inputBox = _unitOfParser.TroopPageParser.GetInputBox(html, troop);
+            var inputBox = _troopPageParser.GetInputBox(html, troop);
             if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
 
             result = await chromeBrowser.InputTextbox(By.XPath(inputBox.XPath), $"{amount}");
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var trainButton = _unitOfParser.TroopPageParser.GetTrainButton(html);
+            var trainButton = _troopPageParser.GetTrainButton(html);
             if (trainButton is null) return Retry.ButtonNotFound("train troop");
 
             result = await chromeBrowser.Click(By.XPath(trainButton.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.DelayClickCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            await _delayClickCommand.Execute(AccountId);
 
             return Result.Ok();
         }

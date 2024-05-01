@@ -5,7 +5,7 @@ namespace MainCore.Tasks.Base
 {
     public abstract class AccountTask : TaskBase
     {
-        protected AccountTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
+        protected AccountTask(IChromeManager chromeManager, IMediator mediator) : base(chromeManager, mediator)
         {
         }
 

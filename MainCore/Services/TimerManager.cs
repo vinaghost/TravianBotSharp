@@ -1,5 +1,5 @@
-﻿using MainCore.Commands.General;
-using Polly;
+﻿using Polly;
+using Splat;
 using Timer = System.Timers.Timer;
 
 namespace MainCore.Services
@@ -14,14 +14,12 @@ namespace MainCore.Services
         private readonly ITaskManager _taskManager;
         private readonly IChromeManager _chromeManager;
         private readonly ILogService _logService;
-        private readonly ICommandHandler<DelayTaskCommand> _delayTaskCommand;
 
-        public TimerManager(ITaskManager taskManager, ILogService logService, ICommandHandler<DelayTaskCommand> delayTaskCommand, IChromeManager chromeManager)
+        public TimerManager(ITaskManager taskManager, ILogService logService, IChromeManager chromeManager)
         {
             _taskManager = taskManager;
             _chromeManager = chromeManager;
             _logService = logService;
-            _delayTaskCommand = delayTaskCommand;
         }
 
         public async Task Execute(AccountId accountId)
@@ -126,7 +124,7 @@ namespace MainCore.Services
                 }
             }
 
-            await _delayTaskCommand.Handle(new DelayTaskCommand(accountId), CancellationToken.None);
+            await Locator.Current.GetService<DelayTaskCommand>().Execute(accountId);
         }
 
         public void Shutdown()

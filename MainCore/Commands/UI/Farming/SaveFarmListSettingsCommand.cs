@@ -41,7 +41,7 @@ namespace MainCore.Commands.UI.Farming
             }
 
             var settings = farmListSettingInput.Get();
-            _unitOfRepository.AccountSettingRepository.Update(accountId, settings);
+            _accountSettingRepository.Update(accountId, settings);
             await _mediator.Publish(new AccountSettingUpdated(accountId), cancellationToken);
 
             _dialogService.ShowMessageBox("Information", "Settings saved");

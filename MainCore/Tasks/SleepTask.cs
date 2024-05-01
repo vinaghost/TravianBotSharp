@@ -1,23 +1,23 @@
-﻿using MainCore.Commands.General;
-using MainCore.DTO;
+﻿using MainCore.Commands.Misc;
 using MainCore.Tasks.Base;
-using Serilog;
 
 namespace MainCore.Tasks
 {
     [RegisterAsTransient(withoutInterface: true)]
     public class SleepTask : AccountTask
     {
+        private readonly GetAccessCommand _getAccessCommand;
+        private readonly IAccountSettingRepository _accountSettingRepository;
+
         private readonly ITaskManager _taskManager;
         private readonly ILogService _logService;
-        private ILogger _logger;
-        private readonly ICommandHandler<OpenBrowserCommand> _openBrowserCommand;
 
-        public SleepTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager, ILogService logService, ICommandHandler<OpenBrowserCommand> openBrowserCommand) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
+        public SleepTask(IChromeManager chromeManager, IMediator mediator, GetAccessCommand getAccessCommand, IAccountSettingRepository accountSettingRepository, ITaskManager taskManager, ILogService logService) : base(chromeManager, mediator)
         {
+            _getAccessCommand = getAccessCommand;
+            _accountSettingRepository = accountSettingRepository;
             _taskManager = taskManager;
             _logService = logService;
-            _openBrowserCommand = openBrowserCommand;
         }
 
         protected override async Task<Result> Execute()
@@ -25,18 +25,17 @@ namespace MainCore.Tasks
             var chromeBrowser = _chromeManager.Get(AccountId);
             await Task.Run(chromeBrowser.Close, CancellationToken.None);
 
-            _logger = _logService.GetLogger(AccountId);
-
             Result result;
             result = await Sleep();
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var accessResult = await GetAccess();
+            var accessResult = await _getAccessCommand.Execute(AccountId);
             if (accessResult.IsFailed) return Result.Fail(accessResult.Errors).WithError(TraceMessage.Error(TraceMessage.Line()));
             var access = accessResult.Value;
 
-            result = await _openBrowserCommand.Handle(new(AccountId, access), CancellationToken);
+            result = await _mediator.Send(new OpenBrowserCommand(AccountId, access, chromeBrowser), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
             await SetNextExecute();
 
             return Result.Ok();
@@ -44,7 +43,7 @@ namespace MainCore.Tasks
 
         private async Task SetNextExecute()
         {
-            var workTime = _unitOfRepository.AccountSettingRepository.GetByName(AccountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
+            var workTime = _accountSettingRepository.GetByName(AccountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
             ExecuteAt = DateTime.Now.AddMinutes(workTime);
             await _taskManager.ReOrder(AccountId);
         }
@@ -56,7 +55,9 @@ namespace MainCore.Tasks
 
         private async Task<Result> Sleep()
         {
-            var sleepTimeMinutes = _unitOfRepository.AccountSettingRepository.GetByName(AccountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
+            var logger = _logService.GetLogger(AccountId);
+
+            var sleepTimeMinutes = _accountSettingRepository.GetByName(AccountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
             var sleepEnd = DateTime.Now.AddMinutes(sleepTimeMinutes);
             int lastMinute = 0;
             while (true)
@@ -68,48 +69,10 @@ namespace MainCore.Tasks
                 var currentMinute = (int)timeRemaining.TotalMinutes;
                 if (lastMinute != currentMinute)
                 {
-                    _logger.Information("Chrome will reopen in {currentMinute} mins", currentMinute);
+                    logger.Information("Chrome will reopen in {currentMinute} mins", currentMinute);
                     lastMinute = currentMinute;
                 }
             }
-        }
-
-        public async Task<Result<AccessDto>> GetAccess()
-        {
-            var accesses = _unitOfRepository.AccountRepository.GetAccesses(AccountId);
-            var access = await GetValidAccess(accesses);
-            if (access is null) return NoAccessAvailable.AllAccessNotWorking;
-
-            _unitOfRepository.AccountRepository.UpdateAccessLastUsed(access.Id);
-
-            if (accesses.Count == 1)
-            {
-                return access;
-            }
-
-            var minSleep = _unitOfRepository.AccountSettingRepository.GetByName(AccountId, AccountSettingEnums.SleepTimeMin);
-            var timeValid = DateTime.Now.AddMinutes(-minSleep);
-            if (access.LastUsed > timeValid) return NoAccessAvailable.LackOfAccess;
-
-            return access;
-        }
-
-        private async Task<AccessDto> GetValidAccess(List<AccessDto> accesses)
-        {
-            foreach (var access in accesses)
-            {
-                _logger.Information("Check connection {proxy}", access.Proxy);
-                var result = await _unitOfCommand.ValidateProxyCommand.Handle(new(access), CancellationToken);
-                if (result.IsFailed) return null;
-                if (!_unitOfCommand.ValidateProxyCommand.Value)
-                {
-                    _logger.Warning("Connection {proxy} cannot connect to travian.com", access.Proxy);
-                    continue;
-                }
-                _logger.Information("Connection {proxy} is working", access.Proxy);
-                return access;
-            }
-            return null;
         }
     }
 }

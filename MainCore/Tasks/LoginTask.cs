@@ -5,11 +5,18 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public sealed class LoginTask : AccountTask
     {
-        private readonly UnitOfParser _unitOfParser;
+        private readonly INavigationBarParser _navigationBarParser;
+        private readonly ILoginPageParser _loginPageParser;
+        private readonly IOptionPageParser _optionPageParser;
 
-        public LoginTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, UnitOfParser unitOfParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
+        private readonly IAccountRepository _accountRepository;
+
+        public LoginTask(IChromeManager chromeManager, IMediator mediator, INavigationBarParser navigationBarParser, ILoginPageParser loginPageParser, IAccountRepository accountRepository, IOptionPageParser optionPageParser) : base(chromeManager, mediator)
         {
-            _unitOfParser = unitOfParser;
+            _navigationBarParser = navigationBarParser;
+            _loginPageParser = loginPageParser;
+            _accountRepository = accountRepository;
+            _optionPageParser = optionPageParser;
         }
 
         protected override async Task<Result> Execute()
@@ -32,18 +39,18 @@ namespace MainCore.Tasks
 
             var html = chromeBrowser.Html;
 
-            var resourceButton = _unitOfParser.NavigationBarParser.GetResourceButton(html);
+            var resourceButton = _navigationBarParser.GetResourceButton(html);
             if (resourceButton is not null) return Result.Ok();
 
-            var buttonNode = _unitOfParser.LoginPageParser.GetLoginButton(html);
+            var buttonNode = _loginPageParser.GetLoginButton(html);
             if (buttonNode is null) return Retry.ButtonNotFound("login");
-            var usernameNode = _unitOfParser.LoginPageParser.GetUsernameNode(html);
+            var usernameNode = _loginPageParser.GetUsernameNode(html);
             if (usernameNode is null) return Retry.TextboxNotFound("username");
-            var passwordNode = _unitOfParser.LoginPageParser.GetPasswordNode(html);
+            var passwordNode = _loginPageParser.GetPasswordNode(html);
             if (passwordNode is null) return Retry.TextboxNotFound("password");
 
-            var username = _unitOfRepository.AccountRepository.GetUsername(AccountId);
-            var password = _unitOfRepository.AccountRepository.GetPassword(AccountId);
+            var username = _accountRepository.GetUsername(AccountId);
+            var password = _accountRepository.GetPassword(AccountId);
 
             Result result;
             result = await chromeBrowser.InputTextbox(By.XPath(usernameNode.XPath), username);
@@ -81,7 +88,7 @@ namespace MainCore.Tasks
         {
             var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
-            return _unitOfParser.OptionPageParser.IsContextualHelpShow(html);
+            return _optionPageParser.IsContextualHelpShow(html);
         }
 
         private async Task<Result> ToOptionsPage()
@@ -89,7 +96,7 @@ namespace MainCore.Tasks
             var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
 
-            var button = _unitOfParser.OptionPageParser.GetOptionButton(html);
+            var button = _optionPageParser.GetOptionButton(html);
             Result result;
             result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -101,7 +108,7 @@ namespace MainCore.Tasks
             var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
 
-            var option = _unitOfParser.OptionPageParser.GetHideContextualHelpOption(html);
+            var option = _optionPageParser.GetHideContextualHelpOption(html);
             if (option is null) return Retry.NotFound("hide contextual help", "option");
             Result result;
             result = await chromeBrowser.Click(By.XPath(option.XPath));
@@ -114,7 +121,7 @@ namespace MainCore.Tasks
             var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
 
-            var option = _unitOfParser.OptionPageParser.GetSubmitButton(html);
+            var option = _optionPageParser.GetSubmitButton(html);
             Result result;
             result = await chromeBrowser.Click(By.XPath(option.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));

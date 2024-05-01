@@ -30,7 +30,7 @@
 
             var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
-            Value = _unitOfParser.TroopPageParser.GetMaxAmount(html, command.Troop);
+            Value = _troopPageParser.GetMaxAmount(html, command.Troop);
             return Result.Ok();
         }
     }

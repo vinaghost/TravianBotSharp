@@ -6,15 +6,20 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class NPCTask : VillageTask
     {
-        private readonly UnitOfParser _unitOfParser;
+        private readonly IBuildingRepository _buildingRepository;
+        private readonly IVillageSettingRepository _villageSettingRepository;
+        private readonly IMarketParser _marketParser;
 
-        public NPCTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, UnitOfParser unitOfParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
+        public NPCTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, IBuildingRepository buildingRepository, IMarketParser marketParser, IVillageSettingRepository villageSettingRepository) : base(chromeManager, mediator, villageRepository)
         {
-            _unitOfParser = unitOfParser;
+            _buildingRepository = buildingRepository;
+            _marketParser = marketParser;
+            _villageSettingRepository = villageSettingRepository;
         }
 
         protected override async Task<Result> Execute()
         {
+            var chromeBrowser = _chromeManager.Get(AccountId);
             Result result;
 
             result = await _mediator.Send(ToDorfCommand.ToDorf2(AccountId), CancellationToken);
@@ -25,10 +30,10 @@ namespace MainCore.Tasks
 
             var market = _buildingRepository.GetBuildingLocation(VillageId, BuildingEnums.Marketplace);
 
-            result = await _unitOfCommand.ToBuildingCommand.Handle(new(AccountId, market), CancellationToken);
+            result = await _mediator.Send(new ToBuildingCommand(chromeBrowser, market), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.SwitchTabCommand.Handle(new(AccountId, 0), CancellationToken);
+            result = await _mediator.Send(new SwitchTabCommand(chromeBrowser, 0), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await OpenNPCDialog();
@@ -56,7 +61,7 @@ namespace MainCore.Tasks
             var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
 
-            var button = _unitOfParser.MarketParser.GetExchangeResourcesButton(html);
+            var button = _marketParser.GetExchangeResourcesButton(html);
             if (button is null) return Retry.ButtonNotFound("Exchange resources");
             Result result;
             result = await chromeBrowser.Click(By.XPath(button.XPath));
@@ -67,7 +72,7 @@ namespace MainCore.Tasks
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
 
-                return _unitOfParser.MarketParser.NPCDialogShown(doc);
+                return _marketParser.NPCDialogShown(doc);
             }
 
             result = await chromeBrowser.Wait(dialogShown, CancellationToken);
@@ -81,7 +86,7 @@ namespace MainCore.Tasks
             var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
 
-            var sum = _unitOfParser.MarketParser.GetSum(html);
+            var sum = _marketParser.GetSum(html);
             var ratio = GetRatio();
             var sumRatio = ratio.Sum();
             var values = new long[4];
@@ -93,7 +98,7 @@ namespace MainCore.Tasks
             var diff = sum - sumValue;
             values[3] += diff;
 
-            var inputs = _unitOfParser.MarketParser.GetInputs(html).ToArray();
+            var inputs = _marketParser.GetInputs(html).ToArray();
 
             Result result;
             for (var i = 0; i < 4; i++)
@@ -135,7 +140,7 @@ namespace MainCore.Tasks
             var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
 
-            var button = _unitOfParser.MarketParser.GetRedeemButton(html);
+            var button = _marketParser.GetRedeemButton(html);
             if (button is null) return Retry.ButtonNotFound("redeem");
 
             Result result;
