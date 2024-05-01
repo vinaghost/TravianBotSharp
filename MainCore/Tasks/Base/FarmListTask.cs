@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.Misc;
-using MainCore.DTO;
+﻿using MainCore.DTO;
 using MainCore.Infrasturecture.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,9 +7,9 @@ namespace MainCore.Tasks.Base
     public abstract class FarmListTask : AccountTask
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly DelayClickCommand _delayClickCommand;
+        protected readonly DelayClickCommand _delayClickCommand;
 
-        private readonly IFarmParser _farmParser;
+        protected readonly IFarmParser _farmParser;
 
         protected FarmListTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IFarmParser farmParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
         {

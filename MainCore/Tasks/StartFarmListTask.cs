@@ -1,19 +1,22 @@
 ﻿using MainCore.Commands.Features;
+using MainCore.Infrasturecture.Persistence;
 using MainCore.Tasks.Base;
+using Microsoft.EntityFrameworkCore;
 
 namespace MainCore.Tasks
 {
     [RegisterAsTransient(withoutInterface: true)]
-    public class StartFarmListTask : AccountTask
+    public class StartFarmListTask : FarmListTask
     {
+        private readonly IAccountSettingRepository _accountSettingRepository;
+        private readonly IFarmRepository _farmRepository;
         private readonly ITaskManager _taskManager;
 
-        private readonly UnitOfParser _unitOfParser;
-
-        public StartFarmListTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager, UnitOfParser unitOfParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
+        public StartFarmListTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IFarmParser farmParser, IAccountSettingRepository accountSettingRepository, IFarmRepository farmRepository, ITaskManager taskManager) : base(chromeManager, unitOfCommand, unitOfRepository, mediator, contextFactory, delayClickCommand, farmParser)
         {
+            _accountSettingRepository = accountSettingRepository;
+            _farmRepository = farmRepository;
             _taskManager = taskManager;
-            _unitOfParser = unitOfParser;
         }
 
         protected override async Task<Result> Execute()
@@ -47,7 +50,7 @@ namespace MainCore.Tasks
                     result = await chromeBrowser.Click(By.XPath(startButton.XPath));
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                    await _unitOfCommand.DelayClickCommand.Handle(new(AccountId), CancellationToken);
+                    await _delayClickCommand.Execute(AccountId);
                 }
             }
             await SetNextExecute();

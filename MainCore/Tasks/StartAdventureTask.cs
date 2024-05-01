@@ -6,16 +6,12 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class StartAdventureTask : AccountTask
     {
-        private readonly ICommandHandler<ToAdventurePageCommand> _toAdventurePageCommand;
-        private readonly ICommandHandler<ExploreAdventureCommand> _exploreAdventureCommand;
         private readonly ITaskManager _taskManager;
         private readonly IHeroParser _heroParser;
 
-        public StartAdventureTask(IChromeManager chromeManager, IMediator mediator, ITaskManager taskManager, ICommandHandler<ToAdventurePageCommand> toAdventurePageCommand, ICommandHandler<ExploreAdventureCommand> exploreAdventureCommand, IHeroParser heroParser) : base(chromeManager, mediator)
+        public StartAdventureTask(IChromeManager chromeManager, IMediator mediator, ITaskManager taskManager, IHeroParser heroParser) : base(chromeManager, mediator)
         {
             _taskManager = taskManager;
-            _toAdventurePageCommand = toAdventurePageCommand;
-            _exploreAdventureCommand = exploreAdventureCommand;
             _heroParser = heroParser;
         }
 
@@ -24,15 +20,17 @@ namespace MainCore.Tasks
             Result result;
             var chromeBrowser = _chromeManager.Get(AccountId);
 
-            result = await _mediator.Send(ToDorfCommand.ToDorf1(AccountId), CancellationToken);
+            result = await _mediator.Send(ToDorfCommand.ToDorf(AccountId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var html = chromeBrowser.Html;
 
+            if (!_heroParser.CanStartAdventure(html)) return Result.Ok();
+
             result = await _mediator.Send(new ToAdventurePageCommand(chromeBrowser), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _exploreAdventureCommand.Handle(new(AccountId), CancellationToken);
+            result = await _mediator.Send(new ExploreAdventureCommand(chromeBrowser), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             html = chromeBrowser.Html;
