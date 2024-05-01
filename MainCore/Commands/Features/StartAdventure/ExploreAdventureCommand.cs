@@ -1,22 +1,29 @@
 ﻿using HtmlAgilityPack;
 
-namespace MainCore.Commands.Features.Step.StartAdventure.ExploreAdventureCommandHandler
+namespace MainCore.Commands.Features.StartAdventure
 {
-    [RegisterAsTransient(Common.Enums.ServerEnums.TravianOfficial)]
-    public class TravianOfficial : ICommandHandler<ExploreAdventureCommand>
+    public class ExploreAdventureCommand : ICommand
     {
-        private readonly IChromeManager _chromeManager;
-        private readonly UnitOfParser _unitOfParser;
-
-        public TravianOfficial(IChromeManager chromeManager, UnitOfParser unitOfParser)
+        public ExploreAdventureCommand(IChromeBrowser chromeBrowser)
         {
-            _chromeManager = chromeManager;
-            _unitOfParser = unitOfParser;
+            ChromeBrowser = chromeBrowser;
         }
 
-        public async Task<Result> Handle(ExploreAdventureCommand command, CancellationToken cancellationToken)
+        public IChromeBrowser ChromeBrowser { get; }
+    }
+
+    public class ExploreAdventureCommandHandler : ICommandHandler<ExploreAdventureCommand>
+    {
+        private readonly IHeroParser _heroParser;
+
+        public ExploreAdventureCommandHandler(IHeroParser heroParser)
         {
-            var chromeBrowser = _chromeManager.Get(command.AccountId);
+            _heroParser = heroParser;
+        }
+
+        public async Task<Result> Handle(ExploreAdventureCommand request, CancellationToken cancellationToken)
+        {
+            var chromeBrowser = request.ChromeBrowser;
             var html = chromeBrowser.Html;
 
             var adventure = _heroParser.GetAdventure(html);

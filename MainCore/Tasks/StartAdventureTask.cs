@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Features.Step.StartAdventure;
+﻿using MainCore.Commands.Features.StartAdventure;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -29,7 +29,7 @@ namespace MainCore.Tasks
 
             var html = chromeBrowser.Html;
 
-            result = await _toAdventurePageCommand.Handle(new(AccountId), CancellationToken);
+            result = await _mediator.Send(new ToAdventurePageCommand(chromeBrowser), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _exploreAdventureCommand.Handle(new(AccountId), CancellationToken);
