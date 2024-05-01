@@ -13,7 +13,7 @@
         {
             await Task.CompletedTask;
             var villageId = notification.VillageId;
-            _unitOfRepository.BuildingRepository.UpdateWall(villageId);
+            _buildingRepository.UpdateWall(villageId);
         }
     }
 }

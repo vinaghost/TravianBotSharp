@@ -118,7 +118,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private List<ListBoxItem> LoadBuildingHandler(VillageId villageId)
         {
-            var buildings = _unitOfRepository.BuildingRepository.GetItems(villageId);
+            var buildings = _buildingRepository.GetItems(villageId);
             return buildings;
         }
 
@@ -137,7 +137,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private List<BuildingEnums> LoadBuildNormalHanlder(ListBoxItem item)
         {
             if (item is null) return new();
-            var buildings = _unitOfRepository.BuildingRepository.GetNormalBuilding(VillageId, new BuildingId(item.Id));
+            var buildings = _buildingRepository.GetNormalBuilding(VillageId, new BuildingId(item.Id));
             return buildings;
         }
 

@@ -39,7 +39,7 @@ namespace MainCore.Commands.UI.Build
                 return;
             }
 
-            var buildings = _unitOfRepository.BuildingRepository.GetBuildings(request.VillageId);
+            var buildings = _buildingRepository.GetBuildings(request.VillageId);
             var building = buildings.FirstOrDefault(x => x.Location == request.Location);
 
             if (building is null) return;

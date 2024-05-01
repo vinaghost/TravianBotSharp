@@ -53,22 +53,6 @@ namespace MainCore.Repositories
             return villages;
         }
 
-        public VillageId GetVillageHasRallypoint(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            var village = context.Villages
-                .Where(x => x.AccountId == accountId.Value)
-                .Include(x => x.Buildings.Where(x => x.Type == BuildingEnums.RallyPoint))
-                .Where(x => x.Buildings.Count > 0)
-                .OrderByDescending(x => x.IsActive)
-                .Select(x => x.Id)
-                .AsEnumerable()
-                .Select(x => new VillageId(x))
-                .FirstOrDefault();
-            return village;
-        }
-
         public List<VillageId> Get(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();

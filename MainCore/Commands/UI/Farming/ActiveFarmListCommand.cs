@@ -37,7 +37,7 @@ namespace MainCore.Commands.UI.Farming
             var accountId = request.AccountId;
             var farmId = new FarmId(selectedFarmList.Id);
 
-            _unitOfRepository.FarmRepository.ChangeActive(farmId);
+            _farmRepository.ChangeActive(farmId);
             await _mediator.Publish(new FarmListUpdated(accountId), cancellationToken);
         }
     }

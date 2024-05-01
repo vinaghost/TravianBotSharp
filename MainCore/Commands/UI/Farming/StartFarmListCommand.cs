@@ -28,7 +28,7 @@ namespace MainCore.Commands.UI.Farming
             var useStartAllButton = _unitOfRepository.AccountSettingRepository.GetBooleanByName(accountId, Common.Enums.AccountSettingEnums.UseStartAllButton);
             if (!useStartAllButton)
             {
-                var count = _unitOfRepository.FarmRepository.CountActive(accountId);
+                var count = _farmRepository.CountActive(accountId);
                 if (count == 0)
                 {
                     _dialogService.ShowMessageBox("Information", "There is no active farm or use start all button is disable");

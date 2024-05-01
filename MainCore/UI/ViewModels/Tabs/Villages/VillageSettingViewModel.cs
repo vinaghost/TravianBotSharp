@@ -61,7 +61,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private Dictionary<VillageSettingEnums, int> LoadSettingHandler(VillageId villageId)
         {
-            var settings = _unitOfRepository.VillageSettingRepository.Get(villageId);
+            var settings = _villageSettingRepository.Get(villageId);
             return settings;
         }
     }

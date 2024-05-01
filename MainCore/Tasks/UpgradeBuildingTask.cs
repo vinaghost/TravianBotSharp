@@ -17,12 +17,16 @@ namespace MainCore.Tasks
         private readonly ITaskManager _taskManager;
 
         private readonly IUpgradeBuildingParser _upgradeBuildingParser;
+        private readonly IBuildingRepository _buildingRepository;
+        private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public UpgradeBuildingTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ILogService logService, ITaskManager taskManager, IUpgradeBuildingParser upgradeBuildingParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
+        public UpgradeBuildingTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IVillageRepository villageRepository, ILogService logService, ITaskManager taskManager, IUpgradeBuildingParser upgradeBuildingParser, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository) : base(chromeManager, unitOfCommand, unitOfRepository, mediator, villageRepository)
         {
             _logService = logService;
             _taskManager = taskManager;
             _upgradeBuildingParser = upgradeBuildingParser;
+            _buildingRepository = buildingRepository;
+            _villageSettingRepository = villageSettingRepository;
         }
 
         protected override async Task<Result> Execute()
@@ -145,13 +149,13 @@ namespace MainCore.Tasks
 
         protected override void SetName()
         {
-            var village = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
+            var village = _villageRepository.GetVillageName(VillageId);
             _name = $"Upgrade building in {village}";
         }
 
         private bool IsUpgradeable(NormalBuildPlan plan)
         {
-            var emptySite = _unitOfRepository.BuildingRepository.EmptySite(VillageId, plan.Location);
+            var emptySite = _buildingRepository.EmptySite(VillageId, plan.Location);
             return !emptySite;
         }
 
@@ -168,7 +172,7 @@ namespace MainCore.Tasks
 
             if (plan.Type.IsResourceField())
             {
-                var dto = _unitOfRepository.BuildingRepository.GetBuilding(VillageId, plan.Location);
+                var dto = _buildingRepository.GetBuilding(VillageId, plan.Location);
                 if (dto.Level == 0) return false;
             }
             return true;
@@ -176,13 +180,13 @@ namespace MainCore.Tasks
 
         private bool IsSpecialUpgrade()
         {
-            var useSpecialUpgrade = _unitOfRepository.VillageSettingRepository.GetBooleanByName(VillageId, VillageSettingEnums.UseSpecialUpgrade);
+            var useSpecialUpgrade = _villageSettingRepository.GetBooleanByName(VillageId, VillageSettingEnums.UseSpecialUpgrade);
             return useSpecialUpgrade;
         }
 
         private bool IsUseHeroResource()
         {
-            var useHeroResource = _unitOfRepository.VillageSettingRepository.GetBooleanByName(VillageId, VillageSettingEnums.UseHeroResourceForBuilding);
+            var useHeroResource = _villageSettingRepository.GetBooleanByName(VillageId, VillageSettingEnums.UseHeroResourceForBuilding);
             return useHeroResource;
         }
 
@@ -220,7 +224,7 @@ namespace MainCore.Tasks
 
         public async Task AddCropland()
         {
-            var cropland = _unitOfRepository.BuildingRepository.GetCropland(VillageId);
+            var cropland = _buildingRepository.GetCropland(VillageId);
 
             var plan = new NormalBuildPlan()
             {
@@ -239,7 +243,7 @@ namespace MainCore.Tasks
             result = await _mediator.Send(new ToBuildingCommand(chromeBrowser, plan.Location), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var building = _unitOfRepository.BuildingRepository.GetBuilding(VillageId, plan.Location);
+            var building = _buildingRepository.GetBuilding(VillageId, plan.Location);
             if (building.Type == BuildingEnums.Site)
             {
                 var tabIndex = plan.Type.GetBuildingsCategory();
@@ -260,14 +264,14 @@ namespace MainCore.Tasks
         {
             var html = chromeBrowser.Html;
 
-            var isEmptySite = _unitOfRepository.BuildingRepository.EmptySite(VillageId, plan.Location);
+            var isEmptySite = _buildingRepository.EmptySite(VillageId, plan.Location);
             return _upgradeBuildingParser.GetRequiredResource(html, isEmptySite, plan.Type);
         }
 
         public TimeSpan GetTimeWhenEnoughResource(IChromeBrowser chromeBrowser, NormalBuildPlan plan)
         {
             var html = chromeBrowser.Html;
-            var isEmptySite = _unitOfRepository.BuildingRepository.EmptySite(VillageId, plan.Location);
+            var isEmptySite = _buildingRepository.EmptySite(VillageId, plan.Location);
             return _upgradeBuildingParser.GetTimeWhenEnoughResource(html, isEmptySite, plan.Type);
         }
     }

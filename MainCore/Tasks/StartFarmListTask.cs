@@ -28,7 +28,7 @@ namespace MainCore.Tasks
             var useStartAllButton = _unitOfRepository.AccountSettingRepository.GetBooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
             if (useStartAllButton)
             {
-                var startAllButton = _unitOfParser.FarmParser.GetStartAllButton(html);
+                var startAllButton = _farmParser.GetStartAllButton(html);
                 if (startAllButton is null) return Retry.ButtonNotFound("Start all farms");
 
                 result = await chromeBrowser.Click(By.XPath(startAllButton.XPath));
@@ -36,12 +36,12 @@ namespace MainCore.Tasks
             }
             else
             {
-                var farmLists = _unitOfRepository.FarmRepository.GetActive(AccountId);
+                var farmLists = _farmRepository.GetActive(AccountId);
                 if (farmLists.Count == 0) return Result.Fail(Skip.NoActiveFarmlist);
 
                 foreach (var farmList in farmLists)
                 {
-                    var startButton = _unitOfParser.FarmParser.GetStartButton(html, farmList);
+                    var startButton = _farmParser.GetStartButton(html, farmList);
                     if (startButton is null) return Retry.ButtonNotFound($"Start farm {farmList}");
 
                     result = await chromeBrowser.Click(By.XPath(startButton.XPath));

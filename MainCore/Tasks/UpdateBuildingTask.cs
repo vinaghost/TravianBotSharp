@@ -49,7 +49,7 @@ namespace MainCore.Tasks
 
         protected override void SetName()
         {
-            var village = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
+            var village = _villageRepository.GetVillageName(VillageId);
             _name = $"Update all buildings in {village}";
         }
     }

@@ -27,7 +27,7 @@
             result = await _mediator.Send(new UpdateVillageListCommand(accountId), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var rallypointVillageId = _unitOfRepository.VillageRepository.GetVillageHasRallypoint(accountId);
+            var rallypointVillageId = _villageRepository.GetVillageHasRallypoint(accountId);
             if (rallypointVillageId == VillageId.Empty) return Skip.NoRallypoint;
 
             result = await _unitOfCommand.SwitchVillageCommand.Handle(new(accountId, rallypointVillageId), cancellationToken);

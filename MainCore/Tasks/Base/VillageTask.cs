@@ -4,8 +4,11 @@ namespace MainCore.Tasks.Base
 {
     public abstract class VillageTask : AccountTask
     {
-        protected VillageTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
+        protected readonly IVillageRepository _villageRepository;
+
+        protected VillageTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IVillageRepository villageRepository) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
         {
+            _villageRepository = villageRepository;
         }
 
         public VillageId VillageId { get; protected set; }

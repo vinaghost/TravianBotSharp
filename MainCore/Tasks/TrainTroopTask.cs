@@ -31,7 +31,7 @@ namespace MainCore.Tasks
 
         protected override async Task<Result> Execute()
         {
-            var buildings = _unitOfRepository.BuildingRepository.GetTrainTroopBuilding(VillageId);
+            var buildings = _buildingRepository.GetTrainTroopBuilding(VillageId);
             if (buildings.Count == 0) return Result.Ok();
 
             Result result;
@@ -52,21 +52,21 @@ namespace MainCore.Tasks
                 }
             }
 
-            _unitOfRepository.VillageSettingRepository.Update(VillageId, settings);
+            _villageSettingRepository.Update(VillageId, settings);
             await SetNextExecute();
             return Result.Ok();
         }
 
         private async Task SetNextExecute()
         {
-            var seconds = _unitOfRepository.VillageSettingRepository.GetByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
+            var seconds = _villageSettingRepository.GetByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
         }
 
         protected override void SetName()
         {
-            var name = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
+            var name = _villageRepository.GetVillageName(VillageId);
             _name = $"Training troop in {name}";
         }
 
@@ -78,7 +78,7 @@ namespace MainCore.Tasks
             result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var buildingLocation = _unitOfRepository.BuildingRepository.GetBuildingLocation(VillageId, buildingType);
+            var buildingLocation = _buildingRepository.GetBuildingLocation(VillageId, buildingType);
             if (buildingLocation == default)
             {
                 return MissingBuilding.Error(buildingType);
@@ -87,9 +87,9 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var troopSeting = _settings[buildingType];
-            var troop = (TroopEnums)_unitOfRepository.VillageSettingRepository.GetByName(VillageId, troopSeting);
+            var troop = (TroopEnums)_villageSettingRepository.GetByName(VillageId, troopSeting);
             var (minSetting, maxSetting) = _amountSettings[buildingType];
-            var amount = _unitOfRepository.VillageSettingRepository.GetByName(VillageId, minSetting, maxSetting);
+            var amount = _villageSettingRepository.GetByName(VillageId, minSetting, maxSetting);
 
             var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
@@ -103,7 +103,7 @@ namespace MainCore.Tasks
 
             if (amount > maxAmount)
             {
-                var trainWhenLowResource = _unitOfRepository.VillageSettingRepository.GetBooleanByName(VillageId, VillageSettingEnums.TrainWhenLowResource);
+                var trainWhenLowResource = _villageSettingRepository.GetBooleanByName(VillageId, VillageSettingEnums.TrainWhenLowResource);
                 if (trainWhenLowResource)
                 {
                     amount = maxAmount;

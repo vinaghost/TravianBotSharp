@@ -76,7 +76,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private List<ListBoxItem> LoadVillageHandler(AccountId accountId)
         {
-            return _unitOfRepository.VillageRepository.GetItems(accountId);
+            return _villageRepository.GetItems(accountId);
         }
     }
 }

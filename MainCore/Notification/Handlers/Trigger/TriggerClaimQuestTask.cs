@@ -25,7 +25,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
-            var autoClaimQuest = _unitOfRepository.VillageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
+            var autoClaimQuest = _villageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
             if (autoClaimQuest)
             {
                 if (_taskManager.IsExist<ClaimQuestTask>(accountId, villageId)) return;

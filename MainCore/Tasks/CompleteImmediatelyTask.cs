@@ -32,7 +32,7 @@ namespace MainCore.Tasks
 
         protected override void SetName()
         {
-            var villageName = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
+            var villageName = _villageRepository.GetVillageName(VillageId);
             _name = $"Complete immediately in {villageName}";
         }
 

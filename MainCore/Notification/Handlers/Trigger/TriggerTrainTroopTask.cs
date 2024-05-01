@@ -20,7 +20,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
         {
-            var villages = _unitOfRepository.VillageRepository.Get(notification.AccountId);
+            var villages = _villageRepository.Get(notification.AccountId);
             foreach (var village in villages)
             {
                 await Trigger(notification.AccountId, village);
@@ -29,7 +29,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
-            var trainTroopEnable = _unitOfRepository.VillageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
+            var trainTroopEnable = _villageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
             if (trainTroopEnable)
             {
                 if (_taskManager.IsExist<TrainTroopTask>(accountId, villageId)) return;

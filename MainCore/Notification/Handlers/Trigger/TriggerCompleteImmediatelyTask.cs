@@ -30,10 +30,10 @@ namespace MainCore.Notification.Handlers.Trigger
             var count = _unitOfRepository.QueueBuildingRepository.Count(villageId);
             if (count == 0) return;
 
-            var completeImmediatelyEnable = _unitOfRepository.VillageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.CompleteImmediately);
+            var completeImmediatelyEnable = _villageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.CompleteImmediately);
             if (!completeImmediatelyEnable) return;
 
-            var applyRomanQueueLogicWhenBuilding = _unitOfRepository.VillageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
+            var applyRomanQueueLogicWhenBuilding = _villageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
             var plusActive = _unitOfRepository.AccountInfoRepository.IsPlusActive(accountId);
 
             var countNeeded = 1;

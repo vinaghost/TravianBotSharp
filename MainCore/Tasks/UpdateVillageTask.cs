@@ -6,10 +6,12 @@ namespace MainCore.Tasks
     public class UpdateVillageTask : VillageTask
     {
         private readonly ITaskManager _taskManager;
+        private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public UpdateVillageTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager) : base(chromeManager, unitOfCommand, unitOfRepository, mediator)
+        public UpdateVillageTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager, IVillageSettingRepository villageSettingRepository) : base(chromeManager, unitOfCommand, unitOfRepository, mediator, villageRepository)
         {
             _taskManager = taskManager;
+            _villageSettingRepository = villageSettingRepository;
         }
 
         protected override async Task<Result> Execute()
@@ -46,14 +48,14 @@ namespace MainCore.Tasks
 
         private async Task SetNextExecute()
         {
-            var seconds = _unitOfRepository.VillageSettingRepository.GetByName(VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
+            var seconds = _villageSettingRepository.GetByName(VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
         }
 
         protected override void SetName()
         {
-            var village = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
+            var village = _villageRepository.GetVillageName(VillageId);
             _name = $"Update village in {village}";
         }
     }

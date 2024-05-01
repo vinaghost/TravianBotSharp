@@ -25,7 +25,7 @@ namespace MainCore.Commands.UI.Village
         public async Task Handle(LoadUnloadCommand request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
-            var villages = _unitOfRepository.VillageRepository.GetMissingBuildingVillages(accountId);
+            var villages = _villageRepository.GetMissingBuildingVillages(accountId);
             foreach (var village in villages)
             {
                 await _taskManager.AddOrUpdate<UpdateBuildingTask>(accountId, village);

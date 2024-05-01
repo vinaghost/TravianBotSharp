@@ -113,7 +113,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private List<ListBoxItem> LoadFarmListHandler(AccountId accountId)
         {
-            var items = _unitOfRepository.FarmRepository.GetItems(accountId);
+            var items = _farmRepository.GetItems(accountId);
             return items;
         }
 

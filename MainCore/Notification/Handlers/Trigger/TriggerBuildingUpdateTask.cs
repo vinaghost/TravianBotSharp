@@ -25,7 +25,7 @@ namespace MainCore.Notification.Handlers.Trigger
             var autoLoadVillageBuilding = _unitOfRepository.AccountSettingRepository.GetBooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             if (!autoLoadVillageBuilding) return;
 
-            var villages = _unitOfRepository.VillageRepository.GetMissingBuildingVillages(accountId);
+            var villages = _villageRepository.GetMissingBuildingVillages(accountId);
 
             foreach (var village in villages)
             {

@@ -23,7 +23,7 @@ namespace MainCore.Tasks
             result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var market = _unitOfRepository.BuildingRepository.GetBuildingLocation(VillageId, BuildingEnums.Marketplace);
+            var market = _buildingRepository.GetBuildingLocation(VillageId, BuildingEnums.Marketplace);
 
             result = await _unitOfCommand.ToBuildingCommand.Handle(new(AccountId, market), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -47,7 +47,7 @@ namespace MainCore.Tasks
 
         protected override void SetName()
         {
-            var village = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
+            var village = _villageRepository.GetVillageName(VillageId);
             _name = $"NPC in {village}";
         }
 
@@ -112,7 +112,7 @@ namespace MainCore.Tasks
                 VillageSettingEnums.AutoNPCIron,
                 VillageSettingEnums.AutoNPCCrop,
             };
-            var settings = _unitOfRepository.VillageSettingRepository.GetByName(VillageId, settingNames);
+            var settings = _villageSettingRepository.GetByName(VillageId, settingNames);
 
             var ratio = new int[4]
             {
