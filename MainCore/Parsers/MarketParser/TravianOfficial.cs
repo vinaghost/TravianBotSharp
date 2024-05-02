@@ -1,5 +1,4 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Extensions;
 
 namespace MainCore.Parsers.MarketParser
 {

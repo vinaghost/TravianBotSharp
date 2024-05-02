@@ -1,5 +1,4 @@
-﻿using MainCore.Common.Extensions;
-using MainCore.DTO;
+﻿using MainCore.DTO;
 using MainCore.Infrasturecture.Persistence;
 using MainCore.UI.Models.Output;
 using Microsoft.EntityFrameworkCore;

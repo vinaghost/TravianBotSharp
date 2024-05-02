@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.Misc;
-using MainCore.Common.Errors.TrainTroop;
+﻿using MainCore.Common.Errors.TrainTroop;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -27,7 +26,7 @@ namespace MainCore.Tasks
         private readonly ITroopPageParser _troopPageParser;
         private readonly DelayClickCommand _delayClickCommand;
 
-        public TrainTroopTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager, UnitOfParser unitOfParser, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, ITroopPageParser troopPageParser, DelayClickCommand delayClickCommand) : base(chromeManager, mediator, villageRepository)
+        public TrainTroopTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, ITroopPageParser troopPageParser, DelayClickCommand delayClickCommand) : base(chromeManager, mediator, villageRepository)
         {
             _taskManager = taskManager;
             _buildingRepository = buildingRepository;

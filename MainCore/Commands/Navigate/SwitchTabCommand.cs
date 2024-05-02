@@ -19,6 +19,11 @@ namespace MainCore.Commands.Navigate
     {
         private readonly INavigationTabParser _navigationTabParser;
 
+        public SwitchTabCommandHandler(INavigationTabParser navigationTabParser)
+        {
+            _navigationTabParser = navigationTabParser;
+        }
+
         public async Task<Result> Handle(SwitchTabCommand request, CancellationToken cancellationToken)
         {
             var chromeBrowser = request.ChromeBrowser;

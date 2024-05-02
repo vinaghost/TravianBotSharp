@@ -23,12 +23,12 @@ namespace MainCore.Commands.Navigate
     public class ToDorfCommandHandler : ICommandHandler<ToDorfCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly UnitOfParser _unitOfParser;
+        private readonly INavigationBarParser _navigationBarParser;
 
-        public ToDorfCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
+        public ToDorfCommandHandler(IChromeManager chromeManager, INavigationBarParser navigationBarParser)
         {
             _chromeManager = chromeManager;
-            _unitOfParser = unitOfParser;
+            _navigationBarParser = navigationBarParser;
         }
 
         public async Task<Result> Handle(ToDorfCommand command, CancellationToken cancellationToken)

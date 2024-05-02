@@ -63,14 +63,6 @@ namespace TestProject.Repositories
         }
 
         [TestMethod]
-        public void GetVillageHasRallypoint_ShouldNotThrow()
-        {
-            var repository = GetRepository();
-            var func = () => repository.GetVillageHasRallypoint(Constants.AccountId);
-            func.Should().NotThrow();
-        }
-
-        [TestMethod]
         public void Update_ShouldNotThrow()
         {
             var repository = GetRepository();

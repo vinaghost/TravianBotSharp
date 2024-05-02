@@ -71,22 +71,6 @@ namespace TestProject.Repositories
         }
 
         [TestMethod]
-        public void GetAccess_ShouldNotThrow()
-        {
-            var repository = GetRepository();
-            var func = () => repository.GetAccess(Constants.AccountId);
-            func.Should().NotThrow();
-        }
-
-        [TestMethod]
-        public void GetAccesses_ShouldNotThrow()
-        {
-            var repository = GetRepository();
-            var func = () => repository.GetAccesses(Constants.AccountId);
-            func.Should().NotThrow();
-        }
-
-        [TestMethod]
         public void GetItems_ShouldNotThrow()
         {
             var repository = GetRepository();

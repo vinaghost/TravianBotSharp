@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.Misc;
-using Splat;
+﻿using Splat;
 
 namespace MainCore.Tasks.Base
 {

@@ -1,6 +1,5 @@
 ﻿using DynamicData;
 using Humanizer;
-using MainCore.Common.Extensions;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;

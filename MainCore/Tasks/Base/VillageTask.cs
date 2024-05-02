@@ -1,6 +1,4 @@
-﻿using MainCore.Commands.Misc;
-
-namespace MainCore.Tasks.Base
+﻿namespace MainCore.Tasks.Base
 {
     public abstract class VillageTask : AccountTask
     {

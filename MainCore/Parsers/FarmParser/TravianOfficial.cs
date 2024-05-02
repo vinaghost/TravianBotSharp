@@ -1,5 +1,4 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Extensions;
 using MainCore.DTO;
 
 namespace MainCore.Parsers.FarmParser
