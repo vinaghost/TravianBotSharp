@@ -19,15 +19,17 @@ namespace MainCore.Commands.UI.Build
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
+        private readonly IBuildingRepository _buildingRepository;
+        private readonly IJobRepository _jobRepository;
 
-        public UpgradeLevelCommandHandler(ITaskManager taskManager, IDialogService dialogService, UnitOfRepository unitOfRepository, IMediator mediator)
+        public UpgradeLevelCommandHandler(ITaskManager taskManager, IDialogService dialogService, IMediator mediator, IBuildingRepository buildingRepository, IJobRepository jobRepository)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
-            _unitOfRepository = unitOfRepository;
             _mediator = mediator;
+            _buildingRepository = buildingRepository;
+            _jobRepository = jobRepository;
         }
 
         public async Task Handle(UpgradeLevelCommand request, CancellationToken cancellationToken)
@@ -63,7 +65,7 @@ namespace MainCore.Commands.UI.Build
                 Level = level,
             };
 
-            _unitOfRepository.JobRepository.Add(request.VillageId, plan);
+            _jobRepository.Add(request.VillageId, plan);
             await _mediator.Publish(new JobUpdated(request.AccountId, request.VillageId), cancellationToken);
         }
     }

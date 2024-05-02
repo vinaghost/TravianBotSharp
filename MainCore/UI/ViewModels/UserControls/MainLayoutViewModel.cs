@@ -16,21 +16,21 @@ namespace MainCore.UI.ViewModels.UserControls
     public class MainLayoutViewModel : ViewModelBase
     {
         private readonly IMediator _mediator;
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly ITaskManager _taskManager;
+        private readonly IAccountRepository _accountRepository;
 
         private readonly AccountTabStore _accountTabStore;
         private readonly SelectedItemStore _selectedItemStore;
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, UnitOfRepository unitOfRepository, ITaskManager taskManager)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, ITaskManager taskManager, IAccountRepository accountRepository)
         {
             _accountTabStore = accountTabStore;
             _selectedItemStore = selectedItemStore;
             _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
             _taskManager = taskManager;
+            _accountRepository = accountRepository;
 
             var isEnable = this.WhenAnyValue(x => x.Accounts.IsEnable);
             AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler, isEnable);

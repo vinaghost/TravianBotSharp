@@ -5,12 +5,12 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerSleepTask : INotificationHandler<AccountInit>
     {
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IAccountSettingRepository _accountSettingRepository;
 
-        public TriggerSleepTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public TriggerSleepTask(ITaskManager taskManager, IAccountSettingRepository accountSettingRepository)
         {
             _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
+            _accountSettingRepository = accountSettingRepository;
         }
 
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)

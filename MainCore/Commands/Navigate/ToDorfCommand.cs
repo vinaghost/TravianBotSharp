@@ -20,7 +20,6 @@ namespace MainCore.Commands.Navigate
         public static ToDorfCommand ToDorf2(AccountId accountId) => new(accountId, 2);
     }
 
-    [RegisterAsTransient]
     public class ToDorfCommandHandler : ICommandHandler<ToDorfCommand>
     {
         private readonly IChromeManager _chromeManager;

@@ -15,18 +15,18 @@ namespace MainCore.Commands.UI.Farming
 
     public class SaveCommandHandler : IRequestHandler<SaveFarmListSettingsCommand>
     {
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
         private readonly IDialogService _dialogService;
 
         private readonly IValidator<FarmListSettingInput> _farmListSettingInputValidator;
+        private readonly IAccountSettingRepository _accountSettingRepository;
 
-        public SaveCommandHandler(UnitOfRepository unitOfRepository, IMediator mediator, IDialogService dialogService, IValidator<FarmListSettingInput> farmListSettingInputValidator)
+        public SaveCommandHandler(IMediator mediator, IDialogService dialogService, IValidator<FarmListSettingInput> farmListSettingInputValidator, IAccountSettingRepository accountSettingRepository)
         {
-            _unitOfRepository = unitOfRepository;
             _mediator = mediator;
             _dialogService = dialogService;
             _farmListSettingInputValidator = farmListSettingInputValidator;
+            _accountSettingRepository = accountSettingRepository;
         }
 
         public async Task Handle(SaveFarmListSettingsCommand request, CancellationToken cancellationToken)

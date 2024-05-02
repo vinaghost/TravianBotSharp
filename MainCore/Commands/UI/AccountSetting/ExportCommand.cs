@@ -11,12 +11,12 @@ namespace MainCore.Commands.UI.AccountSetting
 
     public class ExportCommandHandler : IRequestHandler<ExportCommand>
     {
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IAccountSettingRepository _accountSettingRepository;
         private readonly IDialogService _dialogService;
 
-        public ExportCommandHandler(UnitOfRepository unitOfRepository, IDialogService dialogService)
+        public ExportCommandHandler(IAccountSettingRepository accountSettingRepository, IDialogService dialogService)
         {
-            _unitOfRepository = unitOfRepository;
+            _accountSettingRepository = accountSettingRepository;
             _dialogService = dialogService;
         }
 

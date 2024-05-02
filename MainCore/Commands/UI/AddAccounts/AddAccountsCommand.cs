@@ -17,15 +17,15 @@ namespace MainCore.Commands.UI.AddAccounts
     {
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly IAccountRepository _accountRepository;
 
-        public AddAccountsCommandHandler(IDialogService dialogService, IMediator mediator, UnitOfRepository unitOfRepository, WaitingOverlayViewModel waitingOverlayViewModel)
+        public AddAccountsCommandHandler(IDialogService dialogService, IMediator mediator, WaitingOverlayViewModel waitingOverlayViewModel, IAccountRepository accountRepository)
         {
             _dialogService = dialogService;
             _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
             _waitingOverlayViewModel = waitingOverlayViewModel;
+            _accountRepository = accountRepository;
         }
 
         public async Task Handle(AddAccountsCommand request, CancellationToken cancellationToken)

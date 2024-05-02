@@ -1,7 +1,4 @@
-﻿using MainCore.Commands.General;
-using MainCore.Commands.Misc;
-using MainCore.DTO;
-using MainCore.UI.ViewModels.UserControls;
+﻿using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Commands.UI.MainLayout
 {
@@ -17,26 +14,27 @@ namespace MainCore.Commands.UI.MainLayout
         private readonly ITaskManager _taskManager;
         private readonly ITimerManager _timerManager;
         private readonly IDialogService _dialogService;
+        private readonly IChromeManager _chromeManager;
 
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly GetAccessCommand _getAccessCommand;
+        private readonly OpenBrowserCommand _openBrowserCommand;
 
-        private readonly ICommandHandler<ChooseAccessCommand, AccessDto> _chooseAccessCommand;
-        private readonly ICommandHandler<OpenBrowserCommand> _openBrowserCommand;
-        private readonly ICommandHandler<CloseBrowserCommand> _closeBrowserCommand;
         private readonly ILogService _logService;
         private readonly IMediator _mediator;
 
-        public LoginAccountCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IDialogService dialogService, UnitOfRepository unitOfRepository, ICommandHandler<ChooseAccessCommand, AccessDto> chooseAccessCommand, ICommandHandler<OpenBrowserCommand> openBrowserCommand, ILogService logService, IMediator mediator, ICommandHandler<CloseBrowserCommand> closeBrowserCommand)
+        private readonly IAccountSettingRepository _accountSettingRepository;
+
+        public LoginAccountCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IDialogService dialogService, GetAccessCommand getAccessCommand, OpenBrowserCommand openBrowserCommand, ILogService logService, IMediator mediator, IAccountSettingRepository accountSettingRepository, IChromeManager chromeManager)
         {
             _taskManager = taskManager;
             _timerManager = timerManager;
             _dialogService = dialogService;
-            _unitOfRepository = unitOfRepository;
-            _chooseAccessCommand = chooseAccessCommand;
+            _getAccessCommand = getAccessCommand;
             _openBrowserCommand = openBrowserCommand;
             _logService = logService;
             _mediator = mediator;
-            _closeBrowserCommand = closeBrowserCommand;
+            _accountSettingRepository = accountSettingRepository;
+            _chromeManager = chromeManager;
         }
 
         public async Task Handle(LoginAccountCommand request, CancellationToken cancellationToken)
@@ -65,8 +63,7 @@ namespace MainCore.Commands.UI.MainLayout
             await _taskManager.SetStatus(accountId, StatusEnums.Starting);
             var logger = _logService.GetLogger(accountId);
 
-            Result result;
-            result = await _chooseAccessCommand.Handle(new(accountId, false), cancellationToken);
+            var result = await _getAccessCommand.Execute(accountId, true);
 
             if (result.IsFailed)
             {
@@ -77,18 +74,19 @@ namespace MainCore.Commands.UI.MainLayout
                 await _taskManager.SetStatus(accountId, StatusEnums.Offline);
                 return;
             }
-            var access = _chooseAccessCommand.Value;
+            var access = result.Value;
             logger.Information("Using connection {proxy} to start chrome", access.Proxy);
-            result = await _openBrowserCommand.Handle(new(accountId, access), cancellationToken);
+
+            var chromeBrowser = _chromeManager.Get(accountId);
+
+            result = await _mediator.Send(new OpenBrowserCommand(accountId, access, chromeBrowser), cancellationToken);
             if (result.IsFailed)
             {
                 _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());
                 var errors = result.Errors.Select(x => x.Message).ToList();
                 logger.Error("{errors}", string.Join(Environment.NewLine, errors));
                 await _taskManager.SetStatus(accountId, StatusEnums.Offline);
-
-                await _closeBrowserCommand.Handle(new(accountId), cancellationToken);
-
+                await Task.Run(chromeBrowser.Close, CancellationToken.None);
                 return;
             }
             await _mediator.Publish(new AccountInit(accountId), cancellationToken);

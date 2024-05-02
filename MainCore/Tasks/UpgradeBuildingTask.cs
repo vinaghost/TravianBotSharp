@@ -1,5 +1,4 @@
 ﻿using MainCore.Commands.Features.UpgradeBuilding;
-using MainCore.Commands.Misc;
 using MainCore.Common.Errors.AutoBuilder;
 using MainCore.Common.Errors.Storage;
 using MainCore.Common.Extensions;
@@ -20,13 +19,20 @@ namespace MainCore.Tasks
         private readonly IBuildingRepository _buildingRepository;
         private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public UpgradeBuildingTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IVillageRepository villageRepository, ILogService logService, ITaskManager taskManager, IUpgradeBuildingParser upgradeBuildingParser, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository) : base(chromeManager, unitOfCommand, unitOfRepository, mediator, villageRepository)
+        private readonly IStorageRepository _storageRepository;
+        private readonly IQueueBuildingRepository _queueBuildingRepository;
+        private readonly IJobRepository _jobRepository;
+
+        public UpgradeBuildingTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, ILogService logService, ITaskManager taskManager, IUpgradeBuildingParser upgradeBuildingParser, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, IStorageRepository storageRepository, IQueueBuildingRepository queueBuildingRepository, IJobRepository jobRepository) : base(chromeManager, mediator, villageRepository)
         {
             _logService = logService;
             _taskManager = taskManager;
             _upgradeBuildingParser = upgradeBuildingParser;
             _buildingRepository = buildingRepository;
             _villageSettingRepository = villageSettingRepository;
+            _storageRepository = storageRepository;
+            _queueBuildingRepository = queueBuildingRepository;
+            _jobRepository = jobRepository;
         }
 
         protected override async Task<Result> Execute()
@@ -90,7 +96,7 @@ namespace MainCore.Tasks
 
                 var requiredResource = GetRequiredResource(chromeBrowser, plan);
 
-                result = _unitOfRepository.StorageRepository.IsEnoughResource(VillageId, requiredResource);
+                result = _storageRepository.IsEnoughResource(VillageId, requiredResource);
                 if (result.IsFailed)
                 {
                     if (result.HasError<FreeCrop>())
@@ -108,7 +114,7 @@ namespace MainCore.Tasks
 
                     if (IsUseHeroResource())
                     {
-                        var missingResource = _unitOfRepository.StorageRepository.GetMissingResource(VillageId, requiredResource);
+                        var missingResource = _storageRepository.GetMissingResource(VillageId, requiredResource);
                         var heroResourceResult = await _mediator.Send(new UseHeroResourceCommand(AccountId, chromeBrowser, missingResource), CancellationToken);
                         if (heroResourceResult.IsFailed)
                         {
@@ -199,7 +205,7 @@ namespace MainCore.Tasks
 
         private async Task SetTimeQueueBuildingComplete()
         {
-            var buildingQueue = _unitOfRepository.QueueBuildingRepository.GetFirst(VillageId);
+            var buildingQueue = _queueBuildingRepository.GetFirst(VillageId);
             if (buildingQueue is null)
             {
                 ExecuteAt = DateTime.Now.AddSeconds(1);
@@ -213,9 +219,9 @@ namespace MainCore.Tasks
 
         private async Task<bool> JobComplete(JobDto job)
         {
-            if (_unitOfRepository.JobRepository.JobComplete(VillageId, job))
+            if (_jobRepository.JobComplete(VillageId, job))
             {
-                _unitOfRepository.JobRepository.Delete(job.Id);
+                _jobRepository.Delete(job.Id);
                 await _mediator.Publish(new JobUpdated(AccountId, VillageId));
                 return true;
             }
@@ -233,7 +239,7 @@ namespace MainCore.Tasks
                 Level = cropland.Level + 1,
             };
 
-            _unitOfRepository.JobRepository.AddToTop(VillageId, plan);
+            _jobRepository.AddToTop(VillageId, plan);
             await _mediator.Publish(new JobUpdated(AccountId, VillageId));
         }
 

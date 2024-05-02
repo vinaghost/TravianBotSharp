@@ -17,7 +17,8 @@ namespace MainCore.UI.ViewModels.Tabs
         public ListBoxItemViewModel FarmLists { get; } = new();
 
         private readonly IMediator _mediator;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IAccountSettingRepository _accountSettingRepository;
+        private readonly IFarmRepository _farmRepository;
 
         public ReactiveCommand<Unit, Unit> UpdateFarmList { get; }
         public ReactiveCommand<Unit, Unit> Save { get; }
@@ -34,11 +35,11 @@ namespace MainCore.UI.ViewModels.Tabs
             { Color.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(IMediator mediator, UnitOfRepository unitOfRepository)
-
+        public FarmingViewModel(IMediator mediator, IAccountSettingRepository accountSettingRepository, IFarmRepository farmRepository)
         {
+            _accountSettingRepository = accountSettingRepository;
+            _farmRepository = farmRepository;
             _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
 
             UpdateFarmList = ReactiveCommand.CreateFromTask(UpdateFarmListHandler);
             Start = ReactiveCommand.CreateFromTask(StartHandler);

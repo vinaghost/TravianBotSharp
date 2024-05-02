@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.Misc;
-using MainCore.Infrasturecture.Persistence;
+﻿using MainCore.Infrasturecture.Persistence;
 using MainCore.Tasks.Base;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +7,7 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateFarmListTask : FarmListTask
     {
-        public UpdateFarmListTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IFarmParser farmParser) : base(chromeManager, unitOfCommand, unitOfRepository, mediator, contextFactory, delayClickCommand, farmParser)
+        public UpdateFarmListTask(IChromeManager chromeManager, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IFarmParser farmParser) : base(chromeManager, mediator, contextFactory, delayClickCommand, farmParser)
         {
         }
 

@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.Features.StartFarmList;
-using MainCore.Infrasturecture.Persistence;
+﻿using MainCore.Infrasturecture.Persistence;
 using MainCore.Tasks.Base;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +11,7 @@ namespace MainCore.Tasks
         private readonly IFarmRepository _farmRepository;
         private readonly ITaskManager _taskManager;
 
-        public StartFarmListTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IFarmParser farmParser, IAccountSettingRepository accountSettingRepository, IFarmRepository farmRepository, ITaskManager taskManager) : base(chromeManager, unitOfCommand, unitOfRepository, mediator, contextFactory, delayClickCommand, farmParser)
+        public StartFarmListTask(IChromeManager chromeManager, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IFarmParser farmParser, IAccountSettingRepository accountSettingRepository, IFarmRepository farmRepository, ITaskManager taskManager) : base(chromeManager, mediator, contextFactory, delayClickCommand, farmParser)
         {
             _accountSettingRepository = accountSettingRepository;
             _farmRepository = farmRepository;
@@ -22,10 +21,12 @@ namespace MainCore.Tasks
         protected override async Task<Result> Execute()
         {
             Result result;
-            result = await _mediator.Send(new ToFarmListPageCommand(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var chromeBrowser = _chromeManager.Get(AccountId);
+
+            result = await ToFarmListPage(chromeBrowser, CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
             var html = chromeBrowser.Html;
 
             var useStartAllButton = _accountSettingRepository.GetBooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);

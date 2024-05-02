@@ -8,7 +8,7 @@ namespace MainCore.Tasks
         private readonly ITaskManager _taskManager;
         private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public UpdateVillageTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager, IVillageSettingRepository villageSettingRepository) : base(chromeManager, unitOfCommand, unitOfRepository, mediator, villageRepository)
+        public UpdateVillageTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager, IVillageSettingRepository villageSettingRepository) : base(chromeManager, mediator, villageRepository)
         {
             _taskManager = taskManager;
             _villageSettingRepository = villageSettingRepository;

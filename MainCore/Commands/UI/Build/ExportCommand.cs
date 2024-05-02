@@ -11,13 +11,13 @@ namespace MainCore.Commands.UI.Build
 
     public class ExportCommandHandler : IRequestHandler<ExportCommand>
     {
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
+        private readonly IJobRepository _jobRepository;
 
-        public ExportCommandHandler(UnitOfRepository unitOfRepository, IDialogService dialogService)
+        public ExportCommandHandler(IDialogService dialogService, IJobRepository jobRepository)
         {
-            _unitOfRepository = unitOfRepository;
             _dialogService = dialogService;
+            _jobRepository = jobRepository;
         }
 
         public async Task Handle(ExportCommand request, CancellationToken cancellationToken)
@@ -25,7 +25,7 @@ namespace MainCore.Commands.UI.Build
             var path = _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
             var villageId = request.VillageId;
-            var jobs = _unitOfRepository.JobRepository.GetJobs(villageId);
+            var jobs = _jobRepository.GetJobs(villageId);
             jobs.ForEach(job => job.Id = JobId.Empty);
             var jsonString = JsonSerializer.Serialize(jobs);
             await File.WriteAllTextAsync(path, jsonString, cancellationToken);

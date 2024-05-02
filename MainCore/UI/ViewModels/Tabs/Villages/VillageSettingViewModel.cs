@@ -12,17 +12,17 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public VillageSettingInput VillageSettingInput { get; } = new();
 
         private readonly IMediator _mediator;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IVillageSettingRepository _villageSettingRepository;
 
         public ReactiveCommand<Unit, Unit> SaveCommand { get; }
         public ReactiveCommand<Unit, Unit> ExportCommand { get; }
         public ReactiveCommand<Unit, Unit> ImportCommand { get; }
         public ReactiveCommand<VillageId, Dictionary<VillageSettingEnums, int>> LoadSetting { get; }
 
-        public VillageSettingViewModel(IMediator mediator, UnitOfRepository unitOfRepository)
+        public VillageSettingViewModel(IMediator mediator, IVillageSettingRepository villageSettingRepository)
         {
             _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
+            _villageSettingRepository = villageSettingRepository;
 
             SaveCommand = ReactiveCommand.CreateFromTask(SaveHandler);
             ExportCommand = ReactiveCommand.CreateFromTask(ExportHandler);

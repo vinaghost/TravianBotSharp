@@ -14,7 +14,7 @@ namespace MainCore.UI.ViewModels.Tabs
         public AccessInput AccessInput { get; } = new();
 
         private readonly IMediator _mediator;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IAccountRepository _accountRepository;
         public ReactiveCommand<Unit, Unit> AddAccess { get; }
         public ReactiveCommand<Unit, Unit> EditAccess { get; }
         public ReactiveCommand<Unit, Unit> DeleteAccess { get; }
@@ -22,10 +22,10 @@ namespace MainCore.UI.ViewModels.Tabs
 
         public ReactiveCommand<AccountId, AccountDto> LoadAccount { get; }
 
-        public EditAccountViewModel(IMediator mediator, UnitOfRepository unitOfRepository)
+        public EditAccountViewModel(IMediator mediator, IAccountRepository accountRepository)
         {
             _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
+            _accountRepository = accountRepository;
 
             AddAccess = ReactiveCommand.CreateFromTask(AddAccessHandler);
             EditAccess = ReactiveCommand.CreateFromTask(EditAccessHandler);

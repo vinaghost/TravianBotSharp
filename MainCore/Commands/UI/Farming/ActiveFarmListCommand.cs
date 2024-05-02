@@ -15,14 +15,14 @@ namespace MainCore.Commands.UI.Farming
     public class ActiveFarmListCommandHandler : IRequestHandler<ActiveFarmListCommand>
     {
         private readonly IMediator _mediator;
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
+        private readonly IFarmRepository _farmRepository;
 
-        public ActiveFarmListCommandHandler(IMediator mediator, UnitOfRepository unitOfRepository, IDialogService dialogService)
+        public ActiveFarmListCommandHandler(IMediator mediator, IDialogService dialogService, IFarmRepository farmRepository)
         {
             _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
             _dialogService = dialogService;
+            _farmRepository = farmRepository;
         }
 
         public async Task Handle(ActiveFarmListCommand request, CancellationToken cancellationToken)

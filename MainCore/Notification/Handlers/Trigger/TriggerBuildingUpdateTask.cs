@@ -5,12 +5,14 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerBuildingUpdateTask : INotificationHandler<VillageUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IAccountSettingRepository _accountSettingRepository;
+        private readonly IVillageRepository _villageRepository;
 
-        public TriggerBuildingUpdateTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public TriggerBuildingUpdateTask(ITaskManager taskManager, IAccountSettingRepository accountSettingRepository, IVillageRepository villageRepository)
         {
             _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
+            _accountSettingRepository = accountSettingRepository;
+            _villageRepository = villageRepository;
         }
 
         public async Task Handle(VillageUpdated notification, CancellationToken cancellationToken)

@@ -5,12 +5,16 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerCompleteImmediatelyTask : INotificationHandler<VillageSettingUpdated>, INotificationHandler<QueueBuildingUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IVillageSettingRepository _villageSettingRepository;
+        private readonly IQueueBuildingRepository _queueBuildingRepository;
+        private readonly IAccountInfoRepository _accountInfoRepository;
 
-        public TriggerCompleteImmediatelyTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public TriggerCompleteImmediatelyTask(ITaskManager taskManager, IVillageSettingRepository villageSettingRepository, IQueueBuildingRepository queueBuildingRepository, IAccountInfoRepository accountInfoRepository)
         {
             _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
+            _villageSettingRepository = villageSettingRepository;
+            _queueBuildingRepository = queueBuildingRepository;
+            _accountInfoRepository = accountInfoRepository;
         }
 
         public async Task Handle(QueueBuildingUpdated notification, CancellationToken cancellationToken)
@@ -26,8 +30,8 @@ namespace MainCore.Notification.Handlers.Trigger
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
             if (_taskManager.IsExist<CompleteImmediatelyTask>(accountId, villageId)) return;
-            _unitOfRepository.QueueBuildingRepository.Clean(villageId);
-            var count = _unitOfRepository.QueueBuildingRepository.Count(villageId);
+            _queueBuildingRepository.Clean(villageId);
+            var count = _queueBuildingRepository.Count(villageId);
             if (count == 0) return;
 
             var completeImmediatelyEnable = _villageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.CompleteImmediately);
@@ -47,7 +51,7 @@ namespace MainCore.Notification.Handlers.Trigger
             }
             if (count != countNeeded) return;
 
-            if (!_unitOfRepository.QueueBuildingRepository.IsSkippableBuilding(villageId)) return;
+            if (!_queueBuildingRepository.IsSkippableBuilding(villageId)) return;
 
             await _taskManager.Add<CompleteImmediatelyTask>(accountId, villageId);
         }

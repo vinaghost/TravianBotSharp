@@ -15,12 +15,12 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     public class SpecialUpgradeCommandHandler : ICommandHandler<SpecialUpgradeCommand>
     {
         private readonly IUpgradeBuildingParser _upgradeBuildingParser;
-        private readonly UnitOfCommand _unitOfCommand;
+        private readonly DelayClickCommand _delayClickCommand;
 
-        public SpecialUpgradeCommandHandler(IUpgradeBuildingParser upgradeBuildingParser, UnitOfCommand unitOfCommand)
+        public SpecialUpgradeCommandHandler(IUpgradeBuildingParser upgradeBuildingParser, DelayClickCommand delayClickCommand)
         {
             _upgradeBuildingParser = upgradeBuildingParser;
-            _unitOfCommand = unitOfCommand;
+            _delayClickCommand = delayClickCommand;
         }
 
         public async Task<Result> Handle(SpecialUpgradeCommand request, CancellationToken cancellationToken)
@@ -63,8 +63,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 result = await chromeBrowser.Click(By.XPath(checkbox.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                result = await _unitOfCommand.DelayClickCommand.Handle(new(accountId), cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                await _delayClickCommand.Execute(accountId);
 
                 var watchButton = videoFeature.Descendants("button").FirstOrDefault(x => x.HasClass("green"));
                 if (watchButton is null) return Retry.ButtonNotFound("Watch ads");
@@ -117,8 +116,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 result = await chromeBrowser.Click(By.XPath(dontShowThisAgain.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                result = await _unitOfCommand.DelayClickCommand.Handle(new(accountId), cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                await _delayClickCommand.Execute(accountId);
 
                 var okButton = html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
                 if (okButton is null) return Retry.ButtonNotFound("ok");

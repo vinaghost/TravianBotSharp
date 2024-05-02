@@ -5,12 +5,12 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerStartAdventureTask : INotificationHandler<AdventureUpdated>, INotificationHandler<AccountInit>, INotificationHandler<AccountSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IAccountSettingRepository _accountSettingRepository;
 
-        public TriggerStartAdventureTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public TriggerStartAdventureTask(ITaskManager taskManager, IAccountSettingRepository accountSettingRepository)
         {
             _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
+            _accountSettingRepository = accountSettingRepository;
         }
 
         public async Task Handle(AdventureUpdated notification, CancellationToken cancellationToken)

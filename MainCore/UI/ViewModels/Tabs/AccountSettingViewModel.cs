@@ -11,18 +11,18 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         public AccountSettingInput AccountSettingInput { get; } = new();
 
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
+        private readonly IAccountSettingRepository _accountSettingRepository;
         public ReactiveCommand<Unit, Unit> Save { get; }
         public ReactiveCommand<Unit, Unit> Export { get; }
         public ReactiveCommand<Unit, Unit> Import { get; }
 
         public ReactiveCommand<AccountId, Dictionary<AccountSettingEnums, int>> LoadSettings { get; }
 
-        public AccountSettingViewModel(UnitOfRepository unitOfRepository, IMediator mediator)
+        public AccountSettingViewModel(IMediator mediator, IAccountSettingRepository accountSettingRepository)
         {
-            _unitOfRepository = unitOfRepository;
             _mediator = mediator;
+            _accountSettingRepository = accountSettingRepository;
 
             Save = ReactiveCommand.CreateFromTask(SaveHandler);
             Export = ReactiveCommand.CreateFromTask(ExportHandler);

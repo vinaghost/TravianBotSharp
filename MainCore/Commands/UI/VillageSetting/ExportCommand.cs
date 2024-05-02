@@ -11,13 +11,13 @@ namespace MainCore.Commands.UI.VillageSetting
 
     public class ExportCommandHandler : IRequestHandler<ExportCommand>
     {
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
+        private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public ExportCommandHandler(UnitOfRepository unitOfRepository, IDialogService dialogService)
+        public ExportCommandHandler(IDialogService dialogService, IVillageSettingRepository villageSettingRepository)
         {
-            _unitOfRepository = unitOfRepository;
             _dialogService = dialogService;
+            _villageSettingRepository = villageSettingRepository;
         }
 
         public async Task Handle(ExportCommand request, CancellationToken cancellationToken)

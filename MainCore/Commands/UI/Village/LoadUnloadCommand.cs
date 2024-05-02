@@ -13,13 +13,13 @@ namespace MainCore.Commands.UI.Village
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IVillageRepository _villageRepository;
 
-        public LoadUnloadCommandHandler(ITaskManager taskManager, IDialogService dialogService, UnitOfRepository unitOfRepository)
+        public LoadUnloadCommandHandler(ITaskManager taskManager, IDialogService dialogService, IVillageRepository villageRepository)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
-            _unitOfRepository = unitOfRepository;
+            _villageRepository = villageRepository;
         }
 
         public async Task Handle(LoadUnloadCommand request, CancellationToken cancellationToken)

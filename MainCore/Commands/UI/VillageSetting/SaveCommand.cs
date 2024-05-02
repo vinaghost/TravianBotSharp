@@ -16,16 +16,16 @@ namespace MainCore.Commands.UI.VillageSetting
     public class SaveCommandHandler : IRequestHandler<SaveCommand>
     {
         private readonly IValidator<VillageSettingInput> _villageSettingInputValidator;
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
+        private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public SaveCommandHandler(IValidator<VillageSettingInput> villageSettingInputValidator, UnitOfRepository unitOfRepository, IDialogService dialogService, IMediator mediator)
+        public SaveCommandHandler(IValidator<VillageSettingInput> villageSettingInputValidator, IDialogService dialogService, IMediator mediator, IVillageSettingRepository villageSettingRepository)
         {
             _villageSettingInputValidator = villageSettingInputValidator;
-            _unitOfRepository = unitOfRepository;
             _dialogService = dialogService;
             _mediator = mediator;
+            _villageSettingRepository = villageSettingRepository;
         }
 
         public async Task Handle(SaveCommand request, CancellationToken cancellationToken)

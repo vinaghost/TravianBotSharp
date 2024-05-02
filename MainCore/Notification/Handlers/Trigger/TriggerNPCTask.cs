@@ -5,12 +5,14 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerNPCTask : INotificationHandler<StorageUpdated>, INotificationHandler<VillageSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IVillageSettingRepository _villageSettingRepository;
+        private readonly IStorageRepository _storageRepository;
 
-        public TriggerNPCTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public TriggerNPCTask(ITaskManager taskManager, IVillageSettingRepository villageSettingRepository, IStorageRepository storageRepository)
         {
             _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
+            _villageSettingRepository = villageSettingRepository;
+            _storageRepository = storageRepository;
         }
 
         public async Task Handle(StorageUpdated notification, CancellationToken cancellationToken)
@@ -32,7 +34,7 @@ namespace MainCore.Notification.Handlers.Trigger
             var autoNPCEnable = _villageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
             if (autoNPCEnable)
             {
-                var granaryPercent = _unitOfRepository.StorageRepository.GetGranaryPercent(villageId);
+                var granaryPercent = _storageRepository.GetGranaryPercent(villageId);
                 var autoNPCGranaryPercent = _villageSettingRepository.GetByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
 
                 if (granaryPercent < autoNPCGranaryPercent) return;

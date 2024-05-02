@@ -16,16 +16,16 @@ namespace MainCore.Commands.UI.AccountSetting
     public class SaveCommandHandler : IRequestHandler<SaveCommand>
     {
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
+        private readonly IAccountSettingRepository _accountSettingRepository;
 
-        public SaveCommandHandler(IValidator<AccountSettingInput> accountsettingInputValidator, UnitOfRepository unitOfRepository, IDialogService dialogService, IMediator mediator)
+        public SaveCommandHandler(IValidator<AccountSettingInput> accountsettingInputValidator, IDialogService dialogService, IMediator mediator, IAccountSettingRepository accountSettingRepository)
         {
             _accountsettingInputValidator = accountsettingInputValidator;
-            _unitOfRepository = unitOfRepository;
             _dialogService = dialogService;
             _mediator = mediator;
+            _accountSettingRepository = accountSettingRepository;
         }
 
         public async Task Handle(SaveCommand request, CancellationToken cancellationToken)

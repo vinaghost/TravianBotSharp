@@ -5,7 +5,7 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateBuildingTask : VillageTask
     {
-        public UpdateBuildingTask(IChromeManager chromeManager, UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, IVillageRepository villageRepository) : base(chromeManager, unitOfCommand, unitOfRepository, mediator, villageRepository)
+        public UpdateBuildingTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository) : base(chromeManager, mediator, villageRepository)
         {
         }
 
