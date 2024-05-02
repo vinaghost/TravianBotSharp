@@ -1,7 +1,5 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
 using MainCore.DTO;
-using MainCore.Infrasturecture.AutoRegisterDi;
 
 namespace MainCore.Parsers.HeroParser
 {

@@ -37,13 +37,5 @@ namespace TestProject.Repositories
             var func = () => repository.GetItems(Constants.AccountId);
             func.Should().NotThrow();
         }
-
-        [TestMethod]
-        public void Update_ShouldNotThrow()
-        {
-            var repository = GetRepository();
-            var func = () => repository.Update(Constants.AccountId, new());
-            func.Should().NotThrow();
-        }
     }
 }

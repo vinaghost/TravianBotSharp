@@ -1,8 +1,5 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
 using MainCore.DTO;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
 
 namespace MainCore.Parsers.QueueBuildingParser
 {

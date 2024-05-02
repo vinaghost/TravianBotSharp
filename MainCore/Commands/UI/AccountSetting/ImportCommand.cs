@@ -1,12 +1,5 @@
 ﻿using FluentValidation;
-using MainCore.Common.Enums;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.Models.Input;
-using MediatR;
 using System.Text.Json;
 
 namespace MainCore.Commands.UI.AccountSetting
@@ -24,14 +17,14 @@ namespace MainCore.Commands.UI.AccountSetting
     public class ImportCommandHandler : IRequestHandler<ImportCommand>
     {
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IAccountSettingRepository _accountSettingRepository;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
 
-        public ImportCommandHandler(IValidator<AccountSettingInput> accountsettingInputValidator, UnitOfRepository unitOfRepository, IDialogService dialogService, IMediator mediator)
+        public ImportCommandHandler(IValidator<AccountSettingInput> accountsettingInputValidator, IAccountSettingRepository accountSettingRepository, IDialogService dialogService, IMediator mediator)
         {
             _accountsettingInputValidator = accountsettingInputValidator;
-            _unitOfRepository = unitOfRepository;
+            _accountSettingRepository = accountSettingRepository;
             _dialogService = dialogService;
             _mediator = mediator;
         }
@@ -63,7 +56,7 @@ namespace MainCore.Commands.UI.AccountSetting
             }
 
             settings = accountSettingInput.Get();
-            _unitOfRepository.AccountSettingRepository.Update(accountId, settings);
+            _accountSettingRepository.Update(accountId, settings);
             await _mediator.Publish(new AccountSettingUpdated(accountId), cancellationToken);
 
             _dialogService.ShowMessageBox("Information", "Settings imported");

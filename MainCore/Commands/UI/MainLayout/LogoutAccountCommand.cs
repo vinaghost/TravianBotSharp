@@ -1,11 +1,5 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Commands.General;
-using MainCore.Common.Enums;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Services;
+﻿using MainCore.Commands.General;
 using MainCore.UI.ViewModels.UserControls;
-using MediatR;
 
 namespace MainCore.Commands.UI.MainLayout
 {

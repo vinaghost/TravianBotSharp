@@ -1,11 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.UI.ViewModels.UserControls;
-using MediatR;
+﻿using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Commands.UI.MainLayout
 {
@@ -19,16 +12,16 @@ namespace MainCore.Commands.UI.MainLayout
     public class DeleteAccountCommandHandler : IRequestHandler<DeleteAccountCommand>
     {
         private readonly IMediator _mediator;
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
         private readonly ITaskManager _taskManager;
+        private readonly IAccountRepository _accountRepository;
 
-        public DeleteAccountCommandHandler(IMediator mediator, UnitOfRepository unitOfRepository, IDialogService dialogService, ITaskManager taskManager)
+        public DeleteAccountCommandHandler(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, IAccountRepository accountRepository)
         {
             _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
             _dialogService = dialogService;
             _taskManager = taskManager;
+            _accountRepository = accountRepository;
         }
 
         public async Task Handle(DeleteAccountCommand request, CancellationToken cancellationToken)
@@ -50,7 +43,7 @@ namespace MainCore.Commands.UI.MainLayout
             var result = _dialogService.ShowConfirmBox("Information", $"Are you sure want to delete \n {accounts.SelectedItem.Content}");
             if (!result) return;
 
-            await Task.Run(() => _unitOfRepository.AccountRepository.Delete(accountId), cancellationToken);
+            await Task.Run(() => _accountRepository.Delete(accountId), cancellationToken);
 
             await _mediator.Publish(new AccountUpdated(), cancellationToken);
         }

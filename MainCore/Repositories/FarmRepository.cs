@@ -1,7 +1,4 @@
-﻿using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Infrasturecture.Persistence;
+﻿using MainCore.Infrasturecture.Persistence;
 using MainCore.UI.Models.Output;
 using Microsoft.EntityFrameworkCore;
 using System.Drawing;
@@ -65,32 +62,6 @@ namespace MainCore.Repositories
                 .ToList();
 
             return items;
-        }
-
-        public void Update(AccountId accountId, List<FarmDto> dtos)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var farms = context.FarmLists
-                .Where(x => x.AccountId == accountId.Value)
-                .ToList();
-
-            var ids = dtos.Select(x => x.Id.Value).ToList();
-
-            var farmDeleted = farms.Where(x => !ids.Contains(x.Id)).ToList();
-            var farmInserted = dtos.Where(x => !farms.Any(v => v.Id == x.Id.Value)).ToList();
-            var farmUpdated = farms.Where(x => ids.Contains(x.Id)).ToList();
-
-            farmDeleted.ForEach(x => context.Remove(x));
-            farmInserted.ForEach(x => context.Add(x.ToEntity(accountId)));
-
-            foreach (var farm in farmUpdated)
-            {
-                var dto = dtos.FirstOrDefault(x => x.Id.Value == farm.Id);
-                dto.To(farm);
-                context.Update(farm);
-            }
-
-            context.SaveChanges();
         }
     }
 }

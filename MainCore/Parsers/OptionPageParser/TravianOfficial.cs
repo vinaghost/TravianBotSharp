@@ -1,5 +1,4 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Infrasturecture.AutoRegisterDi;
 
 namespace MainCore.Parsers.OptionPageParser
 {

@@ -1,11 +1,11 @@
-﻿using FluentResults;
-
-namespace MainCore.Common.Errors.Storage
+﻿namespace MainCore.Common.Errors.Storage
 {
     public class FreeCrop : Error
     {
-        public FreeCrop(long storage, long required) : base($"Don't have enough freecrop [{storage} < {required}]")
+        private FreeCrop(long storage, long required) : base($"Don't have enough freecrop [{storage} < {required}]")
         {
         }
+
+        public static FreeCrop Error(long storage, long required) => new(storage, required);
     }
 }

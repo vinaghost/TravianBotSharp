@@ -1,14 +1,9 @@
 ﻿using DynamicData;
 using Humanizer;
-using MainCore.Common.Enums;
-using MainCore.Common.Extensions;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Reactive.Linq;
 
 namespace MainCore.UI.Models.Input

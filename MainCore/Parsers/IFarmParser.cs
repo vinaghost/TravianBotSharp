@@ -1,6 +1,5 @@
 ﻿using HtmlAgilityPack;
 using MainCore.DTO;
-using MainCore.Entities;
 
 namespace MainCore.Parsers
 {

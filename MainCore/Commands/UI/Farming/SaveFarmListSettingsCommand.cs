@@ -1,11 +1,5 @@
 ﻿using FluentValidation;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.Models.Input;
-using MediatR;
 
 namespace MainCore.Commands.UI.Farming
 {
@@ -21,18 +15,18 @@ namespace MainCore.Commands.UI.Farming
 
     public class SaveCommandHandler : IRequestHandler<SaveFarmListSettingsCommand>
     {
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
         private readonly IDialogService _dialogService;
 
         private readonly IValidator<FarmListSettingInput> _farmListSettingInputValidator;
+        private readonly IAccountSettingRepository _accountSettingRepository;
 
-        public SaveCommandHandler(UnitOfRepository unitOfRepository, IMediator mediator, IDialogService dialogService, IValidator<FarmListSettingInput> farmListSettingInputValidator)
+        public SaveCommandHandler(IMediator mediator, IDialogService dialogService, IValidator<FarmListSettingInput> farmListSettingInputValidator, IAccountSettingRepository accountSettingRepository)
         {
-            _unitOfRepository = unitOfRepository;
             _mediator = mediator;
             _dialogService = dialogService;
             _farmListSettingInputValidator = farmListSettingInputValidator;
+            _accountSettingRepository = accountSettingRepository;
         }
 
         public async Task Handle(SaveFarmListSettingsCommand request, CancellationToken cancellationToken)
@@ -47,7 +41,7 @@ namespace MainCore.Commands.UI.Farming
             }
 
             var settings = farmListSettingInput.Get();
-            _unitOfRepository.AccountSettingRepository.Update(accountId, settings);
+            _accountSettingRepository.Update(accountId, settings);
             await _mediator.Publish(new AccountSettingUpdated(accountId), cancellationToken);
 
             _dialogService.ShowMessageBox("Information", "Settings saved");

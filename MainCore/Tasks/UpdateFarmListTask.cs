@@ -1,28 +1,22 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Commands.Features;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
+﻿using MainCore.Infrasturecture.Persistence;
 using MainCore.Tasks.Base;
-using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace MainCore.Tasks
 {
     [RegisterAsTransient(withoutInterface: true)]
-    public class UpdateFarmListTask : AccountTask
+    public class UpdateFarmListTask : FarmListTask
     {
-        public UpdateFarmListTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        public UpdateFarmListTask(IChromeManager chromeManager, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IFarmParser farmParser) : base(chromeManager, mediator, contextFactory, delayClickCommand, farmParser)
         {
         }
 
         protected override async Task<Result> Execute()
         {
             Result result;
-            result = await _mediator.Send(new ToFarmListPageCommand(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = await _unitOfCommand.UpdateFarmListCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            result = await ToFarmListPage(chromeBrowser, CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 

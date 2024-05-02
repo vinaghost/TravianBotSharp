@@ -1,22 +1,16 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.Tasks;
-using MediatR;
+﻿using MainCore.Tasks;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
     public class TriggerSleepTask : INotificationHandler<AccountInit>
     {
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IAccountSettingRepository _accountSettingRepository;
 
-        public TriggerSleepTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public TriggerSleepTask(ITaskManager taskManager, IAccountSettingRepository accountSettingRepository)
         {
             _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
+            _accountSettingRepository = accountSettingRepository;
         }
 
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
@@ -28,7 +22,7 @@ namespace MainCore.Notification.Handlers.Trigger
         private async Task Trigger(AccountId accountId)
         {
             if (_taskManager.IsExist<SleepTask>(accountId)) return;
-            var workTime = _unitOfRepository.AccountSettingRepository.GetByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
+            var workTime = _accountSettingRepository.GetByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
             await _taskManager.Add<SleepTask>(accountId, executeTime: DateTime.Now.AddMinutes(workTime));
         }
     }

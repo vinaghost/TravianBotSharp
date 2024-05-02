@@ -1,17 +1,12 @@
 ﻿using MainCore.Commands.UI.Farming;
-using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
+
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using MediatR;
 using ReactiveUI;
 using System.Drawing;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
@@ -22,7 +17,8 @@ namespace MainCore.UI.ViewModels.Tabs
         public ListBoxItemViewModel FarmLists { get; } = new();
 
         private readonly IMediator _mediator;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IAccountSettingRepository _accountSettingRepository;
+        private readonly IFarmRepository _farmRepository;
 
         public ReactiveCommand<Unit, Unit> UpdateFarmList { get; }
         public ReactiveCommand<Unit, Unit> Save { get; }
@@ -39,11 +35,11 @@ namespace MainCore.UI.ViewModels.Tabs
             { Color.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(IMediator mediator, UnitOfRepository unitOfRepository)
-
+        public FarmingViewModel(IMediator mediator, IAccountSettingRepository accountSettingRepository, IFarmRepository farmRepository)
         {
+            _accountSettingRepository = accountSettingRepository;
+            _farmRepository = farmRepository;
             _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
 
             UpdateFarmList = ReactiveCommand.CreateFromTask(UpdateFarmListHandler);
             Start = ReactiveCommand.CreateFromTask(StartHandler);
@@ -87,7 +83,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task UpdateFarmListHandler()
         {
-            await _mediator.Send(new UpdateFarmListCommand(AccountId));
+            await _mediator.Send(new Commands.UI.Farming.UpdateFarmListCommand(AccountId));
         }
 
         private async Task StartHandler()
@@ -112,13 +108,13 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private Dictionary<AccountSettingEnums, int> LoadSettingHandler(AccountId accountId)
         {
-            var items = _unitOfRepository.AccountSettingRepository.Get(accountId);
+            var items = _accountSettingRepository.Get(accountId);
             return items;
         }
 
         private List<ListBoxItem> LoadFarmListHandler(AccountId accountId)
         {
-            var items = _unitOfRepository.FarmRepository.GetItems(accountId);
+            var items = _farmRepository.GetItems(accountId);
             return items;
         }
 

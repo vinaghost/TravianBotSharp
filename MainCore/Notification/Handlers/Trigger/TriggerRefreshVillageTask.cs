@@ -1,22 +1,18 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.Tasks;
-using MediatR;
+﻿using MainCore.Tasks;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
     public class TriggerRefreshVillageTask : INotificationHandler<VillageSettingUpdated>, INotificationHandler<AccountInit>
     {
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IVillageRepository _villageRepository;
+        private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public TriggerRefreshVillageTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public TriggerRefreshVillageTask(ITaskManager taskManager, IVillageRepository villageRepository, IVillageSettingRepository villageSettingRepository)
         {
             _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
+            _villageRepository = villageRepository;
+            _villageSettingRepository = villageSettingRepository;
         }
 
         public async Task Handle(VillageSettingUpdated notification, CancellationToken cancellationToken)
@@ -30,7 +26,7 @@ namespace MainCore.Notification.Handlers.Trigger
         {
             var accountId = notification.AccountId;
 
-            var villages = _unitOfRepository.VillageRepository.Get(accountId);
+            var villages = _villageRepository.Get(accountId);
             foreach (var village in villages)
             {
                 await Trigger(accountId, village);
@@ -39,7 +35,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
-            var autoRefreshEnable = _unitOfRepository.VillageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.AutoRefreshEnable);
+            var autoRefreshEnable = _villageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.AutoRefreshEnable);
             if (autoRefreshEnable)
             {
                 if (_taskManager.IsExist<UpdateVillageTask>(accountId, villageId)) return;

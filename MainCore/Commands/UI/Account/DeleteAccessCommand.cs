@@ -1,5 +1,4 @@
 ﻿using MainCore.UI.Models.Input;
-using MediatR;
 
 namespace MainCore.Commands.UI.Account
 {

@@ -1,7 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
+﻿using MainCore.DTO;
 using MainCore.Infrasturecture.Persistence;
 using MainCore.UI.Models.Output;
 using Microsoft.EntityFrameworkCore;
@@ -54,22 +51,6 @@ namespace MainCore.Repositories
                 .Select(x => new VillageId(x))
                 .ToList();
             return villages;
-        }
-
-        public VillageId GetVillageHasRallypoint(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            var village = context.Villages
-                .Where(x => x.AccountId == accountId.Value)
-                .Include(x => x.Buildings.Where(x => x.Type == BuildingEnums.RallyPoint))
-                .Where(x => x.Buildings.Count > 0)
-                .OrderByDescending(x => x.IsActive)
-                .Select(x => x.Id)
-                .AsEnumerable()
-                .Select(x => new VillageId(x))
-                .FirstOrDefault();
-            return village;
         }
 
         public List<VillageId> Get(AccountId accountId)

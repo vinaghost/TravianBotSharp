@@ -1,9 +1,5 @@
-﻿using MainCore.Common.Extensions;
-using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
+﻿using MainCore.DTO;
 using MainCore.Infrasturecture.Persistence;
-using MainCore.Services;
 using MainCore.UI.Models.Output;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,36 +34,6 @@ namespace MainCore.Repositories
                 .ToDto()
                 .FirstOrDefault();
             return account;
-        }
-
-        public AccessDto GetAccess(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var access = context.Accesses
-               .Where(x => x.AccountId == accountId.Value)
-               .OrderBy(x => x.LastUsed) // get oldest one
-               .ToDto()
-               .FirstOrDefault();
-            return access;
-        }
-
-        public List<AccessDto> GetAccesses(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var accessess = context.Accesses
-               .Where(x => x.AccountId == accountId.Value)
-               .OrderBy(x => x.LastUsed) // get oldest one
-               .ToDto()
-               .ToList();
-            return accessess;
-        }
-
-        public void UpdateAccessLastUsed(AccessId accessId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var access = context.Accesses
-               .Where(x => x.Id == accessId.Value)
-               .ExecuteUpdate(x => x.SetProperty(x => x.LastUsed, x => DateTime.Now));
         }
 
         public string GetUsername(AccountId accountId)
@@ -167,13 +133,13 @@ namespace MainCore.Repositories
                     access.Useragent = _useragentManager.Get();
                 }
             }
-            
+
             // Remove accesses not present in the DTO
             var existingAccessIds = dto.Accesses.Select(a => a.Id.Value).ToList();
             context.Accesses
                 .Where(a => a.AccountId == account.Id && !existingAccessIds.Contains(a.Id))
                 .ExecuteDelete();
-            
+
             context.Update(account);
             context.SaveChanges();
         }

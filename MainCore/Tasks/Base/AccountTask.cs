@@ -1,20 +1,17 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Common.Errors;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MediatR;
+﻿using Splat;
 
 namespace MainCore.Tasks.Base
 {
     public abstract class AccountTask : TaskBase
     {
-        protected AccountTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        protected AccountTask(IChromeManager chromeManager, IMediator mediator) : base(chromeManager, mediator)
         {
         }
 
         public AccountId AccountId { get; protected set; }
+
+        private INavigationBarParser _navigationBarParser;
+        private ILoginPageParser _loginPageParser;
 
         public void Setup(AccountId accountId, CancellationToken cancellationToken = default)
         {
@@ -24,33 +21,69 @@ namespace MainCore.Tasks.Base
 
         protected override async Task<Result> PreExecute()
         {
-            if (CancellationToken.IsCancellationRequested) return new Cancel();
+            if (CancellationToken.IsCancellationRequested) return Cancel.Error;
 
-            Result result;
-            result = await _unitOfCommand.ValidateIngameCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            _navigationBarParser ??= Locator.Current.GetService<INavigationBarParser>();
 
-            var inGame = _unitOfCommand.ValidateIngameCommand.Value;
+            if (IsIngame())
+            {
+                Result result;
+                result = await _mediator.Send(new UpdateAccountInfoCommand(AccountId));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            if (inGame) return Result.Ok();
+                result = await _mediator.Send(new UpdateVillageListCommand(AccountId));
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                return Result.Ok();
+            }
 
-            result = await _unitOfCommand.ValidateLoginCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            _loginPageParser ??= Locator.Current.GetService<ILoginPageParser>();
 
-            var login = _unitOfCommand.ValidateLoginCommand.Value;
-
-            if (login)
+            if (IsLogin())
             {
                 if (this is not LoginTask)
                 {
                     ExecuteAt = ExecuteAt.AddMilliseconds(1975);
                     await _mediator.Publish(new AccountLogout(AccountId), CancellationToken);
-                    return Result.Fail(Skip.AccountLogout);
+                    return Skip.AccountLogout;
                 }
                 return Result.Ok();
             }
 
-            return Result.Fail(Stop.TravianPage);
+            return Stop.NotTravianPage;
+        }
+
+        protected override async Task<Result> PostExecute()
+        {
+            Result result;
+            result = await _mediator.Send(new UpdateAccountInfoCommand(AccountId));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await _mediator.Send(new UpdateVillageListCommand(AccountId));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await _mediator.Send(new CheckAdventureCommand(AccountId));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            return Result.Ok();
+        }
+
+        private bool IsIngame()
+        {
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            var html = chromeBrowser.Html;
+
+            var fieldButton = _navigationBarParser.GetResourceButton(html);
+
+            return fieldButton is not null;
+        }
+
+        private bool IsLogin()
+        {
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            var html = chromeBrowser.Html;
+
+            var loginButton = _loginPageParser.GetLoginButton(html);
+
+            return loginButton is not null;
         }
     }
 }

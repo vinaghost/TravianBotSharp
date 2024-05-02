@@ -1,5 +1,4 @@
-﻿using MainCore.Common.Enums;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Infrasturecture.AutoRegisterDi
 {

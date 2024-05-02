@@ -1,15 +1,4 @@
-﻿using FluentResults;
-using MainCore.Commands.Base;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Notification.Message;
-using MainCore.Parsers;
-using MainCore.Repositories;
-using MainCore.Services;
-using MediatR;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
     public class UpdateAccountInfoCommand : ByAccountIdBase, ICommand
     {
@@ -18,25 +7,30 @@ namespace MainCore.Commands.Update
         }
     }
 
-    [RegisterAsTransient]
-    public class UpdateAccountInfoCommandHandler : UpdateCommandHandlerBase, ICommandHandler<UpdateAccountInfoCommand>
+    public class UpdateAccountInfoCommandHandler : ICommandHandler<UpdateAccountInfoCommand>
     {
-        public UpdateAccountInfoCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, UnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
+        private readonly IChromeManager _chromeManager;
+        private readonly IMediator _mediator;
+
+        private readonly IAccountInfoParser _accountInfoParser;
+        private readonly IAccountInfoRepository _accountInfoRepository;
+
+        public UpdateAccountInfoCommandHandler(IChromeManager chromeManager, IMediator mediator, IAccountInfoParser accountInfoParser, IAccountInfoRepository accountInfoRepository)
         {
+            _chromeManager = chromeManager;
+            _mediator = mediator;
+            _accountInfoParser = accountInfoParser;
+            _accountInfoRepository = accountInfoRepository;
         }
 
         public async Task<Result> Handle(UpdateAccountInfoCommand command, CancellationToken cancellationToken)
         {
             var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
-            var dto = _unitOfParser.AccountInfoParser.Get(html);
-            _unitOfRepository.AccountInfoRepository.Update(command.AccountId, dto);
-            await _mediator.Publish(new AccountInfoUpdated(command.AccountId), cancellationToken);
+            var dto = _accountInfoParser.Get(html);
+            _accountInfoRepository.Update(command.AccountId, dto);
 
-            if (_unitOfParser.HeroParser.CanStartAdventure(html))
-            {
-                await _mediator.Publish(new AdventureUpdated(command.AccountId), cancellationToken);
-            }
+            await _mediator.Publish(new AccountInfoUpdated(command.AccountId), cancellationToken);
 
             return Result.Ok();
         }

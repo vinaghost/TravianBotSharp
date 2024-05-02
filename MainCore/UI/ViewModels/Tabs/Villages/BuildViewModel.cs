@@ -1,16 +1,10 @@
 ﻿using MainCore.Commands.UI.Build;
-using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using MediatR;
 using ReactiveUI;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
@@ -18,8 +12,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
     public class BuildViewModel : VillageTabViewModelBase
     {
         private readonly IMediator _mediator;
-        private readonly UnitOfRepository _unitOfRepository;
-
+        private readonly IBuildingRepository _buildingRepository;
+        private readonly IQueueBuildingRepository _queueBuildingRepository;
+        private readonly IJobRepository _jobRepository;
         private ReactiveCommand<ListBoxItem, List<BuildingEnums>> LoadBuildNormal { get; }
 
         public ReactiveCommand<Unit, Unit> BuildNormal { get; }
@@ -47,10 +42,13 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(IMediator mediator, UnitOfRepository unitOfRepository)
+        public BuildViewModel(IMediator mediator, IBuildingRepository buildingRepository, IQueueBuildingRepository queueBuildingRepository, IJobRepository jobRepository)
         {
-            _unitOfRepository = unitOfRepository;
             _mediator = mediator;
+
+            _buildingRepository = buildingRepository;
+            _queueBuildingRepository = queueBuildingRepository;
+            _jobRepository = jobRepository;
 
             BuildNormal = ReactiveCommand.CreateFromTask(BuildNormalHandler);
             BuildResource = ReactiveCommand.CreateFromTask(ResourceNormalHandler);
@@ -124,26 +122,26 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private List<ListBoxItem> LoadBuildingHandler(VillageId villageId)
         {
-            var buildings = _unitOfRepository.BuildingRepository.GetItems(villageId);
+            var buildings = _buildingRepository.GetItems(villageId);
             return buildings;
         }
 
         private List<ListBoxItem> LoadQueueHandler(VillageId villageId)
         {
-            var queue = _unitOfRepository.QueueBuildingRepository.GetItems(villageId);
+            var queue = _queueBuildingRepository.GetItems(villageId);
             return queue;
         }
 
         private List<ListBoxItem> LoadJobHandler(VillageId villageId)
         {
-            var jobs = _unitOfRepository.JobRepository.GetItems(villageId);
+            var jobs = _jobRepository.GetItems(villageId);
             return jobs;
         }
 
         private List<BuildingEnums> LoadBuildNormalHanlder(ListBoxItem item)
         {
             if (item is null) return new();
-            var buildings = _unitOfRepository.BuildingRepository.GetNormalBuilding(VillageId, new BuildingId(item.Id));
+            var buildings = _buildingRepository.GetNormalBuilding(VillageId, new BuildingId(item.Id));
             return buildings;
         }
 

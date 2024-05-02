@@ -1,9 +1,4 @@
-﻿using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.Tasks;
-using MediatR;
+﻿using MainCore.Tasks;
 
 namespace MainCore.Commands.UI.Farming
 {
@@ -18,22 +13,24 @@ namespace MainCore.Commands.UI.Farming
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IAccountSettingRepository _accountSettingRepository;
+        private readonly IFarmRepository _farmRepository;
 
-        public StartFarmListCommandHandler(ITaskManager taskManager, IDialogService dialogService, UnitOfRepository unitOfRepository)
+        public StartFarmListCommandHandler(ITaskManager taskManager, IDialogService dialogService, IAccountSettingRepository accountSettingRepository, IFarmRepository farmRepository)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
-            _unitOfRepository = unitOfRepository;
+            _accountSettingRepository = accountSettingRepository;
+            _farmRepository = farmRepository;
         }
 
         public async Task Handle(StartFarmListCommand request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
-            var useStartAllButton = _unitOfRepository.AccountSettingRepository.GetBooleanByName(accountId, Common.Enums.AccountSettingEnums.UseStartAllButton);
+            var useStartAllButton = _accountSettingRepository.GetBooleanByName(accountId, Common.Enums.AccountSettingEnums.UseStartAllButton);
             if (!useStartAllButton)
             {
-                var count = _unitOfRepository.FarmRepository.CountActive(accountId);
+                var count = _farmRepository.CountActive(accountId);
                 if (count == 0)
                 {
                     _dialogService.ShowMessageBox("Information", "There is no active farm or use start all button is disable");

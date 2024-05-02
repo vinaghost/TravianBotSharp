@@ -1,6 +1,4 @@
-﻿using MainCore.Common.Enums;
-
-namespace MainCore.Common
+﻿namespace MainCore.Common
 {
     public static class Constants
     {

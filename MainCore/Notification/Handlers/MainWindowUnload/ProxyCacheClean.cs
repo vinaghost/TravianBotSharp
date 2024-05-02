@@ -1,7 +1,4 @@
-﻿using MainCore.Notification.Message;
-using MediatR;
-
-namespace MainCore.Notification.Handlers.MainWindowUnload
+﻿namespace MainCore.Notification.Handlers.MainWindowUnload
 {
     public class ProxyCacheClean : INotificationHandler<MainWindowUnloaded>
     {

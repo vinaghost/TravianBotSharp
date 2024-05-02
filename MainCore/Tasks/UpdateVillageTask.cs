@@ -1,13 +1,4 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Commands.Features;
-using MainCore.Common.Enums;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.Tasks.Base;
-using MediatR;
+﻿using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -15,31 +6,56 @@ namespace MainCore.Tasks
     public class UpdateVillageTask : VillageTask
     {
         private readonly ITaskManager _taskManager;
+        private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public UpdateVillageTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager) : base(unitOfCommand, unitOfRepository, mediator)
+        public UpdateVillageTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager, IVillageSettingRepository villageSettingRepository) : base(chromeManager, mediator, villageRepository)
         {
             _taskManager = taskManager;
+            _villageSettingRepository = villageSettingRepository;
         }
 
         protected override async Task<Result> Execute()
         {
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            var url = chromeBrowser.CurrentUrl;
             Result result;
-            result = await _mediator.Send(new UpdateDorf1Command(AccountId, VillageId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            await chromeBrowser.Refresh(CancellationToken);
+            if (url.Contains("dorf1"))
+            {
+                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            }
+            else if (url.Contains("dorf2"))
+            {
+                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await _mediator.Send(ToDorfCommand.ToDorf1(AccountId), CancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            }
+            else
+            {
+                result = await _mediator.Send(ToDorfCommand.ToDorf1(AccountId), CancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            }
+
             await SetNextExecute();
             return Result.Ok();
         }
 
         private async Task SetNextExecute()
         {
-            var seconds = _unitOfRepository.VillageSettingRepository.GetByName(VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
+            var seconds = _villageSettingRepository.GetByName(VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
         }
 
         protected override void SetName()
         {
-            var village = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
+            var village = _villageRepository.GetVillageName(VillageId);
             _name = $"Update village in {village}";
         }
     }

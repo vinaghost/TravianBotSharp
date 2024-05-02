@@ -1,16 +1,7 @@
-﻿using FluentResults;
-using FluentValidation;
+﻿using FluentValidation;
 using Humanizer;
-using MainCore.Common.Enums;
-using MainCore.Common.Extensions;
-using MainCore.Common.MediatR;
 using MainCore.Common.Models;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.Models.Input;
-using MediatR;
 
 namespace MainCore.Commands.UI.Build
 {
@@ -32,16 +23,18 @@ namespace MainCore.Commands.UI.Build
         private readonly ITaskManager _taskManager;
         private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
         private readonly IDialogService _dialogService;
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
+        private readonly IBuildingRepository _buildingRepository;
+        private readonly IJobRepository _jobRepository;
 
-        public BuildNormalCommandHandler(ITaskManager taskManager, IValidator<NormalBuildInput> normalBuildInputValidator, IDialogService dialogService, UnitOfRepository unitOfRepository, IMediator mediator)
+        public BuildNormalCommandHandler(ITaskManager taskManager, IValidator<NormalBuildInput> normalBuildInputValidator, IDialogService dialogService, IMediator mediator, IBuildingRepository buildingRepository, IJobRepository jobRepository)
         {
             _taskManager = taskManager;
             _normalBuildInputValidator = normalBuildInputValidator;
             _dialogService = dialogService;
-            _unitOfRepository = unitOfRepository;
             _mediator = mediator;
+            _buildingRepository = buildingRepository;
+            _jobRepository = jobRepository;
         }
 
         public async Task Handle(BuildNormalCommand request, CancellationToken cancellationToken)
@@ -75,7 +68,7 @@ namespace MainCore.Commands.UI.Build
 
         private async Task NormalBuild(AccountId accountId, VillageId villageId, NormalBuildPlan plan, CancellationToken cancellationToken)
         {
-            var buildings = _unitOfRepository.BuildingRepository.GetBuildings(villageId);
+            var buildings = _buildingRepository.GetBuildings(villageId);
             var result = CheckRequirements(buildings, plan);
             if (result.IsFailed)
             {
@@ -85,7 +78,7 @@ namespace MainCore.Commands.UI.Build
 
             Validate(buildings, plan);
 
-            await Task.Run(() => _unitOfRepository.JobRepository.Add(villageId, plan));
+            await Task.Run(() => _jobRepository.Add(villageId, plan));
             await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
         }
 
