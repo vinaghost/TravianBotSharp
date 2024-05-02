@@ -22,16 +22,6 @@ namespace MainCore.Infrasturecture.AutoRegisterDi
                 .RequiredLifetime;
         }
 
-        public static bool IsServerCorrect(this Type type,
-            ServerEnums correctServer)
-        {
-            var server = type
-                .GetCustomAttribute<RegisterWithLifetimeAttribute>(true)
-                .RequiredServer;
-            if (server == ServerEnums.NONE) return true;
-            return correctServer == server;
-        }
-
         public static bool WithoutInterface(this Type type)
         {
             return type

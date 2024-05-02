@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.General;
-using MainCore.UI.ViewModels.UserControls;
+﻿using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Commands.UI.MainLayout
 {
@@ -14,13 +13,13 @@ namespace MainCore.Commands.UI.MainLayout
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
-        private readonly ICommandHandler<CloseBrowserCommand> _closeBrowserCommand;
+        private readonly IChromeManager _chromeManager;
 
-        public LogoutAccountCommandHandler(ITaskManager taskManager, IDialogService dialogService, ICommandHandler<CloseBrowserCommand> closeBrowserCommand)
+        public LogoutAccountCommandHandler(ITaskManager taskManager, IDialogService dialogService, IChromeManager chromeManager)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
-            _closeBrowserCommand = closeBrowserCommand;
+            _chromeManager = chromeManager;
         }
 
         public async Task Handle(LogoutAccountCommand request, CancellationToken cancellationToken)
@@ -57,7 +56,8 @@ namespace MainCore.Commands.UI.MainLayout
             await _taskManager.SetStatus(accountId, StatusEnums.Stopping);
             await _taskManager.StopCurrentTask(accountId);
 
-            await _closeBrowserCommand.Handle(new(accountId), cancellationToken);
+            var chromeBrowser = _chromeManager.Get(accountId);
+            await Task.Run(chromeBrowser.Close);
 
             await _taskManager.SetStatus(accountId, StatusEnums.Offline);
         }

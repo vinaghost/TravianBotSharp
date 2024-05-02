@@ -6,10 +6,9 @@ namespace MainCore.Infrasturecture.AutoRegisterDi
 {
     public static class AutoRegisterHelpers
     {
-        public static IServiceCollection AutoRegister(this IServiceCollection services,
-            ServerEnums server)
+        public static IServiceCollection AutoRegister(this IServiceCollection services)
         {
-            var foundServices = GetAutoRegistered(server);
+            var foundServices = GetAutoRegistered();
             foreach (var service in foundServices)
             {
                 services.Add(new ServiceDescriptor(service.Interface, service.Class, service.Lifetime));
@@ -17,7 +16,7 @@ namespace MainCore.Infrasturecture.AutoRegisterDi
             return services;
         }
 
-        public static IEnumerable<AutoRegisteredResult> GetAutoRegistered(ServerEnums server)
+        public static IEnumerable<AutoRegisteredResult> GetAutoRegistered()
         {
             var assembly = typeof(AppDbContext).Assembly;
             var allPublicTypes = assembly.GetExportedTypes()
@@ -27,7 +26,6 @@ namespace MainCore.Infrasturecture.AutoRegisterDi
             {
                 if (!classType.HasAttribute()) continue;
 
-                if (!classType.IsServerCorrect(server)) continue;
                 var lifetimeForClass = classType.GetLifetimeForClass();
 
                 var withoutInterface = classType.WithoutInterface();
