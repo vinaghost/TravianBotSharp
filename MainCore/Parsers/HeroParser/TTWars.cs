@@ -3,7 +3,7 @@ using MainCore.DTO;
 
 namespace MainCore.Parsers.HeroParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : IHeroParser
     {
         public bool InventoryTabActive(HtmlDocument doc)

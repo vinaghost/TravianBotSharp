@@ -3,7 +3,7 @@ using MainCore.DTO;
 
 namespace MainCore.Parsers.FarmParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IFarmParser
     {
         public HtmlNode GetStartButton(HtmlDocument doc, FarmId raidId)

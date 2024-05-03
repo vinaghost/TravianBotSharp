@@ -2,7 +2,7 @@
 
 namespace MainCore.Parsers.TroopPageParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : ITroopPageParser
     {
         public HtmlNode GetInputBox(HtmlDocument doc, TroopEnums troop)

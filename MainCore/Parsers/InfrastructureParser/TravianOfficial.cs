@@ -3,7 +3,7 @@ using MainCore.DTO;
 
 namespace MainCore.Parsers.InfrastructureParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IInfrastructureParser
     {
         public IEnumerable<BuildingDto> Get(HtmlDocument doc)

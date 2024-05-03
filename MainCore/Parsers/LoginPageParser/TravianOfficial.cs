@@ -2,7 +2,7 @@
 
 namespace MainCore.Parsers.LoginPageParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : ILoginPageParser
     {
         public HtmlNode GetUsernameNode(HtmlDocument doc)

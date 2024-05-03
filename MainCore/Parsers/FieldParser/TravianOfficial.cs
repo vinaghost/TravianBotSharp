@@ -3,7 +3,7 @@ using MainCore.DTO;
 
 namespace MainCore.Parsers.FieldParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IFieldParser
     {
         public IEnumerable<BuildingDto> Get(HtmlDocument doc)

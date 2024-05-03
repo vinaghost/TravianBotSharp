@@ -2,7 +2,7 @@
 
 namespace MainCore.Parsers.TroopPageParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : ITroopPageParser
     {
         public HtmlNode GetInputBox(HtmlDocument doc, TroopEnums troop)

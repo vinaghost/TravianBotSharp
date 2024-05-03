@@ -3,7 +3,7 @@ using MainCore.DTO;
 
 namespace MainCore.Parsers.FarmParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : IFarmParser
     {
         public HtmlNode GetStartButton(HtmlDocument doc, FarmId raidId)

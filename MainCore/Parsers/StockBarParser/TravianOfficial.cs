@@ -4,7 +4,7 @@ using System.Net;
 
 namespace MainCore.Parsers.StockBarParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IStockBarParser
     {
         public StorageDto Get(HtmlDocument doc)

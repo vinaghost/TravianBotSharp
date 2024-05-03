@@ -2,7 +2,7 @@
 
 namespace MainCore.Parsers.UpgradeBuildingParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : IUpgradeBuildingParser
     {
         public long[] GetRequiredResource(HtmlDocument doc, bool isEmptySite, BuildingEnums building = BuildingEnums.Site)

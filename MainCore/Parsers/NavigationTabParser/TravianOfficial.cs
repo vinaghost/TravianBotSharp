@@ -2,7 +2,7 @@
 
 namespace MainCore.Parsers.NavigationTabParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : INavigationTabParser
     {
         private static HtmlNode GetNavigationBar(HtmlDocument doc)

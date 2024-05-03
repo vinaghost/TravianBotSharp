@@ -3,7 +3,7 @@ using MainCore.DTO;
 
 namespace MainCore.Parsers.VillagePanelParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : IVillagePanelParser
     {
         public HtmlNode GetVillageNode(HtmlDocument doc, VillageId villageId)

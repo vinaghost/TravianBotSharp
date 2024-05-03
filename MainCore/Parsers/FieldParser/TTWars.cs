@@ -3,7 +3,7 @@ using MainCore.DTO;
 
 namespace MainCore.Parsers.FieldParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : IFieldParser
     {
         public IEnumerable<BuildingDto> Get(HtmlDocument doc)

@@ -2,7 +2,7 @@
 
 namespace MainCore.Parsers.BuildingParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IBuildingParser
     {
         public HtmlNode GetBuilding(HtmlDocument doc, int location)

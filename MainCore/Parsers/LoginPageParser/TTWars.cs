@@ -2,7 +2,7 @@
 
 namespace MainCore.Parsers.LoginPageParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : ILoginPageParser
     {
         public HtmlNode GetUsernameNode(HtmlDocument doc)

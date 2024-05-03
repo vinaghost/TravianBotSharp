@@ -2,7 +2,7 @@
 
 namespace MainCore.Parsers.UpgradeBuildingParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IUpgradeBuildingParser
     {
         public long[] GetRequiredResource(HtmlDocument doc, bool isEmptySite, BuildingEnums building = BuildingEnums.Site)

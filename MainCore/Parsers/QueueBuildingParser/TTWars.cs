@@ -3,7 +3,7 @@ using MainCore.DTO;
 
 namespace MainCore.Parsers.QueueBuildingParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : IQueueBuildingParser
     {
         public IEnumerable<QueueBuildingDto> Get(HtmlDocument doc)

@@ -2,7 +2,7 @@
 
 namespace MainCore.Parsers.NavigationBarParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : INavigationBarParser
     {
         private static HtmlNode GetButton(HtmlDocument doc, int key)

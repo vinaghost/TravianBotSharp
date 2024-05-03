@@ -2,7 +2,7 @@
 
 namespace MainCore.Parsers.MarketParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : IMarketParser
     {
         public bool NPCDialogShown(HtmlDocument doc)

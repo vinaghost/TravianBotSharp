@@ -2,7 +2,7 @@
 
 namespace MainCore.Parsers.MarketParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IMarketParser
     {
         public bool NPCDialogShown(HtmlDocument doc)

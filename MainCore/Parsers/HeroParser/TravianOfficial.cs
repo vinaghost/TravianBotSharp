@@ -3,7 +3,7 @@ using MainCore.DTO;
 
 namespace MainCore.Parsers.HeroParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IHeroParser
     {
         public TimeSpan GetAdventureDuration(HtmlDocument doc)
