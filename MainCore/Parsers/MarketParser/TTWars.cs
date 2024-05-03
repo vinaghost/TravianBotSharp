@@ -40,7 +40,7 @@ namespace MainCore.Parsers.MarketParser
         {
             var sum = doc.GetElementbyId("sum");
             if (sum is null) return -1;
-            return sum.InnerText.ToLong();
+            return sum.InnerText.ParseLong();
         }
 
         public IEnumerable<HtmlNode> GetInputs(HtmlDocument doc)

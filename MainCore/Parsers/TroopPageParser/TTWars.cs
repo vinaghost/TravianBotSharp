@@ -24,7 +24,7 @@ namespace MainCore.Parsers.TroopPageParser
             if (cta is null) return 0;
             var a = cta.Descendants("a")
                 .FirstOrDefault();
-            return a.InnerText.ToInt();
+            return a.InnerText.ParseInt();
         }
 
         public TimeSpan GetQueueTrainTime(HtmlDocument doc)
@@ -60,7 +60,7 @@ namespace MainCore.Parsers.TroopPageParser
                     .Where(x => x.HasClass("value"))
                     .FirstOrDefault();
                 var text = span.InnerText;
-                resources[i] = text.ToLong();
+                resources[i] = text.ParseLong();
             }
             return resources;
         }
@@ -92,7 +92,7 @@ namespace MainCore.Parsers.TroopPageParser
                 var type = classes
                     .Where(x => x.StartsWith("u"))
                     .FirstOrDefault(x => !x.Equals("unit"));
-                if (type.ToInt() == (int)troop) return node;
+                if (type.ParseInt() == (int)troop) return node;
             }
             return null;
         }

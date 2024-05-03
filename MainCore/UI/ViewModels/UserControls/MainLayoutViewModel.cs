@@ -1,5 +1,4 @@
 ﻿using MainCore.Commands.UI.MainLayout;
-using MainCore.Common;
 using MainCore.UI.Enums;
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
@@ -159,7 +158,7 @@ namespace MainCore.UI.ViewModels.UserControls
         {
             var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
             var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
-            return $"{version} - {Constants.Server}";
+            return $"{version}";
         }
 
         private void SetPauseText(StatusEnums status)

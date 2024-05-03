@@ -31,7 +31,7 @@ namespace MainCore.Parsers.UpgradeBuildingParser
             var resourceBuilding = new long[5];
             for (var i = 0; i < 5; i++)
             {
-                resourceBuilding[i] = resources[i].InnerText.ToLong();
+                resourceBuilding[i] = resources[i].InnerText.ParseLong();
             }
 
             return resourceBuilding;

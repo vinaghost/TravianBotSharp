@@ -2,7 +2,7 @@
 
 namespace MainCore.Parsers
 {
-    [RegisterAsTransient(Common.Enums.ServerEnums.TTWars)]
+    
     public class TTWars : IQuestParser
     {
         public HtmlNode GetQuestMaster(HtmlDocument doc)

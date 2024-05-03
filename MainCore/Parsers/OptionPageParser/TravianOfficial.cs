@@ -1,8 +1,6 @@
-﻿using HtmlAgilityPack;
-
-namespace MainCore.Parsers.OptionPageParser
+﻿namespace MainCore.Parsers.OptionPageParser
 {
-    [RegisterAsTransient(Common.Enums.ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IOptionPageParser
     {
         public bool IsContextualHelpShow(HtmlDocument doc)

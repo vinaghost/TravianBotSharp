@@ -1,7 +1,4 @@
-﻿using HtmlAgilityPack;
-using MainCore.DTO;
-
-namespace MainCore.Parsers.QueueBuildingParser
+﻿namespace MainCore.Parsers.QueueBuildingParser
 {
     [RegisterAsParser]
     public class TravianOfficial : IQueueBuildingParser
@@ -59,16 +56,14 @@ namespace MainCore.Parsers.QueueBuildingParser
             var nodeLevel = node.Descendants("span").FirstOrDefault(x => x.HasClass("lvl"));
             if (nodeLevel is null) return 0;
 
-            return int.Parse(new string(nodeLevel.InnerText.Where(c => char.IsDigit(c)).ToArray()));
+            return nodeLevel.InnerText.ParseInt();
         }
 
         private static TimeSpan GetDuration(HtmlNode node)
         {
             var nodeTimer = node.Descendants().FirstOrDefault(x => x.HasClass("timer"));
             if (nodeTimer is null) return TimeSpan.Zero;
-            var strSec = new string(nodeTimer.GetAttributeValue("value", "0").Where(c => char.IsNumber(c)).ToArray());
-            if (string.IsNullOrEmpty(strSec)) return TimeSpan.Zero;
-            int sec = int.Parse(strSec);
+            int sec = nodeTimer.GetAttributeValue("value", 0);
             return TimeSpan.FromSeconds(sec);
         }
     }

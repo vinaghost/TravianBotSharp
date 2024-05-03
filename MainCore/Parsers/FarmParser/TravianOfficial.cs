@@ -72,7 +72,7 @@ namespace MainCore.Parsers.FarmParser
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("dragAndDrop"));
             var id = flId.GetAttributeValue("data-list", "0");
-            return new FarmId(id.ToInt());
+            return new FarmId(id.ParseInt());
         }
     }
 }

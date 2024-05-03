@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace MainCore.Parsers.AccountInfoParser
+﻿namespace MainCore.Parsers.AccountInfoParser
 {
     [RegisterAsParser]
     public class TravianOfficial : IAccountInfoParser
@@ -21,22 +19,14 @@ namespace MainCore.Parsers.AccountInfoParser
         {
             var goldNode = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("ajaxReplaceableGoldAmount"));
             if (goldNode is null) return -1;
-            var valueStrFixed = WebUtility.HtmlDecode(goldNode.InnerText);
-            if (string.IsNullOrEmpty(valueStrFixed)) return -1;
-            var valueStr = new string(valueStrFixed.Where(c => char.IsDigit(c)).ToArray());
-            if (string.IsNullOrEmpty(valueStr)) return -1;
-            return int.Parse(valueStr);
+            return goldNode.InnerText.ParseInt();
         }
 
         private static int GetSilver(HtmlDocument doc)
         {
             var silverNode = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("ajaxReplaceableSilverAmount"));
             if (silverNode is null) return -1;
-            var valueStrFixed = WebUtility.HtmlDecode(silverNode.InnerText);
-            if (string.IsNullOrEmpty(valueStrFixed)) return -1;
-            var valueStr = new string(valueStrFixed.Where(c => char.IsDigit(c)).ToArray());
-            if (string.IsNullOrEmpty(valueStr)) return -1;
-            return int.Parse(valueStr);
+            return silverNode.InnerText.ParseInt();
         }
 
         private static bool HasPlusAccount(HtmlDocument doc)
