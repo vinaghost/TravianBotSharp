@@ -1,7 +1,4 @@
-﻿using HtmlAgilityPack;
-using MainCore.DTO;
-
-namespace MainCore.Parsers.InfrastructureParser
+﻿namespace MainCore.Parsers.InfrastructureParser
 {
     [RegisterAsParser]
     public class TravianOfficial : IInfrastructureParser
@@ -13,7 +10,12 @@ namespace MainCore.Parsers.InfrastructureParser
             {
                 var location = GetId(node);
                 var level = GetLevel(node);
-                var type = GetBuildingType(node);
+                var type = location switch
+                {
+                    26 => BuildingEnums.MainBuilding,
+                    39 => BuildingEnums.RallyPoint,
+                    _ => GetBuildingType(node)
+                };
                 var isUnderConstruction = IsUnderConstruction(node);
 
                 yield return new BuildingDto()
