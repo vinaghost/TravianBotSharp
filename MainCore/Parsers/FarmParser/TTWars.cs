@@ -1,12 +1,9 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
 using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
 
 namespace MainCore.Parsers.FarmParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : IFarmParser
     {
         public HtmlNode GetStartButton(HtmlDocument doc, FarmId raidId)

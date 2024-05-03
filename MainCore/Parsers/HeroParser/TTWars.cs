@@ -1,11 +1,9 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
 using MainCore.DTO;
-using MainCore.Infrasturecture.AutoRegisterDi;
 
 namespace MainCore.Parsers.HeroParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : IHeroParser
     {
         public bool InventoryTabActive(HtmlDocument doc)

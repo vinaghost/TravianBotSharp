@@ -1,10 +1,8 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
-using MainCore.Infrasturecture.AutoRegisterDi;
 
 namespace MainCore.Parsers.BuildingParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IBuildingParser
     {
         public HtmlNode GetBuilding(HtmlDocument doc, int location)

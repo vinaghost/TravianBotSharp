@@ -1,55 +1,42 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Commands.Base;
-using MainCore.Commands.Features;
-using MainCore.Commands.Features.Step.StartAdventure;
-using MainCore.Commands.Validate;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
-using MainCore.Services;
+﻿using MainCore.Commands.Features.StartAdventure;
 using MainCore.Tasks.Base;
-using MediatR;
 
 namespace MainCore.Tasks
 {
     [RegisterAsTransient(withoutInterface: true)]
     public class StartAdventureTask : AccountTask
     {
-        private readonly ICommandHandler<ValidateAdventureCommand, bool> _validateAdventureCommand;
-        private readonly ICommandHandler<GetDurationAdventureCommand, TimeSpan> _getDurationAdventureCommand;
         private readonly ITaskManager _taskManager;
+        private readonly IHeroParser _heroParser;
 
-        public StartAdventureTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ICommandHandler<ValidateAdventureCommand, bool> validateAdventureCommand, ICommandHandler<GetDurationAdventureCommand, TimeSpan> getDurationAdventureCommand, ITaskManager taskManager) : base(unitOfCommand, unitOfRepository, mediator)
+        public StartAdventureTask(IChromeManager chromeManager, IMediator mediator, ITaskManager taskManager, IHeroParser heroParser) : base(chromeManager, mediator)
         {
-            _validateAdventureCommand = validateAdventureCommand;
-            _getDurationAdventureCommand = getDurationAdventureCommand;
             _taskManager = taskManager;
+            _heroParser = heroParser;
         }
 
         protected override async Task<Result> Execute()
         {
             Result result;
+            var chromeBrowser = _chromeManager.Get(AccountId);
 
-            result = await _unitOfCommand.ToDorfCommand.Handle(new(AccountId, 1, true), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            result = await _mediator.Send(ToDorfCommand.ToDorf(AccountId), CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.UpdateAccountInfoCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            var html = chromeBrowser.Html;
 
-            result = await _validateAdventureCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (!_heroParser.CanStartAdventure(html)) return Result.Ok();
 
-            var canStartAdventure = _validateAdventureCommand.Value;
-            if (!canStartAdventure) return Result.Ok();
+            result = await _mediator.Send(new ToAdventurePageCommand(chromeBrowser), CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new StartAdventureCommand(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            result = await _mediator.Send(new ExploreAdventureCommand(chromeBrowser), CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _getDurationAdventureCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            html = chromeBrowser.Html;
+            var adventureDuration = _heroParser.GetAdventureDuration(html);
 
-            await SetNextExecute(_getDurationAdventureCommand.Value);
+            await SetNextExecute(adventureDuration);
 
             return Result.Ok();
         }

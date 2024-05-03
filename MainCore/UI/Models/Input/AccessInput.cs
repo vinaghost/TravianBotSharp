@@ -1,5 +1,4 @@
 ﻿using MainCore.DTO;
-using MainCore.Entities;
 using ReactiveUI;
 using Riok.Mapperly.Abstractions;
 

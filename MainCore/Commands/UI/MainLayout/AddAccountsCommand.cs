@@ -1,8 +1,6 @@
-﻿using MainCore.Common.MediatR;
-using MainCore.UI.Enums;
+﻿using MainCore.UI.Enums;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.UserControls;
-using MediatR;
 
 namespace MainCore.Commands.UI.MainLayout
 {

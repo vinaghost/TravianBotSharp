@@ -1,11 +1,8 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
 
 namespace MainCore.Parsers.NavigationBarParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : INavigationBarParser
     {
         private static HtmlNode GetButton(HtmlDocument doc, int key)

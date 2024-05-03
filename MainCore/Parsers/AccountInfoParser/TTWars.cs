@@ -1,12 +1,7 @@
-﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
-using MainCore.DTO;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using System.Net;
+﻿using System.Net;
 
 namespace MainCore.Parsers.AccountInfoParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
     public class TTWars : IAccountInfoParser
     {
         public AccountInfoDto Get(HtmlDocument doc)

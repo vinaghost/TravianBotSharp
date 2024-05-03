@@ -1,11 +1,8 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
 
 namespace MainCore.Parsers.NavigationTabParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : INavigationTabParser
     {
         private static HtmlNode GetNavigationBar(HtmlDocument doc)

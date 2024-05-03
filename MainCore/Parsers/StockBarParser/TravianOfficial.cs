@@ -1,12 +1,8 @@
-﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
-using MainCore.DTO;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using System.Net;
+﻿using System.Net;
 
 namespace MainCore.Parsers.StockBarParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IStockBarParser
     {
         public StorageDto Get(HtmlDocument doc)
@@ -28,11 +24,7 @@ namespace MainCore.Parsers.StockBarParser
         {
             var node = doc.GetElementbyId(id);
             if (node is null) return -1;
-            var valueStrFixed = WebUtility.HtmlDecode(node.InnerText);
-            if (string.IsNullOrEmpty(valueStrFixed)) return -1;
-            var valueStr = new string(valueStrFixed.Where(c => char.IsDigit(c)).ToArray());
-            if (string.IsNullOrEmpty(valueStr)) return -1;
-            return long.Parse(valueStr);
+            return node.InnerText.ParseLong();
         }
 
         private static long GetWood(HtmlDocument doc) => GetResource(doc, "l1");
@@ -55,11 +47,7 @@ namespace MainCore.Parsers.StockBarParser
             if (capacityNode is null) return -1;
             var valueNode = capacityNode.Descendants("div").FirstOrDefault(x => x.HasClass("value"));
             if (valueNode is null) return -1;
-            var valueStrFixed = WebUtility.HtmlDecode(valueNode.InnerText);
-            if (string.IsNullOrEmpty(valueStrFixed)) return -1;
-            var valueStr = new string(valueStrFixed.Where(c => char.IsDigit(c)).ToArray());
-            if (string.IsNullOrEmpty(valueStr)) return -1;
-            return long.Parse(valueStr);
+            return valueNode.InnerText.ParseLong();
         }
 
         private static long GetGranaryCapacity(HtmlDocument doc)
@@ -74,9 +62,7 @@ namespace MainCore.Parsers.StockBarParser
             if (valueNode is null) return -1;
             var valueStrFixed = WebUtility.HtmlDecode(valueNode.InnerText);
             if (string.IsNullOrEmpty(valueStrFixed)) return -1;
-            var valueStr = new string(valueStrFixed.Where(c => char.IsDigit(c)).ToArray());
-            if (string.IsNullOrEmpty(valueStr)) return -1;
-            return long.Parse(valueStr);
+            return valueNode.InnerText.ParseLong();
         }
     }
 }

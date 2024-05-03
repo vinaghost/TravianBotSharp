@@ -1,5 +1,4 @@
-﻿using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
 using System.Reactive.Linq;

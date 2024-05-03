@@ -1,6 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using StronglyTypedIds;
 
 [assembly: StronglyTypedIdDefaults(

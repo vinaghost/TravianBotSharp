@@ -1,7 +1,5 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Common.Models;
+﻿using MainCore.Common.Models;
 using MainCore.DTO;
-using MainCore.Entities;
 using MainCore.UI.Models.Output;
 
 namespace MainCore.Repositories

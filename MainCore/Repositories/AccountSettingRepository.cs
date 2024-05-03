@@ -1,7 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Infrasturecture.Persistence;
+﻿using MainCore.Infrasturecture.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace MainCore.Repositories

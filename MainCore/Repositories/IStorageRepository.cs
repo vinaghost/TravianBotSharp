@@ -1,6 +1,4 @@
-﻿using FluentResults;
-using MainCore.DTO;
-using MainCore.Entities;
+﻿using MainCore.DTO;
 
 namespace MainCore.Repositories
 {

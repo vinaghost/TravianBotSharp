@@ -1,9 +1,5 @@
-﻿using HtmlAgilityPack;
-using MainCore.Infrasturecture.AutoRegisterDi;
-
-namespace MainCore.Parsers.CompleteImmediatelyParser
+﻿namespace MainCore.Parsers.CompleteImmediatelyParser
 {
-    [RegisterAsTransient(Common.Enums.ServerEnums.TTWars)]
     public class TTWars : ICompleteImmediatelyParser
     {
         public HtmlNode GetCompleteButton(HtmlDocument doc)

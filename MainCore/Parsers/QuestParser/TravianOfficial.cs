@@ -1,9 +1,6 @@
-﻿using HtmlAgilityPack;
-using MainCore.Infrasturecture.AutoRegisterDi;
-
-namespace MainCore.Parsers.QuestParser
+﻿namespace MainCore.Parsers.QuestParser
 {
-    [RegisterAsTransient(Common.Enums.ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IQuestParser
     {
         public HtmlNode GetQuestMaster(HtmlDocument doc)

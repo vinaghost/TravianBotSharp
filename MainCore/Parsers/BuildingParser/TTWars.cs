@@ -1,10 +1,8 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
-using MainCore.Infrasturecture.AutoRegisterDi;
 
 namespace MainCore.Parsers.BuildingParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : IBuildingParser
     {
         public HtmlNode GetBuilding(HtmlDocument doc, int location)

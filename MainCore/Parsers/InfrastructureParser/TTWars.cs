@@ -1,12 +1,10 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
 using MainCore.DTO;
-using MainCore.Infrasturecture.AutoRegisterDi;
 using System.Net;
 
 namespace MainCore.Parsers.InfrastructureParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : IInfrastructureParser
     {
         public IEnumerable<BuildingDto> Get(HtmlDocument doc)

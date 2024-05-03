@@ -1,40 +1,58 @@
-﻿using MainCore.Common.Enums;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Infrasturecture.AutoRegisterDi
 {
     [AttributeUsage(AttributeTargets.Class)]
     public class RegisterWithLifetimeAttribute : Attribute
     {
-        public RegisterWithLifetimeAttribute(ServiceLifetime requiredLifetime, ServerEnums requiredServer, bool withoutInterface)
+        public RegisterWithLifetimeAttribute(ServiceLifetime requiredLifetime, bool withoutInterface)
         {
             RequiredLifetime = requiredLifetime;
-            RequiredServer = requiredServer;
             WithoutInterface = withoutInterface;
         }
 
         public ServiceLifetime RequiredLifetime { get; }
-        public ServerEnums RequiredServer { get; }
         public bool WithoutInterface { get; }
     }
 
     public class RegisterAsScopedAttribute : RegisterWithLifetimeAttribute
     {
-        public RegisterAsScopedAttribute(ServerEnums requiredServer = ServerEnums.NONE, bool withoutInterface = false) : base(ServiceLifetime.Scoped, requiredServer, withoutInterface)
+        public RegisterAsScopedAttribute(bool withoutInterface = false) : base(ServiceLifetime.Scoped, withoutInterface)
         {
         }
     }
 
     public class RegisterAsTransientAttribute : RegisterWithLifetimeAttribute
     {
-        public RegisterAsTransientAttribute(ServerEnums requiredServer = ServerEnums.NONE, bool withoutInterface = false) : base(ServiceLifetime.Transient, requiredServer, withoutInterface)
+        public RegisterAsTransientAttribute(bool withoutInterface = false) : base(ServiceLifetime.Transient, withoutInterface)
         {
         }
     }
 
     public class RegisterAsSingletonAttribute : RegisterWithLifetimeAttribute
     {
-        public RegisterAsSingletonAttribute(ServerEnums requiredServer = ServerEnums.NONE, bool withoutInterface = false) : base(ServiceLifetime.Singleton, requiredServer, withoutInterface)
+        public RegisterAsSingletonAttribute(bool withoutInterface = false) : base(ServiceLifetime.Singleton, withoutInterface)
+        {
+        }
+    }
+
+    public class RegisterAsServiceAttribute : RegisterAsSingletonAttribute
+    {
+        public RegisterAsServiceAttribute() : base(false)
+        {
+        }
+    }
+
+    public class RegisterAsParserAttribute : RegisterAsTransientAttribute
+    {
+        public RegisterAsParserAttribute() : base(true)
+        {
+        }
+    }
+
+    public class RegisterAsCommandAttribute : RegisterAsTransientAttribute
+    {
+        public RegisterAsCommandAttribute() : base(true)
         {
         }
     }

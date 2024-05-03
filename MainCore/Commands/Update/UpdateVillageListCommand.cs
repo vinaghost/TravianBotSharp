@@ -1,15 +1,4 @@
-﻿using FluentResults;
-using MainCore.Commands.Base;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Notification.Message;
-using MainCore.Parsers;
-using MainCore.Repositories;
-using MainCore.Services;
-using MediatR;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
     public class UpdateVillageListCommand : ByAccountIdBase, ICommand
     {
@@ -18,20 +7,32 @@ namespace MainCore.Commands.Update
         }
     }
 
-    [RegisterAsTransient]
-    public class UpdateVillageListCommandHandler : UpdateCommandHandlerBase, ICommandHandler<UpdateVillageListCommand>
+    public class UpdateVillageListCommandHandler : ICommandHandler<UpdateVillageListCommand>
     {
-        public UpdateVillageListCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, UnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
+        private readonly IMediator _mediator;
+        private readonly IChromeManager _chromeManager;
+        private readonly IVillagePanelParser _villagePanelParser;
+        private readonly IVillageRepository _villageRepository;
+
+        public UpdateVillageListCommandHandler(IMediator mediator, IVillagePanelParser villagePanelParser, IVillageRepository villageRepository, IChromeManager chromeManager)
         {
+            _mediator = mediator;
+            _chromeManager = chromeManager;
+            _villagePanelParser = villagePanelParser;
+            _villageRepository = villageRepository;
+            _chromeManager = chromeManager;
         }
 
-        public async Task<Result> Handle(UpdateVillageListCommand command, CancellationToken cancellationToken)
+        public async Task<Result> Handle(UpdateVillageListCommand request, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _chromeManager.Get(command.AccountId);
+            var accountId = request.AccountId;
+            var chromeBrowser = _chromeManager.Get(accountId);
             var html = chromeBrowser.Html;
-            var dtos = _unitOfParser.VillagePanelParser.Get(html);
-            _unitOfRepository.VillageRepository.Update(command.AccountId, dtos.ToList());
-            await _mediator.Publish(new VillageUpdated(command.AccountId), cancellationToken);
+            var dtos = _villagePanelParser.Get(html);
+            if (!dtos.Any()) return Retry.VillageListEmpty();
+
+            _villageRepository.Update(accountId, dtos.ToList());
+            await _mediator.Publish(new VillageUpdated(accountId), cancellationToken);
             return Result.Ok();
         }
     }

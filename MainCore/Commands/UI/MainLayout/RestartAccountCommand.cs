@@ -1,10 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Services;
-using MainCore.UI.ViewModels.UserControls;
-using MediatR;
+﻿using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Commands.UI.MainLayout
 {

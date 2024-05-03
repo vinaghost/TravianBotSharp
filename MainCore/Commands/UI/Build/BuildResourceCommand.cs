@@ -1,13 +1,6 @@
 ﻿using FluentValidation;
-using MainCore.Common.Enums;
-using MainCore.Common.MediatR;
 using MainCore.Common.Models;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.Models.Input;
-using MediatR;
 
 namespace MainCore.Commands.UI.Build
 {
@@ -25,17 +18,17 @@ namespace MainCore.Commands.UI.Build
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
         private readonly IValidator<ResourceBuildInput> _resourceBuildInputValidator;
+        private readonly IJobRepository _jobRepository;
 
-        public BuildResourceCommandHandler(ITaskManager taskManager, IDialogService dialogService, UnitOfRepository unitOfRepository, IMediator mediator, IValidator<ResourceBuildInput> resourceBuildInputValidator)
+        public BuildResourceCommandHandler(ITaskManager taskManager, IDialogService dialogService, IMediator mediator, IValidator<ResourceBuildInput> resourceBuildInputValidator, IJobRepository jobRepository)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
-            _unitOfRepository = unitOfRepository;
             _mediator = mediator;
             _resourceBuildInputValidator = resourceBuildInputValidator;
+            _jobRepository = jobRepository;
         }
 
         public async Task Handle(BuildResourceCommand request, CancellationToken cancellationToken)
@@ -63,7 +56,7 @@ namespace MainCore.Commands.UI.Build
                 Plan = type,
                 Level = level,
             };
-            await Task.Run(() => _unitOfRepository.JobRepository.Add(villageId, plan), cancellationToken);
+            await Task.Run(() => _jobRepository.Add(villageId, plan), cancellationToken);
             await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
         }
     }

@@ -1,11 +1,6 @@
-﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
-using MainCore.DTO;
-using MainCore.Infrasturecture.AutoRegisterDi;
-
-namespace MainCore.Parsers.HeroParser
+﻿namespace MainCore.Parsers.HeroParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IHeroParser
     {
         public TimeSpan GetAdventureDuration(HtmlDocument doc)
@@ -137,10 +132,7 @@ namespace MainCore.Parsers.HeroParser
 
                 var itemValue = classes.ElementAt(1);
 
-                var itemValueStr = new string(itemValue.Where(c => char.IsDigit(c)).ToArray());
-                if (string.IsNullOrEmpty(itemValueStr)) continue;
-
-                if (int.Parse(itemValueStr) == (int)type) return itemSlot;
+                if (itemValue.ParseInt() == (int)type) return itemSlot;
             }
             return null;
         }
@@ -177,14 +169,15 @@ namespace MainCore.Parsers.HeroParser
                 var itemValue = classes.ElementAt(1);
                 if (itemValue is null) continue;
 
-                var itemValueStr = new string(itemValue.Where(c => char.IsDigit(c)).ToArray());
-                if (string.IsNullOrEmpty(itemValueStr)) continue;
+                var item = (HeroItemEnums)itemValue.ParseInt();
+
+                if (item == HeroItemEnums.None) continue;
 
                 if (!itemSlot.GetAttributeValue("data-tier", "").Contains("consumable"))
                 {
                     yield return new HeroItemDto()
                     {
-                        Type = (HeroItemEnums)int.Parse(itemValueStr),
+                        Type = item,
                         Amount = 1,
                     };
                     continue;
@@ -194,27 +187,27 @@ namespace MainCore.Parsers.HeroParser
                 {
                     yield return new HeroItemDto()
                     {
-                        Type = (HeroItemEnums)int.Parse(itemValueStr),
+                        Type = item,
                         Amount = 1,
                     };
                     continue;
                 }
                 var amountNode = itemSlot.ChildNodes[2];
 
-                var amountValueStr = new string(amountNode.InnerText.Where(c => char.IsDigit(c)).ToArray());
-                if (string.IsNullOrEmpty(amountValueStr))
+                var amount = amountNode.InnerText.ParseInt();
+                if (amount == 0)
                 {
                     yield return new HeroItemDto()
                     {
-                        Type = (HeroItemEnums)int.Parse(itemValueStr),
+                        Type = item,
                         Amount = 1,
                     };
                     continue;
                 }
                 yield return new HeroItemDto()
                 {
-                    Type = (HeroItemEnums)int.Parse(itemValueStr),
-                    Amount = int.Parse(amountValueStr),
+                    Type = item,
+                    Amount = amount,
                 };
                 continue;
             }

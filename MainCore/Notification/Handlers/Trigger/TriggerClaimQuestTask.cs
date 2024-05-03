@@ -1,22 +1,16 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.Tasks;
-using MediatR;
+﻿using MainCore.Tasks;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
     public class TriggerClaimQuestTask : INotificationHandler<QuestUpdated>, INotificationHandler<VillageSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public TriggerClaimQuestTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public TriggerClaimQuestTask(ITaskManager taskManager, IVillageSettingRepository villageSettingRepository)
         {
             _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
+            _villageSettingRepository = villageSettingRepository;
         }
 
         public async Task Handle(QuestUpdated notification, CancellationToken cancellationToken)
@@ -31,7 +25,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
-            var autoClaimQuest = _unitOfRepository.VillageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
+            var autoClaimQuest = _villageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
             if (autoClaimQuest)
             {
                 if (_taskManager.IsExist<ClaimQuestTask>(accountId, villageId)) return;

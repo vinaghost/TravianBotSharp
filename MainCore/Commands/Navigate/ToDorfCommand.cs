@@ -1,13 +1,4 @@
-﻿using FluentResults;
-using HtmlAgilityPack;
-using MainCore.Commands.Base;
-using MainCore.Common.Errors;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
-using MainCore.Services;
-using OpenQA.Selenium;
+﻿using HtmlAgilityPack;
 
 namespace MainCore.Commands.Navigate
 {
@@ -21,18 +12,23 @@ namespace MainCore.Commands.Navigate
             Dorf = dorf;
             IsForceReload = isForceReload;
         }
+
+        public static ToDorfCommand ToDorf(AccountId accountId) => new(accountId, 0);
+
+        public static ToDorfCommand ToDorf1(AccountId accountId) => new(accountId, 1);
+
+        public static ToDorfCommand ToDorf2(AccountId accountId) => new(accountId, 2);
     }
 
-    [RegisterAsTransient]
     public class ToDorfCommandHandler : ICommandHandler<ToDorfCommand>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly UnitOfParser _unitOfParser;
+        private readonly INavigationBarParser _navigationBarParser;
 
-        public ToDorfCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
+        public ToDorfCommandHandler(IChromeManager chromeManager, INavigationBarParser navigationBarParser)
         {
             _chromeManager = chromeManager;
-            _unitOfParser = unitOfParser;
+            _navigationBarParser = navigationBarParser;
         }
 
         public async Task<Result> Handle(ToDorfCommand command, CancellationToken cancellationToken)
@@ -59,9 +55,9 @@ namespace MainCore.Commands.Navigate
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await chromeBrowser.WaitPageChanged($"dorf{dorf}", cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 
@@ -76,8 +72,8 @@ namespace MainCore.Commands.Navigate
         {
             return dorf switch
             {
-                1 => _unitOfParser.NavigationBarParser.GetResourceButton(doc),
-                2 => _unitOfParser.NavigationBarParser.GetBuildingButton(doc),
+                1 => _navigationBarParser.GetResourceButton(doc),
+                2 => _navigationBarParser.GetBuildingButton(doc),
                 _ => null,
             };
         }

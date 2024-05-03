@@ -1,9 +1,6 @@
-﻿using HtmlAgilityPack;
-using MainCore.Infrasturecture.AutoRegisterDi;
-
-namespace MainCore.Parsers.CompleteImmediatelyParser
+﻿namespace MainCore.Parsers.CompleteImmediatelyParser
 {
-    [RegisterAsTransient(Common.Enums.ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : ICompleteImmediatelyParser
     {
         public HtmlNode GetCompleteButton(HtmlDocument doc)

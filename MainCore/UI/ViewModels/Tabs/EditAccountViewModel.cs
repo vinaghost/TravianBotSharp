@@ -1,14 +1,9 @@
 ﻿using MainCore.Commands.UI.Account;
 using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
-using MediatR;
 using ReactiveUI;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
@@ -19,7 +14,7 @@ namespace MainCore.UI.ViewModels.Tabs
         public AccessInput AccessInput { get; } = new();
 
         private readonly IMediator _mediator;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IAccountRepository _accountRepository;
         public ReactiveCommand<Unit, Unit> AddAccess { get; }
         public ReactiveCommand<Unit, Unit> EditAccess { get; }
         public ReactiveCommand<Unit, Unit> DeleteAccess { get; }
@@ -27,10 +22,10 @@ namespace MainCore.UI.ViewModels.Tabs
 
         public ReactiveCommand<AccountId, AccountDto> LoadAccount { get; }
 
-        public EditAccountViewModel(IMediator mediator, UnitOfRepository unitOfRepository)
+        public EditAccountViewModel(IMediator mediator, IAccountRepository accountRepository)
         {
             _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
+            _accountRepository = accountRepository;
 
             AddAccess = ReactiveCommand.CreateFromTask(AddAccessHandler);
             EditAccess = ReactiveCommand.CreateFromTask(EditAccessHandler);
@@ -74,7 +69,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private AccountDto LoadAccountHandler(AccountId accountId)
         {
-            var account = _unitOfRepository.AccountRepository.Get(AccountId, true);
+            var account = _accountRepository.Get(AccountId, true);
             return account;
         }
 

@@ -1,14 +1,8 @@
 ﻿using MainCore.Commands.UI.AccountSetting;
-using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
-using MediatR;
 using ReactiveUI;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
@@ -17,18 +11,18 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         public AccountSettingInput AccountSettingInput { get; } = new();
 
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
+        private readonly IAccountSettingRepository _accountSettingRepository;
         public ReactiveCommand<Unit, Unit> Save { get; }
         public ReactiveCommand<Unit, Unit> Export { get; }
         public ReactiveCommand<Unit, Unit> Import { get; }
 
         public ReactiveCommand<AccountId, Dictionary<AccountSettingEnums, int>> LoadSettings { get; }
 
-        public AccountSettingViewModel(UnitOfRepository unitOfRepository, IMediator mediator)
+        public AccountSettingViewModel(IMediator mediator, IAccountSettingRepository accountSettingRepository)
         {
-            _unitOfRepository = unitOfRepository;
             _mediator = mediator;
+            _accountSettingRepository = accountSettingRepository;
 
             Save = ReactiveCommand.CreateFromTask(SaveHandler);
             Export = ReactiveCommand.CreateFromTask(ExportHandler);
@@ -67,7 +61,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private Dictionary<AccountSettingEnums, int> LoadSettingsHandler(AccountId accountId)
         {
-            var settings = _unitOfRepository.AccountSettingRepository.Get(accountId);
+            var settings = _accountSettingRepository.Get(accountId);
             return settings;
         }
     }

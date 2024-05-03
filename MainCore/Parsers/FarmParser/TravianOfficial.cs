@@ -1,13 +1,9 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
-using MainCore.Common.Extensions;
 using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
 
 namespace MainCore.Parsers.FarmParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IFarmParser
     {
         public HtmlNode GetStartButton(HtmlDocument doc, FarmId raidId)
@@ -76,7 +72,7 @@ namespace MainCore.Parsers.FarmParser
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("dragAndDrop"));
             var id = flId.GetAttributeValue("data-list", "0");
-            return new FarmId(id.ToInt());
+            return new FarmId(id.ParseInt());
         }
     }
 }

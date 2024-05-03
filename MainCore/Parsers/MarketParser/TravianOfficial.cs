@@ -1,11 +1,8 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
-using MainCore.Common.Extensions;
-using MainCore.Infrasturecture.AutoRegisterDi;
 
 namespace MainCore.Parsers.MarketParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IMarketParser
     {
         public bool NPCDialogShown(HtmlDocument doc)
@@ -43,7 +40,7 @@ namespace MainCore.Parsers.MarketParser
         {
             var sum = doc.GetElementbyId("sum");
             if (sum is null) return -1;
-            return sum.InnerText.ToLong();
+            return sum.InnerText.ParseLong();
         }
 
         public IEnumerable<HtmlNode> GetInputs(HtmlDocument doc)

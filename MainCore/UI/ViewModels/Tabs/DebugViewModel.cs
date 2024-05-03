@@ -1,17 +1,12 @@
 ﻿using MainCore.Commands.UI.Debug;
 using MainCore.Commands.UI.DebugTab;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Services;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using MediatR;
 using ReactiveUI;
 using Serilog.Core;
 using Serilog.Events;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs
 {

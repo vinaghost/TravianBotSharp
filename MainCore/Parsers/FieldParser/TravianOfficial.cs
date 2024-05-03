@@ -1,11 +1,6 @@
-﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
-using MainCore.DTO;
-using MainCore.Infrasturecture.AutoRegisterDi;
-
-namespace MainCore.Parsers.FieldParser
+﻿namespace MainCore.Parsers.FieldParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IFieldParser
     {
         public IEnumerable<BuildingDto> Get(HtmlDocument doc)
@@ -42,33 +37,21 @@ namespace MainCore.Parsers.FieldParser
         {
             var classess = node.GetClasses();
             var needClass = classess.FirstOrDefault(x => x.StartsWith("buildingSlot"));
-            if (string.IsNullOrEmpty(needClass)) return -1;
-            var strResult = new string(needClass.Where(c => char.IsDigit(c)).ToArray());
-            if (string.IsNullOrEmpty(strResult)) return -1;
-
-            return int.Parse(strResult);
+            return needClass.ParseInt();
         }
 
         private static BuildingEnums GetBuildingType(HtmlNode node)
         {
             var classess = node.GetClasses();
             var needClass = classess.FirstOrDefault(x => x.StartsWith("gid"));
-            if (string.IsNullOrEmpty(needClass)) return BuildingEnums.Site;
-            var strResult = new string(needClass.Where(c => char.IsDigit(c)).ToArray());
-            if (string.IsNullOrEmpty(strResult)) return BuildingEnums.Site;
-
-            return (BuildingEnums)int.Parse(strResult);
+            return (BuildingEnums)needClass.ParseInt();
         }
 
         private static int GetLevel(HtmlNode node)
         {
             var classess = node.GetClasses();
             var needClass = classess.FirstOrDefault(x => x.StartsWith("level") && !x.Equals("level"));
-            if (string.IsNullOrEmpty(needClass)) return -1;
-            var strResult = new string(needClass.Where(c => char.IsDigit(c)).ToArray());
-            if (string.IsNullOrEmpty(strResult)) return -1;
-
-            return int.Parse(strResult);
+            return needClass.ParseInt();
         }
 
         private static bool IsUnderConstruction(HtmlNode node)

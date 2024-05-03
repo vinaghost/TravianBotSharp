@@ -1,9 +1,8 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Infrasturecture.AutoRegisterDi;
 
 namespace MainCore.Parsers.OptionPageParser
 {
-    [RegisterAsTransient(Common.Enums.ServerEnums.TTWars)]
+    
     public class TTWars : IOptionPageParser
     {
         public bool IsContextualHelpShow(HtmlDocument doc)

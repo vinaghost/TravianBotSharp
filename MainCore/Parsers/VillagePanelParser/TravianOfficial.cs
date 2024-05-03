@@ -1,12 +1,6 @@
-﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
-using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-
-namespace MainCore.Parsers.VillagePanelParser
+﻿namespace MainCore.Parsers.VillagePanelParser
 {
-    [RegisterAsTransient(ServerEnums.TravianOfficial)]
+    [RegisterAsParser]
     public class TravianOfficial : IVillagePanelParser
     {
         public HtmlNode GetVillageNode(HtmlDocument doc, VillageId villageId)
@@ -93,21 +87,14 @@ namespace MainCore.Parsers.VillagePanelParser
         {
             var xNode = node.Descendants("span").FirstOrDefault(x => x.HasClass("coordinateX"));
             if (xNode is null) return 0;
-            var xStr = new string(xNode.InnerText.Where(c => char.IsDigit(c) || c.Equals('−')).ToArray());
-            xStr = xStr.Replace('−', '-');
-            if (string.IsNullOrEmpty(xStr)) return 0;
-
-            return int.Parse(xStr);
+            return xNode.InnerText.ParseInt();
         }
 
         private static int GetY(HtmlNode node)
         {
             var yNode = node.Descendants("span").FirstOrDefault(x => x.HasClass("coordinateY"));
             if (yNode is null) return 0;
-            var yStr = new string(yNode.InnerText.Where(c => char.IsDigit(c) || c.Equals('−')).ToArray());
-            yStr = yStr.Replace('−', '-');
-            if (string.IsNullOrEmpty(yStr)) return 0;
-            return int.Parse(yStr);
+            return yNode.InnerText.ParseInt();
         }
     }
 }

@@ -1,12 +1,9 @@
 ﻿using HtmlAgilityPack;
-using MainCore.Common.Enums;
-using MainCore.Common.Extensions;
 using MainCore.DTO;
-using MainCore.Infrasturecture.AutoRegisterDi;
 
 namespace MainCore.Parsers.QueueBuildingParser
 {
-    [RegisterAsTransient(ServerEnums.TTWars)]
+    
     public class TTWars : IQueueBuildingParser
     {
         public IEnumerable<QueueBuildingDto> Get(HtmlDocument doc)
@@ -84,7 +81,7 @@ namespace MainCore.Parsers.QueueBuildingParser
             var nodeTimer = node.Descendants().FirstOrDefault(x => x.HasClass("timer"));
             if (nodeTimer is null) return TimeSpan.Zero;
             var secStr = nodeTimer.GetAttributeValue("value", "");
-            var sec = secStr.ToInt();
+            var sec = secStr.ParseInt();
             return TimeSpan.FromSeconds(sec);
         }
     }
