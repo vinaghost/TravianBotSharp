@@ -1,5 +1,4 @@
-﻿using HtmlAgilityPack;
-using MainCore.DTO;
+﻿using System.Net;
 
 namespace MainCore.Commands.Update
 {
@@ -16,7 +15,6 @@ namespace MainCore.Commands.Update
         private readonly IChromeManager _chromeManager;
 
         private readonly IQueueBuildingParser _queueBuildingParser;
-        private readonly IStockBarParser _stockBarParser;
         private readonly IInfrastructureParser _infrastructureParser;
         private readonly IFieldParser _fieldParser;
 
@@ -24,12 +22,11 @@ namespace MainCore.Commands.Update
         private readonly IQueueBuildingRepository _queueBuildingRepository;
         private readonly IBuildingRepository _buildingRepository;
 
-        public UpdateBuildingCommandHandler(IMediator mediator, IQueueBuildingParser queueBuildingParser, IStockBarParser stockBarParser, IInfrastructureParser infrastructureParser, IFieldParser fieldParser, IStorageRepository storageRepository, IQueueBuildingRepository queueBuildingRepository, IBuildingRepository buildingRepository, IChromeManager chromeManager)
+        public UpdateBuildingCommandHandler(IMediator mediator, IQueueBuildingParser queueBuildingParser, IInfrastructureParser infrastructureParser, IFieldParser fieldParser, IStorageRepository storageRepository, IQueueBuildingRepository queueBuildingRepository, IBuildingRepository buildingRepository, IChromeManager chromeManager)
         {
             _mediator = mediator;
             _chromeManager = chromeManager;
             _queueBuildingParser = queueBuildingParser;
-            _stockBarParser = stockBarParser;
             _infrastructureParser = infrastructureParser;
             _fieldParser = fieldParser;
             _storageRepository = storageRepository;
@@ -45,7 +42,7 @@ namespace MainCore.Commands.Update
 
             var chromeBrowser = _chromeManager.Get(accountId);
             var html = chromeBrowser.Html;
-            var dtoStorage = _stockBarParser.Get(html);
+            var dtoStorage = Get(html);
 
             _storageRepository.Update(villageId, dtoStorage);
             await _mediator.Publish(new StorageUpdated(accountId, villageId), cancellationToken);
@@ -88,6 +85,66 @@ namespace MainCore.Commands.Update
                 if (!resultParse) return Stop.EnglishRequired(strType);
             }
             return Result.Ok();
+        }
+
+        private static StorageDto Get(HtmlDocument doc)
+        {
+            var storage = new StorageDto()
+            {
+                Wood = GetWood(doc),
+                Clay = GetClay(doc),
+                Iron = GetIron(doc),
+                Crop = GetCrop(doc),
+                FreeCrop = GetFreeCrop(doc),
+                Warehouse = GetWarehouseCapacity(doc),
+                Granary = GetGranaryCapacity(doc)
+            };
+            return storage;
+        }
+
+        private static long GetResource(HtmlDocument doc, string id)
+        {
+            var node = doc.GetElementbyId(id);
+            if (node is null) return -1;
+            return node.InnerText.ParseLong();
+        }
+
+        private static long GetWood(HtmlDocument doc) => GetResource(doc, "l1");
+
+        private static long GetClay(HtmlDocument doc) => GetResource(doc, "l2");
+
+        private static long GetIron(HtmlDocument doc) => GetResource(doc, "l3");
+
+        private static long GetCrop(HtmlDocument doc) => GetResource(doc, "l4");
+
+        private static long GetFreeCrop(HtmlDocument doc) => GetResource(doc, "stockBarFreeCrop");
+
+        private static long GetWarehouseCapacity(HtmlDocument doc)
+        {
+            var stockBarNode = doc.GetElementbyId("stockBar");
+            if (stockBarNode is null) return -1;
+            var warehouseNode = stockBarNode.Descendants("div").FirstOrDefault(x => x.HasClass("warehouse"));
+            if (warehouseNode is null) return -1;
+            var capacityNode = warehouseNode.Descendants("div").FirstOrDefault(x => x.HasClass("capacity"));
+            if (capacityNode is null) return -1;
+            var valueNode = capacityNode.Descendants("div").FirstOrDefault(x => x.HasClass("value"));
+            if (valueNode is null) return -1;
+            return valueNode.InnerText.ParseLong();
+        }
+
+        private static long GetGranaryCapacity(HtmlDocument doc)
+        {
+            var stockBarNode = doc.GetElementbyId("stockBar");
+            if (stockBarNode is null) return -1;
+            var granaryNode = stockBarNode.Descendants("div").FirstOrDefault(x => x.HasClass("granary"));
+            if (granaryNode is null) return -1;
+            var capacityNode = granaryNode.Descendants("div").FirstOrDefault(x => x.HasClass("capacity"));
+            if (capacityNode is null) return -1;
+            var valueNode = capacityNode.Descendants("div").FirstOrDefault(x => x.HasClass("value"));
+            if (valueNode is null) return -1;
+            var valueStrFixed = WebUtility.HtmlDecode(valueNode.InnerText);
+            if (string.IsNullOrEmpty(valueStrFixed)) return -1;
+            return valueNode.InnerText.ParseLong();
         }
     }
 }
