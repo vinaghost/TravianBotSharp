@@ -1,5 +1,4 @@
-﻿using HtmlAgilityPack;
-using MainCore.Tasks.Base;
+﻿using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -8,12 +7,10 @@ namespace MainCore.Tasks
     {
         private readonly IBuildingRepository _buildingRepository;
         private readonly IVillageSettingRepository _villageSettingRepository;
-        private readonly IMarketParser _marketParser;
 
-        public NPCTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, IBuildingRepository buildingRepository, IMarketParser marketParser, IVillageSettingRepository villageSettingRepository) : base(chromeManager, mediator, villageRepository)
+        public NPCTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository) : base(chromeManager, mediator, villageRepository)
         {
             _buildingRepository = buildingRepository;
-            _marketParser = marketParser;
             _villageSettingRepository = villageSettingRepository;
         }
 
@@ -61,7 +58,7 @@ namespace MainCore.Tasks
             var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
 
-            var button = _marketParser.GetExchangeResourcesButton(html);
+            var button = GetExchangeResourcesButton(html);
             if (button is null) return Retry.ButtonNotFound("Exchange resources");
             Result result;
             result = await chromeBrowser.Click(By.XPath(button.XPath));
@@ -72,7 +69,7 @@ namespace MainCore.Tasks
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
 
-                return _marketParser.NPCDialogShown(doc);
+                return NPCDialogShown(doc);
             }
 
             result = await chromeBrowser.Wait(dialogShown, CancellationToken);
@@ -86,7 +83,7 @@ namespace MainCore.Tasks
             var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
 
-            var sum = _marketParser.GetSum(html);
+            var sum = GetSum(html);
             var ratio = GetRatio();
             var sumRatio = ratio.Sum();
             var values = new long[4];
@@ -98,7 +95,7 @@ namespace MainCore.Tasks
             var diff = sum - sumValue;
             values[3] += diff;
 
-            var inputs = _marketParser.GetInputs(html).ToArray();
+            var inputs = GetInputs(html).ToArray();
 
             Result result;
             for (var i = 0; i < 4; i++)
@@ -140,7 +137,7 @@ namespace MainCore.Tasks
             var chromeBrowser = _chromeManager.Get(AccountId);
             var html = chromeBrowser.Html;
 
-            var button = _marketParser.GetRedeemButton(html);
+            var button = GetRedeemButton(html);
             if (button is null) return Retry.ButtonNotFound("redeem");
 
             Result result;
@@ -150,6 +147,55 @@ namespace MainCore.Tasks
             result = await chromeBrowser.WaitPageLoaded(CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
+        }
+
+        private static bool NPCDialogShown(HtmlDocument doc)
+        {
+            var dialog = doc.GetElementbyId("npc");
+            return dialog is not null;
+        }
+
+        private static HtmlNode GetExchangeResourcesButton(HtmlDocument doc)
+        {
+            var npcMerchant = doc.DocumentNode.Descendants("div")
+                .FirstOrDefault(x => x.HasClass("npcMerchant"));
+            if (npcMerchant is null) return null;
+            var button = npcMerchant.Descendants("button")
+                .FirstOrDefault(x => x.HasClass("gold"));
+            return button;
+        }
+
+        private static HtmlNode GetDistributeButton(HtmlDocument doc)
+        {
+            var submitText = doc.GetElementbyId("submitText");
+            if (submitText is null) return null;
+            var button = submitText.Descendants("button")
+                .FirstOrDefault();
+            return button;
+        }
+
+        private static HtmlNode GetRedeemButton(HtmlDocument doc)
+        {
+            var button = doc.GetElementbyId("npc_market_button");
+            return button;
+        }
+
+        private static long GetSum(HtmlDocument doc)
+        {
+            var sum = doc.GetElementbyId("sum");
+            if (sum is null) return -1;
+            return sum.InnerText.ParseLong();
+        }
+
+        private static IEnumerable<HtmlNode> GetInputs(HtmlDocument doc)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                var node = doc.DocumentNode.Descendants("input")
+                    .Where(x => x.GetAttributeValue("name", "") == $"desired{i}")
+                    .FirstOrDefault();
+                yield return node;
+            }
         }
     }
 }
