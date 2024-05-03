@@ -1,17 +1,14 @@
-﻿using HtmlAgilityPack;
-using MainCore.Tasks.Base;
+﻿using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [RegisterAsTransient(withoutInterface: true)]
     public class CompleteImmediatelyTask : VillageTask
     {
-        private readonly ICompleteImmediatelyParser _completeImmediatelyParser;
         private readonly IQueueBuildingParser _queueBuildingParser;
 
-        public CompleteImmediatelyTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, ICompleteImmediatelyParser completeImmediatelyParser, IQueueBuildingParser queueBuildingParser) : base(chromeManager, mediator, villageRepository)
+        public CompleteImmediatelyTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, IQueueBuildingParser queueBuildingParser) : base(chromeManager, mediator, villageRepository)
         {
-            _completeImmediatelyParser = completeImmediatelyParser;
             _queueBuildingParser = queueBuildingParser;
         }
 
@@ -44,7 +41,7 @@ namespace MainCore.Tasks
 
             var html = chromeBrowser.Html;
 
-            var completeNowButton = _completeImmediatelyParser.GetCompleteButton(html);
+            var completeNowButton = GetCompleteButton(html);
             if (completeNowButton is null) return Retry.ButtonNotFound("complete now");
 
             Result result;
@@ -56,7 +53,7 @@ namespace MainCore.Tasks
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                var confirmButton = _completeImmediatelyParser.GetConfirmButton(doc);
+                var confirmButton = GetConfirmButton(doc);
                 return confirmButton is not null;
             };
 
@@ -64,7 +61,7 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             html = chromeBrowser.Html;
-            var confirmButton = _completeImmediatelyParser.GetConfirmButton(html);
+            var confirmButton = GetConfirmButton(html);
             if (confirmButton is null) return Retry.ButtonNotFound("complete now");
 
             var oldQueueCount = _queueBuildingParser.Get(html)
@@ -87,6 +84,28 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
+        }
+
+        private static HtmlNode GetCompleteButton(HtmlDocument doc)
+        {
+            var finishClass = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("finishNow"));
+            if (finishClass is null) return null;
+            var button = finishClass
+                .Descendants("button")
+                .FirstOrDefault();
+            return button;
+        }
+
+        private static HtmlNode GetConfirmButton(HtmlDocument doc)
+        {
+            var dialog = doc.GetElementbyId("finishNowDialog");
+            if (dialog is null) return null;
+            var button = dialog
+                .Descendants("button")
+                .FirstOrDefault();
+            return button;
         }
     }
 }
