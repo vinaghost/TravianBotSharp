@@ -1,32 +1,12 @@
-﻿using HtmlAgilityPack;
-
-namespace MainCore.Commands.Features.ClaimQuest
+﻿namespace MainCore.Commands.Features.ClaimQuest
 {
-    public class ToQuestPageCommand : ICommand
+    public class ToQuestPageCommand : QuestCommand
     {
-        public ToQuestPageCommand(IChromeBrowser chromeBrowser)
+        public async Task<Result> Execute(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
         {
-            ChromeBrowser = chromeBrowser;
-        }
-
-        public IChromeBrowser ChromeBrowser { get; }
-    }
-
-    public class ToQuestPageCommandHandler : ICommandHandler<ToQuestPageCommand>
-    {
-        private readonly IQuestParser _questParser;
-
-        public ToQuestPageCommandHandler(IQuestParser questParser)
-        {
-            _questParser = questParser;
-        }
-
-        public async Task<Result> Handle(ToQuestPageCommand request, CancellationToken cancellationToken)
-        {
-            var chromeBrowser = request.ChromeBrowser;
             var html = chromeBrowser.Html;
 
-            var adventure = _questParser.GetQuestMaster(html);
+            var adventure = GetQuestMaster(html);
             if (adventure is null) return Retry.ButtonNotFound("quest master");
 
             Result result;

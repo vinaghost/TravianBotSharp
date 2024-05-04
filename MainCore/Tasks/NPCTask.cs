@@ -30,7 +30,7 @@ namespace MainCore.Tasks
             result = await _mediator.Send(new ToBuildingCommand(chromeBrowser, market), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new SwitchTabCommand(chromeBrowser, 0), CancellationToken);
+            result = await new SwitchTabCommand().Execute(chromeBrowser, 0, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await OpenNPCDialog();

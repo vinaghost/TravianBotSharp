@@ -42,7 +42,8 @@
             result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new CheckQuestCommand(AccountId, VillageId));
+            var chromeBrowser = _chromeManager.Get(AccountId);
+            result = await _mediator.Send(new CheckQuestCommand(AccountId, VillageId, chromeBrowser));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }

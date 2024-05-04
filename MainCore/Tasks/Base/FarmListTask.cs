@@ -1,5 +1,4 @@
-﻿using MainCore.DTO;
-using MainCore.Infrasturecture.Persistence;
+﻿using MainCore.Infrasturecture.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace MainCore.Tasks.Base
@@ -46,7 +45,7 @@ namespace MainCore.Tasks.Base
             result = await _mediator.Send(new ToBuildingCommand(chromeBrowser, 39), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new SwitchTabCommand(chromeBrowser, 4), cancellationToken);
+            result = await new SwitchTabCommand().Execute(chromeBrowser, 4, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await _delayClickCommand.Execute(AccountId);

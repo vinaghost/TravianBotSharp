@@ -2,7 +2,6 @@
 using MainCore.Common.Errors.AutoBuilder;
 using MainCore.Common.Errors.Storage;
 using MainCore.Common.Models;
-using MainCore.DTO;
 using MainCore.Tasks.Base;
 using System.Text.Json;
 
@@ -252,14 +251,14 @@ namespace MainCore.Tasks
             if (building.Type == BuildingEnums.Site)
             {
                 var tabIndex = plan.Type.GetBuildingsCategory();
-                result = await _mediator.Send(new SwitchTabCommand(chromeBrowser, tabIndex), CancellationToken);
+                result = await new SwitchTabCommand().Execute(chromeBrowser, tabIndex, CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else
             {
                 if (building.Level <= 0) return Result.Ok();
                 if (!building.Type.HasMultipleTabs()) return Result.Ok();
-                result = await _mediator.Send(new SwitchTabCommand(chromeBrowser, 0), CancellationToken);
+                result = await new SwitchTabCommand().Execute(chromeBrowser, 0, CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             return Result.Ok();

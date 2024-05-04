@@ -1,25 +1,9 @@
 ﻿namespace MainCore.Commands.Navigate
 {
-    public class SwitchTabCommand : ICommand
+    public class SwitchTabCommand
     {
-        public int Index { get; }
-        public IChromeBrowser ChromeBrowser { get; }
-
-        public SwitchTabCommand(IChromeBrowser chromeBrowser, int index)
+        public async Task<Result> Execute(IChromeBrowser chromeBrowser, int index, CancellationToken cancellationToken)
         {
-            Index = index;
-            ChromeBrowser = chromeBrowser;
-        }
-    }
-
-    [RegisterAsTransient]
-    public class SwitchTabCommandHandler : ICommandHandler<SwitchTabCommand>
-    {
-        public async Task<Result> Handle(SwitchTabCommand request, CancellationToken cancellationToken)
-        {
-            var chromeBrowser = request.ChromeBrowser;
-            var index = request.Index;
-
             var html = chromeBrowser.Html;
             var count = CountTab(html);
             if (index > count) return Retry.OutOfIndexTab(index, count);

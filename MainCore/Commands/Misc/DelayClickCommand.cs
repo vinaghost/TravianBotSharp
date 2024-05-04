@@ -1,6 +1,6 @@
 ﻿namespace MainCore.Commands.Misc
 {
-    [RegisterAsTransient(withoutInterface: true)]
+    [RegisterAsCommand]
     public class DelayClickCommand
     {
         private readonly IAccountSettingRepository _accountSettingRepository;
