@@ -30,7 +30,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId)
         {
-            var autoStartAdventure = new GetAccountSetting().GetBooleanByName(accountId, AccountSettingEnums.EnableAutoStartAdventure);
+            var autoStartAdventure = new GetAccountSetting().BooleanByName(accountId, AccountSettingEnums.EnableAutoStartAdventure);
             if (autoStartAdventure)
             {
                 if (_taskManager.IsExist<StartAdventureTask>(accountId)) return;

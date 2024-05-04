@@ -24,7 +24,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId)
         {
-            var autoLoadVillageBuilding = new GetAccountSetting().GetBooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
+            var autoLoadVillageBuilding = new GetAccountSetting().BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             if (!autoLoadVillageBuilding) return;
 
             var villages = _villageRepository.GetMissingBuildingVillages(accountId);

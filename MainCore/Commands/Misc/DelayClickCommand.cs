@@ -1,18 +1,10 @@
 ﻿namespace MainCore.Commands.Misc
 {
-    [RegisterAsCommand]
     public class DelayClickCommand
     {
-        private readonly IAccountSettingRepository _accountSettingRepository;
-
-        public DelayClickCommand(IAccountSettingRepository accountSettingRepository)
-        {
-            _accountSettingRepository = accountSettingRepository;
-        }
-
         public async Task Execute(AccountId accountId)
         {
-            var delay = new GetAccountSetting().GetByName(accountId, AccountSettingEnums.ClickDelayMin, AccountSettingEnums.ClickDelayMax);
+            var delay = new GetAccountSetting().ByName(accountId, AccountSettingEnums.ClickDelayMin, AccountSettingEnums.ClickDelayMax);
             await Task.Delay(delay, CancellationToken.None);
         }
     }

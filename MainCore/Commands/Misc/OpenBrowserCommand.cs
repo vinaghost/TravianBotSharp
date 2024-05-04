@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.Queries;
-using MainCore.Common.Models;
+﻿using MainCore.Common.Models;
 
 namespace MainCore.Commands.Misc
 {
@@ -37,7 +36,7 @@ namespace MainCore.Commands.Misc
             var serverFolderName = account.Server.Replace("https://", "").Replace("http://", "").Replace(".", "_");
             var accountFolderName = account.Username;
 
-            var headlessChrome = new GetAccountSetting().GetBooleanByName(accountId, AccountSettingEnums.HeadlessChrome);
+            var headlessChrome = new GetAccountSetting().BooleanByName(accountId, AccountSettingEnums.HeadlessChrome);
             var profilePath = Path.Combine(serverFolderName, accountFolderName);
             var chromeSetting = new ChromeSetting()
             {

@@ -111,7 +111,7 @@ namespace MainCore.Tasks
                 VillageSettingEnums.AutoNPCIron,
                 VillageSettingEnums.AutoNPCCrop,
             };
-            var settings = new GetVillageSetting().GetByName(VillageId, settingNames);
+            var settings = new GetVillageSetting().ByName(VillageId, settingNames);
 
             var ratio = new int[4]
             {

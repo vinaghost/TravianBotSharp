@@ -22,7 +22,7 @@ namespace MainCore.Notification.Handlers.Trigger
         private async Task Trigger(AccountId accountId)
         {
             if (_taskManager.IsExist<SleepTask>(accountId)) return;
-            var workTime = new GetAccountSetting().GetByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
+            var workTime = new GetAccountSetting().ByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
             await _taskManager.Add<SleepTask>(accountId, executeTime: DateTime.Now.AddMinutes(workTime));
         }
     }

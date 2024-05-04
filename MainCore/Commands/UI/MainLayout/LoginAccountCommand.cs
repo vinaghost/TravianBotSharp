@@ -47,7 +47,7 @@ namespace MainCore.Commands.UI.MainLayout
             }
             var accountId = new AccountId(accounts.SelectedItemId);
 
-            var tribe = (TribeEnums)new GetAccountSetting().GetByName(accountId, AccountSettingEnums.Tribe);
+            var tribe = (TribeEnums)new GetAccountSetting().ByName(accountId, AccountSettingEnums.Tribe);
             if (tribe == TribeEnums.Any)
             {
                 _dialogService.ShowMessageBox("Warning", "Choose tribe first");

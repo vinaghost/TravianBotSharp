@@ -65,7 +65,7 @@ namespace MainCore.Tasks
 
         private async Task SetNextExecute()
         {
-            var seconds = new GetVillageSetting().GetByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
+            var seconds = new GetVillageSetting().ByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
         }
@@ -94,9 +94,9 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var troopSeting = _settings[buildingType];
-            var troop = (TroopEnums)new GetVillageSetting().GetByName(VillageId, troopSeting);
+            var troop = (TroopEnums)new GetVillageSetting().ByName(VillageId, troopSeting);
             var (minSetting, maxSetting) = _amountSettings[buildingType];
-            var amount = new GetVillageSetting().GetByName(VillageId, minSetting, maxSetting);
+            var amount = new GetVillageSetting().ByName(VillageId, minSetting, maxSetting);
 
             var html = _chromeBrowser.Html;
 
@@ -109,7 +109,7 @@ namespace MainCore.Tasks
 
             if (amount > maxAmount)
             {
-                var trainWhenLowResource = new GetVillageSetting().GetBooleanByName(VillageId, VillageSettingEnums.TrainWhenLowResource);
+                var trainWhenLowResource = new GetVillageSetting().BooleanByName(VillageId, VillageSettingEnums.TrainWhenLowResource);
                 if (trainWhenLowResource)
                 {
                     amount = maxAmount;

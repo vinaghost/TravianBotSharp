@@ -41,7 +41,7 @@ namespace MainCore.Tasks
 
         private async Task SetNextExecute()
         {
-            var workTime = new GetAccountSetting().GetByName(AccountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
+            var workTime = new GetAccountSetting().ByName(AccountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
             ExecuteAt = DateTime.Now.AddMinutes(workTime);
             await _taskManager.ReOrder(AccountId);
         }
@@ -55,7 +55,7 @@ namespace MainCore.Tasks
         {
             var logger = _logService.GetLogger(AccountId);
 
-            var sleepTimeMinutes = new GetAccountSetting().GetByName(AccountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
+            var sleepTimeMinutes = new GetAccountSetting().ByName(AccountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
             var sleepEnd = DateTime.Now.AddMinutes(sleepTimeMinutes);
             int lastMinute = 0;
             while (true)

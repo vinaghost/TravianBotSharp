@@ -1,6 +1,5 @@
 ﻿using MainCore.Infrasturecture.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
 
 namespace MainCore.Commands.Misc
 {
@@ -34,7 +33,7 @@ namespace MainCore.Commands.Misc
             if (accesses.Count == 1) return access;
             if (ignoreSleepTime) return access;
 
-            var minSleep = new GetAccountSetting().GetByName(accountId, AccountSettingEnums.SleepTimeMin);
+            var minSleep = new GetAccountSetting().ByName(accountId, AccountSettingEnums.SleepTimeMin);
 
             var timeValid = DateTime.Now.AddMinutes(-minSleep);
             if (access.LastUsed > timeValid) return Stop.LackOfAccess;

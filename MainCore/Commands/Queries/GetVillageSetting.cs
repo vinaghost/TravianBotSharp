@@ -1,6 +1,5 @@
 ﻿using MainCore.Infrasturecture.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Splat;
 
 namespace MainCore.Commands.Queries
 {
@@ -13,7 +12,7 @@ namespace MainCore.Commands.Queries
             _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
         }
 
-        public int GetByName(VillageId villageId, VillageSettingEnums setting)
+        public int ByName(VillageId villageId, VillageSettingEnums setting)
         {
             using var context = _contextFactory.CreateDbContext();
             var settingValue = context.VillagesSetting
@@ -24,7 +23,7 @@ namespace MainCore.Commands.Queries
             return settingValue;
         }
 
-        public int GetByName(VillageId villageId, VillageSettingEnums settingMin, VillageSettingEnums settingMax, int multiplier = 1)
+        public int ByName(VillageId villageId, VillageSettingEnums settingMin, VillageSettingEnums settingMax, int multiplier = 1)
         {
             var settings = new List<VillageSettingEnums>
             {
@@ -43,7 +42,7 @@ namespace MainCore.Commands.Queries
             return Random.Shared.Next(min * multiplier, max * multiplier);
         }
 
-        public Dictionary<VillageSettingEnums, int> GetByName(VillageId villageId, List<VillageSettingEnums> settings)
+        public Dictionary<VillageSettingEnums, int> ByName(VillageId villageId, List<VillageSettingEnums> settings)
         {
             using var context = _contextFactory.CreateDbContext();
             var settingValues = context.VillagesSetting
@@ -53,7 +52,7 @@ namespace MainCore.Commands.Queries
             return settingValues;
         }
 
-        public bool GetBooleanByName(VillageId villageId, VillageSettingEnums setting)
+        public bool BooleanByName(VillageId villageId, VillageSettingEnums setting)
         {
             using var context = _contextFactory.CreateDbContext();
             var settingValue = context.VillagesSetting

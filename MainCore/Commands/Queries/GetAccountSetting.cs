@@ -1,6 +1,5 @@
 ﻿using MainCore.Infrasturecture.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Splat;
 
 namespace MainCore.Commands.Queries
 {
@@ -13,7 +12,7 @@ namespace MainCore.Commands.Queries
             _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
         }
 
-        public int GetByName(AccountId accountId, AccountSettingEnums setting)
+        public int ByName(AccountId accountId, AccountSettingEnums setting)
         {
             using var context = _contextFactory.CreateDbContext();
             var settingValue = context.AccountsSetting
@@ -24,7 +23,7 @@ namespace MainCore.Commands.Queries
             return settingValue;
         }
 
-        public int GetByName(AccountId accountId, AccountSettingEnums settingMin, AccountSettingEnums settingMax, int multiplier = 1)
+        public int ByName(AccountId accountId, AccountSettingEnums settingMin, AccountSettingEnums settingMax, int multiplier = 1)
         {
             var settings = new List<AccountSettingEnums>
             {
@@ -46,7 +45,7 @@ namespace MainCore.Commands.Queries
             return Random.Shared.Next(min * multiplier, max * multiplier);
         }
 
-        public bool GetBooleanByName(AccountId accountId, AccountSettingEnums setting)
+        public bool BooleanByName(AccountId accountId, AccountSettingEnums setting)
         {
             using var context = _contextFactory.CreateDbContext();
             var settingValue = context.AccountsSetting
