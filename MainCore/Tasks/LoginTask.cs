@@ -10,7 +10,7 @@ namespace MainCore.Tasks
 
         private readonly IAccountRepository _accountRepository;
 
-        public LoginTask(IChromeManager chromeManager, IMediator mediator, ILoginPageParser loginPageParser, IAccountRepository accountRepository, IOptionPageParser optionPageParser) : base(chromeManager, mediator)
+        public LoginTask(IMediator mediator, ILoginPageParser loginPageParser, IAccountRepository accountRepository, IOptionPageParser optionPageParser) : base(mediator)
         {
             _loginPageParser = loginPageParser;
             _accountRepository = accountRepository;

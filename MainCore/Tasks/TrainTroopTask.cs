@@ -26,7 +26,7 @@ namespace MainCore.Tasks
         private readonly ITroopPageParser _troopPageParser;
         private readonly DelayClickCommand _delayClickCommand;
 
-        public TrainTroopTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, ITroopPageParser troopPageParser, DelayClickCommand delayClickCommand) : base(chromeManager, mediator, villageRepository)
+        public TrainTroopTask(IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, ITroopPageParser troopPageParser, DelayClickCommand delayClickCommand) : base(mediator, villageRepository)
         {
             _taskManager = taskManager;
             _buildingRepository = buildingRepository;
@@ -89,9 +89,8 @@ namespace MainCore.Tasks
             {
                 return MissingBuilding.Error(buildingType);
             }
-            var chromeBrowser = _chromeManager.Get(AccountId);
 
-            result = await _mediator.Send(new ToBuildingCommand(chromeBrowser, buildingLocation), CancellationToken);
+            result = await _mediator.Send(new ToBuildingCommand(_chromeBrowser, buildingLocation), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var troopSeting = _settings[buildingType];
@@ -99,7 +98,7 @@ namespace MainCore.Tasks
             var (minSetting, maxSetting) = _amountSettings[buildingType];
             var amount = _villageSettingRepository.GetByName(VillageId, minSetting, maxSetting);
 
-            var html = chromeBrowser.Html;
+            var html = _chromeBrowser.Html;
 
             var maxAmount = _troopPageParser.GetMaxAmount(html, troop);
 
@@ -121,18 +120,18 @@ namespace MainCore.Tasks
                 }
             }
 
-            html = chromeBrowser.Html;
+            html = _chromeBrowser.Html;
 
             var inputBox = _troopPageParser.GetInputBox(html, troop);
             if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
 
-            result = await chromeBrowser.InputTextbox(By.XPath(inputBox.XPath), $"{amount}");
+            result = await _chromeBrowser.InputTextbox(By.XPath(inputBox.XPath), $"{amount}");
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var trainButton = _troopPageParser.GetTrainButton(html);
             if (trainButton is null) return Retry.ButtonNotFound("train troop");
 
-            result = await chromeBrowser.Click(By.XPath(trainButton.XPath));
+            result = await _chromeBrowser.Click(By.XPath(trainButton.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await _delayClickCommand.Execute(AccountId);

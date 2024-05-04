@@ -8,7 +8,7 @@ namespace MainCore.Tasks
         private readonly IBuildingRepository _buildingRepository;
         private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public NPCTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository) : base(chromeManager, mediator, villageRepository)
+        public NPCTask(IMediator mediator, IVillageRepository villageRepository, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository) : base(mediator, villageRepository)
         {
             _buildingRepository = buildingRepository;
             _villageSettingRepository = villageSettingRepository;
@@ -16,7 +16,6 @@ namespace MainCore.Tasks
 
         protected override async Task<Result> Execute()
         {
-            var chromeBrowser = _chromeManager.Get(AccountId);
             Result result;
 
             result = await new ToDorfCommand().Execute(_chromeBrowser, 2, false, CancellationToken);
@@ -27,10 +26,10 @@ namespace MainCore.Tasks
 
             var market = _buildingRepository.GetBuildingLocation(VillageId, BuildingEnums.Marketplace);
 
-            result = await _mediator.Send(new ToBuildingCommand(chromeBrowser, market), CancellationToken);
+            result = await _mediator.Send(new ToBuildingCommand(_chromeBrowser, market), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await new SwitchTabCommand().Execute(chromeBrowser, 0, CancellationToken);
+            result = await new SwitchTabCommand().Execute(_chromeBrowser, 0, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await OpenNPCDialog();
@@ -55,13 +54,12 @@ namespace MainCore.Tasks
 
         private async Task<Result> OpenNPCDialog()
         {
-            var chromeBrowser = _chromeManager.Get(AccountId);
-            var html = chromeBrowser.Html;
+            var html = _chromeBrowser.Html;
 
             var button = GetExchangeResourcesButton(html);
             if (button is null) return Retry.ButtonNotFound("Exchange resources");
             Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath));
+            result = await _chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             bool dialogShown(IWebDriver driver)
@@ -72,7 +70,7 @@ namespace MainCore.Tasks
                 return NPCDialogShown(doc);
             }
 
-            result = await chromeBrowser.Wait(dialogShown, CancellationToken);
+            result = await _chromeBrowser.Wait(dialogShown, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
@@ -80,8 +78,7 @@ namespace MainCore.Tasks
 
         public async Task<Result> InputAmount()
         {
-            var chromeBrowser = _chromeManager.Get(AccountId);
-            var html = chromeBrowser.Html;
+            var html = _chromeBrowser.Html;
 
             var sum = GetSum(html);
             var ratio = GetRatio();
@@ -100,7 +97,7 @@ namespace MainCore.Tasks
             Result result;
             for (var i = 0; i < 4; i++)
             {
-                result = await chromeBrowser.InputTextbox(By.XPath(inputs[i].XPath), $"{values[i]}");
+                result = await _chromeBrowser.InputTextbox(By.XPath(inputs[i].XPath), $"{values[i]}");
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             return Result.Ok();
@@ -134,17 +131,16 @@ namespace MainCore.Tasks
 
         public async Task<Result> Redeem()
         {
-            var chromeBrowser = _chromeManager.Get(AccountId);
-            var html = chromeBrowser.Html;
+            var html = _chromeBrowser.Html;
 
             var button = GetRedeemButton(html);
             if (button is null) return Retry.ButtonNotFound("redeem");
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath));
+            result = await _chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await chromeBrowser.WaitPageLoaded(CancellationToken);
+            result = await _chromeBrowser.WaitPageLoaded(CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }

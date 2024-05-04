@@ -11,7 +11,7 @@ namespace MainCore.Tasks
         private readonly IFarmRepository _farmRepository;
         private readonly ITaskManager _taskManager;
 
-        public StartFarmListTask(IChromeManager chromeManager, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IFarmParser farmParser, IAccountSettingRepository accountSettingRepository, IFarmRepository farmRepository, ITaskManager taskManager) : base(chromeManager, mediator, contextFactory, delayClickCommand, farmParser)
+        public StartFarmListTask(IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IFarmParser farmParser, IAccountSettingRepository accountSettingRepository, IFarmRepository farmRepository, ITaskManager taskManager) : base(mediator, contextFactory, delayClickCommand, farmParser)
         {
             _accountSettingRepository = accountSettingRepository;
             _farmRepository = farmRepository;
@@ -22,12 +22,10 @@ namespace MainCore.Tasks
         {
             Result result;
 
-            var chromeBrowser = _chromeManager.Get(AccountId);
-
-            result = await ToFarmListPage(chromeBrowser, CancellationToken);
+            result = await ToFarmListPage(_chromeBrowser, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var html = chromeBrowser.Html;
+            var html = _chromeBrowser.Html;
 
             var useStartAllButton = _accountSettingRepository.GetBooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
             if (useStartAllButton)
@@ -35,7 +33,7 @@ namespace MainCore.Tasks
                 var startAllButton = _farmParser.GetStartAllButton(html);
                 if (startAllButton is null) return Retry.ButtonNotFound("Start all farms");
 
-                result = await chromeBrowser.Click(By.XPath(startAllButton.XPath));
+                result = await _chromeBrowser.Click(By.XPath(startAllButton.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else
@@ -48,7 +46,7 @@ namespace MainCore.Tasks
                     var startButton = _farmParser.GetStartButton(html, farmList);
                     if (startButton is null) return Retry.ButtonNotFound($"Start farm {farmList}");
 
-                    result = await chromeBrowser.Click(By.XPath(startButton.XPath));
+                    result = await _chromeBrowser.Click(By.XPath(startButton.XPath));
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                     await _delayClickCommand.Execute(AccountId);

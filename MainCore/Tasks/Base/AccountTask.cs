@@ -4,15 +4,18 @@ namespace MainCore.Tasks.Base
 {
     public abstract class AccountTask : TaskBase
     {
-        protected AccountTask(IChromeManager chromeManager, IMediator mediator) : base(chromeManager, mediator)
-        {
-        }
-
         public AccountId AccountId { get; protected set; }
 
         private ILoginPageParser _loginPageParser;
 
         protected IChromeBrowser _chromeBrowser;
+
+        private readonly IChromeManager _chromeManager;
+
+        protected AccountTask(IMediator mediator) : base(mediator)
+        {
+            _chromeManager = Locator.Current.GetService<IChromeManager>();
+        }
 
         public void Setup(AccountId accountId, CancellationToken cancellationToken = default)
         {

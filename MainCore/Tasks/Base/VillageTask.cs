@@ -4,7 +4,7 @@
     {
         protected readonly IVillageRepository _villageRepository;
 
-        protected VillageTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository) : base(chromeManager, mediator)
+        protected VillageTask(IMediator mediator, IVillageRepository villageRepository) : base(mediator)
         {
             _villageRepository = villageRepository;
         }

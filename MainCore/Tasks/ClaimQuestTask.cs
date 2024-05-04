@@ -8,20 +8,19 @@ namespace MainCore.Tasks
     {
         private readonly DelayClickCommand _delayClickCommand;
 
-        public ClaimQuestTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, DelayClickCommand delayClickCommand) : base(chromeManager, mediator, villageRepository)
+        public ClaimQuestTask(IMediator mediator, IVillageRepository villageRepository, DelayClickCommand delayClickCommand) : base(mediator, villageRepository)
         {
             _delayClickCommand = delayClickCommand;
         }
 
         protected override async Task<Result> Execute()
         {
-            var chromeBrowser = _chromeManager.Get(AccountId);
             Result result;
 
-            result = await new ToQuestPageCommand().Execute(chromeBrowser, CancellationToken);
+            result = await new ToQuestPageCommand().Execute(_chromeBrowser, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await new ClaimQuestCommand(_delayClickCommand).Execute(AccountId, chromeBrowser, CancellationToken);
+            result = await new ClaimQuestCommand(_delayClickCommand).Execute(AccountId, _chromeBrowser, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await _mediator.Publish(new StorageUpdated(AccountId, VillageId), CancellationToken);

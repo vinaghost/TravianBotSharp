@@ -8,7 +8,7 @@ namespace MainCore.Tasks
         private readonly ITaskManager _taskManager;
         private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public UpdateVillageTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager, IVillageSettingRepository villageSettingRepository) : base(chromeManager, mediator, villageRepository)
+        public UpdateVillageTask(IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager, IVillageSettingRepository villageSettingRepository) : base(mediator, villageRepository)
         {
             _taskManager = taskManager;
             _villageSettingRepository = villageSettingRepository;
@@ -16,10 +16,9 @@ namespace MainCore.Tasks
 
         protected override async Task<Result> Execute()
         {
-            var chromeBrowser = _chromeManager.Get(AccountId);
-            var url = chromeBrowser.CurrentUrl;
+            var url = _chromeBrowser.CurrentUrl;
             Result result;
-            await chromeBrowser.Refresh(CancellationToken);
+            await _chromeBrowser.Refresh(CancellationToken);
             if (url.Contains("dorf1"))
             {
                 result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);

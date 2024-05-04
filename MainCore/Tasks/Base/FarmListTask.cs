@@ -10,7 +10,7 @@ namespace MainCore.Tasks.Base
 
         protected readonly IFarmParser _farmParser;
 
-        protected FarmListTask(IChromeManager chromeManager, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IFarmParser farmParser) : base(chromeManager, mediator)
+        protected FarmListTask(IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IFarmParser farmParser) : base(mediator)
         {
             _contextFactory = contextFactory;
             _delayClickCommand = delayClickCommand;

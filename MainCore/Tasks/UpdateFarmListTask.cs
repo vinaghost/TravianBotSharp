@@ -7,15 +7,14 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateFarmListTask : FarmListTask
     {
-        public UpdateFarmListTask(IChromeManager chromeManager, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IFarmParser farmParser) : base(chromeManager, mediator, contextFactory, delayClickCommand, farmParser)
+        public UpdateFarmListTask(IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IFarmParser farmParser) : base(mediator, contextFactory, delayClickCommand, farmParser)
         {
         }
 
         protected override async Task<Result> Execute()
         {
             Result result;
-            var chromeBrowser = _chromeManager.Get(AccountId);
-            result = await ToFarmListPage(chromeBrowser, CancellationToken);
+            result = await ToFarmListPage(_chromeBrowser, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }

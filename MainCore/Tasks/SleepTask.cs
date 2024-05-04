@@ -11,7 +11,7 @@ namespace MainCore.Tasks
         private readonly ITaskManager _taskManager;
         private readonly ILogService _logService;
 
-        public SleepTask(IChromeManager chromeManager, IMediator mediator, GetAccessCommand getAccessCommand, IAccountSettingRepository accountSettingRepository, ITaskManager taskManager, ILogService logService) : base(chromeManager, mediator)
+        public SleepTask(IMediator mediator, GetAccessCommand getAccessCommand, IAccountSettingRepository accountSettingRepository, ITaskManager taskManager, ILogService logService) : base(mediator)
         {
             _getAccessCommand = getAccessCommand;
             _accountSettingRepository = accountSettingRepository;
@@ -21,8 +21,7 @@ namespace MainCore.Tasks
 
         protected override async Task<Result> Execute()
         {
-            var chromeBrowser = _chromeManager.Get(AccountId);
-            await Task.Run(chromeBrowser.Close, CancellationToken.None);
+            await Task.Run(_chromeBrowser.Close, CancellationToken.None);
 
             Result result;
             result = await Sleep();
@@ -32,7 +31,7 @@ namespace MainCore.Tasks
             if (accessResult.IsFailed) return Result.Fail(accessResult.Errors).WithError(TraceMessage.Error(TraceMessage.Line()));
             var access = accessResult.Value;
 
-            result = await _mediator.Send(new OpenBrowserCommand(AccountId, access, chromeBrowser), CancellationToken);
+            result = await _mediator.Send(new OpenBrowserCommand(AccountId, access, _chromeBrowser), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await SetNextExecute();

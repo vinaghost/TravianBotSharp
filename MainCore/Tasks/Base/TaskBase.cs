@@ -2,13 +2,11 @@
 {
     public abstract class TaskBase
     {
-        protected readonly IChromeManager _chromeManager;
         protected readonly IMediator _mediator;
 
-        protected TaskBase(IChromeManager chromeManager, IMediator mediator)
+        protected TaskBase(IMediator mediator)
         {
             _mediator = mediator;
-            _chromeManager = chromeManager;
         }
 
         public StageEnums Stage { get; set; }

@@ -7,7 +7,7 @@ namespace MainCore.Tasks
     {
         private readonly IQueueBuildingParser _queueBuildingParser;
 
-        public CompleteImmediatelyTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, IQueueBuildingParser queueBuildingParser) : base(chromeManager, mediator, villageRepository)
+        public CompleteImmediatelyTask(IMediator mediator, IVillageRepository villageRepository, IQueueBuildingParser queueBuildingParser) : base(mediator, villageRepository)
         {
             _queueBuildingParser = queueBuildingParser;
         }
@@ -37,16 +37,14 @@ namespace MainCore.Tasks
 
         public async Task<Result> CompleteImmediately()
         {
-            var chromeBrowser = _chromeManager.Get(AccountId);
-
-            var html = chromeBrowser.Html;
+            var html = _chromeBrowser.Html;
 
             var completeNowButton = GetCompleteButton(html);
             if (completeNowButton is null) return Retry.ButtonNotFound("complete now");
 
             Result result;
 
-            result = await chromeBrowser.Click(By.XPath(completeNowButton.XPath));
+            result = await _chromeBrowser.Click(By.XPath(completeNowButton.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             bool confirmShown(IWebDriver driver)
@@ -57,10 +55,10 @@ namespace MainCore.Tasks
                 return confirmButton is not null;
             };
 
-            result = await chromeBrowser.Wait(confirmShown, CancellationToken);
+            result = await _chromeBrowser.Wait(confirmShown, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            html = chromeBrowser.Html;
+            html = _chromeBrowser.Html;
             var confirmButton = GetConfirmButton(html);
             if (confirmButton is null) return Retry.ButtonNotFound("complete now");
 
@@ -68,7 +66,7 @@ namespace MainCore.Tasks
                 .Where(x => x.Level != -1)
                 .Count();
 
-            result = await chromeBrowser.Click(By.XPath(confirmButton.XPath));
+            result = await _chromeBrowser.Click(By.XPath(confirmButton.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             bool queueDifferent(IWebDriver driver)
@@ -80,7 +78,7 @@ namespace MainCore.Tasks
                     .Count();
                 return oldQueueCount != newQueueCount;
             };
-            result = await chromeBrowser.Wait(queueDifferent, CancellationToken);
+            result = await _chromeBrowser.Wait(queueDifferent, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

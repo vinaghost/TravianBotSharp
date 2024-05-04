@@ -5,14 +5,13 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateBuildingTask : VillageTask
     {
-        public UpdateBuildingTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository) : base(chromeManager, mediator, villageRepository)
+        public UpdateBuildingTask(IMediator mediator, IVillageRepository villageRepository) : base(mediator, villageRepository)
         {
         }
 
         protected override async Task<Result> Execute()
         {
-            var chromeBrowser = _chromeManager.Get(AccountId);
-            var url = chromeBrowser.CurrentUrl;
+            var url = _chromeBrowser.CurrentUrl;
             Result result;
             if (url.Contains("dorf1"))
             {

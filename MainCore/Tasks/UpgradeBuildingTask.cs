@@ -21,7 +21,7 @@ namespace MainCore.Tasks
         private readonly IQueueBuildingRepository _queueBuildingRepository;
         private readonly IJobRepository _jobRepository;
 
-        public UpgradeBuildingTask(IChromeManager chromeManager, IMediator mediator, IVillageRepository villageRepository, ILogService logService, ITaskManager taskManager, IUpgradeBuildingParser upgradeBuildingParser, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, IStorageRepository storageRepository, IQueueBuildingRepository queueBuildingRepository, IJobRepository jobRepository) : base(chromeManager, mediator, villageRepository)
+        public UpgradeBuildingTask(IMediator mediator, IVillageRepository villageRepository, ILogService logService, ITaskManager taskManager, IUpgradeBuildingParser upgradeBuildingParser, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, IStorageRepository storageRepository, IQueueBuildingRepository queueBuildingRepository, IJobRepository jobRepository) : base(mediator, villageRepository)
         {
             _logService = logService;
             _taskManager = taskManager;
@@ -87,12 +87,10 @@ namespace MainCore.Tasks
 
                 logger.Information("Build {type} to level {level} at location {location}", plan.Type, plan.Level, plan.Location);
 
-                var chromeBrowser = _chromeManager.Get(AccountId);
-
-                result = await ToBuildingPage(chromeBrowser, plan);
+                result = await ToBuildingPage(_chromeBrowser, plan);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                var requiredResource = GetRequiredResource(chromeBrowser, plan);
+                var requiredResource = GetRequiredResource(_chromeBrowser, plan);
 
                 result = _storageRepository.IsEnoughResource(VillageId, requiredResource);
                 if (result.IsFailed)
@@ -113,12 +111,12 @@ namespace MainCore.Tasks
                     if (IsUseHeroResource())
                     {
                         var missingResource = _storageRepository.GetMissingResource(VillageId, requiredResource);
-                        var heroResourceResult = await _mediator.Send(new UseHeroResourceCommand(AccountId, chromeBrowser, missingResource), CancellationToken);
+                        var heroResourceResult = await _mediator.Send(new UseHeroResourceCommand(AccountId, _chromeBrowser, missingResource), CancellationToken);
                         if (heroResourceResult.IsFailed)
                         {
                             if (!heroResourceResult.HasError<Retry>())
                             {
-                                await SetEnoughResourcesTime(chromeBrowser, plan);
+                                await SetEnoughResourcesTime(_chromeBrowser, plan);
                             }
 
                             return heroResourceResult.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -126,7 +124,7 @@ namespace MainCore.Tasks
                     }
                     else
                     {
-                        await SetEnoughResourcesTime(chromeBrowser, plan);
+                        await SetEnoughResourcesTime(_chromeBrowser, plan);
                         return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
                 }
@@ -134,18 +132,18 @@ namespace MainCore.Tasks
                 {
                     if (IsSpecialUpgrade() && IsSpecialUpgradeable(plan))
                     {
-                        result = await _mediator.Send(new SpecialUpgradeCommand(AccountId, chromeBrowser), CancellationToken);
+                        result = await _mediator.Send(new SpecialUpgradeCommand(AccountId, _chromeBrowser), CancellationToken);
                         if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
                     else
                     {
-                        result = await _mediator.Send(new UpgradeCommand(chromeBrowser), CancellationToken);
+                        result = await _mediator.Send(new UpgradeCommand(_chromeBrowser), CancellationToken);
                         if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
                 }
                 else
                 {
-                    result = await _mediator.Send(new ConstructCommand(chromeBrowser, plan.Type), CancellationToken);
+                    result = await _mediator.Send(new ConstructCommand(_chromeBrowser, plan.Type), CancellationToken);
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
             }
@@ -194,9 +192,9 @@ namespace MainCore.Tasks
             return useHeroResource;
         }
 
-        private async Task SetEnoughResourcesTime(IChromeBrowser chromeBrowser, NormalBuildPlan plan)
+        private async Task SetEnoughResourcesTime(IChromeBrowser _chromeBrowser, NormalBuildPlan plan)
         {
-            var time = GetTimeWhenEnoughResource(chromeBrowser, plan);
+            var time = GetTimeWhenEnoughResource(_chromeBrowser, plan);
             ExecuteAt = DateTime.Now.Add(time);
             await _taskManager.ReOrder(AccountId);
         }
@@ -241,40 +239,40 @@ namespace MainCore.Tasks
             await _mediator.Publish(new JobUpdated(AccountId, VillageId));
         }
 
-        public async Task<Result> ToBuildingPage(IChromeBrowser chromeBrowser, NormalBuildPlan plan)
+        public async Task<Result> ToBuildingPage(IChromeBrowser _chromeBrowser, NormalBuildPlan plan)
         {
             Result result;
-            result = await _mediator.Send(new ToBuildingCommand(chromeBrowser, plan.Location), CancellationToken);
+            result = await _mediator.Send(new ToBuildingCommand(_chromeBrowser, plan.Location), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var building = _buildingRepository.GetBuilding(VillageId, plan.Location);
             if (building.Type == BuildingEnums.Site)
             {
                 var tabIndex = plan.Type.GetBuildingsCategory();
-                result = await new SwitchTabCommand().Execute(chromeBrowser, tabIndex, CancellationToken);
+                result = await new SwitchTabCommand().Execute(_chromeBrowser, tabIndex, CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else
             {
                 if (building.Level <= 0) return Result.Ok();
                 if (!building.Type.HasMultipleTabs()) return Result.Ok();
-                result = await new SwitchTabCommand().Execute(chromeBrowser, 0, CancellationToken);
+                result = await new SwitchTabCommand().Execute(_chromeBrowser, 0, CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             return Result.Ok();
         }
 
-        public long[] GetRequiredResource(IChromeBrowser chromeBrowser, NormalBuildPlan plan)
+        public long[] GetRequiredResource(IChromeBrowser _chromeBrowser, NormalBuildPlan plan)
         {
-            var html = chromeBrowser.Html;
+            var html = _chromeBrowser.Html;
 
             var isEmptySite = _buildingRepository.EmptySite(VillageId, plan.Location);
             return _upgradeBuildingParser.GetRequiredResource(html, isEmptySite, plan.Type);
         }
 
-        public TimeSpan GetTimeWhenEnoughResource(IChromeBrowser chromeBrowser, NormalBuildPlan plan)
+        public TimeSpan GetTimeWhenEnoughResource(IChromeBrowser _chromeBrowser, NormalBuildPlan plan)
         {
-            var html = chromeBrowser.Html;
+            var html = _chromeBrowser.Html;
             var isEmptySite = _buildingRepository.EmptySite(VillageId, plan.Location);
             return _upgradeBuildingParser.GetTimeWhenEnoughResource(html, isEmptySite, plan.Type);
         }

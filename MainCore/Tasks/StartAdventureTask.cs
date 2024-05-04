@@ -9,7 +9,7 @@ namespace MainCore.Tasks
         private readonly ITaskManager _taskManager;
         private readonly IHeroParser _heroParser;
 
-        public StartAdventureTask(IChromeManager chromeManager, IMediator mediator, ITaskManager taskManager, IHeroParser heroParser) : base(chromeManager, mediator)
+        public StartAdventureTask(IMediator mediator, ITaskManager taskManager, IHeroParser heroParser) : base(mediator)
         {
             _taskManager = taskManager;
             _heroParser = heroParser;
@@ -18,22 +18,21 @@ namespace MainCore.Tasks
         protected override async Task<Result> Execute()
         {
             Result result;
-            var chromeBrowser = _chromeManager.Get(AccountId);
 
             result = await new ToDorfCommand().Execute(_chromeBrowser, 0, false, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var html = chromeBrowser.Html;
+            var html = _chromeBrowser.Html;
 
             if (!_heroParser.CanStartAdventure(html)) return Result.Ok();
 
-            result = await _mediator.Send(new ToAdventurePageCommand(chromeBrowser), CancellationToken);
+            result = await _mediator.Send(new ToAdventurePageCommand(_chromeBrowser), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new ExploreAdventureCommand(chromeBrowser), CancellationToken);
+            result = await _mediator.Send(new ExploreAdventureCommand(_chromeBrowser), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            html = chromeBrowser.Html;
+            html = _chromeBrowser.Html;
             var adventureDuration = _heroParser.GetAdventureDuration(html);
 
             await SetNextExecute(adventureDuration);
