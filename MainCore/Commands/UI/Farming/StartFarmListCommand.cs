@@ -27,7 +27,7 @@ namespace MainCore.Commands.UI.Farming
         public async Task Handle(StartFarmListCommand request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
-            var useStartAllButton = _accountSettingRepository.GetBooleanByName(accountId, Common.Enums.AccountSettingEnums.UseStartAllButton);
+            var useStartAllButton = new GetAccountSetting().GetBooleanByName(accountId, Common.Enums.AccountSettingEnums.UseStartAllButton);
             if (!useStartAllButton)
             {
                 var count = _farmRepository.CountActive(accountId);

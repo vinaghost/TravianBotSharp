@@ -4,12 +4,6 @@
     {
         Dictionary<AccountSettingEnums, int> Get(AccountId accountId);
 
-        bool GetBooleanByName(AccountId accountId, AccountSettingEnums setting);
-
-        int GetByName(AccountId accountId, AccountSettingEnums setting);
-
-        int GetByName(AccountId accountId, AccountSettingEnums settingMin, AccountSettingEnums settingMax, int multiplier = 1);
-
         void Update(AccountId accountId, Dictionary<AccountSettingEnums, int> settings);
     }
 }

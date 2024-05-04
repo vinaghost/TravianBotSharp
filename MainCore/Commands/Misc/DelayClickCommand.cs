@@ -12,7 +12,7 @@
 
         public async Task Execute(AccountId accountId)
         {
-            var delay = _accountSettingRepository.GetByName(accountId, AccountSettingEnums.ClickDelayMin, AccountSettingEnums.ClickDelayMax);
+            var delay = new GetAccountSetting().GetByName(accountId, AccountSettingEnums.ClickDelayMin, AccountSettingEnums.ClickDelayMax);
             await Task.Delay(delay, CancellationToken.None);
         }
     }

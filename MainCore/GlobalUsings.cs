@@ -3,6 +3,7 @@ global using HtmlAgilityPack;
 global using MainCore.Commands.Base;
 global using MainCore.Commands.Misc;
 global using MainCore.Commands.Navigate;
+global using MainCore.Commands.Queries;
 global using MainCore.Commands.Update;
 global using MainCore.Common.Enums;
 global using MainCore.Common.Errors;

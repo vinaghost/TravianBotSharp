@@ -42,7 +42,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (countQueueBuilding == 0) return GetBuildingJob(villageId);
 
             var plusActive = _accountInfoRepository.IsPlusActive(accountId);
-            var applyRomanQueueLogic = _villageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
+            var applyRomanQueueLogic = new GetVillageSetting().GetBooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
 
             if (countQueueBuilding == 1)
             {

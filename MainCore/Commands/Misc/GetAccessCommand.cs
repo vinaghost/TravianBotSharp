@@ -1,5 +1,4 @@
-﻿using MainCore.DTO;
-using MainCore.Infrasturecture.Persistence;
+﻿using MainCore.Infrasturecture.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -35,7 +34,7 @@ namespace MainCore.Commands.Misc
             if (accesses.Count == 1) return access;
             if (ignoreSleepTime) return access;
 
-            var minSleep = _accountSettingRepository.GetByName(accountId, AccountSettingEnums.SleepTimeMin);
+            var minSleep = new GetAccountSetting().GetByName(accountId, AccountSettingEnums.SleepTimeMin);
 
             var timeValid = DateTime.Now.AddMinutes(-minSleep);
             if (access.LastUsed > timeValid) return Stop.LackOfAccess;
