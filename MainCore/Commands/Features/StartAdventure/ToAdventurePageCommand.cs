@@ -1,32 +1,14 @@
-﻿using HtmlAgilityPack;
+﻿using MainCore.Commands.Abstract;
 
 namespace MainCore.Commands.Features.StartAdventure
 {
-    public class ToAdventurePageCommand : ICommand
+    public class ToAdventurePageCommand : AdventureCommand
     {
-        public ToAdventurePageCommand(IChromeBrowser chromeBrowser)
+        public async Task<Result> Execute(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
         {
-            ChromeBrowser = chromeBrowser;
-        }
-
-        public IChromeBrowser ChromeBrowser { get; }
-    }
-
-    public class ToAdventurePageCommandHandler : ICommandHandler<ToAdventurePageCommand>
-    {
-        private readonly IHeroParser _heroParser;
-
-        public ToAdventurePageCommandHandler(IHeroParser heroParser)
-        {
-            _heroParser = heroParser;
-        }
-
-        public async Task<Result> Handle(ToAdventurePageCommand request, CancellationToken cancellationToken)
-        {
-            var chromeBrowser = request.ChromeBrowser;
             var html = chromeBrowser.Html;
 
-            var adventure = _heroParser.GetHeroAdventure(html);
+            var adventure = GetHeroAdventure(html);
             if (adventure is null) return Retry.ButtonNotFound("hero adventure");
 
             Result result;

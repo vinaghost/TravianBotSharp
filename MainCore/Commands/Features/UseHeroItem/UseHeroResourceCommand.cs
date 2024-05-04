@@ -1,38 +1,23 @@
-﻿using HtmlAgilityPack;
+﻿using MainCore.Common.Errors.Storage;
+using MainCore.Infrasturecture.Persistence;
+using Microsoft.EntityFrameworkCore;
 
-namespace MainCore.Commands.Misc
+namespace MainCore.Commands.Features.UseHeroItem
 {
-    public class UseHeroResourceCommand : ByAccountIdBase, ICommand
+    public class UseHeroResourceCommand
     {
-        public long[] RequiredResource { get; }
-        public IChromeBrowser ChromeBrowser { get; }
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public UseHeroResourceCommand(AccountId accountId, IChromeBrowser chromeBrowser, long[] requiredResource) : base(accountId)
+        public UseHeroResourceCommand(IDbContextFactory<AppDbContext> contextFactory = null)
         {
-            RequiredResource = requiredResource;
-            ChromeBrowser = chromeBrowser;
-        }
-    }
-
-    [RegisterAsTransient]
-    public class UseHeroResourceCommandHandler : HeroInventoryCommandHandler, ICommandHandler<UseHeroResourceCommand>
-    {
-        private readonly DelayClickCommand _delayClickCommand;
-
-        public UseHeroResourceCommandHandler(IHeroParser heroParser, IHeroItemRepository heroItemRepository, IMediator mediator, DelayClickCommand delayClickCommand) : base(heroParser, heroItemRepository, mediator)
-        {
-            _delayClickCommand = delayClickCommand;
+            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
         }
 
-        public async Task<Result> Handle(UseHeroResourceCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Execute(AccountId accountId, IChromeBrowser chromeBrowser, long[] requiredResource, CancellationToken cancellationToken)
         {
-            var accountId = request.AccountId;
-            var chromeBrowser = request.ChromeBrowser;
-            var requiredResource = request.RequiredResource;
-
             var currentUrl = chromeBrowser.CurrentUrl;
             Result result;
-            result = await ToHeroInventory(accountId, chromeBrowser, cancellationToken);
+            result = await new ToHeroInventoryCommand().Execute(accountId, chromeBrowser, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             for (var i = 0; i < 4; i++)
@@ -40,7 +25,7 @@ namespace MainCore.Commands.Misc
                 requiredResource[i] = RoundUpTo100(requiredResource[i]);
             }
 
-            result = _heroItemRepository.IsEnoughResource(accountId, requiredResource);
+            result = IsEnoughResource(accountId, requiredResource);
             if (result.IsFailed)
             {
                 if (!result.HasError<Retry>())
@@ -77,17 +62,19 @@ namespace MainCore.Commands.Misc
             result = await ClickItem(chromeBrowser, item, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            await _delayClickCommand.Execute(accountId);
+            var delayClickCommand = new DelayClickCommand();
+
+            await delayClickCommand.Execute(accountId);
 
             result = await EnterAmount(chromeBrowser, amount);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            await _delayClickCommand.Execute(accountId);
+            await delayClickCommand.Execute(accountId);
 
             result = await Confirm(chromeBrowser, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            await _delayClickCommand.Execute(accountId);
+            await delayClickCommand.Execute(accountId);
 
             return Result.Ok();
         }
@@ -95,7 +82,7 @@ namespace MainCore.Commands.Misc
         private async Task<Result> ClickItem(IChromeBrowser chromeBrowser, HeroItemEnums item, CancellationToken cancellationToken)
         {
             var html = chromeBrowser.Html;
-            var node = _heroParser.GetItemSlot(html, item);
+            var node = GetItemSlot(html, item);
             if (node is null) return Retry.NotFound($"{item}", "item");
 
             Result result;
@@ -106,7 +93,7 @@ namespace MainCore.Commands.Misc
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                return !_heroParser.HeroInventoryLoading(doc);
+                return !HeroInventoryLoading(doc);
             };
 
             result = await chromeBrowser.Wait(loadingCompleted, cancellationToken);
@@ -118,7 +105,7 @@ namespace MainCore.Commands.Misc
         private async Task<Result> EnterAmount(IChromeBrowser chromeBrowser, long amount)
         {
             var html = chromeBrowser.Html;
-            var node = _heroParser.GetAmountBox(html);
+            var node = GetAmountBox(html);
             if (node is null) return Retry.TextboxNotFound("amount resource input");
             Result result;
             result = await chromeBrowser.InputTextbox(By.XPath(node.XPath), amount.ToString());
@@ -129,7 +116,7 @@ namespace MainCore.Commands.Misc
         private async Task<Result> Confirm(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
         {
             var html = chromeBrowser.Html;
-            var node = _heroParser.GetConfirmButton(html);
+            var node = GetConfirmButton(html);
             if (node is null) return Retry.ButtonNotFound("confirm use resource");
 
             Result result;
@@ -140,7 +127,7 @@ namespace MainCore.Commands.Misc
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                return !_heroParser.HeroInventoryLoading(doc);
+                return !HeroInventoryLoading(doc);
             };
 
             result = await chromeBrowser.Wait(loadingCompleted, cancellationToken);
@@ -154,6 +141,82 @@ namespace MainCore.Commands.Misc
             if (res == 0) return 0;
             var remainder = res % 100;
             return res + (100 - remainder);
+        }
+
+        private Result IsEnoughResource(AccountId accountId, long[] requiredResource)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var types = new List<HeroItemEnums>() {
+                HeroItemEnums.Wood,
+                HeroItemEnums.Clay,
+                HeroItemEnums.Iron,
+                HeroItemEnums.Crop,
+            };
+
+            var items = context.HeroItems
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => types.Contains(x.Type))
+                .OrderBy(x => x.Type)
+                .ToList();
+
+            var result = Result.Ok();
+            var wood = items.FirstOrDefault(x => x.Type == HeroItemEnums.Wood);
+            var woodAmount = wood?.Amount ?? 0;
+            if (woodAmount < requiredResource[0]) result.WithError(Resource.Error("wood", woodAmount, requiredResource[0]));
+            var clay = items.FirstOrDefault(x => x.Type == HeroItemEnums.Clay);
+            var clayAmount = clay?.Amount ?? 0;
+            if (clayAmount < requiredResource[1]) result.WithError(Resource.Error("clay", clayAmount, requiredResource[1]));
+            var iron = items.FirstOrDefault(x => x.Type == HeroItemEnums.Iron);
+            var ironAmount = iron?.Amount ?? 0;
+            if (ironAmount < requiredResource[2]) result.WithError(Resource.Error("iron", ironAmount, requiredResource[2]));
+            var crop = items.FirstOrDefault(x => x.Type == HeroItemEnums.Crop);
+            var cropAmount = crop?.Amount ?? 0;
+            if (cropAmount < requiredResource[3]) result.WithError(Resource.Error("crop", cropAmount, requiredResource[3]));
+            return result;
+        }
+
+        private static bool HeroInventoryLoading(HtmlDocument doc)
+        {
+            var inventoryPageWrapper = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("inventoryPageWrapper"));
+            return inventoryPageWrapper.HasClass("loading");
+        }
+
+        private static HtmlNode GetItemSlot(HtmlDocument doc, HeroItemEnums type)
+        {
+            var heroItemsDiv = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("heroItems"));
+            if (heroItemsDiv is null) return null;
+            var heroItemDivs = heroItemsDiv.Descendants("div").Where(x => x.HasClass("heroItem") && !x.HasClass("empty"));
+            if (!heroItemDivs.Any()) return null;
+
+            foreach (var itemSlot in heroItemDivs)
+            {
+                if (itemSlot.ChildNodes.Count < 2) continue;
+                var itemNode = itemSlot.ChildNodes[1];
+                var classes = itemNode.GetClasses();
+                if (classes.Count() != 2) continue;
+
+                var itemValue = classes.ElementAt(1);
+
+                if (itemValue.ParseInt() == (int)type) return itemSlot;
+            }
+            return null;
+        }
+
+        private static HtmlNode GetAmountBox(HtmlDocument doc)
+        {
+            var form = doc.GetElementbyId("consumableHeroItem");
+            return form.Descendants("input").FirstOrDefault();
+        }
+
+        private static HtmlNode GetConfirmButton(HtmlDocument doc)
+        {
+            var dialog = doc.GetElementbyId("dialogContent");
+            var buttonWrapper = dialog.Descendants("div").FirstOrDefault(x => x.HasClass("buttonsWrapper"));
+            var buttonTransfer = buttonWrapper.Descendants("button");
+            if (buttonTransfer.Count() < 2) return null;
+            return buttonTransfer.ElementAt(1);
         }
     }
 }

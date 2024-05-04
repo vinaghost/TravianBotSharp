@@ -1,6 +1,4 @@
-﻿using Splat;
-
-namespace MainCore.Tasks.Base
+﻿namespace MainCore.Tasks.Base
 {
     public abstract class AccountTask : TaskBase
     {
@@ -64,8 +62,7 @@ namespace MainCore.Tasks.Base
             result = await _mediator.Send(new UpdateVillageListCommand(AccountId, _chromeBrowser));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new CheckAdventureCommand(AccountId));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            await new CheckAdventureCommand().Execute(AccountId, _chromeBrowser, CancellationToken);
             return Result.Ok();
         }
 

@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.Features.UpgradeBuilding;
+using MainCore.Commands.Features.UseHeroItem;
 using MainCore.Common.Errors.AutoBuilder;
 using MainCore.Common.Errors.Storage;
 using MainCore.Common.Models;
@@ -111,7 +112,7 @@ namespace MainCore.Tasks
                     if (IsUseHeroResource())
                     {
                         var missingResource = _storageRepository.GetMissingResource(VillageId, requiredResource);
-                        var heroResourceResult = await _mediator.Send(new UseHeroResourceCommand(AccountId, _chromeBrowser, missingResource), CancellationToken);
+                        var heroResourceResult = await new UseHeroResourceCommand().Execute(AccountId, _chromeBrowser, missingResource, CancellationToken);
                         if (heroResourceResult.IsFailed)
                         {
                             if (!heroResourceResult.HasError<Retry>())

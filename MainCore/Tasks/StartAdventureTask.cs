@@ -7,12 +7,10 @@ namespace MainCore.Tasks
     public class StartAdventureTask : AccountTask
     {
         private readonly ITaskManager _taskManager;
-        private readonly IHeroParser _heroParser;
 
-        public StartAdventureTask(IMediator mediator, ITaskManager taskManager, IHeroParser heroParser) : base(mediator)
+        public StartAdventureTask(IMediator mediator, ITaskManager taskManager) : base(mediator)
         {
             _taskManager = taskManager;
-            _heroParser = heroParser;
         }
 
         protected override async Task<Result> Execute()
@@ -24,17 +22,13 @@ namespace MainCore.Tasks
 
             var html = _chromeBrowser.Html;
 
-            if (!_heroParser.CanStartAdventure(html)) return Result.Ok();
-
-            result = await _mediator.Send(new ToAdventurePageCommand(_chromeBrowser), CancellationToken);
+            result = await new ToAdventurePageCommand().Execute(_chromeBrowser, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new ExploreAdventureCommand(_chromeBrowser), CancellationToken);
+            result = await new ExploreAdventureCommand().Execute(AccountId, _chromeBrowser, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            html = _chromeBrowser.Html;
-            var adventureDuration = _heroParser.GetAdventureDuration(html);
-
+            var adventureDuration = new GetAdventureDuration().Execute(_chromeBrowser);
             await SetNextExecute(adventureDuration);
 
             return Result.Ok();
