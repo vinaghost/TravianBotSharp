@@ -242,7 +242,7 @@ namespace MainCore.Tasks
         public async Task<Result> ToBuildingPage(IChromeBrowser _chromeBrowser, NormalBuildPlan plan)
         {
             Result result;
-            result = await _mediator.Send(new ToBuildingCommand(_chromeBrowser, plan.Location), CancellationToken);
+            result = await new ToBuildingCommand().Execute(_chromeBrowser, plan.Location, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var building = _buildingRepository.GetBuilding(VillageId, plan.Location);

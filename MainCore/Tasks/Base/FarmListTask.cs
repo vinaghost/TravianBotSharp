@@ -42,7 +42,7 @@ namespace MainCore.Tasks.Base
             result = await _mediator.Send(new UpdateBuildingCommand(AccountId, rallypointVillageId), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new ToBuildingCommand(chromeBrowser, 39), cancellationToken);
+            result = await new ToBuildingCommand().Execute(chromeBrowser, 39, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await new SwitchTabCommand().Execute(chromeBrowser, 4, cancellationToken);

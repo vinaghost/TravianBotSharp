@@ -90,7 +90,7 @@ namespace MainCore.Tasks
                 return MissingBuilding.Error(buildingType);
             }
 
-            result = await _mediator.Send(new ToBuildingCommand(_chromeBrowser, buildingLocation), CancellationToken);
+            result = await new ToBuildingCommand().Execute(_chromeBrowser, buildingLocation, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var troopSeting = _settings[buildingType];

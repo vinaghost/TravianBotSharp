@@ -2,34 +2,12 @@
 
 namespace MainCore.Commands.Navigate
 {
-    public class ToBuildingCommand : ICommand
+    public class ToBuildingCommand
     {
-        public ToBuildingCommand(IChromeBrowser chromeBrowser, int location)
+        public async Task<Result> Execute(IChromeBrowser chromeBrowser, int location, CancellationToken cancellationToken)
         {
-            Location = location;
-            ChromeBrowser = chromeBrowser;
-        }
-
-        public int Location { get; }
-        public IChromeBrowser ChromeBrowser { get; }
-    }
-
-    public class ToBuildingCommandHandler : ICommandHandler<ToBuildingCommand>
-    {
-        private readonly IBuildingParser _buildingParser;
-
-        public ToBuildingCommandHandler(IBuildingParser buildingParser)
-        {
-            _buildingParser = buildingParser;
-        }
-
-        public async Task<Result> Handle(ToBuildingCommand request, CancellationToken cancellationToken)
-        {
-            var chromeBrowser = request.ChromeBrowser;
-            var location = request.Location;
-
             var html = chromeBrowser.Html;
-            var node = _buildingParser.GetBuilding(html, location);
+            var node = GetBuilding(html, location);
             if (node is null) return Retry.NotFound($"{location}", "nodeBuilding");
 
             Result result;
@@ -75,6 +53,29 @@ namespace MainCore.Commands.Navigate
             result = await chromeBrowser.WaitPageLoaded(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
+        }
+
+        private static HtmlNode GetBuilding(HtmlDocument doc, int location)
+        {
+            if (location < 19) return GetField(doc, location);
+            return GetInfrastructure(doc, location);
+        }
+
+        private static HtmlNode GetField(HtmlDocument doc, int location)
+        {
+            var node = doc.DocumentNode
+                   .Descendants("a")
+                   .FirstOrDefault(x => x.HasClass($"buildingSlot{location}"));
+            return node;
+        }
+
+        private static HtmlNode GetInfrastructure(HtmlDocument doc, int location)
+        {
+            var tmpLocation = location - 18;
+            var div = doc.DocumentNode
+                .SelectSingleNode($"//*[@id='villageContent']/div[{tmpLocation}]");
+
+            return div;
         }
     }
 }

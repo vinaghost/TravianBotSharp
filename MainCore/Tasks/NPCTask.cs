@@ -26,7 +26,7 @@ namespace MainCore.Tasks
 
             var market = _buildingRepository.GetBuildingLocation(VillageId, BuildingEnums.Marketplace);
 
-            result = await _mediator.Send(new ToBuildingCommand(_chromeBrowser, market), CancellationToken);
+            result = await new ToBuildingCommand().Execute(_chromeBrowser, market, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await new SwitchTabCommand().Execute(_chromeBrowser, 0, CancellationToken);
