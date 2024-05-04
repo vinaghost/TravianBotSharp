@@ -18,4 +18,6 @@ global using MainCore.Repositories;
 global using MainCore.Services;
 global using MediatR;
 global using OpenQA.Selenium;
+global using Splat;
+global using ILogger = Serilog.ILogger;
 global using Unit = System.Reactive.Unit;
