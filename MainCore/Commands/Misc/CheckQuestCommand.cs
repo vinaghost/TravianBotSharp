@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Features.ClaimQuest;
+﻿using MainCore.Commands.Abstract;
 
 namespace MainCore.Commands.Misc
 {

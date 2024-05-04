@@ -1,9 +1,8 @@
-﻿namespace MainCore.Parsers.VillagePanelParser
+﻿namespace MainCore.Commands.Abstract
 {
-    [RegisterAsParser]
-    public class TravianOfficial : IVillagePanelParser
+    public abstract class VillagePanelCommand
     {
-        public HtmlNode GetVillageNode(HtmlDocument doc, VillageId villageId)
+        protected static HtmlNode GetVillageNode(HtmlDocument doc, VillageId villageId)
         {
             var villageBox = doc.GetElementbyId("sidebarBoxVillagelist");
             if (villageBox is null) return null;
@@ -15,7 +14,7 @@
             return village;
         }
 
-        public VillageId GetCurrentVillageId(HtmlDocument doc)
+        protected static VillageId GetCurrentVillageId(HtmlDocument doc)
         {
             var villageBox = doc.GetElementbyId("sidebarBoxVillagelist");
             if (villageBox is null) return VillageId.Empty;
@@ -28,7 +27,7 @@
             return village;
         }
 
-        public bool IsActive(HtmlNode node)
+        protected static bool IsActive(HtmlNode node)
         {
             return node.HasClass("active");
         }
@@ -39,7 +38,7 @@
             return new VillageId(dataDid);
         }
 
-        public IEnumerable<VillageDto> Get(HtmlDocument doc)
+        protected static IEnumerable<VillageDto> Get(HtmlDocument doc)
         {
             var nodes = GetVillages(doc);
             foreach (var node in nodes)

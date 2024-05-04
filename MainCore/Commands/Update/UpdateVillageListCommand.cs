@@ -1,34 +1,34 @@
-﻿namespace MainCore.Commands.Update
+﻿using MainCore.Commands.Abstract;
+
+namespace MainCore.Commands.Update
 {
     public class UpdateVillageListCommand : ByAccountIdBase, ICommand
     {
-        public UpdateVillageListCommand(AccountId accountId) : base(accountId)
+        public IChromeBrowser ChromeBrowser { get; }
+
+        public UpdateVillageListCommand(AccountId accountId, IChromeBrowser chromeBrowser) : base(accountId)
         {
+            ChromeBrowser = chromeBrowser;
         }
     }
 
-    public class UpdateVillageListCommandHandler : ICommandHandler<UpdateVillageListCommand>
+    public class UpdateVillageListCommandHandler : VillagePanelCommand, ICommandHandler<UpdateVillageListCommand>
     {
         private readonly IMediator _mediator;
-        private readonly IChromeManager _chromeManager;
-        private readonly IVillagePanelParser _villagePanelParser;
         private readonly IVillageRepository _villageRepository;
 
-        public UpdateVillageListCommandHandler(IMediator mediator, IVillagePanelParser villagePanelParser, IVillageRepository villageRepository, IChromeManager chromeManager)
+        public UpdateVillageListCommandHandler(IMediator mediator, IVillageRepository villageRepository)
         {
             _mediator = mediator;
-            _chromeManager = chromeManager;
-            _villagePanelParser = villagePanelParser;
             _villageRepository = villageRepository;
-            _chromeManager = chromeManager;
         }
 
         public async Task<Result> Handle(UpdateVillageListCommand request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
-            var chromeBrowser = _chromeManager.Get(accountId);
+            var chromeBrowser = request.ChromeBrowser;
             var html = chromeBrowser.Html;
-            var dtos = _villagePanelParser.Get(html);
+            var dtos = Get(html);
             if (!dtos.Any()) return Retry.VillageListEmpty();
 
             _villageRepository.Update(accountId, dtos.ToList());

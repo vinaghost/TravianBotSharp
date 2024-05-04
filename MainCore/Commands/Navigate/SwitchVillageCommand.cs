@@ -1,37 +1,30 @@
-﻿using HtmlAgilityPack;
+﻿using MainCore.Commands.Abstract;
 
 namespace MainCore.Commands.Navigate
 {
-    public class SwitchVillageCommand : ByAccountVillageIdBase, ICommand
+    public class SwitchVillageCommand : ByVillageIdBase, ICommand
     {
-        public SwitchVillageCommand(AccountId accountId, VillageId villageId) : base(accountId, villageId)
+        public IChromeBrowser ChromeBrowser { get; }
+
+        public SwitchVillageCommand(IChromeBrowser chromeBrowser, VillageId villageId) : base(villageId)
         {
+            ChromeBrowser = chromeBrowser;
         }
     }
 
-    public class SwitchVillageCommandHandler : ICommandHandler<SwitchVillageCommand>
+    public class SwitchVillageCommandHandler : VillagePanelCommand, ICommandHandler<SwitchVillageCommand>
     {
-        private readonly IChromeManager _chromeManager;
-        private readonly ILogService _logService;
-        private readonly IVillagePanelParser _villagePanelParser;
-
-        public SwitchVillageCommandHandler(IChromeManager chromeManager, ILogService logService, IVillagePanelParser villagePanelParser)
-        {
-            _chromeManager = chromeManager;
-            _logService = logService;
-            _villagePanelParser = villagePanelParser;
-        }
-
         public async Task<Result> Handle(SwitchVillageCommand command, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _chromeManager.Get(command.AccountId);
+            var villageId = command.VillageId;
+            var chromeBrowser = command.ChromeBrowser;
             var html = chromeBrowser.Html;
-            var node = _villagePanelParser.GetVillageNode(html, command.VillageId);
+            var node = GetVillageNode(html, villageId);
             if (node is null) return Skip.VillageNotFound;
 
-            if (_villagePanelParser.IsActive(node)) return Result.Ok();
+            if (IsActive(node)) return Result.Ok();
 
-            var current = _villagePanelParser.GetCurrentVillageId(html);
+            var current = GetCurrentVillageId(html);
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(node.XPath));
@@ -42,13 +35,13 @@ namespace MainCore.Commands.Navigate
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
 
-                var villageNode = _villagePanelParser.GetVillageNode(doc, command.VillageId);
-                return villageNode is not null && _villagePanelParser.IsActive(villageNode);
+                var villageNode = GetVillageNode(doc, villageId);
+                return villageNode is not null && IsActive(villageNode);
             };
 
             result = await chromeBrowser.Wait(villageChanged, cancellationToken);
             if (result.IsFailed) return result
-                    .WithError(new Error($"page stuck at changing village stage [Current: {current}] [Expected: {command.VillageId}]"))
+                    .WithError(new Error($"page stuck at changing village stage [Current: {current}] [Expected: {villageId}]"))
                     .WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Features.ClaimQuest
+﻿namespace MainCore.Commands.Abstract
 {
     public abstract class QuestCommand
     {

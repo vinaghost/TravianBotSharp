@@ -24,7 +24,7 @@
             result = await base.PreExecute();
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new SwitchVillageCommand(AccountId, VillageId), CancellationToken);
+            result = await _mediator.Send(new SwitchVillageCommand(_chromeBrowser, VillageId), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
@@ -42,8 +42,7 @@
             result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var chromeBrowser = _chromeManager.Get(AccountId);
-            result = await _mediator.Send(new CheckQuestCommand(AccountId, VillageId, chromeBrowser));
+            result = await _mediator.Send(new CheckQuestCommand(AccountId, VillageId, _chromeBrowser));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }

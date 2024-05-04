@@ -13,6 +13,8 @@ namespace MainCore.Tasks.Base
         private INavigationBarParser _navigationBarParser;
         private ILoginPageParser _loginPageParser;
 
+        protected IChromeBrowser _chromeBrowser;
+
         public void Setup(AccountId accountId, CancellationToken cancellationToken = default)
         {
             AccountId = accountId;
@@ -22,6 +24,7 @@ namespace MainCore.Tasks.Base
         protected override async Task<Result> PreExecute()
         {
             if (CancellationToken.IsCancellationRequested) return Cancel.Error;
+            _chromeBrowser = _chromeManager.Get(AccountId);
 
             _navigationBarParser ??= Locator.Current.GetService<INavigationBarParser>();
 
@@ -31,7 +34,7 @@ namespace MainCore.Tasks.Base
                 result = await _mediator.Send(new UpdateAccountInfoCommand(AccountId));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                result = await _mediator.Send(new UpdateVillageListCommand(AccountId));
+                result = await _mediator.Send(new UpdateVillageListCommand(AccountId, _chromeBrowser));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 return Result.Ok();
             }
@@ -58,7 +61,7 @@ namespace MainCore.Tasks.Base
             result = await _mediator.Send(new UpdateAccountInfoCommand(AccountId));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new UpdateVillageListCommand(AccountId));
+            result = await _mediator.Send(new UpdateVillageListCommand(AccountId, _chromeBrowser));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _mediator.Send(new CheckAdventureCommand(AccountId));
@@ -68,8 +71,7 @@ namespace MainCore.Tasks.Base
 
         private bool IsIngame()
         {
-            var chromeBrowser = _chromeManager.Get(AccountId);
-            var html = chromeBrowser.Html;
+            var html = _chromeBrowser.Html;
 
             var fieldButton = _navigationBarParser.GetResourceButton(html);
 
@@ -78,8 +80,7 @@ namespace MainCore.Tasks.Base
 
         private bool IsLogin()
         {
-            var chromeBrowser = _chromeManager.Get(AccountId);
-            var html = chromeBrowser.Html;
+            var html = _chromeBrowser.Html;
 
             var loginButton = _loginPageParser.GetLoginButton(html);
 
