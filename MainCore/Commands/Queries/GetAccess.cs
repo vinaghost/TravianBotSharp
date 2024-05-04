@@ -1,22 +1,18 @@
-﻿using MainCore.Infrasturecture.Persistence;
+﻿using MainCore.Commands.Checks;
+using MainCore.Infrasturecture.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace MainCore.Commands.Misc
+namespace MainCore.Commands.Queries
 {
-    [RegisterAsTransient(withoutInterface: true)]
-    public class GetAccessCommand
+    public class GetAccess
     {
-        private readonly ValidateProxyCommand _validateProxyCommand;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IAccountSettingRepository _accountSettingRepository;
         private readonly ILogService _logService;
 
-        public GetAccessCommand(ValidateProxyCommand validateProxyCommand, IAccountSettingRepository accountSettingRepository, IDbContextFactory<AppDbContext> contextFactory, ILogService logService)
+        public GetAccess(IDbContextFactory<AppDbContext> contextFactory = null, ILogService logService = null)
         {
-            _validateProxyCommand = validateProxyCommand;
-            _accountSettingRepository = accountSettingRepository;
-            _contextFactory = contextFactory;
-            _logService = logService;
+            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+            _logService = logService ?? Locator.Current.GetService<ILogService>();
         }
 
         public async Task<Result<AccessDto>> Execute(AccountId accountId, bool ignoreSleepTime = false)
@@ -40,12 +36,12 @@ namespace MainCore.Commands.Misc
             return access;
         }
 
-        private async Task<AccessDto> GetValidAccess(List<AccessDto> accesses, ILogger logger)
+        private static async Task<AccessDto> GetValidAccess(List<AccessDto> accesses, ILogger logger)
         {
             foreach (var access in accesses)
             {
                 logger.Information("Check connection {proxy}", access.Proxy);
-                var valid = await _validateProxyCommand.Execute(access);
+                var valid = await new CheckProxyCommand().Execute(access);
 
                 if (!valid)
                 {

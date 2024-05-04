@@ -1,12 +1,10 @@
-﻿using MainCore.DTO;
-using Polly;
+﻿using Polly;
 using Polly.Retry;
 using RestSharp;
 
-namespace MainCore.Commands.Misc
+namespace MainCore.Commands.Checks
 {
-    [RegisterAsTransient(withoutInterface: true)]
-    public class ValidateProxyCommand
+    public class CheckProxyCommand
     {
         private readonly IRestClientManager _restClientManager;
 
@@ -16,9 +14,9 @@ namespace MainCore.Commands.Misc
                     retryCount: 3,
                     sleepDurationProvider: times => TimeSpan.FromSeconds(10 * times));
 
-        public ValidateProxyCommand(IRestClientManager restClientManager)
+        public CheckProxyCommand(IRestClientManager restClientManager = null)
         {
-            _restClientManager = restClientManager;
+            _restClientManager = restClientManager ?? Locator.Current.GetService<IRestClientManager>();
         }
 
         private async Task Validate(AccessDto access)

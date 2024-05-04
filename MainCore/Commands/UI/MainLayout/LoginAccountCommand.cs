@@ -16,7 +16,7 @@ namespace MainCore.Commands.UI.MainLayout
         private readonly IDialogService _dialogService;
         private readonly IChromeManager _chromeManager;
 
-        private readonly GetAccessCommand _getAccessCommand;
+        private readonly GetAccess _getAccessCommand;
         private readonly OpenBrowserCommand _openBrowserCommand;
 
         private readonly ILogService _logService;
@@ -24,7 +24,7 @@ namespace MainCore.Commands.UI.MainLayout
 
         private readonly IAccountSettingRepository _accountSettingRepository;
 
-        public LoginAccountCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IDialogService dialogService, GetAccessCommand getAccessCommand, OpenBrowserCommand openBrowserCommand, ILogService logService, IMediator mediator, IAccountSettingRepository accountSettingRepository, IChromeManager chromeManager)
+        public LoginAccountCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IDialogService dialogService, GetAccess getAccessCommand, OpenBrowserCommand openBrowserCommand, ILogService logService, IMediator mediator, IAccountSettingRepository accountSettingRepository, IChromeManager chromeManager)
         {
             _taskManager = taskManager;
             _timerManager = timerManager;
@@ -79,7 +79,7 @@ namespace MainCore.Commands.UI.MainLayout
 
             var chromeBrowser = _chromeManager.Get(accountId);
 
-            result = await _mediator.Send(new OpenBrowserCommand(accountId, access, chromeBrowser), cancellationToken);
+            result = await new OpenBrowserCommand().Execute(chromeBrowser, accountId, access, cancellationToken);
             if (result.IsFailed)
             {
                 _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());

@@ -1,5 +1,4 @@
-﻿using MainCore.DTO;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 
 namespace MainCore.Repositories
 {
@@ -10,8 +9,6 @@ namespace MainCore.Repositories
         void Add(List<AccountDetailDto> dtos);
 
         void Delete(AccountId accountId);
-
-        AccountDto Get(AccountId accountId, bool includeAccess = false);
 
         List<ListBoxItem> GetItems();
 

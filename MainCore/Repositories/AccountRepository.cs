@@ -1,5 +1,4 @@
-﻿using MainCore.DTO;
-using MainCore.Infrasturecture.Persistence;
+﻿using MainCore.Infrasturecture.Persistence;
 using MainCore.UI.Models.Output;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,23 +16,6 @@ namespace MainCore.Repositories
             _contextFactory = contextFactory;
             _useragentManager = useragentManager;
             _taskManager = taskManager;
-        }
-
-        public AccountDto Get(AccountId accountId, bool includeAccess = false)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var query = context.Accounts
-                .Where(x => x.Id == accountId.Value);
-
-            if (includeAccess)
-            {
-                query = query
-                    .Include(x => x.Accesses);
-            }
-            var account = query
-                .ToDto()
-                .FirstOrDefault();
-            return account;
         }
 
         public string GetUsername(AccountId accountId)

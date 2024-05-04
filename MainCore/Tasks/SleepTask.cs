@@ -5,16 +5,11 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class SleepTask : AccountTask
     {
-        private readonly GetAccessCommand _getAccessCommand;
-        private readonly IAccountSettingRepository _accountSettingRepository;
-
         private readonly ITaskManager _taskManager;
         private readonly ILogService _logService;
 
-        public SleepTask(IMediator mediator, GetAccessCommand getAccessCommand, IAccountSettingRepository accountSettingRepository, ITaskManager taskManager, ILogService logService) : base(mediator)
+        public SleepTask(IMediator mediator, ITaskManager taskManager, ILogService logService) : base(mediator)
         {
-            _getAccessCommand = getAccessCommand;
-            _accountSettingRepository = accountSettingRepository;
             _taskManager = taskManager;
             _logService = logService;
         }
@@ -27,11 +22,11 @@ namespace MainCore.Tasks
             result = await Sleep();
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var accessResult = await _getAccessCommand.Execute(AccountId);
+            var accessResult = await new GetAccess().Execute(AccountId);
             if (accessResult.IsFailed) return Result.Fail(accessResult.Errors).WithError(TraceMessage.Error(TraceMessage.Line()));
             var access = accessResult.Value;
 
-            result = await _mediator.Send(new OpenBrowserCommand(AccountId, access, _chromeBrowser), CancellationToken);
+            result = await new OpenBrowserCommand().Execute(_chromeBrowser, AccountId, access, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await SetNextExecute();

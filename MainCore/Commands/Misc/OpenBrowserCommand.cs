@@ -2,36 +2,11 @@
 
 namespace MainCore.Commands.Misc
 {
-    public class OpenBrowserCommand : ByAccountIdBase, ICommand
+    public class OpenBrowserCommand
     {
-        public AccessDto Access { get; }
-        public IChromeBrowser ChromeBrowser { get; }
-
-        public OpenBrowserCommand(AccountId accountId, AccessDto access, IChromeBrowser chromeBrowser) : base(accountId)
+        public async Task<Result> Execute(IChromeBrowser chromeBrowser, AccountId accountId, AccessDto access, CancellationToken cancellationToken)
         {
-            Access = access;
-            ChromeBrowser = chromeBrowser;
-        }
-    }
-
-    public class OpenBrowserCommandHandler : ICommandHandler<OpenBrowserCommand>
-    {
-        private readonly IAccountRepository _accountRepository;
-        private readonly IAccountSettingRepository _accountSettingRepository;
-
-        public OpenBrowserCommandHandler(IAccountRepository accountRepository, IAccountSettingRepository accountSettingRepository)
-        {
-            _accountRepository = accountRepository;
-            _accountSettingRepository = accountSettingRepository;
-        }
-
-        public async Task<Result> Handle(OpenBrowserCommand request, CancellationToken cancellationToken)
-        {
-            var accountId = request.AccountId;
-            var chromeBrowser = request.ChromeBrowser;
-            var access = request.Access;
-
-            var account = _accountRepository.Get(accountId);
+            var account = new GetAccount().Execute(accountId);
 
             var serverFolderName = account.Server.Replace("https://", "").Replace("http://", "").Replace(".", "_");
             var accountFolderName = account.Username;
