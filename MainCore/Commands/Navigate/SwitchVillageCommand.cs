@@ -2,22 +2,10 @@
 
 namespace MainCore.Commands.Navigate
 {
-    public class SwitchVillageCommand : ByVillageIdBase, ICommand
+    public class SwitchVillageCommand : VillagePanelCommand
     {
-        public IChromeBrowser ChromeBrowser { get; }
-
-        public SwitchVillageCommand(IChromeBrowser chromeBrowser, VillageId villageId) : base(villageId)
+        public async Task<Result> Execute(IChromeBrowser chromeBrowser, VillageId villageId, CancellationToken cancellationToken)
         {
-            ChromeBrowser = chromeBrowser;
-        }
-    }
-
-    public class SwitchVillageCommandHandler : VillagePanelCommand, ICommandHandler<SwitchVillageCommand>
-    {
-        public async Task<Result> Handle(SwitchVillageCommand command, CancellationToken cancellationToken)
-        {
-            var villageId = command.VillageId;
-            var chromeBrowser = command.ChromeBrowser;
             var html = chromeBrowser.Html;
             var node = GetVillageNode(html, villageId);
             if (node is null) return Skip.VillageNotFound;

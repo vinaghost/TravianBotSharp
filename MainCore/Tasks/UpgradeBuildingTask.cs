@@ -41,7 +41,7 @@ namespace MainCore.Tasks
             {
                 if (CancellationToken.IsCancellationRequested) return Cancel.Error;
 
-                result = await _mediator.Send(ToDorfCommand.ToDorf(AccountId), CancellationToken);
+                result = await new ToDorfCommand().Execute(_chromeBrowser, 0, false, CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
@@ -74,7 +74,7 @@ namespace MainCore.Tasks
                 var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
 
                 var dorf = plan.Location < 19 ? 1 : 2;
-                result = await _mediator.Send(new ToDorfCommand(AccountId, dorf), CancellationToken);
+                result = await new ToDorfCommand().Execute(_chromeBrowser, dorf, false, CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);

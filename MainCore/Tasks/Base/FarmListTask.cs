@@ -33,10 +33,10 @@ namespace MainCore.Tasks.Base
             var rallypointVillageId = GetVillageHasRallypoint(AccountId);
             if (rallypointVillageId == VillageId.Empty) return Skip.NoRallypoint;
 
-            result = await _mediator.Send(new SwitchVillageCommand(chromeBrowser, rallypointVillageId), cancellationToken);
+            result = await new SwitchVillageCommand().Execute(_chromeBrowser, rallypointVillageId, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(ToDorfCommand.ToDorf2(AccountId), cancellationToken);
+            result = await new ToDorfCommand().Execute(_chromeBrowser, 2, false, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _mediator.Send(new UpdateBuildingCommand(AccountId, rallypointVillageId), cancellationToken);

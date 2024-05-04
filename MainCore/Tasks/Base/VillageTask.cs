@@ -24,7 +24,7 @@
             result = await base.PreExecute();
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new SwitchVillageCommand(_chromeBrowser, VillageId), CancellationToken);
+            result = await new SwitchVillageCommand().Execute(_chromeBrowser, VillageId, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
@@ -36,7 +36,7 @@
             result = await base.PostExecute();
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(ToDorfCommand.ToDorf(AccountId));
+            result = await new ToDorfCommand().Execute(_chromeBrowser, 0, false, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId));

@@ -16,7 +16,7 @@ namespace MainCore.Tasks
         {
             Result result;
 
-            result = await _mediator.Send(ToDorfCommand.ToDorf(AccountId), CancellationToken);
+            result = await new ToDorfCommand().Execute(_chromeBrowser, 0, false, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await CompleteImmediately();

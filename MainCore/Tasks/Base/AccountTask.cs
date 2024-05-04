@@ -10,7 +10,6 @@ namespace MainCore.Tasks.Base
 
         public AccountId AccountId { get; protected set; }
 
-        private INavigationBarParser _navigationBarParser;
         private ILoginPageParser _loginPageParser;
 
         protected IChromeBrowser _chromeBrowser;
@@ -25,8 +24,6 @@ namespace MainCore.Tasks.Base
         {
             if (CancellationToken.IsCancellationRequested) return Cancel.Error;
             _chromeBrowser = _chromeManager.Get(AccountId);
-
-            _navigationBarParser ??= Locator.Current.GetService<INavigationBarParser>();
 
             if (IsIngame())
             {
@@ -73,9 +70,9 @@ namespace MainCore.Tasks.Base
         {
             var html = _chromeBrowser.Html;
 
-            var fieldButton = _navigationBarParser.GetResourceButton(html);
+            var serverTime = html.GetElementbyId("servertime");
 
-            return fieldButton is not null;
+            return serverTime is not null;
         }
 
         private bool IsLogin()

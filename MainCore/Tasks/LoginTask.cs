@@ -5,15 +5,13 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public sealed class LoginTask : AccountTask
     {
-        private readonly INavigationBarParser _navigationBarParser;
         private readonly ILoginPageParser _loginPageParser;
         private readonly IOptionPageParser _optionPageParser;
 
         private readonly IAccountRepository _accountRepository;
 
-        public LoginTask(IChromeManager chromeManager, IMediator mediator, INavigationBarParser navigationBarParser, ILoginPageParser loginPageParser, IAccountRepository accountRepository, IOptionPageParser optionPageParser) : base(chromeManager, mediator)
+        public LoginTask(IChromeManager chromeManager, IMediator mediator, ILoginPageParser loginPageParser, IAccountRepository accountRepository, IOptionPageParser optionPageParser) : base(chromeManager, mediator)
         {
-            _navigationBarParser = navigationBarParser;
             _loginPageParser = loginPageParser;
             _accountRepository = accountRepository;
             _optionPageParser = optionPageParser;
@@ -37,8 +35,7 @@ namespace MainCore.Tasks
         {
             var html = _chromeBrowser.Html;
 
-            var resourceButton = _navigationBarParser.GetResourceButton(html);
-            if (resourceButton is not null) return Result.Ok();
+            if (IsIngame()) return Result.Ok();
 
             var buttonNode = _loginPageParser.GetLoginButton(html);
             if (buttonNode is null) return Retry.ButtonNotFound("login");
@@ -77,7 +74,7 @@ namespace MainCore.Tasks
             result = await Submit();
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(ToDorfCommand.ToDorf1(AccountId), CancellationToken);
+            result = await new ToDorfCommand().Execute(_chromeBrowser, 1, false, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
@@ -120,6 +117,15 @@ namespace MainCore.Tasks
             result = await _chromeBrowser.Click(By.XPath(option.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
+        }
+
+        private bool IsIngame()
+        {
+            var html = _chromeBrowser.Html;
+
+            var serverTime = html.GetElementbyId("servertime");
+
+            return serverTime is not null;
         }
 
         protected override void SetName()

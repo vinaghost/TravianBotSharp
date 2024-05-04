@@ -18,7 +18,7 @@ namespace MainCore.Tasks
             {
                 result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                result = await _mediator.Send(ToDorfCommand.ToDorf2(AccountId), CancellationToken);
+                result = await new ToDorfCommand().Execute(_chromeBrowser, 2, false, CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -27,18 +27,18 @@ namespace MainCore.Tasks
             {
                 result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                result = await _mediator.Send(ToDorfCommand.ToDorf1(AccountId), CancellationToken);
+                result = await new ToDorfCommand().Execute(_chromeBrowser, 1, false, CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else
             {
-                result = await _mediator.Send(ToDorfCommand.ToDorf2(AccountId), CancellationToken);
+                result = await new ToDorfCommand().Execute(_chromeBrowser, 2, false, CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                result = await _mediator.Send(ToDorfCommand.ToDorf1(AccountId), CancellationToken);
+                result = await new ToDorfCommand().Execute(_chromeBrowser, 1, false, CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
