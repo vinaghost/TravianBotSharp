@@ -70,17 +70,6 @@ namespace MainCore.Repositories
             return count;
         }
 
-        public int GetBuildingLocation(VillageId villageId, BuildingEnums building)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var location = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type == building)
-                .Select(x => x.Location)
-                .FirstOrDefault();
-            return location;
-        }
-
         public bool IsRallyPointExists(VillageId villageId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -265,39 +254,6 @@ namespace MainCore.Repositories
                 }
             }
             return villageBuildings;
-        }
-
-        public List<BuildingEnums> GetTrainTroopBuilding(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var settings = new List<VillageSettingEnums>() {
-                VillageSettingEnums.BarrackTroop,
-                VillageSettingEnums.StableTroop,
-                VillageSettingEnums.WorkshopTroop,
-            };
-
-            var filterdSettings = context.VillagesSetting
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => settings.Contains(x.Setting))
-                .Where(x => x.Value != 0)
-                .Select(x => x.Setting)
-                .ToList();
-
-            var buildings = new List<BuildingEnums>();
-
-            if (filterdSettings.Contains(VillageSettingEnums.BarrackTroop))
-            {
-                buildings.Add(BuildingEnums.Barracks);
-            }
-            if (filterdSettings.Contains(VillageSettingEnums.StableTroop))
-            {
-                buildings.Add(BuildingEnums.Stable);
-            }
-            if (filterdSettings.Contains(VillageSettingEnums.WorkshopTroop))
-            {
-                buildings.Add(BuildingEnums.Workshop);
-            }
-            return buildings;
         }
 
         public void UpdateWall(VillageId villageId)

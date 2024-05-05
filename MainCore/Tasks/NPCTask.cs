@@ -5,13 +5,6 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class NPCTask : VillageTask
     {
-        private readonly IBuildingRepository _buildingRepository;
-
-        public NPCTask(IBuildingRepository buildingRepository)
-        {
-            _buildingRepository = buildingRepository;
-        }
-
         protected override async Task<Result> Execute()
         {
             Result result;
@@ -21,7 +14,7 @@ namespace MainCore.Tasks
 
             await new UpdateBuildingCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
 
-            var market = _buildingRepository.GetBuildingLocation(VillageId, BuildingEnums.Marketplace);
+            var market = new GetBuildingLocation().Execute(VillageId, BuildingEnums.Marketplace);
 
             result = await new ToBuildingCommand().Execute(_chromeBrowser, market, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));

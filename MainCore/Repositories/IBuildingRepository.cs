@@ -23,10 +23,6 @@ namespace MainCore.Repositories
 
         List<BuildingItem> GetBuildings(VillageId villageId, bool ignoreJobBuilding = false);
 
-        List<BuildingEnums> GetTrainTroopBuilding(VillageId villageId);
-
-        int GetBuildingLocation(VillageId villageId, BuildingEnums building);
-
         List<BuildingEnums> GetNormalBuilding(VillageId villageId, BuildingId buildingId);
 
         void UpdateWall(VillageId villageId);

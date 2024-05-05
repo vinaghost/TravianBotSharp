@@ -56,7 +56,7 @@ namespace MainCore.Commands.UI.VillageSetting
             }
             var villageId = request.VillageId;
             settings = villageSettingInput.Get();
-            await Task.Run(() => _villageSettingRepository.Update(villageId, settings), cancellationToken);
+            new SetVillageSettingCommand().Execute(villageId, settings);
             await _mediator.Publish(new VillageSettingUpdated(accountId, villageId), cancellationToken);
 
             _dialogService.ShowMessageBox("Information", "Settings imported");
