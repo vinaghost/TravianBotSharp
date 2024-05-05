@@ -12,16 +12,6 @@ namespace MainCore.Repositories
             _contextFactory = contextFactory;
         }
 
-        public string GetVillageName(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var villageName = context.Villages
-                .Where(x => x.Id == villageId.Value)
-                .Select(x => x.Name)
-                .FirstOrDefault();
-            return villageName;
-        }
-
         public VillageId GetActiveVillages(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();

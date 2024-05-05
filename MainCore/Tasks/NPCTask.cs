@@ -45,7 +45,7 @@ namespace MainCore.Tasks
 
         protected override void SetName()
         {
-            var village = _villageRepository.GetVillageName(VillageId);
+            var village = new GetVillageName().Execute(VillageId);
             _name = $"NPC in {village}";
         }
 

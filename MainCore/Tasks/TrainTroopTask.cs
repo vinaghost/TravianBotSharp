@@ -72,7 +72,7 @@ namespace MainCore.Tasks
 
         protected override void SetName()
         {
-            var name = _villageRepository.GetVillageName(VillageId);
+            var name = new GetVillageName().Execute(VillageId);
             _name = $"Training troop in {name}";
         }
 

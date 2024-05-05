@@ -27,7 +27,7 @@ namespace MainCore.Tasks
 
         protected override void SetName()
         {
-            var villageName = _villageRepository.GetVillageName(VillageId);
+            var villageName = new GetVillageName().Execute(VillageId);
             _name = $"Complete immediately in {villageName}";
         }
 

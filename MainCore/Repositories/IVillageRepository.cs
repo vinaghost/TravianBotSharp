@@ -15,7 +15,5 @@ namespace MainCore.Repositories
         List<VillageId> GetMissingBuildingVillages(AccountId accountId);
 
         List<ListBoxItem> GetItems(AccountId accountId);
-
-        string GetVillageName(VillageId villageId);
     }
 }
