@@ -1,20 +1,19 @@
-﻿using MainCore.Infrasturecture.Persistence;
+﻿using MainCore.Commands.Features.StartFarmList;
 using MainCore.Tasks.Base;
-using Microsoft.EntityFrameworkCore;
 
 namespace MainCore.Tasks
 {
     [RegisterAsTransient(withoutInterface: true)]
-    public class UpdateFarmListTask : FarmListTask
+    public class UpdateFarmListTask : AccountTask
     {
-        public UpdateFarmListTask(IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IFarmParser farmParser) : base(mediator, contextFactory, delayClickCommand, farmParser)
+        public UpdateFarmListTask(IMediator mediator) : base(mediator)
         {
         }
 
         protected override async Task<Result> Execute()
         {
             Result result;
-            result = await ToFarmListPage(_chromeBrowser, CancellationToken);
+            result = await new ToFarmListPageCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }

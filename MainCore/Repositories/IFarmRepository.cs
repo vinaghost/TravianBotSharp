@@ -4,8 +4,6 @@ namespace MainCore.Repositories
 {
     public interface IFarmRepository
     {
-        List<FarmId> GetActive(AccountId accountId);
-
         void ChangeActive(FarmId farmListId);
 
         int CountActive(AccountId accountId);

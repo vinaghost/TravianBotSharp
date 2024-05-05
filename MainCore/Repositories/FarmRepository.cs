@@ -1,6 +1,4 @@
-﻿using MainCore.Infrasturecture.Persistence;
-using MainCore.UI.Models.Output;
-using Microsoft.EntityFrameworkCore;
+﻿using MainCore.UI.Models.Output;
 using System.Drawing;
 
 namespace MainCore.Repositories
@@ -13,19 +11,6 @@ namespace MainCore.Repositories
         public FarmRepository(IDbContextFactory<AppDbContext> contextFactory)
         {
             _contextFactory = contextFactory;
-        }
-
-        public List<FarmId> GetActive(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var farmListIds = context.FarmLists
-                    .Where(x => x.AccountId == accountId.Value)
-                    .Where(x => x.IsActive)
-                    .Select(x => x.Id)
-                    .AsEnumerable()
-                    .Select(x => new FarmId(x))
-                    .ToList();
-            return farmListIds;
         }
 
         public int CountActive(AccountId accountId)
