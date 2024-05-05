@@ -1,21 +1,11 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Common.Enums;
-using MainCore.Repositories;
-using MediatR;
-
-namespace MainCore.Tasks.Base
+﻿namespace MainCore.Tasks.Base
 {
     public abstract class TaskBase
     {
-        protected readonly UnitOfCommand _unitOfCommand;
-        protected readonly UnitOfRepository _unitOfRepository;
         protected readonly IMediator _mediator;
 
-        protected TaskBase(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator)
+        protected TaskBase(IMediator mediator)
         {
-            _unitOfCommand = unitOfCommand;
-            _unitOfRepository = unitOfRepository;
             _mediator = mediator;
         }
 
@@ -29,7 +19,10 @@ namespace MainCore.Tasks.Base
             result = await PreExecute();
             if (result.IsFailed) return result;
             result = await Execute();
-            if (result.IsFailed) return result;
+            if (result.IsFailed)
+            {
+                if (!result.HasError<Skip>()) return result;
+            }
             result = await PostExecute();
             if (result.IsFailed) return result;
             return Result.Ok();

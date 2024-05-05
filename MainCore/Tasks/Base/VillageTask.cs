@@ -1,16 +1,12 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Common.Errors;
-using MainCore.Entities;
-using MainCore.Repositories;
-using MediatR;
-
-namespace MainCore.Tasks.Base
+﻿namespace MainCore.Tasks.Base
 {
     public abstract class VillageTask : AccountTask
     {
-        protected VillageTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        protected readonly IVillageRepository _villageRepository;
+
+        protected VillageTask(IMediator mediator, IVillageRepository villageRepository) : base(mediator)
         {
+            _villageRepository = villageRepository;
         }
 
         public VillageId VillageId { get; protected set; }
@@ -25,12 +21,30 @@ namespace MainCore.Tasks.Base
         protected override async Task<Result> PreExecute()
         {
             Result result;
-
             result = await base.PreExecute();
-            if (result.IsFailed) return result;
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _unitOfCommand.SwitchVillageCommand.Handle(new(AccountId, VillageId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            result = await new SwitchVillageCommand().Execute(_chromeBrowser, VillageId, CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            await new UpdateStorageCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+
+            return Result.Ok();
+        }
+
+        protected override async Task<Result> PostExecute()
+        {
+            Result result;
+
+            result = await base.PostExecute();
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await new ToDorfCommand().Execute(_chromeBrowser, 0, false, CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            await new UpdateBuildingCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+            await new UpdateStorageCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+            await new CheckQuestCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
             return Result.Ok();
         }
     }

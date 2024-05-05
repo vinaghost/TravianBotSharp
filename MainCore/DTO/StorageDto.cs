@@ -1,5 +1,4 @@
-﻿using MainCore.Entities;
-using Riok.Mapperly.Abstractions;
+﻿using Riok.Mapperly.Abstractions;
 
 namespace MainCore.DTO
 {

@@ -1,5 +1,4 @@
-﻿using MainCore.Common.Enums;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MainCore.Entities

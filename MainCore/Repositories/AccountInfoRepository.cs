@@ -1,7 +1,4 @@
-﻿using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Infrasturecture.Persistence;
+﻿using MainCore.Infrasturecture.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace MainCore.Repositories
@@ -24,27 +21,6 @@ namespace MainCore.Repositories
 
             if (accountInfo is null) return false;
             return accountInfo.HasPlusAccount;
-        }
-
-        public void Update(AccountId accountId, AccountInfoDto dto)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            var dbAccountInfo = context.AccountsInfo
-                .Where(x => x.AccountId == accountId.Value)
-                .FirstOrDefault();
-
-            if (dbAccountInfo is null)
-            {
-                var accountInfo = dto.ToEntity(accountId);
-                context.Add(accountInfo);
-            }
-            else
-            {
-                dto.To(dbAccountInfo);
-                context.Update(dbAccountInfo);
-            }
-            context.SaveChanges();
         }
     }
 }

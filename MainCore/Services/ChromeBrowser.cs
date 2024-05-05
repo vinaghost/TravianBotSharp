@@ -1,9 +1,5 @@
-﻿using FluentResults;
-using HtmlAgilityPack;
-using MainCore.Common.Errors;
+﻿using HtmlAgilityPack;
 using MainCore.Common.Models;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Chrome.ChromeDriverExtensions;
 using OpenQA.Selenium.Interactions;
@@ -140,12 +136,12 @@ namespace MainCore.Services
                 }
                 catch (Exception exception)
                 {
-                    return Result.Fail(new Stop(exception.Message));
+                    return Stop.Exception(exception);
                 }
             }
 
             var result = await Task.Run(refresh);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return result;
         }
 
@@ -165,13 +161,13 @@ namespace MainCore.Services
                 }
                 catch (Exception exception)
                 {
-                    return Result.Fail(new Stop(exception.Message));
+                    return Stop.Exception(exception);
                 }
             }
             var result = await Task.Run(goToUrl);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return result;
         }
 
@@ -240,9 +236,9 @@ namespace MainCore.Services
                 }
                 catch (WebDriverTimeoutException)
                 {
-                    return Result.Fail(new Stop("Page not loaded in 3 mins"));
+                    return Stop.PageNotLoad;
                 }
-                if (cancellationToken.IsCancellationRequested) return Result.Fail(new Cancel());
+                if (cancellationToken.IsCancellationRequested) return Cancel.Error;
                 return Result.Ok();
             }
             return await Task.Run(wait);
@@ -266,7 +262,7 @@ namespace MainCore.Services
             {
                 return result
                     .WithError(new Error(message: $"page stuck at loading stage [Current: {CurrentUrl}]"))
-                    .WithError(new TraceMessage(TraceMessage.Line()));
+                    .WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             return result;
         }
@@ -280,11 +276,11 @@ namespace MainCore.Services
             {
                 return result
                     .WithError(new Error($"page stuck at changing stage [Current: {CurrentUrl}] [Expected: {part}]"))
-                    .WithError(new TraceMessage(TraceMessage.Line()));
+                    .WithError(TraceMessage.Error(TraceMessage.Line()));
             }
 
             result = await WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return result;
         }
 

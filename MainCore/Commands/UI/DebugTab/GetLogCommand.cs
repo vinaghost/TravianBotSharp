@@ -1,8 +1,4 @@
-﻿using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Services;
-using MediatR;
-using Serilog.Core;
+﻿using Serilog.Core;
 using Serilog.Formatting.Display;
 using System.Text;
 

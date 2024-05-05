@@ -1,5 +1,4 @@
-﻿using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.UI.Enums;
+﻿using MainCore.UI.Enums;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.Tabs;
 using ReactiveUI;

@@ -1,46 +1,11 @@
-﻿using FluentResults;
-using HtmlAgilityPack;
-using MainCore.Commands.Base;
-using MainCore.Common.Errors;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Parsers;
-using MainCore.Services;
-using OpenQA.Selenium;
-
-namespace MainCore.Commands.Navigate
+﻿namespace MainCore.Commands.Navigate
 {
-    public class ToDorfCommand : ByAccountIdBase, ICommand
+    public class ToDorfCommand
     {
-        public int Dorf { get; }
-        public bool IsForceReload { get; }
-
-        public ToDorfCommand(AccountId accountId, int dorf, bool isForceReload = false) : base(accountId)
+        public async Task<Result> Execute(IChromeBrowser chromeBrowser, int dorf, bool forceReload, CancellationToken cancellationToken)
         {
-            Dorf = dorf;
-            IsForceReload = isForceReload;
-        }
-    }
-
-    [RegisterAsTransient]
-    public class ToDorfCommandHandler : ICommandHandler<ToDorfCommand>
-    {
-        private readonly IChromeManager _chromeManager;
-        private readonly UnitOfParser _unitOfParser;
-
-        public ToDorfCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser)
-        {
-            _chromeManager = chromeManager;
-            _unitOfParser = unitOfParser;
-        }
-
-        public async Task<Result> Handle(ToDorfCommand command, CancellationToken cancellationToken)
-        {
-            var chromeBrowser = _chromeManager.Get(command.AccountId);
             var currentUrl = chromeBrowser.CurrentUrl;
             var currentDorf = GetCurrentDorf(currentUrl);
-            var dorf = command.Dorf;
             if (dorf == 0)
             {
                 if (currentDorf == 0) dorf = 1;
@@ -49,37 +14,59 @@ namespace MainCore.Commands.Navigate
 
             if (currentDorf != 0)
             {
-                if (dorf == currentDorf && !command.IsForceReload) return Result.Ok();
+                if (dorf == currentDorf && !forceReload) return Result.Ok();
             }
 
             var html = chromeBrowser.Html;
 
-            var button = GetButton(html, dorf);
+            var button = GetDorfButton(html, dorf);
             if (button is null) return Retry.ButtonNotFound($"dorf{dorf}");
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await chromeBrowser.WaitPageChanged($"dorf{dorf}", cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 
-        private int GetCurrentDorf(string url)
+        private static int GetCurrentDorf(string url)
         {
-            if (url.Contains($"dorf1")) return 1;
-            if (url.Contains($"dorf2")) return 2;
+            if (url.Contains("dorf1")) return 1;
+            if (url.Contains("dorf2")) return 2;
             return 0;
         }
 
-        private HtmlNode GetButton(HtmlDocument doc, int dorf)
+        private static HtmlNode GetDorfButton(HtmlDocument doc, int dorf)
         {
             return dorf switch
             {
-                1 => _unitOfParser.NavigationBarParser.GetResourceButton(doc),
-                2 => _unitOfParser.NavigationBarParser.GetBuildingButton(doc),
+                1 => GetResourceButton(doc),
+                2 => GetBuildingButton(doc),
                 _ => null,
             };
         }
+
+        private static HtmlNode GetButton(HtmlDocument doc, int key)
+        {
+            var navigationBar = doc.GetElementbyId("navigation");
+            if (navigationBar is null) return null;
+            var buttonNode = navigationBar.Descendants("a").FirstOrDefault(x => x.GetAttributeValue("accesskey", 0) == key);
+            return buttonNode;
+        }
+
+        private static HtmlNode GetResourceButton(HtmlDocument doc) => GetButton(doc, 1);
+
+        private static HtmlNode GetBuildingButton(HtmlDocument doc) => GetButton(doc, 2);
+
+        //private static HtmlNode GetMapButton(HtmlDocument doc) => GetButton(doc, 3);
+
+        //private static HtmlNode GetStatisticsButton(HtmlDocument doc) => GetButton(doc, 4);
+
+        //private static HtmlNode GetReportsButton(HtmlDocument doc) => GetButton(doc, 5);
+
+        //private static HtmlNode GetMessageButton(HtmlDocument doc) => GetButton(doc, 6);
+
+        //private static HtmlNode GetDailyButton(HtmlDocument doc) => GetButton(doc, 7);
     }
 }

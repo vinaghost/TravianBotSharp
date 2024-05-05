@@ -1,9 +1,4 @@
-﻿using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Services;
-using MediatR;
-
-namespace MainCore.Commands.UI.DebugTab
+﻿namespace MainCore.Commands.UI.DebugTab
 {
     public class LoadEndpointAddress : ByAccountIdBase, IRequest<string>
     {

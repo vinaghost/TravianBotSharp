@@ -1,5 +1,4 @@
-﻿using MainCore.Infrasturecture.AutoRegisterDi;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.Http.Json;

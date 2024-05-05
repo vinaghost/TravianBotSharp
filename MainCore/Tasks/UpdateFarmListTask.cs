@@ -1,28 +1,20 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Commands.Features;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
+﻿using MainCore.Commands.Features.StartFarmList;
 using MainCore.Tasks.Base;
-using MediatR;
 
 namespace MainCore.Tasks
 {
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateFarmListTask : AccountTask
     {
-        public UpdateFarmListTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
+        public UpdateFarmListTask(IMediator mediator) : base(mediator)
         {
         }
 
         protected override async Task<Result> Execute()
         {
             Result result;
-            result = await _mediator.Send(new ToFarmListPageCommand(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = await _unitOfCommand.UpdateFarmListCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            result = await new ToFarmListPageCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 

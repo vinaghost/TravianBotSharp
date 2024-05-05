@@ -1,40 +1,27 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Commands.Base;
-using MainCore.Commands.Features;
-using MainCore.Commands.Validate;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
+﻿using MainCore.Commands.Features.ClaimQuest;
 using MainCore.Tasks.Base;
-using MediatR;
 
 namespace MainCore.Tasks
 {
     [RegisterAsTransient(withoutInterface: true)]
     public class ClaimQuestTask : VillageTask
     {
-        private readonly ICommandHandler<ValidateQuestCommand, bool> _validateQuestCommand;
+        private readonly DelayClickCommand _delayClickCommand;
 
-        public ClaimQuestTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ICommandHandler<ValidateQuestCommand, bool> validateQuestCommand) : base(unitOfCommand, unitOfRepository, mediator)
+        public ClaimQuestTask(IMediator mediator, IVillageRepository villageRepository, DelayClickCommand delayClickCommand) : base(mediator, villageRepository)
         {
-            _validateQuestCommand = validateQuestCommand;
+            _delayClickCommand = delayClickCommand;
         }
 
         protected override async Task<Result> Execute()
         {
             Result result;
-            result = await _unitOfCommand.UpdateAccountInfoCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = await _validateQuestCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
 
-            var isClaimable = _validateQuestCommand.Value;
-            if (!isClaimable) return Result.Ok();
+            result = await new ToQuestPageCommand().Execute(_chromeBrowser, CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new ClaimQuestCommand(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            result = await new ClaimQuestCommand().Execute(AccountId, _chromeBrowser, CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await _mediator.Publish(new StorageUpdated(AccountId, VillageId), CancellationToken);
             return Result.Ok();
@@ -42,7 +29,7 @@ namespace MainCore.Tasks
 
         protected override void SetName()
         {
-            var village = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
+            var village = _villageRepository.GetVillageName(VillageId);
             _name = $"Claim quest in {village}";
         }
     }

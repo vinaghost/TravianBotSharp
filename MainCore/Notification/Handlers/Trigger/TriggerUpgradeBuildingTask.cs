@@ -1,27 +1,22 @@
-﻿using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.Tasks;
-using MediatR;
+﻿using MainCore.Tasks;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
     public class TriggerUpgradeBuildingTaskHandler : INotificationHandler<AccountInit>, INotificationHandler<JobUpdated>, INotificationHandler<CompleteImmediatelyMessage>
     {
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IVillageRepository _villageRepository;
 
-        public TriggerUpgradeBuildingTaskHandler(ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public TriggerUpgradeBuildingTaskHandler(ITaskManager taskManager, IVillageRepository villageRepository)
         {
             _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
+            _villageRepository = villageRepository;
         }
 
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
-            var hasBuildingJobVillages = _unitOfRepository.VillageRepository.GetHasBuildingJobVillages(accountId);
+            var hasBuildingJobVillages = _villageRepository.GetHasBuildingJobVillages(accountId);
             foreach (var village in hasBuildingJobVillages)
             {
                 await Trigger(accountId, village);

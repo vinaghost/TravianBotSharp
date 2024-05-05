@@ -1,11 +1,4 @@
-﻿using MainCore.Common.Extensions;
-using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Infrasturecture.Persistence;
-using MainCore.Services;
-using MainCore.UI.Models.Output;
-using Microsoft.EntityFrameworkCore;
+﻿using MainCore.UI.Models.Output;
 
 namespace MainCore.Repositories
 {
@@ -21,74 +14,6 @@ namespace MainCore.Repositories
             _contextFactory = contextFactory;
             _useragentManager = useragentManager;
             _taskManager = taskManager;
-        }
-
-        public AccountDto Get(AccountId accountId, bool includeAccess = false)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var query = context.Accounts
-                .Where(x => x.Id == accountId.Value);
-
-            if (includeAccess)
-            {
-                query = query
-                    .Include(x => x.Accesses);
-            }
-            var account = query
-                .ToDto()
-                .FirstOrDefault();
-            return account;
-        }
-
-        public AccessDto GetAccess(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var access = context.Accesses
-               .Where(x => x.AccountId == accountId.Value)
-               .OrderBy(x => x.LastUsed) // get oldest one
-               .ToDto()
-               .FirstOrDefault();
-            return access;
-        }
-
-        public List<AccessDto> GetAccesses(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var accessess = context.Accesses
-               .Where(x => x.AccountId == accountId.Value)
-               .OrderBy(x => x.LastUsed) // get oldest one
-               .ToDto()
-               .ToList();
-            return accessess;
-        }
-
-        public void UpdateAccessLastUsed(AccessId accessId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var access = context.Accesses
-               .Where(x => x.Id == accessId.Value)
-               .ExecuteUpdate(x => x.SetProperty(x => x.LastUsed, x => DateTime.Now));
-        }
-
-        public string GetUsername(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var username = context.Accounts
-                .Where(x => x.Id == accountId.Value)
-                .Select(x => x.Username)
-                .FirstOrDefault();
-            return username;
-        }
-
-        public string GetPassword(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var password = context.Accesses
-                .Where(x => x.AccountId == accountId.Value)
-                .OrderByDescending(x => x.LastUsed)
-                .Select(x => x.Password)
-                .FirstOrDefault();
-            return password;
         }
 
         public bool Add(AccountDto dto)
@@ -167,13 +92,13 @@ namespace MainCore.Repositories
                     access.Useragent = _useragentManager.Get();
                 }
             }
-            
+
             // Remove accesses not present in the DTO
             var existingAccessIds = dto.Accesses.Select(a => a.Id.Value).ToList();
             context.Accesses
                 .Where(a => a.AccountId == account.Id && !existingAccessIds.Contains(a.Id))
                 .ExecuteDelete();
-            
+
             context.Update(account);
             context.SaveChanges();
         }

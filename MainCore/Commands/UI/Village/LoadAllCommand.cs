@@ -1,9 +1,4 @@
-﻿using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.Tasks;
-using MediatR;
+﻿using MainCore.Tasks;
 
 namespace MainCore.Commands.UI.Village
 {
@@ -18,19 +13,19 @@ namespace MainCore.Commands.UI.Village
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IVillageRepository _villageRepository;
 
-        public LoadAllCommandHandler(ITaskManager taskManager, IDialogService dialogService, UnitOfRepository unitOfRepository)
+        public LoadAllCommandHandler(ITaskManager taskManager, IDialogService dialogService, IVillageRepository villageRepository)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
-            _unitOfRepository = unitOfRepository;
+            _villageRepository = villageRepository;
         }
 
         public async Task Handle(LoadAllCommand request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
-            var villages = _unitOfRepository.VillageRepository.Get(accountId);
+            var villages = _villageRepository.Get(accountId);
             foreach (var village in villages)
             {
                 await _taskManager.AddOrUpdate<UpdateBuildingTask>(accountId, village);

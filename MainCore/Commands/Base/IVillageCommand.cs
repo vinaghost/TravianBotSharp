@@ -1,7 +1,4 @@
-﻿using FluentResults;
-using MainCore.Entities;
-
-namespace MainCore.Commands.Base
+﻿namespace MainCore.Commands.Base
 {
     public interface IVillageCommand
     {

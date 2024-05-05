@@ -1,13 +1,5 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Commands.Features;
-using MainCore.Common.Enums;
-using MainCore.Common.Errors.TrainTroop;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
-using MainCore.Services;
+﻿using MainCore.Common.Errors.TrainTroop;
 using MainCore.Tasks.Base;
-using MediatR;
 
 namespace MainCore.Tasks
 {
@@ -21,23 +13,38 @@ namespace MainCore.Tasks
             {BuildingEnums.Workshop, VillageSettingEnums.WorkshopTroop },
         };
 
-        private readonly ITaskManager _taskManager;
+        private static readonly Dictionary<BuildingEnums, (VillageSettingEnums, VillageSettingEnums)> _amountSettings = new()
+        {
+            {BuildingEnums.Barracks, (VillageSettingEnums.BarrackAmountMin,VillageSettingEnums.BarrackAmountMax )},
+            {BuildingEnums.Stable, (VillageSettingEnums.StableAmountMin,VillageSettingEnums.StableAmountMax ) },
+            {BuildingEnums.Workshop, (VillageSettingEnums.WorkshopAmountMin,VillageSettingEnums.WorkshopAmountMax ) },
+        };
 
-        public TrainTroopTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager) : base(unitOfCommand, unitOfRepository, mediator)
+        private readonly ITaskManager _taskManager;
+        private readonly IBuildingRepository _buildingRepository;
+        private readonly IVillageSettingRepository _villageSettingRepository;
+        private readonly ITroopPageParser _troopPageParser;
+        private readonly DelayClickCommand _delayClickCommand;
+
+        public TrainTroopTask(IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, ITroopPageParser troopPageParser, DelayClickCommand delayClickCommand) : base(mediator, villageRepository)
         {
             _taskManager = taskManager;
+            _buildingRepository = buildingRepository;
+            _villageSettingRepository = villageSettingRepository;
+            _troopPageParser = troopPageParser;
+            _delayClickCommand = delayClickCommand;
         }
 
         protected override async Task<Result> Execute()
         {
-            var buildings = _unitOfRepository.BuildingRepository.GetTrainTroopBuilding(VillageId);
+            var buildings = _buildingRepository.GetTrainTroopBuilding(VillageId);
             if (buildings.Count == 0) return Result.Ok();
 
             Result result;
             var settings = new Dictionary<VillageSettingEnums, int>();
             foreach (var building in buildings)
             {
-                result = await _mediator.Send(new TrainTroopCommand(AccountId, VillageId, building), CancellationToken);
+                result = await Train(building);
                 if (result.IsFailed)
                 {
                     if (result.HasError<MissingBuilding>())
@@ -51,22 +58,85 @@ namespace MainCore.Tasks
                 }
             }
 
-            _unitOfRepository.VillageSettingRepository.Update(VillageId, settings);
+            _villageSettingRepository.Update(VillageId, settings);
             await SetNextExecute();
             return Result.Ok();
         }
 
         private async Task SetNextExecute()
         {
-            var seconds = _unitOfRepository.VillageSettingRepository.GetByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
+            var seconds = new GetVillageSetting().ByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
         }
 
         protected override void SetName()
         {
-            var name = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
+            var name = _villageRepository.GetVillageName(VillageId);
             _name = $"Training troop in {name}";
+        }
+
+        public async Task<Result> Train(BuildingEnums buildingType)
+        {
+            Result result;
+            result = await new ToDorfCommand().Execute(_chromeBrowser, 2, false, CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            await new UpdateBuildingCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+
+            var buildingLocation = _buildingRepository.GetBuildingLocation(VillageId, buildingType);
+            if (buildingLocation == default)
+            {
+                return MissingBuilding.Error(buildingType);
+            }
+
+            result = await new ToBuildingCommand().Execute(_chromeBrowser, buildingLocation, CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            var troopSeting = _settings[buildingType];
+            var troop = (TroopEnums)new GetVillageSetting().ByName(VillageId, troopSeting);
+            var (minSetting, maxSetting) = _amountSettings[buildingType];
+            var amount = new GetVillageSetting().ByName(VillageId, minSetting, maxSetting);
+
+            var html = _chromeBrowser.Html;
+
+            var maxAmount = _troopPageParser.GetMaxAmount(html, troop);
+
+            if (maxAmount == 0)
+            {
+                return MissingResource.Error(buildingType);
+            }
+
+            if (amount > maxAmount)
+            {
+                var trainWhenLowResource = new GetVillageSetting().BooleanByName(VillageId, VillageSettingEnums.TrainWhenLowResource);
+                if (trainWhenLowResource)
+                {
+                    amount = maxAmount;
+                }
+                else
+                {
+                    return MissingResource.Error(buildingType);
+                }
+            }
+
+            html = _chromeBrowser.Html;
+
+            var inputBox = _troopPageParser.GetInputBox(html, troop);
+            if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
+
+            result = await _chromeBrowser.InputTextbox(By.XPath(inputBox.XPath), $"{amount}");
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            var trainButton = _troopPageParser.GetTrainButton(html);
+            if (trainButton is null) return Retry.ButtonNotFound("train troop");
+
+            result = await _chromeBrowser.Click(By.XPath(trainButton.XPath));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            await _delayClickCommand.Execute(AccountId);
+
+            return Result.Ok();
         }
     }
 }

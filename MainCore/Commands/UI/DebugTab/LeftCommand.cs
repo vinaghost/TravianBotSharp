@@ -1,5 +1,4 @@
-﻿using MediatR;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace MainCore.Commands.UI.DebugTab
 {
