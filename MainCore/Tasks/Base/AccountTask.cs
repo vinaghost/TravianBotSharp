@@ -28,10 +28,9 @@
 
             if (IsIngame())
             {
-                Result result;
-                result = await _mediator.Send(new UpdateAccountInfoCommand(AccountId));
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                await new UpdateAccountInfoCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
 
+                Result result;
                 result = await _mediator.Send(new UpdateVillageListCommand(AccountId, _chromeBrowser));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 return Result.Ok();
@@ -55,9 +54,9 @@
 
         protected override async Task<Result> PostExecute()
         {
+            await new UpdateAccountInfoCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
+
             Result result;
-            result = await _mediator.Send(new UpdateAccountInfoCommand(AccountId));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await _mediator.Send(new UpdateVillageListCommand(AccountId, _chromeBrowser));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));

@@ -1,36 +1,23 @@
 ﻿namespace MainCore.Commands.Update
 {
-    public class UpdateAccountInfoCommand : ByAccountIdBase, ICommand
+    public class UpdateAccountInfoCommand
     {
-        public UpdateAccountInfoCommand(AccountId accountId) : base(accountId)
-        {
-        }
-    }
-
-    public class UpdateAccountInfoCommandHandler : ICommandHandler<UpdateAccountInfoCommand>
-    {
-        private readonly IChromeManager _chromeManager;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IMediator _mediator;
 
-        private readonly IAccountInfoRepository _accountInfoRepository;
-
-        public UpdateAccountInfoCommandHandler(IChromeManager chromeManager, IMediator mediator, IAccountInfoRepository accountInfoRepository)
+        public UpdateAccountInfoCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null)
         {
-            _chromeManager = chromeManager;
-            _mediator = mediator;
-            _accountInfoRepository = accountInfoRepository;
+            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
         }
 
-        public async Task<Result> Handle(UpdateAccountInfoCommand command, CancellationToken cancellationToken)
+        public async Task Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
             var dto = Get(html);
-            _accountInfoRepository.Update(command.AccountId, dto);
+            UpdateToDatabase(accountId, dto);
 
-            await _mediator.Publish(new AccountInfoUpdated(command.AccountId), cancellationToken);
-
-            return Result.Ok();
+            await _mediator.Publish(new AccountInfoUpdated(accountId), cancellationToken);
         }
 
         private static AccountInfoDto Get(HtmlDocument doc)
@@ -67,6 +54,27 @@
             if (market.HasClass("green")) return true;
             if (market.HasClass("gold")) return false;
             return false;
+        }
+
+        private void UpdateToDatabase(AccountId accountId, AccountInfoDto dto)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var dbAccountInfo = context.AccountsInfo
+                .Where(x => x.AccountId == accountId.Value)
+                .FirstOrDefault();
+
+            if (dbAccountInfo is null)
+            {
+                var accountInfo = dto.ToEntity(accountId);
+                context.Add(accountInfo);
+            }
+            else
+            {
+                dto.To(dbAccountInfo);
+                context.Update(dbAccountInfo);
+            }
+            context.SaveChanges();
         }
     }
 }
