@@ -5,10 +5,6 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateBuildingTask : VillageTask
     {
-        public UpdateBuildingTask(IVillageRepository villageRepository) : base(villageRepository)
-        {
-        }
-
         protected override async Task<Result> Execute()
         {
             var url = _chromeBrowser.CurrentUrl;

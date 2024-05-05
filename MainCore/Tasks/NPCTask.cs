@@ -7,7 +7,7 @@ namespace MainCore.Tasks
     {
         private readonly IBuildingRepository _buildingRepository;
 
-        public NPCTask(IVillageRepository villageRepository, IBuildingRepository buildingRepository) : base(villageRepository)
+        public NPCTask(IBuildingRepository buildingRepository)
         {
             _buildingRepository = buildingRepository;
         }

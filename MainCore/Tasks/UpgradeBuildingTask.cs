@@ -16,19 +16,17 @@ namespace MainCore.Tasks
 
         private readonly IUpgradeBuildingParser _upgradeBuildingParser;
         private readonly IBuildingRepository _buildingRepository;
-        private readonly IVillageSettingRepository _villageSettingRepository;
 
         private readonly IStorageRepository _storageRepository;
         private readonly IQueueBuildingRepository _queueBuildingRepository;
         private readonly IJobRepository _jobRepository;
 
-        public UpgradeBuildingTask(IVillageRepository villageRepository, ILogService logService, ITaskManager taskManager, IUpgradeBuildingParser upgradeBuildingParser, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, IStorageRepository storageRepository, IQueueBuildingRepository queueBuildingRepository, IJobRepository jobRepository) : base(villageRepository)
+        public UpgradeBuildingTask(ILogService logService, ITaskManager taskManager, IUpgradeBuildingParser upgradeBuildingParser, IBuildingRepository buildingRepository, IStorageRepository storageRepository, IQueueBuildingRepository queueBuildingRepository, IJobRepository jobRepository)
         {
             _logService = logService;
             _taskManager = taskManager;
             _upgradeBuildingParser = upgradeBuildingParser;
             _buildingRepository = buildingRepository;
-            _villageSettingRepository = villageSettingRepository;
             _storageRepository = storageRepository;
             _queueBuildingRepository = queueBuildingRepository;
             _jobRepository = jobRepository;

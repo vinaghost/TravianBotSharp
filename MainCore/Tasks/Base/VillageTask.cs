@@ -2,13 +2,6 @@
 {
     public abstract class VillageTask : AccountTask
     {
-        protected readonly IVillageRepository _villageRepository;
-
-        protected VillageTask(IVillageRepository villageRepository)
-        {
-            _villageRepository = villageRepository;
-        }
-
         public VillageId VillageId { get; protected set; }
 
         public void Setup(AccountId accountId, VillageId villageId, CancellationToken cancellationToken = default)

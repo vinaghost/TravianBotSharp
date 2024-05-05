@@ -6,13 +6,6 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class ClaimQuestTask : VillageTask
     {
-        private readonly DelayClickCommand _delayClickCommand;
-
-        public ClaimQuestTask(IVillageRepository villageRepository, DelayClickCommand delayClickCommand) : base(villageRepository)
-        {
-            _delayClickCommand = delayClickCommand;
-        }
-
         protected override async Task<Result> Execute()
         {
             Result result;

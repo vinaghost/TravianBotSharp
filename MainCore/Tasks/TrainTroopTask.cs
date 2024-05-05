@@ -24,15 +24,13 @@ namespace MainCore.Tasks
         private readonly IBuildingRepository _buildingRepository;
         private readonly IVillageSettingRepository _villageSettingRepository;
         private readonly ITroopPageParser _troopPageParser;
-        private readonly DelayClickCommand _delayClickCommand;
 
-        public TrainTroopTask(IVillageRepository villageRepository, ITaskManager taskManager, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, ITroopPageParser troopPageParser, DelayClickCommand delayClickCommand) : base(villageRepository)
+        public TrainTroopTask(ITaskManager taskManager, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, ITroopPageParser troopPageParser)
         {
             _taskManager = taskManager;
             _buildingRepository = buildingRepository;
             _villageSettingRepository = villageSettingRepository;
             _troopPageParser = troopPageParser;
-            _delayClickCommand = delayClickCommand;
         }
 
         protected override async Task<Result> Execute()
@@ -134,7 +132,7 @@ namespace MainCore.Tasks
             result = await _chromeBrowser.Click(By.XPath(trainButton.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            await _delayClickCommand.Execute(AccountId);
+            await new DelayClickCommand().Execute(AccountId);
 
             return Result.Ok();
         }

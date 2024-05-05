@@ -5,10 +5,6 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class CompleteImmediatelyTask : VillageTask
     {
-        public CompleteImmediatelyTask(IVillageRepository villageRepository) : base(villageRepository)
-        {
-        }
-
         protected override async Task<Result> Execute()
         {
             Result result;

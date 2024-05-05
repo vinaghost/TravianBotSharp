@@ -7,7 +7,7 @@ namespace MainCore.Tasks
     {
         private readonly ITaskManager _taskManager;
 
-        public UpdateVillageTask(IVillageRepository villageRepository, ITaskManager taskManager) : base(villageRepository)
+        public UpdateVillageTask(ITaskManager taskManager)
         {
             _taskManager = taskManager;
         }
