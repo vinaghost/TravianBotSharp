@@ -5,7 +5,7 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateBuildingTask : VillageTask
     {
-        public UpdateBuildingTask(IMediator mediator, IVillageRepository villageRepository) : base(mediator, villageRepository)
+        public UpdateBuildingTask(IVillageRepository villageRepository) : base(villageRepository)
         {
         }
 

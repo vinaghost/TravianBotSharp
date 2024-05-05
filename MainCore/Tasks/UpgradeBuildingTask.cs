@@ -22,7 +22,7 @@ namespace MainCore.Tasks
         private readonly IQueueBuildingRepository _queueBuildingRepository;
         private readonly IJobRepository _jobRepository;
 
-        public UpgradeBuildingTask(IMediator mediator, IVillageRepository villageRepository, ILogService logService, ITaskManager taskManager, IUpgradeBuildingParser upgradeBuildingParser, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, IStorageRepository storageRepository, IQueueBuildingRepository queueBuildingRepository, IJobRepository jobRepository) : base(mediator, villageRepository)
+        public UpgradeBuildingTask(IVillageRepository villageRepository, ILogService logService, ITaskManager taskManager, IUpgradeBuildingParser upgradeBuildingParser, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, IStorageRepository storageRepository, IQueueBuildingRepository queueBuildingRepository, IJobRepository jobRepository) : base(villageRepository)
         {
             _logService = logService;
             _taskManager = taskManager;

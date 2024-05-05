@@ -8,7 +8,7 @@ namespace MainCore.Tasks
     {
         private readonly ITaskManager _taskManager;
 
-        public StartAdventureTask(IMediator mediator, ITaskManager taskManager) : base(mediator)
+        public StartAdventureTask(ITaskManager taskManager)
         {
             _taskManager = taskManager;
         }

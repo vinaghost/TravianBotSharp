@@ -6,10 +6,6 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class UpdateFarmListTask : AccountTask
     {
-        public UpdateFarmListTask(IMediator mediator) : base(mediator)
-        {
-        }
-
         protected override async Task<Result> Execute()
         {
             Result result;

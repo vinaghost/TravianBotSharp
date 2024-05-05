@@ -8,7 +8,7 @@ namespace MainCore.Tasks
     {
         private readonly DelayClickCommand _delayClickCommand;
 
-        public ClaimQuestTask(IMediator mediator, IVillageRepository villageRepository, DelayClickCommand delayClickCommand) : base(mediator, villageRepository)
+        public ClaimQuestTask(IVillageRepository villageRepository, DelayClickCommand delayClickCommand) : base(villageRepository)
         {
             _delayClickCommand = delayClickCommand;
         }

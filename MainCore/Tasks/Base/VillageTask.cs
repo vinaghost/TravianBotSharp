@@ -4,7 +4,7 @@
     {
         protected readonly IVillageRepository _villageRepository;
 
-        protected VillageTask(IMediator mediator, IVillageRepository villageRepository) : base(mediator)
+        protected VillageTask(IVillageRepository villageRepository)
         {
             _villageRepository = villageRepository;
         }

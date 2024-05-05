@@ -26,7 +26,7 @@ namespace MainCore.Tasks
         private readonly ITroopPageParser _troopPageParser;
         private readonly DelayClickCommand _delayClickCommand;
 
-        public TrainTroopTask(IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, ITroopPageParser troopPageParser, DelayClickCommand delayClickCommand) : base(mediator, villageRepository)
+        public TrainTroopTask(IVillageRepository villageRepository, ITaskManager taskManager, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository, ITroopPageParser troopPageParser, DelayClickCommand delayClickCommand) : base(villageRepository)
         {
             _taskManager = taskManager;
             _buildingRepository = buildingRepository;

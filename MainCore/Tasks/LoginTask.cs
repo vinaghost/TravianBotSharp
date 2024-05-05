@@ -7,10 +7,6 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public sealed class LoginTask : AccountTask
     {
-        public LoginTask(IMediator mediator) : base(mediator)
-        {
-        }
-
         protected override async Task<Result> Execute()
         {
             Result result;

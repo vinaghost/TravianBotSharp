@@ -5,7 +5,7 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class CompleteImmediatelyTask : VillageTask
     {
-        public CompleteImmediatelyTask(IMediator mediator, IVillageRepository villageRepository) : base(mediator, villageRepository)
+        public CompleteImmediatelyTask(IVillageRepository villageRepository) : base(villageRepository)
         {
         }
 

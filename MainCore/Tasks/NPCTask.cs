@@ -6,12 +6,10 @@ namespace MainCore.Tasks
     public class NPCTask : VillageTask
     {
         private readonly IBuildingRepository _buildingRepository;
-        private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public NPCTask(IMediator mediator, IVillageRepository villageRepository, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository) : base(mediator, villageRepository)
+        public NPCTask(IVillageRepository villageRepository, IBuildingRepository buildingRepository) : base(villageRepository)
         {
             _buildingRepository = buildingRepository;
-            _villageSettingRepository = villageSettingRepository;
         }
 
         protected override async Task<Result> Execute()

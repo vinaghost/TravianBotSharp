@@ -5,12 +5,14 @@
         public AccountId AccountId { get; protected set; }
 
         protected IChromeBrowser _chromeBrowser;
+        protected IMediator _mediator;
 
         private readonly IChromeManager _chromeManager;
 
-        protected AccountTask(IMediator mediator) : base(mediator)
+        protected AccountTask()
         {
             _chromeManager = Locator.Current.GetService<IChromeManager>();
+            _mediator = Locator.Current.GetService<IMediator>();
         }
 
         public void Setup(AccountId accountId, CancellationToken cancellationToken = default)

@@ -2,13 +2,6 @@
 {
     public abstract class TaskBase
     {
-        protected readonly IMediator _mediator;
-
-        protected TaskBase(IMediator mediator)
-        {
-            _mediator = mediator;
-        }
-
         public StageEnums Stage { get; set; }
         public DateTime ExecuteAt { get; set; }
         public CancellationToken CancellationToken { get; set; }

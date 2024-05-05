@@ -8,7 +8,7 @@ namespace MainCore.Tasks
     {
         private readonly ITaskManager _taskManager;
 
-        public StartFarmListTask(IMediator mediator, ITaskManager taskManager) : base(mediator)
+        public StartFarmListTask(ITaskManager taskManager)
         {
             _taskManager = taskManager;
         }

@@ -8,7 +8,7 @@ namespace MainCore.Tasks
         private readonly ITaskManager _taskManager;
         private readonly ILogService _logService;
 
-        public SleepTask(IMediator mediator, ITaskManager taskManager, ILogService logService) : base(mediator)
+        public SleepTask(ITaskManager taskManager, ILogService logService)
         {
             _taskManager = taskManager;
             _logService = logService;
