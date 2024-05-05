@@ -1,5 +1,4 @@
-﻿using MainCore.DTO;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 
 namespace MainCore.Repositories
 {
@@ -18,7 +17,5 @@ namespace MainCore.Repositories
         List<ListBoxItem> GetItems(AccountId accountId);
 
         string GetVillageName(VillageId villageId);
-
-        void Update(AccountId accountId, List<VillageDto> dtos);
     }
 }

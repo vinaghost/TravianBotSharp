@@ -25,9 +25,6 @@ namespace MainCore.Tasks
 
             result = await DisableContextualHelp();
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await _mediator.Send(new UpdateVillageListCommand(AccountId, _chromeBrowser), CancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 

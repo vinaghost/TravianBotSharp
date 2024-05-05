@@ -29,10 +29,7 @@
             if (IsIngame())
             {
                 await new UpdateAccountInfoCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
-
-                Result result;
-                result = await _mediator.Send(new UpdateVillageListCommand(AccountId, _chromeBrowser));
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                await new UpdateVillageListCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
                 return Result.Ok();
             }
 
@@ -55,13 +52,8 @@
         protected override async Task<Result> PostExecute()
         {
             await new UpdateAccountInfoCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
-
-            Result result;
-
-            result = await _mediator.Send(new UpdateVillageListCommand(AccountId, _chromeBrowser));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            await new CheckAdventureCommand().Execute(AccountId, _chromeBrowser, CancellationToken);
+            await new UpdateVillageListCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
+            await new CheckAdventureCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
             return Result.Ok();
         }
 

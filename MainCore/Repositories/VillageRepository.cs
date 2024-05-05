@@ -1,7 +1,4 @@
-﻿using MainCore.DTO;
-using MainCore.Infrasturecture.Persistence;
-using MainCore.UI.Models.Output;
-using Microsoft.EntityFrameworkCore;
+﻿using MainCore.UI.Models.Output;
 
 namespace MainCore.Repositories
 {
@@ -113,36 +110,6 @@ namespace MainCore.Repositories
                 })
                 .ToList();
             return villages;
-        }
-
-        public void Update(AccountId accountId, List<VillageDto> dtos)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var villages = context.Villages
-                .Where(x => x.AccountId == accountId.Value)
-                .ToList();
-
-            var ids = dtos.Select(x => x.Id.Value).ToList();
-
-            var villageDeleted = villages.Where(x => !ids.Contains(x.Id)).ToList();
-            var villageInserted = dtos.Where(x => !villages.Any(v => v.Id == x.Id.Value)).ToList();
-            var villageUpdated = villages.Where(x => ids.Contains(x.Id)).ToList();
-
-            villageDeleted.ForEach(x => context.Remove(x));
-            villageInserted.ForEach(x =>
-            {
-                context.Add(x.ToEntity(accountId));
-                context.FillVillageSettings(accountId, x.Id);
-            });
-
-            foreach (var village in villageUpdated)
-            {
-                var dto = dtos.FirstOrDefault(x => x.Id.Value == village.Id);
-                dto.To(village);
-                context.Update(village);
-            }
-
-            context.SaveChanges();
         }
     }
 }

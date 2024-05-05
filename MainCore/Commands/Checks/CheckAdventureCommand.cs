@@ -11,7 +11,7 @@ namespace MainCore.Commands.Misc
             _mediator = mediator ?? Locator.Current.GetService<IMediator>();
         }
 
-        public async Task Execute(AccountId accountId, IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
+        public async Task Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
         {
             var html = chromeBrowser.Html;
             if (CanStartAdventure(html))

@@ -6,8 +6,6 @@
         {
         }
 
-        public static Retry VillageListEmpty() => new("Village list is empty");
-
         public static Retry NotFound(string name, string type) => new($"Cannot find {type} [{name}] ");
 
         public static Retry TextboxNotFound(string name) => NotFound(name, "textbox");
