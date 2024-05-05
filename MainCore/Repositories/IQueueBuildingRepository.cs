@@ -1,5 +1,4 @@
-﻿using MainCore.DTO;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 
 namespace MainCore.Repositories
 {
@@ -14,9 +13,5 @@ namespace MainCore.Repositories
         List<ListBoxItem> GetItems(VillageId villageId);
 
         bool IsSkippableBuilding(VillageId villageId);
-
-        void Update(VillageId villageId, List<BuildingDto> dtos);
-
-        void Update(VillageId villageId, List<QueueBuildingDto> dtos);
     }
 }

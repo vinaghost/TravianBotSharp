@@ -1,77 +1,45 @@
-﻿using System.Net;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
-    public class UpdateBuildingCommand : ByAccountVillageIdBase, ICommand
+    public class UpdateBuildingCommand
     {
-        public UpdateBuildingCommand(AccountId accountId, VillageId villageId) : base(accountId, villageId)
-        {
-        }
-    }
-
-    public class UpdateBuildingCommandHandler : ICommandHandler<UpdateBuildingCommand>
-    {
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IMediator _mediator;
-        private readonly IChromeManager _chromeManager;
 
-        private readonly IQueueBuildingParser _queueBuildingParser;
-        private readonly IInfrastructureParser _infrastructureParser;
-        private readonly IFieldParser _fieldParser;
-
-        private readonly IStorageRepository _storageRepository;
-        private readonly IQueueBuildingRepository _queueBuildingRepository;
-        private readonly IBuildingRepository _buildingRepository;
-
-        public UpdateBuildingCommandHandler(IMediator mediator, IQueueBuildingParser queueBuildingParser, IInfrastructureParser infrastructureParser, IFieldParser fieldParser, IStorageRepository storageRepository, IQueueBuildingRepository queueBuildingRepository, IBuildingRepository buildingRepository, IChromeManager chromeManager)
+        public UpdateBuildingCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null)
         {
-            _mediator = mediator;
-            _chromeManager = chromeManager;
-            _queueBuildingParser = queueBuildingParser;
-            _infrastructureParser = infrastructureParser;
-            _fieldParser = fieldParser;
-            _storageRepository = storageRepository;
-            _queueBuildingRepository = queueBuildingRepository;
-            _buildingRepository = buildingRepository;
-            _chromeManager = chromeManager;
+            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
         }
 
-        public async Task<Result> Handle(UpdateBuildingCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Execute(IChromeBrowser chromeBrowser, AccountId accountId, VillageId villageId, CancellationToken cancellationToken)
         {
-            var accountId = request.AccountId;
-            var villageId = request.VillageId;
-
-            var chromeBrowser = _chromeManager.Get(accountId);
             var html = chromeBrowser.Html;
-            var dtoStorage = Get(html);
-
-            _storageRepository.Update(villageId, dtoStorage);
-            await _mediator.Publish(new StorageUpdated(accountId, villageId), cancellationToken);
 
             var dtoBuilding = GetBuildings(chromeBrowser.CurrentUrl, html);
             if (!dtoBuilding.Any()) return Result.Ok();
 
-            var dtoQueueBuilding = _queueBuildingParser.Get(html);
+            var dtoQueueBuilding = GetQueueBuilding(html);
             var queueBuildings = dtoQueueBuilding.ToList();
             var result = IsVaildQueueBuilding(queueBuildings);
             if (result.IsFailed) return result;
 
-            _queueBuildingRepository.Update(villageId, queueBuildings);
-            _buildingRepository.Update(villageId, dtoBuilding.ToList());
+            UpdateQueueToDatabase(villageId, queueBuildings);
+            UpdateBuildToDatabase(villageId, dtoBuilding.ToList());
 
             var dtoUnderConstructionBuildings = dtoBuilding.Where(x => x.IsUnderConstruction).ToList();
-            _queueBuildingRepository.Update(villageId, dtoUnderConstructionBuildings);
+            UpdateQueueToDatabase(villageId, dtoUnderConstructionBuildings);
             await _mediator.Publish(new QueueBuildingUpdated(accountId, villageId), cancellationToken);
 
             return Result.Ok();
         }
 
-        private IEnumerable<BuildingDto> GetBuildings(string url, HtmlDocument html)
+        private static IEnumerable<BuildingDto> GetBuildings(string url, HtmlDocument html)
         {
             if (url.Contains("dorf1"))
-                return _fieldParser.Get(html);
+                return GetFields(html);
 
             if (url.Contains("dorf2"))
-                return _infrastructureParser.Get(html);
+                return GetInfrastructures(html);
 
             return Enumerable.Empty<BuildingDto>();
         }
@@ -87,64 +55,296 @@ namespace MainCore.Commands.Update
             return Result.Ok();
         }
 
-        private static StorageDto Get(HtmlDocument doc)
+        private static IEnumerable<QueueBuildingDto> GetQueueBuilding(HtmlDocument doc)
         {
-            var storage = new StorageDto()
+            static List<HtmlNode> GetNodes(HtmlDocument doc)
             {
-                Wood = GetWood(doc),
-                Clay = GetClay(doc),
-                Iron = GetIron(doc),
-                Crop = GetCrop(doc),
-                FreeCrop = GetFreeCrop(doc),
-                Warehouse = GetWarehouseCapacity(doc),
-                Granary = GetGranaryCapacity(doc)
-            };
-            return storage;
+                var finishButton = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("finishNow"));
+                if (finishButton is null) return new();
+                return finishButton.ParentNode.Descendants("li").ToList();
+            }
+
+            static string GetBuildingType(HtmlNode node)
+            {
+                var nodeName = node.Descendants("div").FirstOrDefault(x => x.HasClass("name"));
+                if (nodeName is null) return "";
+
+                return new string(nodeName.ChildNodes[0].InnerText.Where(c => char.IsLetter(c) || char.IsDigit(c)).ToArray());
+            }
+
+            static int GetLevel(HtmlNode node)
+            {
+                var nodeLevel = node.Descendants("span").FirstOrDefault(x => x.HasClass("lvl"));
+                if (nodeLevel is null) return 0;
+
+                return nodeLevel.InnerText.ParseInt();
+            }
+
+            static TimeSpan GetDuration(HtmlNode node)
+            {
+                var nodeTimer = node.Descendants().FirstOrDefault(x => x.HasClass("timer"));
+                if (nodeTimer is null) return TimeSpan.Zero;
+                int sec = nodeTimer.GetAttributeValue("value", 0);
+                return TimeSpan.FromSeconds(sec);
+            }
+
+            var nodes = GetNodes(doc);
+
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                var node = nodes[i];
+                var type = GetBuildingType(node);
+                var level = GetLevel(node);
+                var duration = GetDuration(node);
+                yield return new()
+                {
+                    Position = i,
+                    Type = type,
+                    Level = level,
+                    CompleteTime = DateTime.Now.Add(duration),
+                    Location = -1,
+                };
+            }
+
+            for (int i = nodes.Count; i < 4; i++) // we will save 3 slot for each village, Roman can build 3 building in one time
+            {
+                yield return new()
+                {
+                    Position = i,
+                    Type = "Site",
+                    Level = -1,
+                    CompleteTime = DateTime.MaxValue,
+                    Location = -1,
+                };
+            }
         }
 
-        private static long GetResource(HtmlDocument doc, string id)
+        private static IEnumerable<BuildingDto> GetFields(HtmlDocument doc)
         {
-            var node = doc.GetElementbyId(id);
-            if (node is null) return -1;
-            return node.InnerText.ParseLong();
+            static IEnumerable<HtmlNode> GetNodes(HtmlDocument doc)
+            {
+                var resourceFieldContainerNode = doc.GetElementbyId("resourceFieldContainer");
+                if (resourceFieldContainerNode is null) return Enumerable.Empty<HtmlNode>();
+
+                var nodes = resourceFieldContainerNode
+                    .ChildNodes
+                    .Where(x => x.HasClass("level"));
+                return nodes;
+            }
+
+            static int GetId(HtmlNode node)
+            {
+                var classess = node.GetClasses();
+                var needClass = classess.FirstOrDefault(x => x.StartsWith("buildingSlot"));
+                return needClass.ParseInt();
+            }
+
+            static BuildingEnums GetBuildingType(HtmlNode node)
+            {
+                var classess = node.GetClasses();
+                var needClass = classess.FirstOrDefault(x => x.StartsWith("gid"));
+                return (BuildingEnums)needClass.ParseInt();
+            }
+
+            static int GetLevel(HtmlNode node)
+            {
+                var classess = node.GetClasses();
+                var needClass = classess.FirstOrDefault(x => x.StartsWith("level") && !x.Equals("level"));
+                return needClass.ParseInt();
+            }
+
+            static bool IsUnderConstruction(HtmlNode node)
+            {
+                return node.GetClasses().Contains("underConstruction");
+            }
+
+            var nodes = GetNodes(doc);
+            foreach (var node in nodes)
+            {
+                var location = GetId(node);
+                var level = GetLevel(node);
+                var type = GetBuildingType(node);
+                var isUnderConstruction = IsUnderConstruction(node);
+                yield return new BuildingDto()
+                {
+                    Location = location,
+                    Level = level,
+                    Type = type,
+                    IsUnderConstruction = isUnderConstruction,
+                };
+            }
         }
 
-        private static long GetWood(HtmlDocument doc) => GetResource(doc, "l1");
-
-        private static long GetClay(HtmlDocument doc) => GetResource(doc, "l2");
-
-        private static long GetIron(HtmlDocument doc) => GetResource(doc, "l3");
-
-        private static long GetCrop(HtmlDocument doc) => GetResource(doc, "l4");
-
-        private static long GetFreeCrop(HtmlDocument doc) => GetResource(doc, "stockBarFreeCrop");
-
-        private static long GetWarehouseCapacity(HtmlDocument doc)
+        private static IEnumerable<BuildingDto> GetInfrastructures(HtmlDocument doc)
         {
-            var stockBarNode = doc.GetElementbyId("stockBar");
-            if (stockBarNode is null) return -1;
-            var warehouseNode = stockBarNode.Descendants("div").FirstOrDefault(x => x.HasClass("warehouse"));
-            if (warehouseNode is null) return -1;
-            var capacityNode = warehouseNode.Descendants("div").FirstOrDefault(x => x.HasClass("capacity"));
-            if (capacityNode is null) return -1;
-            var valueNode = capacityNode.Descendants("div").FirstOrDefault(x => x.HasClass("value"));
-            if (valueNode is null) return -1;
-            return valueNode.InnerText.ParseLong();
+            static List<HtmlNode> GetNodes(HtmlDocument doc)
+            {
+                var villageContentNode = doc.GetElementbyId("villageContent");
+                if (villageContentNode is null) return new();
+                var list = villageContentNode.Descendants("div").Where(x => x.HasClass("buildingSlot")).ToList();
+                if (list.Count == 23) // level 1 wall and above has 2 part
+                {
+                    list.RemoveAt(list.Count - 1);
+                }
+
+                return list;
+            }
+
+            static int GetId(HtmlNode node)
+            {
+                return node.GetAttributeValue<int>("data-aid", -1);
+            }
+
+            static BuildingEnums GetBuildingType(HtmlNode node)
+            {
+                return (BuildingEnums)node.GetAttributeValue<int>("data-gid", -1);
+            }
+
+            static int GetLevel(HtmlNode node)
+            {
+                var aNode = node.Descendants("a").FirstOrDefault();
+                if (aNode is null) return -1;
+                return aNode.GetAttributeValue<int>("data-level", -1);
+            }
+
+            static bool IsUnderConstruction(HtmlNode node)
+            {
+                return node.Descendants("a").Any(x => x.HasClass("underConstruction"));
+            }
+
+            var nodes = GetNodes(doc);
+            foreach (var node in nodes)
+            {
+                var location = GetId(node);
+                var level = GetLevel(node);
+                var type = location switch
+                {
+                    26 => BuildingEnums.MainBuilding,
+                    39 => BuildingEnums.RallyPoint,
+                    _ => GetBuildingType(node)
+                };
+                var isUnderConstruction = IsUnderConstruction(node);
+
+                yield return new BuildingDto()
+                {
+                    Location = location,
+                    Level = level,
+                    Type = type,
+                    IsUnderConstruction = isUnderConstruction,
+                };
+            }
         }
 
-        private static long GetGranaryCapacity(HtmlDocument doc)
+        private void UpdateQueueToDatabase(VillageId villageId, List<BuildingDto> dtos)
         {
-            var stockBarNode = doc.GetElementbyId("stockBar");
-            if (stockBarNode is null) return -1;
-            var granaryNode = stockBarNode.Descendants("div").FirstOrDefault(x => x.HasClass("granary"));
-            if (granaryNode is null) return -1;
-            var capacityNode = granaryNode.Descendants("div").FirstOrDefault(x => x.HasClass("capacity"));
-            if (capacityNode is null) return -1;
-            var valueNode = capacityNode.Descendants("div").FirstOrDefault(x => x.HasClass("value"));
-            if (valueNode is null) return -1;
-            var valueStrFixed = WebUtility.HtmlDecode(valueNode.InnerText);
-            if (string.IsNullOrEmpty(valueStrFixed)) return -1;
-            return valueNode.InnerText.ParseLong();
+            using var context = _contextFactory.CreateDbContext();
+            var queueBuildings = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type != BuildingEnums.Site)
+                .ToList();
+
+            if (dtos.Count == 1)
+            {
+                var building = dtos[0];
+                queueBuildings = queueBuildings
+                    .Where(x => x.Type == building.Type)
+                    .ToList();
+
+                foreach (var item in queueBuildings)
+                {
+                    item.Location = building.Location;
+                }
+            }
+            else if (dtos.Count == 2)
+            {
+                var typeCount = dtos.DistinctBy(x => x.Type).Count();
+
+                if (typeCount == 2)
+                {
+                    foreach (var dto in dtos)
+                    {
+                        var queueBuilding = queueBuildings.FirstOrDefault(x => x.Type == dto.Type);
+                        if (queueBuilding is not null)
+                        {
+                            queueBuilding.Location = dto.Location;
+                        }
+                    }
+                }
+                else if (typeCount == 1)
+                {
+                    queueBuildings = queueBuildings.Where(x => x.Type == dtos[0].Type).ToList();
+                    if (dtos[0].Level == dtos[1].Level)
+                    {
+                        for (var i = 0; i < dtos.Count; i++)
+                        {
+                            queueBuildings[i].Location = dtos[i].Location;
+                        }
+                    }
+                    else
+                    {
+                        foreach (var dto in dtos)
+                        {
+                            var queueBuilding = queueBuildings.FirstOrDefault(x => x.Level == dto.Level + 1);
+                            if (queueBuilding is not null)
+                            {
+                                queueBuilding.Location = dto.Location;
+                            }
+                        }
+                    }
+                }
+            }
+            context.SaveChanges();
+        }
+
+        private void UpdateQueueToDatabase(VillageId villageId, List<QueueBuildingDto> dtos)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .ExecuteDelete();
+
+            var entities = new List<QueueBuilding>();
+
+            foreach (var dto in dtos)
+            {
+                var queueBuilding = dto.ToEntity(villageId);
+                entities.Add(queueBuilding);
+            }
+
+            context.AddRange(entities);
+            context.SaveChanges();
+        }
+
+        private void UpdateBuildToDatabase(VillageId villageId, List<BuildingDto> dtos)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var dbBuildings = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .ToList();
+
+            foreach (var dto in dtos)
+            {
+                if (dto.Location == 40)
+                {
+                    var tribe = (TribeEnums)new GetVillageSetting(_contextFactory).ByName(villageId, VillageSettingEnums.Tribe);
+                    var wall = tribe.GetWall();
+                    dto.Type = wall;
+                }
+                var dbBuilding = dbBuildings
+                    .FirstOrDefault(x => x.Location == dto.Location);
+                if (dbBuilding is null)
+                {
+                    var building = dto.ToEntity(villageId);
+                    context.Add(building);
+                }
+                else
+                {
+                    dto.To(dbBuilding);
+                    context.Update(dbBuilding);
+                }
+            }
+            context.SaveChanges();
         }
     }
 }

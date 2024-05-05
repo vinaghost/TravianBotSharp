@@ -5,11 +5,8 @@ namespace MainCore.Tasks
     [RegisterAsTransient(withoutInterface: true)]
     public class CompleteImmediatelyTask : VillageTask
     {
-        private readonly IQueueBuildingParser _queueBuildingParser;
-
-        public CompleteImmediatelyTask(IMediator mediator, IVillageRepository villageRepository, IQueueBuildingParser queueBuildingParser) : base(mediator, villageRepository)
+        public CompleteImmediatelyTask(IMediator mediator, IVillageRepository villageRepository) : base(mediator, villageRepository)
         {
-            _queueBuildingParser = queueBuildingParser;
         }
 
         protected override async Task<Result> Execute()
@@ -22,8 +19,7 @@ namespace MainCore.Tasks
             result = await CompleteImmediately();
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            await new UpdateBuildingCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
 
             await _mediator.Publish(new CompleteImmediatelyMessage(AccountId, VillageId), CancellationToken);
             return Result.Ok();
@@ -62,9 +58,7 @@ namespace MainCore.Tasks
             var confirmButton = GetConfirmButton(html);
             if (confirmButton is null) return Retry.ButtonNotFound("complete now");
 
-            var oldQueueCount = _queueBuildingParser.Get(html)
-                .Where(x => x.Level != -1)
-                .Count();
+            var oldQueueCount = new CountQueueBuilding().Execute(_chromeBrowser);
 
             result = await _chromeBrowser.Click(By.XPath(confirmButton.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -73,9 +67,7 @@ namespace MainCore.Tasks
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                var newQueueCount = _queueBuildingParser.Get(doc)
-                    .Where(x => x.Level != -1)
-                    .Count();
+                var newQueueCount = new CountQueueBuilding().Execute(_chromeBrowser);
                 return oldQueueCount != newQueueCount;
             };
             result = await _chromeBrowser.Wait(queueDifferent, CancellationToken);

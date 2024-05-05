@@ -26,6 +26,9 @@
 
             result = await new SwitchVillageCommand().Execute(_chromeBrowser, VillageId, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            await new UpdateStorageCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+
             return Result.Ok();
         }
 
@@ -39,9 +42,8 @@
             result = await new ToDorfCommand().Execute(_chromeBrowser, 0, false, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
+            await new UpdateBuildingCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+            await new UpdateStorageCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
             await new CheckQuestCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
             return Result.Ok();
         }

@@ -45,8 +45,7 @@ namespace MainCore.Tasks
                 result = await new ToDorfCommand().Execute(_chromeBrowser, 0, false, CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                await new UpdateBuildingCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
 
                 var jobResult = await _mediator.Send(new GetJobCommand(AccountId, VillageId), CancellationToken);
 
@@ -78,8 +77,7 @@ namespace MainCore.Tasks
                 result = await new ToDorfCommand().Execute(_chromeBrowser, dorf, false, CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                await new UpdateBuildingCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
 
                 if (await JobComplete(job))
                 {
@@ -90,6 +88,8 @@ namespace MainCore.Tasks
 
                 result = await ToBuildingPage(_chromeBrowser, plan);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                await new UpdateStorageCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
 
                 var requiredResource = GetRequiredResource(_chromeBrowser, plan);
 

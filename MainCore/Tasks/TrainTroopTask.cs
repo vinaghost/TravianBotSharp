@@ -81,8 +81,8 @@ namespace MainCore.Tasks
             Result result;
             result = await new ToDorfCommand().Execute(_chromeBrowser, 2, false, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            await new UpdateBuildingCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
 
             var buildingLocation = _buildingRepository.GetBuildingLocation(VillageId, buildingType);
             if (buildingLocation == default)

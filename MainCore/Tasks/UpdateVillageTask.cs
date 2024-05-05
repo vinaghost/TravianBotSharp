@@ -6,12 +6,10 @@ namespace MainCore.Tasks
     public class UpdateVillageTask : VillageTask
     {
         private readonly ITaskManager _taskManager;
-        private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public UpdateVillageTask(IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager, IVillageSettingRepository villageSettingRepository) : base(mediator, villageRepository)
+        public UpdateVillageTask(IMediator mediator, IVillageRepository villageRepository, ITaskManager taskManager) : base(mediator, villageRepository)
         {
             _taskManager = taskManager;
-            _villageSettingRepository = villageSettingRepository;
         }
 
         protected override async Task<Result> Execute()
@@ -19,27 +17,31 @@ namespace MainCore.Tasks
             var url = _chromeBrowser.CurrentUrl;
             Result result;
             await _chromeBrowser.Refresh(CancellationToken);
+
+            var updateBuildingCommand = new UpdateBuildingCommand();
+
             if (url.Contains("dorf1"))
             {
-                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
             }
             else if (url.Contains("dorf2"))
             {
-                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+
                 result = await new ToDorfCommand().Execute(_chromeBrowser, 1, false, CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
             }
             else
             {
                 result = await new ToDorfCommand().Execute(_chromeBrowser, 1, false, CancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
             }
+
+            await new UpdateStorageCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
 
             await SetNextExecute();
             return Result.Ok();

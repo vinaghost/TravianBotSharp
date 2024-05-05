@@ -1,5 +1,4 @@
 ﻿using MainCore.Common.Models;
-using MainCore.DTO;
 using MainCore.UI.Models.Output;
 
 namespace MainCore.Repositories
@@ -23,8 +22,6 @@ namespace MainCore.Repositories
         bool IsRallyPointExists(VillageId villageId);
 
         List<BuildingItem> GetBuildings(VillageId villageId, bool ignoreJobBuilding = false);
-
-        void Update(VillageId villageId, List<BuildingDto> dtos);
 
         List<BuildingEnums> GetTrainTroopBuilding(VillageId villageId);
 

@@ -1,9 +1,6 @@
 ﻿using Humanizer;
 using MainCore.Common.Models;
-using MainCore.DTO;
-using MainCore.Infrasturecture.Persistence;
 using MainCore.UI.Models.Output;
-using Microsoft.EntityFrameworkCore;
 using System.Text;
 using System.Text.Json;
 
@@ -320,42 +317,6 @@ namespace MainCore.Repositories
             if (wallBuilding.Type == wall) return;
             wallBuilding.Type = wall;
             context.Update(wallBuilding);
-            context.SaveChanges();
-        }
-
-        public void Update(VillageId villageId, List<BuildingDto> dtos)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var dbBuildings = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .ToList();
-
-            foreach (var dto in dtos)
-            {
-                if (dto.Location == 40)
-                {
-                    var tribe = (TribeEnums)context.VillagesSetting
-                        .Where(x => x.VillageId == villageId.Value)
-                        .Where(x => x.Setting == VillageSettingEnums.Tribe)
-                        .Select(x => x.Value)
-                        .FirstOrDefault();
-
-                    var wall = tribe.GetWall();
-                    dto.Type = wall;
-                }
-                var dbBuilding = dbBuildings
-                    .FirstOrDefault(x => x.Location == dto.Location);
-                if (dbBuilding is null)
-                {
-                    var building = dto.ToEntity(villageId);
-                    context.Add(building);
-                }
-                else
-                {
-                    dto.To(dbBuilding);
-                    context.Update(dbBuilding);
-                }
-            }
             context.SaveChanges();
         }
 

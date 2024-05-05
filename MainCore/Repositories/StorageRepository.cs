@@ -1,7 +1,4 @@
 ﻿using MainCore.Common.Errors.Storage;
-using MainCore.DTO;
-using MainCore.Infrasturecture.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 namespace MainCore.Repositories
 {
@@ -61,27 +58,6 @@ namespace MainCore.Repositories
                 .Select(x => x.Crop * 100f / x.Granary)
                 .FirstOrDefault();
             return (int)percent;
-        }
-
-        public void Update(VillageId villageId, StorageDto dto)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var dbStorage = context.Storages
-                .Where(x => x.VillageId == villageId.Value)
-                .FirstOrDefault();
-
-            if (dbStorage is null)
-            {
-                var storage = dto.ToEntity(villageId);
-                context.Add(storage);
-            }
-            else
-            {
-                dto.To(dbStorage);
-                context.Update(dbStorage);
-            }
-
-            context.SaveChanges();
         }
     }
 }

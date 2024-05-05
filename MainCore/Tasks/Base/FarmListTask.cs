@@ -1,7 +1,4 @@
-﻿using MainCore.Infrasturecture.Persistence;
-using Microsoft.EntityFrameworkCore;
-
-namespace MainCore.Tasks.Base
+﻿namespace MainCore.Tasks.Base
 {
     public abstract class FarmListTask : AccountTask
     {
@@ -39,8 +36,7 @@ namespace MainCore.Tasks.Base
             result = await new ToDorfCommand().Execute(_chromeBrowser, 2, false, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new UpdateBuildingCommand(AccountId, rallypointVillageId), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            await new UpdateBuildingCommand().Execute(_chromeBrowser, AccountId, rallypointVillageId, CancellationToken);
 
             result = await new ToBuildingCommand().Execute(chromeBrowser, 39, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));

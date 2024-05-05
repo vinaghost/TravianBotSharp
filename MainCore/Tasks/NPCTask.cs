@@ -21,8 +21,7 @@ namespace MainCore.Tasks
             result = await new ToDorfCommand().Execute(_chromeBrowser, 2, false, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            await new UpdateBuildingCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
 
             var market = _buildingRepository.GetBuildingLocation(VillageId, BuildingEnums.Marketplace);
 
@@ -41,7 +40,7 @@ namespace MainCore.Tasks
             result = await Redeem();
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _mediator.Send(new UpdateBuildingCommand(AccountId, VillageId), CancellationToken);
+            await new UpdateStorageCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
