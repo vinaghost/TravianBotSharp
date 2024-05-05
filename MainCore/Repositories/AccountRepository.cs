@@ -1,6 +1,4 @@
-﻿using MainCore.Infrasturecture.Persistence;
-using MainCore.UI.Models.Output;
-using Microsoft.EntityFrameworkCore;
+﻿using MainCore.UI.Models.Output;
 
 namespace MainCore.Repositories
 {
@@ -16,27 +14,6 @@ namespace MainCore.Repositories
             _contextFactory = contextFactory;
             _useragentManager = useragentManager;
             _taskManager = taskManager;
-        }
-
-        public string GetUsername(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var username = context.Accounts
-                .Where(x => x.Id == accountId.Value)
-                .Select(x => x.Username)
-                .FirstOrDefault();
-            return username;
-        }
-
-        public string GetPassword(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var password = context.Accesses
-                .Where(x => x.AccountId == accountId.Value)
-                .OrderByDescending(x => x.LastUsed)
-                .Select(x => x.Password)
-                .FirstOrDefault();
-            return password;
         }
 
         public bool Add(AccountDto dto)

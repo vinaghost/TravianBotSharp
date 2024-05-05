@@ -20,7 +20,7 @@ namespace MainCore.Tasks
             result = await new ToQuestPageCommand().Execute(_chromeBrowser, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await new ClaimQuestCommand(_delayClickCommand).Execute(AccountId, _chromeBrowser, CancellationToken);
+            result = await new ClaimQuestCommand().Execute(AccountId, _chromeBrowser, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await _mediator.Publish(new StorageUpdated(AccountId, VillageId), CancellationToken);

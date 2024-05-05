@@ -4,8 +4,6 @@
     {
         public AccountId AccountId { get; protected set; }
 
-        private ILoginPageParser _loginPageParser;
-
         protected IChromeBrowser _chromeBrowser;
 
         private readonly IChromeManager _chromeManager;
@@ -26,16 +24,14 @@
             if (CancellationToken.IsCancellationRequested) return Cancel.Error;
             _chromeBrowser = _chromeManager.Get(AccountId);
 
-            if (IsIngame())
+            if (new IsIngamePage().Execute(_chromeBrowser))
             {
                 await new UpdateAccountInfoCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
                 await new UpdateVillageListCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
                 return Result.Ok();
             }
 
-            _loginPageParser ??= Locator.Current.GetService<ILoginPageParser>();
-
-            if (IsLogin())
+            if (new IsLoginPage().Execute(_chromeBrowser))
             {
                 if (this is not LoginTask)
                 {
@@ -55,24 +51,6 @@
             await new UpdateVillageListCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
             await new CheckAdventureCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
             return Result.Ok();
-        }
-
-        private bool IsIngame()
-        {
-            var html = _chromeBrowser.Html;
-
-            var serverTime = html.GetElementbyId("servertime");
-
-            return serverTime is not null;
-        }
-
-        private bool IsLogin()
-        {
-            var html = _chromeBrowser.Html;
-
-            var loginButton = _loginPageParser.GetLoginButton(html);
-
-            return loginButton is not null;
         }
     }
 }

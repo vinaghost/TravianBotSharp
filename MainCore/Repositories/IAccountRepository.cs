@@ -12,10 +12,6 @@ namespace MainCore.Repositories
 
         List<ListBoxItem> GetItems();
 
-        string GetPassword(AccountId accountId);
-
-        string GetUsername(AccountId accountId);
-
         void Update(AccountDto dto);
     }
 }
