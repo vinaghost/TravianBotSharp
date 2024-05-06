@@ -1,5 +1,4 @@
-﻿using MainCore.DTO;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 
 namespace MainCore.Repositories
 {
@@ -9,13 +8,9 @@ namespace MainCore.Repositories
 
         void AddRange(VillageId villageId, IEnumerable<JobDto> jobDtos);
 
-        void AddToTop<T>(VillageId villageId, T content);
-
         int CountBuildingJob(VillageId villageId);
 
         void Delete(VillageId villageId);
-
-        void Delete(JobId jobId);
 
         JobDto GetBuildingJob(VillageId villageId);
 
@@ -26,8 +21,6 @@ namespace MainCore.Repositories
         List<JobDto> GetJobs(VillageId villageId);
 
         JobDto GetResourceBuildingJob(VillageId villageId);
-
-        bool JobComplete(VillageId villageId, JobDto job);
 
         Result JobValid(VillageId villageId, JobDto job);
 

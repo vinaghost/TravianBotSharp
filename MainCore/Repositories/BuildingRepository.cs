@@ -31,17 +31,6 @@ namespace MainCore.Repositories
             _contextFactory = contextFactory;
         }
 
-        public BuildingDto GetBuilding(VillageId villageId, int location)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var building = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Location == location)
-                .ToDto()
-                .FirstOrDefault();
-            return building;
-        }
-
         public int CountQueueBuilding(VillageId villageId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -79,29 +68,6 @@ namespace MainCore.Repositories
                 .Where(x => x.Level > 0)
                 .Any();
             return isExists;
-        }
-
-        public bool EmptySite(VillageId villageId, int location)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            bool isEmptySite = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Location == location)
-                .Where(x => x.Type == BuildingEnums.Site || x.Level == -1)
-                .Any();
-
-            return isEmptySite;
-        }
-
-        public Building GetCropland(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var building = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type == BuildingEnums.Cropland)
-                .OrderBy(x => x.Level)
-                .FirstOrDefault();
-            return building;
         }
 
         public NormalBuildPlan GetNormalBuildPlan(VillageId villageId, ResourceBuildPlan plan)

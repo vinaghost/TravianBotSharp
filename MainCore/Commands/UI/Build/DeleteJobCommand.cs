@@ -41,7 +41,7 @@ namespace MainCore.Commands.UI.Build
             var oldIndex = jobs.SelectedIndex;
             var jobId = jobs.SelectedItemId;
 
-            await Task.Run(() => _jobRepository.Delete(new JobId(jobId)), cancellationToken);
+            new MainCore.Commands.Misc.DeleteJobCommand().ByJobId(new JobId(jobId));
             var villageId = request.VillageId;
             await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
         }

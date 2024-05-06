@@ -8,8 +8,6 @@ namespace MainCore.Repositories
 
         int Count(VillageId villageId);
 
-        QueueBuilding GetFirst(VillageId villageId);
-
         List<ListBoxItem> GetItems(VillageId villageId);
 
         bool IsSkippableBuilding(VillageId villageId);

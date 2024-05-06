@@ -13,23 +13,13 @@ namespace MainCore.Tasks
     {
         private readonly ILogService _logService;
         private readonly ITaskManager _taskManager;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        private readonly IUpgradeBuildingParser _upgradeBuildingParser;
-        private readonly IBuildingRepository _buildingRepository;
-
-        private readonly IStorageRepository _storageRepository;
-        private readonly IQueueBuildingRepository _queueBuildingRepository;
-        private readonly IJobRepository _jobRepository;
-
-        public UpgradeBuildingTask(ILogService logService, ITaskManager taskManager, IUpgradeBuildingParser upgradeBuildingParser, IBuildingRepository buildingRepository, IStorageRepository storageRepository, IQueueBuildingRepository queueBuildingRepository, IJobRepository jobRepository)
+        public UpgradeBuildingTask(ILogService logService, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
         {
             _logService = logService;
             _taskManager = taskManager;
-            _upgradeBuildingParser = upgradeBuildingParser;
-            _buildingRepository = buildingRepository;
-            _storageRepository = storageRepository;
-            _queueBuildingRepository = queueBuildingRepository;
-            _jobRepository = jobRepository;
+            _contextFactory = contextFactory;
         }
 
         protected override async Task<Result> Execute()
@@ -91,7 +81,7 @@ namespace MainCore.Tasks
 
                 var requiredResource = GetRequiredResource(_chromeBrowser, plan);
 
-                result = _storageRepository.IsEnoughResource(VillageId, requiredResource);
+                result = IsEnoughResource(VillageId, requiredResource);
                 if (result.IsFailed)
                 {
                     if (result.HasError<FreeCrop>())
@@ -109,7 +99,7 @@ namespace MainCore.Tasks
 
                     if (IsUseHeroResource())
                     {
-                        var missingResource = _storageRepository.GetMissingResource(VillageId, requiredResource);
+                        var missingResource = GetMissingResource(VillageId, requiredResource);
                         var heroResourceResult = await new UseHeroResourceCommand().Execute(AccountId, _chromeBrowser, missingResource, CancellationToken);
                         if (heroResourceResult.IsFailed)
                         {
@@ -156,8 +146,7 @@ namespace MainCore.Tasks
 
         private bool IsUpgradeable(NormalBuildPlan plan)
         {
-            var emptySite = _buildingRepository.EmptySite(VillageId, plan.Location);
-            return !emptySite;
+            return !IsEmptySite(VillageId, plan.Location);
         }
 
         private bool IsSpecialUpgradeable(NormalBuildPlan plan)
@@ -173,7 +162,7 @@ namespace MainCore.Tasks
 
             if (plan.Type.IsResourceField())
             {
-                var dto = _buildingRepository.GetBuilding(VillageId, plan.Location);
+                var dto = GetBuilding(VillageId, plan.Location);
                 if (dto.Level == 0) return false;
             }
             return true;
@@ -200,7 +189,7 @@ namespace MainCore.Tasks
 
         private async Task SetTimeQueueBuildingComplete()
         {
-            var buildingQueue = _queueBuildingRepository.GetFirst(VillageId);
+            var buildingQueue = GetFirstQueueBuilding(VillageId);
             if (buildingQueue is null)
             {
                 ExecuteAt = DateTime.Now.AddSeconds(1);
@@ -214,9 +203,9 @@ namespace MainCore.Tasks
 
         private async Task<bool> JobComplete(JobDto job)
         {
-            if (_jobRepository.JobComplete(VillageId, job))
+            if (JobComplete(VillageId, job))
             {
-                _jobRepository.Delete(job.Id);
+                new DeleteJobCommand().ByJobId(job.Id);
                 await _mediator.Publish(new JobUpdated(AccountId, VillageId));
                 return true;
             }
@@ -225,7 +214,7 @@ namespace MainCore.Tasks
 
         public async Task AddCropland()
         {
-            var cropland = _buildingRepository.GetCropland(VillageId);
+            var cropland = GetCropland(VillageId);
 
             var plan = new NormalBuildPlan()
             {
@@ -234,7 +223,7 @@ namespace MainCore.Tasks
                 Level = cropland.Level + 1,
             };
 
-            _jobRepository.AddToTop(VillageId, plan);
+            new AddJobToTopCommand().Execute(VillageId, plan);
             await _mediator.Publish(new JobUpdated(AccountId, VillageId));
         }
 
@@ -244,7 +233,7 @@ namespace MainCore.Tasks
             result = await new ToBuildingCommand().Execute(_chromeBrowser, plan.Location, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var building = _buildingRepository.GetBuilding(VillageId, plan.Location);
+            var building = GetBuilding(VillageId, plan.Location);
             if (building.Type == BuildingEnums.Site)
             {
                 var tabIndex = plan.Type.GetBuildingsCategory();
@@ -265,15 +254,179 @@ namespace MainCore.Tasks
         {
             var html = _chromeBrowser.Html;
 
-            var isEmptySite = _buildingRepository.EmptySite(VillageId, plan.Location);
-            return _upgradeBuildingParser.GetRequiredResource(html, isEmptySite, plan.Type);
+            var isEmptySite = IsEmptySite(VillageId, plan.Location);
+            return GetRequiredResource(html, isEmptySite, plan.Type);
         }
 
         public TimeSpan GetTimeWhenEnoughResource(IChromeBrowser _chromeBrowser, NormalBuildPlan plan)
         {
             var html = _chromeBrowser.Html;
-            var isEmptySite = _buildingRepository.EmptySite(VillageId, plan.Location);
-            return _upgradeBuildingParser.GetTimeWhenEnoughResource(html, isEmptySite, plan.Type);
+            var isEmptySite = IsEmptySite(VillageId, plan.Location);
+            return GetTimeWhenEnoughResource(html, isEmptySite, plan.Type);
+        }
+
+        private static TimeSpan GetTimeWhenEnoughResource(HtmlDocument doc, bool isEmptySite, BuildingEnums building = BuildingEnums.Site)
+        {
+            HtmlNode node;
+            if (isEmptySite)
+            {
+                node = doc.GetElementbyId($"contract_building{(int)building}");
+            }
+            else
+            {
+                node = doc.GetElementbyId("contract");
+            }
+            if (node is null) return TimeSpan.Zero;
+
+            var errorMessage = node.Descendants("div")
+                .FirstOrDefault(x => x.HasClass("errorMessage"));
+            if (errorMessage is null) return TimeSpan.Zero;
+            var timer = errorMessage.Descendants("span")
+                .FirstOrDefault(x => x.HasClass("timer"));
+            if (timer is null) return TimeSpan.Zero;
+            var time = timer.GetAttributeValue("value", 0);
+            return TimeSpan.FromSeconds(time);
+        }
+
+        private static long[] GetRequiredResource(HtmlDocument doc, bool isEmptySite, BuildingEnums building = BuildingEnums.Site)
+        {
+            HtmlNode node;
+            if (isEmptySite)
+            {
+                node = doc.GetElementbyId($"contract_building{(int)building}");
+            }
+            else
+            {
+                node = doc.GetElementbyId("contract");
+            }
+
+            if (node is null) return Enumerable.Repeat(-1L, 5).ToArray();
+            var resourceWrapper = node.Descendants("div")
+                .FirstOrDefault(x => x.HasClass("resourceWrapper"));
+            if (resourceWrapper is null) return Enumerable.Repeat(-1L, 5).ToArray();
+
+            var resources = resourceWrapper.Descendants("div")
+                .Where(x => x.HasClass("resource"))
+                .ToList();
+
+            if (resources.Count != 5) return Enumerable.Repeat(-1L, 5).ToArray();
+
+            var resourceBuilding = new long[5];
+            for (var i = 0; i < 5; i++)
+            {
+                resourceBuilding[i] = resources[i].InnerText.ParseLong();
+            }
+
+            return resourceBuilding;
+        }
+
+        private Building GetCropland(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var building = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type == BuildingEnums.Cropland)
+                .OrderBy(x => x.Level)
+                .FirstOrDefault();
+            return building;
+        }
+
+        private BuildingDto GetBuilding(VillageId villageId, int location)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var building = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Location == location)
+                .ToDto()
+                .FirstOrDefault();
+            return building;
+        }
+
+        private bool IsEmptySite(VillageId villageId, int location)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            bool isEmptySite = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Location == location)
+                .Where(x => x.Type == BuildingEnums.Site || x.Level == -1)
+                .Any();
+
+            return isEmptySite;
+        }
+
+        private long[] GetMissingResource(VillageId villageId, long[] requiredResource)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var storage = context.Storages
+                .Where(x => x.VillageId == villageId.Value)
+                .FirstOrDefault();
+            if (storage is null) return new long[4] { 0, 0, 0, 0 };
+
+            var resource = new long[4];
+            if (storage.Wood < requiredResource[0]) resource[0] = requiredResource[0] - storage.Wood;
+            if (storage.Clay < requiredResource[1]) resource[1] = requiredResource[1] - storage.Clay;
+            if (storage.Iron < requiredResource[2]) resource[2] = requiredResource[2] - storage.Iron;
+            if (storage.Crop < requiredResource[3]) resource[3] = requiredResource[3] - storage.Crop;
+            return resource;
+        }
+
+        private Result IsEnoughResource(VillageId villageId, long[] requiredResource)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var storage = context.Storages
+                .Where(x => x.VillageId == villageId.Value)
+                .FirstOrDefault();
+
+            if (storage is null) return Result.Ok();
+
+            var result = Result.Ok();
+            if (storage.Wood < requiredResource[0]) result.WithError(Resource.Error("wood", storage.Wood, requiredResource[0]));
+            if (storage.Clay < requiredResource[1]) result.WithError(Resource.Error("clay", storage.Clay, requiredResource[1]));
+            if (storage.Iron < requiredResource[2]) result.WithError(Resource.Error("iron", storage.Iron, requiredResource[2]));
+            if (storage.Crop < requiredResource[3]) result.WithError(Resource.Error("crop", storage.Wood, requiredResource[3]));
+            if (storage.FreeCrop < requiredResource[4]) result.WithError(FreeCrop.Error(storage.Wood, requiredResource[4]));
+
+            var max = requiredResource.Max();
+            if (storage.Warehouse < max) result.WithError(WarehouseLimit.Error(storage.Warehouse, max));
+            if (storage.Granary < requiredResource[3]) result.WithError(GranaryLimit.Error(storage.Granary, requiredResource[3]));
+            return result;
+        }
+
+        private QueueBuilding GetFirstQueueBuilding(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var queueBuilding = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type != BuildingEnums.Site)
+                .OrderBy(x => x.Position)
+                .FirstOrDefault();
+            return queueBuilding;
+        }
+
+        private bool JobComplete(VillageId villageId, JobDto job)
+        {
+            if (job.Type == JobTypeEnums.ResourceBuild) return false;
+            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
+
+            using var context = _contextFactory.CreateDbContext();
+
+            var queueBuilding = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Location == plan.Location)
+                .OrderByDescending(x => x.Level)
+                .Select(x => x.Level)
+                .FirstOrDefault();
+
+            if (queueBuilding >= plan.Level) return true;
+
+            var villageBuilding = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Location == plan.Location)
+                .Select(x => x.Level)
+                .FirstOrDefault();
+            if (villageBuilding >= plan.Level) return true;
+
+            return false;
         }
     }
 }

@@ -32,17 +32,6 @@ namespace MainCore.Repositories
             return queueBuilding;
         }
 
-        public QueueBuilding GetFirst(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var queueBuilding = context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type != BuildingEnums.Site)
-                .OrderBy(x => x.Position)
-                .FirstOrDefault();
-            return queueBuilding;
-        }
-
         public void Clean(VillageId villageId)
         {
             using var context = _contextFactory.CreateDbContext();

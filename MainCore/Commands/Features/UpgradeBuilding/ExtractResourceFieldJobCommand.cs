@@ -1,5 +1,4 @@
 ﻿using MainCore.Common.Models;
-using MainCore.DTO;
 using System.Text.Json;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
@@ -38,11 +37,11 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var normalBuildPlan = _buildingRepository.GetNormalBuildPlan(villageId, resourceBuildPlan);
             if (normalBuildPlan is null)
             {
-                _jobRepository.Delete(job.Id);
+                new DeleteJobCommand().ByJobId(job.Id);
             }
             else
             {
-                _jobRepository.AddToTop(villageId, normalBuildPlan);
+                new AddJobToTopCommand().Execute(villageId, normalBuildPlan);
             }
             await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
             return Result.Ok();

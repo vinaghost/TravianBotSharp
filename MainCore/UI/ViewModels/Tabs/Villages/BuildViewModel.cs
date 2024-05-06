@@ -190,7 +190,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task DeleteHandler()
         {
-            await _mediator.Send(new DeleteJobCommand(AccountId, VillageId, Jobs));
+            await _mediator.Send(new Commands.UI.Build.DeleteJobCommand(AccountId, VillageId, Jobs));
         }
 
         private async Task DeleteAllHandler()

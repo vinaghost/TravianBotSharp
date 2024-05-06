@@ -9,15 +9,9 @@ namespace MainCore.Repositories
 
         int CountResourceQueueBuilding(VillageId villageId);
 
-        BuildingDto GetBuilding(VillageId villageId, int location);
-
         List<ListBoxItem> GetItems(VillageId villageId);
 
-        Building GetCropland(VillageId villageId);
-
         NormalBuildPlan GetNormalBuildPlan(VillageId villageId, ResourceBuildPlan plan);
-
-        bool EmptySite(VillageId villageId, int location);
 
         bool IsRallyPointExists(VillageId villageId);
 
