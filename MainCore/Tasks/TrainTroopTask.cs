@@ -4,7 +4,7 @@ using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
-    [RegisterAsTransient(withoutInterface: true)]
+    [RegisterAsTask]
     public class TrainTroopTask : VillageTask
     {
         private static readonly Dictionary<BuildingEnums, VillageSettingEnums> _settings = new()

@@ -2,7 +2,7 @@
 
 namespace MainCore.Tasks
 {
-    [RegisterAsTransient(withoutInterface: true)]
+    [RegisterAsTask]
     public class SleepTask : AccountTask
     {
         private readonly ITaskManager _taskManager;

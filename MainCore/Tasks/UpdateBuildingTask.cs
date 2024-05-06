@@ -2,7 +2,7 @@
 
 namespace MainCore.Tasks
 {
-    [RegisterAsTransient(withoutInterface: true)]
+    [RegisterAsTask]
     public class UpdateBuildingTask : VillageTask
     {
         protected override async Task<Result> Execute()

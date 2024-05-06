@@ -1,11 +1,10 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
-using Splat;
 
 namespace MainCore.UI.ViewModels
 {
-    [RegisterAsTransient(withoutInterface: true)]
+    [RegisterAsSingleton(withoutInterface: true)]
     public class MainViewModel : ViewModelBase
     {
         private MainLayoutViewModel _mainLayoutViewModel;

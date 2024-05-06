@@ -43,16 +43,9 @@ namespace MainCore.Infrasturecture.AutoRegisterDi
         }
     }
 
-    public class RegisterAsParserAttribute : RegisterAsTransientAttribute
+    public class RegisterAsTaskAttribute : RegisterAsTransientAttribute
     {
-        public RegisterAsParserAttribute() : base(true)
-        {
-        }
-    }
-
-    public class RegisterAsCommandAttribute : RegisterAsTransientAttribute
-    {
-        public RegisterAsCommandAttribute() : base(true)
+        public RegisterAsTaskAttribute() : base(true)
         {
         }
     }
