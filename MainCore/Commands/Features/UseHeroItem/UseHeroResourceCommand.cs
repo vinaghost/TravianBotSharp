@@ -1,6 +1,4 @@
 ﻿using MainCore.Common.Errors.Storage;
-using MainCore.Infrasturecture.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 namespace MainCore.Commands.Features.UseHeroItem
 {

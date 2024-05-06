@@ -1,7 +1,4 @@
-﻿using MainCore.DTO;
-using MainCore.Infrasturecture.Persistence;
-using Microsoft.EntityFrameworkCore;
-using RestSharp;
+﻿using RestSharp;
 using System.Net;
 
 namespace MainCore.Services

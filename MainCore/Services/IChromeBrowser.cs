@@ -1,5 +1,4 @@
-﻿using HtmlAgilityPack;
-using MainCore.Common.Models;
+﻿using MainCore.Common.Models;
 using OpenQA.Selenium.Chrome;
 
 namespace MainCore.Services

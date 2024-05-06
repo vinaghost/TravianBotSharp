@@ -1,6 +1,5 @@
 ﻿using MainCore.UI.Stores;
 using ReactiveUI;
-using Splat;
 using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Abstract

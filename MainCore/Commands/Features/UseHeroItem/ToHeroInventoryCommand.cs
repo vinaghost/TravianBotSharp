@@ -1,7 +1,4 @@
-﻿using MainCore.Infrasturecture.Persistence;
-using Microsoft.EntityFrameworkCore;
-
-namespace MainCore.Commands.Features.UseHeroItem
+﻿namespace MainCore.Commands.Features.UseHeroItem
 {
     public class ToHeroInventoryCommand
     {

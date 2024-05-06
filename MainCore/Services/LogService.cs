@@ -1,6 +1,4 @@
-﻿using MainCore.Infrasturecture.Persistence;
-using Microsoft.EntityFrameworkCore;
-using Serilog;
+﻿using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using System.Reflection;

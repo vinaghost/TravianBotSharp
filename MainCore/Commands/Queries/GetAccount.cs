@@ -1,7 +1,4 @@
-﻿using MainCore.Infrasturecture.Persistence;
-using Microsoft.EntityFrameworkCore;
-
-namespace MainCore.Commands.Queries
+﻿namespace MainCore.Commands.Queries
 {
     public class GetAccount
     {

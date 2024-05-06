@@ -22,7 +22,7 @@ namespace MainCore.Commands.UI.MainLayout
         private readonly ILogService _logService;
         private readonly IMediator _mediator;
 
-        
+
 
         public LoginAccountCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IDialogService dialogService, GetAccess getAccessCommand, OpenBrowserCommand openBrowserCommand, ILogService logService, IMediator mediator, IChromeManager chromeManager)
         {
@@ -33,7 +33,7 @@ namespace MainCore.Commands.UI.MainLayout
             _openBrowserCommand = openBrowserCommand;
             _logService = logService;
             _mediator = mediator;
-            
+
             _chromeManager = chromeManager;
         }
 

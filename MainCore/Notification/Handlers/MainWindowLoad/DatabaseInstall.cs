@@ -1,6 +1,4 @@
-﻿using MainCore.Infrasturecture.Persistence;
-using MainCore.UI.ViewModels.UserControls;
-using Microsoft.EntityFrameworkCore;
+﻿using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Notification.Handlers.MainWindowLoad
 {

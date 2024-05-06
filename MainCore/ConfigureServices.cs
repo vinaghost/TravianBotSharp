@@ -1,12 +1,9 @@
 ﻿using FluentValidation;
-using MainCore.Infrasturecture.Persistence;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Validators;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ReactiveUI;
-using Splat;
 using Splat.Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore

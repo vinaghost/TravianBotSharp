@@ -1,6 +1,5 @@
 ﻿using MainCore.Tasks.Base;
 using Microsoft.Extensions.DependencyInjection;
-using Splat;
 
 namespace MainCore.Services
 {

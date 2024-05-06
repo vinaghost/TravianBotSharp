@@ -1,5 +1,4 @@
-﻿using MainCore.Infrasturecture.Persistence;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 namespace MainCore.Infrasturecture.AutoRegisterDi

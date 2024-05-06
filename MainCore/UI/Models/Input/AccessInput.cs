@@ -1,5 +1,4 @@
-﻿using MainCore.DTO;
-using ReactiveUI;
+﻿using ReactiveUI;
 using Riok.Mapperly.Abstractions;
 
 namespace MainCore.UI.Models.Input

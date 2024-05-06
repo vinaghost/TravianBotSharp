@@ -1,5 +1,4 @@
 ﻿using Polly;
-using Splat;
 using Timer = System.Timers.Timer;
 
 namespace MainCore.Services

@@ -5,12 +5,12 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerStartAdventureTask : INotificationHandler<AdventureUpdated>, INotificationHandler<AccountInit>, INotificationHandler<AccountSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
-        
+
 
         public TriggerStartAdventureTask(ITaskManager taskManager)
         {
             _taskManager = taskManager;
-            
+
         }
 
         public async Task Handle(AdventureUpdated notification, CancellationToken cancellationToken)

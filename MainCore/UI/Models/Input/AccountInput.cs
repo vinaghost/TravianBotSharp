@@ -1,5 +1,4 @@
 ﻿using DynamicData;
-using MainCore.DTO;
 using ReactiveUI;
 using Riok.Mapperly.Abstractions;
 using System.Collections.ObjectModel;

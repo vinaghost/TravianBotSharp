@@ -1,6 +1,4 @@
 ﻿using MainCore.Commands.Checks;
-using MainCore.Infrasturecture.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 namespace MainCore.Commands.Queries
 {

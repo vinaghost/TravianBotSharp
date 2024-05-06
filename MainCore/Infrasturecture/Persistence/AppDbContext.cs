@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using StronglyTypedIds;
+﻿using StronglyTypedIds;
 
 [assembly: StronglyTypedIdDefaults(
     backingType: StronglyTypedIdBackingType.Int,
