@@ -40,7 +40,7 @@ namespace MainCore.Commands.UI.Build
                 return;
             }
 
-            var buildings = _buildingRepository.GetBuildings(request.VillageId);
+            var buildings = new GetBuildings().Execute(request.VillageId);
             var building = buildings.FirstOrDefault(x => x.Location == request.Location);
 
             if (building is null) return;

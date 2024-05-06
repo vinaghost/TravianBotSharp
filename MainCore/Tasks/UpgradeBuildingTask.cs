@@ -35,7 +35,7 @@ namespace MainCore.Tasks
 
                 await new UpdateBuildingCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
 
-                var jobResult = await _mediator.Send(new GetJobCommand(AccountId, VillageId), CancellationToken);
+                var jobResult = new GetJobCommand().Execute(AccountId, VillageId);
 
                 if (jobResult.IsFailed)
                 {
@@ -54,7 +54,7 @@ namespace MainCore.Tasks
 
                 if (job.Type == JobTypeEnums.ResourceBuild)
                 {
-                    result = await _mediator.Send(new ExtractResourceFieldJobCommand(AccountId, VillageId, job));
+                    result = await new ExtractResourceFieldJobCommand().Execute(AccountId, VillageId, job, CancellationToken);
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     continue;
                 }

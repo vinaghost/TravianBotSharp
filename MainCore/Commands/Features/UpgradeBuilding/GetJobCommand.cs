@@ -1,41 +1,24 @@
 ﻿using MainCore.Common.Errors.AutoBuilder;
+using MainCore.Common.Models;
+using System.Text.Json;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
-    public class GetJobCommand : ByAccountVillageIdBase, ICommand<JobDto>
+    public class GetJobCommand
     {
-        public GetJobCommand(AccountId accountId, VillageId villageId) : base(accountId, villageId)
-        {
-        }
-    }
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-    public class GetJobCommandHandler : ICommandHandler<GetJobCommand, JobDto>
-    {
-        private readonly IJobRepository _jobRepository;
-        private readonly IBuildingRepository _buildingRepository;
-        private readonly IVillageSettingRepository _villageSettingRepository;
-
-        public GetJobCommandHandler(IJobRepository jobRepository, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository)
+        public GetJobCommand(IDbContextFactory<AppDbContext> contextFactory = null)
         {
-            _jobRepository = jobRepository;
-            _buildingRepository = buildingRepository;
-            _villageSettingRepository = villageSettingRepository;
+            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
         }
 
-        public async Task<Result<JobDto>> Handle(GetJobCommand request, CancellationToken cancellationToken)
+        public Result<JobDto> Execute(AccountId accountId, VillageId villageId)
         {
-            var accountId = request.AccountId;
-            var villageId = request.VillageId;
-            await Task.CompletedTask;
-            return GetBuildingJob(accountId, villageId);
-        }
-
-        private Result<JobDto> GetBuildingJob(AccountId accountId, VillageId villageId)
-        {
-            var countJob = _jobRepository.CountBuildingJob(villageId);
+            var countJob = CountBuildingJob(villageId);
             if (countJob == 0) return Skip.AutoBuilderJobQueueEmpty;
 
-            var countQueueBuilding = _buildingRepository.CountQueueBuilding(villageId);
+            var countQueueBuilding = CountQueueBuilding(villageId);
             if (countQueueBuilding == 0) return GetBuildingJob(villageId);
 
             var plusActive = new IsPlusActive().Execute(accountId);
@@ -59,23 +42,132 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private JobDto GetBuildingJob(VillageId villageId, bool romanLogic = false)
         {
-            var job = romanLogic ? GetJobBasedOnRomanLogic(villageId) : _jobRepository.GetBuildingJob(villageId);
+            var job = romanLogic ? GetJobBasedOnRomanLogic(villageId) : GetBuildingJob(villageId);
             return job;
         }
 
         private JobDto GetJobBasedOnRomanLogic(VillageId villageId)
         {
-            var countQueueBuilding = _buildingRepository.CountQueueBuilding(villageId);
-            var countResourceQueueBuilding = _buildingRepository.CountResourceQueueBuilding(villageId);
+            var countQueueBuilding = CountQueueBuilding(villageId);
+            var countResourceQueueBuilding = CountResourceQueueBuilding(villageId);
             var countInfrastructureQueueBuilding = countQueueBuilding - countResourceQueueBuilding;
             if (countResourceQueueBuilding > countInfrastructureQueueBuilding)
             {
-                return _jobRepository.GetInfrastructureBuildingJob(villageId);
+                return GetInfrastructureBuildingJob(villageId);
             }
             else
             {
-                return _jobRepository.GetResourceBuildingJob(villageId);
+                return GetResourceBuildingJob(villageId);
             }
+        }
+
+        private int CountQueueBuilding(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var count = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type != BuildingEnums.Site)
+                .Count();
+            return count;
+        }
+
+        private int CountResourceQueueBuilding(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var resourceTypes = new List<BuildingEnums>()
+            {
+                BuildingEnums.Woodcutter,
+                BuildingEnums.ClayPit,
+                BuildingEnums.IronMine,
+                BuildingEnums.Cropland
+            };
+
+            var count = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => resourceTypes.Contains(x.Type))
+                .Count();
+            return count;
+        }
+
+        private JobDto GetInfrastructureBuildingJob(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var resourceTypes = new List<BuildingEnums>()
+            {
+                BuildingEnums.Woodcutter,
+                BuildingEnums.ClayPit,
+                BuildingEnums.IronMine,
+                BuildingEnums.Cropland
+            };
+
+            var job = context.Jobs
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type == JobTypeEnums.NormalBuild)
+                .ToDto()
+                .AsEnumerable()
+                .Select(x => new
+                {
+                    Job = x,
+                    Content = JsonSerializer.Deserialize<NormalBuildPlan>(x.Content)
+                })
+                .Where(x => !resourceTypes.Contains(x.Content.Type))
+                .Select(x => x.Job)
+                .OrderBy(x => x.Position)
+                .FirstOrDefault();
+            return job;
+        }
+
+        private JobDto GetResourceBuildingJob(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var resourceTypes = new List<BuildingEnums>()
+            {
+                BuildingEnums.Woodcutter,
+                BuildingEnums.ClayPit,
+                BuildingEnums.IronMine,
+                BuildingEnums.Cropland
+            };
+            var job = context.Jobs
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type == JobTypeEnums.NormalBuild)
+                .ToDto()
+                .AsEnumerable()
+                .Select(x => new
+                {
+                    Job = x,
+                    Content = JsonSerializer.Deserialize<NormalBuildPlan>(x.Content)
+                })
+                .Where(x => resourceTypes.Contains(x.Content.Type))
+                .Select(x => x.Job)
+                .OrderBy(x => x.Position)
+                .FirstOrDefault();
+
+            var resourceBuildJob = context.Jobs
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type == JobTypeEnums.ResourceBuild)
+                .ToDto()
+                .FirstOrDefault();
+            if (job is null) return resourceBuildJob;
+            if (resourceBuildJob is null) return job;
+            if (job.Position < resourceBuildJob.Position) return job;
+            return resourceBuildJob;
+        }
+
+        private int CountBuildingJob(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var types = new List<JobTypeEnums>()
+            {
+                JobTypeEnums.NormalBuild,
+                JobTypeEnums.ResourceBuild
+            };
+            var count = context.Jobs
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => types.Contains(x.Type))
+                .Count();
+            return count;
         }
     }
 }

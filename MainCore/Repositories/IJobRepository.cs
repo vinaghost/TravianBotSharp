@@ -8,19 +8,11 @@ namespace MainCore.Repositories
 
         void AddRange(VillageId villageId, IEnumerable<JobDto> jobDtos);
 
-        int CountBuildingJob(VillageId villageId);
-
         void Delete(VillageId villageId);
-
-        JobDto GetBuildingJob(VillageId villageId);
-
-        JobDto GetInfrastructureBuildingJob(VillageId villageId);
 
         List<ListBoxItem> GetItems(VillageId villageId);
 
         List<JobDto> GetJobs(VillageId villageId);
-
-        JobDto GetResourceBuildingJob(VillageId villageId);
 
         Result JobValid(VillageId villageId, JobDto job);
 

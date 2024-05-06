@@ -74,7 +74,7 @@ namespace MainCore.Commands.UI.Build
 
         private IEnumerable<JobDto> GetModifiedJobs(VillageId villageId, List<JobDto> jobs)
         {
-            var buildings = _buildingRepository.GetBuildings(villageId);
+            var buildings = new GetBuildings().Execute(villageId);
 
             var changedLocations = new Dictionary<int, int>();
             foreach (var job in jobs)

@@ -68,7 +68,7 @@ namespace MainCore.Commands.UI.Build
 
         private async Task NormalBuild(AccountId accountId, VillageId villageId, NormalBuildPlan plan, CancellationToken cancellationToken)
         {
-            var buildings = _buildingRepository.GetBuildings(villageId);
+            var buildings = new GetBuildings().Execute(villageId);
             var result = CheckRequirements(buildings, plan);
             if (result.IsFailed)
             {
