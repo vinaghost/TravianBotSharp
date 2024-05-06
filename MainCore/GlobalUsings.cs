@@ -1,6 +1,5 @@
 ﻿global using FluentResults;
 global using HtmlAgilityPack;
-global using MainCore.Commands.Base;
 global using MainCore.Commands.Misc;
 global using MainCore.Commands.Navigate;
 global using MainCore.Commands.Queries;
