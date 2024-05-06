@@ -5,12 +5,12 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerStartAdventureTask : INotificationHandler<AdventureUpdated>, INotificationHandler<AccountInit>, INotificationHandler<AccountSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly IAccountSettingRepository _accountSettingRepository;
+        
 
-        public TriggerStartAdventureTask(ITaskManager taskManager, IAccountSettingRepository accountSettingRepository)
+        public TriggerStartAdventureTask(ITaskManager taskManager)
         {
             _taskManager = taskManager;
-            _accountSettingRepository = accountSettingRepository;
+            
         }
 
         public async Task Handle(AdventureUpdated notification, CancellationToken cancellationToken)
@@ -30,7 +30,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId)
         {
-            var autoStartAdventure = new GetAccountSetting().BooleanByName(accountId, AccountSettingEnums.EnableAutoStartAdventure);
+            var autoStartAdventure = new GetSetting().BooleanByName(accountId, AccountSettingEnums.EnableAutoStartAdventure);
             if (autoStartAdventure)
             {
                 if (_taskManager.IsExist<StartAdventureTask>(accountId)) return;

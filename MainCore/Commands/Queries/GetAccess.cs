@@ -29,7 +29,7 @@ namespace MainCore.Commands.Queries
             if (accesses.Count == 1) return access;
             if (ignoreSleepTime) return access;
 
-            var minSleep = new GetAccountSetting().ByName(accountId, AccountSettingEnums.SleepTimeMin);
+            var minSleep = new GetSetting().ByName(accountId, AccountSettingEnums.SleepTimeMin);
 
             var timeValid = DateTime.Now.AddMinutes(-minSleep);
             if (access.LastUsed > timeValid) return Stop.LackOfAccess;

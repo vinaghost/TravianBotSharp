@@ -5,13 +5,11 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerBuildingUpdateTask : INotificationHandler<VillageUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly IAccountSettingRepository _accountSettingRepository;
         private readonly IVillageRepository _villageRepository;
 
-        public TriggerBuildingUpdateTask(ITaskManager taskManager, IAccountSettingRepository accountSettingRepository, IVillageRepository villageRepository)
+        public TriggerBuildingUpdateTask(ITaskManager taskManager, IVillageRepository villageRepository)
         {
             _taskManager = taskManager;
-            _accountSettingRepository = accountSettingRepository;
             _villageRepository = villageRepository;
         }
 
@@ -24,7 +22,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId)
         {
-            var autoLoadVillageBuilding = new GetAccountSetting().BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
+            var autoLoadVillageBuilding = new GetSetting().BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             if (!autoLoadVillageBuilding) return;
 
             var villages = _villageRepository.GetMissingBuildingVillages(accountId);

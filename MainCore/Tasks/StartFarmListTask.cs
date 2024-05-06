@@ -20,7 +20,7 @@ namespace MainCore.Tasks
             result = await new ToFarmListPageCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var useStartAllButton = new GetAccountSetting().BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
+            var useStartAllButton = new GetSetting().BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
             if (useStartAllButton)
             {
                 result = await new StartAllFarmListCommand().Execute(_chromeBrowser);
@@ -37,7 +37,7 @@ namespace MainCore.Tasks
 
         private async Task SetNextExecute()
         {
-            var seconds = new GetAccountSetting().ByName(AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
+            var seconds = new GetSetting().ByName(AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
         }

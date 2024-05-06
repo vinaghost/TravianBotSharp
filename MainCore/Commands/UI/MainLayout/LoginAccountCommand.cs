@@ -22,9 +22,9 @@ namespace MainCore.Commands.UI.MainLayout
         private readonly ILogService _logService;
         private readonly IMediator _mediator;
 
-        private readonly IAccountSettingRepository _accountSettingRepository;
+        
 
-        public LoginAccountCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IDialogService dialogService, GetAccess getAccessCommand, OpenBrowserCommand openBrowserCommand, ILogService logService, IMediator mediator, IAccountSettingRepository accountSettingRepository, IChromeManager chromeManager)
+        public LoginAccountCommandHandler(ITaskManager taskManager, ITimerManager timerManager, IDialogService dialogService, GetAccess getAccessCommand, OpenBrowserCommand openBrowserCommand, ILogService logService, IMediator mediator, IChromeManager chromeManager)
         {
             _taskManager = taskManager;
             _timerManager = timerManager;
@@ -33,7 +33,7 @@ namespace MainCore.Commands.UI.MainLayout
             _openBrowserCommand = openBrowserCommand;
             _logService = logService;
             _mediator = mediator;
-            _accountSettingRepository = accountSettingRepository;
+            
             _chromeManager = chromeManager;
         }
 
@@ -47,7 +47,7 @@ namespace MainCore.Commands.UI.MainLayout
             }
             var accountId = new AccountId(accounts.SelectedItemId);
 
-            var tribe = (TribeEnums)new GetAccountSetting().ByName(accountId, AccountSettingEnums.Tribe);
+            var tribe = (TribeEnums)new GetSetting().ByName(accountId, AccountSettingEnums.Tribe);
             if (tribe == TribeEnums.Any)
             {
                 _dialogService.ShowMessageBox("Warning", "Choose tribe first");

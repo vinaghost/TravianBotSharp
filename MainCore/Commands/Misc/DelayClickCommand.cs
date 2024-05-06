@@ -4,7 +4,7 @@
     {
         public async Task Execute(AccountId accountId)
         {
-            var delay = new GetAccountSetting().ByName(accountId, AccountSettingEnums.ClickDelayMin, AccountSettingEnums.ClickDelayMax);
+            var delay = new GetSetting().ByName(accountId, AccountSettingEnums.ClickDelayMin, AccountSettingEnums.ClickDelayMax);
             await Task.Delay(delay, CancellationToken.None);
         }
     }

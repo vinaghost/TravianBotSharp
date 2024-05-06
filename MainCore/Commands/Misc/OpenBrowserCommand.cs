@@ -11,7 +11,7 @@ namespace MainCore.Commands.Misc
             var serverFolderName = account.Server.Replace("https://", "").Replace("http://", "").Replace(".", "_");
             var accountFolderName = account.Username;
 
-            var headlessChrome = new GetAccountSetting().BooleanByName(accountId, AccountSettingEnums.HeadlessChrome);
+            var headlessChrome = new GetSetting().BooleanByName(accountId, AccountSettingEnums.HeadlessChrome);
             var profilePath = Path.Combine(serverFolderName, accountFolderName);
             var chromeSetting = new ChromeSetting()
             {
