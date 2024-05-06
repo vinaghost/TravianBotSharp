@@ -6,7 +6,6 @@ namespace MainCore.Repositories
     public class AccountRepository : IAccountRepository
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IUseragentManager _useragentManager;
         private readonly ITaskManager _taskManager;
 
         public AccountRepository(IDbContextFactory<AppDbContext> contextFactory, IUseragentManager useragentManager, ITaskManager taskManager)
@@ -39,37 +38,6 @@ namespace MainCore.Repositories
             context.SaveChanges();
             context.FillAccountSettings(new(account.Id));
             return true;
-        }
-
-        public void Add(List<AccountDetailDto> dtos)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            var accounts = new List<Account>();
-            foreach (var dto in dtos)
-            {
-                var isExist = context.Accounts
-                    .Where(x => x.Username == dto.Username)
-                    .Where(x => x.Server == dto.Server)
-                    .Any();
-                if (isExist) continue;
-                var account = dto.ToEnitty();
-                foreach (var access in account.Accesses)
-                {
-                    if (string.IsNullOrEmpty(access.Useragent))
-                    {
-                        access.Useragent = _useragentManager.Get();
-                    }
-                }
-                accounts.Add(account);
-            }
-            context.AddRange(accounts);
-            context.SaveChanges();
-
-            foreach (var account in accounts)
-            {
-                context.FillAccountSettings(new(account.Id));
-            }
         }
 
         public void Delete(AccountId accountId)
