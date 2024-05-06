@@ -1,46 +1,15 @@
-﻿using MainCore.UI.Models.Output;
-
-namespace MainCore.Repositories
+﻿namespace MainCore.Commands.Queries
 {
-    [RegisterAsTransient]
-    public class VillageRepository : IVillageRepository
+    public class GetVillage
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public VillageRepository(IDbContextFactory<AppDbContext> contextFactory)
+        public GetVillage(IDbContextFactory<AppDbContext> contextFactory = null)
         {
-            _contextFactory = contextFactory;
+            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
         }
 
-        public VillageId GetActiveVillages(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            var village = context.Villages
-                .Where(x => x.AccountId == accountId.Value)
-                .Where(x => x.IsActive)
-                .Select(x => x.Id)
-                .AsEnumerable()
-                .Select(x => new VillageId(x))
-                .FirstOrDefault();
-            return village;
-        }
-
-        public List<VillageId> GetInactiveVillages(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var villages = context.Villages
-                .Where(x => x.AccountId == accountId.Value)
-                .Where(x => !x.IsActive)
-                .OrderBy(x => x.Name)
-                .Select(x => x.Id)
-                .AsEnumerable()
-                .Select(x => new VillageId(x))
-                .ToList();
-            return villages;
-        }
-
-        public List<VillageId> Get(AccountId accountId)
+        public List<VillageId> All(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();
 
@@ -53,7 +22,7 @@ namespace MainCore.Repositories
             return villages;
         }
 
-        public List<VillageId> GetMissingBuildingVillages(AccountId accountId)
+        public List<VillageId> Missing(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();
 
@@ -68,7 +37,35 @@ namespace MainCore.Repositories
             return missingBuildingVillages;
         }
 
-        public List<VillageId> GetHasBuildingJobVillages(AccountId accountId)
+        public VillageId Active(AccountId accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var village = context.Villages
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => x.IsActive)
+                .Select(x => x.Id)
+                .AsEnumerable()
+                .Select(x => new VillageId(x))
+                .FirstOrDefault();
+            return village;
+        }
+
+        public List<VillageId> Inactive(AccountId accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var villages = context.Villages
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => !x.IsActive)
+                .OrderBy(x => x.Name)
+                .Select(x => x.Id)
+                .AsEnumerable()
+                .Select(x => new VillageId(x))
+                .ToList();
+            return villages;
+        }
+
+        public List<VillageId> Job(AccountId accountId)
         {
             var types = new List<JobTypeEnums>() {
                 JobTypeEnums.NormalBuild,
@@ -84,22 +81,6 @@ namespace MainCore.Repositories
                 .Select(x => new VillageId(x))
                 .ToList();
             return hasBuildingJobVillages;
-        }
-
-        public List<ListBoxItem> GetItems(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            var villages = context.Villages
-                .Where(x => x.AccountId == accountId.Value)
-                .OrderBy(x => x.Name)
-                .Select(x => new ListBoxItem()
-                {
-                    Id = x.Id,
-                    Content = $"{x.Name}{Environment.NewLine}({x.X}|{x.Y})",
-                })
-                .ToList();
-            return villages;
         }
     }
 }

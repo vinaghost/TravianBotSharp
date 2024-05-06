@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.UI.Village;
+﻿using MainCore.Tasks;
 using MainCore.UI.Enums;
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
@@ -14,8 +14,10 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         private readonly VillageTabStore _villageTabStore;
 
-        private readonly IMediator _mediator;
-        private readonly IVillageRepository _villageRepository;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+
+        private readonly ITaskManager _taskManager;
+        private readonly IDialogService _dialogService;
         public ListBoxItemViewModel Villages { get; } = new();
 
         public VillageTabStore VillageTabStore => _villageTabStore;
@@ -24,11 +26,12 @@ namespace MainCore.UI.ViewModels.Tabs
         public ReactiveCommand<Unit, Unit> LoadAll { get; }
         public ReactiveCommand<AccountId, List<ListBoxItem>> LoadVillage { get; }
 
-        public VillageViewModel(VillageTabStore villageTabStore, IMediator mediator, IVillageRepository villageRepository)
+        public VillageViewModel(VillageTabStore villageTabStore, IDbContextFactory<AppDbContext> contextFactory, ITaskManager taskManager, IDialogService dialogService)
         {
             _villageTabStore = villageTabStore;
-            _mediator = mediator;
-            _villageRepository = villageRepository;
+            _contextFactory = contextFactory;
+            _taskManager = taskManager;
+            _dialogService = dialogService;
 
             LoadCurrent = ReactiveCommand.CreateFromTask(LoadCurrentHandler);
             LoadUnload = ReactiveCommand.CreateFromTask(LoadUnloadHandler);
@@ -51,32 +54,62 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadVillage.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadVillage.Execute(accountId);
         }
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadVillage.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadVillage.Execute(accountId);
         }
 
         private async Task LoadCurrentHandler()
         {
-            await _mediator.Send(new LoadCurrentCommand(AccountId, Villages));
+            if (!Villages.IsSelected)
+            {
+                _dialogService.ShowMessageBox("Warning", "No village selected");
+                return;
+            }
+
+            var villageId = new VillageId(Villages.SelectedItemId);
+            await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, villageId);
+
+            _dialogService.ShowMessageBox("Information", $"Added update task");
         }
 
         private async Task LoadUnloadHandler()
         {
-            await _mediator.Send(new LoadUnloadCommand(AccountId));
+            var villages = new GetVillage().Missing(AccountId);
+            foreach (var village in villages)
+            {
+                await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
+            }
+            _dialogService.ShowMessageBox("Information", $"Added update task");
         }
 
         private async Task LoadAllHandler()
         {
-            await _mediator.Send(new LoadAllCommand(AccountId));
+            var villages = new GetVillage().All(AccountId);
+            foreach (var village in villages)
+            {
+                await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
+            }
+            _dialogService.ShowMessageBox("Information", $"Added update task");
         }
 
         private List<ListBoxItem> LoadVillageHandler(AccountId accountId)
         {
-            return _villageRepository.GetItems(accountId);
+            using var context = _contextFactory.CreateDbContext();
+
+            var villages = context.Villages
+                .Where(x => x.AccountId == accountId.Value)
+                .OrderBy(x => x.Name)
+                .Select(x => new ListBoxItem()
+                {
+                    Id = x.Id,
+                    Content = $"{x.Name}{Environment.NewLine}({x.X}|{x.Y})",
+                })
+                .ToList();
+            return villages;
         }
     }
 }

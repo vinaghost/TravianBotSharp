@@ -12,17 +12,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public VillageSettingInput VillageSettingInput { get; } = new();
 
         private readonly IMediator _mediator;
-        private readonly IVillageSettingRepository _villageSettingRepository;
 
         public ReactiveCommand<Unit, Unit> SaveCommand { get; }
         public ReactiveCommand<Unit, Unit> ExportCommand { get; }
         public ReactiveCommand<Unit, Unit> ImportCommand { get; }
         public ReactiveCommand<VillageId, Dictionary<VillageSettingEnums, int>> LoadSetting { get; }
 
-        public VillageSettingViewModel(IMediator mediator, IVillageSettingRepository villageSettingRepository)
+        public VillageSettingViewModel(IMediator mediator)
         {
             _mediator = mediator;
-            _villageSettingRepository = villageSettingRepository;
 
             SaveCommand = ReactiveCommand.CreateFromTask(SaveHandler);
             ExportCommand = ReactiveCommand.CreateFromTask(ExportHandler);
@@ -61,7 +59,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private Dictionary<VillageSettingEnums, int> LoadSettingHandler(VillageId villageId)
         {
-            var settings = _villageSettingRepository.Get(villageId);
+            var settings = new GetSetting().Get(villageId);
             return settings;
         }
     }

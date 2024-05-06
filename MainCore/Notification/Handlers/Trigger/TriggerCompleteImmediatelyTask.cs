@@ -5,13 +5,13 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerCompleteImmediatelyTask : INotificationHandler<VillageSettingUpdated>, INotificationHandler<QueueBuildingUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly IVillageSettingRepository _villageSettingRepository;
+
         private readonly IQueueBuildingRepository _queueBuildingRepository;
 
-        public TriggerCompleteImmediatelyTask(ITaskManager taskManager, IVillageSettingRepository villageSettingRepository, IQueueBuildingRepository queueBuildingRepository)
+        public TriggerCompleteImmediatelyTask(ITaskManager taskManager, IQueueBuildingRepository queueBuildingRepository)
         {
             _taskManager = taskManager;
-            _villageSettingRepository = villageSettingRepository;
+
             _queueBuildingRepository = queueBuildingRepository;
         }
 

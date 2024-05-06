@@ -5,13 +5,13 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerNPCTask : INotificationHandler<StorageUpdated>, INotificationHandler<VillageSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly IVillageSettingRepository _villageSettingRepository;
+
         private readonly IStorageRepository _storageRepository;
 
-        public TriggerNPCTask(ITaskManager taskManager, IVillageSettingRepository villageSettingRepository, IStorageRepository storageRepository)
+        public TriggerNPCTask(ITaskManager taskManager, IStorageRepository storageRepository)
         {
             _taskManager = taskManager;
-            _villageSettingRepository = villageSettingRepository;
+
             _storageRepository = storageRepository;
         }
 

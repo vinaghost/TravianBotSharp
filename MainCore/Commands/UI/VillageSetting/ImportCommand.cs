@@ -19,14 +19,12 @@ namespace MainCore.Commands.UI.VillageSetting
         private readonly IValidator<VillageSettingInput> _villageSettingInputValidator;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
-        private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public ImportCommandHandler(IValidator<VillageSettingInput> villageSettingInputValidator, IDialogService dialogService, IMediator mediator, IVillageSettingRepository villageSettingRepository)
+        public ImportCommandHandler(IValidator<VillageSettingInput> villageSettingInputValidator, IDialogService dialogService, IMediator mediator)
         {
             _villageSettingInputValidator = villageSettingInputValidator;
             _dialogService = dialogService;
             _mediator = mediator;
-            _villageSettingRepository = villageSettingRepository;
         }
 
         public async Task Handle(ImportCommand request, CancellationToken cancellationToken)

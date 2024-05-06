@@ -5,12 +5,10 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerClaimQuestTask : INotificationHandler<QuestUpdated>, INotificationHandler<VillageSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public TriggerClaimQuestTask(ITaskManager taskManager, IVillageSettingRepository villageSettingRepository)
+        public TriggerClaimQuestTask(ITaskManager taskManager)
         {
             _taskManager = taskManager;
-            _villageSettingRepository = villageSettingRepository;
         }
 
         public async Task Handle(QuestUpdated notification, CancellationToken cancellationToken)

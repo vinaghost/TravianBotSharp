@@ -115,5 +115,15 @@
 
             return settingValue;
         }
+
+        public Dictionary<VillageSettingEnums, int> Get(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var settings = context.VillagesSetting
+                .Where(x => x.VillageId == villageId.Value)
+                .ToDictionary(x => x.Setting, x => x.Value);
+            return settings;
+        }
     }
 }
