@@ -40,7 +40,7 @@ namespace MainCore.Commands.UI.VillageSetting
             }
             var villageId = request.VillageId;
             var settings = villageSettingInput.Get();
-            new SetVillageSettingCommand().Execute(villageId, settings);
+            new SetSettingCommand().Execute(villageId, settings);
             await _mediator.Publish(new VillageSettingUpdated(accountId, villageId), cancellationToken);
 
             _dialogService.ShowMessageBox("Information", "Settings saved");

@@ -31,7 +31,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
-            var trainTroopEnable = new GetVillageSetting().BooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
+            var trainTroopEnable = new GetSetting().BooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
             if (trainTroopEnable)
             {
                 if (_taskManager.IsExist<TrainTroopTask>(accountId, villageId)) return;

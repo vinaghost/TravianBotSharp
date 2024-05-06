@@ -170,13 +170,13 @@ namespace MainCore.Tasks
 
         private bool IsSpecialUpgrade()
         {
-            var useSpecialUpgrade = new GetVillageSetting().BooleanByName(VillageId, VillageSettingEnums.UseSpecialUpgrade);
+            var useSpecialUpgrade = new GetSetting().BooleanByName(VillageId, VillageSettingEnums.UseSpecialUpgrade);
             return useSpecialUpgrade;
         }
 
         private bool IsUseHeroResource()
         {
-            var useHeroResource = new GetVillageSetting().BooleanByName(VillageId, VillageSettingEnums.UseHeroResourceForBuilding);
+            var useHeroResource = new GetSetting().BooleanByName(VillageId, VillageSettingEnums.UseHeroResourceForBuilding);
             return useHeroResource;
         }
 

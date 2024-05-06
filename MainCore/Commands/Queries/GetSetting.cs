@@ -1,13 +1,10 @@
-﻿using MainCore.Infrasturecture.Persistence;
-using Microsoft.EntityFrameworkCore;
-
-namespace MainCore.Commands.Queries
+﻿namespace MainCore.Commands.Queries
 {
-    public class GetVillageSetting
+    public class GetSetting
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public GetVillageSetting(IDbContextFactory<AppDbContext> contextFactory = null)
+        public GetSetting(IDbContextFactory<AppDbContext> contextFactory = null)
         {
             _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
         }
@@ -62,6 +59,16 @@ namespace MainCore.Commands.Queries
                    .FirstOrDefault();
 
             return settingValue;
+        }
+
+        public Dictionary<AccountSettingEnums, int> Get(AccountId accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var settings = context.AccountsSetting
+                .Where(x => x.AccountId == accountId.Value)
+                .ToDictionary(x => x.Setting, x => x.Value);
+            return settings;
         }
     }
 }

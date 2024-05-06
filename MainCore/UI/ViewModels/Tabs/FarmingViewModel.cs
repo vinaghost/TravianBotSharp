@@ -108,7 +108,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private Dictionary<AccountSettingEnums, int> LoadSettingHandler(AccountId accountId)
         {
-            var items = _accountSettingRepository.Get(accountId);
+            var items = new GetSetting().Get(accountId);
             return items;
         }
 

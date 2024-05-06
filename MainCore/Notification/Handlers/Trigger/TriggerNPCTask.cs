@@ -31,11 +31,11 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
-            var autoNPCEnable = new GetVillageSetting().BooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
+            var autoNPCEnable = new GetSetting().BooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
             if (autoNPCEnable)
             {
                 var granaryPercent = _storageRepository.GetGranaryPercent(villageId);
-                var autoNPCGranaryPercent = new GetVillageSetting().ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
+                var autoNPCGranaryPercent = new GetSetting().ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
 
                 if (granaryPercent < autoNPCGranaryPercent) return;
                 if (_taskManager.IsExist<NPCTask>(accountId, villageId)) return;

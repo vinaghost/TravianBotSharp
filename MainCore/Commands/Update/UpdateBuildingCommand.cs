@@ -327,7 +327,7 @@
             {
                 if (dto.Location == 40)
                 {
-                    var tribe = (TribeEnums)new GetVillageSetting(_contextFactory).ByName(villageId, VillageSettingEnums.Tribe);
+                    var tribe = (TribeEnums)new GetSetting(_contextFactory).ByName(villageId, VillageSettingEnums.Tribe);
                     var wall = tribe.GetWall();
                     dto.Type = wall;
                 }
