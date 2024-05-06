@@ -1,19 +1,15 @@
-﻿using MainCore.Infrasturecture.Persistence;
-using Microsoft.EntityFrameworkCore;
-
-namespace MainCore.Repositories
+﻿namespace MainCore.Commands.Queries
 {
-    [RegisterAsTransient]
-    public class AccountInfoRepository : IAccountInfoRepository
+    public class IsPlusActive
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public AccountInfoRepository(IDbContextFactory<AppDbContext> contextFactory)
+        public IsPlusActive(IDbContextFactory<AppDbContext> contextFactory = null)
         {
-            _contextFactory = contextFactory;
+            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
         }
 
-        public bool IsPlusActive(AccountId accountId)
+        public bool Execute(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();
             var accountInfo = context.AccountsInfo

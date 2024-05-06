@@ -7,14 +7,12 @@ namespace MainCore.Notification.Handlers.Trigger
         private readonly ITaskManager _taskManager;
         private readonly IVillageSettingRepository _villageSettingRepository;
         private readonly IQueueBuildingRepository _queueBuildingRepository;
-        private readonly IAccountInfoRepository _accountInfoRepository;
 
-        public TriggerCompleteImmediatelyTask(ITaskManager taskManager, IVillageSettingRepository villageSettingRepository, IQueueBuildingRepository queueBuildingRepository, IAccountInfoRepository accountInfoRepository)
+        public TriggerCompleteImmediatelyTask(ITaskManager taskManager, IVillageSettingRepository villageSettingRepository, IQueueBuildingRepository queueBuildingRepository)
         {
             _taskManager = taskManager;
             _villageSettingRepository = villageSettingRepository;
             _queueBuildingRepository = queueBuildingRepository;
-            _accountInfoRepository = accountInfoRepository;
         }
 
         public async Task Handle(QueueBuildingUpdated notification, CancellationToken cancellationToken)
@@ -38,7 +36,7 @@ namespace MainCore.Notification.Handlers.Trigger
             if (!completeImmediatelyEnable) return;
 
             var applyRomanQueueLogicWhenBuilding = new GetVillageSetting().BooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
-            var plusActive = _accountInfoRepository.IsPlusActive(accountId);
+            var plusActive = new IsPlusActive().Execute(accountId);
 
             var countNeeded = 1;
             if (applyRomanQueueLogicWhenBuilding)

@@ -1,5 +1,4 @@
 ﻿using MainCore.Common.Errors.AutoBuilder;
-using MainCore.DTO;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
@@ -14,14 +13,12 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     {
         private readonly IJobRepository _jobRepository;
         private readonly IBuildingRepository _buildingRepository;
-        private readonly IAccountInfoRepository _accountInfoRepository;
         private readonly IVillageSettingRepository _villageSettingRepository;
 
-        public GetJobCommandHandler(IJobRepository jobRepository, IBuildingRepository buildingRepository, IAccountInfoRepository accountInfoRepository, IVillageSettingRepository villageSettingRepository)
+        public GetJobCommandHandler(IJobRepository jobRepository, IBuildingRepository buildingRepository, IVillageSettingRepository villageSettingRepository)
         {
             _jobRepository = jobRepository;
             _buildingRepository = buildingRepository;
-            _accountInfoRepository = accountInfoRepository;
             _villageSettingRepository = villageSettingRepository;
         }
 
@@ -41,7 +38,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var countQueueBuilding = _buildingRepository.CountQueueBuilding(villageId);
             if (countQueueBuilding == 0) return GetBuildingJob(villageId);
 
-            var plusActive = _accountInfoRepository.IsPlusActive(accountId);
+            var plusActive = new IsPlusActive().Execute(accountId);
             var applyRomanQueueLogic = new GetVillageSetting().BooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
 
             if (countQueueBuilding == 1)
