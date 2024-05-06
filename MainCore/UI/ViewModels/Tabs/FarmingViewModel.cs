@@ -10,7 +10,7 @@ using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class FarmingViewModel : AccountTabViewModelBase
     {
         public FarmListSettingInput FarmListSettingInput { get; } = new();

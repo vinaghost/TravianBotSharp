@@ -10,7 +10,7 @@ using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class DebugViewModel : AccountTabViewModelBase
     {
         private readonly LogSink _logSink;

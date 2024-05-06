@@ -1,5 +1,4 @@
 ﻿using MainCore.Commands.UI.AddAccounts;
-using MainCore.DTO;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
 using System.Collections.ObjectModel;
@@ -7,7 +6,7 @@ using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class AddAccountsViewModel : TabViewModelBase
     {
         private readonly IMediator _mediator;

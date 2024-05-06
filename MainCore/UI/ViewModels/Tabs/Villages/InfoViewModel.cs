@@ -2,7 +2,7 @@
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class InfoViewModel : VillageTabViewModelBase
     {
         protected override Task Load(VillageId villageId)

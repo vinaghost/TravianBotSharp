@@ -6,7 +6,7 @@ using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class VillageSettingViewModel : VillageTabViewModelBase
     {
         public VillageSettingInput VillageSettingInput { get; } = new();

@@ -9,7 +9,7 @@ using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class VillageViewModel : AccountTabViewModelBase
     {
         private readonly VillageTabStore _villageTabStore;

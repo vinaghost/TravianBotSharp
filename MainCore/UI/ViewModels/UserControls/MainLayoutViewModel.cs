@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class MainLayoutViewModel : ViewModelBase
     {
         private readonly IMediator _mediator;

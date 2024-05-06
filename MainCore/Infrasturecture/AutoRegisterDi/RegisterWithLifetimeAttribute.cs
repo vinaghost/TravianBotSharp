@@ -50,6 +50,13 @@ namespace MainCore.Infrasturecture.AutoRegisterDi
         }
     }
 
+    public class RegisterAsViewModelAttribute : RegisterAsSingletonAttribute
+    {
+        public RegisterAsViewModelAttribute() : base(true)
+        {
+        }
+    }
+
     /// <summary>
     /// Attribute for marking classes which no need to register in container
     /// </summary>
