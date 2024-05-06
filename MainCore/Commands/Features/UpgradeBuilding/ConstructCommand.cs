@@ -1,33 +1,12 @@
 ﻿namespace MainCore.Commands.Features.UpgradeBuilding
 {
-    public class ConstructCommand : ICommand
+    public class ConstructCommand
     {
-        public ConstructCommand(IChromeBrowser chromeBrowser, BuildingEnums building)
+        public async Task<Result> Execute(IChromeBrowser chromeBrowser, BuildingEnums building, CancellationToken cancellationToken)
         {
-            Building = building;
-            ChromeBrowser = chromeBrowser;
-        }
-
-        public BuildingEnums Building { get; }
-        public IChromeBrowser ChromeBrowser { get; }
-    }
-
-    public class ConstructCommandHandler : ICommandHandler<ConstructCommand>
-    {
-        private readonly IUpgradeBuildingParser _upgradeBuildingParser;
-
-        public ConstructCommandHandler(IUpgradeBuildingParser upgradeBuildingParser)
-        {
-            _upgradeBuildingParser = upgradeBuildingParser;
-        }
-
-        public async Task<Result> Handle(ConstructCommand request, CancellationToken cancellationToken)
-        {
-            var chromeBrowser = request.ChromeBrowser;
-            var building = request.Building;
             var html = chromeBrowser.Html;
 
-            var button = _upgradeBuildingParser.GetConstructButton(html, building);
+            var button = GetConstructButton(html, building);
             if (button is null) return Retry.ButtonNotFound("construct");
 
             var result = await chromeBrowser.Click(By.XPath(button.XPath));
@@ -36,6 +15,18 @@
             result = await chromeBrowser.WaitPageChanged("dorf", cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
+        }
+
+        private static HtmlNode GetConstructButton(HtmlDocument doc, BuildingEnums building)
+        {
+            var node = doc.GetElementbyId($"contract_building{(int)building}");
+            if (node is null) return null;
+
+            var button = node
+                .Descendants("button")
+                .FirstOrDefault(x => x.HasClass("new"));
+
+            return button;
         }
     }
 }

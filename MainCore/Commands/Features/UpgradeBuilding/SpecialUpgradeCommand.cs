@@ -1,35 +1,11 @@
-﻿using HtmlAgilityPack;
-
-namespace MainCore.Commands.Features.UpgradeBuilding
+﻿namespace MainCore.Commands.Features.UpgradeBuilding
 {
-    public class SpecialUpgradeCommand : ByAccountIdBase, ICommand
+    public class SpecialUpgradeCommand
     {
-        public IChromeBrowser ChromeBrowser { get; }
-
-        public SpecialUpgradeCommand(AccountId accountId, IChromeBrowser chromeBrowser) : base(accountId)
+        public async Task<Result> Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
         {
-            ChromeBrowser = chromeBrowser;
-        }
-    }
-
-    public class SpecialUpgradeCommandHandler : ICommandHandler<SpecialUpgradeCommand>
-    {
-        private readonly IUpgradeBuildingParser _upgradeBuildingParser;
-        private readonly DelayClickCommand _delayClickCommand;
-
-        public SpecialUpgradeCommandHandler(IUpgradeBuildingParser upgradeBuildingParser, DelayClickCommand delayClickCommand)
-        {
-            _upgradeBuildingParser = upgradeBuildingParser;
-            _delayClickCommand = delayClickCommand;
-        }
-
-        public async Task<Result> Handle(SpecialUpgradeCommand request, CancellationToken cancellationToken)
-        {
-            var chromeBrowser = request.ChromeBrowser;
-            var accountId = request.AccountId;
-
             var html = chromeBrowser.Html;
-            var button = _upgradeBuildingParser.GetSpecialUpgradeButton(html);
+            var button = GetSpecialUpgradeButton(html);
             if (button is null) return Retry.ButtonNotFound("Watch ads upgrade");
             var result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -63,7 +39,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 result = await chromeBrowser.Click(By.XPath(checkbox.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                await _delayClickCommand.Execute(accountId);
+                await new DelayClickCommand().Execute(accountId);
 
                 var watchButton = videoFeature.Descendants("button").FirstOrDefault(x => x.HasClass("green"));
                 if (watchButton is null) return Retry.ButtonNotFound("Watch ads");
@@ -116,7 +92,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 result = await chromeBrowser.Click(By.XPath(dontShowThisAgain.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                await _delayClickCommand.Execute(accountId);
+                await new DelayClickCommand().Execute(accountId);
 
                 var okButton = html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
                 if (okButton is null) return Retry.ButtonNotFound("ok");
@@ -125,6 +101,20 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             }
 
             return Result.Ok();
+        }
+
+        private static HtmlNode GetSpecialUpgradeButton(HtmlDocument doc)
+        {
+            var node = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("upgradeButtonsContainer"));
+            if (node is null) return null;
+
+            var button = node
+                .Descendants("button")
+                .FirstOrDefault(x => x.HasClass("videoFeatureButton") && x.HasClass("green"));
+
+            return button;
         }
     }
 }

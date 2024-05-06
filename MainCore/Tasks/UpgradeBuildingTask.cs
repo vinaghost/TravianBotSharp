@@ -121,18 +121,18 @@ namespace MainCore.Tasks
                 {
                     if (IsSpecialUpgrade() && IsSpecialUpgradeable(plan))
                     {
-                        result = await _mediator.Send(new SpecialUpgradeCommand(AccountId, _chromeBrowser), CancellationToken);
+                        result = await new SpecialUpgradeCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
                         if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
                     else
                     {
-                        result = await _mediator.Send(new UpgradeCommand(_chromeBrowser), CancellationToken);
+                        result = await new UpgradeCommand().Execute(_chromeBrowser, CancellationToken);
                         if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
                 }
                 else
                 {
-                    result = await _mediator.Send(new ConstructCommand(_chromeBrowser, plan.Type), CancellationToken);
+                    result = await new ConstructCommand().Execute(_chromeBrowser, plan.Type, CancellationToken);
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
             }
