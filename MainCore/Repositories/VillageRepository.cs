@@ -1,10 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Infrasturecture.Persistence;
-using MainCore.UI.Models.Output;
-using Microsoft.EntityFrameworkCore;
+﻿using MainCore.UI.Models.Output;
 
 namespace MainCore.Repositories
 {
@@ -16,16 +10,6 @@ namespace MainCore.Repositories
         public VillageRepository(IDbContextFactory<AppDbContext> contextFactory)
         {
             _contextFactory = contextFactory;
-        }
-
-        public string GetVillageName(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var villageName = context.Villages
-                .Where(x => x.Id == villageId.Value)
-                .Select(x => x.Name)
-                .FirstOrDefault();
-            return villageName;
         }
 
         public VillageId GetActiveVillages(AccountId accountId)
@@ -54,22 +38,6 @@ namespace MainCore.Repositories
                 .Select(x => new VillageId(x))
                 .ToList();
             return villages;
-        }
-
-        public VillageId GetVillageHasRallypoint(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            var village = context.Villages
-                .Where(x => x.AccountId == accountId.Value)
-                .Include(x => x.Buildings.Where(x => x.Type == BuildingEnums.RallyPoint))
-                .Where(x => x.Buildings.Count > 0)
-                .OrderByDescending(x => x.IsActive)
-                .Select(x => x.Id)
-                .AsEnumerable()
-                .Select(x => new VillageId(x))
-                .FirstOrDefault();
-            return village;
         }
 
         public List<VillageId> Get(AccountId accountId)
@@ -132,36 +100,6 @@ namespace MainCore.Repositories
                 })
                 .ToList();
             return villages;
-        }
-
-        public void Update(AccountId accountId, List<VillageDto> dtos)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var villages = context.Villages
-                .Where(x => x.AccountId == accountId.Value)
-                .ToList();
-
-            var ids = dtos.Select(x => x.Id.Value).ToList();
-
-            var villageDeleted = villages.Where(x => !ids.Contains(x.Id)).ToList();
-            var villageInserted = dtos.Where(x => !villages.Any(v => v.Id == x.Id.Value)).ToList();
-            var villageUpdated = villages.Where(x => ids.Contains(x.Id)).ToList();
-
-            villageDeleted.ForEach(x => context.Remove(x));
-            villageInserted.ForEach(x =>
-            {
-                context.Add(x.ToEntity(accountId));
-                context.FillVillageSettings(accountId, x.Id);
-            });
-
-            foreach (var village in villageUpdated)
-            {
-                var dto = dtos.FirstOrDefault(x => x.Id.Value == village.Id);
-                dto.To(village);
-                context.Update(village);
-            }
-
-            context.SaveChanges();
         }
     }
 }

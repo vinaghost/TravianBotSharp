@@ -1,16 +1,12 @@
 ﻿using MainCore.Commands.UI.AddAccounts;
-using MainCore.DTO;
-using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.UI.ViewModels.Abstract;
-using MediatR;
 using ReactiveUI;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class AddAccountsViewModel : TabViewModelBase
     {
         private readonly IMediator _mediator;

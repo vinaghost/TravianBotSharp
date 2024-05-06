@@ -1,69 +1,75 @@
-﻿using FluentResults;
-using MainCore.Common.Errors;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Parsers;
-using MainCore.Repositories;
-using MainCore.Services;
-using MediatR;
-using OpenQA.Selenium;
+﻿using MainCore.Commands.Abstract;
 
 namespace MainCore.Commands.Features
 {
-    public class LoginCommand : ByAccountIdBase, IRequest<Result>
+    public class LoginCommand : LoginPageCommand
     {
-        public LoginCommand(AccountId accountId) : base(accountId)
-        {
-        }
-    }
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-    public class LoginCommandHandler : IRequestHandler<LoginCommand, Result>
-    {
-        private readonly IChromeManager _chromeManager;
-        private readonly UnitOfParser _unitOfParser;
-        private readonly UnitOfRepository _unitOfRepository;
-
-        public LoginCommandHandler(IChromeManager chromeManager, UnitOfParser unitOfParser, UnitOfRepository unitOfRepository)
+        public LoginCommand(IDbContextFactory<AppDbContext> contextFactory = null)
         {
-            _chromeManager = chromeManager;
-            _unitOfParser = unitOfParser;
-            _unitOfRepository = unitOfRepository;
+            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
         }
 
-        public async Task<Result> Handle(LoginCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
-            var accountId = request.AccountId;
-
-            var chromeBrowser = _chromeManager.Get(accountId);
+            if (new IsIngamePage().Execute(chromeBrowser)) return Result.Ok();
 
             var html = chromeBrowser.Html;
 
-            var resourceButton = _unitOfParser.NavigationBarParser.GetResourceButton(html);
-            if (resourceButton is not null) return Result.Ok();
-
-            var buttonNode = _unitOfParser.LoginPageParser.GetLoginButton(html);
+            var buttonNode = GetLoginButton(html);
             if (buttonNode is null) return Retry.ButtonNotFound("login");
-            var usernameNode = _unitOfParser.LoginPageParser.GetUsernameNode(html);
+            var usernameNode = GetUsernameNode(html);
             if (usernameNode is null) return Retry.TextboxNotFound("username");
-            var passwordNode = _unitOfParser.LoginPageParser.GetPasswordNode(html);
+            var passwordNode = GetPasswordNode(html);
             if (passwordNode is null) return Retry.TextboxNotFound("password");
 
-            var username = _unitOfRepository.AccountRepository.GetUsername(accountId);
-            var password = _unitOfRepository.AccountRepository.GetPassword(accountId);
+            var (username, password) = GetLoginInfo(accountId);
 
             Result result;
             result = await chromeBrowser.InputTextbox(By.XPath(usernameNode.XPath), username);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await chromeBrowser.InputTextbox(By.XPath(passwordNode.XPath), password);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await chromeBrowser.Click(By.XPath(buttonNode.XPath));
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await chromeBrowser.WaitPageChanged("dorf", cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
+        }
+
+        private static HtmlNode GetUsernameNode(HtmlDocument doc)
+        {
+            var node = doc.DocumentNode
+                .Descendants("input")
+                .FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("name"));
+            return node;
+        }
+
+        private static HtmlNode GetPasswordNode(HtmlDocument doc)
+        {
+            var node = doc.DocumentNode
+                .Descendants("input")
+                .FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("password"));
+            return node;
+        }
+
+        private (string, string) GetLoginInfo(AccountId accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var username = context.Accounts
+                .Where(x => x.Id == accountId.Value)
+                .Select(x => x.Username)
+                .FirstOrDefault();
+
+            var password = context.Accesses
+                .Where(x => x.AccountId == accountId.Value)
+                .OrderByDescending(x => x.LastUsed)
+                .Select(x => x.Password)
+                .FirstOrDefault();
+            return (username, password);
         }
     }
 }

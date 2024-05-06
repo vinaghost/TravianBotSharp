@@ -1,15 +1,12 @@
 ﻿using MainCore.Commands.UI.Account;
-using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
-using MediatR;
 using ReactiveUI;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class AddAccountViewModel : TabViewModelBase
     {
         public AccountInput AccountInput { get; } = new();

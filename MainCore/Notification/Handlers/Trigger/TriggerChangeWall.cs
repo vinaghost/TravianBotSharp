@@ -1,23 +1,19 @@
-﻿using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MediatR;
-
-namespace MainCore.Notification.Handlers.Trigger
+﻿namespace MainCore.Notification.Handlers.Trigger
 {
     public class TriggerChangeWall : INotificationHandler<VillageSettingUpdated>
     {
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IBuildingRepository _buildingRepository;
 
-        public TriggerChangeWall(UnitOfRepository unitOfRepository)
+        public TriggerChangeWall(IBuildingRepository buildingRepository)
         {
-            _unitOfRepository = unitOfRepository;
+            _buildingRepository = buildingRepository;
         }
 
         public async Task Handle(VillageSettingUpdated notification, CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
             var villageId = notification.VillageId;
-            _unitOfRepository.BuildingRepository.UpdateWall(villageId);
+            _buildingRepository.UpdateWall(villageId);
         }
     }
 }

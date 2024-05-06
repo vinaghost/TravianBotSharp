@@ -1,6 +1,4 @@
-﻿using MainCore.Infrasturecture.AutoRegisterDi;
-
-namespace MainCore.Services
+﻿namespace MainCore.Services
 {
     [RegisterAsSingleton]
     public class DialogService : IDialogService

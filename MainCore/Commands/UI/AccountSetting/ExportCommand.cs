@@ -1,9 +1,4 @@
-﻿using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Repositories;
-using MainCore.Services;
-using MediatR;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace MainCore.Commands.UI.AccountSetting
 {
@@ -16,12 +11,12 @@ namespace MainCore.Commands.UI.AccountSetting
 
     public class ExportCommandHandler : IRequestHandler<ExportCommand>
     {
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IAccountSettingRepository _accountSettingRepository;
         private readonly IDialogService _dialogService;
 
-        public ExportCommandHandler(UnitOfRepository unitOfRepository, IDialogService dialogService)
+        public ExportCommandHandler(IAccountSettingRepository accountSettingRepository, IDialogService dialogService)
         {
-            _unitOfRepository = unitOfRepository;
+            _accountSettingRepository = accountSettingRepository;
             _dialogService = dialogService;
         }
 
@@ -30,7 +25,7 @@ namespace MainCore.Commands.UI.AccountSetting
             var accountId = request.AccountId;
             var path = _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
-            var settings = _unitOfRepository.AccountSettingRepository.Get(accountId);
+            var settings = _accountSettingRepository.Get(accountId);
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString, cancellationToken);
             _dialogService.ShowMessageBox("Information", "Settings exported");

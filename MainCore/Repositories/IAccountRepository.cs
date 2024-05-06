@@ -1,6 +1,4 @@
-﻿using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 
 namespace MainCore.Repositories
 {
@@ -12,20 +10,8 @@ namespace MainCore.Repositories
 
         void Delete(AccountId accountId);
 
-        AccountDto Get(AccountId accountId, bool includeAccess = false);
-
-        AccessDto GetAccess(AccountId accountId);
-
-        List<AccessDto> GetAccesses(AccountId accountId);
-
         List<ListBoxItem> GetItems();
 
-        string GetPassword(AccountId accountId);
-
-        string GetUsername(AccountId accountId);
-
         void Update(AccountDto dto);
-
-        void UpdateAccessLastUsed(AccessId accessId);
     }
 }
