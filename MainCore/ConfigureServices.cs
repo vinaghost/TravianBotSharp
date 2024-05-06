@@ -1,7 +1,4 @@
 ﻿using FluentValidation;
-using MainCore.Common;
-using MainCore.Common.Enums;
-using MainCore.Infrasturecture.AutoRegisterDi;
 using MainCore.Infrasturecture.Persistence;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Validators;
@@ -18,7 +15,7 @@ namespace MainCore
     {
         private const string _connectionString = "DataSource=TBS.db;Cache=Shared";
 
-        public static IServiceCollection AddCoreServices(this IServiceCollection services, ServerEnums server)
+        public static IServiceCollection AddCoreServices(this IServiceCollection services)
         {
             services.AddDbContextFactory<AppDbContext>(
                 options => options
@@ -29,7 +26,7 @@ namespace MainCore
             );
 
             services
-                .AutoRegister(server)
+                .AutoRegister()
                 .AddValidator()
                 .AddMediatR(cfg =>
                 {
@@ -52,9 +49,7 @@ namespace MainCore
             return services;
         }
 
-        public static IServiceProvider Setup() => Setup(Constants.Server);
-
-        public static IServiceProvider Setup(ServerEnums server)
+        public static IServiceProvider Setup()
         {
             var host = Host.CreateDefaultBuilder()
                .ConfigureServices((_context, services) =>
@@ -65,7 +60,7 @@ namespace MainCore
                    resolver.InitializeReactiveUI();
 
                    services
-                       .AddCoreServices(server);
+                       .AddCoreServices();
                })
                .UseDefaultServiceProvider(config =>
                {

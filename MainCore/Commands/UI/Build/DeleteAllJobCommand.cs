@@ -1,11 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.UI.ViewModels.UserControls;
-using MediatR;
+﻿using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Commands.UI.Build
 {
@@ -24,14 +17,14 @@ namespace MainCore.Commands.UI.Build
         private readonly IMediator _mediator;
         private readonly IDialogService _dialogService;
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IJobRepository _jobRepository;
 
-        public DeleteAllJobCommandHandler(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public DeleteAllJobCommandHandler(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, IJobRepository jobRepository)
         {
             _mediator = mediator;
             _dialogService = dialogService;
             _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
+            _jobRepository = jobRepository;
         }
 
         public async Task Handle(DeleteAllJobCommand request, CancellationToken cancellationToken)
@@ -44,7 +37,7 @@ namespace MainCore.Commands.UI.Build
                 return;
             }
             var villageId = request.VillageId;
-            await Task.Run(() => _unitOfRepository.JobRepository.Delete(villageId), cancellationToken);
+            await Task.Run(() => _jobRepository.Delete(villageId), cancellationToken);
             await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
         }
     }

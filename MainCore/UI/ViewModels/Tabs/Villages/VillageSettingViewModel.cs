@@ -1,34 +1,28 @@
 ﻿using MainCore.Commands.UI.VillageSetting;
-using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
-using MediatR;
 using ReactiveUI;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class VillageSettingViewModel : VillageTabViewModelBase
     {
         public VillageSettingInput VillageSettingInput { get; } = new();
 
         private readonly IMediator _mediator;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IVillageSettingRepository _villageSettingRepository;
 
         public ReactiveCommand<Unit, Unit> SaveCommand { get; }
         public ReactiveCommand<Unit, Unit> ExportCommand { get; }
         public ReactiveCommand<Unit, Unit> ImportCommand { get; }
         public ReactiveCommand<VillageId, Dictionary<VillageSettingEnums, int>> LoadSetting { get; }
 
-        public VillageSettingViewModel(IMediator mediator, UnitOfRepository unitOfRepository)
+        public VillageSettingViewModel(IMediator mediator, IVillageSettingRepository villageSettingRepository)
         {
             _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
+            _villageSettingRepository = villageSettingRepository;
 
             SaveCommand = ReactiveCommand.CreateFromTask(SaveHandler);
             ExportCommand = ReactiveCommand.CreateFromTask(ExportHandler);
@@ -67,7 +61,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private Dictionary<VillageSettingEnums, int> LoadSettingHandler(VillageId villageId)
         {
-            var settings = _unitOfRepository.VillageSettingRepository.Get(villageId);
+            var settings = _villageSettingRepository.Get(villageId);
             return settings;
         }
     }

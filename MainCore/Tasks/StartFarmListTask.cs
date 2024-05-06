@@ -1,22 +1,14 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Commands.Features;
-using MainCore.Common.Enums;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
-using MainCore.Services;
+﻿using MainCore.Commands.Features.StartFarmList;
 using MainCore.Tasks.Base;
-using MediatR;
 
 namespace MainCore.Tasks
 {
-    [RegisterAsTransient(withoutInterface: true)]
+    [RegisterAsTask]
     public class StartFarmListTask : AccountTask
     {
         private readonly ITaskManager _taskManager;
 
-        public StartFarmListTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager) : base(unitOfCommand, unitOfRepository, mediator)
+        public StartFarmListTask(ITaskManager taskManager)
         {
             _taskManager = taskManager;
         }
@@ -24,17 +16,28 @@ namespace MainCore.Tasks
         protected override async Task<Result> Execute()
         {
             Result result;
-            result = await _mediator.Send(new ToFarmListPageCommand(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-            result = await _mediator.Send(new StartFarmListCommand(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+
+            result = await new ToFarmListPageCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            var useStartAllButton = new GetAccountSetting().BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
+            if (useStartAllButton)
+            {
+                result = await new StartAllFarmListCommand().Execute(_chromeBrowser);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            }
+            else
+            {
+                result = await new StartActiveFarmListCommand().Execute(_chromeBrowser, AccountId);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            }
             await SetNextExecute();
             return Result.Ok();
         }
 
         private async Task SetNextExecute()
         {
-            var seconds = _unitOfRepository.AccountSettingRepository.GetByName(AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
+            var seconds = new GetAccountSetting().ByName(AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
         }

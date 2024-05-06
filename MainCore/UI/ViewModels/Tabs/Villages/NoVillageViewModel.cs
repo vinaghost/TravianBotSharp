@@ -1,9 +1,8 @@
-﻿using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.UI.ViewModels.Abstract;
+﻿using MainCore.UI.ViewModels.Abstract;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class NoVillageViewModel : TabViewModelBase
     {
     }

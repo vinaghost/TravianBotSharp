@@ -1,6 +1,4 @@
-﻿using MainCore.Notification.Message;
-using MainCore.UI.ViewModels.UserControls;
-using MediatR;
+﻿using MainCore.UI.ViewModels.UserControls;
 using System.Reactive.Linq;
 
 namespace MainCore.Notification.Handlers.Refresh

@@ -1,10 +1,6 @@
 ﻿using FluentValidation;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.UserControls;
-using MediatR;
 
 namespace MainCore.Commands.UI.Account
 {
@@ -23,16 +19,16 @@ namespace MainCore.Commands.UI.Account
         private readonly IValidator<AccountInput> _accountInputValidator;
         private readonly IDialogService _dialogService;
         private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
+        private readonly IAccountRepository _accountRepository;
 
-        public AddAccountCommandHandler(IValidator<AccountInput> accountInputValidator, IDialogService dialogService, WaitingOverlayViewModel waitingOverlayViewModel, UnitOfRepository unitOfRepository, IMediator mediator)
+        public AddAccountCommandHandler(IValidator<AccountInput> accountInputValidator, IDialogService dialogService, WaitingOverlayViewModel waitingOverlayViewModel, IMediator mediator, IAccountRepository accountRepository)
         {
             _accountInputValidator = accountInputValidator;
             _dialogService = dialogService;
             _waitingOverlayViewModel = waitingOverlayViewModel;
-            _unitOfRepository = unitOfRepository;
             _mediator = mediator;
+            _accountRepository = accountRepository;
         }
 
         public async Task Handle(AddAccountCommand request, CancellationToken cancellationToken)
@@ -48,7 +44,7 @@ namespace MainCore.Commands.UI.Account
             await _waitingOverlayViewModel.Show("adding account");
 
             var dto = accountInput.ToDto();
-            var success = await Task.Run(() => _unitOfRepository.AccountRepository.Add(dto));
+            var success = await Task.Run(() => _accountRepository.Add(dto));
             if (success) await _mediator.Publish(new AccountUpdated(), cancellationToken);
 
             await _waitingOverlayViewModel.Hide();

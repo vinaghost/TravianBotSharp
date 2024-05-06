@@ -1,26 +1,21 @@
 ﻿using MainCore.Commands.UI.Village;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
 using MainCore.UI.Enums;
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using MediatR;
 using ReactiveUI;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class VillageViewModel : AccountTabViewModelBase
     {
         private readonly VillageTabStore _villageTabStore;
 
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
+        private readonly IVillageRepository _villageRepository;
         public ListBoxItemViewModel Villages { get; } = new();
 
         public VillageTabStore VillageTabStore => _villageTabStore;
@@ -29,11 +24,11 @@ namespace MainCore.UI.ViewModels.Tabs
         public ReactiveCommand<Unit, Unit> LoadAll { get; }
         public ReactiveCommand<AccountId, List<ListBoxItem>> LoadVillage { get; }
 
-        public VillageViewModel(VillageTabStore villageTabStore, IMediator mediator, UnitOfRepository unitOfRepository)
+        public VillageViewModel(VillageTabStore villageTabStore, IMediator mediator, IVillageRepository villageRepository)
         {
             _villageTabStore = villageTabStore;
             _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
+            _villageRepository = villageRepository;
 
             LoadCurrent = ReactiveCommand.CreateFromTask(LoadCurrentHandler);
             LoadUnload = ReactiveCommand.CreateFromTask(LoadUnloadHandler);
@@ -81,7 +76,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private List<ListBoxItem> LoadVillageHandler(AccountId accountId)
         {
-            return _unitOfRepository.VillageRepository.GetItems(accountId);
+            return _villageRepository.GetItems(accountId);
         }
     }
 }

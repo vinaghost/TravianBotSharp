@@ -1,10 +1,4 @@
-﻿using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.UI.Models.Output;
-using MediatR;
+﻿using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.Farming
 {
@@ -21,14 +15,14 @@ namespace MainCore.Commands.UI.Farming
     public class ActiveFarmListCommandHandler : IRequestHandler<ActiveFarmListCommand>
     {
         private readonly IMediator _mediator;
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
+        private readonly IFarmRepository _farmRepository;
 
-        public ActiveFarmListCommandHandler(IMediator mediator, UnitOfRepository unitOfRepository, IDialogService dialogService)
+        public ActiveFarmListCommandHandler(IMediator mediator, IDialogService dialogService, IFarmRepository farmRepository)
         {
             _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
             _dialogService = dialogService;
+            _farmRepository = farmRepository;
         }
 
         public async Task Handle(ActiveFarmListCommand request, CancellationToken cancellationToken)
@@ -43,7 +37,7 @@ namespace MainCore.Commands.UI.Farming
             var accountId = request.AccountId;
             var farmId = new FarmId(selectedFarmList.Id);
 
-            _unitOfRepository.FarmRepository.ChangeActive(farmId);
+            _farmRepository.ChangeActive(farmId);
             await _mediator.Publish(new FarmListUpdated(accountId), cancellationToken);
         }
     }

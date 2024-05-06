@@ -1,22 +1,18 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.Tasks;
-using MediatR;
+﻿using MainCore.Tasks;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
     public class TriggerCompleteImmediatelyTask : INotificationHandler<VillageSettingUpdated>, INotificationHandler<QueueBuildingUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IVillageSettingRepository _villageSettingRepository;
+        private readonly IQueueBuildingRepository _queueBuildingRepository;
 
-        public TriggerCompleteImmediatelyTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public TriggerCompleteImmediatelyTask(ITaskManager taskManager, IVillageSettingRepository villageSettingRepository, IQueueBuildingRepository queueBuildingRepository)
         {
             _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
+            _villageSettingRepository = villageSettingRepository;
+            _queueBuildingRepository = queueBuildingRepository;
         }
 
         public async Task Handle(QueueBuildingUpdated notification, CancellationToken cancellationToken)
@@ -32,15 +28,15 @@ namespace MainCore.Notification.Handlers.Trigger
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
             if (_taskManager.IsExist<CompleteImmediatelyTask>(accountId, villageId)) return;
-            _unitOfRepository.QueueBuildingRepository.Clean(villageId);
-            var count = _unitOfRepository.QueueBuildingRepository.Count(villageId);
+            _queueBuildingRepository.Clean(villageId);
+            var count = _queueBuildingRepository.Count(villageId);
             if (count == 0) return;
 
-            var completeImmediatelyEnable = _unitOfRepository.VillageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.CompleteImmediately);
+            var completeImmediatelyEnable = new GetVillageSetting().BooleanByName(villageId, VillageSettingEnums.CompleteImmediately);
             if (!completeImmediatelyEnable) return;
 
-            var applyRomanQueueLogicWhenBuilding = _unitOfRepository.VillageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
-            var plusActive = _unitOfRepository.AccountInfoRepository.IsPlusActive(accountId);
+            var applyRomanQueueLogicWhenBuilding = new GetVillageSetting().BooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
+            var plusActive = new IsPlusActive().Execute(accountId);
 
             var countNeeded = 1;
             if (applyRomanQueueLogicWhenBuilding)
@@ -53,7 +49,7 @@ namespace MainCore.Notification.Handlers.Trigger
             }
             if (count != countNeeded) return;
 
-            if (!_unitOfRepository.QueueBuildingRepository.IsSkippableBuilding(villageId)) return;
+            if (!_queueBuildingRepository.IsSkippableBuilding(villageId)) return;
 
             await _taskManager.Add<CompleteImmediatelyTask>(accountId, villageId);
         }

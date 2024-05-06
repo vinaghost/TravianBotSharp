@@ -1,43 +1,34 @@
 ﻿using MainCore.Commands.UI.MainLayout;
-using MainCore.Common;
-using MainCore.Common.Enums;
-using MainCore.Common.Extensions;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.Enums;
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
-using MediatR;
 using ReactiveUI;
 using Serilog;
 using System.Reactive.Linq;
 using System.Reflection;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class MainLayoutViewModel : ViewModelBase
     {
         private readonly IMediator _mediator;
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly ITaskManager _taskManager;
+        private readonly IAccountRepository _accountRepository;
 
         private readonly AccountTabStore _accountTabStore;
         private readonly SelectedItemStore _selectedItemStore;
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, UnitOfRepository unitOfRepository, ITaskManager taskManager)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, ITaskManager taskManager, IAccountRepository accountRepository)
         {
             _accountTabStore = accountTabStore;
             _selectedItemStore = selectedItemStore;
             _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
             _taskManager = taskManager;
+            _accountRepository = accountRepository;
 
             var isEnable = this.WhenAnyValue(x => x.Accounts.IsEnable);
             AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler, isEnable);
@@ -153,7 +144,7 @@ namespace MainCore.UI.ViewModels.UserControls
 
         private List<ListBoxItem> LoadAccountHandler()
         {
-            var items = _unitOfRepository.AccountRepository.GetItems();
+            var items = _accountRepository.GetItems();
             return items;
         }
 
@@ -167,7 +158,7 @@ namespace MainCore.UI.ViewModels.UserControls
         {
             var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
             var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
-            return $"{version} - {Constants.Server}";
+            return $"{version}";
         }
 
         private void SetPauseText(StatusEnums status)

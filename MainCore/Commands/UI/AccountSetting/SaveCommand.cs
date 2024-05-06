@@ -1,11 +1,5 @@
 ﻿using FluentValidation;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.Models.Input;
-using MediatR;
 
 namespace MainCore.Commands.UI.AccountSetting
 {
@@ -22,16 +16,16 @@ namespace MainCore.Commands.UI.AccountSetting
     public class SaveCommandHandler : IRequestHandler<SaveCommand>
     {
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
+        private readonly IAccountSettingRepository _accountSettingRepository;
 
-        public SaveCommandHandler(IValidator<AccountSettingInput> accountsettingInputValidator, UnitOfRepository unitOfRepository, IDialogService dialogService, IMediator mediator)
+        public SaveCommandHandler(IValidator<AccountSettingInput> accountsettingInputValidator, IDialogService dialogService, IMediator mediator, IAccountSettingRepository accountSettingRepository)
         {
             _accountsettingInputValidator = accountsettingInputValidator;
-            _unitOfRepository = unitOfRepository;
             _dialogService = dialogService;
             _mediator = mediator;
+            _accountSettingRepository = accountSettingRepository;
         }
 
         public async Task Handle(SaveCommand request, CancellationToken cancellationToken)
@@ -46,7 +40,7 @@ namespace MainCore.Commands.UI.AccountSetting
             }
 
             var settings = accountSettingInput.Get();
-            _unitOfRepository.AccountSettingRepository.Update(accountId, settings);
+            _accountSettingRepository.Update(accountId, settings);
             await _mediator.Publish(new AccountSettingUpdated(accountId), cancellationToken);
             _dialogService.ShowMessageBox("Information", message: "Settings saved");
         }

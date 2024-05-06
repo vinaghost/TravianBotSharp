@@ -1,22 +1,18 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.Tasks;
-using MediatR;
+﻿using MainCore.Tasks;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
     public class TriggerNPCTask : INotificationHandler<StorageUpdated>, INotificationHandler<VillageSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IVillageSettingRepository _villageSettingRepository;
+        private readonly IStorageRepository _storageRepository;
 
-        public TriggerNPCTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public TriggerNPCTask(ITaskManager taskManager, IVillageSettingRepository villageSettingRepository, IStorageRepository storageRepository)
         {
             _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
+            _villageSettingRepository = villageSettingRepository;
+            _storageRepository = storageRepository;
         }
 
         public async Task Handle(StorageUpdated notification, CancellationToken cancellationToken)
@@ -35,11 +31,11 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
-            var autoNPCEnable = _unitOfRepository.VillageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
+            var autoNPCEnable = new GetVillageSetting().BooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
             if (autoNPCEnable)
             {
-                var granaryPercent = _unitOfRepository.StorageRepository.GetGranaryPercent(villageId);
-                var autoNPCGranaryPercent = _unitOfRepository.VillageSettingRepository.GetByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
+                var granaryPercent = _storageRepository.GetGranaryPercent(villageId);
+                var autoNPCGranaryPercent = new GetVillageSetting().ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
 
                 if (granaryPercent < autoNPCGranaryPercent) return;
                 if (_taskManager.IsExist<NPCTask>(accountId, villageId)) return;

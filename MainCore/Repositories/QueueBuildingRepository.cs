@@ -1,11 +1,5 @@
 ﻿using Humanizer;
-using MainCore.Common.Enums;
-using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Infrasturecture.Persistence;
 using MainCore.UI.Models.Output;
-using Microsoft.EntityFrameworkCore;
 
 namespace MainCore.Repositories
 {
@@ -35,17 +29,6 @@ namespace MainCore.Repositories
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => !buildings.Contains(x.Type))
                 .Any();
-            return queueBuilding;
-        }
-
-        public QueueBuilding GetFirst(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var queueBuilding = context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type != BuildingEnums.Site)
-                .OrderBy(x => x.Position)
-                .FirstOrDefault();
             return queueBuilding;
         }
 
@@ -82,87 +65,6 @@ namespace MainCore.Repositories
                 .Where(x => x.Type != BuildingEnums.Site)
                 .Count();
             return count;
-        }
-
-        public void Update(VillageId villageId, List<BuildingDto> dtos)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var queueBuildings = context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type != BuildingEnums.Site)
-                .ToList();
-
-            if (dtos.Count == 1)
-            {
-                var building = dtos[0];
-                queueBuildings = queueBuildings
-                    .Where(x => x.Type == building.Type)
-                    .ToList();
-
-                foreach (var item in queueBuildings)
-                {
-                    item.Location = building.Location;
-                }
-            }
-            else if (dtos.Count == 2)
-            {
-                var typeCount = dtos.DistinctBy(x => x.Type).Count();
-
-                if (typeCount == 2)
-                {
-                    foreach (var dto in dtos)
-                    {
-                        var queueBuilding = queueBuildings.FirstOrDefault(x => x.Type == dto.Type);
-                        if (queueBuilding is not null)
-                        {
-                            queueBuilding.Location = dto.Location;
-                        }
-                    }
-                }
-                else if (typeCount == 1)
-                {
-                    queueBuildings = queueBuildings.Where(x => x.Type == dtos[0].Type).ToList();
-                    if (dtos[0].Level == dtos[1].Level)
-                    {
-                        for (var i = 0; i < dtos.Count; i++)
-                        {
-                            queueBuildings[i].Location = dtos[i].Location;
-                        }
-                    }
-                    else
-                    {
-                        foreach (var dto in dtos)
-                        {
-                            var queueBuilding = queueBuildings.FirstOrDefault(x => x.Level == dto.Level + 1);
-                            if (queueBuilding is not null)
-                            {
-                                queueBuilding.Location = dto.Location;
-                            }
-                        }
-                    }
-                }
-            }
-            context.SaveChanges();
-        }
-
-        public void Update(VillageId villageId, List<QueueBuildingDto> dtos)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .ExecuteDelete();
-
-            var entities = new List<QueueBuilding>();
-
-            foreach (var dto in dtos)
-            {
-                var queueBuilding = dto.ToEntity(villageId);
-                entities.Add(queueBuilding);
-            }
-
-            context.AddRange(entities);
-            context.SaveChanges();
         }
 
         public List<ListBoxItem> GetItems(VillageId villageId)

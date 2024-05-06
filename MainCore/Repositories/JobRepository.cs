@@ -1,15 +1,7 @@
-﻿using FluentResults;
-using Humanizer;
-using MainCore.Common.Enums;
-using MainCore.Common.Errors;
-using MainCore.Common.Extensions;
+﻿using Humanizer;
+using MainCore.Common.Errors.AutoBuilder;
 using MainCore.Common.Models;
-using MainCore.DTO;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Infrasturecture.Persistence;
 using MainCore.UI.Models.Output;
-using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace MainCore.Repositories
@@ -19,36 +11,16 @@ namespace MainCore.Repositories
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        private readonly Dictionary<Type, JobTypeEnums> _jobTypes = new()
-        {
-            { typeof(NormalBuildPlan),JobTypeEnums.NormalBuild  },
-            { typeof(ResourceBuildPlan),JobTypeEnums.ResourceBuild },
-        };
-
         public JobRepository(IDbContextFactory<AppDbContext> contextFactory)
         {
             _contextFactory = contextFactory;
         }
 
-        public void AddToTop<T>(VillageId villageId, T content)
+        private static readonly Dictionary<Type, JobTypeEnums> _jobTypes = new()
         {
-            using var context = _contextFactory.CreateDbContext();
-
-            context.Jobs
-               .Where(x => x.VillageId == villageId.Value)
-               .ExecuteUpdate(x =>
-                   x.SetProperty(x => x.Position, x => x.Position + 1));
-
-            var job = new Job()
-            {
-                Position = 0,
-                VillageId = villageId.Value,
-                Type = _jobTypes[typeof(T)],
-                Content = JsonSerializer.Serialize(content),
-            };
-            context.Add(job);
-            context.SaveChanges();
-        }
+            { typeof(NormalBuildPlan),JobTypeEnums.NormalBuild  },
+            { typeof(ResourceBuildPlan),JobTypeEnums.ResourceBuild },
+        };
 
         public void Add<T>(VillageId villageId, T content)
         {
@@ -95,87 +67,6 @@ namespace MainCore.Repositories
             context.SaveChanges();
         }
 
-        public int CountBuildingJob(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var types = new List<JobTypeEnums>()
-            {
-                JobTypeEnums.NormalBuild,
-                JobTypeEnums.ResourceBuild
-            };
-            var count = context.Jobs
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => types.Contains(x.Type))
-                .Count();
-            return count;
-        }
-
-        public JobDto GetResourceBuildingJob(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            var resourceTypes = new List<BuildingEnums>()
-            {
-                BuildingEnums.Woodcutter,
-                BuildingEnums.ClayPit,
-                BuildingEnums.IronMine,
-                BuildingEnums.Cropland
-            };
-            var job = context.Jobs
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type == JobTypeEnums.NormalBuild)
-                .ToDto()
-                .AsEnumerable()
-                .Select(x => new
-                {
-                    Job = x,
-                    Content = JsonSerializer.Deserialize<NormalBuildPlan>(x.Content)
-                })
-                .Where(x => resourceTypes.Contains(x.Content.Type))
-                .Select(x => x.Job)
-                .OrderBy(x => x.Position)
-                .FirstOrDefault();
-
-            var resourceBuildJob = context.Jobs
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type == JobTypeEnums.ResourceBuild)
-                .ToDto()
-                .FirstOrDefault();
-            if (job is null) return resourceBuildJob;
-            if (resourceBuildJob is null) return job;
-            if (job.Position < resourceBuildJob.Position) return job;
-            return resourceBuildJob;
-        }
-
-        public JobDto GetInfrastructureBuildingJob(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            var resourceTypes = new List<BuildingEnums>()
-            {
-                BuildingEnums.Woodcutter,
-                BuildingEnums.ClayPit,
-                BuildingEnums.IronMine,
-                BuildingEnums.Cropland
-            };
-
-            var job = context.Jobs
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type == JobTypeEnums.NormalBuild)
-                .ToDto()
-                .AsEnumerable()
-                .Select(x => new
-                {
-                    Job = x,
-                    Content = JsonSerializer.Deserialize<NormalBuildPlan>(x.Content)
-                })
-                .Where(x => !resourceTypes.Contains(x.Content.Type))
-                .Select(x => x.Job)
-                .OrderBy(x => x.Position)
-                .FirstOrDefault();
-            return job;
-        }
-
         public List<JobDto> GetJobs(VillageId villageId)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -203,31 +94,6 @@ namespace MainCore.Repositories
                 .ToDto()
                 .FirstOrDefault();
             return job;
-        }
-
-        public void Delete(JobId jobId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            var job = context.Jobs
-                .Where(x => x.Id == jobId.Value)
-                .Select(x => new
-                {
-                    x.VillageId,
-                    x.Position
-                })
-                .FirstOrDefault();
-
-            if (job is null) return;
-
-            context.Jobs
-                .Where(x => x.Id == jobId.Value)
-                .ExecuteDelete();
-
-            context.Jobs
-                .Where(x => x.VillageId == job.VillageId)
-                .Where(x => x.Position > job.Position)
-                .ExecuteUpdate(x => x.SetProperty(x => x.Position, x => x.Position - 1));
         }
 
         public void Delete(VillageId villageId)
@@ -292,32 +158,6 @@ namespace MainCore.Repositories
                 default:
                     return job.Content;
             }
-        }
-
-        public bool JobComplete(VillageId villageId, JobDto job)
-        {
-            if (job.Type == JobTypeEnums.ResourceBuild) return false;
-            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
-
-            using var context = _contextFactory.CreateDbContext();
-
-            var queueBuilding = context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Location == plan.Location)
-                .OrderByDescending(x => x.Level)
-                .Select(x => x.Level)
-                .FirstOrDefault();
-
-            if (queueBuilding >= plan.Level) return true;
-
-            var villageBuilding = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Location == plan.Location)
-                .Select(x => x.Level)
-                .FirstOrDefault();
-            if (villageBuilding >= plan.Level) return true;
-
-            return false;
         }
 
         public Result JobValid(VillageId villageId, JobDto job)

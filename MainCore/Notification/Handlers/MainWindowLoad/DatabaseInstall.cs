@@ -1,7 +1,5 @@
 ﻿using MainCore.Infrasturecture.Persistence;
-using MainCore.Notification.Message;
 using MainCore.UI.ViewModels.UserControls;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace MainCore.Notification.Handlers.MainWindowLoad
