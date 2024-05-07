@@ -123,7 +123,7 @@ namespace MainCore.Services
                 }
             }
 
-            await Locator.Current.GetService<DelayTaskCommand>().Execute(accountId);
+            await new DelayTaskCommand().Execute(accountId);
         }
 
         public void Shutdown()

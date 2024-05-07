@@ -7,6 +7,8 @@
             var html = chromeBrowser.Html;
 
             var button = GetOptionButton(html);
+            if (button is null) return Retry.ButtonNotFound("options");
+
             Result result;
             result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -20,9 +22,7 @@
         {
             var outOfGame = doc.GetElementbyId("outOfGame");
             if (outOfGame is null) return null;
-            var li = outOfGame.Descendants("li").Where(x => x.HasClass("options")).FirstOrDefault();
-            if (li is null) return null;
-            var a = li.Descendants("a").FirstOrDefault();
+            var a = outOfGame.Descendants("a").Where(x => x.HasClass("options")).FirstOrDefault();
             return a;
         }
     }
