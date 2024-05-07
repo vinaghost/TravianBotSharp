@@ -1,5 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
 using System.Collections.ObjectModel;

@@ -1,38 +1,56 @@
-﻿using FluentResults;
-using MainCore.Commands.Base;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Notification.Message;
-using MainCore.Parsers;
-using MainCore.Repositories;
-using MainCore.Services;
-using MediatR;
+﻿using MainCore.Commands.Abstract;
 
 namespace MainCore.Commands.Update
 {
-    public class UpdateVillageListCommand : ByAccountIdBase, ICommand
+    public class UpdateVillageListCommand : VillagePanelCommand
     {
-        public UpdateVillageListCommand(AccountId accountId) : base(accountId)
-        {
-        }
-    }
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IMediator _mediator;
 
-    [RegisterAsTransient]
-    public class UpdateVillageListCommandHandler : UpdateCommandHandlerBase, ICommandHandler<UpdateVillageListCommand>
-    {
-        public UpdateVillageListCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, UnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
+        public UpdateVillageListCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null)
         {
+            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
         }
 
-        public async Task<Result> Handle(UpdateVillageListCommand command, CancellationToken cancellationToken)
+        public async Task Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
-            var dtos = _unitOfParser.VillagePanelParser.Get(html);
-            _unitOfRepository.VillageRepository.Update(command.AccountId, dtos.ToList());
-            await _mediator.Publish(new VillageUpdated(command.AccountId), cancellationToken);
-            return Result.Ok();
+            var dtos = Get(html);
+            if (!dtos.Any()) return;
+
+            UpdateToDatabase(accountId, dtos.ToList());
+            await _mediator.Publish(new VillageUpdated(accountId), cancellationToken);
+        }
+
+        private void UpdateToDatabase(AccountId accountId, List<VillageDto> dtos)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var villages = context.Villages
+                .Where(x => x.AccountId == accountId.Value)
+                .ToList();
+
+            var ids = dtos.Select(x => x.Id.Value).ToList();
+
+            var villageDeleted = villages.Where(x => !ids.Contains(x.Id)).ToList();
+            var villageInserted = dtos.Where(x => !villages.Any(v => v.Id == x.Id.Value)).ToList();
+            var villageUpdated = villages.Where(x => ids.Contains(x.Id)).ToList();
+
+            villageDeleted.ForEach(x => context.Remove(x));
+            villageInserted.ForEach(x =>
+            {
+                context.Add(x.ToEntity(accountId));
+                context.FillVillageSettings(accountId, x.Id);
+            });
+
+            foreach (var village in villageUpdated)
+            {
+                var dto = dtos.FirstOrDefault(x => x.Id.Value == village.Id);
+                dto.To(village);
+                context.Update(village);
+            }
+
+            context.SaveChanges();
         }
     }
 }

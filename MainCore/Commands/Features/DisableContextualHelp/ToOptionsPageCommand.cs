@@ -1,0 +1,29 @@
+﻿namespace MainCore.Commands.Features.DisableContextualHelp
+{
+    public class ToOptionsPageCommand
+    {
+        public async Task<Result> Execute(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
+        {
+            var html = chromeBrowser.Html;
+
+            var button = GetOptionButton(html);
+            Result result;
+            result = await chromeBrowser.Click(By.XPath(button.XPath));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await chromeBrowser.WaitPageLoaded(cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            return Result.Ok();
+        }
+
+        private static HtmlNode GetOptionButton(HtmlDocument doc)
+        {
+            var outOfGame = doc.GetElementbyId("outOfGame");
+            if (outOfGame is null) return null;
+            var li = outOfGame.Descendants("li").Where(x => x.HasClass("options")).FirstOrDefault();
+            if (li is null) return null;
+            var a = li.Descendants("a").FirstOrDefault();
+            return a;
+        }
+    }
+}
