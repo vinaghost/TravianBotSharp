@@ -1,7 +1,4 @@
-﻿using MainCore.Entities;
-using System.Collections.Generic;
-
-namespace MainCore.UI.Models.Input
+﻿namespace MainCore.UI.Models.Input
 {
     public class AccountsInput
     {

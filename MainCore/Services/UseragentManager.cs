@@ -1,5 +1,4 @@
-﻿using MainCore.Infrasturecture.AutoRegisterDi;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace MainCore.Services

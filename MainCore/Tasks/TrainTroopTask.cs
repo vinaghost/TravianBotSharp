@@ -1,17 +1,10 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Commands.Features;
-using MainCore.Common.Enums;
+﻿using MainCore.Commands.Features.TrainTroop;
 using MainCore.Common.Errors.TrainTroop;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.Tasks.Base;
-using MediatR;
 
 namespace MainCore.Tasks
 {
-    [RegisterAsTransient(withoutInterface: true)]
+    [RegisterAsTask]
     public class TrainTroopTask : VillageTask
     {
         private static readonly Dictionary<BuildingEnums, VillageSettingEnums> _settings = new()
@@ -21,23 +14,30 @@ namespace MainCore.Tasks
             {BuildingEnums.Workshop, VillageSettingEnums.WorkshopTroop },
         };
 
+        private static readonly Dictionary<BuildingEnums, (VillageSettingEnums, VillageSettingEnums)> _amountSettings = new()
+        {
+            {BuildingEnums.Barracks, (VillageSettingEnums.BarrackAmountMin,VillageSettingEnums.BarrackAmountMax )},
+            {BuildingEnums.Stable, (VillageSettingEnums.StableAmountMin,VillageSettingEnums.StableAmountMax ) },
+            {BuildingEnums.Workshop, (VillageSettingEnums.WorkshopAmountMin,VillageSettingEnums.WorkshopAmountMax ) },
+        };
+
         private readonly ITaskManager _taskManager;
 
-        public TrainTroopTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator, ITaskManager taskManager) : base(unitOfCommand, unitOfRepository, mediator)
+        public TrainTroopTask(ITaskManager taskManager)
         {
             _taskManager = taskManager;
         }
 
         protected override async Task<Result> Execute()
         {
-            var buildings = _unitOfRepository.BuildingRepository.GetTrainTroopBuilding(VillageId);
+            var buildings = new GetTrainTroopBuilding().Execute(VillageId);
             if (buildings.Count == 0) return Result.Ok();
 
             Result result;
             var settings = new Dictionary<VillageSettingEnums, int>();
             foreach (var building in buildings)
             {
-                result = await _mediator.Send(new TrainTroopCommand(AccountId, VillageId, building), CancellationToken);
+                result = await Train(building);
                 if (result.IsFailed)
                 {
                     if (result.HasError<MissingBuilding>())
@@ -51,22 +51,177 @@ namespace MainCore.Tasks
                 }
             }
 
-            _unitOfRepository.VillageSettingRepository.Update(VillageId, settings);
+            new SetSettingCommand().Execute(VillageId, settings);
             await SetNextExecute();
             return Result.Ok();
         }
 
         private async Task SetNextExecute()
         {
-            var seconds = _unitOfRepository.VillageSettingRepository.GetByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
+            var seconds = new GetSetting().ByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
         }
 
         protected override void SetName()
         {
-            var name = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
+            var name = new GetVillageName().Execute(VillageId);
             _name = $"Training troop in {name}";
+        }
+
+        public async Task<Result> Train(BuildingEnums buildingType)
+        {
+            Result result;
+            result = await new ToDorfCommand().Execute(_chromeBrowser, 2, false, CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            await new UpdateBuildingCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+
+            var buildingLocation = new GetBuildingLocation().Execute(VillageId, buildingType);
+            if (buildingLocation == default)
+            {
+                return MissingBuilding.Error(buildingType);
+            }
+
+            result = await new ToBuildingCommand().Execute(_chromeBrowser, buildingLocation, CancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            var troopSeting = _settings[buildingType];
+            var troop = (TroopEnums)new GetSetting().ByName(VillageId, troopSeting);
+            var (minSetting, maxSetting) = _amountSettings[buildingType];
+            var amount = new GetSetting().ByName(VillageId, minSetting, maxSetting);
+
+            var html = _chromeBrowser.Html;
+
+            var maxAmount = GetMaxAmount(html, troop);
+
+            if (maxAmount == 0)
+            {
+                return MissingResource.Error(buildingType);
+            }
+
+            if (amount > maxAmount)
+            {
+                var trainWhenLowResource = new GetSetting().BooleanByName(VillageId, VillageSettingEnums.TrainWhenLowResource);
+                if (trainWhenLowResource)
+                {
+                    amount = maxAmount;
+                }
+                else
+                {
+                    return MissingResource.Error(buildingType);
+                }
+            }
+
+            html = _chromeBrowser.Html;
+
+            var inputBox = GetInputBox(html, troop);
+            if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
+
+            result = await _chromeBrowser.InputTextbox(By.XPath(inputBox.XPath), $"{amount}");
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            var trainButton = GetTrainButton(html);
+            if (trainButton is null) return Retry.ButtonNotFound("train troop");
+
+            result = await _chromeBrowser.Click(By.XPath(trainButton.XPath));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            await new DelayClickCommand().Execute(AccountId);
+
+            return Result.Ok();
+        }
+
+        private static HtmlNode GetInputBox(HtmlDocument doc, TroopEnums troop)
+        {
+            var node = GetNode(doc, troop);
+            var cta = node.Descendants("div")
+                .FirstOrDefault(x => x.HasClass("cta"));
+            if (cta is null) return null;
+            var input = cta.Descendants("input")
+                .FirstOrDefault(x => x.HasClass("text"));
+            return input;
+        }
+
+        private static int GetMaxAmount(HtmlDocument doc, TroopEnums troop)
+        {
+            var node = GetNode(doc, troop);
+            var cta = node.Descendants("div")
+                .FirstOrDefault(x => x.HasClass("cta"));
+            if (cta is null) return 0;
+            var a = cta.Descendants("a")
+                .FirstOrDefault();
+            return a.InnerText.ParseInt();
+        }
+
+        private static TimeSpan GetQueueTrainTime(HtmlDocument doc)
+        {
+            var table = doc.DocumentNode.Descendants("table")
+                .FirstOrDefault(x => x.HasClass("under_progress"));
+            if (table is null) return TimeSpan.FromSeconds(0);
+            var td = table.Descendants("td")
+                .FirstOrDefault(x => x.HasClass("dur"));
+            var timer = td.Descendants("span")
+                .FirstOrDefault(x => x.HasClass("timer"));
+            var value = timer.GetAttributeValue("value", 0);
+            return TimeSpan.FromSeconds(value);
+        }
+
+        private static HtmlNode GetTrainButton(HtmlDocument doc)
+        {
+            return doc.GetElementbyId("s1");
+        }
+
+        private static long[] GetTrainCost(HtmlDocument doc, TroopEnums troop)
+        {
+            var node = GetNode(doc, troop);
+            var resource = node.Descendants("div")
+                .Where(x => x.HasClass("inlineIcon"))
+                .Where(x => x.HasClass("resource"))
+                .SkipLast(1) // free crop
+                .ToList();
+            var resources = new long[4];
+            for (var i = 0; i < 4; i++)
+            {
+                var span = resource[i].Descendants("span")
+                    .Where(x => x.HasClass("value"))
+                    .FirstOrDefault();
+                var text = span.InnerText;
+                resources[i] = text.ParseLong();
+            }
+            return resources;
+        }
+
+        private static TimeSpan GetTrainTime(HtmlDocument doc, TroopEnums troop)
+        {
+            var node = GetNode(doc, troop);
+            var durationDiv = node.Descendants("div")
+                .Where(x => x.HasClass("duration"))
+                .FirstOrDefault();
+            var durationSpan = durationDiv.Descendants("span")
+                .Where(x => x.HasClass("value"))
+                .FirstOrDefault();
+            return durationSpan.InnerText.ToDuration();
+        }
+
+        private static HtmlNode GetNode(HtmlDocument doc, TroopEnums troop)
+        {
+            var nodes = doc.DocumentNode.Descendants("div")
+               .Where(x => x.HasClass("troop"))
+               .Where(x => !x.HasClass("empty"))
+               .AsEnumerable();
+
+            foreach (var node in nodes)
+            {
+                var img = node.Descendants("img")
+                .FirstOrDefault(x => x.HasClass("unit"));
+                var classes = img.GetClasses();
+                var type = classes
+                    .Where(x => x.StartsWith("u"))
+                    .FirstOrDefault(x => !x.Equals("unit"));
+                if (type.ParseInt() == (int)troop) return node;
+            }
+            return null;
         }
     }
 }

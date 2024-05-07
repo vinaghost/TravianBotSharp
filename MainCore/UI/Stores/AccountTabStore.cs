@@ -1,12 +1,11 @@
-﻿using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.UI.Enums;
+﻿using MainCore.UI.Enums;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.Tabs;
 using ReactiveUI;
 
 namespace MainCore.UI.Stores
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class AccountTabStore : ViewModelBase
     {
         private readonly bool[] _tabVisibility = new bool[4];

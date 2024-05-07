@@ -1,5 +1,4 @@
-﻿using MainCore.Common.Enums;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 namespace MainCore.Infrasturecture.AutoRegisterDi
@@ -21,16 +20,6 @@ namespace MainCore.Infrasturecture.AutoRegisterDi
             return type
                 .GetCustomAttribute<RegisterWithLifetimeAttribute>(true)
                 .RequiredLifetime;
-        }
-
-        public static bool IsServerCorrect(this Type type,
-            ServerEnums correctServer)
-        {
-            var server = type
-                .GetCustomAttribute<RegisterWithLifetimeAttribute>(true)
-                .RequiredServer;
-            if (server == ServerEnums.NONE) return true;
-            return correctServer == server;
         }
 
         public static bool WithoutInterface(this Type type)

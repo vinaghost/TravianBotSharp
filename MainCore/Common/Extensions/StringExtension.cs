@@ -1,4 +1,6 @@
-﻿namespace MainCore.Common.Extensions
+﻿using System.Net;
+
+namespace MainCore.Common.Extensions
 {
     public static class StringExtension
     {
@@ -9,29 +11,41 @@
             if (value.Contains("(+"))
             {
                 var parts = value.Split('(');
-                ms = parts[1].ToInt();
+                ms = parts[1].ParseInt();
                 value = parts[0];
             }
             // h:m:s
             var arr = value.Split(':');
-            var h = arr[0].ToInt();
-            var m = arr[1].ToInt();
-            var s = arr[2].ToInt();
+            var h = arr[0].ParseInt();
+            var m = arr[1].ParseInt();
+            var s = arr[2].ParseInt();
             return new TimeSpan(0, h, m, s, ms);
         }
 
-        public static int ToInt(this string value)
+        private static string Normalized(this string value)
         {
-            var valueStr = new string(value.Where(c => char.IsDigit(c) || c == '-').ToArray());
-            if (string.IsNullOrEmpty(valueStr)) return 0;
-            return int.Parse(valueStr);
+            var valueStrDecoded = WebUtility.HtmlDecode(value);
+            if (string.IsNullOrEmpty(valueStrDecoded)) return "";
+
+            var valueStr = new string(valueStrDecoded.Where(c => char.IsDigit(c) || c == '-' || c == '−').ToArray());
+            valueStr = valueStr.Replace('−', '-');
+
+            if (string.IsNullOrEmpty(valueStr)) return "";
+            return valueStr;
         }
 
-        public static long ToLong(this string value)
+        public static int ParseInt(this string value)
         {
-            var valueStr = new string(value.Where(c => char.IsDigit(c) || c == '-').ToArray());
-            if (string.IsNullOrEmpty(valueStr)) return 0;
-            return long.Parse(valueStr);
+            var normValue = value.Normalized();
+            if (string.IsNullOrEmpty(normValue)) return 0;
+            return int.Parse(normValue);
+        }
+
+        public static long ParseLong(this string value)
+        {
+            var normValue = value.Normalized();
+            if (string.IsNullOrEmpty(normValue)) return 0;
+            return long.Parse(normValue);
         }
     }
 }

@@ -1,32 +1,53 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Commands.Features;
-using MainCore.Common.Errors;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
-using MainCore.Tasks.Base;
-using MediatR;
+﻿using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
-    [RegisterAsTransient(withoutInterface: true)]
+    [RegisterAsTask]
     public class UpdateBuildingTask : VillageTask
     {
-        public UpdateBuildingTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
-        {
-        }
-
         protected override async Task<Result> Execute()
         {
+            var url = _chromeBrowser.CurrentUrl;
             Result result;
-            result = await _mediator.Send(new UpdateBothDorfCommand(AccountId, VillageId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            var updateBuildingCommand = new UpdateBuildingCommand();
+
+            if (url.Contains("dorf1"))
+            {
+                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+
+                result = await new ToDorfCommand().Execute(_chromeBrowser, 2, false, CancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+            }
+            else if (url.Contains("dorf2"))
+            {
+                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+
+                result = await new ToDorfCommand().Execute(_chromeBrowser, 1, false, CancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+            }
+            else
+            {
+                result = await new ToDorfCommand().Execute(_chromeBrowser, 2, false, CancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+
+                result = await new ToDorfCommand().Execute(_chromeBrowser, 1, false, CancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+            }
+
             return Result.Ok();
         }
 
         protected override void SetName()
         {
-            var village = _unitOfRepository.VillageRepository.GetVillageName(VillageId);
+            var village = new GetVillageName().Execute(VillageId);
             _name = $"Update all buildings in {village}";
         }
     }

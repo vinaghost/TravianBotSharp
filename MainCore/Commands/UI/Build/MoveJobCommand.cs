@@ -1,70 +1,46 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.UI.ViewModels.UserControls;
-using MediatR;
+﻿using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Commands.UI.Build
 {
-    public class MoveJobCommand : ByAccountVillageIdBase, IRequest
+    public class MoveJobCommand
     {
-        public ListBoxItemViewModel Jobs { get; }
-        public MoveEnums Move { get; }
-
-        public MoveJobCommand(AccountId accountId, VillageId villageId, ListBoxItemViewModel jobs, MoveEnums move) : base(accountId, villageId)
-        {
-            Jobs = jobs;
-            Move = move;
-        }
-    }
-
-    public class MoveJobCommandHandler : IRequestHandler<MoveJobCommand>
-    {
-        private readonly IMediator _mediator;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IDialogService _dialogService;
+        private readonly IMediator _mediator;
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
 
-        public MoveJobCommandHandler(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public MoveJobCommand(IDbContextFactory<AppDbContext> contextFactory = null, IDialogService dialogService = null, IMediator mediator = null, ITaskManager taskManager = null)
         {
-            _mediator = mediator;
-            _dialogService = dialogService;
-            _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
+            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+            _dialogService = dialogService ?? Locator.Current.GetService<IDialogService>();
+            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
+            _taskManager = taskManager ?? Locator.Current.GetService<ITaskManager>();
         }
 
-        public async Task Handle(MoveJobCommand request, CancellationToken cancellationToken)
+        public async Task Execute(AccountId accountId, VillageId villageId, ListBoxItemViewModel jobs, MoveEnums move)
         {
-            var accountId = request.AccountId;
             var status = _taskManager.GetStatus(accountId);
             if (status == StatusEnums.Online)
             {
                 _dialogService.ShowMessageBox("Warning", "Please pause account before modifing building queue");
                 return;
             }
-            var jobs = request.Jobs;
             if (!jobs.IsSelected) return;
 
             var oldIndex = jobs.SelectedIndex;
 
-            var move = request.Move;
             if (!IsValid(move, oldIndex, jobs.Count)) return;
             var newIndex = GetNewIndex(move, oldIndex, jobs.Count);
-
-            var villageId = request.VillageId;
 
             var oldJob = jobs[oldIndex];
             var newJob = jobs[newIndex];
 
-            await Task.Run(() => _unitOfRepository.JobRepository.Move(new JobId(oldJob.Id), new JobId(newJob.Id)), cancellationToken);
-            await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
+            Move(new JobId(oldJob.Id), new JobId(newJob.Id));
+            await _mediator.Publish(new JobUpdated(accountId, villageId));
             jobs.SelectedIndex = newIndex;
         }
 
-        public static bool IsValid(MoveEnums move, int oldIndex, int count)
+        private static bool IsValid(MoveEnums move, int oldIndex, int count)
         {
             switch (move)
             {
@@ -85,7 +61,7 @@ namespace MainCore.Commands.UI.Build
             }
         }
 
-        public static int GetNewIndex(MoveEnums move, int oldIndex, int count)
+        private static int GetNewIndex(MoveEnums move, int oldIndex, int count)
         {
             switch (move)
             {
@@ -104,6 +80,23 @@ namespace MainCore.Commands.UI.Build
                 default:
                     return 0;
             }
+        }
+
+        private void Move(JobId oldJobId, JobId newJobId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var jobIds = new List<int>() { oldJobId.Value, newJobId.Value };
+
+            var jobs = context.Jobs
+                .Where(x => jobIds.Contains(x.Id))
+                .ToList();
+
+            if (jobs.Count != 2) return;
+
+            (jobs[0].Position, jobs[1].Position) = (jobs[1].Position, jobs[0].Position);
+            context.UpdateRange(jobs);
+            context.SaveChanges();
         }
     }
 }

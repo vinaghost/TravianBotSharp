@@ -1,23 +1,39 @@
-﻿using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MediatR;
-
-namespace MainCore.Notification.Handlers.Trigger
+﻿namespace MainCore.Notification.Handlers.Trigger
 {
     public class TriggerChangeWall : INotificationHandler<VillageSettingUpdated>
     {
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public TriggerChangeWall(UnitOfRepository unitOfRepository)
+        public TriggerChangeWall(IDbContextFactory<AppDbContext> contextFactory)
         {
-            _unitOfRepository = unitOfRepository;
+            _contextFactory = contextFactory;
         }
 
         public async Task Handle(VillageSettingUpdated notification, CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
             var villageId = notification.VillageId;
-            _unitOfRepository.BuildingRepository.UpdateWall(villageId);
+            UpdateWall(villageId);
+        }
+
+        public void UpdateWall(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var wallBuilding = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Location == 40)
+                .FirstOrDefault();
+            if (wallBuilding is null) return;
+            var tribe = (TribeEnums)context.VillagesSetting
+                       .Where(x => x.VillageId == villageId.Value)
+                       .Where(x => x.Setting == VillageSettingEnums.Tribe)
+                       .Select(x => x.Value)
+                       .FirstOrDefault();
+            var wall = tribe.GetWall();
+            if (wallBuilding.Type == wall) return;
+            wallBuilding.Type = wall;
+            context.Update(wallBuilding);
+            context.SaveChanges();
         }
     }
 }
