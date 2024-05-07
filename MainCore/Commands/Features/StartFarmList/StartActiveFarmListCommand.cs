@@ -14,7 +14,7 @@ namespace MainCore.Commands.Features.StartFarmList
         public async Task<Result> Execute(IChromeBrowser chromeBrowser, AccountId accountId)
         {
             var farmLists = GetActive(accountId);
-            if (farmLists.Count == 0) return Result.Fail(Skip.NoActiveFarmlist);
+            if (farmLists.Count == 0) return Skip.NoActiveFarmlist;
 
             var delayClickCommand = new DelayClickCommand();
 
