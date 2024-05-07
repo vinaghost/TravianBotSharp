@@ -5,43 +5,24 @@ using MainCore.UI.Models.Input;
 
 namespace MainCore.Commands.UI.Build
 {
-    public class BuildNormalCommand : ByAccountVillageIdBase, IRequest
+    public class BuildNormalCommand
     {
-        public NormalBuildInput NormalBuildInput { get; }
-
-        public int Location { get; }
-
-        public BuildNormalCommand(AccountId accountId, VillageId villageId, NormalBuildInput normalBuildInput, int location) : base(accountId, villageId)
-        {
-            NormalBuildInput = normalBuildInput;
-            Location = location;
-        }
-    }
-
-    public class BuildNormalCommandHandler : IRequestHandler<BuildNormalCommand>
-    {
-        private readonly ITaskManager _taskManager;
-        private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
-        private readonly IBuildingRepository _buildingRepository;
-        private readonly IJobRepository _jobRepository;
 
-        public BuildNormalCommandHandler(ITaskManager taskManager, IValidator<NormalBuildInput> normalBuildInputValidator, IDialogService dialogService, IMediator mediator, IBuildingRepository buildingRepository, IJobRepository jobRepository)
+        private readonly ITaskManager _taskManager;
+        private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
+
+        public BuildNormalCommand(IDialogService dialogService = null, IMediator mediator = null, ITaskManager taskManager = null, IValidator<NormalBuildInput> normalBuildInputValidator = null)
         {
-            _taskManager = taskManager;
-            _normalBuildInputValidator = normalBuildInputValidator;
-            _dialogService = dialogService;
-            _mediator = mediator;
-            _buildingRepository = buildingRepository;
-            _jobRepository = jobRepository;
+            _dialogService = dialogService ?? Locator.Current.GetService<IDialogService>();
+            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
+            _taskManager = taskManager ?? Locator.Current.GetService<ITaskManager>();
+            _normalBuildInputValidator = normalBuildInputValidator ?? Locator.Current.GetService<IValidator<NormalBuildInput>>();
         }
 
-        public async Task Handle(BuildNormalCommand request, CancellationToken cancellationToken)
+        public async Task Execute(AccountId accountId, VillageId villageId, NormalBuildInput normalBuildInput, int location)
         {
-            var accountId = request.AccountId;
-            var villageId = request.VillageId;
-            var normalBuildInput = request.NormalBuildInput;
             var status = _taskManager.GetStatus(accountId);
             if (status == StatusEnums.Online)
             {
@@ -59,14 +40,14 @@ namespace MainCore.Commands.UI.Build
             var (type, level) = normalBuildInput.Get();
             var plan = new NormalBuildPlan()
             {
-                Location = request.Location,
+                Location = location,
                 Type = type,
                 Level = level,
             };
-            await NormalBuild(accountId, villageId, plan, cancellationToken);
+            await NormalBuild(accountId, villageId, plan);
         }
 
-        private async Task NormalBuild(AccountId accountId, VillageId villageId, NormalBuildPlan plan, CancellationToken cancellationToken)
+        private async Task NormalBuild(AccountId accountId, VillageId villageId, NormalBuildPlan plan)
         {
             var buildings = new GetBuildings().Execute(villageId);
             var result = CheckRequirements(buildings, plan);
@@ -78,8 +59,8 @@ namespace MainCore.Commands.UI.Build
 
             Validate(buildings, plan);
 
-            await Task.Run(() => _jobRepository.Add(villageId, plan));
-            await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
+            new AddJobCommand().ToBottom(villageId, plan);
+            await _mediator.Publish(new JobUpdated(accountId, villageId));
         }
 
         private static Result CheckRequirements(List<BuildingItem> buildings, NormalBuildPlan plan)

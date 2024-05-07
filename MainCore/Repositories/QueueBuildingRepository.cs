@@ -1,7 +1,4 @@
-﻿using Humanizer;
-using MainCore.UI.Models.Output;
-
-namespace MainCore.Repositories
+﻿namespace MainCore.Repositories
 {
     [RegisterAsTransient]
     public class QueueBuildingRepository : IQueueBuildingRepository
@@ -65,34 +62,6 @@ namespace MainCore.Repositories
                 .Where(x => x.Type != BuildingEnums.Site)
                 .Count();
             return count;
-        }
-
-        public List<ListBoxItem> GetItems(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            var queue = context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type != BuildingEnums.Site)
-                .AsEnumerable()
-                .Select(x => new ListBoxItem()
-                {
-                    Id = x.Id,
-                    Content = $"{x.Type.Humanize()} to level {x.Level} complete at {x.CompleteTime}",
-                })
-                .ToList();
-
-            var tribe = (TribeEnums)context.VillagesSetting
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Setting == VillageSettingEnums.Tribe)
-                .Select(x => x.Value)
-                .FirstOrDefault();
-
-            var count = 2;
-            if (tribe == TribeEnums.Romans) count = 3;
-            queue.AddRange(Enumerable.Range(0, count - queue.Count).Select(x => new ListBoxItem()));
-
-            return queue;
         }
     }
 }

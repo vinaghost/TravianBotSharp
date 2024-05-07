@@ -1,14 +1,10 @@
-﻿using MainCore.UI.Models.Output;
-
-namespace MainCore.Repositories
+﻿namespace MainCore.Repositories
 {
     public interface IQueueBuildingRepository
     {
         void Clean(VillageId villageId);
 
         int Count(VillageId villageId);
-
-        List<ListBoxItem> GetItems(VillageId villageId);
 
         bool IsSkippableBuilding(VillageId villageId);
     }

@@ -23,7 +23,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             }
             else
             {
-                new AddJobToTopCommand().Execute(villageId, normalBuildPlan);
+                new AddJobCommand().ToTop(villageId, normalBuildPlan);
             }
             await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
             return Result.Ok();

@@ -223,7 +223,7 @@ namespace MainCore.Tasks
                 Level = cropland.Level + 1,
             };
 
-            new AddJobToTopCommand().Execute(VillageId, plan);
+            new AddJobCommand().ToTop(VillageId, plan);
             await _mediator.Publish(new JobUpdated(AccountId, VillageId));
         }
 
@@ -427,6 +427,46 @@ namespace MainCore.Tasks
             if (villageBuilding >= plan.Level) return true;
 
             return false;
+        }
+
+        private Result JobValid(VillageId villageId, JobDto job)
+        {
+            if (job.Type == JobTypeEnums.ResourceBuild) return Result.Ok();
+            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
+            if (plan.Type.IsResourceField()) return Result.Ok();
+            using var context = _contextFactory.CreateDbContext();
+
+            var currentBuilding = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Location == plan.Location)
+                .FirstOrDefault();
+
+            if (currentBuilding is not null && currentBuilding.Type == plan.Type) return Result.Ok();
+
+            var prerequisiteBuildings = plan.Type.GetPrerequisiteBuildings();
+
+            foreach (var prerequisiteBuilding in prerequisiteBuildings)
+            {
+                var vaild = context.Buildings
+                    .Where(x => x.VillageId == villageId.Value)
+                    .Where(x => x.Type == prerequisiteBuilding.Type)
+                    .Any(x => x.Level >= prerequisiteBuilding.Level);
+                if (!vaild) return Result.Fail(BuildingQueue.NotEnoughPrerequisiteBuilding(plan.Type, prerequisiteBuilding.Type, prerequisiteBuilding.Level));
+            }
+
+            if (!plan.Type.IsMultipleBuilding()) return Result.Ok();
+
+            var building = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type == plan.Type)
+                .OrderByDescending(x => x.Level)
+                .FirstOrDefault();
+
+            if (building is null) return Result.Ok();
+
+            if (building.Level == building.Type.GetMaxLevel()) return Result.Ok();
+
+            return Result.Fail(BuildingQueue.NotEnoughPrerequisiteBuilding(building.Type, building.Level));
         }
     }
 }

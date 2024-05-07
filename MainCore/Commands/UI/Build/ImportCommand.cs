@@ -3,19 +3,18 @@ using System.Text.Json;
 
 namespace MainCore.Commands.UI.Build
 {
-    public class ImportCommand : ByAccountVillageIdBase, IRequest
+    public class ImportCommand
     {
-        public ImportCommand(AccountId accountId, VillageId villageId) : base(accountId, villageId)
-        {
-        }
-    }
-
-    public class ImportCommandHandler : IRequestHandler<ImportCommand>
-    {
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
-        private readonly IJobRepository _jobRepository;
-        private readonly IBuildingRepository _buildingRepository;
+
+        public ImportCommand(IDbContextFactory<AppDbContext> contextFactory = null, IDialogService dialogService = null, IMediator mediator = null)
+        {
+            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+            _dialogService = dialogService ?? Locator.Current.GetService<IDialogService>();
+            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
+        }
 
         private static readonly List<int> _excludedLocations = new() { 26, 39, 40 }; //main building, rallypoint and wall
 
@@ -34,21 +33,13 @@ namespace MainCore.Commands.UI.Build
                 BuildingEnums.Cropland,}},
         };
 
-        public ImportCommandHandler(IDialogService dialogService, IMediator mediator, IJobRepository jobRepository, IBuildingRepository buildingRepository)
-        {
-            _dialogService = dialogService;
-            _mediator = mediator;
-            _jobRepository = jobRepository;
-            _buildingRepository = buildingRepository;
-        }
-
-        public async Task Handle(ImportCommand request, CancellationToken cancellationToken)
+        public async Task Execute(AccountId accountId, VillageId villageId)
         {
             var path = _dialogService.OpenFileDialog();
             List<JobDto> jobs;
             try
             {
-                var jsonString = await File.ReadAllTextAsync(path, cancellationToken);
+                var jsonString = await File.ReadAllTextAsync(path);
                 jobs = JsonSerializer.Deserialize<List<JobDto>>(jsonString);
             }
             catch
@@ -60,18 +51,15 @@ namespace MainCore.Commands.UI.Build
             var confirm = _dialogService.ShowConfirmBox("Warning", "TBS will remove resource field build job if its position doesn't match with current village.");
             if (!confirm) return;
 
-            var accountId = request.AccountId;
-            var villageId = request.VillageId;
-
             var modifiedJobs = GetModifiedJobs(villageId, jobs);
-            _jobRepository.AddRange(villageId, modifiedJobs);
+            AddJobToDatabase(villageId, modifiedJobs);
 
-            await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
+            await _mediator.Publish(new JobUpdated(accountId, villageId));
 
             _dialogService.ShowMessageBox("Information", "Jobs imported");
         }
 
-        private IEnumerable<JobDto> GetModifiedJobs(VillageId villageId, List<JobDto> jobs)
+        private static IEnumerable<JobDto> GetModifiedJobs(VillageId villageId, List<JobDto> jobs)
         {
             var buildings = new GetBuildings().Execute(villageId);
 
@@ -218,6 +206,32 @@ namespace MainCore.Commands.UI.Build
         private static int GetRandomLocation(List<int> freeLocations)
         {
             return freeLocations[Random.Shared.Next(0, freeLocations.Count - 1)];
+        }
+
+        private void AddJobToDatabase(VillageId villageId, IEnumerable<JobDto> jobDtos)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var count = context.Jobs
+               .Where(x => x.VillageId == villageId.Value)
+               .Count();
+
+            var jobs = new List<Job>();
+            foreach (var jobDto in jobDtos)
+            {
+                var job = new Job()
+                {
+                    Position = count,
+                    VillageId = villageId.Value,
+                    Type = jobDto.Type,
+                    Content = jobDto.Content,
+                };
+
+                jobs.Add(job);
+                count++;
+            }
+
+            context.AddRange(jobs);
+            context.SaveChanges();
         }
     }
 }
