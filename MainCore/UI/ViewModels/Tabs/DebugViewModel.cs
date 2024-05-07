@@ -1,25 +1,25 @@
-﻿using MainCore.Commands.UI.Debug;
-using MainCore.Commands.UI.DebugTab;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Services;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using MediatR;
 using ReactiveUI;
 using Serilog.Core;
 using Serilog.Events;
+using Serilog.Formatting.Display;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
+using System.Text;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class DebugViewModel : AccountTabViewModelBase
     {
         private readonly LogSink _logSink;
-        private readonly IMediator _mediator;
+        private readonly ITaskManager _taskManager;
+        private readonly IChromeManager _chromeManager;
+        private static readonly MessageTemplateTextFormatter _formatter = new("{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
+        private const string NotOpen = "Chrome didn't open yet";
+
         public ObservableCollection<TaskItem> Tasks { get; } = new();
 
         public string _logs;
@@ -38,17 +38,18 @@ namespace MainCore.UI.ViewModels.Tabs
             set => this.RaiseAndSetIfChanged(ref _endpointAddress, value);
         }
 
-        public DebugViewModel(ILogEventSink logSink, IMediator mediator)
+        public DebugViewModel(ILogEventSink logSink, ITaskManager taskManager, IChromeManager chromeManager)
         {
+            _taskManager = taskManager;
+            _chromeManager = chromeManager;
             _logSink = logSink as LogSink;
             _logSink.LogEmitted += LogEmitted;
-            _mediator = mediator;
 
-            LoadTask = ReactiveCommand.CreateFromTask<AccountId, List<TaskItem>>(LoadTaskHandler);
-            LoadLog = ReactiveCommand.CreateFromTask<AccountId, string>(LoadLogHandler);
-            LoadEndpointAddress = ReactiveCommand.CreateFromTask<AccountId, string>(LoadEndpointAddressHandler);
-            LeftCommand = ReactiveCommand.CreateFromTask(LeftTask);
-            RightCommand = ReactiveCommand.CreateFromTask(RightTask);
+            LoadTask = ReactiveCommand.Create<AccountId, List<TaskItem>>(LoadTaskHandler);
+            LoadLog = ReactiveCommand.Create<AccountId, string>(LoadLogHandler);
+            LoadEndpointAddress = ReactiveCommand.Create<AccountId, string>(LoadEndpointAddressHandler);
+            LeftCommand = ReactiveCommand.Create(LeftTask);
+            RightCommand = ReactiveCommand.Create(RightTask);
 
             LoadTask.Subscribe(items =>
             {
@@ -69,54 +70,77 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            LoadLog.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler).Subscribe();
+            LoadLog.Execute(accountId).Subscribe();
         }
 
         public async Task EndpointAddressRefresh(AccountId accountId)
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadEndpointAddress.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadEndpointAddress.Execute(accountId);
         }
 
         public async Task TaskListRefresh(AccountId accountId)
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadTask.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadTask.Execute(accountId);
         }
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadTask.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
-            await LoadLog.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
-            await LoadEndpointAddress.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadTask.Execute(accountId);
+            await LoadLog.Execute(accountId);
+            await LoadEndpointAddress.Execute(accountId);
         }
 
-        private async Task<List<TaskItem>> LoadTaskHandler(AccountId accountId)
+        private List<TaskItem> LoadTaskHandler(AccountId accountId)
         {
-            return await _mediator.Send(new GetTaskCommand(accountId));
+            var tasks = _taskManager.GetTaskList(accountId);
+
+            return tasks
+                .Select(x => new TaskItem(x))
+                .ToList();
         }
 
-        private async Task<string> LoadLogHandler(AccountId accountId)
+        private string LoadLogHandler(AccountId accountId)
         {
-            var logs = await _mediator.Send(new GetLogCommand(AccountId));
-            return logs;
+            var logs = _logSink.GetLogs(accountId);
+            var buffer = new StringWriter(new StringBuilder());
+
+            foreach (var log in logs)
+            {
+                _formatter.Format(log, buffer);
+            }
+            return buffer.ToString();
         }
 
-        private async Task<string> LoadEndpointAddressHandler(AccountId accountId)
+        private string LoadEndpointAddressHandler(AccountId accountId)
         {
-            return await _mediator.Send(new LoadEndpointAddress(accountId));
+            var status = _taskManager.GetStatus(accountId);
+            if (status == StatusEnums.Offline) return NotOpen;
+            var chromeBrowser = _chromeManager.Get(accountId);
+            var address = chromeBrowser.EndpointAddress;
+            if (string.IsNullOrEmpty(address)) return NotOpen;
+            return address;
         }
 
-        private async Task LeftTask()
+        private void LeftTask()
         {
-            await _mediator.Send(new LeftCommand());
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "https://ko-fi.com/vinaghost",
+                UseShellExecute = true
+            });
         }
 
-        private async Task RightTask()
+        private void RightTask()
         {
-            await _mediator.Send(new RightCommand());
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = Path.Combine(AppContext.BaseDirectory, "logs"),
+                UseShellExecute = true
+            });
         }
 
         public ReactiveCommand<AccountId, List<TaskItem>> LoadTask { get; }

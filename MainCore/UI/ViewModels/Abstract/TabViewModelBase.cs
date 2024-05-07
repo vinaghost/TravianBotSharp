@@ -1,5 +1,4 @@
 ﻿using ReactiveUI;
-using System.Reactive;
 using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Abstract

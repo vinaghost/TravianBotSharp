@@ -1,6 +1,4 @@
-﻿using MainCore.Common.Enums;
-
-namespace MainCore.Common.Models
+﻿namespace MainCore.Common.Models
 {
     public class NormalBuildPlan
     {

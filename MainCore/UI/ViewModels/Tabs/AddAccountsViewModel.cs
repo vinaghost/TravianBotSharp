@@ -1,19 +1,20 @@
-﻿using MainCore.Commands.UI.AddAccounts;
-using MainCore.DTO;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.UI.ViewModels.Abstract;
-using MediatR;
+﻿using MainCore.UI.ViewModels.Abstract;
+using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class AddAccountsViewModel : TabViewModelBase
     {
+        private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
+        private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IUseragentManager _useragentManager;
+
         public ReactiveCommand<Unit, Unit> AddAccount { get; }
         private ReactiveCommand<string, List<AccountDetailDto>> Parse { get; }
 
@@ -26,9 +27,13 @@ namespace MainCore.UI.ViewModels.Tabs
             set => this.RaiseAndSetIfChanged(ref _input, value);
         }
 
-        public AddAccountsViewModel(IMediator mediator)
+        public AddAccountsViewModel(IMediator mediator, IDialogService dialogService, WaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, IUseragentManager useragentManager)
         {
             _mediator = mediator;
+            _dialogService = dialogService;
+            _waitingOverlayViewModel = waitingOverlayViewModel;
+            _contextFactory = contextFactory;
+            _useragentManager = useragentManager;
 
             AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler);
             Parse = ReactiveCommand.Create<string, List<AccountDetailDto>>(ParseHandler);
@@ -56,7 +61,15 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task AddAccountHandler()
         {
-            await _mediator.Send(new AddAccountsCommand(Accounts.ToList()));
+            await _waitingOverlayViewModel.Show("adding accounts");
+
+            Add(Accounts.ToList());
+
+            await _mediator.Publish(new AccountUpdated());
+
+            await _waitingOverlayViewModel.Hide();
+
+            _dialogService.ShowMessageBox("Information", "Added accounts");
         }
 
         private List<AccountDetailDto> ParseHandler(string input)
@@ -104,6 +117,37 @@ namespace MainCore.UI.ViewModels.Tabs
                 7 => AccountDetailDto.Create(strAccount[1], url.AbsoluteUri, strAccount[2], strAccount[3], int.Parse(strAccount[4]), strAccount[5], strAccount[6]),
                 _ => null,
             }; ;
+        }
+
+        private void Add(List<AccountDetailDto> dtos)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var accounts = new List<Account>();
+            foreach (var dto in dtos)
+            {
+                var isExist = context.Accounts
+                    .Where(x => x.Username == dto.Username)
+                    .Where(x => x.Server == dto.Server)
+                    .Any();
+                if (isExist) continue;
+                var account = dto.ToEnitty();
+                foreach (var access in account.Accesses)
+                {
+                    if (string.IsNullOrEmpty(access.Useragent))
+                    {
+                        access.Useragent = _useragentManager.Get();
+                    }
+                }
+                accounts.Add(account);
+            }
+            context.AddRange(accounts);
+            context.SaveChanges();
+
+            foreach (var account in accounts)
+            {
+                context.FillAccountSettings(new(account.Id));
+            }
         }
     }
 }

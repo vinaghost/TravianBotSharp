@@ -6,11 +6,7 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <SelfContained>true</SelfContained>
 	
-    <Server>TRAVIAN_OFFICIAL</Server>
-    <!--<Server>TTWARS</Server>-->
     <AssemblyVersion>1975.4.30</AssemblyVersion>
-
-    <DefineConstants Condition="'$(Server)' != ''">$(DefineConstants);$(Server)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
