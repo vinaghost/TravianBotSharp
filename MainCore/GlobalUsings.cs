@@ -13,7 +13,6 @@ global using MainCore.Entities;
 global using MainCore.Infrasturecture.AutoRegisterDi;
 global using MainCore.Infrasturecture.Persistence;
 global using MainCore.Notification.Message;
-global using MainCore.Repositories;
 global using MainCore.Services;
 global using MediatR;
 global using Microsoft.EntityFrameworkCore;

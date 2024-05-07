@@ -5,14 +5,12 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerNPCTask : INotificationHandler<StorageUpdated>, INotificationHandler<VillageSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        private readonly IStorageRepository _storageRepository;
-
-        public TriggerNPCTask(ITaskManager taskManager, IStorageRepository storageRepository)
+        public TriggerNPCTask(ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
         {
             _taskManager = taskManager;
-
-            _storageRepository = storageRepository;
+            _contextFactory = contextFactory;
         }
 
         public async Task Handle(StorageUpdated notification, CancellationToken cancellationToken)
@@ -34,7 +32,7 @@ namespace MainCore.Notification.Handlers.Trigger
             var autoNPCEnable = new GetSetting().BooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
             if (autoNPCEnable)
             {
-                var granaryPercent = _storageRepository.GetGranaryPercent(villageId);
+                var granaryPercent = GetGranaryPercent(villageId);
                 var autoNPCGranaryPercent = new GetSetting().ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
 
                 if (granaryPercent < autoNPCGranaryPercent) return;
@@ -47,6 +45,16 @@ namespace MainCore.Notification.Handlers.Trigger
                 var task = _taskManager.Get<NPCTask>(accountId, villageId);
                 await _taskManager.Remove(accountId, task);
             }
+        }
+
+        private int GetGranaryPercent(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var percent = context.Storages
+                .Where(x => x.VillageId == villageId.Value)
+                .Select(x => x.Crop * 100f / x.Granary)
+                .FirstOrDefault();
+            return (int)percent;
         }
     }
 }

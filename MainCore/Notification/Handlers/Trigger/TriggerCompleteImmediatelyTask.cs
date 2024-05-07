@@ -6,13 +6,12 @@ namespace MainCore.Notification.Handlers.Trigger
     {
         private readonly ITaskManager _taskManager;
 
-        private readonly IQueueBuildingRepository _queueBuildingRepository;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public TriggerCompleteImmediatelyTask(ITaskManager taskManager, IQueueBuildingRepository queueBuildingRepository)
+        public TriggerCompleteImmediatelyTask(ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
         {
             _taskManager = taskManager;
-
-            _queueBuildingRepository = queueBuildingRepository;
+            _contextFactory = contextFactory;
         }
 
         public async Task Handle(QueueBuildingUpdated notification, CancellationToken cancellationToken)
@@ -28,8 +27,9 @@ namespace MainCore.Notification.Handlers.Trigger
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
             if (_taskManager.IsExist<CompleteImmediatelyTask>(accountId, villageId)) return;
-            _queueBuildingRepository.Clean(villageId);
-            var count = _queueBuildingRepository.Count(villageId);
+            Clean(villageId);
+
+            var count = Count(villageId);
             if (count == 0) return;
 
             var completeImmediatelyEnable = new GetSetting().BooleanByName(villageId, VillageSettingEnums.CompleteImmediately);
@@ -49,9 +49,64 @@ namespace MainCore.Notification.Handlers.Trigger
             }
             if (count != countNeeded) return;
 
-            if (!_queueBuildingRepository.IsSkippableBuilding(villageId)) return;
+            if (!IsSkippableBuilding(villageId)) return;
 
             await _taskManager.Add<CompleteImmediatelyTask>(accountId, villageId);
+        }
+
+        private bool IsSkippableBuilding(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var buildings = new List<BuildingEnums>()
+            {
+                BuildingEnums.Site,
+                BuildingEnums.Residence,
+                BuildingEnums.Palace,
+                BuildingEnums.CommandCenter,
+            };
+
+            var queueBuilding = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => !buildings.Contains(x.Type))
+                .Any();
+            return queueBuilding;
+        }
+
+        private void Clean(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var now = DateTime.Now;
+            var completeBuildingQuery = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type != BuildingEnums.Site)
+                .Where(x => x.CompleteTime < now);
+
+            var completeBuildingLocations = completeBuildingQuery
+                .Select(x => x.Location)
+                .ToList();
+
+            foreach (var completeBuildingLocation in completeBuildingLocations)
+            {
+                context.Buildings
+                    .Where(x => x.VillageId == villageId.Value)
+                    .Where(x => x.Location == completeBuildingLocation)
+                    .ExecuteUpdate(x => x.SetProperty(x => x.Level, x => x.Level + 1));
+            }
+
+            completeBuildingQuery
+                .ExecuteUpdate(x => x.SetProperty(x => x.Type, BuildingEnums.Site));
+        }
+
+        private int Count(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var count = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type != BuildingEnums.Site)
+                .Count();
+            return count;
         }
     }
 }
