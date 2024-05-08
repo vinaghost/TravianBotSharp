@@ -1,9 +1,4 @@
-﻿using FluentResults;
-using HtmlAgilityPack;
-using MainCore.Common.Errors;
-using MainCore.Common.Models;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using OpenQA.Selenium;
+﻿using MainCore.Common.Models;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Chrome.ChromeDriverExtensions;
 using OpenQA.Selenium.Interactions;
@@ -140,12 +135,12 @@ namespace MainCore.Services
                 }
                 catch (Exception exception)
                 {
-                    return Result.Fail(new Stop(exception.Message));
+                    return Stop.Exception(exception);
                 }
             }
 
             var result = await Task.Run(refresh);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return result;
         }
 
@@ -165,13 +160,13 @@ namespace MainCore.Services
                 }
                 catch (Exception exception)
                 {
-                    return Result.Fail(new Stop(exception.Message));
+                    return Stop.Exception(exception);
                 }
             }
             var result = await Task.Run(goToUrl);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return result;
         }
 
@@ -179,11 +174,15 @@ namespace MainCore.Services
         {
             if (string.IsNullOrEmpty(source))
             {
+#pragma warning disable S2486 // Generic exceptions should not be ignored
+#pragma warning disable S108 // Nested blocks of code should not be left empty
                 try
                 {
                     _htmlDoc.LoadHtml(_driver.PageSource);
                 }
                 catch { }
+#pragma warning restore S108 // Nested blocks of code should not be left empty
+#pragma warning restore S2486 // Generic exceptions should not be ignored
             }
             else
             {
@@ -240,9 +239,9 @@ namespace MainCore.Services
                 }
                 catch (WebDriverTimeoutException)
                 {
-                    return Result.Fail(new Stop("Page not loaded in 3 mins"));
+                    return Stop.PageNotLoad;
                 }
-                if (cancellationToken.IsCancellationRequested) return Result.Fail(new Cancel());
+                if (cancellationToken.IsCancellationRequested) return Cancel.Error;
                 return Result.Ok();
             }
             return await Task.Run(wait);
@@ -259,14 +258,14 @@ namespace MainCore.Services
                     _driver.Navigate().Refresh();
                 });
 
-            var poliResult = await retryPolicy.ExecuteAndCaptureAsync(() => Wait(pageLoaded, cancellationToken));
+            await retryPolicy.ExecuteAndCaptureAsync(() => Wait(pageLoaded, cancellationToken));
 
             var result = await Wait(pageLoaded, cancellationToken);
             if (result.IsFailed)
             {
                 return result
                     .WithError(new Error(message: $"page stuck at loading stage [Current: {CurrentUrl}]"))
-                    .WithError(new TraceMessage(TraceMessage.Line()));
+                    .WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             return result;
         }
@@ -280,11 +279,11 @@ namespace MainCore.Services
             {
                 return result
                     .WithError(new Error($"page stuck at changing stage [Current: {CurrentUrl}] [Expected: {part}]"))
-                    .WithError(new TraceMessage(TraceMessage.Line()));
+                    .WithError(TraceMessage.Error(TraceMessage.Line()));
             }
 
             result = await WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return result;
         }
 

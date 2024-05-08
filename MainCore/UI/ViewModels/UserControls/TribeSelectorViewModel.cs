@@ -1,5 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
 using System.Collections.ObjectModel;
@@ -22,7 +21,7 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public void Set(TribeEnums tribe)
         {
-            SelectedItem = Items.Where(x => x.Tribe == tribe).First();
+            SelectedItem = Items.First(x => x.Tribe == tribe);
         }
 
         public TribeEnums Get()

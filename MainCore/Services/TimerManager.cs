@@ -1,11 +1,4 @@
-﻿using FluentResults;
-using MainCore.Commands.Base;
-using MainCore.Commands.General;
-using MainCore.Common.Enums;
-using MainCore.Common.Errors;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using Polly;
+﻿using Polly;
 using Timer = System.Timers.Timer;
 
 namespace MainCore.Services
@@ -20,14 +13,12 @@ namespace MainCore.Services
         private readonly ITaskManager _taskManager;
         private readonly IChromeManager _chromeManager;
         private readonly ILogService _logService;
-        private readonly ICommandHandler<DelayTaskCommand> _delayTaskCommand;
 
-        public TimerManager(ITaskManager taskManager, IChromeManager chromeManager, ILogService logService, ICommandHandler<DelayTaskCommand> delayTaskCommand)
+        public TimerManager(ITaskManager taskManager, ILogService logService, IChromeManager chromeManager)
         {
             _taskManager = taskManager;
             _chromeManager = chromeManager;
             _logService = logService;
-            _delayTaskCommand = delayTaskCommand;
         }
 
         public async Task Execute(AccountId accountId)
@@ -36,7 +27,7 @@ namespace MainCore.Services
             if (status != StatusEnums.Online) return;
             var tasks = _taskManager.GetTaskList(accountId);
             if (tasks.Count == 0) return;
-            var task = tasks.First();
+            var task = tasks[0];
 
             if (task.ExecuteAt > DateTime.Now) return;
 
@@ -51,14 +42,14 @@ namespace MainCore.Services
                     if (error.Exception is null)
                     {
                         var errors = error.Result.Reasons.Select(x => x.Message).ToList();
-                        logger.Error("{errors}", string.Join(Environment.NewLine, errors));
+                        logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
                     }
                     else
                     {
                         var exception = error.Exception;
-                        logger.Error(exception, "{message}", exception.Message);
+                        logger.Error(exception, "{Message}", exception.Message);
                     }
-                    logger.Warning("Retry {retryCount} for {taskName}", retryCount, task.GetName());
+                    logger.Warning("Retry {RetryCount} for {TaskName}", retryCount, task.GetName());
 
                     var chromeBrowser = _chromeManager.Get(accountId);
                     await chromeBrowser.Refresh(task.CancellationToken);
@@ -73,11 +64,11 @@ namespace MainCore.Services
 
             var cacheExecuteTime = task.ExecuteAt;
 
-            logger.Information("{taskName} is started", task.GetName());
+            logger.Information("{TaskName} is started", task.GetName());
             ///===========================================================///
             var poliResult = await retryPolicy.ExecuteAndCaptureAsync(task.Handle);
             ///===========================================================///
-            logger.Information("{taskName} is finished", task.GetName());
+            logger.Information("{TaskName} is finished", task.GetName());
 
             task.Stage = StageEnums.Waiting;
             taskInfo.IsExecuting = false;
@@ -88,7 +79,7 @@ namespace MainCore.Services
             {
                 logger.Warning("There is something wrong. Bot is pausing. Last exception is");
                 var ex = poliResult.FinalException;
-                logger.Error(ex, "{message}", ex.Message);
+                logger.Error(ex, "{Message}", ex.Message);
                 await _taskManager.SetStatus(accountId, StatusEnums.Paused);
             }
             else
@@ -132,7 +123,7 @@ namespace MainCore.Services
                 }
             }
 
-            await _delayTaskCommand.Handle(new DelayTaskCommand(accountId), CancellationToken.None);
+            await new DelayTaskCommand().Execute(accountId);
         }
 
         public void Shutdown()

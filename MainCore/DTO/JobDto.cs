@@ -1,6 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Entities;
-using Riok.Mapperly.Abstractions;
+﻿using Riok.Mapperly.Abstractions;
 
 namespace MainCore.DTO
 {
@@ -22,9 +20,9 @@ namespace MainCore.DTO
             return entity;
         }
 
-        public static partial JobDto ToDto(this Job dto);
-
         private static partial Job ToEntity(this JobDto dto);
+
+        public static partial JobDto ToDto(this Job dto);
 
         public static partial IQueryable<JobDto> ToDto(this IQueryable<Job> entities);
 

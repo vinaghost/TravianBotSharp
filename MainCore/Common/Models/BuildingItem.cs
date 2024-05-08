@@ -1,7 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Entities;
-
-namespace MainCore.Common.Models
+﻿namespace MainCore.Common.Models
 {
     public class BuildingItem
     {

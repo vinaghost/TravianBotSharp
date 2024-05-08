@@ -1,54 +1,28 @@
-﻿using FluentResults;
-using FluentValidation;
+﻿using FluentValidation;
 using Humanizer;
-using MainCore.Common.Enums;
-using MainCore.Common.Extensions;
-using MainCore.Common.MediatR;
 using MainCore.Common.Models;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
 using MainCore.UI.Models.Input;
-using MediatR;
 
 namespace MainCore.Commands.UI.Build
 {
-    public class BuildNormalCommand : ByAccountVillageIdBase, IRequest
+    public class BuildNormalCommand
     {
-        public NormalBuildInput NormalBuildInput { get; }
-
-        public int Location { get; }
-
-        public BuildNormalCommand(AccountId accountId, VillageId villageId, NormalBuildInput normalBuildInput, int location) : base(accountId, villageId)
-        {
-            NormalBuildInput = normalBuildInput;
-            Location = location;
-        }
-    }
-
-    public class BuildNormalCommandHandler : IRequestHandler<BuildNormalCommand>
-    {
-        private readonly ITaskManager _taskManager;
-        private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
         private readonly IDialogService _dialogService;
-        private readonly UnitOfRepository _unitOfRepository;
         private readonly IMediator _mediator;
 
-        public BuildNormalCommandHandler(ITaskManager taskManager, IValidator<NormalBuildInput> normalBuildInputValidator, IDialogService dialogService, UnitOfRepository unitOfRepository, IMediator mediator)
+        private readonly ITaskManager _taskManager;
+        private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
+
+        public BuildNormalCommand(IDialogService dialogService = null, IMediator mediator = null, ITaskManager taskManager = null, IValidator<NormalBuildInput> normalBuildInputValidator = null)
         {
-            _taskManager = taskManager;
-            _normalBuildInputValidator = normalBuildInputValidator;
-            _dialogService = dialogService;
-            _unitOfRepository = unitOfRepository;
-            _mediator = mediator;
+            _dialogService = dialogService ?? Locator.Current.GetService<IDialogService>();
+            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
+            _taskManager = taskManager ?? Locator.Current.GetService<ITaskManager>();
+            _normalBuildInputValidator = normalBuildInputValidator ?? Locator.Current.GetService<IValidator<NormalBuildInput>>();
         }
 
-        public async Task Handle(BuildNormalCommand request, CancellationToken cancellationToken)
+        public async Task Execute(AccountId accountId, VillageId villageId, NormalBuildInput normalBuildInput, int location)
         {
-            var accountId = request.AccountId;
-            var villageId = request.VillageId;
-            var normalBuildInput = request.NormalBuildInput;
             var status = _taskManager.GetStatus(accountId);
             if (status == StatusEnums.Online)
             {
@@ -56,7 +30,7 @@ namespace MainCore.Commands.UI.Build
                 return;
             }
 
-            var result = _normalBuildInputValidator.Validate(normalBuildInput);
+            var result = await _normalBuildInputValidator.ValidateAsync(normalBuildInput);
             if (!result.IsValid)
             {
                 _dialogService.ShowMessageBox("Error", result.ToString());
@@ -66,27 +40,27 @@ namespace MainCore.Commands.UI.Build
             var (type, level) = normalBuildInput.Get();
             var plan = new NormalBuildPlan()
             {
-                Location = request.Location,
+                Location = location,
                 Type = type,
                 Level = level,
             };
-            await NormalBuild(accountId, villageId, plan, cancellationToken);
+            await NormalBuild(accountId, villageId, plan);
         }
 
-        private async Task NormalBuild(AccountId accountId, VillageId villageId, NormalBuildPlan plan, CancellationToken cancellationToken)
+        private async Task NormalBuild(AccountId accountId, VillageId villageId, NormalBuildPlan plan)
         {
-            var buildings = _unitOfRepository.BuildingRepository.GetBuildings(villageId);
+            var buildings = new GetBuildings().Execute(villageId);
             var result = CheckRequirements(buildings, plan);
             if (result.IsFailed)
             {
-                _dialogService.ShowMessageBox("Error", result.Errors.First().Message);
+                _dialogService.ShowMessageBox("Error", result.Errors[0].Message);
                 return;
             }
 
             Validate(buildings, plan);
 
-            await Task.Run(() => _unitOfRepository.JobRepository.Add(villageId, plan));
-            await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
+            new AddJobCommand().ToBottom(villageId, plan);
+            await _mediator.Publish(new JobUpdated(accountId, villageId));
         }
 
         private static Result CheckRequirements(List<BuildingItem> buildings, NormalBuildPlan plan)
@@ -115,7 +89,7 @@ namespace MainCore.Commands.UI.Build
             {
                 var sameTypeBuildings = buildings.Where(x => x.Type == plan.Type);
                 if (!sameTypeBuildings.Any()) return;
-                if (sameTypeBuildings.Where(x => x.Location == plan.Location).Any()) return;
+                if (sameTypeBuildings.Any(x => x.Location == plan.Location)) return;
                 var largestLevelBuilding = sameTypeBuildings.MaxBy(x => x.Level);
                 if (largestLevelBuilding.Level == plan.Type.GetMaxLevel()) return;
                 plan.Location = largestLevelBuilding.Location;
@@ -124,18 +98,16 @@ namespace MainCore.Commands.UI.Build
 
             if (plan.Type.IsResourceField())
             {
-                var field = buildings.FirstOrDefault(x => x.Location == plan.Location);
+                var field = buildings.Find(x => x.Location == plan.Location);
                 if (plan.Type == field.Type) return;
                 plan.Type = field.Type;
                 return;
             }
 
-            {
-                var building = buildings.FirstOrDefault(x => x.Type == plan.Type);
-                if (building is null) return;
-                if (plan.Location == building.Location) return;
-                plan.Location = building.Location;
-            }
+            var building = buildings.Find(x => x.Type == plan.Type);
+            if (building is null) return;
+            if (plan.Location == building.Location) return;
+            plan.Location = building.Location;
         }
     }
 }

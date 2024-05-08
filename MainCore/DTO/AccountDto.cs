@@ -1,5 +1,4 @@
-﻿using MainCore.Entities;
-using Riok.Mapperly.Abstractions;
+﻿using Riok.Mapperly.Abstractions;
 
 namespace MainCore.DTO
 {
@@ -18,14 +17,14 @@ namespace MainCore.DTO
 
         public static partial AccountDto ToDto(this Account entity);
 
-        private static int ToInt(this AccountId accountId) => accountId.Value;
-
-        private static AccountId ToAccountId(this int value) => new(value);
+        public static partial IQueryable<AccountDto> ToDto(this IQueryable<Account> entities);
 
         private static int ToInt(this AccessId accessId) => accessId.Value;
 
-        private static AccessId ToAccessId(this int value) => new(value);
+        private static int ToInt(this AccountId accountId) => accountId.Value;
 
-        public static partial IQueryable<AccountDto> ToDto(this IQueryable<Account> entities);
+        private static AccountId ToAccountId(this int id) => new AccountId(id);
+
+        private static AccessId ToAccessId(this int value) => new(value);
     }
 }

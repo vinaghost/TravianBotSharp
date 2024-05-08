@@ -1,5 +1,4 @@
-﻿using MainCore.Infrasturecture.AutoRegisterDi;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace MainCore.Services
@@ -42,7 +41,7 @@ namespace MainCore.Services
                 await Update();
                 return;
             }
-            var userAgentJsonString = File.ReadAllText(pathFile);
+            var userAgentJsonString = await File.ReadAllTextAsync(pathFile);
             var modelLoaded = JsonSerializer.Deserialize<Model>(userAgentJsonString);
             _userAgentList = modelLoaded.UserAgentList;
             _dateTime = modelLoaded.DateTime;
@@ -64,7 +63,7 @@ namespace MainCore.Services
 
         private readonly Random rnd = new();
 
-        private class Model
+        private sealed class Model
         {
             public List<string> UserAgentList { get; set; }
             public DateTime DateTime { get; set; }

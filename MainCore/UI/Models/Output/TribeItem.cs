@@ -1,12 +1,12 @@
-﻿using MainCore.Common.Enums;
-using ReactiveUI;
+﻿using ReactiveUI;
+using System.Collections.Immutable;
 using System.Drawing;
 
 namespace MainCore.UI.Models.Output
 {
     public class TribeItem : ReactiveObject
     {
-        public static readonly Dictionary<TribeEnums, string> TribeImage = new()
+        public static readonly ImmutableDictionary<TribeEnums, string> TribeImage = new Dictionary<TribeEnums, string>
         {
             {TribeEnums.Any, "natar_big.png" },
             {TribeEnums.Romans, "roman_big.png" },
@@ -16,7 +16,7 @@ namespace MainCore.UI.Models.Output
             {TribeEnums.Natars, "natar_big.png" },
             {TribeEnums.Egyptians, "egyptian_big.png" },
             {TribeEnums.Huns, "hun_big.png" },
-        };
+        }.ToImmutableDictionary();
 
         public TribeItem(TribeEnums tribe)
         {
@@ -25,7 +25,6 @@ namespace MainCore.UI.Models.Output
 
         public static string GetImageSource(TribeEnums tribe)
         {
-            //const string url = "pack://application:,,,/MainCore;component/UI/Resources/";
             const string url = "pack://application:,,,/Resources/";
             return $"{url}{TribeImage[tribe]}";
         }
