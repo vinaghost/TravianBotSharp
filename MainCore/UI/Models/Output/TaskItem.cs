@@ -1,6 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Tasks.Base;
-using System;
+﻿using MainCore.Tasks.Base;
 
 namespace MainCore.UI.Models.Output
 {

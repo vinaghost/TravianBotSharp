@@ -1,6 +1,4 @@
-﻿using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using Serilog.Core;
+﻿using Serilog.Core;
 using Serilog.Events;
 
 namespace MainCore.Services

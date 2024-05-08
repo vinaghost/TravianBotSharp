@@ -1,6 +1,4 @@
-﻿using MainCore.Entities;
-
-namespace MainCore.Services
+﻿namespace MainCore.Services
 {
     public interface ITimerManager
     {

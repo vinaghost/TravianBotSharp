@@ -1,11 +1,10 @@
-﻿using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.UI.ViewModels.Abstract;
+﻿using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
 using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class WaitingOverlayViewModel : ViewModelBase
     {
         public WaitingOverlayViewModel()

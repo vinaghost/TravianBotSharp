@@ -1,6 +1,4 @@
-﻿using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace MainCore.Services

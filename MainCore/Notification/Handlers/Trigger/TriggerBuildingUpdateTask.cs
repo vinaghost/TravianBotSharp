@@ -1,22 +1,14 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.Tasks;
-using MediatR;
+﻿using MainCore.Tasks;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
     public class TriggerBuildingUpdateTask : INotificationHandler<VillageUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
 
-        public TriggerBuildingUpdateTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public TriggerBuildingUpdateTask(ITaskManager taskManager)
         {
             _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
         }
 
         public async Task Handle(VillageUpdated notification, CancellationToken cancellationToken)
@@ -28,10 +20,10 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId)
         {
-            var autoLoadVillageBuilding = _unitOfRepository.AccountSettingRepository.GetBooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
+            var autoLoadVillageBuilding = new GetSetting().BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             if (!autoLoadVillageBuilding) return;
 
-            var villages = _unitOfRepository.VillageRepository.GetMissingBuildingVillages(accountId);
+            var villages = new GetVillage().Missing(accountId);
 
             foreach (var village in villages)
             {

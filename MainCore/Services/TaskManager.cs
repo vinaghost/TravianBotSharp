@@ -1,11 +1,5 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Notification.Message;
-using MainCore.Tasks.Base;
-using MediatR;
+﻿using MainCore.Tasks.Base;
 using Microsoft.Extensions.DependencyInjection;
-using Splat;
 
 namespace MainCore.Services
 {

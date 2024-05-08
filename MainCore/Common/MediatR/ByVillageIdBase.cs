@@ -1,6 +1,4 @@
-﻿using MainCore.Entities;
-
-namespace MainCore.Common.MediatR
+﻿namespace MainCore.Common.MediatR
 {
     public class ByVillageIdBase
     {

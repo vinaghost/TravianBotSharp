@@ -1,6 +1,4 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Common.Extensions;
-using ReactiveUI;
+﻿using ReactiveUI;
 using System.Drawing;
 
 namespace MainCore.UI.Models.Output
