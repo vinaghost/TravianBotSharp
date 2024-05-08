@@ -1,5 +1,4 @@
-﻿using MainCore.DTO;
-using RestSharp;
+﻿using RestSharp;
 
 namespace MainCore.Services
 {

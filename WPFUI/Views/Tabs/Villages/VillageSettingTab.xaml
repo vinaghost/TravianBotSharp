@@ -37,7 +37,12 @@
                         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Upgrade settings" VerticalAlignment="Center" FontWeight="Bold" />
                         <CheckBox x:Name="UseHeroResForBuilding" Content="Use hero resources when lack of resources" />
                         <CheckBox x:Name="UseRomanQueueLogic" Content="Use Roman queue logic" />
-                        <CheckBox x:Name="CompleteImmediately" Content="Use complete immediately button when building queue is full" />
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox x:Name="CompleteImmediately" Content="Use complete immediately button if queue time longer than " />
+                            <TextBox x:Name="CompleteImmediatelyTime" Width="25" />
+                            <Label Content=" mins" />
+                        </StackPanel>
+
                         <CheckBox x:Name="UseSpecialUpgrade" Content="Use special upgrade method (the right upgrade button)" />
                     </StackPanel>
                 </Border>

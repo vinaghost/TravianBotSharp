@@ -1,5 +1,4 @@
-﻿using MainCore.Common.Enums;
-using StronglyTypedIds;
+﻿using StronglyTypedIds;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MainCore.Entities

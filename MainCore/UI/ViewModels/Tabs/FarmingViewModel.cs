@@ -1,28 +1,28 @@
-﻿using MainCore.Commands.UI.Farming;
-using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Repositories;
+﻿using FluentValidation;
+using MainCore.Tasks;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using MediatR;
 using ReactiveUI;
 using System.Drawing;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class FarmingViewModel : AccountTabViewModelBase
     {
+        private readonly IValidator<FarmListSettingInput> _farmListSettingInputValidator;
+
         public FarmListSettingInput FarmListSettingInput { get; } = new();
         public ListBoxItemViewModel FarmLists { get; } = new();
 
         private readonly IMediator _mediator;
-        private readonly UnitOfRepository _unitOfRepository;
+        private readonly IDialogService _dialogService;
+        private readonly ITaskManager _taskManager;
+
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
         public ReactiveCommand<Unit, Unit> UpdateFarmList { get; }
         public ReactiveCommand<Unit, Unit> Save { get; }
@@ -39,11 +39,13 @@ namespace MainCore.UI.ViewModels.Tabs
             { Color.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(IMediator mediator, UnitOfRepository unitOfRepository)
-
+        public FarmingViewModel(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, IValidator<FarmListSettingInput> farmListSettingInputValidator)
         {
             _mediator = mediator;
-            _unitOfRepository = unitOfRepository;
+            _dialogService = dialogService;
+            _taskManager = taskManager;
+            _contextFactory = contextFactory;
+            _farmListSettingInputValidator = farmListSettingInputValidator;
 
             UpdateFarmList = ReactiveCommand.CreateFromTask(UpdateFarmListHandler);
             Start = ReactiveCommand.CreateFromTask(StartHandler);
@@ -76,49 +78,101 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadFarmList.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadFarmList.Execute(accountId);
         }
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadFarmList.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
-            await LoadSetting.Execute(accountId).SubscribeOn(RxApp.TaskpoolScheduler);
+            await LoadFarmList.Execute(accountId);
+            await LoadSetting.Execute(accountId);
         }
 
         private async Task UpdateFarmListHandler()
         {
-            await _mediator.Send(new UpdateFarmListCommand(AccountId));
+            await _taskManager.AddOrUpdate<UpdateFarmListTask>(AccountId);
+            _dialogService.ShowMessageBox("Information", "Added update farm list task");
         }
 
         private async Task StartHandler()
         {
-            await _mediator.Send(new StartFarmListCommand(AccountId));
+            var useStartAllButton = new GetSetting().BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
+            if (!useStartAllButton)
+            {
+                var count = CountActive(AccountId);
+                if (count == 0)
+                {
+                    _dialogService.ShowMessageBox("Information", "There is no active farm or use start all button is disable");
+                    return;
+                }
+            }
+            await _taskManager.AddOrUpdate<StartFarmListTask>(AccountId);
+            _dialogService.ShowMessageBox("Information", "Added start farm list task");
         }
 
         private async Task StopHandler()
         {
-            await _mediator.Send(new StopFarmListCommand(AccountId));
+            var task = _taskManager.Get<StartFarmListTask>(AccountId);
+
+            if (task is not null) await _taskManager.Remove(AccountId, task);
+
+            _dialogService.ShowMessageBox("Information", "Removed start farm list task");
         }
 
         private async Task SaveHandler()
         {
-            await _mediator.Send(new SaveFarmListSettingsCommand(AccountId, FarmListSettingInput));
+            var result = _farmListSettingInputValidator.Validate(FarmListSettingInput);
+            if (!result.IsValid)
+            {
+                _dialogService.ShowMessageBox("Error", result.ToString());
+                return;
+            }
+
+            var settings = FarmListSettingInput.Get();
+            new SetSettingCommand().Execute(AccountId, settings);
+            await _mediator.Publish(new AccountSettingUpdated(AccountId));
+
+            _dialogService.ShowMessageBox("Information", "Settings saved");
         }
 
         private async Task ActiveFarmListHandler()
         {
-            await _mediator.Send(new ActiveFarmListCommand(AccountId, FarmLists.SelectedItem));
+            var selectedFarmList = FarmLists.SelectedItem;
+            if (selectedFarmList is null)
+            {
+                _dialogService.ShowMessageBox("Warning", "No farm list selected");
+                return;
+            }
+
+            using (var context = _contextFactory.CreateDbContext())
+            {
+                context.FarmLists
+                   .Where(x => x.Id == selectedFarmList.Id)
+                   .ExecuteUpdate(x => x.SetProperty(x => x.IsActive, x => !x.IsActive));
+            };
+
+            await _mediator.Publish(new FarmListUpdated(AccountId));
         }
 
         private Dictionary<AccountSettingEnums, int> LoadSettingHandler(AccountId accountId)
         {
-            var items = _unitOfRepository.AccountSettingRepository.Get(accountId);
+            var items = new GetSetting().Get(accountId);
             return items;
         }
 
         private List<ListBoxItem> LoadFarmListHandler(AccountId accountId)
         {
-            var items = _unitOfRepository.FarmRepository.GetItems(accountId);
+            using var context = _contextFactory.CreateDbContext();
+
+            var items = context.FarmLists
+                .Where(x => x.AccountId == accountId.Value)
+                .Select(x => new ListBoxItem()
+                {
+                    Id = x.Id,
+                    Color = x.IsActive ? Color.Green : Color.Red,
+                    Content = x.Name,
+                })
+                .ToList();
+
             return items;
         }
 
@@ -128,6 +182,17 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             get => _activeText;
             set => this.RaiseAndSetIfChanged(ref _activeText, value);
+        }
+
+        private int CountActive(AccountId accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var count = context.FarmLists
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => x.IsActive)
+                .Count();
+            return count;
         }
     }
 }

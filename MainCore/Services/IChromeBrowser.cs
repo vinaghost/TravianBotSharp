@@ -1,7 +1,4 @@
-﻿using FluentResults;
-using HtmlAgilityPack;
-using MainCore.Common.Models;
-using OpenQA.Selenium;
+﻿using MainCore.Common.Models;
 using OpenQA.Selenium.Chrome;
 
 namespace MainCore.Services
