@@ -33,7 +33,7 @@ namespace MainCore.Commands.Update
             var ids = dtos.Select(x => x.Id.Value).ToList();
 
             var villageDeleted = villages.Where(x => !ids.Contains(x.Id)).ToList();
-            var villageInserted = dtos.Where(x => !villages.Any(v => v.Id == x.Id.Value)).ToList();
+            var villageInserted = dtos.Where(x => !villages.Exists(v => v.Id == x.Id.Value)).ToList();
             var villageUpdated = villages.Where(x => ids.Contains(x.Id)).ToList();
 
             villageDeleted.ForEach(x => context.Remove(x));
@@ -45,7 +45,7 @@ namespace MainCore.Commands.Update
 
             foreach (var village in villageUpdated)
             {
-                var dto = dtos.FirstOrDefault(x => x.Id.Value == village.Id);
+                var dto = dtos.Find(x => x.Id.Value == village.Id);
                 dto.To(village);
                 context.Update(village);
             }

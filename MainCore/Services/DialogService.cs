@@ -3,10 +3,10 @@
     [RegisterAsSingleton]
     public class DialogService : IDialogService
     {
-        public Action<string, string> MessageBoxFunc;
-        public Func<string, string, bool> ConfirmBoxFunc;
-        public Func<string> OpenFileDialogFunc;
-        public Func<string> SaveFileDialogFunc;
+        public Action<string, string> MessageBoxFunc { get; set; }
+        public Func<string, string, bool> ConfirmBoxFunc { get; set; }
+        public Func<string> OpenFileDialogFunc { get; set; }
+        public Func<string> SaveFileDialogFunc { get; set; }
 
         public string OpenFileDialog() => OpenFileDialogFunc?.Invoke();
 

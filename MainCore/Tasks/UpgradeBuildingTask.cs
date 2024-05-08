@@ -72,7 +72,7 @@ namespace MainCore.Tasks
                     continue;
                 }
 
-                logger.Information("Build {type} to level {level} at location {location}", plan.Type, plan.Level, plan.Location);
+                logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
 
                 result = await ToBuildingPage(_chromeBrowser, plan);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -199,17 +199,6 @@ namespace MainCore.Tasks
 
             ExecuteAt = buildingQueue.CompleteTime.AddSeconds(3);
             await _taskManager.ReOrder(AccountId);
-        }
-
-        private async Task<bool> JobComplete(JobDto job)
-        {
-            if (JobComplete(VillageId, job))
-            {
-                new DeleteJobCommand().ByJobId(job.Id);
-                await _mediator.Publish(new JobUpdated(AccountId, VillageId));
-                return true;
-            }
-            return false;
         }
 
         public async Task AddCropland()
@@ -401,6 +390,17 @@ namespace MainCore.Tasks
                 .OrderBy(x => x.Position)
                 .FirstOrDefault();
             return queueBuilding;
+        }
+
+        private async Task<bool> JobComplete(JobDto job)
+        {
+            if (JobComplete(VillageId, job))
+            {
+                new DeleteJobCommand().ByJobId(job.Id);
+                await _mediator.Publish(new JobUpdated(AccountId, VillageId));
+                return true;
+            }
+            return false;
         }
 
         private bool JobComplete(VillageId villageId, JobDto job)

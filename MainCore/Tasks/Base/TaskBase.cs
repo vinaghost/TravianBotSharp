@@ -12,9 +12,9 @@
             result = await PreExecute();
             if (result.IsFailed) return result;
             result = await Execute();
-            if (result.IsFailed)
+            if (result.IsFailed && !result.HasError<Skip>())
             {
-                if (!result.HasError<Skip>()) return result;
+                return result;
             }
             result = await PostExecute();
             if (result.IsFailed) return result;
@@ -25,14 +25,12 @@
 
         protected virtual async Task<Result> PreExecute()
         {
-            await Task.CompletedTask;
-            return Result.Ok();
+            return await Task.FromResult(Result.Ok());
         }
 
         protected virtual async Task<Result> PostExecute()
         {
-            await Task.CompletedTask;
-            return Result.Ok();
+            return await Task.FromResult(Result.Ok());
         }
 
         public string GetName()

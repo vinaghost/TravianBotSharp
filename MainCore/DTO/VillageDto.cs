@@ -23,11 +23,11 @@ namespace MainCore.DTO
             return entity;
         }
 
+        private static partial Village ToEntity(this VillageDto dto);
+
         public static partial void To(this VillageDto dto, Village entity);
 
         public static partial VillageDto ToDto(this Village dto);
-
-        private static partial Village ToEntity(this VillageDto dto);
 
         public static partial IQueryable<VillageDto> ToDto(this IQueryable<Village> entities);
 

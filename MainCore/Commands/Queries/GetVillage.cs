@@ -75,7 +75,7 @@
             var hasBuildingJobVillages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .Include(x => x.Jobs.Where(x => types.Contains(x.Type)))
-                .Where(x => x.Jobs.Count() > 0)
+                .Where(x => x.Jobs.Any())
                 .Select(x => x.Id)
                 .AsEnumerable()
                 .Select(x => new VillageId(x))

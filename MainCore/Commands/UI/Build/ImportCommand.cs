@@ -114,7 +114,7 @@ namespace MainCore.Commands.UI.Build
 
         private static bool IsValidPlan(List<BuildingItem> buildings, NormalBuildPlan plan)
         {
-            var building = buildings.FirstOrDefault(x => x.Location == plan.Location);
+            var building = buildings.Find(x => x.Location == plan.Location);
             if (building is null) return false;
 
             if (building.Type != BuildingEnums.Site)
@@ -143,7 +143,7 @@ namespace MainCore.Commands.UI.Build
             {
                 if (plan.Type.IsWall())
                 {
-                    var wall = buildings.FirstOrDefault(x => x.Location == 40);
+                    var wall = buildings.Find(x => x.Location == 40);
                     if (plan.Type != wall.Type)
                     {
                         plan.Type = wall.Type;
@@ -175,7 +175,7 @@ namespace MainCore.Commands.UI.Build
         private static bool ModifySame(List<BuildingItem> buildings, NormalBuildPlan plan)
         {
             var sameTypeBuilding = buildings
-                .FirstOrDefault(x => x.Type == plan.Type);
+                .Find(x => x.Type == plan.Type);
             if (sameTypeBuilding is not null)
             {
                 if (sameTypeBuilding.Location != plan.Location)

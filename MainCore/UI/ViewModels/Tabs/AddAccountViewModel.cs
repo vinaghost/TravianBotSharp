@@ -87,7 +87,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task AddAccountHandler()
         {
-            var results = _accountInputValidator.Validate(AccountInput);
+            var results = await _accountInputValidator.ValidateAsync(AccountInput);
 
             if (!results.IsValid)
             {
@@ -116,13 +116,11 @@ namespace MainCore.UI.ViewModels.Tabs
             if (isExist) return false;
 
             var account = dto.ToEntity();
-            foreach (var access in account.Accesses)
+            foreach (var access in account.Accesses.Where(access => string.IsNullOrEmpty(access.Useragent)))
             {
-                if (string.IsNullOrEmpty(access.Useragent))
-                {
-                    access.Useragent = _useragentManager.Get();
-                }
+                access.Useragent = _useragentManager.Get();
             }
+
             context.Add(account);
             context.SaveChanges();
             context.FillAccountSettings(new(account.Id));

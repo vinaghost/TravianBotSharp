@@ -1,4 +1,5 @@
 ﻿using StronglyTypedIds;
+using System.Collections.Immutable;
 
 [assembly: StronglyTypedIdDefaults(
     backingType: StronglyTypedIdBackingType.Int,
@@ -32,7 +33,7 @@ namespace MainCore.Infrasturecture.Persistence
 
         #region account setting
 
-        public static readonly Dictionary<AccountSettingEnums, int> AccountDefaultSettings = new()
+        public static readonly ImmutableDictionary<AccountSettingEnums, int> AccountDefaultSettings = new Dictionary<AccountSettingEnums, int>
         {
             {AccountSettingEnums.ClickDelayMin, 500 },
             {AccountSettingEnums.ClickDelayMax, 900 },
@@ -49,7 +50,7 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.WorkTimeMax, 720 },
             {AccountSettingEnums.HeadlessChrome, 0 },
             {AccountSettingEnums.EnableAutoStartAdventure, 0 },
-        };
+        }.ToImmutableDictionary();
 
         private List<AccountSettingEnums> GetMissingAccountSettings()
         {
@@ -120,7 +121,7 @@ namespace MainCore.Infrasturecture.Persistence
 
         #region village setting
 
-        public static readonly Dictionary<VillageSettingEnums, int> VillageDefaultSettings = new()
+        public static readonly ImmutableDictionary<VillageSettingEnums, int> VillageDefaultSettings = new Dictionary<VillageSettingEnums, int>
         {
             {VillageSettingEnums.UseHeroResourceForBuilding, 0 },
             {VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding, 0 },
@@ -155,7 +156,7 @@ namespace MainCore.Infrasturecture.Persistence
 
             {VillageSettingEnums.AutoClaimQuestEnable, 0 },
             {VillageSettingEnums.CompleteImmediatelyTime, 20 },
-        };
+        }.ToImmutableDictionary();
 
         private List<VillageSettingEnums> GetMissingVillageSettings()
         {

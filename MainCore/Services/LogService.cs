@@ -51,13 +51,13 @@ namespace MainCore.Services
                 using var context = _contextFactory.CreateDbContext();
                 var account = context.Accounts
                     .Where(x => x.Id == accountId.Value)
-                    .FirstOrDefault();
+                    .First();
 
                 var uri = new Uri(account.Server);
                 logger = Log.ForContext("Account", $"{account.Username}_{uri.Host}")
                             .ForContext("AccountId", accountId);
                 _loggers.Add(accountId, logger);
-                logger.Information("===============> Current version: {version} <===============", GetVersion());
+                logger.Information("===============> Current version: {Version} <===============", GetVersion());
             }
             return logger;
         }

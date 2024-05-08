@@ -81,7 +81,7 @@ namespace MainCore.Commands.Features.StartFarmList
             var ids = dtos.Select(x => x.Id.Value).ToList();
 
             var farmDeleted = farms.Where(x => !ids.Contains(x.Id)).ToList();
-            var farmInserted = dtos.Where(x => !farms.Any(v => v.Id == x.Id.Value)).ToList();
+            var farmInserted = dtos.Where(x => !farms.Exists(v => v.Id == x.Id.Value)).ToList();
             var farmUpdated = farms.Where(x => ids.Contains(x.Id)).ToList();
 
             farmDeleted.ForEach(x => context.Remove(x));

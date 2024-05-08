@@ -6,8 +6,7 @@
         {
             var adventure = doc.DocumentNode
                 .Descendants("a")
-                .Where(x => x.HasClass("adventure") && x.HasClass("round"))
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.HasClass("adventure") && x.HasClass("round"));
             return adventure;
         }
 
@@ -15,21 +14,18 @@
         {
             var status = doc.DocumentNode
                 .Descendants("div")
-                .Where(x => x.HasClass("heroStatus"))
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.HasClass("heroStatus"));
             if (status is null) return false;
 
             var heroHome = status.Descendants("i")
-                .Where(x => x.HasClass("heroHome"))
-                .Any();
+                .Any(x => x.HasClass("heroHome"));
             if (!heroHome) return false;
 
             var adventure = GetHeroAdventure(doc);
             if (adventure is null) return false;
 
             var adventureAvailabe = adventure.Descendants("div")
-                .Where(x => x.HasClass("content"))
-                .Any();
+                .Any(x => x.HasClass("content"));
             return adventureAvailabe;
         }
     }

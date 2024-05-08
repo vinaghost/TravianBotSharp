@@ -46,9 +46,8 @@
 
         private static Result IsVaildQueueBuilding(List<QueueBuildingDto> dtos)
         {
-            foreach (var dto in dtos)
+            foreach (var strType in dtos.Select(x => x.Type))
             {
-                var strType = dto.Type;
                 var resultParse = Enum.TryParse(strType, false, out BuildingEnums _);
                 if (!resultParse) return Stop.EnglishRequired(strType);
             }
@@ -263,7 +262,7 @@
                 {
                     foreach (var dto in dtos)
                     {
-                        var queueBuilding = queueBuildings.FirstOrDefault(x => x.Type == dto.Type);
+                        var queueBuilding = queueBuildings.Find(x => x.Type == dto.Type);
                         if (queueBuilding is not null)
                         {
                             queueBuilding.Location = dto.Location;
@@ -284,7 +283,7 @@
                     {
                         foreach (var dto in dtos)
                         {
-                            var queueBuilding = queueBuildings.FirstOrDefault(x => x.Level == dto.Level + 1);
+                            var queueBuilding = queueBuildings.Find(x => x.Level == dto.Level + 1);
                             if (queueBuilding is not null)
                             {
                                 queueBuilding.Location = dto.Location;
@@ -332,7 +331,7 @@
                     dto.Type = wall;
                 }
                 var dbBuilding = dbBuildings
-                    .FirstOrDefault(x => x.Location == dto.Location);
+                    .Find(x => x.Location == dto.Location);
                 if (dbBuilding is null)
                 {
                     var building = dto.ToEntity(villageId);

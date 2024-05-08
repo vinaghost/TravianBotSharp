@@ -22,7 +22,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         public ObservableCollection<TaskItem> Tasks { get; } = new();
 
-        public string _logs;
+        private string _logs;
 
         public string Logs
         {

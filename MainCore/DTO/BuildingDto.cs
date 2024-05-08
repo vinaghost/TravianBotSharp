@@ -21,12 +21,12 @@ namespace MainCore.DTO
             return entity;
         }
 
-        public static partial BuildingDto ToDto(this Building entity);
+        private static partial Building ToEntity(this BuildingDto dto);
 
         [MapperIgnoreSource(nameof(BuildingDto.Id))]
         public static partial void To(this BuildingDto dto, Building entity);
 
-        private static partial Building ToEntity(this BuildingDto dto);
+        public static partial BuildingDto ToDto(this Building entity);
 
         public static partial IQueryable<BuildingDto> ToDto(this IQueryable<Building> entities);
 

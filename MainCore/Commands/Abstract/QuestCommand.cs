@@ -14,8 +14,7 @@
             if (questmasterButton is null) return false;
             var newQuestSpeechBubble = questmasterButton
                 .Descendants("div")
-                .Where(x => x.HasClass("newQuestSpeechBubble"))
-                .Any();
+                .Any(x => x.HasClass("newQuestSpeechBubble"));
             return newQuestSpeechBubble;
         }
     }

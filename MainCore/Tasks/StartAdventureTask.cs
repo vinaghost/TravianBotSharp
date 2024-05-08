@@ -20,8 +20,6 @@ namespace MainCore.Tasks
             result = await new ToDorfCommand().Execute(_chromeBrowser, 0, false, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var html = _chromeBrowser.Html;
-
             result = await new ToAdventurePageCommand().Execute(_chromeBrowser, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 

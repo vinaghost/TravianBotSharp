@@ -8,8 +8,9 @@ namespace MainCore.Commands.Checks
     {
         private readonly IRestClientManager _restClientManager;
 
-        private static readonly AsyncRetryPolicy _retryPolicy = Policy
+        private static readonly AsyncRetryPolicy<bool> _retryPolicy = Policy<bool>
                 .Handle<Exception>()
+                .OrResult(x => false)
                 .WaitAndRetryAsync(
                     retryCount: 3,
                     sleepDurationProvider: times => TimeSpan.FromSeconds(10 * times));
@@ -19,7 +20,7 @@ namespace MainCore.Commands.Checks
             _restClientManager = restClientManager ?? Locator.Current.GetService<IRestClientManager>();
         }
 
-        private async Task Validate(AccessDto access)
+        private async Task<bool> Validate(AccessDto access)
         {
             var request = new RestRequest
             {
@@ -27,7 +28,7 @@ namespace MainCore.Commands.Checks
             };
             var client = _restClientManager.Get(access);
             var response = await client.ExecuteAsync(request);
-            if (!response.IsSuccessful) throw new Exception("Proxy failed");
+            return response.IsSuccessful;
         }
 
         public async Task<bool> Execute(AccessDto access)

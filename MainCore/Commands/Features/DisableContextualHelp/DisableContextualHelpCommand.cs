@@ -27,21 +27,9 @@
             return node;
         }
 
-        private static HtmlNode GetReporPerPageOption(HtmlDocument doc)
-        {
-            var node = doc.GetElementbyId("epp");
-            return node;
-        }
-
-        private static HtmlNode GetMovementsPerPageOption(HtmlDocument doc)
-        {
-            var node = doc.GetElementbyId("troopMovementsPerPage");
-            return node;
-        }
-
         private static HtmlNode GetSubmitButton(HtmlDocument doc)
         {
-            var div = doc.DocumentNode.Descendants("div").Where(x => x.HasClass("submitButtonContainer")).FirstOrDefault();
+            var div = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("submitButtonContainer"));
             if (div is null) return null;
             var button = div.Descendants("button").FirstOrDefault();
             return button;

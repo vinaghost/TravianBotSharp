@@ -92,7 +92,7 @@ namespace MainCore.Commands.Features.UseHeroItem
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
                 return !HeroInventoryLoading(doc);
-            };
+            }
 
             result = await chromeBrowser.Wait(loadingCompleted, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -126,7 +126,7 @@ namespace MainCore.Commands.Features.UseHeroItem
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
                 return !HeroInventoryLoading(doc);
-            };
+            }
 
             result = await chromeBrowser.Wait(loadingCompleted, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -158,16 +158,16 @@ namespace MainCore.Commands.Features.UseHeroItem
                 .ToList();
 
             var result = Result.Ok();
-            var wood = items.FirstOrDefault(x => x.Type == HeroItemEnums.Wood);
+            var wood = items.Find(x => x.Type == HeroItemEnums.Wood);
             var woodAmount = wood?.Amount ?? 0;
             if (woodAmount < requiredResource[0]) result.WithError(Resource.Error("wood", woodAmount, requiredResource[0]));
-            var clay = items.FirstOrDefault(x => x.Type == HeroItemEnums.Clay);
+            var clay = items.Find(x => x.Type == HeroItemEnums.Clay);
             var clayAmount = clay?.Amount ?? 0;
             if (clayAmount < requiredResource[1]) result.WithError(Resource.Error("clay", clayAmount, requiredResource[1]));
-            var iron = items.FirstOrDefault(x => x.Type == HeroItemEnums.Iron);
+            var iron = items.Find(x => x.Type == HeroItemEnums.Iron);
             var ironAmount = iron?.Amount ?? 0;
             if (ironAmount < requiredResource[2]) result.WithError(Resource.Error("iron", ironAmount, requiredResource[2]));
-            var crop = items.FirstOrDefault(x => x.Type == HeroItemEnums.Crop);
+            var crop = items.Find(x => x.Type == HeroItemEnums.Crop);
             var cropAmount = crop?.Amount ?? 0;
             if (cropAmount < requiredResource[3]) result.WithError(Resource.Error("crop", cropAmount, requiredResource[3]));
             return result;
@@ -178,6 +178,7 @@ namespace MainCore.Commands.Features.UseHeroItem
             var inventoryPageWrapper = doc.DocumentNode
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("inventoryPageWrapper"));
+            if (inventoryPageWrapper is null) return false;
             return inventoryPageWrapper.HasClass("loading");
         }
 
@@ -212,6 +213,7 @@ namespace MainCore.Commands.Features.UseHeroItem
         {
             var dialog = doc.GetElementbyId("dialogContent");
             var buttonWrapper = dialog.Descendants("div").FirstOrDefault(x => x.HasClass("buttonsWrapper"));
+            if (buttonWrapper is null) return null;
             var buttonTransfer = buttonWrapper.Descendants("button");
             if (buttonTransfer.Count() < 2) return null;
             return buttonTransfer.ElementAt(1);

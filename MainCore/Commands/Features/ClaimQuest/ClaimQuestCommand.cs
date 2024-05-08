@@ -50,14 +50,12 @@ namespace MainCore.Commands.Features.ClaimQuest
         {
             var taskTable = doc.DocumentNode
                 .Descendants("div")
-                .Where(x => x.HasClass("taskOverview"))
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.HasClass("taskOverview"));
             if (taskTable is null) return null;
 
             var button = taskTable
                 .Descendants("button")
-                .Where(x => x.HasClass("collect") && !x.HasClass("disabled"))
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.HasClass("collect") && !x.HasClass("disabled"));
             return button;
         }
     }

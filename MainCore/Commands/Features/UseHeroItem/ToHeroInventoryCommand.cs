@@ -39,7 +39,7 @@
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
                 return InventoryTabActive(doc);
-            };
+            }
 
             result = await chromeBrowser.Wait(tabActived, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -127,7 +127,6 @@
                     Type = item,
                     Amount = amount,
                 };
-                continue;
             }
         }
 
@@ -141,7 +140,7 @@
             var types = dtos.Select(x => x.Type).ToList();
 
             var itemDeleted = items.Where(x => !types.Contains(x.Type)).ToList();
-            var itemInserted = dtos.Where(x => !items.Any(v => v.Type == x.Type)).ToList();
+            var itemInserted = dtos.Where(x => !items.Exists(v => v.Type == x.Type)).ToList();
             var itemUpdated = items.Where(x => types.Contains(x.Type)).ToList();
 
             itemDeleted.ForEach(x => context.Remove(x));
@@ -149,7 +148,7 @@
 
             foreach (var item in itemUpdated)
             {
-                var dto = dtos.FirstOrDefault(x => x.Type == item.Type);
+                var dto = dtos.Find(x => x.Type == item.Type);
                 dto.To(item);
                 context.Update(item);
             }

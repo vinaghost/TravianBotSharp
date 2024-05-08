@@ -60,7 +60,7 @@ namespace MainCore.Services
                 throw new Exception($"ChromeDriver version not found for Chrome version {chromeVersion} [no download link ]");
             }
 
-            var link = version.Downloads.ChromeDriver.FirstOrDefault(x => x.Platform == "win64");
+            var link = version.Downloads.ChromeDriver.Find(x => x.Platform == "win64");
             if (link is null)
             {
                 throw new Exception($"ChromeDriver version not found for Chrome version {chromeVersion} [no win64 download link]");
@@ -78,7 +78,7 @@ namespace MainCore.Services
             using var zipFileStream = await driverZipResponse.Content.ReadAsStreamAsync();
             using var zipArchive = new ZipArchive(zipFileStream, ZipArchiveMode.Read);
             using var chromeDriverWriter = new FileStream(targetPath, FileMode.Create);
-            var entry = zipArchive.Entries.FirstOrDefault(x => x.Name.Contains(driverName));
+            var entry = zipArchive.Entries.First(x => x.Name.Contains(driverName));
             using Stream chromeDriverStream = entry.Open();
             await chromeDriverStream.CopyToAsync(chromeDriverWriter);
         }

@@ -25,7 +25,7 @@
                 if (tab is null) return false;
                 if (!IsTabActive(tab)) return false;
                 return true;
-            };
+            }
             result = await chromeBrowser.Wait(tabActived, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();

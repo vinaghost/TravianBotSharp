@@ -91,12 +91,9 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             var strAccount = input.Trim().Split(' ');
             Uri url = null;
-            if (strAccount.Length > 0)
+            if (strAccount.Length > 0 && !Uri.TryCreate(strAccount[0], UriKind.Absolute, out url))
             {
-                if (!Uri.TryCreate(strAccount[0], UriKind.Absolute, out url))
-                {
-                    return null;
-                };
+                return null;
             }
 
             if (strAccount.Length > 4)
@@ -116,7 +113,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 5 => AccountDetailDto.Create(strAccount[1], url.AbsoluteUri, strAccount[2], strAccount[3], int.Parse(strAccount[4])),
                 7 => AccountDetailDto.Create(strAccount[1], url.AbsoluteUri, strAccount[2], strAccount[3], int.Parse(strAccount[4]), strAccount[5], strAccount[6]),
                 _ => null,
-            }; ;
+            };
         }
 
         private void Add(List<AccountDetailDto> dtos)
@@ -132,13 +129,11 @@ namespace MainCore.UI.ViewModels.Tabs
                     .Any();
                 if (isExist) continue;
                 var account = dto.ToEnitty();
-                foreach (var access in account.Accesses)
+                foreach (var access in account.Accesses.Where(access => string.IsNullOrEmpty(access.Useragent)))
                 {
-                    if (string.IsNullOrEmpty(access.Useragent))
-                    {
-                        access.Useragent = _useragentManager.Get();
-                    }
+                    access.Useragent = _useragentManager.Get();
                 }
+
                 accounts.Add(account);
             }
             context.AddRange(accounts);

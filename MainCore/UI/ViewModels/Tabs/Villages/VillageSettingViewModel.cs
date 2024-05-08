@@ -48,7 +48,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task SaveHandler()
         {
-            var result = _villageSettingInputValidator.Validate(VillageSettingInput);
+            var result = await _villageSettingInputValidator.ValidateAsync(VillageSettingInput);
             if (!result.IsValid)
             {
                 _dialogService.ShowMessageBox("Error", result.ToString());
@@ -77,7 +77,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
 
             VillageSettingInput.Set(settings);
-            var result = _villageSettingInputValidator.Validate(VillageSettingInput);
+            var result = await _villageSettingInputValidator.ValidateAsync(VillageSettingInput);
             if (!result.IsValid)
             {
                 _dialogService.ShowMessageBox("Error", result.ToString());

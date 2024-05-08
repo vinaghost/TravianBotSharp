@@ -2,12 +2,12 @@
 
 namespace MainCore.Notification.Handlers.Trigger
 {
-    public class TriggerNPCTask : INotificationHandler<StorageUpdated>, INotificationHandler<VillageSettingUpdated>
+    public class TriggerNpcTask : INotificationHandler<StorageUpdated>, INotificationHandler<VillageSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public TriggerNPCTask(ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
+        public TriggerNpcTask(ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
         {
             _taskManager = taskManager;
             _contextFactory = contextFactory;
@@ -36,13 +36,13 @@ namespace MainCore.Notification.Handlers.Trigger
                 var autoNPCGranaryPercent = new GetSetting().ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
 
                 if (granaryPercent < autoNPCGranaryPercent) return;
-                if (_taskManager.IsExist<NPCTask>(accountId, villageId)) return;
+                if (_taskManager.IsExist<NpcTask>(accountId, villageId)) return;
 
-                await _taskManager.Add<NPCTask>(accountId, villageId);
+                await _taskManager.Add<NpcTask>(accountId, villageId);
             }
             else
             {
-                var task = _taskManager.Get<NPCTask>(accountId, villageId);
+                var task = _taskManager.Get<NpcTask>(accountId, villageId);
                 await _taskManager.Remove(accountId, task);
             }
         }

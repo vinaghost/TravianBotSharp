@@ -151,57 +151,13 @@ namespace MainCore.Tasks
             if (cta is null) return 0;
             var a = cta.Descendants("a")
                 .FirstOrDefault();
+            if (a is null) return 0;
             return a.InnerText.ParseInt();
-        }
-
-        private static TimeSpan GetQueueTrainTime(HtmlDocument doc)
-        {
-            var table = doc.DocumentNode.Descendants("table")
-                .FirstOrDefault(x => x.HasClass("under_progress"));
-            if (table is null) return TimeSpan.FromSeconds(0);
-            var td = table.Descendants("td")
-                .FirstOrDefault(x => x.HasClass("dur"));
-            var timer = td.Descendants("span")
-                .FirstOrDefault(x => x.HasClass("timer"));
-            var value = timer.GetAttributeValue("value", 0);
-            return TimeSpan.FromSeconds(value);
         }
 
         private static HtmlNode GetTrainButton(HtmlDocument doc)
         {
             return doc.GetElementbyId("s1");
-        }
-
-        private static long[] GetTrainCost(HtmlDocument doc, TroopEnums troop)
-        {
-            var node = GetNode(doc, troop);
-            var resource = node.Descendants("div")
-                .Where(x => x.HasClass("inlineIcon"))
-                .Where(x => x.HasClass("resource"))
-                .SkipLast(1) // free crop
-                .ToList();
-            var resources = new long[4];
-            for (var i = 0; i < 4; i++)
-            {
-                var span = resource[i].Descendants("span")
-                    .Where(x => x.HasClass("value"))
-                    .FirstOrDefault();
-                var text = span.InnerText;
-                resources[i] = text.ParseLong();
-            }
-            return resources;
-        }
-
-        private static TimeSpan GetTrainTime(HtmlDocument doc, TroopEnums troop)
-        {
-            var node = GetNode(doc, troop);
-            var durationDiv = node.Descendants("div")
-                .Where(x => x.HasClass("duration"))
-                .FirstOrDefault();
-            var durationSpan = durationDiv.Descendants("span")
-                .Where(x => x.HasClass("value"))
-                .FirstOrDefault();
-            return durationSpan.InnerText.ToDuration();
         }
 
         private static HtmlNode GetNode(HtmlDocument doc, TroopEnums troop)
@@ -215,9 +171,10 @@ namespace MainCore.Tasks
             {
                 var img = node.Descendants("img")
                 .FirstOrDefault(x => x.HasClass("unit"));
+                if (img is null) continue;
                 var classes = img.GetClasses();
                 var type = classes
-                    .Where(x => x.StartsWith("u"))
+                    .Where(x => x.StartsWith('u'))
                     .FirstOrDefault(x => !x.Equals("unit"));
                 if (type.ParseInt() == (int)troop) return node;
             }

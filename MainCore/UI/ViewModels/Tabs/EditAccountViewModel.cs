@@ -92,7 +92,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task EditAccountHandler()
         {
-            var results = _accountInputValidator.Validate(AccountInput);
+            var results = await _accountInputValidator.ValidateAsync(AccountInput);
 
             if (!results.IsValid)
             {
@@ -141,12 +141,9 @@ namespace MainCore.UI.ViewModels.Tabs
             using var context = _contextFactory.CreateDbContext();
 
             var account = dto.ToEntity();
-            foreach (var access in account.Accesses)
+            foreach (var access in account.Accesses.Where(access => string.IsNullOrWhiteSpace(access.Useragent)))
             {
-                if (string.IsNullOrWhiteSpace(access.Useragent))
-                {
-                    access.Useragent = _useragentManager.Get();
-                }
+                access.Useragent = _useragentManager.Get();
             }
 
             // Remove accesses not present in the DTO

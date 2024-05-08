@@ -62,7 +62,7 @@ namespace MainCore.Tasks
                 var currentMinute = (int)timeRemaining.TotalMinutes;
                 if (lastMinute != currentMinute)
                 {
-                    logger.Information("Chrome will reopen in {currentMinute} mins", currentMinute);
+                    logger.Information("Chrome will reopen in {CurrentMinute} mins", currentMinute);
                     lastMinute = currentMinute;
                 }
             }

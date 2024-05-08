@@ -21,7 +21,7 @@ namespace MainCore.Commands.Features.StartAdventure
             if (adventure is null) return Retry.ButtonNotFound("adventure place");
 
             var logger = _logService.GetLogger(accountId);
-            logger.Information("Start adventure {adventure}", GetAdventureInfo(adventure));
+            logger.Information("Start adventure {Adventure}", GetAdventureInfo(adventure));
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(adventure.XPath));
@@ -33,7 +33,7 @@ namespace MainCore.Commands.Features.StartAdventure
                 doc.LoadHtml(driver.PageSource);
                 var continueButton = GetContinueButton(doc);
                 return continueButton is not null;
-            };
+            }
 
             result = await chromeBrowser.Wait(continueShow, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -58,8 +58,7 @@ namespace MainCore.Commands.Features.StartAdventure
         {
             var button = doc.DocumentNode
                 .Descendants("button")
-                .Where(x => x.HasClass("continue"))
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.HasClass("continue"));
             return button;
         }
 

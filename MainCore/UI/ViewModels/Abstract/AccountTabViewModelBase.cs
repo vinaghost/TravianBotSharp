@@ -13,7 +13,7 @@ namespace MainCore.UI.ViewModels.Abstract
 
         private ReactiveCommand<AccountId, Unit> AccountChanged { get; }
 
-        public AccountTabViewModelBase()
+        protected AccountTabViewModelBase()
         {
             _selectedItemStore = Locator.Current.GetService<SelectedItemStore>();
 

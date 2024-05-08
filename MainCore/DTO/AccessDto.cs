@@ -27,14 +27,14 @@ namespace MainCore.DTO
             return entity;
         }
 
+        public static partial Access ToEntity(this AccessDto dto);
+
         public static partial AccessDto ToDto(this Access entity);
 
-        public static partial Access ToEntity(this AccessDto dto);
+        public static partial IQueryable<AccessDto> ToDto(this IQueryable<Access> entities);
 
         private static int ToInt(this AccessId accessId) => accessId.Value;
 
         private static AccessId ToAccessId(this int value) => new(value);
-
-        public static partial IQueryable<AccessDto> ToDto(this IQueryable<Access> entities);
     }
 }

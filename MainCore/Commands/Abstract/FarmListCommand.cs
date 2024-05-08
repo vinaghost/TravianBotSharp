@@ -17,6 +17,7 @@
             var flId = node
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("dragAndDrop"));
+            if (flId is null) return FarmId.Empty;
             var id = flId.GetAttributeValue("data-list", "0");
             return new FarmId(id.ParseInt());
         }

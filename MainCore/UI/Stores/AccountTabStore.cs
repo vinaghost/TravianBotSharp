@@ -41,9 +41,9 @@ namespace MainCore.UI.Stores
         {
             if (tabType == _currentTabType)
             {
-                if (tabType == AccountTabType.NoAccount)
+                if (tabType == AccountTabType.NoAccount && !_noAccountViewModel.IsActive)
                 {
-                    if (!_noAccountViewModel.IsActive) _noAccountViewModel.IsActive = true;
+                    _noAccountViewModel.IsActive = true;
                 }
                 return;
             }

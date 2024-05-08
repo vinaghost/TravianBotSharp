@@ -16,7 +16,7 @@ namespace MainCore.UI.ViewModels.Abstract
 
         public ReactiveCommand<VillageId, Unit> VillageChanged { get; }
 
-        public VillageTabViewModelBase()
+        protected VillageTabViewModelBase()
         {
             _selectedItemStore = Locator.Current.GetService<SelectedItemStore>();
 

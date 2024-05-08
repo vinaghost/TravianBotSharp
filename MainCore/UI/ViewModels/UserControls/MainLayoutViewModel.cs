@@ -21,14 +21,12 @@ namespace MainCore.UI.ViewModels.UserControls
         private readonly IChromeManager _chromeManager;
 
         private readonly AccountTabStore _accountTabStore;
-        private readonly SelectedItemStore _selectedItemStore;
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
         public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, ILogService logService, ITimerManager timerManager, IChromeManager chromeManager, IDialogService dialogService)
         {
             _accountTabStore = accountTabStore;
-            _selectedItemStore = selectedItemStore;
             _mediator = mediator;
             _taskManager = taskManager;
 
@@ -54,7 +52,7 @@ namespace MainCore.UI.ViewModels.UserControls
             GetStatus = ReactiveCommand.Create<AccountId, StatusEnums>(GetStatusHandler);
 
             var accountObservable = this.WhenAnyValue(x => x.Accounts.SelectedItem);
-            accountObservable.BindTo(_selectedItemStore, vm => vm.Account);
+            accountObservable.BindTo(selectedItemStore, vm => vm.Account);
 
             accountObservable.Subscribe(x =>
             {
@@ -72,7 +70,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 .InvokeCommand(GetStatus);
 
             LoadVersion
-                .Do(version => Log.Information("===============> Current version: {version} <===============", version))
+                .Do(version => Log.Information("===============> Current version: {Version} <===============", version))
                 .ToProperty(this, x => x.Version, out _version);
 
             LoadAccount.Subscribe(accounts => Accounts.Load(accounts));
@@ -80,12 +78,12 @@ namespace MainCore.UI.ViewModels.UserControls
             GetStatus.Subscribe(SetPauseText);
 
             Observable
-                .Merge(new IObservable<bool>[] {
+                .Merge(
                     Login.IsExecuting.Select(x => !x),
                     Logout.IsExecuting.Select(x => !x),
                     Pause.IsExecuting.Select(x => !x),
-                    Restart.IsExecuting.Select(x => !x),
-                })
+                    Restart.IsExecuting.Select(x => !x)
+                )
                 .BindTo(Accounts, x => x.IsEnable);
         }
 
@@ -161,13 +159,13 @@ namespace MainCore.UI.ViewModels.UserControls
             {
                 _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());
                 var errors = result.Errors.Select(x => x.Message).ToList();
-                logger.Error("{errors}", string.Join(Environment.NewLine, errors));
+                logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
 
                 await _taskManager.SetStatus(accountId, StatusEnums.Offline);
                 return;
             }
             var access = result.Value;
-            logger.Information("Using connection {proxy} to start chrome", access.Proxy);
+            logger.Information("Using connection {Proxy} to start chrome", access.Proxy);
 
             var chromeBrowser = _chromeManager.Get(accountId);
 
@@ -176,7 +174,7 @@ namespace MainCore.UI.ViewModels.UserControls
             {
                 _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());
                 var errors = result.Errors.Select(x => x.Message).ToList();
-                logger.Error("{errors}", string.Join(Environment.NewLine, errors));
+                logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
                 await _taskManager.SetStatus(accountId, StatusEnums.Offline);
                 await Task.Run(chromeBrowser.Close, CancellationToken.None);
                 return;

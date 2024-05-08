@@ -24,10 +24,9 @@ namespace MainCore.Commands.Features.ClaimQuest
                 doc.LoadHtml(driver.PageSource);
                 var table = doc.DocumentNode
                     .Descendants("div")
-                    .Where(x => x.HasClass("tasks") && x.HasClass("tasksVillage"))
-                    .Any();
+                    .Any(x => x.HasClass("tasks") && x.HasClass("tasksVillage"));
                 return table;
-            };
+            }
 
             result = await chromeBrowser.Wait(tableShow, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));

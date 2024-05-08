@@ -16,7 +16,7 @@ namespace MainCore.Notification.Handlers.MainWindowLoad
         public async Task Handle(MainWindowLoaded notification, CancellationToken cancellationToken)
         {
             await _waitingOverlayViewModel.ChangeMessage("loading database");
-            using var context = _contextFactory.CreateDbContext();
+            using var context = await _contextFactory.CreateDbContextAsync();
             var notExist = await context.Database.EnsureCreatedAsync(cancellationToken);
             if (!notExist)
             {

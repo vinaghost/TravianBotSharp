@@ -30,7 +30,7 @@ namespace MainCore.Commands.UI.Build
                 return;
             }
 
-            var result = _normalBuildInputValidator.Validate(normalBuildInput);
+            var result = await _normalBuildInputValidator.ValidateAsync(normalBuildInput);
             if (!result.IsValid)
             {
                 _dialogService.ShowMessageBox("Error", result.ToString());
@@ -53,7 +53,7 @@ namespace MainCore.Commands.UI.Build
             var result = CheckRequirements(buildings, plan);
             if (result.IsFailed)
             {
-                _dialogService.ShowMessageBox("Error", result.Errors.First().Message);
+                _dialogService.ShowMessageBox("Error", result.Errors[0].Message);
                 return;
             }
 
@@ -89,7 +89,7 @@ namespace MainCore.Commands.UI.Build
             {
                 var sameTypeBuildings = buildings.Where(x => x.Type == plan.Type);
                 if (!sameTypeBuildings.Any()) return;
-                if (sameTypeBuildings.Where(x => x.Location == plan.Location).Any()) return;
+                if (sameTypeBuildings.Any(x => x.Location == plan.Location)) return;
                 var largestLevelBuilding = sameTypeBuildings.MaxBy(x => x.Level);
                 if (largestLevelBuilding.Level == plan.Type.GetMaxLevel()) return;
                 plan.Location = largestLevelBuilding.Location;
@@ -98,18 +98,16 @@ namespace MainCore.Commands.UI.Build
 
             if (plan.Type.IsResourceField())
             {
-                var field = buildings.FirstOrDefault(x => x.Location == plan.Location);
+                var field = buildings.Find(x => x.Location == plan.Location);
                 if (plan.Type == field.Type) return;
                 plan.Type = field.Type;
                 return;
             }
 
-            {
-                var building = buildings.FirstOrDefault(x => x.Type == plan.Type);
-                if (building is null) return;
-                if (plan.Location == building.Location) return;
-                plan.Location = building.Location;
-            }
+            var building = buildings.Find(x => x.Type == plan.Type);
+            if (building is null) return;
+            if (plan.Location == building.Location) return;
+            plan.Location = building.Location;
         }
     }
 }

@@ -24,10 +24,9 @@ namespace MainCore.Commands.Features.StartAdventure
                 doc.LoadHtml(driver.PageSource);
                 var table = doc.DocumentNode
                     .Descendants("table")
-                    .Where(x => x.HasClass("adventureList"))
-                    .Any();
+                    .Any(x => x.HasClass("adventureList"));
                 return table;
-            };
+            }
 
             result = await chromeBrowser.Wait(tableShow, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));

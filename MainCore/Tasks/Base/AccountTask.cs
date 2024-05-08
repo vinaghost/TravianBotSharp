@@ -35,12 +35,14 @@
 
             if (new IsLoginPage().Execute(_chromeBrowser))
             {
+#pragma warning disable S3060 // "is" should not be used with "this"
                 if (this is not LoginTask)
                 {
                     ExecuteAt = ExecuteAt.AddMilliseconds(1975);
                     await _mediator.Publish(new AccountLogout(AccountId), CancellationToken);
                     return Skip.AccountLogout;
                 }
+#pragma warning restore S3060 // "is" should not be used with "this"
                 return Result.Ok();
             }
 

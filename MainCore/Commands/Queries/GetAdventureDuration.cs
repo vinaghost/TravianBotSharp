@@ -8,8 +8,7 @@
             var heroAdventure = html.GetElementbyId("heroAdventure");
             var timer = heroAdventure
                 .Descendants("span")
-                .Where(x => x.HasClass("timer"))
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.HasClass("timer"));
             if (timer is null) return TimeSpan.Zero;
 
             var seconds = timer.GetAttributeValue("value", 0);

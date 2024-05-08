@@ -45,7 +45,7 @@ namespace MainCore.Tasks
                 doc.LoadHtml(driver.PageSource);
                 var confirmButton = GetConfirmButton(doc);
                 return confirmButton is not null;
-            };
+            }
 
             result = await _chromeBrowser.Wait(confirmShown, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -65,7 +65,7 @@ namespace MainCore.Tasks
                 doc.LoadHtml(driver.PageSource);
                 var newQueueCount = new CountQueueBuilding().Execute(_chromeBrowser);
                 return oldQueueCount != newQueueCount;
-            };
+            }
             result = await _chromeBrowser.Wait(queueDifferent, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 

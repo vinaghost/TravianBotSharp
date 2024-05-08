@@ -66,6 +66,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 .OrderBy(x => x.Id.Value + Random.Shared.Next())
                 .FirstOrDefault();
 
+            if (chosenOne is null) return null;
+
             var normalBuildPlan = new NormalBuildPlan()
             {
                 Type = chosenOne.Type,

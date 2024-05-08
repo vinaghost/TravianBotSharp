@@ -49,7 +49,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task SaveHandler()
         {
-            var result = _accountsettingInputValidator.Validate(AccountSettingInput);
+            var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
             if (!result.IsValid)
             {
                 _dialogService.ShowMessageBox("Error", result.ToString());
@@ -78,7 +78,7 @@ namespace MainCore.UI.ViewModels.Tabs
             }
 
             AccountSettingInput.Set(settings);
-            var result = _accountsettingInputValidator.Validate(AccountSettingInput);
+            var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
             if (!result.IsValid)
             {
                 _dialogService.ShowMessageBox("Error", result.ToString());

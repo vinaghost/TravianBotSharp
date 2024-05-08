@@ -68,7 +68,7 @@ namespace MainCore.Services
         public TaskBase GetCurrentTask(AccountId accountId)
         {
             var tasks = GetTaskList(accountId);
-            return tasks.FirstOrDefault(x => x.Stage == StageEnums.Executing);
+            return tasks.Find(x => x.Stage == StageEnums.Executing);
         }
 
         public async Task StopCurrentTask(AccountId accountId)

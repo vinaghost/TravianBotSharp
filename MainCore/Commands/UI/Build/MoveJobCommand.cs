@@ -57,7 +57,7 @@ namespace MainCore.Commands.UI.Build
                     return oldIndex != count - 1;
 
                 default:
-                    return true; ;
+                    return true;
             }
         }
 

@@ -2,6 +2,18 @@
 
 namespace MainCore.Common.Extensions
 {
+    public struct PrerequisiteBuilding
+    {
+        public PrerequisiteBuilding(BuildingEnums type, int level)
+        {
+            Type = type;
+            Level = level;
+        }
+
+        public BuildingEnums Type { get; set; }
+        public int Level { get; set; }
+    }
+
     public static class BuildExtension
     {
         public static bool IsWall(this BuildingEnums building)
@@ -383,16 +395,4 @@ namespace MainCore.Common.Extensions
             return cost.Select(x => (long)x).ToArray();
         }
     }
-}
-
-public struct PrerequisiteBuilding
-{
-    public PrerequisiteBuilding(BuildingEnums type, int level)
-    {
-        Type = type;
-        Level = level;
-    }
-
-    public BuildingEnums Type { get; set; }
-    public int Level { get; set; }
 }

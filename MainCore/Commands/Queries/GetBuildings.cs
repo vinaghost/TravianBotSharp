@@ -35,7 +35,7 @@ namespace MainCore.Commands.Queries
 
             foreach (var queueBuilding in queueBuildings)
             {
-                var building = villageBuildings.FirstOrDefault(x => x.Location == queueBuilding.Key);
+                var building = villageBuildings.Find(x => x.Location == queueBuilding.Key);
                 if (building is null) continue;
                 var queue = queueBuilding.MaxBy(x => x.Level);
                 if (queue is null) continue;
@@ -55,7 +55,7 @@ namespace MainCore.Commands.Queries
 
                 foreach (var jobBuilding in jobBuildings)
                 {
-                    var building = villageBuildings.FirstOrDefault(x => x.Location == jobBuilding.Key);
+                    var building = villageBuildings.Find(x => x.Location == jobBuilding.Key);
                     if (building is null) continue;
                     var job = jobBuilding.MaxBy(x => x.Level);
                     if (job is null) continue;

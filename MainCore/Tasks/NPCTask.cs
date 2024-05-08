@@ -3,7 +3,7 @@
 namespace MainCore.Tasks
 {
     [RegisterAsTask]
-    public class NPCTask : VillageTask
+    public class NpcTask : VillageTask
     {
         protected override async Task<Result> Execute()
         {
@@ -151,15 +151,6 @@ namespace MainCore.Tasks
             return button;
         }
 
-        private static HtmlNode GetDistributeButton(HtmlDocument doc)
-        {
-            var submitText = doc.GetElementbyId("submitText");
-            if (submitText is null) return null;
-            var button = submitText.Descendants("button")
-                .FirstOrDefault();
-            return button;
-        }
-
         private static HtmlNode GetRedeemButton(HtmlDocument doc)
         {
             var button = doc.GetElementbyId("npc_market_button");
@@ -178,8 +169,7 @@ namespace MainCore.Tasks
             for (int i = 0; i < 4; i++)
             {
                 var node = doc.DocumentNode.Descendants("input")
-                    .Where(x => x.GetAttributeValue("name", "") == $"desired{i}")
-                    .FirstOrDefault();
+                    .FirstOrDefault(x => x.GetAttributeValue("name", "") == $"desired{i}");
                 yield return node;
             }
         }

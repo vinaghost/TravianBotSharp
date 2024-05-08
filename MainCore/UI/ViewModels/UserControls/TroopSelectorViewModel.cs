@@ -24,13 +24,12 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public void ChangeTribe(BuildingEnums building, TribeEnums tribe)
         {
-            var selectedItem = SelectedItem;
             Items.Clear();
             Items.Add(new(TroopEnums.None));
             var troops = GetTroops(building, tribe);
             Items.AddRange(troops.Select(x => new TroopItem(x)));
 
-            SelectedItem = Items.FirstOrDefault(x => x.Troop == SelectedItem?.Troop) ?? Items.First();
+            SelectedItem = Items.FirstOrDefault(x => x.Troop == SelectedItem?.Troop) ?? Items[0];
         }
 
         public void Set(TroopEnums selectedTroop, BuildingEnums building, TribeEnums tribe)
@@ -39,7 +38,7 @@ namespace MainCore.UI.ViewModels.UserControls
             Items.Add(new(TroopEnums.None));
             var troops = GetTroops(building, tribe);
             Items.AddRange(troops.Select(x => new TroopItem(x)));
-            SelectedItem = Items.FirstOrDefault(x => x.Troop == selectedTroop) ?? Items.First();
+            SelectedItem = Items.FirstOrDefault(x => x.Troop == selectedTroop) ?? Items[0];
         }
 
         private static List<TroopEnums> GetTroops(BuildingEnums building, TribeEnums tribe)

@@ -10,7 +10,7 @@ namespace MainCore.UI.Models.Input
         public AccountId Id { get; set; }
         private string _username;
         private string _server;
-        public ObservableCollection<AccessInput> Accesses = new();
+        public ObservableCollection<AccessInput> Accesses { get; } = new();
 
         public void SetAccesses(IEnumerable<AccessInput> accesses)
         {

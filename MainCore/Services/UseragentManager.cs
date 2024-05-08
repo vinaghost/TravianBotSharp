@@ -41,7 +41,7 @@ namespace MainCore.Services
                 await Update();
                 return;
             }
-            var userAgentJsonString = File.ReadAllText(pathFile);
+            var userAgentJsonString = await File.ReadAllTextAsync(pathFile);
             var modelLoaded = JsonSerializer.Deserialize<Model>(userAgentJsonString);
             _userAgentList = modelLoaded.UserAgentList;
             _dateTime = modelLoaded.DateTime;
@@ -63,7 +63,7 @@ namespace MainCore.Services
 
         private readonly Random rnd = new();
 
-        private class Model
+        private sealed class Model
         {
             public List<string> UserAgentList { get; set; }
             public DateTime DateTime { get; set; }

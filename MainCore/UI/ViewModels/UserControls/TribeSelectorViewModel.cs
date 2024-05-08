@@ -21,7 +21,7 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public void Set(TribeEnums tribe)
         {
-            SelectedItem = Items.Where(x => x.Tribe == tribe).First();
+            SelectedItem = Items.First(x => x.Tribe == tribe);
         }
 
         public TribeEnums Get()

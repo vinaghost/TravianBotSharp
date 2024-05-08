@@ -25,7 +25,7 @@
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
                 return doc.GetElementbyId("videoFeature") is not null;
-            };
+            }
 
             result = await chromeBrowser.Wait(videoFeatureShown, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));

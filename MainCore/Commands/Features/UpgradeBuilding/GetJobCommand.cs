@@ -64,8 +64,36 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
                 valid = IsJobValid(villageId, plan);
 
-                if (valid.IsFailed) return valid.Errors.First() as BuildingQueue;
+                if (valid.IsFailed)
+                {
+                    var logger = _logService.GetLogger(accountId);
+                    foreach (var error in valid.Errors)
+                    {
+                        if (error is BuildingQueue bqError)
+                        {
+                            logger.Warning("{Message}", bqError.Message);
+                        }
+                    }
+                    return (BuildingQueue)valid.Errors[0];
+                }
             }
+            return job;
+        }
+
+        private JobDto GetBuildingJob(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var types = new List<JobTypeEnums>()
+            {
+                JobTypeEnums.NormalBuild,
+                JobTypeEnums.ResourceBuild
+            };
+            var job = context.Jobs
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => types.Contains(x.Type))
+                .OrderBy(x => x.Position)
+                .ToDto()
+                .FirstOrDefault();
             return job;
         }
 
@@ -110,23 +138,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 .Where(x => resourceTypes.Contains(x.Type))
                 .Count();
             return count;
-        }
-
-        private JobDto GetBuildingJob(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var types = new List<JobTypeEnums>()
-            {
-                JobTypeEnums.NormalBuild,
-                JobTypeEnums.ResourceBuild
-            };
-            var job = context.Jobs
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => types.Contains(x.Type))
-                .OrderBy(x => x.Position)
-                .ToDto()
-                .FirstOrDefault();
-            return job;
         }
 
         private JobDto GetInfrastructureBuildingJob(VillageId villageId)

@@ -38,16 +38,16 @@ namespace MainCore.Commands.Queries
         {
             foreach (var access in accesses)
             {
-                logger.Information("Check connection {proxy}", access.Proxy);
+                logger.Information("Check connection {Proxy}", access.Proxy);
                 var valid = await new CheckProxyCommand().Execute(access);
 
                 if (!valid)
                 {
-                    logger.Warning("Connection {proxy} cannot connect to travian.com", access.Proxy);
+                    logger.Warning("Connection {Proxy} cannot connect to travian.com", access.Proxy);
                     continue;
                 }
 
-                logger.Information("Connection {proxy} is working", access.Proxy);
+                logger.Information("Connection {Proxy} is working", access.Proxy);
                 return access;
             }
             return null;
@@ -67,7 +67,7 @@ namespace MainCore.Commands.Queries
         private void UpdateAccessLastUsed(AccessId accessId)
         {
             using var context = _contextFactory.CreateDbContext();
-            var access = context.Accesses
+            context.Accesses
                .Where(x => x.Id == accessId.Value)
                .ExecuteUpdate(x => x.SetProperty(x => x.LastUsed, x => DateTime.Now));
         }

@@ -25,7 +25,7 @@ namespace MainCore.Commands.Navigate
 
                 var villageNode = GetVillageNode(doc, villageId);
                 return villageNode is not null && IsActive(villageNode);
-            };
+            }
 
             result = await chromeBrowser.Wait(villageChanged, cancellationToken);
             if (result.IsFailed) return result

@@ -6,25 +6,20 @@ namespace MainCore.UI.ViewModels.Abstract
     public abstract class TabViewModelBase : ViewModelBase
     {
         private bool _isActive;
-        private readonly ReactiveCommand<Unit, Unit> Active;
-        private readonly ReactiveCommand<Unit, Unit> Deactive;
 
-        public TabViewModelBase()
+        protected TabViewModelBase()
         {
-            Active = ReactiveCommand.CreateFromTask(OnActive);
-            Deactive = ReactiveCommand.CreateFromTask(OnDeactive);
-
             var isActiveObservable = this.WhenAnyValue(x => x.IsActive);
 
             isActiveObservable
-                .Where(x => x == true)
+                .Where(active => active)
                 .Select(x => Unit.Default)
-                .InvokeCommand(Active);
+                .InvokeCommand(ReactiveCommand.CreateFromTask(OnActive));
 
             isActiveObservable
-                .Where(x => x == false)
+                .Where(active => !active)
                 .Select(x => Unit.Default)
-                .InvokeCommand(Deactive);
+                .InvokeCommand(ReactiveCommand.CreateFromTask(OnDeactive));
         }
 
         public bool IsActive

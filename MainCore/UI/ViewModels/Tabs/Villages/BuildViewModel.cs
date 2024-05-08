@@ -94,7 +94,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                     default:
                         NormalBuildInput.Set(buildings, -1);
                         break;
-                };
+                }
             });
         }
 
@@ -178,7 +178,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 _dialogService.ShowMessageBox("Warning", "Please pause account before modifing building queue");
                 return;
             }
-            var result = _resourceBuildInputValidator.Validate(ResourceBuildInput);
+            var result = await _resourceBuildInputValidator.ValidateAsync(ResourceBuildInput);
             if (!result.IsValid)
             {
                 _dialogService.ShowMessageBox("Error", result.ToString());
@@ -238,11 +238,14 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 _dialogService.ShowMessageBox("Warning", "Please pause account before modifing building queue");
                 return;
             }
-            using var context = _contextFactory.CreateDbContext();
+            using var context = await _contextFactory.CreateDbContextAsync();
 
+            //sqlite async dont work
+#pragma warning disable S6966 // Awaitable method should be used
             context.Jobs
                 .Where(x => x.VillageId == VillageId.Value)
                 .ExecuteDelete();
+#pragma warning restore S6966 // Awaitable method should be used
 
             await _mediator.Publish(new JobUpdated(AccountId, VillageId));
         }
@@ -429,7 +432,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
 
             var buildings = new GetBuildings().Execute(villageId);
-            var building = buildings.FirstOrDefault(x => x.Location == location);
+            var building = buildings.Find(x => x.Location == location);
 
             if (building is null) return;
             if (building.Type == BuildingEnums.Site) return;

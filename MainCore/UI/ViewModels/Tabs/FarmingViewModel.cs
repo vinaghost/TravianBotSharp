@@ -120,7 +120,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task SaveHandler()
         {
-            var result = _farmListSettingInputValidator.Validate(FarmListSettingInput);
+            var result = await _farmListSettingInputValidator.ValidateAsync(FarmListSettingInput);
             if (!result.IsValid)
             {
                 _dialogService.ShowMessageBox("Error", result.ToString());
@@ -143,12 +143,15 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
-            using (var context = _contextFactory.CreateDbContext())
+            using (var context = await _contextFactory.CreateDbContextAsync())
             {
+                // sqlite no async
+#pragma warning disable S6966 // Awaitable method should be used
                 context.FarmLists
                    .Where(x => x.Id == selectedFarmList.Id)
                    .ExecuteUpdate(x => x.SetProperty(x => x.IsActive, x => !x.IsActive));
-            };
+#pragma warning restore S6966 // Awaitable method should be used
+            }
 
             await _mediator.Publish(new FarmListUpdated(AccountId));
         }

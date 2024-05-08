@@ -12,9 +12,9 @@
                 else dorf = currentDorf;
             }
 
-            if (currentDorf != 0)
+            if (currentDorf != 0 && dorf == currentDorf && !forceReload)
             {
-                if (dorf == currentDorf && !forceReload) return Result.Ok();
+                return Result.Ok();
             }
 
             var html = chromeBrowser.Html;
@@ -58,15 +58,5 @@
         private static HtmlNode GetResourceButton(HtmlDocument doc) => GetButton(doc, 1);
 
         private static HtmlNode GetBuildingButton(HtmlDocument doc) => GetButton(doc, 2);
-
-        //private static HtmlNode GetMapButton(HtmlDocument doc) => GetButton(doc, 3);
-
-        //private static HtmlNode GetStatisticsButton(HtmlDocument doc) => GetButton(doc, 4);
-
-        //private static HtmlNode GetReportsButton(HtmlDocument doc) => GetButton(doc, 5);
-
-        //private static HtmlNode GetMessageButton(HtmlDocument doc) => GetButton(doc, 6);
-
-        //private static HtmlNode GetDailyButton(HtmlDocument doc) => GetButton(doc, 7);
     }
 }

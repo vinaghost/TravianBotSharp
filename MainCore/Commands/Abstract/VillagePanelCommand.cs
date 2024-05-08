@@ -10,7 +10,7 @@
                 .Descendants("div")
                 .Where(x => x.HasClass("listEntry"))
                 .ToList();
-            var village = villages.FirstOrDefault(x => GetId(x) == villageId);
+            var village = villages.Find(x => GetId(x) == villageId);
             return village;
         }
 

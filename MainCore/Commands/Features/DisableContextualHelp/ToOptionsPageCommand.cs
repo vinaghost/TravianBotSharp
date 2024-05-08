@@ -22,7 +22,7 @@
         {
             var outOfGame = doc.GetElementbyId("outOfGame");
             if (outOfGame is null) return null;
-            var a = outOfGame.Descendants("a").Where(x => x.HasClass("options")).FirstOrDefault();
+            var a = outOfGame.Descendants("a").FirstOrDefault(x => x.HasClass("options"));
             return a;
         }
     }

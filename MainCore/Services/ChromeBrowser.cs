@@ -174,11 +174,15 @@ namespace MainCore.Services
         {
             if (string.IsNullOrEmpty(source))
             {
+#pragma warning disable S2486 // Generic exceptions should not be ignored
+#pragma warning disable S108 // Nested blocks of code should not be left empty
                 try
                 {
                     _htmlDoc.LoadHtml(_driver.PageSource);
                 }
                 catch { }
+#pragma warning restore S108 // Nested blocks of code should not be left empty
+#pragma warning restore S2486 // Generic exceptions should not be ignored
             }
             else
             {
@@ -254,7 +258,7 @@ namespace MainCore.Services
                     _driver.Navigate().Refresh();
                 });
 
-            var poliResult = await retryPolicy.ExecuteAndCaptureAsync(() => Wait(pageLoaded, cancellationToken));
+            await retryPolicy.ExecuteAndCaptureAsync(() => Wait(pageLoaded, cancellationToken));
 
             var result = await Wait(pageLoaded, cancellationToken);
             if (result.IsFailed)
