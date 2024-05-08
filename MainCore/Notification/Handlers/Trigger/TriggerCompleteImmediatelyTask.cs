@@ -35,23 +35,30 @@ namespace MainCore.Notification.Handlers.Trigger
             var completeImmediatelyEnable = new GetSetting().BooleanByName(villageId, VillageSettingEnums.CompleteImmediately);
             if (!completeImmediatelyEnable) return;
 
-            var applyRomanQueueLogicWhenBuilding = new GetSetting().BooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
-            var plusActive = new IsPlusActive().Execute(accountId);
+            if (!IsSkippableBuilding(villageId)) return;
 
-            var countNeeded = 1;
-            if (applyRomanQueueLogicWhenBuilding)
-            {
-                countNeeded++;
-            }
-            if (plusActive)
-            {
-                countNeeded++;
-            }
-            if (count != countNeeded) return;
+            var completeImmediatelyTime = new GetSetting().ByName(villageId, VillageSettingEnums.CompleteImmediatelyTime);
+
+            var requiredTime = DateTime.Now.AddMinutes(completeImmediatelyTime);
+            var queueTime = GetQueueTime(villageId);
+
+            if (requiredTime > queueTime) return;
 
             if (!IsSkippableBuilding(villageId)) return;
 
             await _taskManager.Add<CompleteImmediatelyTask>(accountId, villageId);
+        }
+
+        private DateTime GetQueueTime(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var queueBuilding = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type != BuildingEnums.Site)
+                .OrderByDescending(x => x.Position)
+                .Select(x => x.CompleteTime)
+                .FirstOrDefault();
+            return queueBuilding;
         }
 
         private bool IsSkippableBuilding(VillageId villageId)

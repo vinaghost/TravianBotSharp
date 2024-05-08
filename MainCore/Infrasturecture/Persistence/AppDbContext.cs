@@ -154,6 +154,7 @@ namespace MainCore.Infrasturecture.Persistence
             {VillageSettingEnums.AutoRefreshMax, 75 },
 
             {VillageSettingEnums.AutoClaimQuestEnable, 0 },
+            {VillageSettingEnums.CompleteImmediatelyTime, 20 },
         };
 
         private List<VillageSettingEnums> GetMissingVillageSettings()

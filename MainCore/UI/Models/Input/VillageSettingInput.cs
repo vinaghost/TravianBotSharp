@@ -34,6 +34,14 @@ namespace MainCore.UI.Models.Input
         public RangeInputViewModel AutoRefreshTime { get; } = new();
         private bool _autoClaimQuestEnable;
 
+        private int _completeImmediatelyTime;
+
+        public int CompleteImmediatelyTime
+        {
+            get => _completeImmediatelyTime;
+            set => this.RaiseAndSetIfChanged(ref _completeImmediatelyTime, value);
+        }
+
         public void Set(Dictionary<VillageSettingEnums, int> settings)
         {
             var tribe = (TribeEnums)settings.GetValueOrDefault(VillageSettingEnums.Tribe);
@@ -80,6 +88,7 @@ namespace MainCore.UI.Models.Input
                 settings.GetValueOrDefault(VillageSettingEnums.AutoRefreshMax));
 
             AutoClaimQuestEnable = settings.GetValueOrDefault(VillageSettingEnums.AutoClaimQuestEnable) == 1;
+            CompleteImmediatelyTime = settings.GetValueOrDefault(VillageSettingEnums.CompleteImmediatelyTime);
         }
 
         public Dictionary<VillageSettingEnums, int> Get()
@@ -110,6 +119,7 @@ namespace MainCore.UI.Models.Input
             var (autoRefreshMin, autoRefreshMax) = AutoRefreshTime.Get();
 
             var autoClaimQuestEnable = AutoClaimQuestEnable ? 1 : 0;
+            var completeImmediatelyTime = CompleteImmediatelyTime;
 
             var settings = new Dictionary<VillageSettingEnums, int>()
             {
@@ -142,6 +152,7 @@ namespace MainCore.UI.Models.Input
                 { VillageSettingEnums.AutoRefreshMin, autoRefreshMin },
                 { VillageSettingEnums.AutoRefreshMax, autoRefreshMax },
                 { VillageSettingEnums.AutoClaimQuestEnable, autoClaimQuestEnable },
+                { VillageSettingEnums.CompleteImmediatelyTime, completeImmediatelyTime },
             };
             return settings;
         }
