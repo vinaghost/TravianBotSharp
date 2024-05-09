@@ -1,13 +1,12 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Common.Extensions;
-using ReactiveUI;
+﻿using ReactiveUI;
+using System.Collections.Immutable;
 using System.Drawing;
 
 namespace MainCore.UI.Models.Output
 {
     public class TroopItem : ReactiveObject
     {
-        public static readonly Dictionary<int, int> ImageOffset = new()
+        public static readonly ImmutableDictionary<int, int> ImageOffset = new Dictionary<int, int>
         {
             {1 , 0 },
             {2, 19 },
@@ -19,9 +18,9 @@ namespace MainCore.UI.Models.Output
             {8, 133},
             {9, 152},
             {0, 171},
-        };
+        }.ToImmutableDictionary();
 
-        public static readonly Dictionary<TribeEnums, string> TribeImage = new()
+        public static readonly ImmutableDictionary<TribeEnums, string> TribeImage = new Dictionary<TribeEnums, string>
         {
             {TribeEnums.Romans, "roman.png" },
             {TribeEnums.Teutons, "teuton.png" },
@@ -30,7 +29,7 @@ namespace MainCore.UI.Models.Output
             {TribeEnums.Natars, "natar.png" },
             {TribeEnums.Egyptians, "egyptian.png" },
             {TribeEnums.Huns, "hun.png" },
-        };
+        }.ToImmutableDictionary();
 
         public TroopItem(TroopEnums troop)
         {
@@ -39,7 +38,6 @@ namespace MainCore.UI.Models.Output
 
         public static string GetImageSource(TroopEnums troop)
         {
-            //const string url = "pack://application:,,,/MainCore;component/UI/Resources/";
             const string url = "pack://application:,,,/Resources/";
             if (troop == TroopEnums.None) return $"{url}{TribeImage[TribeEnums.Natars]}";
             return $"{url}{TribeImage[troop.GetTribe()]}";

@@ -40,15 +40,15 @@ namespace MainCore.UI.ViewModels.UserControls
             {
                 if (oldIndex == -1)
                 {
-                    SelectedItem = Items.First();
+                    SelectedItem = Items[0];
                 }
                 else if (oldIndex < Items.Count)
                 {
-                    SelectedItem = Items.ElementAt(oldIndex);
+                    SelectedItem = Items[oldIndex];
                 }
                 else
                 {
-                    SelectedItem = Items.Last();
+                    SelectedItem = Items[^1];
                 }
             }
             else

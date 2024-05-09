@@ -1,8 +1,4 @@
-﻿using MainCore.DTO;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Infrasturecture.Persistence;
-using Microsoft.EntityFrameworkCore;
-using RestSharp;
+﻿using RestSharp;
 using System.Net;
 
 namespace MainCore.Services
@@ -11,12 +7,6 @@ namespace MainCore.Services
     public class RestClientManager : IRestClientManager
     {
         private readonly Dictionary<int, RestClient> _database = new();
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
-        public RestClientManager(IDbContextFactory<AppDbContext> contextFactory)
-        {
-            _contextFactory = contextFactory;
-        }
 
         public RestClient Get(AccessDto access)
         {
@@ -31,7 +21,7 @@ namespace MainCore.Services
                 if (!string.IsNullOrEmpty(access.ProxyUsername)) // Proxy auth
 
                 {
-                    ICredentials credentials = new NetworkCredential(access.ProxyUsername, access.ProxyPassword);
+                    var credentials = new NetworkCredential(access.ProxyUsername, access.ProxyPassword);
 
                     proxy = new WebProxy($"{access.ProxyHost}:{access.ProxyPort}", false, null, credentials);
                 }

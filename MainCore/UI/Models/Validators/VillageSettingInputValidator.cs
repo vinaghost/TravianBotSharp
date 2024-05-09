@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using MainCore.Common.Enums;
 using MainCore.UI.Models.Input;
 
 namespace MainCore.UI.Models.Validators

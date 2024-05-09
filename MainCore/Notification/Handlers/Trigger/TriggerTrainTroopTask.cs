@@ -1,22 +1,14 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MainCore.Services;
-using MainCore.Tasks;
-using MediatR;
+﻿using MainCore.Tasks;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
     public class TriggerTrainTroopTask : INotificationHandler<VillageSettingUpdated>, INotificationHandler<AccountInit>
     {
         private readonly ITaskManager _taskManager;
-        private readonly UnitOfRepository _unitOfRepository;
 
-        public TriggerTrainTroopTask(ITaskManager taskManager, UnitOfRepository unitOfRepository)
+        public TriggerTrainTroopTask(ITaskManager taskManager)
         {
             _taskManager = taskManager;
-            _unitOfRepository = unitOfRepository;
         }
 
         public async Task Handle(VillageSettingUpdated notification, CancellationToken cancellationToken)
@@ -26,7 +18,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
         {
-            var villages = _unitOfRepository.VillageRepository.Get(notification.AccountId);
+            var villages = new GetVillage().All(notification.AccountId);
             foreach (var village in villages)
             {
                 await Trigger(notification.AccountId, village);
@@ -35,7 +27,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
-            var trainTroopEnable = _unitOfRepository.VillageSettingRepository.GetBooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
+            var trainTroopEnable = new GetSetting().BooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
             if (trainTroopEnable)
             {
                 if (_taskManager.IsExist<TrainTroopTask>(accountId, villageId)) return;

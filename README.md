@@ -5,7 +5,7 @@
 [hyperlink]: https://discord.gg/mBa4f2K
 [image]:https://discordapp.com/api/guilds/740829801446637601/widget.png?style=banner4
 
-**TravianBotSharp** is a **free** Travian bot supports [Travian Official](https://www.travian.com) and [TTwars](https://ttwars.com).
+**TravianBotSharp** is a **free** Travian bot supports [Travian Official](https://www.travian.com).
 
 ## Main features
 

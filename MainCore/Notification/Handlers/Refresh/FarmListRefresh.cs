@@ -1,6 +1,4 @@
-﻿using MainCore.Notification.Message;
-using MainCore.UI.ViewModels.Tabs;
-using MediatR;
+﻿using MainCore.UI.ViewModels.Tabs;
 
 namespace MainCore.Notification.Handlers.Refresh
 {
