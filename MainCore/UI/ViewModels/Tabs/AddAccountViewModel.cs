@@ -1,33 +1,45 @@
-﻿using MainCore.Commands.UI.Account;
-using MainCore.Infrasturecture.AutoRegisterDi;
+﻿using FluentValidation;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
-using MediatR;
+using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
 using System.Reactive.Linq;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsSingleton(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class AddAccountViewModel : TabViewModelBase
     {
         public AccountInput AccountInput { get; } = new();
         public AccessInput AccessInput { get; } = new();
 
         private readonly IMediator _mediator;
+
+        private readonly IValidator<AccessInput> _accessInputValidator;
+        private readonly IValidator<AccountInput> _accountInputValidator;
+
+        private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly IDialogService _dialogService;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IUseragentManager _useragentManager;
         public ReactiveCommand<Unit, Unit> AddAccess { get; }
         public ReactiveCommand<Unit, Unit> EditAccess { get; }
         public ReactiveCommand<Unit, Unit> DeleteAccess { get; }
         public ReactiveCommand<Unit, Unit> AddAccount { get; }
 
-        public AddAccountViewModel(IMediator mediator)
+        public AddAccountViewModel(IMediator mediator, IValidator<AccessInput> accessInputValidator, IValidator<AccountInput> accountInputValidator, WaitingOverlayViewModel waitingOverlayViewModel, IDialogService dialogService, IDbContextFactory<AppDbContext> contextFactory, IUseragentManager useragentManager)
         {
             _mediator = mediator;
+            _accessInputValidator = accessInputValidator;
+            _accountInputValidator = accountInputValidator;
+            _waitingOverlayViewModel = waitingOverlayViewModel;
+            _dialogService = dialogService;
+            _contextFactory = contextFactory;
+            _useragentManager = useragentManager;
 
-            AddAccess = ReactiveCommand.CreateFromTask(AddAccessHandler);
-            EditAccess = ReactiveCommand.CreateFromTask(EditAccessHandler);
-            DeleteAccess = ReactiveCommand.CreateFromTask(DeleteAccessHandler);
+            AddAccess = ReactiveCommand.Create(AddAccessHandler);
+            EditAccess = ReactiveCommand.Create(EditAccessHandler);
+            DeleteAccess = ReactiveCommand.Create(DeleteAccessHandler);
             AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler);
 
             this.WhenAnyValue(vm => vm.SelectedAccess)
@@ -42,24 +54,77 @@ namespace MainCore.UI.ViewModels.Tabs
             });
         }
 
-        private async Task AddAccessHandler()
+        private void AddAccessHandler()
         {
-            await _mediator.Send(new AddAccessCommand(AccessInput, AccountInput));
+            var result = _accessInputValidator.Validate(AccessInput);
+
+            if (!result.IsValid)
+            {
+                _dialogService.ShowMessageBox("Error", result.ToString());
+                return;
+            }
+
+            AccountInput.Accesses.Add(AccessInput.Clone());
         }
 
-        private async Task EditAccessHandler()
+        private void EditAccessHandler()
         {
-            await _mediator.Send(new EditAccessCommand(AccessInput, SelectedAccess));
+            var result = _accessInputValidator.Validate(AccessInput);
+
+            if (!result.IsValid)
+            {
+                _dialogService.ShowMessageBox("Error", result.ToString());
+                return;
+            }
+
+            AccessInput.CopyTo(SelectedAccess);
         }
 
-        private async Task DeleteAccessHandler()
+        private void DeleteAccessHandler()
         {
-            await _mediator.Send(new DeleteAccessCommand(SelectedAccess, AccountInput));
+            AccountInput.Accesses.Remove(SelectedAccess);
         }
 
         private async Task AddAccountHandler()
         {
-            await _mediator.Send(new AddAccountCommand(AccountInput));
+            var results = await _accountInputValidator.ValidateAsync(AccountInput);
+
+            if (!results.IsValid)
+            {
+                _dialogService.ShowMessageBox("Error", results.ToString());
+                return;
+            }
+            await _waitingOverlayViewModel.Show("adding account");
+
+            var dto = AccountInput.ToDto();
+            var success = Add(dto);
+            if (success) await _mediator.Publish(new AccountUpdated());
+
+            await _waitingOverlayViewModel.Hide();
+            _dialogService.ShowMessageBox("Information", success ? "Added account" : "Account is duplicated");
+        }
+
+        private bool Add(AccountDto dto)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var isExist = context.Accounts
+                .Where(x => x.Username == dto.Username)
+                .Where(x => x.Server == dto.Server)
+                .Any();
+
+            if (isExist) return false;
+
+            var account = dto.ToEntity();
+            foreach (var access in account.Accesses.Where(access => string.IsNullOrEmpty(access.Useragent)))
+            {
+                access.Useragent = _useragentManager.Get();
+            }
+
+            context.Add(account);
+            context.SaveChanges();
+            context.FillAccountSettings(new(account.Id));
+            return true;
         }
 
         private AccessInput _selectedAccess;

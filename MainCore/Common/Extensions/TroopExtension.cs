@@ -1,6 +1,4 @@
-﻿using MainCore.Common.Enums;
-
-namespace MainCore.Common.Extensions
+﻿namespace MainCore.Common.Extensions
 {
     public static class TroopExtension
     {

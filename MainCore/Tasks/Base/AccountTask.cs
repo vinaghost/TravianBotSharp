@@ -1,20 +1,19 @@
-﻿using FluentResults;
-using MainCore.Commands;
-using MainCore.Common.Errors;
-using MainCore.Entities;
-using MainCore.Notification.Message;
-using MainCore.Repositories;
-using MediatR;
-
-namespace MainCore.Tasks.Base
+﻿namespace MainCore.Tasks.Base
 {
     public abstract class AccountTask : TaskBase
     {
-        protected AccountTask(UnitOfCommand unitOfCommand, UnitOfRepository unitOfRepository, IMediator mediator) : base(unitOfCommand, unitOfRepository, mediator)
-        {
-        }
-
         public AccountId AccountId { get; protected set; }
+
+        protected IChromeBrowser _chromeBrowser;
+        protected IMediator _mediator;
+
+        private readonly IChromeManager _chromeManager;
+
+        protected AccountTask()
+        {
+            _chromeManager = Locator.Current.GetService<IChromeManager>();
+            _mediator = Locator.Current.GetService<IMediator>();
+        }
 
         public void Setup(AccountId accountId, CancellationToken cancellationToken = default)
         {
@@ -24,33 +23,38 @@ namespace MainCore.Tasks.Base
 
         protected override async Task<Result> PreExecute()
         {
-            if (CancellationToken.IsCancellationRequested) return new Cancel();
+            if (CancellationToken.IsCancellationRequested) return Cancel.Error;
+            _chromeBrowser = _chromeManager.Get(AccountId);
 
-            Result result;
-            result = await _unitOfCommand.ValidateIngameCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
-            var inGame = _unitOfCommand.ValidateIngameCommand.Value;
-
-            if (inGame) return Result.Ok();
-
-            result = await _unitOfCommand.ValidateLoginCommand.Handle(new(AccountId), CancellationToken);
-            if (result.IsFailed) return result.WithError(new TraceMessage(TraceMessage.Line()));
-
-            var login = _unitOfCommand.ValidateLoginCommand.Value;
-
-            if (login)
+            if (new IsIngamePage().Execute(_chromeBrowser))
             {
+                await new UpdateAccountInfoCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
+                await new UpdateVillageListCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
+                return Result.Ok();
+            }
+
+            if (new IsLoginPage().Execute(_chromeBrowser))
+            {
+#pragma warning disable S3060 // "is" should not be used with "this"
                 if (this is not LoginTask)
                 {
                     ExecuteAt = ExecuteAt.AddMilliseconds(1975);
                     await _mediator.Publish(new AccountLogout(AccountId), CancellationToken);
-                    return Result.Fail(Skip.AccountLogout);
+                    return Skip.AccountLogout;
                 }
+#pragma warning restore S3060 // "is" should not be used with "this"
                 return Result.Ok();
             }
 
-            return Result.Fail(Stop.TravianPage);
+            return Stop.NotTravianPage;
+        }
+
+        protected override async Task<Result> PostExecute()
+        {
+            await new UpdateAccountInfoCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
+            await new UpdateVillageListCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
+            await new CheckAdventureCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
+            return Result.Ok();
         }
     }
 }

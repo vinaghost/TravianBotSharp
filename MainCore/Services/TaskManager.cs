@@ -1,11 +1,5 @@
-﻿using MainCore.Common.Enums;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Notification.Message;
-using MainCore.Tasks.Base;
-using MediatR;
+﻿using MainCore.Tasks.Base;
 using Microsoft.Extensions.DependencyInjection;
-using Splat;
 
 namespace MainCore.Services
 {
@@ -74,7 +68,7 @@ namespace MainCore.Services
         public TaskBase GetCurrentTask(AccountId accountId)
         {
             var tasks = GetTaskList(accountId);
-            return tasks.FirstOrDefault(x => x.Stage == StageEnums.Executing);
+            return tasks.Find(x => x.Stage == StageEnums.Executing);
         }
 
         public async Task StopCurrentTask(AccountId accountId)

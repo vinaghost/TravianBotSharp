@@ -1,15 +1,10 @@
-﻿using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Notification.Message;
-using MainCore.UI.ViewModels.Abstract;
+﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using MediatR;
 using ReactiveUI;
-using Splat;
-using Unit = System.Reactive.Unit;
 
 namespace MainCore.UI.ViewModels
 {
-    [RegisterAsTransient(withoutInterface: true)]
+    [RegisterAsViewModel]
     public class MainViewModel : ViewModelBase
     {
         private MainLayoutViewModel _mainLayoutViewModel;

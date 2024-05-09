@@ -1,44 +1,80 @@
-﻿using FluentResults;
-using MainCore.Commands.Base;
-using MainCore.Common.MediatR;
-using MainCore.Entities;
-using MainCore.Infrasturecture.AutoRegisterDi;
-using MainCore.Notification.Message;
-using MainCore.Parsers;
-using MainCore.Repositories;
-using MainCore.Services;
-using MediatR;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
-    public class UpdateAccountInfoCommand : ByAccountIdBase, ICommand
+    public class UpdateAccountInfoCommand
     {
-        public UpdateAccountInfoCommand(AccountId accountId) : base(accountId)
-        {
-        }
-    }
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IMediator _mediator;
 
-    [RegisterAsTransient]
-    public class UpdateAccountInfoCommandHandler : UpdateCommandHandlerBase, ICommandHandler<UpdateAccountInfoCommand>
-    {
-        public UpdateAccountInfoCommandHandler(IChromeManager chromeManager, IMediator mediator, UnitOfRepository unitOfRepository, UnitOfParser unitOfParser) : base(chromeManager, mediator, unitOfRepository, unitOfParser)
+        public UpdateAccountInfoCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null)
         {
+            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
         }
 
-        public async Task<Result> Handle(UpdateAccountInfoCommand command, CancellationToken cancellationToken)
+        public async Task Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
-            var dto = _unitOfParser.AccountInfoParser.Get(html);
-            _unitOfRepository.AccountInfoRepository.Update(command.AccountId, dto);
-            await _mediator.Publish(new AccountInfoUpdated(command.AccountId), cancellationToken);
+            var dto = Get(html);
+            UpdateToDatabase(accountId, dto);
 
-            if (_unitOfParser.HeroParser.CanStartAdventure(html))
+            await _mediator.Publish(new AccountInfoUpdated(accountId), cancellationToken);
+        }
+
+        private static AccountInfoDto Get(HtmlDocument doc)
+        {
+            var dto = new AccountInfoDto()
             {
-                await _mediator.Publish(new AdventureUpdated(command.AccountId), cancellationToken);
-            }
+                Gold = GetGold(doc),
+                Silver = GetSilver(doc),
+                HasPlusAccount = HasPlusAccount(doc),
+                Tribe = TribeEnums.Any,
+            };
+            return dto;
+        }
 
-            return Result.Ok();
+        private static int GetGold(HtmlDocument doc)
+        {
+            var goldNode = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("ajaxReplaceableGoldAmount"));
+            if (goldNode is null) return -1;
+            return goldNode.InnerText.ParseInt();
+        }
+
+        private static int GetSilver(HtmlDocument doc)
+        {
+            var silverNode = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("ajaxReplaceableSilverAmount"));
+            if (silverNode is null) return -1;
+            return silverNode.InnerText.ParseInt();
+        }
+
+        private static bool HasPlusAccount(HtmlDocument doc)
+        {
+            var market = doc.DocumentNode.Descendants("a").FirstOrDefault(x => x.HasClass("market") && x.HasClass("round"));
+            if (market is null) return false;
+
+            if (market.HasClass("green")) return true;
+            if (market.HasClass("gold")) return false;
+            return false;
+        }
+
+        private void UpdateToDatabase(AccountId accountId, AccountInfoDto dto)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var dbAccountInfo = context.AccountsInfo
+                .Where(x => x.AccountId == accountId.Value)
+                .FirstOrDefault();
+
+            if (dbAccountInfo is null)
+            {
+                var accountInfo = dto.ToEntity(accountId);
+                context.Add(accountInfo);
+            }
+            else
+            {
+                dto.To(dbAccountInfo);
+                context.Update(dbAccountInfo);
+            }
+            context.SaveChanges();
         }
     }
 }

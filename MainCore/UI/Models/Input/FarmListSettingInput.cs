@@ -1,8 +1,6 @@
-﻿using MainCore.Common.Enums;
-using MainCore.UI.ViewModels.Abstract;
+﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
-using System.Collections.Generic;
 
 namespace MainCore.UI.Models.Input
 {
