@@ -14,13 +14,13 @@ jobs:
       version: ${{ steps.semvers.outputs.patch }}
     steps:
       - name: Checkout 
-        uses: actions/checkout@v3  
+        uses: actions/checkout@v4.1.5
         with:
           fetch-depth: 0 
       
       - name: Get Previous tag
         id: previoustag
-        uses: WyriHaximus/github-action-get-previous-tag@v1.3.0  
+        uses: WyriHaximus/github-action-get-previous-tag@v1.4.0  
         with:
           fallback: 1.0.0
       
@@ -31,7 +31,7 @@ jobs:
           version: ${{ steps.previoustag.outputs.tag }}
           
       - name: Create tag
-        uses: rickstaa/action-create-tag@v1.7.1
+        uses: rickstaa/action-create-tag@v1.7.2
         with:
           tag: ${{ steps.semvers.outputs.patch }}
           tag_exists_error: false
@@ -42,15 +42,15 @@ jobs:
     
     steps:
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 6.0.x
         
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.1.5
       
       - name: Load cached dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4.0.2
         with:
             path: ~/.nuget/packages
             key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
@@ -63,7 +63,7 @@ jobs:
         run: dotnet publish WPFUI -c Release --no-restore --self-contained -p:PublishSingleFile=true -p:AssemblyVersion=${{needs.version.outputs.version}}
       
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.3.3
         with:
           name: TBS-${{needs.version.outputs.version}}
           path: WPFUI\bin\Release\net6.0-windows10.0.19041.0\win-x64\publish\
@@ -75,7 +75,7 @@ jobs:
         pull-requests: write
     steps:
       - name: Comment PR
-        uses: thollander/actions-comment-pull-request@v2
+        uses: thollander/actions-comment-pull-request@v2.5.0
         with:
           message: |
             Version of this build is ${{needs.version.outputs.version}}
