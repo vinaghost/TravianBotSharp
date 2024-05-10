@@ -45,7 +45,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         private async Task<Result<JobDto>> GetBuildingJob(IChromeBrowser chromeBrowser, AccountId accountId, VillageId villageId, bool romanLogic, CancellationToken cancellationToken)
         {
             var job = romanLogic ? GetJobBasedOnRomanLogic(villageId) : GetBuildingJob(villageId);
-
+            if (job is null) return BuildingQueue.Full;
             if (job.Type == JobTypeEnums.ResourceBuild) return job;
 
             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
@@ -66,15 +66,32 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
                 if (valid.IsFailed)
                 {
+                    using var context = await _contextFactory.CreateDbContextAsync();
+
                     var logger = _logService.GetLogger(accountId);
+
+                    bool isProgressing = false;
+                    logger.Warning("Try to build {Type} level {Level} but", plan.Type, plan.Level);
                     foreach (var error in valid.Errors)
                     {
-                        if (error is BuildingQueue bqError)
+                        if (error is PrerequisiteBuildingMissing bqError)
                         {
+#pragma warning disable S6966 // Awaitable method should be used
+                            if (!isProgressing && context.QueueBuildings
+                                .Where(x => x.VillageId == villageId.Value)
+                                .Where(x => x.Type == bqError.PrerequisiteBuilding)
+                                .Any(x => x.Level >= bqError.Level))
+                            {
+                                isProgressing = true;
+                            }
+#pragma warning restore S6966 // Awaitable method should be used
                             logger.Warning("{Message}", bqError.Message);
                         }
                     }
-                    return (BuildingQueue)valid.Errors[0];
+                    if (isProgressing) return BuildingQueue.Full;
+
+                    logger.Information("Removed task while waiting user fix auto build queue order");
+                    return Skip.Cancel;
                 }
             }
             return job;
@@ -234,16 +251,18 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             var prerequisiteBuildings = plan.Type.GetPrerequisiteBuildings();
 
+            var errors = new List<PrerequisiteBuildingMissing>();
+
             foreach (var prerequisiteBuilding in prerequisiteBuildings)
             {
                 var vaild = context.Buildings
                     .Where(x => x.VillageId == villageId.Value)
                     .Where(x => x.Type == prerequisiteBuilding.Type)
                     .Any(x => x.Level >= prerequisiteBuilding.Level);
-                if (!vaild) return BuildingQueue.NotEnoughPrerequisiteBuilding(plan.Type, prerequisiteBuilding.Type, prerequisiteBuilding.Level);
+                if (!vaild) errors.Add(new(prerequisiteBuilding.Type, prerequisiteBuilding.Level, false));
             }
 
-            if (!plan.Type.IsMultipleBuilding()) return Result.Ok();
+            if (!plan.Type.IsMultipleBuilding()) return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
 
             var building = context.Buildings
                 .Where(x => x.VillageId == villageId.Value)
@@ -251,11 +270,11 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 .OrderByDescending(x => x.Level)
                 .FirstOrDefault();
 
-            if (building is null) return Result.Ok();
+            if (building is null) return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
+            if (building.Level == building.Type.GetMaxLevel()) return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
 
-            if (building.Level == building.Type.GetMaxLevel()) return Result.Ok();
-
-            return BuildingQueue.NotEnoughPrerequisiteBuilding(building.Type, building.Level);
+            errors.Add(new(building.Type, building.Level, false));
+            return Result.Fail(errors);
         }
     }
 }
