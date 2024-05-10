@@ -46,7 +46,6 @@ namespace MainCore.Tasks
                     }
 
                     return Result.Fail(jobResult.Errors)
-                        .WithError(Skip.Cancel)
                         .WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
 
