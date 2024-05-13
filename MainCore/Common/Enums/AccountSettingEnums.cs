@@ -17,5 +17,6 @@
         SleepTimeMax,
         HeadlessChrome,
         EnableAutoStartAdventure,
+        EnableAutoDisableRedRaidReport,
     }
 }
