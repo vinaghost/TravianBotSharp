@@ -17,6 +17,10 @@ namespace MainCore.Tasks
         {
             Result result;
 
+            if (IsDisableRedRaidReport())
+            {
+            }
+
             result = await new ToFarmListPageCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
@@ -40,6 +44,11 @@ namespace MainCore.Tasks
             var seconds = new GetSetting().ByName(AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
+        }
+
+        private bool IsDisableRedRaidReport()
+        {
+            return new GetSetting().BooleanByName(AccountId, AccountSettingEnums.EnableAutoDisableRedRaidReport);
         }
 
         protected override void SetName()
