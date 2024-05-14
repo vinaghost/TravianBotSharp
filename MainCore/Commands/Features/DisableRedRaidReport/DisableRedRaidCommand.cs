@@ -43,7 +43,7 @@
             return a;
         }
 
-        private async Task<Result> OpenRaidList(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
+        private static async Task<Result> OpenRaidList(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
         {
             var html = chromeBrowser.Html;
             var raidListGoldclub = html.GetElementbyId("raidListGoldclub");
