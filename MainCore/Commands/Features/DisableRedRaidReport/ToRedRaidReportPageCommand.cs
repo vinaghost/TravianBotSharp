@@ -10,7 +10,7 @@ namespace MainCore.Commands.Features.DisableRedRaidReport
         {
             var currentUrl = chromeBrowser.CurrentUrl;
             Uri.TryCreate(currentUrl, UriKind.Absolute, out var url);
-            var baseUrl = url.AbsoluteUri;
+            var baseUrl = url.GetLeftPart(UriPartial.Authority);
 
             Result result;
             result = await chromeBrowser.Navigate($"{baseUrl}{RED_REPORT}", cancellationToken);
