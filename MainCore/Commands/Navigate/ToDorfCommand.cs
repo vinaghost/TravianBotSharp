@@ -1,6 +1,8 @@
-﻿namespace MainCore.Commands.Navigate
+﻿using MainCore.Commands.Abstract;
+
+namespace MainCore.Commands.Navigate
 {
-    public class ToDorfCommand
+    public class ToDorfCommand : NavigationBarCommand
     {
         public async Task<Result> Execute(IChromeBrowser chromeBrowser, int dorf, bool forceReload, CancellationToken cancellationToken)
         {
@@ -45,14 +47,6 @@
                 2 => GetBuildingButton(doc),
                 _ => null,
             };
-        }
-
-        private static HtmlNode GetButton(HtmlDocument doc, int key)
-        {
-            var navigationBar = doc.GetElementbyId("navigation");
-            if (navigationBar is null) return null;
-            var buttonNode = navigationBar.Descendants("a").FirstOrDefault(x => x.GetAttributeValue("accesskey", 0) == key);
-            return buttonNode;
         }
 
         private static HtmlNode GetResourceButton(HtmlDocument doc) => GetButton(doc, 1);
