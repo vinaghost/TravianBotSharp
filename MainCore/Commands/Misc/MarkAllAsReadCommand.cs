@@ -15,6 +15,11 @@
             result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
+            await Task.Delay(500);
+
+            result = await chromeBrowser.WaitPageLoaded(cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
             return Result.Ok();
         }
     }

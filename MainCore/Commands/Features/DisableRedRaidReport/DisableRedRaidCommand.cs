@@ -4,11 +4,11 @@
     {
         public async Task<Result> Execute(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
         {
-            var html = chromeBrowser.Html;
             Result result;
 
             do
             {
+                var html = chromeBrowser.Html;
                 var newReport = GetNewReport(html);
                 if (newReport is null) return Result.Ok();
 
@@ -23,7 +23,7 @@
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 result = await Deactive(chromeBrowser);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                result = await Save(chromeBrowser);
+                result = await Save(chromeBrowser, cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 result = await chromeBrowser.Navigate(currentUrl, cancellationToken);
@@ -73,15 +73,15 @@
             var farmListTargetForm = html.GetElementbyId("farmListTargetForm");
             var activeInput = farmListTargetForm.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "") == "isActive");
             if (activeInput is null) return Retry.NotFound("active farm", "check box ");
-            if (activeInput.GetAttributeValue("value", "") == "false") return Result.Ok();
+            if (activeInput.GetAttributeValue("value", "") == "true") return Result.Ok();
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(activeInput.XPath));
+            result = await chromeBrowser.Click(By.XPath(activeInput.NextSibling.NextSibling.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 
-        private static async Task<Result> Save(IChromeBrowser chromeBrowser)
+        private static async Task<Result> Save(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
         {
             var html = chromeBrowser.Html;
             var farmListTargetForm = html.GetElementbyId("farmListTargetForm");
@@ -91,6 +91,11 @@
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(saveButton.XPath));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            await Task.Delay(500);
+
+            result = await chromeBrowser.WaitPageLoaded(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
