@@ -73,11 +73,14 @@
             var farmListTargetForm = html.GetElementbyId("farmListTargetForm");
             var activeInput = farmListTargetForm.Descendants("input").FirstOrDefault(x => x.GetAttributeValue("name", "") == "isActive");
             if (activeInput is null) return Retry.NotFound("active farm", "check box ");
-            if (activeInput.GetAttributeValue("value", "") == "true") return Result.Ok();
+            if (activeInput.Attributes.Any(x => x.Name == "checked")) return Result.Ok();
 
             Result result;
             result = await chromeBrowser.Click(By.XPath(activeInput.NextSibling.NextSibling.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            await Task.Delay(1000);
+
             return Result.Ok();
         }
 
@@ -93,10 +96,12 @@
             result = await chromeBrowser.Click(By.XPath(saveButton.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            await Task.Delay(500);
+            await Task.Delay(1000);
 
             result = await chromeBrowser.WaitPageLoaded(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            await Task.Delay(1000);
+
             return Result.Ok();
         }
     }
