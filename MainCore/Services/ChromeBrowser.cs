@@ -174,15 +174,8 @@ namespace MainCore.Services
         {
             if (string.IsNullOrEmpty(source))
             {
-#pragma warning disable S2486 // Generic exceptions should not be ignored
-#pragma warning disable S108 // Nested blocks of code should not be left empty
-                try
-                {
-                    _htmlDoc.LoadHtml(_driver.PageSource);
-                }
-                catch { }
-#pragma warning restore S108 // Nested blocks of code should not be left empty
-#pragma warning restore S2486 // Generic exceptions should not be ignored
+                if (_driver is null) return;
+                _htmlDoc.LoadHtml(_driver.PageSource);
             }
             else
             {
@@ -241,6 +234,7 @@ namespace MainCore.Services
                 {
                     return Stop.PageNotLoad;
                 }
+
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
                 return Result.Ok();
             }
