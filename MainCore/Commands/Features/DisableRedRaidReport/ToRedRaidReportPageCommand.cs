@@ -13,7 +13,7 @@ namespace MainCore.Commands.Features.DisableRedRaidReport
             var baseUrl = url.GetLeftPart(UriPartial.Authority);
 
             Result result;
-            result = await chromeBrowser.Navigate($"{baseUrl}{RED_REPORT}", cancellationToken);
+            result = await chromeBrowser.Navigate($"{baseUrl}/{RED_REPORT}", cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
