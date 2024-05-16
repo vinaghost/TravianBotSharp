@@ -176,7 +176,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 var errors = result.Errors.Select(x => x.Message).ToList();
                 logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
                 await _taskManager.SetStatus(accountId, StatusEnums.Offline);
-                await Task.Run(chromeBrowser.Close, CancellationToken.None);
+                await chromeBrowser.Close();
                 return;
             }
             await _mediator.Publish(new AccountInit(accountId));
@@ -219,7 +219,7 @@ namespace MainCore.UI.ViewModels.UserControls
             await _taskManager.StopCurrentTask(accountId);
 
             var chromeBrowser = _chromeManager.Get(accountId);
-            await Task.Run(chromeBrowser.Close);
+            await chromeBrowser.Close();
 
             await _taskManager.SetStatus(accountId, StatusEnums.Offline);
         }
