@@ -10,13 +10,19 @@ namespace MainCore.Services
         HtmlDocument Html { get; }
         string EndpointAddress { get; }
 
-        Task<Result> Click(By by);
+        Task<Result> Click(By by, CancellationToken cancellationToken);
+
+        Task<Result> Click(By by, string url, CancellationToken cancellationToken);
+
+        Task<Result> Click(By by, Func<IWebDriver, bool> condition, CancellationToken cancellationToken);
+
+        Task<Result> Click(By by, string url, Func<IWebDriver, bool> condition, CancellationToken cancellationToken);
 
         Task Close();
 
-        Task<Result> InputTextbox(By by, string content);
+        Task<Result> ExecuteJsScript(string javascript, string url, CancellationToken cancellationToken);
 
-        bool IsOpen();
+        Task<Result> InputTextbox(By by, string content);
 
         Task<Result> Navigate(string url, CancellationToken cancellationToken);
 

@@ -26,7 +26,7 @@ namespace MainCore.Commands.Features.StartFarmList
                 var startButton = GetStartButton(html, farmList);
                 if (startButton is null) return Retry.ButtonNotFound($"Start farm {farmList}");
 
-                result = await chromeBrowser.Click(By.XPath(startButton.XPath));
+                result = await chromeBrowser.Click(By.XPath(startButton.XPath), CancellationToken.None);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 await delayClickCommand.Execute(accountId);

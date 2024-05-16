@@ -10,11 +10,9 @@
             if (button is null) return Retry.ButtonNotFound("options");
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath));
+            result = await chromeBrowser.Click(By.XPath(button.XPath), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await chromeBrowser.WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 

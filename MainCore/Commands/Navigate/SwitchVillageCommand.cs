@@ -14,10 +14,6 @@ namespace MainCore.Commands.Navigate
 
             var current = GetCurrentVillageId(html);
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(node.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
             bool villageChanged(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
@@ -27,7 +23,8 @@ namespace MainCore.Commands.Navigate
                 return villageNode is not null && IsActive(villageNode);
             }
 
-            result = await chromeBrowser.Wait(villageChanged, cancellationToken);
+            Result result;
+            result = await chromeBrowser.Click(By.XPath(node.XPath), villageChanged, cancellationToken);
             if (result.IsFailed) return result
                     .WithError(new Error($"page stuck at changing village stage [Current: {current}] [Expected: {villageId}]"))
                     .WithError(TraceMessage.Error(TraceMessage.Line()));
