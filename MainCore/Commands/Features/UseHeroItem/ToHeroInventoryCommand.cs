@@ -27,13 +27,6 @@
             var avatar = GetHeroAvatar(html);
             if (avatar is null) return Retry.ButtonNotFound("avatar hero");
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(avatar.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await chromeBrowser.WaitPageChanged("hero", cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
             bool tabActived(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
@@ -41,7 +34,8 @@
                 return InventoryTabActive(doc);
             }
 
-            result = await chromeBrowser.Wait(tabActived, cancellationToken);
+            Result result;
+            result = await chromeBrowser.Click(By.XPath(avatar.XPath), "hero", tabActived, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

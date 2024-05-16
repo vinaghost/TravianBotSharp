@@ -31,10 +31,7 @@ namespace MainCore.Commands.Features
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             result = await chromeBrowser.InputTextbox(By.XPath(passwordNode.XPath), password);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            result = await chromeBrowser.Click(By.XPath(buttonNode.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await chromeBrowser.WaitPageChanged("dorf", cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(buttonNode.XPath), "dorf", cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

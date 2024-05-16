@@ -23,7 +23,7 @@ namespace MainCore.Commands.Navigate
                 else
                 {
                     var css = $"#villageContent > div.buildingSlot.a{location} > svg > path";
-                    result = await chromeBrowser.Click(By.CssSelector(css));
+                    result = await chromeBrowser.Click(By.CssSelector(css), "build.php", cancellationToken);
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
             }
@@ -38,20 +38,16 @@ namespace MainCore.Commands.Navigate
                     if (string.IsNullOrEmpty(javascript)) return Retry.NotFound($"{location}", "JavaScriptExecutor onclick wall");
 
                     var decodedJs = HttpUtility.HtmlDecode(javascript);
-                    var js = chromeBrowser.Driver as IJavaScriptExecutor;
-                    js.ExecuteScript(decodedJs);
 
-                    result = await chromeBrowser.WaitPageChanged("build.php", cancellationToken);
+                    result = await chromeBrowser.ExecuteJsScript(decodedJs, "build.php", cancellationToken);
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
                 else
                 {
-                    result = await chromeBrowser.Click(By.XPath(node.XPath));
+                    result = await chromeBrowser.Click(By.XPath(node.XPath), "build.php", cancellationToken);
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
             }
-            result = await chromeBrowser.WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 
