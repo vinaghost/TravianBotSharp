@@ -215,7 +215,14 @@ namespace MainCore.Services
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await WaitPageChanged(url, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed)
+            {
+                result = await Click(by);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                result = await WaitPageChanged(url, cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            }
 
             result = await WaitPageLoaded(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -230,13 +237,32 @@ namespace MainCore.Services
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await WaitPageChanged(url, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed)
+            {
+                result = await Click(by);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
+                result = await WaitPageChanged(url, cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            }
             result = await WaitPageLoaded(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await Wait(condition, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed)
+            {
+                result = await Click(by);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                result = await WaitPageChanged(url, cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                result = await WaitPageLoaded(cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                result = await Wait(condition, cancellationToken);
+                return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            }
 
             return Result.Ok();
         }
@@ -248,8 +274,14 @@ namespace MainCore.Services
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await Wait(condition, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed)
+            {
+                result = await Click(by);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
+                result = await Wait(condition, cancellationToken);
+                return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            }
             return Result.Ok();
         }
 
@@ -289,8 +321,14 @@ namespace MainCore.Services
 
             Result result;
             result = await WaitPageChanged(url, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed)
+            {
+                await ExecuteJsScript(javascript);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
+                result = await WaitPageChanged(url, cancellationToken);
+                return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            }
             result = await WaitPageLoaded(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
