@@ -13,15 +13,12 @@
                 if (newReport is null) return Result.Ok();
 
                 var currentUrl = chromeBrowser.CurrentUrl;
-                result = await chromeBrowser.Click(By.XPath(newReport.XPath));
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-                result = await chromeBrowser.WaitPageLoaded(cancellationToken);
+                result = await chromeBrowser.Click(By.XPath(newReport.XPath), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 result = await OpenRaidList(chromeBrowser, cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                result = await Deactive(chromeBrowser);
+                result = await Deactive(chromeBrowser, cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 result = await Save(chromeBrowser, cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -48,9 +45,6 @@
             var html = chromeBrowser.Html;
             var raidListGoldclub = html.GetElementbyId("raidListGoldclub");
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(raidListGoldclub.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             static bool farmListDiaglog(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
@@ -62,12 +56,13 @@
                 return !doc.DocumentNode.Descendants("div").Any(x => x.HasClass("contentLoadingIndicator"));
             }
 
-            result = await chromeBrowser.Wait(farmListDiaglog, cancellationToken);
+            Result result;
+            result = await chromeBrowser.Click(By.XPath(raidListGoldclub.XPath), farmListDiaglog, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
 
-        private static async Task<Result> Deactive(IChromeBrowser chromeBrowser)
+        private static async Task<Result> Deactive(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
         {
             var html = chromeBrowser.Html;
             var farmListTargetForm = html.GetElementbyId("farmListTargetForm");
@@ -76,7 +71,7 @@
             if (activeInput.Attributes.Any(x => x.Name == "checked")) return Result.Ok();
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(activeInput.NextSibling.NextSibling.XPath));
+            result = await chromeBrowser.Click(By.XPath(activeInput.NextSibling.NextSibling.XPath), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await Task.Delay(1000);
@@ -93,7 +88,7 @@
             if (saveButton is null) return Retry.ButtonNotFound("save farmlist");
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(saveButton.XPath));
+            result = await chromeBrowser.Click(By.XPath(saveButton.XPath), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await Task.Delay(1000);

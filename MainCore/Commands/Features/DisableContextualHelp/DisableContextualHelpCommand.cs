@@ -13,7 +13,7 @@
 
             option = GetHiddenReportImageOption(html);
             if (option is null) return Retry.NotFound("hide report image", "option");
-            result = await chromeBrowser.Click(By.XPath(option.XPath));
+            result = await chromeBrowser.Click(By.XPath(option.XPath), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             option = GetMessagePerPageOption(html);
