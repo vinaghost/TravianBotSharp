@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.StartFarmList
             if (startAllButton is null) return Retry.ButtonNotFound("Start all farms");
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(startAllButton.XPath));
+            result = await chromeBrowser.Click(By.XPath(startAllButton.XPath), CancellationToken.None);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

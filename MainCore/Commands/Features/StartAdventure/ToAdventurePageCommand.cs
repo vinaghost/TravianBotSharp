@@ -11,13 +11,6 @@ namespace MainCore.Commands.Features.StartAdventure
             var adventure = GetHeroAdventure(html);
             if (adventure is null) return Retry.ButtonNotFound("hero adventure");
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(adventure.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await chromeBrowser.WaitPageChanged("adventures", cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
             bool tableShow(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
@@ -28,8 +21,10 @@ namespace MainCore.Commands.Features.StartAdventure
                 return table;
             }
 
-            result = await chromeBrowser.Wait(tableShow, cancellationToken);
+            Result result;
+            result = await chromeBrowser.Click(By.XPath(adventure.XPath), "adventures", tableShow, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
             return Result.Ok();
         }
     }
