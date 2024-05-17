@@ -83,10 +83,6 @@ namespace MainCore.Commands.Features.UseHeroItem
             var node = GetItemSlot(html, item);
             if (node is null) return Retry.NotFound($"{item}", "item");
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(node.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
             bool loadingCompleted(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
@@ -94,7 +90,8 @@ namespace MainCore.Commands.Features.UseHeroItem
                 return !HeroInventoryLoading(doc);
             }
 
-            result = await chromeBrowser.Wait(loadingCompleted, cancellationToken);
+            Result result;
+            result = await chromeBrowser.Click(By.XPath(node.XPath), loadingCompleted, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
@@ -117,10 +114,6 @@ namespace MainCore.Commands.Features.UseHeroItem
             var node = GetConfirmButton(html);
             if (node is null) return Retry.ButtonNotFound("confirm use resource");
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(node.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
             bool loadingCompleted(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
@@ -128,7 +121,8 @@ namespace MainCore.Commands.Features.UseHeroItem
                 return !HeroInventoryLoading(doc);
             }
 
-            result = await chromeBrowser.Wait(loadingCompleted, cancellationToken);
+            Result result;
+            result = await chromeBrowser.Click(By.XPath(node.XPath), loadingCompleted, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

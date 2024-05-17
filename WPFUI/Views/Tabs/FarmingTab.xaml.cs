@@ -29,6 +29,7 @@ namespace WPFUI.Views.Tabs
 
                 this.Bind(ViewModel, vm => vm.FarmListSettingInput.UseStartAllButton, v => v.UseStartAllCheckbox.IsChecked).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.FarmListSettingInput.FarmInterval, v => v.FarmInterval.ViewModel).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.FarmListSettingInput.EnableAutoDisableRedRaidReport, v => v.EnableAutoDisableRedRaidReport.IsChecked).DisposeWith(d);
 
                 this.Bind(ViewModel, vm => vm.ActiveText, v => v.ActiveButton.Content).DisposeWith(d);
             });

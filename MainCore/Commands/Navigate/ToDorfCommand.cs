@@ -1,6 +1,8 @@
-﻿namespace MainCore.Commands.Navigate
+﻿using MainCore.Commands.Abstract;
+
+namespace MainCore.Commands.Navigate
 {
-    public class ToDorfCommand
+    public class ToDorfCommand : NavigationBarCommand
     {
         public async Task<Result> Execute(IChromeBrowser chromeBrowser, int dorf, bool forceReload, CancellationToken cancellationToken)
         {
@@ -23,9 +25,7 @@
             if (button is null) return Retry.ButtonNotFound($"dorf{dorf}");
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            result = await chromeBrowser.WaitPageChanged($"dorf{dorf}", cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(button.XPath), $"dorf{dorf}", cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
@@ -45,14 +45,6 @@
                 2 => GetBuildingButton(doc),
                 _ => null,
             };
-        }
-
-        private static HtmlNode GetButton(HtmlDocument doc, int key)
-        {
-            var navigationBar = doc.GetElementbyId("navigation");
-            if (navigationBar is null) return null;
-            var buttonNode = navigationBar.Descendants("a").FirstOrDefault(x => x.GetAttributeValue("accesskey", 0) == key);
-            return buttonNode;
         }
 
         private static HtmlNode GetResourceButton(HtmlDocument doc) => GetButton(doc, 1);

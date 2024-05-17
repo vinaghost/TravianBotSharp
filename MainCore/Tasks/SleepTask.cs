@@ -16,7 +16,7 @@ namespace MainCore.Tasks
 
         protected override async Task<Result> Execute()
         {
-            await Task.Run(_chromeBrowser.Close, CancellationToken.None);
+            await _chromeBrowser.Close();
 
             Result result;
             result = await Sleep();
