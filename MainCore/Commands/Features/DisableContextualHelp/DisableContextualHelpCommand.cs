@@ -8,7 +8,7 @@
             var option = GetHideContextualHelpOption(html);
             if (option is null) return Retry.NotFound("hide contextual help", "option");
             Result result;
-            result = await chromeBrowser.Click(By.XPath(option.XPath));
+            result = await chromeBrowser.Click(By.XPath(option.XPath), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             option = GetHiddenReportImageOption(html);
@@ -27,10 +27,7 @@
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var button = GetSubmitButton(html);
-            result = await chromeBrowser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await chromeBrowser.WaitPageLoaded(cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(button.XPath), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

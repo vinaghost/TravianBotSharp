@@ -7,7 +7,7 @@
             var html = chromeBrowser.Html;
             var button = GetSpecialUpgradeButton(html);
             if (button is null) return Retry.ButtonNotFound("Watch ads upgrade");
-            var result = await chromeBrowser.Click(By.XPath(button.XPath));
+            var result = await chromeBrowser.Click(By.XPath(button.XPath), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var driver = chromeBrowser.Driver;
@@ -36,14 +36,14 @@
             {
                 var checkbox = videoFeature.Descendants("div").FirstOrDefault(x => x.HasClass("checkbox"));
                 if (checkbox is null) return Retry.ButtonNotFound("Don't show watch ads confirm again");
-                result = await chromeBrowser.Click(By.XPath(checkbox.XPath));
+                result = await chromeBrowser.Click(By.XPath(checkbox.XPath), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 await new DelayClickCommand().Execute(accountId);
 
                 var watchButton = videoFeature.Descendants("button").FirstOrDefault(x => x.HasClass("green"));
                 if (watchButton is null) return Retry.ButtonNotFound("Watch ads");
-                result = await chromeBrowser.Click(By.XPath(watchButton.XPath));
+                result = await chromeBrowser.Click(By.XPath(watchButton.XPath), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
 
@@ -53,7 +53,7 @@
             var node = html.GetElementbyId("videoFeature");
             if (node is null) return Retry.ButtonNotFound($"play ads");
 
-            result = await chromeBrowser.Click(By.XPath(node.XPath));
+            result = await chromeBrowser.Click(By.XPath(node.XPath), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             driver.SwitchTo().DefaultContent();
@@ -71,7 +71,7 @@
                 driver.Close();
                 driver.SwitchTo().Window(current);
 
-                result = await chromeBrowser.Click(By.XPath(node.XPath));
+                result = await chromeBrowser.Click(By.XPath(node.XPath), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 driver.SwitchTo().DefaultContent();
@@ -89,14 +89,14 @@
             var dontShowThisAgain = html.GetElementbyId("dontShowThisAgain");
             if (dontShowThisAgain is not null)
             {
-                result = await chromeBrowser.Click(By.XPath(dontShowThisAgain.XPath));
+                result = await chromeBrowser.Click(By.XPath(dontShowThisAgain.XPath), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 await new DelayClickCommand().Execute(accountId);
 
                 var okButton = html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
                 if (okButton is null) return Retry.ButtonNotFound("ok");
-                result = await chromeBrowser.Click(By.XPath(okButton.XPath));
+                result = await chromeBrowser.Click(By.XPath(okButton.XPath), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
 
