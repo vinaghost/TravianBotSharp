@@ -46,7 +46,8 @@ namespace MainCore.UI.Models.Input
             var dto = input.MapToDto();
 
             Uri.TryCreate(input.Server, UriKind.Absolute, out var url);
-            dto.Server = url.AbsoluteUri;
+            var host = url.GetLeftPart(UriPartial.Authority);
+            dto.Server = host;
             return dto;
         }
 
