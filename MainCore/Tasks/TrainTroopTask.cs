@@ -124,7 +124,7 @@ namespace MainCore.Tasks
             var trainButton = GetTrainButton(html);
             if (trainButton is null) return Retry.ButtonNotFound("train troop");
 
-            result = await _chromeBrowser.Click(By.XPath(trainButton.XPath));
+            result = await _chromeBrowser.Click(By.XPath(trainButton.XPath), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await new DelayClickCommand().Execute(AccountId);

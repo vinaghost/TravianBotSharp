@@ -48,9 +48,6 @@ namespace MainCore.Tasks
 
             var button = GetExchangeResourcesButton(html);
             if (button is null) return Retry.ButtonNotFound("Exchange resources");
-            Result result;
-            result = await _chromeBrowser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             bool dialogShown(IWebDriver driver)
             {
@@ -60,7 +57,8 @@ namespace MainCore.Tasks
                 return NPCDialogShown(doc);
             }
 
-            result = await _chromeBrowser.Wait(dialogShown, CancellationToken);
+            Result result;
+            result = await _chromeBrowser.Click(By.XPath(button.XPath), dialogShown, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
@@ -127,10 +125,7 @@ namespace MainCore.Tasks
             if (button is null) return Retry.ButtonNotFound("redeem");
 
             Result result;
-            result = await _chromeBrowser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await _chromeBrowser.WaitPageLoaded(CancellationToken);
+            result = await _chromeBrowser.Click(By.XPath(button.XPath), CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }

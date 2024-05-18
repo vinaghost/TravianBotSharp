@@ -22,11 +22,6 @@ namespace MainCore.Commands.Features.StartAdventure
 
             var logger = _logService.GetLogger(accountId);
             logger.Information("Start adventure {Adventure}", GetAdventureInfo(adventure));
-
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(adventure.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
             bool continueShow(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
@@ -34,9 +29,10 @@ namespace MainCore.Commands.Features.StartAdventure
                 var continueButton = GetContinueButton(doc);
                 return continueButton is not null;
             }
-
-            result = await chromeBrowser.Wait(continueShow, cancellationToken);
+            Result result;
+            result = await chromeBrowser.Click(By.XPath(adventure.XPath), continueShow, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
             return Result.Ok();
         }
 

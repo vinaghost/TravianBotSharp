@@ -11,10 +11,6 @@
             if (tab is null) return Retry.NotFound($"{index}", "tab");
             if (IsTabActive(tab)) return Result.Ok();
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(tab.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
             bool tabActived(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
@@ -26,8 +22,11 @@
                 if (!IsTabActive(tab)) return false;
                 return true;
             }
-            result = await chromeBrowser.Wait(tabActived, cancellationToken);
+
+            Result result;
+            result = await chromeBrowser.Click(By.XPath(tab.XPath), tabActived, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
             return Result.Ok();
         }
 
