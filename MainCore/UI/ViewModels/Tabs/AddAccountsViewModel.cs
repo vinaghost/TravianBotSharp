@@ -96,6 +96,8 @@ namespace MainCore.UI.ViewModels.Tabs
                 return null;
             }
 
+            if (url is null) return null;
+
             if (strAccount.Length > 4)
             {
                 if (int.TryParse(strAccount[4], out var port))
@@ -107,11 +109,14 @@ namespace MainCore.UI.ViewModels.Tabs
                     return null;
                 }
             }
+
+            var host = url.GetLeftPart(UriPartial.Authority);
+
             return strAccount.Length switch
             {
-                3 => AccountDetailDto.Create(strAccount[1], url.AbsoluteUri, strAccount[2]),
-                5 => AccountDetailDto.Create(strAccount[1], url.AbsoluteUri, strAccount[2], strAccount[3], int.Parse(strAccount[4])),
-                7 => AccountDetailDto.Create(strAccount[1], url.AbsoluteUri, strAccount[2], strAccount[3], int.Parse(strAccount[4]), strAccount[5], strAccount[6]),
+                3 => AccountDetailDto.Create(strAccount[1], host, strAccount[2]),
+                5 => AccountDetailDto.Create(strAccount[1], host, strAccount[2], strAccount[3], int.Parse(strAccount[4])),
+                7 => AccountDetailDto.Create(strAccount[1], host, strAccount[2], strAccount[3], int.Parse(strAccount[4]), strAccount[5], strAccount[6]),
                 _ => null,
             };
         }
