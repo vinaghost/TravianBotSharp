@@ -7,8 +7,9 @@ namespace MainCore.Commands.Misc
         public async Task<Result> Execute(IChromeBrowser chromeBrowser, AccountId accountId, AccessDto access, CancellationToken cancellationToken)
         {
             var account = new GetAccount().Execute(accountId);
+            var uri = new Uri(account.Server);
 
-            var serverFolderName = account.Server.Replace("https://", "").Replace("http://", "").Replace(".", "_");
+            var serverFolderName = uri.Host.Replace(".", "_");
             var accountFolderName = account.Username;
 
             var headlessChrome = new GetSetting().BooleanByName(accountId, AccountSettingEnums.HeadlessChrome);
@@ -26,7 +27,7 @@ namespace MainCore.Commands.Misc
             var result = await chromeBrowser.Setup(chromeSetting);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await chromeBrowser.Navigate($"{account.Server}dorf1.php", cancellationToken);
+            result = await chromeBrowser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
