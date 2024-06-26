@@ -4,11 +4,10 @@
     {
         protected static HtmlNode GetLoginButton(HtmlDocument doc)
         {
-            var trNode = doc.DocumentNode
-                .Descendants("tr")
-                .FirstOrDefault(x => x.HasClass("loginButtonRow"));
-            if (trNode is null) return null;
-            var node = trNode
+            var loginScene = doc.GetElementbyId("loginScene");
+            if (loginScene is null) return null;
+
+            var node = loginScene
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("green"));
             return node;
