@@ -8,15 +8,20 @@
 
         public async Task<Result> Handle()
         {
-            Result result;
-            result = await PreExecute();
-            if (result.IsFailed) return result;
-            result = await Execute();
+            var preResult = await PreExecute();
+            if (preResult.IsFailed) return preResult;
+            var result = await Execute();
             if (result.IsFailed && !result.HasError<Skip>())
             {
                 return result;
             }
-            result = await PostExecute();
+            var postResult = await PostExecute();
+            if (postResult.IsFailed)
+            {
+                if (result.IsFailed) return result.WithErrors(postResult.Errors);
+                return postResult;
+            }
+
             if (result.IsFailed) return result;
             return Result.Ok();
         }
