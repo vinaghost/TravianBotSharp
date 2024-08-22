@@ -134,18 +134,18 @@
       },
       "Selenium.Support": {
         "type": "Direct",
-        "requested": "[4.19.0, )",
-        "resolved": "4.19.0",
-        "contentHash": "mMghl/3vzRNbE1FA57Iqpw8206DCKekvXl+6PKi811/fg98HSomrknvHgI4aZbfJEuL7Y2IKFt1oBbbUQT0elQ==",
+        "requested": "[4.23.0, )",
+        "resolved": "4.23.0",
+        "contentHash": "ykT3saViorD54A6Eizw6CnNp8SuuIx4E01QhtEnZVrFvgH6P6mSgpCgfDlCX2RNwbGnrpkeoG5eV1dOGmzP12w==",
         "dependencies": {
-          "Selenium.WebDriver": "4.19.0"
+          "Selenium.WebDriver": "4.23.0"
         }
       },
       "Selenium.WebDriver": {
         "type": "Direct",
-        "requested": "[4.19.0, )",
-        "resolved": "4.19.0",
-        "contentHash": "rguRY+Kbiow0s7RHtnHXnJdMgsmqAOOtv7ZGBtIQ1DbErkFtksrZHdUMcKyMK6VKNMmfsViqcCDGw4mPSPT70w==",
+        "requested": "[4.23.0, )",
+        "resolved": "4.23.0",
+        "contentHash": "jQxNGGuWeSw/+xeZVv+0TL6pVnKeLsBYlxvADY7iGyq1yjgtUFNxGK01t0Op6+FMVdFLcMysL4Z0VdTvzFn0eA==",
         "dependencies": {
           "Newtonsoft.Json": "13.0.1"
         }
