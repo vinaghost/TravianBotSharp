@@ -3,7 +3,7 @@ using Serilog.Events;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton]
+    [RegisterAsSingleton]
     public sealed class LogSink : ILogEventSink
     {
         private Dictionary<AccountId, LinkedList<LogEvent>> Logs { get; } = new();

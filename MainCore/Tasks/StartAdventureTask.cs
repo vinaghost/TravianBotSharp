@@ -3,7 +3,7 @@ using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient]
+    [RegisterAsTask]
     public class StartAdventureTask : AccountTask
     {
         private readonly ITaskManager _taskManager;

@@ -6,7 +6,7 @@ using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterSingleton]
+    [RegisterAsViewModel]
     public class AddAccountsViewModel : TabViewModelBase
     {
         private readonly IDialogService _dialogService;

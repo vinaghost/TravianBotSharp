@@ -2,7 +2,7 @@
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient]
+    [RegisterAsTask]
     public class CompleteImmediatelyTask : VillageTask
     {
         protected override async Task<Result> Execute()

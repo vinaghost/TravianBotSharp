@@ -66,14 +66,6 @@
         "resolved": "2.14.1",
         "contentHash": "lQKvtaTDOXnoVJ20ibTuSIOf2i0uO0MPbDhd1jm238I+U/2ZnRENj0cktKZhtchBMtCUSRQ5v4xBCUbKNmyVMw=="
       },
-      "Injectio": {
-        "type": "Transitive",
-        "resolved": "3.1.0",
-        "contentHash": "7b7IdkoJA1ecyHYjstI0TraeilfaRdwmoBpR09oOYxuOTHYvKjPm5Odvjcdp6WMjcQF2WUs7xm169w9uXEgA1g==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
-        }
-      },
       "MaterialDesignColors": {
         "type": "Transitive",
         "resolved": "2.1.4",
@@ -655,7 +647,6 @@
           "FluentValidation.DependencyInjectionExtensions": "[11.9.0, )",
           "HtmlAgilityPack": "[1.11.60, )",
           "Humanizer.Core": "[2.14.1, )",
-          "Injectio": "[3.1.0, )",
           "MediatR": "[12.2.0, )",
           "Microsoft.EntityFrameworkCore.Sqlite": "[7.0.12, )",
           "Microsoft.Extensions.Hosting": "[7.0.1, )",

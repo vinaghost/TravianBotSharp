@@ -1,6 +1,6 @@
 ﻿namespace MainCore.Services
 {
-    [RegisterSingleton]
+    [RegisterAsSingleton]
     public class DialogService : IDialogService
     {
         public Action<string, string> MessageBoxFunc { get; set; }

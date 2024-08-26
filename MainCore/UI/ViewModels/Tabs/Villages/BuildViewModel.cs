@@ -13,7 +13,7 @@ using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
-    [RegisterSingleton]
+    [RegisterAsViewModel]
     public class BuildViewModel : VillageTabViewModelBase
     {
         private readonly IMediator _mediator;

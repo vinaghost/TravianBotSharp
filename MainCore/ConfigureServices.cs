@@ -23,7 +23,7 @@ namespace MainCore
             );
 
             services
-                .AddMainCore()
+                .AutoRegister()
                 .AddValidator()
                 .AddMediatR(cfg =>
                 {

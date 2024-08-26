@@ -1,6 +1,5 @@
 ﻿global using FluentResults;
 global using HtmlAgilityPack;
-global using Injectio.Attributes;
 global using MainCore.Commands.Misc;
 global using MainCore.Commands.Navigate;
 global using MainCore.Commands.Queries;
@@ -11,6 +10,7 @@ global using MainCore.Common.Extensions;
 global using MainCore.Common.MediatR;
 global using MainCore.DTO;
 global using MainCore.Entities;
+global using MainCore.Infrasturecture.AutoRegisterDi;
 global using MainCore.Infrasturecture.Persistence;
 global using MainCore.Notification.Message;
 global using MainCore.Services;

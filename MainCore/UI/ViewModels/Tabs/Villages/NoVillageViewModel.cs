@@ -2,7 +2,7 @@
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
-    [RegisterSingleton]
+    [RegisterAsViewModel]
     public class NoVillageViewModel : TabViewModelBase
     {
     }

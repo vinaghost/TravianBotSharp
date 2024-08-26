@@ -6,6 +6,7 @@ using OpenQA.Selenium.Support.UI;
 
 namespace MainCore.Services
 {
+    [DoNotAutoRegister]
     public sealed class ChromeBrowser : IChromeBrowser
     {
         private ChromeDriver _driver;

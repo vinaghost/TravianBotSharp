@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton]
+    [RegisterAsSingleton]
     public sealed class LogService : ILogService
     {
         private readonly Dictionary<AccountId, ILogger> _loggers = new();

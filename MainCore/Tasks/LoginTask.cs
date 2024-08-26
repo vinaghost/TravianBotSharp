@@ -4,7 +4,7 @@ using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient]
+    [RegisterAsTask]
     public sealed class LoginTask : AccountTask
     {
         protected override async Task<Result> Execute()
