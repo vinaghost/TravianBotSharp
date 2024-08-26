@@ -1,5 +1,6 @@
 ﻿global using FluentResults;
 global using HtmlAgilityPack;
+global using Injectio.Attributes;
 global using MainCore.Commands.Misc;
 global using MainCore.Commands.Navigate;
 global using MainCore.Commands.Queries;
