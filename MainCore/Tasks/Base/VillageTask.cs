@@ -1,4 +1,6 @@
-﻿namespace MainCore.Tasks.Base
+﻿using MainCore.Commands.Checks;
+
+namespace MainCore.Tasks.Base
 {
     public abstract class VillageTask : AccountTask
     {

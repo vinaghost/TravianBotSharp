@@ -153,7 +153,7 @@ namespace MainCore.UI.ViewModels.UserControls
             await _taskManager.SetStatus(accountId, StatusEnums.Starting);
             var logger = _logService.GetLogger(accountId);
 
-            var result = await new GetAccess().Execute(accountId, true);
+            var result = new GetAccess().Execute(accountId, true);
 
             if (result.IsFailed)
             {
