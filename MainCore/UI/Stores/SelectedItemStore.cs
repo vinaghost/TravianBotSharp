@@ -5,7 +5,7 @@ using System.Reactive.Linq;
 
 namespace MainCore.UI.Stores
 {
-    [RegisterAsViewModel]
+    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
     public class SelectedItemStore : ViewModelBase
     {
         public SelectedItemStore()
