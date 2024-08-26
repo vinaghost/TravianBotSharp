@@ -2,7 +2,7 @@
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsViewModel]
+    [RegisterSingleton]
     public class NoAccountViewModel : TabViewModelBase
     {
     }

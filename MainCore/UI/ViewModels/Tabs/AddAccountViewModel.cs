@@ -7,7 +7,7 @@ using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsViewModel]
+    [RegisterSingleton]
     public class AddAccountViewModel : TabViewModelBase
     {
         public AccountInput AccountInput { get; } = new();

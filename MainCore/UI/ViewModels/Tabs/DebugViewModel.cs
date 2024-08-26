@@ -11,7 +11,7 @@ using System.Text;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsViewModel]
+    [RegisterSingleton]
     public class DebugViewModel : AccountTabViewModelBase
     {
         private readonly LogSink _logSink;

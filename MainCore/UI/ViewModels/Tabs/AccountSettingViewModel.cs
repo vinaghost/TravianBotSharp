@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsViewModel]
+    [RegisterSingleton]
     public class AccountSettingViewModel : AccountTabViewModelBase
     {
         public AccountSettingInput AccountSettingInput { get; } = new();

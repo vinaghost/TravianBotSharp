@@ -2,7 +2,7 @@
 
 namespace MainCore.Tasks
 {
-    [RegisterAsTask]
+    [RegisterTransient]
     public class UpdateVillageTask : VillageTask
     {
         private readonly ITaskManager _taskManager;

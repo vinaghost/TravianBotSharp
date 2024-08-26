@@ -4,7 +4,7 @@ using ReactiveUI;
 
 namespace MainCore.UI.ViewModels
 {
-    [RegisterAsViewModel]
+    [RegisterSingleton]
     public class MainViewModel : ViewModelBase
     {
         private MainLayoutViewModel _mainLayoutViewModel;

@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace MainCore.Services
 {
-    [RegisterAsSingleton]
+    [RegisterSingleton]
     public sealed class UseragentManager : IUseragentManager
     {
         private List<string> _userAgentList;

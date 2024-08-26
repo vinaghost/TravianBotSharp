@@ -3,7 +3,7 @@ using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
-    [RegisterAsTask]
+    [RegisterTransient]
     public class StartFarmListTask : AccountTask
     {
         private readonly ITaskManager _taskManager;

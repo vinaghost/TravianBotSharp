@@ -2,7 +2,7 @@
 
 namespace MainCore.Tasks
 {
-    [RegisterAsTask]
+    [RegisterTransient]
     public class NpcTask : VillageTask
     {
         protected override async Task<Result> Execute()

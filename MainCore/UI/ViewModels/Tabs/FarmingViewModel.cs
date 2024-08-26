@@ -10,7 +10,7 @@ using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterAsViewModel]
+    [RegisterSingleton]
     public class FarmingViewModel : AccountTabViewModelBase
     {
         private readonly IValidator<FarmListSettingInput> _farmListSettingInputValidator;

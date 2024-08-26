@@ -3,7 +3,7 @@ using System.Net;
 
 namespace MainCore.Services
 {
-    [RegisterAsSingleton]
+    [RegisterSingleton]
     public class RestClientManager : IRestClientManager
     {
         private readonly Dictionary<int, RestClient> _database = new();
