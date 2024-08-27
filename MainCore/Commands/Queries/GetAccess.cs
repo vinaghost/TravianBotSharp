@@ -1,6 +1,4 @@
-﻿using MainCore.Commands.Checks;
-
-namespace MainCore.Commands.Queries
+﻿namespace MainCore.Commands.Queries
 {
     public class GetAccess
     {
@@ -13,12 +11,12 @@ namespace MainCore.Commands.Queries
             _logService = logService ?? Locator.Current.GetService<ILogService>();
         }
 
-        public async Task<Result<AccessDto>> Execute(AccountId accountId, bool ignoreSleepTime = false)
+        public Result<AccessDto> Execute(AccountId accountId, bool ignoreSleepTime = false)
         {
             var accesses = GetAccesses(accountId);
             var logger = _logService.GetLogger(accountId);
 
-            var access = await GetValidAccess(accesses, logger);
+            var access = GetValidAccess(accesses, logger);
 
             if (access is null) return Stop.AllAccessNotWorking;
 
@@ -34,23 +32,12 @@ namespace MainCore.Commands.Queries
             return access;
         }
 
-        private static async Task<AccessDto> GetValidAccess(List<AccessDto> accesses, ILogger logger)
+        private static AccessDto GetValidAccess(List<AccessDto> accesses, ILogger logger)
         {
-            foreach (var access in accesses)
-            {
-                logger.Information("Check connection {Proxy}", access.Proxy);
-                var valid = await new CheckProxyCommand().Execute(access);
-
-                if (!valid)
-                {
-                    logger.Warning("Connection {Proxy} cannot connect to travian.com", access.Proxy);
-                    continue;
-                }
-
-                logger.Information("Connection {Proxy} is working", access.Proxy);
-                return access;
-            }
-            return null;
+            if (accesses.Count == 0) return null;
+            var access = accesses[0];
+            logger.Information("Using connection {Proxy}", access.Proxy);
+            return access;
         }
 
         private List<AccessDto> GetAccesses(AccountId accountId)

@@ -1,6 +1,6 @@
 ﻿using MainCore.Commands.Abstract;
 
-namespace MainCore.Commands.Misc
+namespace MainCore.Commands.Checks
 {
     public class CheckQuestCommand : QuestCommand
     {

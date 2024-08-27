@@ -64,7 +64,14 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
-            AccountInput.Accesses.Add(AccessInput.Clone());
+            if (AccountInput.Accesses.Count == 0)
+            {
+                AccountInput.Accesses.Add(AccessInput.Clone());
+            }
+            else
+            {
+                _dialogService.ShowMessageBox("Error", "Only one access is allowed because new rule. Please check TBS's discord server");
+            }
         }
 
         private void EditAccessHandler()
