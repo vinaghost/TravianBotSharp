@@ -30,12 +30,26 @@ namespace MainCore.Commands.UI.Build
             var oldIndex = jobs.SelectedIndex;
 
             if (!IsValid(move, oldIndex, jobs.Count)) return;
+
             var newIndex = GetNewIndex(move, oldIndex, jobs.Count);
-
             var oldJob = jobs[oldIndex];
-            var newJob = jobs[newIndex];
 
-            Move(new JobId(oldJob.Id), new JobId(newJob.Id));
+            switch (move)
+            {
+                case MoveEnums.Up:
+                case MoveEnums.Down:
+                    Move(new JobId(oldJob.Id), new JobId(jobs[newIndex].Id));
+                    break;
+
+                case MoveEnums.Top:
+                    MoveTop(new JobId(oldJob.Id));
+                    break;
+
+                case MoveEnums.Bottom:
+                    MoveBottom(new JobId(oldJob.Id));
+                    break;
+            }
+
             await _mediator.Publish(new JobUpdated(accountId, villageId));
             jobs.SelectedIndex = newIndex;
         }
@@ -96,6 +110,53 @@ namespace MainCore.Commands.UI.Build
 
             (jobs[0].Position, jobs[1].Position) = (jobs[1].Position, jobs[0].Position);
             context.UpdateRange(jobs);
+            context.SaveChanges();
+        }
+
+        private void MoveTop(JobId jobId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var job = context.Jobs
+                .Where(x => x.Id == jobId.Value)
+                .FirstOrDefault();
+
+            if (job is null) return;
+
+            var currentPosition = job.Position;
+
+            context.Jobs
+                .Where(x => x.VillageId == job.VillageId)
+                .Where(x => x.Position < currentPosition)
+                .ExecuteUpdate(x => x.SetProperty(y => y.Position, y => y.Position + 1));
+
+            job.Position = 0;
+            context.Update(job);
+            context.SaveChanges();
+        }
+
+        private void MoveBottom(JobId jobId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var job = context.Jobs
+                .Where(x => x.Id == jobId.Value)
+                .FirstOrDefault();
+
+            if (job is null) return;
+
+            var currentPosition = job.Position;
+
+            context.Jobs
+                .Where(x => x.VillageId == job.VillageId)
+                .Where(x => x.Position > currentPosition)
+                .ExecuteUpdate(x => x.SetProperty(y => y.Position, y => y.Position - 1));
+
+            job.Position = context.Jobs
+                .Where(x => x.VillageId == job.VillageId)
+                .Max(x => x.Position) + 1;
+
+            context.Update(job);
             context.SaveChanges();
         }
     }

@@ -5,7 +5,7 @@ using System.Reactive.Concurrency;
 
 namespace MainCore.UI
 {
-    [RegisterAsViewModel]
+    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
     public class ObservableExceptionHandler : IObserver<Exception>
     {
         private readonly IDialogService _dialogService;

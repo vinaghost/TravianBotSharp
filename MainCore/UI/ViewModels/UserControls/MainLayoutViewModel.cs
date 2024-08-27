@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
-    [RegisterAsViewModel]
+    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
     public class MainLayoutViewModel : ViewModelBase
     {
         private readonly IMediator _mediator;
