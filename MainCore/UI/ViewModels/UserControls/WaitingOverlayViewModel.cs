@@ -4,7 +4,7 @@ using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
-    [RegisterAsViewModel]
+    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
     public class WaitingOverlayViewModel : ViewModelBase
     {
         public WaitingOverlayViewModel()

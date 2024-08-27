@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
-    [RegisterAsViewModel]
+    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
     public class VillageSettingViewModel : VillageTabViewModelBase
     {
         public VillageSettingInput VillageSettingInput { get; } = new();

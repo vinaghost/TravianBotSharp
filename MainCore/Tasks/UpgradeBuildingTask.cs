@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace MainCore.Tasks
 {
-    [RegisterAsTask]
+    [RegisterTransient(Registration = RegistrationStrategy.Self)]
     public class UpgradeBuildingTask : VillageTask
     {
         private readonly ILogService _logService;

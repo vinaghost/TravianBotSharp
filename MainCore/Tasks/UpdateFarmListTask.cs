@@ -3,7 +3,7 @@ using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
-    [RegisterAsTask]
+    [RegisterTransient(Registration = RegistrationStrategy.Self)]
     public class UpdateFarmListTask : AccountTask
     {
         protected override async Task<Result> Execute()
