@@ -50,14 +50,19 @@ namespace MainCore.Commands.UI.Build
         private async Task NormalBuild(AccountId accountId, VillageId villageId, NormalBuildPlan plan)
         {
             var buildings = new GetBuildings().Execute(villageId);
-            var result = CheckRequirements(buildings, plan);
-            if (result.IsFailed)
-            {
-                _dialogService.ShowMessageBox("Error", result.Errors[0].Message);
-                return;
-            }
 
-            Validate(buildings, plan);
+            var building = buildings.Find(x => x.Location == plan.Location);
+
+            if (building is null)
+            {
+                var result = CheckRequirements(buildings, plan);
+                if (result.IsFailed)
+                {
+                    _dialogService.ShowMessageBox("Error", result.Errors[0].Message);
+                    return;
+                }
+                Validate(buildings, plan);
+            }
 
             new AddJobCommand().ToBottom(villageId, plan);
             await _mediator.Publish(new JobUpdated(accountId, villageId));
