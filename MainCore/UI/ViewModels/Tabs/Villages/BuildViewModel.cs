@@ -328,13 +328,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             BuildingEnums.Site,
             BuildingEnums.Blacksmith,
-            BuildingEnums.GreatBarracks,
-            BuildingEnums.GreatStable,
             BuildingEnums.CityWall,
             BuildingEnums.EarthWall,
             BuildingEnums.Palisade,
-            BuildingEnums.GreatWarehouse,
-            BuildingEnums.GreatGranary,
             BuildingEnums.WW,
             BuildingEnums.StoneWall,
             BuildingEnums.MakeshiftWall,
