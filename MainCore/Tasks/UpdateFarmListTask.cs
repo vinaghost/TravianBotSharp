@@ -11,6 +11,9 @@ namespace MainCore.Tasks
             Result result;
             result = await new ToFarmListPageCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            await new UpdateFarmlistCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
+
             return Result.Ok();
         }
 
