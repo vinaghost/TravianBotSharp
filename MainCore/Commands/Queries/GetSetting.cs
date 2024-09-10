@@ -65,7 +65,7 @@
                    .Select(x => x.Value)
                    .ToList();
 
-            if (settingValues.Count != 2) return 0;
+            if (settingValues.Count != 2) return 1000;
             var min = settingValues.Min();
             var max = settingValues.Max();
 

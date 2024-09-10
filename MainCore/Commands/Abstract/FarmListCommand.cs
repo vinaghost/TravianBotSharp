@@ -21,5 +21,14 @@
             var id = flId.GetAttributeValue("data-list", "0");
             return new FarmId(id.ParseInt());
         }
+
+        protected static string GetName(HtmlNode node)
+        {
+            var flName = node
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("name"));
+            if (flName is null) return null;
+            return flName.InnerText.Trim();
+        }
     }
 }
