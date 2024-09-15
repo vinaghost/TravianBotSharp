@@ -29,7 +29,7 @@ namespace MainCore.Commands.Features.ClaimQuest
             return Result.Ok();
         }
 
-        private async Task<Result> ClaimAccountQuest(AccountId accountId, IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
+        private static async Task<Result> ClaimAccountQuest(AccountId accountId, IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
         {
             Result result;
             result = await new SwitchTabCommand().Execute(chromeBrowser, 1, cancellationToken);

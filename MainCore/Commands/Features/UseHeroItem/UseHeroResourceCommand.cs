@@ -97,7 +97,7 @@ namespace MainCore.Commands.Features.UseHeroItem
             return Result.Ok();
         }
 
-        private async Task<Result> EnterAmount(IChromeBrowser chromeBrowser, long amount)
+        private static async Task<Result> EnterAmount(IChromeBrowser chromeBrowser, long amount)
         {
             var html = chromeBrowser.Html;
             var node = GetAmountBox(html);
