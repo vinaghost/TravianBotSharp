@@ -30,9 +30,9 @@
       },
       "HtmlAgilityPack": {
         "type": "Direct",
-        "requested": "[1.11.60, )",
-        "resolved": "1.11.60",
-        "contentHash": "7Uzaf1Mxeuxne33LpTZfSsuRW4sRRX6FWMolOSxXcaAwcKvFevH2E+P6tb4dMWhdyUdBfi0N0yyPZ8hqodfEYg=="
+        "requested": "[1.11.65, )",
+        "resolved": "1.11.65",
+        "contentHash": "Skse4MVlRcHHyP88x+v/uQrMxTPaBIwQodiQ/y59jxs8vHlqTR5M3jt5Wk+csYFnR4rX6I4ndqDji2M8p9kAzw=="
       },
       "Humanizer.Core": {
         "type": "Direct",
@@ -134,20 +134,20 @@
       },
       "Selenium.Support": {
         "type": "Direct",
-        "requested": "[4.23.0, )",
-        "resolved": "4.23.0",
-        "contentHash": "ykT3saViorD54A6Eizw6CnNp8SuuIx4E01QhtEnZVrFvgH6P6mSgpCgfDlCX2RNwbGnrpkeoG5eV1dOGmzP12w==",
+        "requested": "[4.24.0, )",
+        "resolved": "4.24.0",
+        "contentHash": "VA9r7KZH6Gnw1jthN18c2dat8ixQw7vd5KTT7D8106b5M+vI6ALvBLaX0rtU1846D63Ac/+gG0mi6xn6E1jRxQ==",
         "dependencies": {
-          "Selenium.WebDriver": "4.23.0"
+          "Selenium.WebDriver": "4.24.0"
         }
       },
       "Selenium.WebDriver": {
         "type": "Direct",
-        "requested": "[4.23.0, )",
-        "resolved": "4.23.0",
-        "contentHash": "jQxNGGuWeSw/+xeZVv+0TL6pVnKeLsBYlxvADY7iGyq1yjgtUFNxGK01t0Op6+FMVdFLcMysL4Z0VdTvzFn0eA==",
+        "requested": "[4.24.0, )",
+        "resolved": "4.24.0",
+        "contentHash": "pwpNZQPCtDFH07nCliNMT/YRR5NhlPmxsrh/9e7PQsI/TfSUBy/VEdA6QwDY2WybzVZ6SlYSu1bv3cWKkiN8/w==",
         "dependencies": {
-          "Newtonsoft.Json": "13.0.1"
+          "System.Text.Json": "8.0.4"
         }
       },
       "Serilog": {
@@ -549,11 +549,6 @@
         "dependencies": {
           "System.Runtime.CompilerServices.Unsafe": "6.0.0"
         }
-      },
-      "Newtonsoft.Json": {
-        "type": "Transitive",
-        "resolved": "13.0.1",
-        "contentHash": "ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A=="
       },
       "Serilog.Extensions.Logging": {
         "type": "Transitive",

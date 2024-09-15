@@ -58,8 +58,8 @@
       },
       "HtmlAgilityPack": {
         "type": "Transitive",
-        "resolved": "1.11.60",
-        "contentHash": "7Uzaf1Mxeuxne33LpTZfSsuRW4sRRX6FWMolOSxXcaAwcKvFevH2E+P6tb4dMWhdyUdBfi0N0yyPZ8hqodfEYg=="
+        "resolved": "1.11.65",
+        "contentHash": "Skse4MVlRcHHyP88x+v/uQrMxTPaBIwQodiQ/y59jxs8vHlqTR5M3jt5Wk+csYFnR4rX6I4ndqDji2M8p9kAzw=="
       },
       "Humanizer.Core": {
         "type": "Transitive",
@@ -448,11 +448,6 @@
         "resolved": "1.1.39",
         "contentHash": "8PZKqw9QOcu42xk8puY4P1+EXHL9YGOR9b7qhaYx5cILHul456H073tj99vyPcCt0W0781T9RwHqkx507ZyUpQ=="
       },
-      "Newtonsoft.Json": {
-        "type": "Transitive",
-        "resolved": "13.0.1",
-        "contentHash": "ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A=="
-      },
       "OpenQA.Selenium.Chrome.ChromeDriverExtensions": {
         "type": "Transitive",
         "resolved": "1.2.0",
@@ -484,18 +479,18 @@
       },
       "Selenium.Support": {
         "type": "Transitive",
-        "resolved": "4.23.0",
-        "contentHash": "ykT3saViorD54A6Eizw6CnNp8SuuIx4E01QhtEnZVrFvgH6P6mSgpCgfDlCX2RNwbGnrpkeoG5eV1dOGmzP12w==",
+        "resolved": "4.24.0",
+        "contentHash": "VA9r7KZH6Gnw1jthN18c2dat8ixQw7vd5KTT7D8106b5M+vI6ALvBLaX0rtU1846D63Ac/+gG0mi6xn6E1jRxQ==",
         "dependencies": {
-          "Selenium.WebDriver": "4.23.0"
+          "Selenium.WebDriver": "4.24.0"
         }
       },
       "Selenium.WebDriver": {
         "type": "Transitive",
-        "resolved": "4.23.0",
-        "contentHash": "jQxNGGuWeSw/+xeZVv+0TL6pVnKeLsBYlxvADY7iGyq1yjgtUFNxGK01t0Op6+FMVdFLcMysL4Z0VdTvzFn0eA==",
+        "resolved": "4.24.0",
+        "contentHash": "pwpNZQPCtDFH07nCliNMT/YRR5NhlPmxsrh/9e7PQsI/TfSUBy/VEdA6QwDY2WybzVZ6SlYSu1bv3cWKkiN8/w==",
         "dependencies": {
-          "Newtonsoft.Json": "13.0.1"
+          "System.Text.Json": "8.0.4"
         }
       },
       "Serilog": {
@@ -645,7 +640,7 @@
           "FluentResults": "[3.16.0, )",
           "FluentValidation": "[11.9.2, )",
           "FluentValidation.DependencyInjectionExtensions": "[11.9.2, )",
-          "HtmlAgilityPack": "[1.11.60, )",
+          "HtmlAgilityPack": "[1.11.65, )",
           "Humanizer.Core": "[2.14.1, )",
           "Injectio": "[3.1.0, )",
           "MediatR": "[12.2.0, )",
@@ -655,8 +650,8 @@
           "Polly": "[7.2.4, )",
           "ReactiveUI": "[19.6.1, )",
           "Riok.Mapperly": "[3.4.0, )",
-          "Selenium.Support": "[4.23.0, )",
-          "Selenium.WebDriver": "[4.23.0, )",
+          "Selenium.Support": "[4.24.0, )",
+          "Selenium.WebDriver": "[4.24.0, )",
           "Serilog": "[3.1.1, )",
           "Serilog.Extensions.Hosting": "[7.0.0, )",
           "Serilog.Sinks.File": "[5.0.0, )",
