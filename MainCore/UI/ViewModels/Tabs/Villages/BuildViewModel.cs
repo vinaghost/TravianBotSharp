@@ -266,7 +266,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             _dialogService.ShowMessageBox("Information", "Job list exported");
         }
 
-        private List<ListBoxItem> GetBuildingItems(VillageId villageId)
+        private static List<ListBoxItem> GetBuildingItems(VillageId villageId)
         {
             var items = new GetBuildings().Execute(villageId).Select(x => ToListBoxItem(x)).ToList();
             return items;

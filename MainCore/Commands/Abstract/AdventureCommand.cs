@@ -2,7 +2,7 @@
 {
     public abstract class AdventureCommand
     {
-        public HtmlNode GetHeroAdventure(HtmlDocument doc)
+        public static HtmlNode GetHeroAdventure(HtmlDocument doc)
         {
             var adventure = doc.DocumentNode
                 .Descendants("a")
@@ -10,7 +10,7 @@
             return adventure;
         }
 
-        public bool CanStartAdventure(HtmlDocument doc)
+        public static bool CanStartAdventure(HtmlDocument doc)
         {
             var status = doc.DocumentNode
                 .Descendants("div")

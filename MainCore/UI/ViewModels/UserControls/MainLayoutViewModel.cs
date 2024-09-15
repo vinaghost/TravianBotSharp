@@ -308,7 +308,7 @@ namespace MainCore.UI.ViewModels.UserControls
             return account;
         }
 
-        private string LoadVersionHandler()
+        private static string LoadVersionHandler()
         {
             var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
             var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
