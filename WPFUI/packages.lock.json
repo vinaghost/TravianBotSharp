@@ -4,31 +4,31 @@
     "net6.0-windows10.0.19041": {
       "MaterialDesignThemes": {
         "type": "Direct",
-        "requested": "[4.9.0, )",
-        "resolved": "4.9.0",
-        "contentHash": "Bp9Auw70j+9V7WsUMT4pc8ulVzfL0Eav/tyGgICDirxxhKJwhqtC/6PRkTUm+R1t9611xiDuk5pSUNdDV6vfOQ==",
+        "requested": "[5.1.0, )",
+        "resolved": "5.1.0",
+        "contentHash": "k5lO0NqhExrCLnFWnapI+a2XvOOm/Mwz92GwUq4CvNrahMMPx9puALE8VJlLNeNxUYjWf2+PAKPGpmr1u1QDfg==",
         "dependencies": {
-          "MaterialDesignColors": "2.1.4",
+          "MaterialDesignColors": "3.1.0",
           "Microsoft.Xaml.Behaviors.Wpf": "1.1.39"
         }
       },
       "ReactiveUI.WPF": {
         "type": "Direct",
-        "requested": "[19.6.1, )",
-        "resolved": "19.6.1",
-        "contentHash": "4FB9WgVtCae4IG8DxNm8DrVP7T9ivnuVR8s86iuHAro/EiY+9PBGNjdp+/L7shhvSO5o8MKBW5aiubN76HBOtg==",
+        "requested": "[20.1.1, )",
+        "resolved": "20.1.1",
+        "contentHash": "/xWQwprSkd5Bwa/xmlN2dZL93M53Avv5ok4s2FFg3GGzwnroeYVP/T785/J1S86x70e+5d5j2IwFlNyCTFoCIQ==",
         "dependencies": {
-          "DynamicData": "8.3.27",
-          "ReactiveUI": "19.6.1",
-          "Splat": "14.8.12",
+          "DynamicData": "8.4.1",
+          "ReactiveUI": "20.1.1",
+          "Splat": "15.1.1",
           "System.ComponentModel.Annotations": "5.0.0",
           "System.Text.Json": "8.0.3"
         }
       },
       "DynamicData": {
         "type": "Transitive",
-        "resolved": "8.3.27",
-        "contentHash": "m5PGnTbFCE04xrH3peeNtiHrXJM5Vxk6Sy9bwXm8ahZ+/ZavqYb8XstBD1GFqcU7g6f8YD3zPcI7XkkW3Y1Ang==",
+        "resolved": "8.4.1",
+        "contentHash": "Mn1+fU/jqxgONEJq8KLQPGWEi7g/hUVTbjZyn4QM0sWWDAVOHPO9WjXWORSykwdfg/6S3GM15qsfz+2EvO+QAQ==",
         "dependencies": {
           "System.Reactive": "6.0.0"
         }
@@ -76,8 +76,8 @@
       },
       "MaterialDesignColors": {
         "type": "Transitive",
-        "resolved": "2.1.4",
-        "contentHash": "C4Oy+qkjMoMPoZKyqYdCnIYtK8c0OSIHmNP73Vgc69NjiUG093xTkE7W/Ks54cTDS7fmWOtUHfwISTVTtb/YKg=="
+        "resolved": "3.1.0",
+        "contentHash": "J2mpZBWx0wArrMCK8E0Cqfsy+Wh3iRDVnznp5/84B1KcnTKI9u9Pyt2zN0oSQGsa6NhvwdUErbhE3jJd6iRTxw=="
       },
       "MediatR": {
         "type": "Transitive",
@@ -511,11 +511,11 @@
       },
       "ReactiveUI": {
         "type": "Transitive",
-        "resolved": "19.6.1",
-        "contentHash": "F7SSjALY+cFgfJbK/zygE7vA6kA0/JpGRMMmVrhgILMaC/guKFDCb8jBJmd0tYJNTesKJ1YLrHaH9taaH8IzgQ==",
+        "resolved": "20.1.1",
+        "contentHash": "9hNPknWjijnaSWs6auypoXqUptPZcRpUypF+cf1zD50fgW+SEoQda502N3fVZ2eWPcaiUad+z6GaLwOWmUVHNw==",
         "dependencies": {
-          "DynamicData": "8.3.27",
-          "Splat": "14.8.12",
+          "DynamicData": "8.4.1",
+          "Splat": "15.1.1",
           "System.ComponentModel.Annotations": "5.0.0",
           "System.Text.Json": "8.0.3"
         }
@@ -585,16 +585,16 @@
       },
       "Splat": {
         "type": "Transitive",
-        "resolved": "14.8.12",
-        "contentHash": "7dTp+hgC2CS4DqjHtgkeS7hsECbpD09ukGwxL63HVM/aih9zseIaIjWhS6sQWlWw5GDvli8bVMHeZ1dekgmuvQ=="
+        "resolved": "15.1.1",
+        "contentHash": "RHDTdF90FwVbRia2cmuIzkiVoETqnXSB2dDBBi/I35HWXqv4OKGqoMcfcd6obMvO2OmmY5PjU1M62K8LkJafAA=="
       },
       "Splat.Microsoft.Extensions.DependencyInjection": {
         "type": "Transitive",
-        "resolved": "14.8.12",
-        "contentHash": "VOU/ii54zIM2Km0ulnoSQEu4qn1VZjElKgjS7pgqbwD3ponvFZfW1+ZkYKM9g51I7iL0c5uW1dkKTwZBLCkNJA==",
+        "resolved": "15.1.1",
+        "contentHash": "xCo6rgDfqZ/zpVccpvMLMEDP9wJHhOkzrS467JEGrGoCPuws3EBrvkjdHfWgSBLRVSrROUbgSOzll1CdB0PYxA==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "Splat": "14.8.12"
+          "Splat": "15.1.1"
         }
       },
       "SQLitePCLRaw.bundle_e_sqlite3": {
@@ -696,7 +696,7 @@
           "Microsoft.Extensions.Hosting": "[8.0.0, )",
           "OpenQA.Selenium.Chrome.ChromeDriverExtensions": "[1.2.0, )",
           "Polly": "[8.4.1, )",
-          "ReactiveUI": "[19.6.1, )",
+          "ReactiveUI": "[20.1.1, )",
           "Riok.Mapperly": "[3.6.0, )",
           "Selenium.Support": "[4.24.0, )",
           "Selenium.WebDriver": "[4.24.0, )",
@@ -704,8 +704,8 @@
           "Serilog.Extensions.Hosting": "[8.0.0, )",
           "Serilog.Sinks.File": "[6.0.0, )",
           "Serilog.Sinks.Map": "[2.0.0, )",
-          "Splat": "[14.8.12, )",
-          "Splat.Microsoft.Extensions.DependencyInjection": "[14.8.12, )"
+          "Splat": "[15.1.1, )",
+          "Splat.Microsoft.Extensions.DependencyInjection": "[15.1.1, )"
         }
       }
     },

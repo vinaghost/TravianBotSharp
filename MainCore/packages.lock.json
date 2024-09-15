@@ -119,12 +119,12 @@
       },
       "ReactiveUI": {
         "type": "Direct",
-        "requested": "[19.6.1, )",
-        "resolved": "19.6.1",
-        "contentHash": "F7SSjALY+cFgfJbK/zygE7vA6kA0/JpGRMMmVrhgILMaC/guKFDCb8jBJmd0tYJNTesKJ1YLrHaH9taaH8IzgQ==",
+        "requested": "[20.1.1, )",
+        "resolved": "20.1.1",
+        "contentHash": "9hNPknWjijnaSWs6auypoXqUptPZcRpUypF+cf1zD50fgW+SEoQda502N3fVZ2eWPcaiUad+z6GaLwOWmUVHNw==",
         "dependencies": {
-          "DynamicData": "8.3.27",
-          "Splat": "14.8.12",
+          "DynamicData": "8.4.1",
+          "Splat": "15.1.1",
           "System.ComponentModel.Annotations": "5.0.0",
           "System.Text.Json": "8.0.3"
         }
@@ -198,18 +198,18 @@
       },
       "Splat": {
         "type": "Direct",
-        "requested": "[14.8.12, )",
-        "resolved": "14.8.12",
-        "contentHash": "7dTp+hgC2CS4DqjHtgkeS7hsECbpD09ukGwxL63HVM/aih9zseIaIjWhS6sQWlWw5GDvli8bVMHeZ1dekgmuvQ=="
+        "requested": "[15.1.1, )",
+        "resolved": "15.1.1",
+        "contentHash": "RHDTdF90FwVbRia2cmuIzkiVoETqnXSB2dDBBi/I35HWXqv4OKGqoMcfcd6obMvO2OmmY5PjU1M62K8LkJafAA=="
       },
       "Splat.Microsoft.Extensions.DependencyInjection": {
         "type": "Direct",
-        "requested": "[14.8.12, )",
-        "resolved": "14.8.12",
-        "contentHash": "VOU/ii54zIM2Km0ulnoSQEu4qn1VZjElKgjS7pgqbwD3ponvFZfW1+ZkYKM9g51I7iL0c5uW1dkKTwZBLCkNJA==",
+        "requested": "[15.1.1, )",
+        "resolved": "15.1.1",
+        "contentHash": "xCo6rgDfqZ/zpVccpvMLMEDP9wJHhOkzrS467JEGrGoCPuws3EBrvkjdHfWgSBLRVSrROUbgSOzll1CdB0PYxA==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "Splat": "14.8.12"
+          "Splat": "15.1.1"
         }
       },
       "StronglyTypedId": {
@@ -220,8 +220,8 @@
       },
       "DynamicData": {
         "type": "Transitive",
-        "resolved": "8.3.27",
-        "contentHash": "m5PGnTbFCE04xrH3peeNtiHrXJM5Vxk6Sy9bwXm8ahZ+/ZavqYb8XstBD1GFqcU7g6f8YD3zPcI7XkkW3Y1Ang==",
+        "resolved": "8.4.1",
+        "contentHash": "Mn1+fU/jqxgONEJq8KLQPGWEi7g/hUVTbjZyn4QM0sWWDAVOHPO9WjXWORSykwdfg/6S3GM15qsfz+2EvO+QAQ==",
         "dependencies": {
           "System.Reactive": "6.0.0"
         }
