@@ -25,10 +25,6 @@ namespace MainCore.DTO
 
         private static partial Farm ToEntity(this FarmDto dto);
 
-        public static partial IQueryable<FarmDto> ToDto(this IQueryable<Farm> entities);
-
-        private static FarmId ToFarmId(this int value) => new(value);
-
         private static int ToInt(this FarmId farmId) => farmId.Value;
     }
 }

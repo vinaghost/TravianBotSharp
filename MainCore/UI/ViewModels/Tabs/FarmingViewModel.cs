@@ -156,7 +156,7 @@ namespace MainCore.UI.ViewModels.Tabs
             await _mediator.Publish(new FarmListUpdated(AccountId));
         }
 
-        private Dictionary<AccountSettingEnums, int> LoadSettingHandler(AccountId accountId)
+        private static Dictionary<AccountSettingEnums, int> LoadSettingHandler(AccountId accountId)
         {
             var items = new GetSetting().Get(accountId);
             return items;
