@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton(Registration=RegistrationStrategy.ImplementedInterfaces)]
+    [RegisterSingleton(Registration = RegistrationStrategy.ImplementedInterfaces)]
     public sealed class LogService : ILogService
     {
         private readonly Dictionary<AccountId, ILogger> _loggers = new();
@@ -62,7 +62,7 @@ namespace MainCore.Services
             return logger;
         }
 
-        private string GetVersion()
+        private static string GetVersion()
         {
             var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
             var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);

@@ -72,7 +72,7 @@ namespace MainCore.UI.ViewModels.Tabs
             _dialogService.ShowMessageBox("Information", "Added accounts");
         }
 
-        private List<AccountDetailDto> ParseHandler(string input)
+        private static List<AccountDetailDto> ParseHandler(string input)
         {
             if (string.IsNullOrEmpty(input)) return new List<AccountDetailDto>();
 

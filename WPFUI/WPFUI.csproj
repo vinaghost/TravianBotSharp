@@ -24,8 +24,8 @@
     <Content Include="favicon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
-    <PackageReference Include="ReactiveUI.WPF" Version="19.6.1" />    
+    <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
+    <PackageReference Include="ReactiveUI.WPF" Version="20.1.1" />    
   </ItemGroup>
 
   <ItemGroup>
