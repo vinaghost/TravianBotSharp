@@ -41,7 +41,7 @@
                 </ListView>
             </Border>
             <Border Style="{DynamicResource Box}"  Grid.Row="2" Grid.Column="1">
-                <TextBox x:Name="LogView" IsReadOnly="True" />
+                <TextBox x:Name="LogView" IsReadOnly="True" VerticalContentAlignment="Top" />
             </Border>
         </Grid>
 
