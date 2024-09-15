@@ -477,14 +477,6 @@
           "System.Text.Json": "8.0.3"
         }
       },
-      "RestSharp": {
-        "type": "Transitive",
-        "resolved": "110.2.0",
-        "contentHash": "FXGw0IMcqY7yO/hzS9QrD3iNswNgb9UxJnxWmfOxmGs4kRlZWqdtBoGPLuhlbgsDzX1RFo4WKui8TGGKXWKalw==",
-        "dependencies": {
-          "System.Text.Json": "7.0.2"
-        }
-      },
       "Riok.Mapperly": {
         "type": "Transitive",
         "resolved": "3.4.0",
@@ -662,7 +654,6 @@
           "OpenQA.Selenium.Chrome.ChromeDriverExtensions": "[1.2.0, )",
           "Polly": "[7.2.4, )",
           "ReactiveUI": "[19.6.1, )",
-          "RestSharp": "[110.2.0, )",
           "Riok.Mapperly": "[3.4.0, )",
           "Selenium.Support": "[4.23.0, )",
           "Selenium.WebDriver": "[4.23.0, )",

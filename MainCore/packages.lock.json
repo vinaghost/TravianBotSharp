@@ -126,15 +126,6 @@
           "System.Text.Json": "8.0.3"
         }
       },
-      "RestSharp": {
-        "type": "Direct",
-        "requested": "[110.2.0, )",
-        "resolved": "110.2.0",
-        "contentHash": "FXGw0IMcqY7yO/hzS9QrD3iNswNgb9UxJnxWmfOxmGs4kRlZWqdtBoGPLuhlbgsDzX1RFo4WKui8TGGKXWKalw==",
-        "dependencies": {
-          "System.Text.Json": "7.0.2"
-        }
-      },
       "Riok.Mapperly": {
         "type": "Direct",
         "requested": "[3.4.0, )",
