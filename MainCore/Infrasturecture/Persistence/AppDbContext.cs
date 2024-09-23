@@ -1,10 +1,7 @@
 ﻿using StronglyTypedIds;
 using System.Collections.Immutable;
 
-[assembly: StronglyTypedIdDefaults(
-    backingType: StronglyTypedIdBackingType.Int,
-    converters: StronglyTypedIdConverter.SystemTextJson |
-                StronglyTypedIdConverter.EfCoreValueConverter)]
+[assembly: StronglyTypedIdDefaults(backingType: StronglyTypedIdBackingType.Int, converters: StronglyTypedIdConverter.None)]
 
 namespace MainCore.Infrasturecture.Persistence
 {
