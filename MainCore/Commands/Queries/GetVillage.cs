@@ -1,13 +1,8 @@
 ﻿namespace MainCore.Commands.Queries
 {
-    public class GetVillage
+    public class GetVillage(IDbContextFactory<AppDbContext> contextFactory = null)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
-        public GetVillage(IDbContextFactory<AppDbContext> contextFactory = null)
-        {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-        }
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
 
         public List<VillageId> All(AccountId accountId)
         {
@@ -15,9 +10,7 @@
 
             var villages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
-                .Select(x => x.Id)
-                .AsEnumerable()
-                .Select(x => new VillageId(x))
+                .Select(x => new VillageId(x.Id))
                 .ToList();
             return villages;
         }
@@ -28,11 +21,8 @@
 
             var missingBuildingVillages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
-                .Include(x => x.Buildings)
                 .Where(x => x.Buildings.Count != 40)
-                .Select(x => x.Id)
-                .AsEnumerable()
-                .Select(x => new VillageId(x))
+                .Select(x => new VillageId(x.Id))
                 .ToList();
             return missingBuildingVillages;
         }
@@ -44,9 +34,7 @@
             var village = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .Where(x => x.IsActive)
-                .Select(x => x.Id)
-                .AsEnumerable()
-                .Select(x => new VillageId(x))
+                .Select(x => new VillageId(x.Id))
                 .FirstOrDefault();
             return village;
         }
@@ -58,14 +46,12 @@
                 .Where(x => x.AccountId == accountId.Value)
                 .Where(x => !x.IsActive)
                 .OrderBy(x => x.Name)
-                .Select(x => x.Id)
-                .AsEnumerable()
-                .Select(x => new VillageId(x))
+                .Select(x => new VillageId(x.Id))
                 .ToList();
             return villages;
         }
 
-        public List<VillageId> Job(AccountId accountId)
+        public List<VillageId> HasBuildingJob(AccountId accountId)
         {
             var types = new List<JobTypeEnums>() {
                 JobTypeEnums.NormalBuild,
@@ -74,8 +60,7 @@
             using var context = _contextFactory.CreateDbContext();
             var hasBuildingJobVillages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
-                .Include(x => x.Jobs.Where(x => types.Contains(x.Type)))
-                .Where(x => x.Jobs.Any())
+                .Where(x => x.Jobs.Any(x => types.Contains(x.Type)))
                 .Select(x => x.Id)
                 .AsEnumerable()
                 .Select(x => new VillageId(x))

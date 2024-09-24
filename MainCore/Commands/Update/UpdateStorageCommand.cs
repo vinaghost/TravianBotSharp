@@ -2,16 +2,10 @@
 
 namespace MainCore.Commands.Update
 {
-    public class UpdateStorageCommand
+    public class UpdateStorageCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IMediator _mediator;
-
-        public UpdateStorageCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null)
-        {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
-        }
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+        private readonly IMediator _mediator = mediator ?? Locator.Current.GetService<IMediator>();
 
         public async Task Execute(IChromeBrowser chromeBrowser, AccountId accountId, VillageId villageId, CancellationToken cancellationToken)
         {

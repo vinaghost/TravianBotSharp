@@ -14,7 +14,7 @@ namespace MainCore
 
         public static IServiceCollection AddCoreServices(this IServiceCollection services)
         {
-            services.AddDbContextFactory<AppDbContext>(
+            services.AddPooledDbContextFactory<AppDbContext>(
                 options => options
 #if DEBUG
                     .EnableSensitiveDataLogging()

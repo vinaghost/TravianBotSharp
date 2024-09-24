@@ -1,13 +1,8 @@
 ﻿namespace MainCore.Commands.Queries
 {
-    public class IsPlusActive
+    public class IsPlusActive(IDbContextFactory<AppDbContext> contextFactory = null)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
-        public IsPlusActive(IDbContextFactory<AppDbContext> contextFactory = null)
-        {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-        }
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
 
         public bool Execute(AccountId accountId)
         {

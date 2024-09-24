@@ -50,12 +50,9 @@ namespace MainCore.Commands.Features.StartFarmList
 
             var village = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
-                .Include(x => x.Buildings.Where(x => x.Type == BuildingEnums.RallyPoint && x.Level > 0))
-                .Where(x => x.Buildings.Count > 0)
+                .Where(x => x.Buildings.Any(x => x.Type == BuildingEnums.RallyPoint && x.Level > 0))
                 .OrderByDescending(x => x.IsActive)
-                .Select(x => x.Id)
-                .AsEnumerable()
-                .Select(x => new VillageId(x))
+                .Select(x => new VillageId(x.Id))
                 .FirstOrDefault();
             return village;
         }

@@ -1,15 +1,9 @@
 ﻿namespace MainCore.Commands.Update
 {
-    public class UpdateAccountInfoCommand
+    public class UpdateAccountInfoCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IMediator _mediator;
-
-        public UpdateAccountInfoCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null)
-        {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
-        }
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+        private readonly IMediator _mediator = mediator ?? Locator.Current.GetService<IMediator>();
 
         public async Task Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
         {
@@ -22,11 +16,15 @@
 
         private static AccountInfoDto Get(HtmlDocument doc)
         {
+            var gold = GetGold(doc);
+            var silver = GetSilver(doc);
+            var hasPlusAccount = HasPlusAccount(doc);
+
             var dto = new AccountInfoDto()
             {
-                Gold = GetGold(doc),
-                Silver = GetSilver(doc),
-                HasPlusAccount = HasPlusAccount(doc),
+                Gold = gold,
+                Silver = silver,
+                HasPlusAccount = hasPlusAccount,
                 Tribe = TribeEnums.Any,
             };
             return dto;
