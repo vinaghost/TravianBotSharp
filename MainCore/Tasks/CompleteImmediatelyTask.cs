@@ -51,13 +51,13 @@ namespace MainCore.Tasks
             var confirmButton = GetConfirmButton(html);
             if (confirmButton is null) return Retry.ButtonNotFound("complete now");
 
-            var oldQueueCount = new CountQueueBuilding().Execute(_chromeBrowser);
+            var oldQueueCount = CountQueueBuilding(html);
 
             bool queueDifferent(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                var newQueueCount = new CountQueueBuilding().Execute(_chromeBrowser);
+                var newQueueCount = CountQueueBuilding(doc);
                 return oldQueueCount != newQueueCount;
             }
 
@@ -65,6 +65,17 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
+        }
+
+        private static int CountQueueBuilding(HtmlDocument doc)
+        {
+            var finishButton = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("finishNow"));
+            if (finishButton is null) return 0;
+            var nodes = finishButton.ParentNode
+                .Descendants("li");
+            return nodes.Count();
         }
 
         private static HtmlNode GetCompleteButton(HtmlDocument doc)
