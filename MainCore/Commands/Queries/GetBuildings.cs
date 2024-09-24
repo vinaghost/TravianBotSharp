@@ -3,14 +3,9 @@ using System.Text.Json;
 
 namespace MainCore.Commands.Queries
 {
-    public class GetBuildings
+    public class GetBuildings(IDbContextFactory<AppDbContext> contextFactory = null)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
-        public GetBuildings(IDbContextFactory<AppDbContext> contextFactory = null)
-        {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-        }
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
 
         public List<BuildingItem> Execute(VillageId villageId, bool ignoreJobBuilding = false)
         {

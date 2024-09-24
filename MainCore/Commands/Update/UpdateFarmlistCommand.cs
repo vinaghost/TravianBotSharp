@@ -2,23 +2,12 @@
 
 namespace MainCore.Commands.Update
 {
-    public class UpdateFarmlistCommand : FarmListCommand
+    public class UpdateFarmlistCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null) : FarmListCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IMediator _mediator;
-
-        public UpdateFarmlistCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null)
-        {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
-        }
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+        private readonly IMediator _mediator = mediator ?? Locator.Current.GetService<IMediator>();
 
         public async Task Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
-        {
-            await Update(chromeBrowser, accountId, cancellationToken);
-        }
-
-        private async Task Update(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
         {
             var html = chromeBrowser.Html;
             var dtos = Get(html);

@@ -1,22 +1,45 @@
 ﻿namespace MainCore.Commands.Queries
 {
-    public class GetSetting
+    public class GetSetting(IDbContextFactory<AppDbContext> contextFactory = null)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
 
-        public GetSetting(IDbContextFactory<AppDbContext> contextFactory = null)
-        {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-        }
+        private static readonly Func<AppDbContext, VillageId, VillageSettingEnums, int> ByNameVillageSettingQuery =
+            EF.CompileQuery((AppDbContext context, VillageId villageId, VillageSettingEnums setting) =>
+                context.VillagesSetting
+                    .Where(x => x.VillageId == villageId.Value)
+                    .Where(x => x.Setting == setting)
+                    .Select(x => x.Value)
+                    .FirstOrDefault());
+
+        private static readonly Func<AppDbContext, VillageId, VillageSettingEnums, bool> ByNameVillageSettingBooleanQuery =
+            EF.CompileQuery((AppDbContext context, VillageId villageId, VillageSettingEnums setting) =>
+                context.VillagesSetting
+                    .Where(x => x.VillageId == villageId.Value)
+                    .Where(x => x.Setting == setting)
+                    .Select(x => x.Value != 0)
+                    .FirstOrDefault());
+
+        private static readonly Func<AppDbContext, AccountId, AccountSettingEnums, int> ByNameAccountSettingQuery =
+            EF.CompileQuery((AppDbContext context, AccountId accountId, AccountSettingEnums setting) =>
+                context.AccountsSetting
+                    .Where(x => x.AccountId == accountId.Value)
+                    .Where(x => x.Setting == setting)
+                    .Select(x => x.Value)
+                    .FirstOrDefault());
+
+        private static readonly Func<AppDbContext, AccountId, AccountSettingEnums, bool> ByNameAccountSettingBooleanQuery =
+            EF.CompileQuery((AppDbContext context, AccountId accountId, AccountSettingEnums setting) =>
+                context.AccountsSetting
+                    .Where(x => x.AccountId == accountId.Value)
+                    .Where(x => x.Setting == setting)
+                    .Select(x => x.Value != 0)
+                    .FirstOrDefault());
 
         public int ByName(VillageId villageId, VillageSettingEnums setting)
         {
             using var context = _contextFactory.CreateDbContext();
-            var settingValue = context.VillagesSetting
-                   .Where(x => x.VillageId == villageId.Value)
-                   .Where(x => x.Setting == setting)
-                   .Select(x => x.Value)
-                   .FirstOrDefault();
+            var settingValue = ByNameVillageSettingQuery(context, villageId, setting);
             return settingValue;
         }
 
@@ -42,11 +65,7 @@
         public int ByName(AccountId accountId, AccountSettingEnums setting)
         {
             using var context = _contextFactory.CreateDbContext();
-            var settingValue = context.AccountsSetting
-                   .Where(x => x.AccountId == accountId.Value)
-                   .Where(x => x.Setting == setting)
-                   .Select(x => x.Value)
-                   .FirstOrDefault();
+            var settingValue = ByNameAccountSettingQuery(context, accountId, setting);
             return settingValue;
         }
 
@@ -85,24 +104,14 @@
         public bool BooleanByName(VillageId villageId, VillageSettingEnums setting)
         {
             using var context = _contextFactory.CreateDbContext();
-            var settingValue = context.VillagesSetting
-                   .Where(x => x.VillageId == villageId.Value)
-                   .Where(x => x.Setting == setting)
-                   .Select(x => x.Value != 0)
-                   .FirstOrDefault();
-
+            var settingValue = ByNameVillageSettingBooleanQuery(context, villageId, setting);
             return settingValue;
         }
 
         public bool BooleanByName(AccountId accountId, AccountSettingEnums setting)
         {
             using var context = _contextFactory.CreateDbContext();
-            var settingValue = context.AccountsSetting
-                   .Where(x => x.AccountId == accountId.Value)
-                   .Where(x => x.Setting == setting)
-                   .Select(x => x.Value != 0)
-                   .FirstOrDefault();
-
+            var settingValue = ByNameAccountSettingBooleanQuery(context, accountId, setting);
             return settingValue;
         }
 

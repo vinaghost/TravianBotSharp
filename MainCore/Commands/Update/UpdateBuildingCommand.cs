@@ -1,15 +1,9 @@
 ﻿namespace MainCore.Commands.Update
 {
-    public class UpdateBuildingCommand
+    public class UpdateBuildingCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IMediator _mediator;
-
-        public UpdateBuildingCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null)
-        {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
-        }
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+        private readonly IMediator _mediator = mediator ?? Locator.Current.GetService<IMediator>();
 
         public async Task<Result> Execute(IChromeBrowser chromeBrowser, AccountId accountId, VillageId villageId, CancellationToken cancellationToken)
         {
@@ -41,7 +35,7 @@
             if (url.Contains("dorf2"))
                 return GetInfrastructures(html);
 
-            return Enumerable.Empty<BuildingDto>();
+            return [];
         }
 
         private static Result IsVaildQueueBuilding(List<QueueBuildingDto> dtos)
@@ -123,7 +117,7 @@
             static IEnumerable<HtmlNode> GetNodes(HtmlDocument doc)
             {
                 var resourceFieldContainerNode = doc.GetElementbyId("resourceFieldContainer");
-                if (resourceFieldContainerNode is null) return Enumerable.Empty<HtmlNode>();
+                if (resourceFieldContainerNode is null) return [];
 
                 var nodes = resourceFieldContainerNode
                     .ChildNodes

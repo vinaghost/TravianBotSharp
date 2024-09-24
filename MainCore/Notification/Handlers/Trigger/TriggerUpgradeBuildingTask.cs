@@ -14,7 +14,7 @@ namespace MainCore.Notification.Handlers.Trigger
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
-            var hasBuildingJobVillages = new GetVillage().Job(accountId);
+            var hasBuildingJobVillages = new GetVillage().HasBuildingJob(accountId);
             foreach (var village in hasBuildingJobVillages)
             {
                 await Trigger(accountId, village);
