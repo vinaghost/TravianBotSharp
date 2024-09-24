@@ -1,13 +1,8 @@
 ﻿namespace MainCore.Commands.Queries
 {
-    public class GetVillageName
+    public class GetVillageName(IDbContextFactory<AppDbContext> contextFactory = null)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
-        public GetVillageName(IDbContextFactory<AppDbContext> contextFactory = null)
-        {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-        }
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
 
         public string Execute(VillageId villageId)
         {
@@ -16,7 +11,7 @@
                 .Where(x => x.Id == villageId.Value)
                 .Select(x => x.Name)
                 .FirstOrDefault();
-            return villageName;
+            return villageName ?? "Unknow village";
         }
     }
 }
