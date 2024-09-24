@@ -1,13 +1,8 @@
 ﻿namespace MainCore.Commands.Queries
 {
-    public class GetBuildingLocation
+    public class GetBuildingLocation(IDbContextFactory<AppDbContext> contextFactory = null)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
-        public GetBuildingLocation(IDbContextFactory<AppDbContext> contextFactory = null)
-        {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-        }
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
 
         public int Execute(VillageId villageId, BuildingEnums building)
         {
