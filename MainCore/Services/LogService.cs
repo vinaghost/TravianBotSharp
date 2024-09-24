@@ -8,7 +8,7 @@ namespace MainCore.Services
     [RegisterSingleton(Registration = RegistrationStrategy.ImplementedInterfaces)]
     public sealed class LogService : ILogService
     {
-        private readonly Dictionary<AccountId, ILogger> _loggers = new();
+        private readonly Dictionary<AccountId, ILogger> _loggers = [];
 
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IServiceProvider _serviceProvider;
