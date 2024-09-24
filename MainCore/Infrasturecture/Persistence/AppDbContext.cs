@@ -233,7 +233,6 @@ namespace MainCore.Infrasturecture.Persistence
             }
 
             AddRange(settings);
-            SaveChanges();
         }
 
         #endregion village setting

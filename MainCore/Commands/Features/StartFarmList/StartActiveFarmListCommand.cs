@@ -57,9 +57,7 @@ namespace MainCore.Commands.Features.StartFarmList
             var farmListIds = context.FarmLists
                     .Where(x => x.AccountId == accountId.Value)
                     .Where(x => x.IsActive)
-                    .Select(x => x.Id)
-                    .AsEnumerable()
-                    .Select(x => new FarmId(x))
+                    .Select(x => new FarmId(x.Id))
                     .ToList();
             return farmListIds;
         }
