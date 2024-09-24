@@ -26,7 +26,7 @@ namespace MainCore.Tasks
             result = await new ExploreAdventureCommand().Execute(AccountId, _chromeBrowser, CancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var adventureDuration = new GetAdventureDuration().Execute(_chromeBrowser);
+            var adventureDuration = GetAdventureDuration(_chromeBrowser);
             await SetNextExecute(adventureDuration);
 
             return Result.Ok();
@@ -36,6 +36,19 @@ namespace MainCore.Tasks
         {
             ExecuteAt = DateTime.Now.Add(duration * 2);
             await _taskManager.ReOrder(AccountId);
+        }
+
+        private static TimeSpan GetAdventureDuration(IChromeBrowser chromeBrowser)
+        {
+            var html = chromeBrowser.Html;
+            var heroAdventure = html.GetElementbyId("heroAdventure");
+            var timer = heroAdventure
+                .Descendants("span")
+                .FirstOrDefault(x => x.HasClass("timer"));
+            if (timer is null) return TimeSpan.Zero;
+
+            var seconds = timer.GetAttributeValue("value", 0);
+            return TimeSpan.FromSeconds(seconds);
         }
 
         protected override void SetName()
