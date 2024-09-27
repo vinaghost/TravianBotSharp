@@ -1,12 +1,92 @@
-﻿namespace MainCore.Commands.Features.UpgradeBuilding
+﻿using MainCore.Commands.Abstract;
+using MainCore.Common.Models;
+
+namespace MainCore.Commands.Features.UpgradeBuilding
 {
-    public class SpecialUpgradeCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class HandleUpgradeCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand) : CommandBase<NormalBuildPlan>(dataService)
     {
-        public async Task<Result> Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
+        private readonly DelayClickCommand _delayClickCommand = delayClickCommand;
+
+        private readonly List<BuildingEnums> _buildings = [
+            BuildingEnums.Residence,
+            BuildingEnums.Palace,
+            BuildingEnums.CommandCenter
+        ];
+
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
+            var plan = Data;
+            Result result;
+
+            if (IsUpgradeable(plan))
+            {
+                if (IsSpecialUpgrade() && IsSpecialUpgradeable(plan))
+                {
+                    result = await SpecialUpgrade(cancellationToken);
+                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                }
+                else
+                {
+                    result = await Upgrade(cancellationToken);
+                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                }
+            }
+            else
+            {
+                result = await Construct(plan.Type, cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            }
+
+            return Result.Ok();
+        }
+
+        private bool IsUpgradeable(NormalBuildPlan plan)
+        {
+            return !IsEmptySite(plan.Location);
+        }
+
+        private bool IsSpecialUpgradeable(NormalBuildPlan plan)
+        {
+            if (_buildings.Contains(plan.Type)) return false;
+
+            if (plan.Type.IsResourceField())
+            {
+                var villageId = _dataService.VillageId;
+                var dto = new GetBuilding().Execute(villageId, plan.Location);
+                if (dto.Level == 0) return false;
+            }
+            return true;
+        }
+
+        private bool IsSpecialUpgrade()
+        {
+            var villageId = _dataService.VillageId;
+            var useSpecialUpgrade = new GetSetting().BooleanByName(villageId, VillageSettingEnums.UseSpecialUpgrade);
+            return useSpecialUpgrade;
+        }
+
+        private bool IsEmptySite(int location)
+        {
+            var villageId = _dataService.VillageId;
+            using var context = _contextFactory.CreateDbContext();
+            bool isEmptySite = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Location == location)
+                .Where(x => x.Type == BuildingEnums.Site || x.Level == -1)
+                .Any();
+
+            return isEmptySite;
+        }
+
+        private async Task<Result> SpecialUpgrade(CancellationToken cancellationToken)
+        {
+            var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;
-            var button = GetSpecialUpgradeButton(html);
+            var button = UpgradeParser.GetSpecialUpgradeButton(html);
             if (button is null) return Retry.ButtonNotFound("Watch ads upgrade");
+
             var result = await chromeBrowser.Click(By.XPath(button.XPath), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
@@ -20,7 +100,7 @@
                 driver.SwitchTo().Window(current);
             }
 
-            bool videoFeatureShown(IWebDriver driver)
+            static bool videoFeatureShown(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
@@ -39,7 +119,7 @@
                 result = await chromeBrowser.Click(By.XPath(checkbox.XPath), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                await new DelayClickCommand().Execute(accountId);
+                await _delayClickCommand.Execute(cancellationToken);
 
                 var watchButton = videoFeature.Descendants("button").FirstOrDefault(x => x.HasClass("green"));
                 if (watchButton is null) return Retry.ButtonNotFound("Watch ads");
@@ -92,7 +172,7 @@
                 result = await chromeBrowser.Click(By.XPath(dontShowThisAgain.XPath), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                await new DelayClickCommand().Execute(accountId);
+                await _delayClickCommand.Execute(cancellationToken);
 
                 var okButton = html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
                 if (okButton is null) return Retry.ButtonNotFound("ok");
@@ -103,18 +183,31 @@
             return Result.Ok();
         }
 
-        private static HtmlNode GetSpecialUpgradeButton(HtmlDocument doc)
+        private async Task<Result> Upgrade(CancellationToken cancellationToken)
         {
-            var node = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("upgradeButtonsContainer"));
-            if (node is null) return null;
+            var chromeBrowser = _dataService.ChromeBrowser;
+            var html = chromeBrowser.Html;
 
-            var button = node
-                .Descendants("button")
-                .FirstOrDefault(x => x.HasClass("videoFeatureButton") && x.HasClass("green"));
+            var button = UpgradeParser.GetUpgradeButton(html);
+            if (button is null) return Retry.ButtonNotFound("upgrade");
 
-            return button;
+            var result = await chromeBrowser.Click(By.XPath(button.XPath), "dorf", cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            return Result.Ok();
+        }
+
+        private async Task<Result> Construct(BuildingEnums building, CancellationToken cancellationToken)
+        {
+            var chromeBrowser = _dataService.ChromeBrowser;
+            var html = chromeBrowser.Html;
+
+            var button = UpgradeParser.GetConstructButton(html, building);
+            if (button is null) return Retry.ButtonNotFound("construct");
+
+            var result = await chromeBrowser.Click(By.XPath(button.XPath), "dorf", cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            return Result.Ok();
         }
     }
 }

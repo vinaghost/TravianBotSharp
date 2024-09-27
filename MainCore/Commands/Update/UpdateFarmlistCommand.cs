@@ -2,17 +2,22 @@
 
 namespace MainCore.Commands.Update
 {
-    public class UpdateFarmlistCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null) : FarmListCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class UpdateFarmlistCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-        private readonly IMediator _mediator = mediator ?? Locator.Current.GetService<IMediator>();
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
+        private readonly IMediator _mediator = mediator;
 
-        public async Task Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
+            var accountId = _dataService.AccountId;
+            var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;
             var dtos = Get(html);
             UpdateToDatabase(accountId, dtos);
             await _mediator.Publish(new FarmListUpdated(accountId), cancellationToken);
+
+            return Result.Ok();
         }
 
         private void UpdateToDatabase(AccountId accountId, IEnumerable<FarmDto> dtos)
@@ -43,11 +48,11 @@ namespace MainCore.Commands.Update
 
         private static IEnumerable<FarmDto> Get(HtmlDocument doc)
         {
-            var nodes = GetFarmNodes(doc);
+            var nodes = FarmListParser.GetFarmNodes(doc);
             foreach (var node in nodes)
             {
-                var id = GetId(node);
-                var name = GetName(node);
+                var id = FarmListParser.GetId(node);
+                var name = FarmListParser.GetName(node);
                 yield return new()
                 {
                     Id = id,

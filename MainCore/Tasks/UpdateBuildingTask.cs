@@ -1,45 +1,56 @@
 ﻿using MainCore.Tasks.Base;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
     [RegisterTransient(Registration = RegistrationStrategy.Self)]
     public class UpdateBuildingTask : VillageTask
     {
-        protected override async Task<Result> Execute()
+        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
         {
-            var url = _chromeBrowser.CurrentUrl;
+            var dataService = scoped.ServiceProvider.GetRequiredService<DataService>();
+            var chromeBrowser = dataService.ChromeBrowser;
+            var url = chromeBrowser.CurrentUrl;
             Result result;
-            var updateBuildingCommand = new UpdateBuildingCommand();
+
+            var updateBuildingCommand = scoped.ServiceProvider.GetRequiredService<UpdateBuildingCommand>();
+            var toDorfCommand = scoped.ServiceProvider.GetRequiredService<ToDorfCommand>();
 
             if (url.Contains("dorf1"))
             {
-                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
-
-                result = await new ToDorfCommand().Execute(_chromeBrowser, 2, false, CancellationToken);
+                result = await updateBuildingCommand.Execute(cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+                result = await toDorfCommand.Execute(2, cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                result = await updateBuildingCommand.Execute(cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else if (url.Contains("dorf2"))
             {
-                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
-
-                result = await new ToDorfCommand().Execute(_chromeBrowser, 1, false, CancellationToken);
+                result = await updateBuildingCommand.Execute(cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+                result = await toDorfCommand.Execute(1, cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                result = await updateBuildingCommand.Execute(cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else
             {
-                result = await new ToDorfCommand().Execute(_chromeBrowser, 2, false, CancellationToken);
+                result = await toDorfCommand.Execute(2, cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
-
-                result = await new ToDorfCommand().Execute(_chromeBrowser, 1, false, CancellationToken);
+                result = await updateBuildingCommand.Execute(cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+                result = await toDorfCommand.Execute(1, cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                result = await updateBuildingCommand.Execute(cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
 
             return Result.Ok();

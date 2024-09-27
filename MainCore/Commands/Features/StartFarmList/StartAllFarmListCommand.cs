@@ -1,11 +1,15 @@
+using MainCore.Commands.Abstract;
+
 namespace MainCore.Commands.Features.StartFarmList
 {
-    public class StartAllFarmListCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class StartAllFarmListCommand(DataService dataService) : CommandBase(dataService)
     {
-        public async Task<Result> Execute(IChromeBrowser chromeBrowser)
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
+            var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;
-            var startAllButton = GetStartAllButton(html);
+            var startAllButton = FarmListParser.GetStartAllButton(html);
             if (startAllButton is null) return Retry.ButtonNotFound("Start all farms");
 
             Result result;
@@ -13,16 +17,6 @@ namespace MainCore.Commands.Features.StartFarmList
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
-        }
-
-        private static HtmlNode GetStartAllButton(HtmlDocument doc)
-        {
-            var raidList = doc.GetElementbyId("rallyPointFarmList");
-            if (raidList is null) return null;
-            var startAll = raidList
-                .Descendants("button")
-                .FirstOrDefault(x => x.HasClass("startAllFarmLists"));
-            return startAll;
         }
     }
 }

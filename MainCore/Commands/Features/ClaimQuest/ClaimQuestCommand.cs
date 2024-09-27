@@ -2,41 +2,56 @@
 
 namespace MainCore.Commands.Features.ClaimQuest
 {
-    public class ClaimQuestCommand : QuestCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class ClaimQuestCommand(DataService dataService, IMediator mediator, SwitchTabCommand switchTabCommand, DelayClickCommand delayClickCommand) : CommandBase(dataService)
     {
-        public async Task<Result> Execute(AccountId accountId, IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
+        private readonly IMediator _mediator = mediator;
+        private readonly SwitchTabCommand _switchTabCommand = switchTabCommand;
+        private readonly DelayClickCommand _delayClickCommand = delayClickCommand;
+
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
+            var chromeBrowser = _dataService.ChromeBrowser;
+            var accountId = _dataService.AccountId;
+            var villageId = _dataService.VillageId;
             HtmlDocument html;
             Result result;
             do
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
                 html = chromeBrowser.Html;
-                var quest = GetQuestCollectButton(html);
+                var quest = QuestParser.GetQuestCollectButton(html);
 
                 if (quest is null)
                 {
-                    result = await ClaimAccountQuest(accountId, chromeBrowser, cancellationToken);
+                    result = await ClaimAccountQuest(cancellationToken);
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                    await _mediator.Publish(new StorageUpdated(accountId, villageId), cancellationToken);
                     return Result.Ok();
                 }
 
                 result = await chromeBrowser.Click(By.XPath(quest.XPath), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                await new DelayClickCommand().Execute(accountId);
+                await _delayClickCommand.Execute(cancellationToken);
             }
-            while (IsQuestClaimable(html));
+            while (QuestParser.IsQuestClaimable(html));
+
+            await _mediator.Publish(new StorageUpdated(accountId, villageId), cancellationToken);
+
             return Result.Ok();
         }
 
-        private static async Task<Result> ClaimAccountQuest(AccountId accountId, IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
+        private async Task<Result> ClaimAccountQuest(CancellationToken cancellationToken)
         {
-            Result result;
-            result = await new SwitchTabCommand().Execute(chromeBrowser, 1, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            await new DelayClickCommand().Execute(accountId);
+            var chromeBrowser = _dataService.ChromeBrowser;
 
-            var quest = GetQuestCollectButton(chromeBrowser.Html);
+            Result result;
+            result = await _switchTabCommand.Execute(1, cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            await _delayClickCommand.Execute(cancellationToken);
+
+            var quest = QuestParser.GetQuestCollectButton(chromeBrowser.Html);
 
             if (quest is null) return Result.Ok();
 
@@ -44,19 +59,6 @@ namespace MainCore.Commands.Features.ClaimQuest
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
-        }
-
-        private static HtmlNode GetQuestCollectButton(HtmlDocument doc)
-        {
-            var taskTable = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("taskOverview"));
-            if (taskTable is null) return null;
-
-            var button = taskTable
-                .Descendants("button")
-                .FirstOrDefault(x => x.HasClass("collect") && !x.HasClass("disabled"));
-            return button;
         }
     }
 }

@@ -2,23 +2,22 @@
 
 namespace MainCore.Commands.Features.StartAdventure
 {
-    public class ToAdventurePageCommand : AdventureCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class ToAdventurePageCommand(DataService dataService) : CommandBase(dataService)
     {
-        public async Task<Result> Execute(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
+            var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;
 
-            var adventure = GetHeroAdventure(html);
+            var adventure = AdventureParser.GetHeroAdventure(html);
             if (adventure is null) return Retry.ButtonNotFound("hero adventure");
 
-            bool tableShow(IWebDriver driver)
+            static bool tableShow(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                var table = doc.DocumentNode
-                    .Descendants("table")
-                    .Any(x => x.HasClass("adventureList"));
-                return table;
+                return AdventureParser.IsAdventurePage(doc);
             }
 
             Result result;

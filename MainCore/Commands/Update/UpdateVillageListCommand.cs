@@ -2,25 +2,23 @@
 
 namespace MainCore.Commands.Update
 {
-    public class UpdateVillageListCommand : VillagePanelCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class UpdateVillageListCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IMediator _mediator;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
+        private readonly IMediator _mediator = mediator;
 
-        public UpdateVillageListCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null)
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
-        }
-
-        public async Task Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
-        {
+            var accountId = _dataService.AccountId;
+            var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;
-            var dtos = Get(html);
-            if (!dtos.Any()) return;
+            var dtos = VillagePanelParser.Get(html);
+            if (!dtos.Any()) return Result.Ok();
 
             UpdateToDatabase(accountId, dtos.ToList());
             await _mediator.Publish(new VillageUpdated(accountId), cancellationToken);
+            return Result.Ok();
         }
 
         private void UpdateToDatabase(AccountId accountId, List<VillageDto> dtos)

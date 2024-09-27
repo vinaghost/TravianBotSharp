@@ -1,11 +1,17 @@
-﻿namespace MainCore.Commands.Misc
+﻿using MainCore.Commands.Abstract;
+
+namespace MainCore.Commands.Misc
 {
-    public class DelayClickCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class DelayClickCommand(DataService dataService) : CommandBase(dataService)
     {
-        public async Task Execute(AccountId accountId)
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
+            var accountId = _dataService.AccountId;
             var delay = new GetSetting().ByName(accountId, AccountSettingEnums.ClickDelayMin, AccountSettingEnums.ClickDelayMax);
-            await Task.Delay(delay, CancellationToken.None);
+
+            var result = await Result.Try(() => Task.Delay(delay, cancellationToken), x => Cancel.Error);
+            return result;
         }
     }
 }
