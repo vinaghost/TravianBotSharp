@@ -1,9 +1,9 @@
-﻿namespace MainCore.Commands.Queries
-{
-    public class GetVillage(IDbContextFactory<AppDbContext> contextFactory = null)
-    {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+﻿using MainCore.Commands.Abstract;
 
+namespace MainCore.Commands.Queries
+{
+    public class GetVillage(IDbContextFactory<AppDbContext> contextFactory = null) : QueryBase(contextFactory)
+    {
         public List<VillageId> All(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();

@@ -1,25 +1,29 @@
-﻿namespace MainCore.Commands.Navigate
+﻿using MainCore.Commands.Abstract;
+
+namespace MainCore.Commands.Navigate
 {
-    public class SwitchTabCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class SwitchTabCommand(DataService dataService) : CommandBase<int>(dataService)
     {
-        public async Task<Result> Execute(IChromeBrowser chromeBrowser, int index, CancellationToken cancellationToken)
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
+            var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;
-            var count = CountTab(html);
-            if (index > count) return Retry.OutOfIndexTab(index, count);
-            var tab = GetTab(html, index);
-            if (tab is null) return Retry.NotFound($"{index}", "tab");
-            if (IsTabActive(tab)) return Result.Ok();
+            var count = BuildingTabParser.CountTab(html);
+            if (Data > count) return Retry.OutOfIndexTab(Data, count);
+            var tab = BuildingTabParser.GetTab(html, Data);
+            if (tab is null) return Retry.NotFound($"{Data}", "tab");
+            if (BuildingTabParser.IsTabActive(tab)) return Result.Ok();
 
             bool tabActived(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                var count = CountTab(doc);
-                if (index > count) return false;
-                var tab = GetTab(doc, index);
+                var count = BuildingTabParser.CountTab(doc);
+                if (Data > count) return false;
+                var tab = BuildingTabParser.GetTab(doc, Data);
                 if (tab is null) return false;
-                if (!IsTabActive(tab)) return false;
+                if (!BuildingTabParser.IsTabActive(tab)) return false;
                 return true;
             }
 
@@ -28,43 +32,6 @@
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
-        }
-
-        private static HtmlNode GetNavigationBar(HtmlDocument doc)
-        {
-            var navigationBar = doc.DocumentNode
-             .Descendants("div")
-             .FirstOrDefault(x => x.HasClass("contentNavi") && x.HasClass("subNavi"));
-            return navigationBar;
-        }
-
-        private static IEnumerable<HtmlNode> GetTabs(HtmlDocument doc)
-        {
-            var navigationBar = GetNavigationBar(doc);
-            if (navigationBar is null) return Enumerable.Empty<HtmlNode>();
-            var tabs = navigationBar
-                .Descendants("a")
-                .Where(x => x.HasClass("tabItem"));
-            return tabs;
-        }
-
-        private static int CountTab(HtmlDocument doc)
-        {
-            var count = GetTabs(doc)
-                .Count();
-            return count;
-        }
-
-        private static HtmlNode GetTab(HtmlDocument doc, int index)
-        {
-            var tab = GetTabs(doc)
-                .ElementAt(index);
-            return tab;
-        }
-
-        private static bool IsTabActive(HtmlNode node)
-        {
-            return node.HasClass("active");
         }
     }
 }

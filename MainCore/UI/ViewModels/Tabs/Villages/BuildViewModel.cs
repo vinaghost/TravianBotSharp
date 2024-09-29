@@ -127,7 +127,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await LoadQueue.Execute(villageId);
         }
 
-        private List<ListBoxItem> LoadBuildingHandler(VillageId villageId)
+        private static List<ListBoxItem> LoadBuildingHandler(VillageId villageId)
         {
             var buildings = GetBuildingItems(villageId);
             return buildings;

@@ -1,9 +1,9 @@
-﻿namespace MainCore.Commands.Queries
-{
-    public class GetAccount(IDbContextFactory<AppDbContext> contextFactory = null)
-    {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+﻿using MainCore.Commands.Abstract;
 
+namespace MainCore.Commands.Queries
+{
+    public class GetAccount(IDbContextFactory<AppDbContext> contextFactory = null) : QueryBase(contextFactory)
+    {
         public AccountDto Execute(AccountId accountId, bool includeAccess = false)
         {
             using var context = _contextFactory.CreateDbContext();

@@ -2,50 +2,46 @@
 
 namespace MainCore.Commands.Features.StartFarmList
 {
-    public class ToFarmListPageCommand : FarmListCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class ToFarmListPageCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, SwitchVillageCommand switchVillageCommand, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, DelayClickCommand delayClickCommand) : CommandBase(dataService)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
+        private readonly SwitchVillageCommand _switchVillageCommand = switchVillageCommand;
+        private readonly ToDorfCommand _toDorfCommand = toDorfCommand;
+        private readonly UpdateBuildingCommand _updateBuildingCommand = updateBuildingCommand;
+        private readonly ToBuildingCommand _toBuildingCommand = toBuildingCommand;
+        private readonly SwitchTabCommand _switchTabCommand = switchTabCommand;
+        private readonly DelayClickCommand _delayClickCommand = delayClickCommand;
 
-        public ToFarmListPageCommand(IDbContextFactory<AppDbContext> contextFactory = null)
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-        }
-
-        public async Task<Result> Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await ToPage(chromeBrowser, accountId, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            return Result.Ok();
-        }
-
-        private async Task<Result> ToPage(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
-        {
-            Result result;
-
-            var rallypointVillageId = GetVillageHasRallypoint(accountId);
+            var rallypointVillageId = GetVillageHasRallypoint();
             if (rallypointVillageId == VillageId.Empty) return Skip.NoRallypoint;
+            _dataService.VillageId = rallypointVillageId;
 
-            result = await new SwitchVillageCommand().Execute(chromeBrowser, rallypointVillageId, cancellationToken);
+            Result result;
+            result = await _switchVillageCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await new ToDorfCommand().Execute(chromeBrowser, 2, false, cancellationToken);
+            result = await _toDorfCommand.Execute(2, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            await new UpdateBuildingCommand().Execute(chromeBrowser, accountId, rallypointVillageId, cancellationToken);
-
-            result = await new ToBuildingCommand().Execute(chromeBrowser, 39, cancellationToken);
+            result = await _updateBuildingCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await new SwitchTabCommand().Execute(chromeBrowser, 4, cancellationToken);
+            result = await _toBuildingCommand.Execute(39, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            await new DelayClickCommand().Execute(accountId);
+            result = await _switchTabCommand.Execute(4, cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            await _delayClickCommand.Execute(cancellationToken);
             return Result.Ok();
         }
 
-        private VillageId GetVillageHasRallypoint(AccountId accountId)
+        private VillageId GetVillageHasRallypoint()
         {
+            var accountId = _dataService.AccountId;
             using var context = _contextFactory.CreateDbContext();
 
             var village = context.Villages

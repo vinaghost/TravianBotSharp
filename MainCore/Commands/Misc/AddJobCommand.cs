@@ -1,17 +1,11 @@
-﻿using MainCore.Common.Models;
+﻿using MainCore.Commands.Abstract;
+using MainCore.Common.Models;
 using System.Text.Json;
 
 namespace MainCore.Commands.Misc
 {
-    public class AddJobCommand
+    public class AddJobCommand(IDbContextFactory<AppDbContext> contextFactory = null) : QueryBase(contextFactory)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
-        public AddJobCommand(IDbContextFactory<AppDbContext> contextFactory = null)
-        {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-        }
-
         private static readonly Dictionary<Type, JobTypeEnums> _jobTypes = new()
         {
             { typeof(NormalBuildPlan),JobTypeEnums.NormalBuild  },

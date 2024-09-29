@@ -168,8 +168,14 @@ namespace MainCore.UI.ViewModels.UserControls
             logger.Information("Using connection {Proxy} to start chrome", access.Proxy);
 
             var chromeBrowser = _chromeManager.Get(accountId);
+            var dataService = new DataService()
+            {
+                ChromeBrowser = chromeBrowser,
+                Logger = logger,
+                AccountId = accountId,
+            };
 
-            result = await new OpenBrowserCommand().Execute(chromeBrowser, accountId, access, CancellationToken.None);
+            result = await new OpenBrowserCommand(dataService).Execute(access, CancellationToken.None);
             if (result.IsFailed)
             {
                 _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());

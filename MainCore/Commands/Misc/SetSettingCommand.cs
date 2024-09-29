@@ -1,14 +1,9 @@
-﻿namespace MainCore.Commands.Misc
+﻿using MainCore.Commands.Abstract;
+
+namespace MainCore.Commands.Misc
 {
-    public class SetSettingCommand
+    public class SetSettingCommand(IDbContextFactory<AppDbContext> contextFactory = null) : QueryBase(contextFactory)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
-        public SetSettingCommand(IDbContextFactory<AppDbContext> contextFactory = null)
-        {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-        }
-
         public void Execute(VillageId villageId, Dictionary<VillageSettingEnums, int> settings)
         {
             if (settings.Count == 0) return;

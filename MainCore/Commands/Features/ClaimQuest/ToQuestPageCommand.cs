@@ -2,23 +2,21 @@
 
 namespace MainCore.Commands.Features.ClaimQuest
 {
-    public class ToQuestPageCommand : QuestCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class ToQuestPageCommand(DataService dataService) : CommandBase(dataService)
     {
-        public async Task<Result> Execute(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
-            var html = chromeBrowser.Html;
+            var chromeBrowser = _dataService.ChromeBrowser;
 
-            var adventure = GetQuestMaster(html);
+            var adventure = QuestParser.GetQuestMaster(chromeBrowser.Html);
             if (adventure is null) return Retry.ButtonNotFound("quest master");
 
-            bool tableShow(IWebDriver driver)
+            static bool tableShow(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                var table = doc.DocumentNode
-                    .Descendants("div")
-                    .Any(x => x.HasClass("tasks") && x.HasClass("tasksVillage"));
-                return table;
+                return QuestParser.IsQuestPage(doc);
             }
 
             Result result;

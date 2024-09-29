@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.Checks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks.Base
 {
@@ -6,40 +7,54 @@ namespace MainCore.Tasks.Base
     {
         public VillageId VillageId { get; protected set; }
 
-        public void Setup(AccountId accountId, VillageId villageId, CancellationToken cancellationToken = default)
+        public void Setup(AccountId accountId, VillageId villageId)
         {
             AccountId = accountId;
             VillageId = villageId;
-            CancellationToken = cancellationToken;
         }
 
-        protected override async Task<Result> PreExecute()
+        protected override async Task<Result> PreExecute(IServiceScope scoped, CancellationToken cancellationToken)
         {
             Result result;
-            result = await base.PreExecute();
+            result = await base.PreExecute(scoped, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await new SwitchVillageCommand().Execute(_chromeBrowser, VillageId, CancellationToken);
+            var dataService = scoped.ServiceProvider.GetRequiredService<DataService>();
+            dataService.VillageId = VillageId;
+
+            var switchVillageCommand = scoped.ServiceProvider.GetRequiredService<SwitchVillageCommand>();
+            result = await switchVillageCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            await new UpdateStorageCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+            var updateStorageCommand = scoped.ServiceProvider.GetRequiredService<UpdateStorageCommand>();
+            result = await updateStorageCommand.Execute(cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }
 
-        protected override async Task<Result> PostExecute()
+        protected override async Task<Result> PostExecute(IServiceScope scoped, CancellationToken cancellationToken)
         {
             Result result;
 
-            result = await base.PostExecute();
+            result = await base.PostExecute(scoped, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await new ToDorfCommand().Execute(_chromeBrowser, 0, false, CancellationToken);
+            var toDorfCommand = scoped.ServiceProvider.GetRequiredService<ToDorfCommand>();
+            result = await toDorfCommand.Execute(0, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            await new UpdateBuildingCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
-            await new UpdateStorageCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
-            await new CheckQuestCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+            var updateBuildingCommand = scoped.ServiceProvider.GetRequiredService<UpdateBuildingCommand>();
+            result = await updateBuildingCommand.Execute(cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            var updateStorageCommand = scoped.ServiceProvider.GetRequiredService<UpdateStorageCommand>();
+            result = await updateStorageCommand.Execute(cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            var checkQuestCommand = scoped.ServiceProvider.GetRequiredService<CheckQuestCommand>();
+            result = await checkQuestCommand.Execute(cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
     }

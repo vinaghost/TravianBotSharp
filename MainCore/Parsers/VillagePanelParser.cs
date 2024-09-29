@@ -1,8 +1,8 @@
-﻿namespace MainCore.Commands.Abstract
+﻿namespace MainCore.Parsers
 {
-    public abstract class VillagePanelCommand
+    public static class VillagePanelParser
     {
-        protected static HtmlNode GetVillageNode(HtmlDocument doc, VillageId villageId)
+        public static HtmlNode GetVillageNode(HtmlDocument doc, VillageId villageId)
         {
             var villageBox = doc.GetElementbyId("sidebarBoxVillagelist");
             if (villageBox is null) return null;
@@ -14,7 +14,7 @@
             return village;
         }
 
-        protected static VillageId GetCurrentVillageId(HtmlDocument doc)
+        public static VillageId GetCurrentVillageId(HtmlDocument doc)
         {
             var villageBox = doc.GetElementbyId("sidebarBoxVillagelist");
             if (villageBox is null) return VillageId.Empty;
@@ -27,7 +27,7 @@
             return village;
         }
 
-        protected static bool IsActive(HtmlNode node)
+        public static bool IsActive(HtmlNode node)
         {
             return node.HasClass("active");
         }
@@ -38,7 +38,7 @@
             return new VillageId(dataDid);
         }
 
-        protected static IEnumerable<VillageDto> Get(HtmlDocument doc)
+        public static IEnumerable<VillageDto> Get(HtmlDocument doc)
         {
             var nodes = GetVillages(doc);
             foreach (var node in nodes)

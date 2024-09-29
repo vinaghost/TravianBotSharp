@@ -1,34 +1,33 @@
 ﻿using MainCore.Commands.Features.StartFarmList;
 using MainCore.Tasks.Base;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
     [RegisterTransient(Registration = RegistrationStrategy.Self)]
-    public class StartFarmListTask : AccountTask
+    public class StartFarmListTask(ITaskManager taskManager) : AccountTask
     {
-        private readonly ITaskManager _taskManager;
+        private readonly ITaskManager _taskManager = taskManager;
 
-        public StartFarmListTask(ITaskManager taskManager)
-        {
-            _taskManager = taskManager;
-        }
-
-        protected override async Task<Result> Execute()
+        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
         {
             Result result;
 
-            result = await new ToFarmListPageCommand().Execute(_chromeBrowser, AccountId, CancellationToken);
+            var toFarmListPageCommand = scoped.ServiceProvider.GetRequiredService<ToFarmListPageCommand>();
+            result = await toFarmListPageCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var useStartAllButton = new GetSetting().BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
             if (useStartAllButton)
             {
-                result = await new StartAllFarmListCommand().Execute(_chromeBrowser);
+                var startAllFarmListCommand = scoped.ServiceProvider.GetRequiredService<StartAllFarmListCommand>();
+                result = await startAllFarmListCommand.Execute(cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else
             {
-                result = await new StartActiveFarmListCommand().Execute(_chromeBrowser, AccountId);
+                var startActiveFarmListCommand = scoped.ServiceProvider.GetRequiredService<StartActiveFarmListCommand>();
+                result = await startActiveFarmListCommand.Execute(cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             await SetNextExecute();

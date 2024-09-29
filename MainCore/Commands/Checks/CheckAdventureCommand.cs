@@ -2,22 +2,19 @@
 
 namespace MainCore.Commands.Checks
 {
-    public class CheckAdventureCommand : AdventureCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class CheckAdventureCommand(DataService dataService, IMediator mediator) : CommandBase(dataService)
     {
-        private readonly IMediator _mediator;
+        private readonly IMediator _mediator = mediator;
 
-        public CheckAdventureCommand(IMediator mediator = null)
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
-            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
-        }
+            var html = _dataService.ChromeBrowser.Html;
+            if (!AdventureParser.CanStartAdventure(html)) return Result.Ok();
 
-        public async Task Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
-        {
-            var html = chromeBrowser.Html;
-            if (CanStartAdventure(html))
-            {
-                await _mediator.Publish(new AdventureUpdated(accountId), cancellationToken);
-            }
+            var accountId = _dataService.AccountId;
+            await _mediator.Publish(new AdventureUpdated(accountId), cancellationToken);
+            return Result.Ok();
         }
     }
 }
