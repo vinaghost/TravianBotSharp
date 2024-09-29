@@ -1,14 +1,9 @@
-﻿namespace MainCore.Commands.Misc
+﻿using MainCore.Commands.Abstract;
+
+namespace MainCore.Commands.Misc
 {
-    public class DeleteJobCommand
+    public class DeleteJobCommand(IDbContextFactory<AppDbContext> contextFactory = null) : QueryBase(contextFactory)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
-        public DeleteJobCommand(IDbContextFactory<AppDbContext> contextFactory = null)
-        {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-        }
-
         public void ByJobId(JobId jobId)
         {
             using var context = _contextFactory.CreateDbContext();

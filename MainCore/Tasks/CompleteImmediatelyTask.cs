@@ -1,23 +1,27 @@
-﻿using MainCore.Tasks.Base;
+﻿using MainCore.Commands.Features.CompleteImmediately;
+using MainCore.Tasks.Base;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
     [RegisterTransient(Registration = RegistrationStrategy.Self)]
     public class CompleteImmediatelyTask : VillageTask
     {
-        protected override async Task<Result> Execute()
+        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
         {
             Result result;
-
-            result = await new ToDorfCommand().Execute(_chromeBrowser, 0, false, CancellationToken);
+            var toDorfCommand = scoped.ServiceProvider.GetRequiredService<ToDorfCommand>();
+            result = await toDorfCommand.Execute(0, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await CompleteImmediately();
+            var completeImmediatelyCommand = scoped.ServiceProvider.GetRequiredService<CompleteImmediatelyCommand>();
+            result = await completeImmediatelyCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            await new UpdateBuildingCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+            var updateBuildingCommand = scoped.ServiceProvider.GetRequiredService<UpdateBuildingCommand>();
+            result = await updateBuildingCommand.Execute(cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            await _mediator.Publish(new CompleteImmediatelyMessage(AccountId, VillageId), CancellationToken);
             return Result.Ok();
         }
 
@@ -25,79 +29,6 @@ namespace MainCore.Tasks
         {
             var villageName = new GetVillageName().Execute(VillageId);
             _name = $"Complete immediately in {villageName}";
-        }
-
-        public async Task<Result> CompleteImmediately()
-        {
-            var html = _chromeBrowser.Html;
-
-            var completeNowButton = GetCompleteButton(html);
-            if (completeNowButton is null) return Retry.ButtonNotFound("complete now");
-
-            bool confirmShown(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                var confirmButton = GetConfirmButton(doc);
-                return confirmButton is not null;
-            }
-
-            Result result;
-
-            result = await _chromeBrowser.Click(By.XPath(completeNowButton.XPath), confirmShown, CancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            html = _chromeBrowser.Html;
-            var confirmButton = GetConfirmButton(html);
-            if (confirmButton is null) return Retry.ButtonNotFound("complete now");
-
-            var oldQueueCount = CountQueueBuilding(html);
-
-            bool queueDifferent(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                var newQueueCount = CountQueueBuilding(doc);
-                return oldQueueCount != newQueueCount;
-            }
-
-            result = await _chromeBrowser.Click(By.XPath(confirmButton.XPath), queueDifferent, CancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            return Result.Ok();
-        }
-
-        private static int CountQueueBuilding(HtmlDocument doc)
-        {
-            var finishButton = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("finishNow"));
-            if (finishButton is null) return 0;
-            var nodes = finishButton.ParentNode
-                .Descendants("li");
-            return nodes.Count();
-        }
-
-        private static HtmlNode GetCompleteButton(HtmlDocument doc)
-        {
-            var finishClass = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("finishNow"));
-            if (finishClass is null) return null;
-            var button = finishClass
-                .Descendants("button")
-                .FirstOrDefault();
-            return button;
-        }
-
-        private static HtmlNode GetConfirmButton(HtmlDocument doc)
-        {
-            var dialog = doc.GetElementbyId("finishNowDialog");
-            if (dialog is null) return null;
-            var button = dialog
-                .Descendants("button")
-                .FirstOrDefault();
-            return button;
         }
     }
 }

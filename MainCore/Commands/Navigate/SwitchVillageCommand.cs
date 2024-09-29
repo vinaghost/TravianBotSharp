@@ -2,25 +2,28 @@
 
 namespace MainCore.Commands.Navigate
 {
-    public class SwitchVillageCommand : VillagePanelCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class SwitchVillageCommand(DataService dataService) : CommandBase(dataService)
     {
-        public async Task<Result> Execute(IChromeBrowser chromeBrowser, VillageId villageId, CancellationToken cancellationToken)
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
+            var villageId = _dataService.VillageId;
+            var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;
-            var node = GetVillageNode(html, villageId);
+            var node = VillagePanelParser.GetVillageNode(html, villageId);
             if (node is null) return Skip.VillageNotFound;
 
-            if (IsActive(node)) return Result.Ok();
+            if (VillagePanelParser.IsActive(node)) return Result.Ok();
 
-            var current = GetCurrentVillageId(html);
+            var current = VillagePanelParser.GetCurrentVillageId(html);
 
             bool villageChanged(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
 
-                var villageNode = GetVillageNode(doc, villageId);
-                return villageNode is not null && IsActive(villageNode);
+                var villageNode = VillagePanelParser.GetVillageNode(doc, villageId);
+                return villageNode is not null && VillagePanelParser.IsActive(villageNode);
             }
 
             Result result;

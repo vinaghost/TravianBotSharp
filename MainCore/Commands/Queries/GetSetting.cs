@@ -1,9 +1,9 @@
-﻿namespace MainCore.Commands.Queries
-{
-    public class GetSetting(IDbContextFactory<AppDbContext> contextFactory = null)
-    {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+﻿using MainCore.Commands.Abstract;
 
+namespace MainCore.Commands.Queries
+{
+    public class GetSetting(IDbContextFactory<AppDbContext> contextFactory = null) : QueryBase(contextFactory)
+    {
         private static readonly Func<AppDbContext, int, VillageSettingEnums, int> ByNameVillageSettingQuery =
             EF.CompileQuery((AppDbContext context, int villageId, VillageSettingEnums setting) =>
                 context.VillagesSetting

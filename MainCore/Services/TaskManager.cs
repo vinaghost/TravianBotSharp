@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton(Registration=RegistrationStrategy.ImplementedInterfaces)]
+    [RegisterSingleton(Registration = RegistrationStrategy.ImplementedInterfaces)]
     public sealed class TaskManager : ITaskManager
     {
         public class TaskInfo
@@ -74,7 +74,8 @@ namespace MainCore.Services
         public async Task StopCurrentTask(AccountId accountId)
         {
             var cts = GetCancellationTokenSource(accountId);
-            cts?.Cancel();
+            if (cts is null) return;
+            await cts.CancelAsync();
             TaskBase currentTask;
             do
             {

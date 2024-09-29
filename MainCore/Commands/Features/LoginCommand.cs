@@ -2,26 +2,24 @@
 
 namespace MainCore.Commands.Features
 {
-    public class LoginCommand : LoginPageCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class LoginCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory) : CommandBase(dataService)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
 
-        public LoginCommand(IDbContextFactory<AppDbContext> contextFactory = null)
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-        }
-
-        public async Task<Result> Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
-        {
-            if (new IsIngamePage().Execute(chromeBrowser)) return Result.Ok();
+            var accountId = _dataService.AccountId;
+            var chromeBrowser = _dataService.ChromeBrowser;
 
             var html = chromeBrowser.Html;
+            if (LoginParser.IsIngamePage(html)) return Result.Ok();
 
-            var buttonNode = GetLoginButton(html);
+            var buttonNode = LoginParser.GetLoginButton(html);
             if (buttonNode is null) return Retry.ButtonNotFound("login");
-            var usernameNode = GetUsernameNode(html);
+            var usernameNode = LoginParser.GetUsernameInput(html);
             if (usernameNode is null) return Retry.TextboxNotFound("username");
-            var passwordNode = GetPasswordNode(html);
+            var passwordNode = LoginParser.GetPasswordInput(html);
             if (passwordNode is null) return Retry.TextboxNotFound("password");
 
             var (username, password) = GetLoginInfo(accountId);
@@ -35,22 +33,6 @@ namespace MainCore.Commands.Features
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
-        }
-
-        private static HtmlNode GetUsernameNode(HtmlDocument doc)
-        {
-            var node = doc.DocumentNode
-                .Descendants("input")
-                .FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("name"));
-            return node;
-        }
-
-        private static HtmlNode GetPasswordNode(HtmlDocument doc)
-        {
-            var node = doc.DocumentNode
-                .Descendants("input")
-                .FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("password"));
-            return node;
         }
 
         private (string, string) GetLoginInfo(AccountId accountId)

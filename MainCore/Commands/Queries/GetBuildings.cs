@@ -1,12 +1,11 @@
-﻿using MainCore.Common.Models;
+﻿using MainCore.Commands.Abstract;
+using MainCore.Common.Models;
 using System.Text.Json;
 
 namespace MainCore.Commands.Queries
 {
-    public class GetBuildings(IDbContextFactory<AppDbContext> contextFactory = null)
+    public class GetBuildings(IDbContextFactory<AppDbContext> contextFactory = null) : QueryBase(contextFactory)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-
         public List<BuildingItem> Execute(VillageId villageId, bool ignoreJobBuilding = false)
         {
             using var context = _contextFactory.CreateDbContext();

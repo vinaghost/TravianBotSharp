@@ -1,4 +1,5 @@
 ﻿using MainCore.Tasks.Base;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
@@ -12,36 +13,46 @@ namespace MainCore.Tasks
             _taskManager = taskManager;
         }
 
-        protected override async Task<Result> Execute()
+        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
         {
-            var url = _chromeBrowser.CurrentUrl;
+            var dataService = scoped.ServiceProvider.GetRequiredService<DataService>();
+            var chromeBrowser = dataService.ChromeBrowser;
+            var url = chromeBrowser.CurrentUrl;
             Result result;
-            await _chromeBrowser.Refresh(CancellationToken);
 
-            var updateBuildingCommand = new UpdateBuildingCommand();
+            await chromeBrowser.Refresh(cancellationToken);
+
+            var updateBuildingCommand = scoped.ServiceProvider.GetRequiredService<UpdateBuildingCommand>();
+            var toDorfCommand = scoped.ServiceProvider.GetRequiredService<ToDorfCommand>();
 
             if (url.Contains("dorf1"))
             {
-                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+                result = await updateBuildingCommand.Execute(cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else if (url.Contains("dorf2"))
             {
-                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
-
-                result = await new ToDorfCommand().Execute(_chromeBrowser, 1, false, CancellationToken);
+                result = await updateBuildingCommand.Execute(cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+                result = await toDorfCommand.Execute(1, cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+                result = await updateBuildingCommand.Execute(cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else
             {
-                result = await new ToDorfCommand().Execute(_chromeBrowser, 1, false, CancellationToken);
+                result = await toDorfCommand.Execute(1, cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                await updateBuildingCommand.Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+                result = await updateBuildingCommand.Execute(cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
 
-            await new UpdateStorageCommand().Execute(_chromeBrowser, AccountId, VillageId, CancellationToken);
+            var updateStorageCommand = scoped.ServiceProvider.GetRequiredService<UpdateStorageCommand>();
+            result = await updateStorageCommand.Execute(cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await SetNextExecute();
             return Result.Ok();

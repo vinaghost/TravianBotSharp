@@ -1,8 +1,9 @@
-﻿namespace MainCore.Commands.Queries
+﻿using MainCore.Commands.Abstract;
+
+namespace MainCore.Commands.Queries
 {
-    public class GetAccess(IDbContextFactory<AppDbContext> contextFactory = null, ILogService logService = null)
+    public class GetAccess(IDbContextFactory<AppDbContext> contextFactory = null, ILogService logService = null) : QueryBase(contextFactory)
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
         private readonly ILogService _logService = logService ?? Locator.Current.GetService<ILogService>();
 
         public Result<AccessDto> Execute(AccountId accountId, bool ignoreSleepTime = false)

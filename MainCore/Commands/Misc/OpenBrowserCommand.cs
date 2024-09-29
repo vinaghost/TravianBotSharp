@@ -1,11 +1,17 @@
-﻿using MainCore.Common.Models;
+﻿using MainCore.Commands.Abstract;
+using MainCore.Common.Models;
 
 namespace MainCore.Commands.Misc
 {
-    public class OpenBrowserCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class OpenBrowserCommand(DataService dataService) : CommandBase<AccessDto>(dataService)
     {
-        public async Task<Result> Execute(IChromeBrowser chromeBrowser, AccountId accountId, AccessDto access, CancellationToken cancellationToken)
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
+            var chromeBrowser = _dataService.ChromeBrowser;
+            var accountId = _dataService.AccountId;
+            var access = Data;
+
             var account = new GetAccount().Execute(accountId);
             var uri = new Uri(account.Server);
 

@@ -3,10 +3,10 @@ using Serilog.Events;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton(Registration=RegistrationStrategy.ImplementedInterfaces)]
+    [RegisterSingleton(Registration = RegistrationStrategy.ImplementedInterfaces)]
     public sealed class LogSink : ILogEventSink
     {
-        private Dictionary<AccountId, LinkedList<LogEvent>> Logs { get; } = new();
+        private Dictionary<AccountId, LinkedList<LogEvent>> Logs { get; } = [];
 
         public event Action<AccountId, LogEvent> LogEmitted;
 
@@ -23,6 +23,7 @@ namespace MainCore.Services
 
         public void Emit(LogEvent logEvent)
         {
+            if (logEvent.Level < LogEventLevel.Information) return;
             var logEventPropertyValue = logEvent.Properties.GetValueOrDefault("AccountId");
             if (logEventPropertyValue is null) return;
             if (logEventPropertyValue is not ScalarValue scalarValue) return;

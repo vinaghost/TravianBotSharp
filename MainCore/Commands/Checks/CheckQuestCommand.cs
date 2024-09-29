@@ -2,22 +2,21 @@
 
 namespace MainCore.Commands.Checks
 {
-    public class CheckQuestCommand : QuestCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class CheckQuestCommand(DataService dataService, IMediator mediator) : CommandBase(dataService)
     {
-        private readonly IMediator _mediator;
+        private readonly IMediator _mediator = mediator;
 
-        public CheckQuestCommand(IMediator mediator = null)
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
-            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
-        }
+            var html = _dataService.ChromeBrowser.Html;
+            if (!QuestParser.IsQuestClaimable(html)) return Result.Ok();
 
-        public async Task Execute(IChromeBrowser chromeBrowser, AccountId accountId, VillageId villageId, CancellationToken cancellationToken)
-        {
-            var html = chromeBrowser.Html;
-            if (IsQuestClaimable(html))
-            {
-                await _mediator.Publish(new QuestUpdated(accountId, villageId), cancellationToken);
-            }
+            var accountId = _dataService.AccountId;
+            var villageId = _dataService.VillageId;
+
+            await _mediator.Publish(new QuestUpdated(accountId, villageId), cancellationToken);
+            return Result.Ok();
         }
     }
 }

@@ -1,24 +1,31 @@
-﻿namespace MainCore.Commands.Update
-{
-    public class UpdateAccountInfoCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null)
-    {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-        private readonly IMediator _mediator = mediator ?? Locator.Current.GetService<IMediator>();
+﻿using MainCore.Commands.Abstract;
 
-        public async Task Execute(IChromeBrowser chromeBrowser, AccountId accountId, CancellationToken cancellationToken)
+namespace MainCore.Commands.Update
+{
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class UpdateAccountInfoCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService)
+    {
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
+        private readonly IMediator _mediator = mediator;
+
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
+            var accountId = _dataService.AccountId;
+            var chromeBrowser = _dataService.ChromeBrowser;
+
             var html = chromeBrowser.Html;
             var dto = Get(html);
             UpdateToDatabase(accountId, dto);
 
             await _mediator.Publish(new AccountInfoUpdated(accountId), cancellationToken);
+            return Result.Ok();
         }
 
         private static AccountInfoDto Get(HtmlDocument doc)
         {
-            var gold = GetGold(doc);
-            var silver = GetSilver(doc);
-            var hasPlusAccount = HasPlusAccount(doc);
+            var gold = InfoParser.GetGold(doc);
+            var silver = InfoParser.GetSilver(doc);
+            var hasPlusAccount = InfoParser.HasPlusAccount(doc);
 
             var dto = new AccountInfoDto()
             {
@@ -28,30 +35,6 @@
                 Tribe = TribeEnums.Any,
             };
             return dto;
-        }
-
-        private static int GetGold(HtmlDocument doc)
-        {
-            var goldNode = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("ajaxReplaceableGoldAmount"));
-            if (goldNode is null) return -1;
-            return goldNode.InnerText.ParseInt();
-        }
-
-        private static int GetSilver(HtmlDocument doc)
-        {
-            var silverNode = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("ajaxReplaceableSilverAmount"));
-            if (silverNode is null) return -1;
-            return silverNode.InnerText.ParseInt();
-        }
-
-        private static bool HasPlusAccount(HtmlDocument doc)
-        {
-            var market = doc.DocumentNode.Descendants("a").FirstOrDefault(x => x.HasClass("market") && x.HasClass("round"));
-            if (market is null) return false;
-
-            if (market.HasClass("green")) return true;
-            if (market.HasClass("gold")) return false;
-            return false;
         }
 
         private void UpdateToDatabase(AccountId accountId, AccountInfoDto dto)

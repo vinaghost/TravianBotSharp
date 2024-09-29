@@ -1,21 +1,22 @@
-﻿namespace MainCore.Tasks.Base
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace MainCore.Tasks.Base
 {
     public abstract class TaskBase
     {
         public StageEnums Stage { get; set; }
         public DateTime ExecuteAt { get; set; }
-        public CancellationToken CancellationToken { get; set; }
 
-        public async Task<Result> Handle()
+        public async Task<Result> Handle(IServiceScope scoped, CancellationToken cancellationToken)
         {
-            var preResult = await PreExecute();
+            var preResult = await PreExecute(scoped, cancellationToken);
             if (preResult.IsFailed) return preResult;
-            var result = await Execute();
+            var result = await Execute(scoped, cancellationToken);
             if (result.IsFailed && !result.HasError<Skip>())
             {
                 return result;
             }
-            var postResult = await PostExecute();
+            var postResult = await PostExecute(scoped, cancellationToken);
             if (postResult.IsFailed)
             {
                 if (result.IsFailed) return result.WithErrors(postResult.Errors);
@@ -26,16 +27,16 @@
             return Result.Ok();
         }
 
-        protected abstract Task<Result> Execute();
+        protected abstract Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken);
 
-        protected virtual async Task<Result> PreExecute()
+        protected virtual Task<Result> PreExecute(IServiceScope scoped, CancellationToken cancellationToken)
         {
-            return await Task.FromResult(Result.Ok());
+            return Task.FromResult(Result.Ok());
         }
 
-        protected virtual async Task<Result> PostExecute()
+        protected virtual Task<Result> PostExecute(IServiceScope scoped, CancellationToken cancellationToken)
         {
-            return await Task.FromResult(Result.Ok());
+            return Task.FromResult(Result.Ok());
         }
 
         public string GetName()

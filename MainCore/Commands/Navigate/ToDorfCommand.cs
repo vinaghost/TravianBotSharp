@@ -1,29 +1,34 @@
-﻿namespace MainCore.Commands.Navigate
+﻿using MainCore.Commands.Abstract;
+
+namespace MainCore.Commands.Navigate
 {
-    public class ToDorfCommand
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class ToDorfCommand(DataService dataService) : CommandBase<int>(dataService)
     {
-        public async Task<Result> Execute(IChromeBrowser chromeBrowser, int dorf, bool forceReload, CancellationToken cancellationToken)
+        public override async Task<Result> Execute(CancellationToken cancellationToken)
         {
+            var chromeBrowser = _dataService.ChromeBrowser;
+
             var currentUrl = chromeBrowser.CurrentUrl;
             var currentDorf = GetCurrentDorf(currentUrl);
-            if (dorf == 0)
+            if (Data == 0)
             {
-                if (currentDorf == 0) dorf = 1;
-                else dorf = currentDorf;
+                if (currentDorf == 0) Data = 1;
+                else Data = currentDorf;
             }
 
-            if (currentDorf != 0 && dorf == currentDorf && !forceReload)
+            if (currentDorf != 0 && Data == currentDorf)
             {
                 return Result.Ok();
             }
 
             var html = chromeBrowser.Html;
 
-            var button = GetDorfButton(html, dorf);
-            if (button is null) return Retry.ButtonNotFound($"dorf{dorf}");
+            var button = NavigationBarParser.GetDorfButton(html, Data);
+            if (button is null) return Retry.ButtonNotFound($"dorf{Data}");
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath), $"dorf{dorf}", cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(button.XPath), $"dorf{Data}", cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
@@ -34,27 +39,5 @@
             if (url.Contains("dorf2")) return 2;
             return 0;
         }
-
-        private static HtmlNode GetDorfButton(HtmlDocument doc, int dorf)
-        {
-            return dorf switch
-            {
-                1 => GetResourceButton(doc),
-                2 => GetBuildingButton(doc),
-                _ => null,
-            };
-        }
-
-        private static HtmlNode GetButton(HtmlDocument doc, int key)
-        {
-            var navigationBar = doc.GetElementbyId("navigation");
-            if (navigationBar is null) return null;
-            var buttonNode = navigationBar.Descendants("a").FirstOrDefault(x => x.GetAttributeValue("accesskey", 0) == key);
-            return buttonNode;
-        }
-
-        private static HtmlNode GetResourceButton(HtmlDocument doc) => GetButton(doc, 1);
-
-        private static HtmlNode GetBuildingButton(HtmlDocument doc) => GetButton(doc, 2);
     }
 }
