@@ -2,10 +2,9 @@
 {
     public static class AdventureParser
     {
-        public static TimeSpan GetAdventureDuration(IChromeBrowser chromeBrowser)
+        public static TimeSpan GetAdventureDuration(HtmlDocument doc)
         {
-            var html = chromeBrowser.Html;
-            var heroAdventure = html.GetElementbyId("heroAdventure");
+            var heroAdventure = doc.GetElementbyId("heroAdventure");
             var timer = heroAdventure
                 .Descendants("span")
                 .FirstOrDefault(x => x.HasClass("timer"));
@@ -23,7 +22,7 @@
             return table;
         }
 
-        public static HtmlNode GetHeroAdventure(HtmlDocument doc)
+        public static HtmlNode GetHeroAdventureButton(HtmlDocument doc)
         {
             var adventure = doc.DocumentNode
                 .Descendants("a")
@@ -42,7 +41,7 @@
                 .Any(x => x.HasClass("heroHome"));
             if (!heroHome) return false;
 
-            var adventure = GetHeroAdventure(doc);
+            var adventure = GetHeroAdventureButton(doc);
             if (adventure is null) return false;
 
             var adventureAvailabe = adventure.Descendants("div")
@@ -74,8 +73,10 @@
 
         public static string GetAdventureInfo(HtmlNode node)
         {
-            var difficult = GetAdventureDifficult(node);
-            var coordinates = GetAdventureCoordinates(node);
+            // tr/td/buton
+            var trNode = node.ParentNode.ParentNode;
+            var difficult = GetAdventureDifficult(trNode);
+            var coordinates = GetAdventureCoordinates(trNode);
 
             return $"{difficult} - {coordinates}";
         }
