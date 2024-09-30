@@ -37,7 +37,7 @@ namespace MainCore.Tasks.Base
                 return Result.Ok();
             }
 
-            if (LoginParser.IsLoginPage(chromeBrowser))
+            if (LoginParser.IsLoginPage(chromeBrowser.Html))
             {
 #pragma warning disable S3060 // "is" should not be used with "this"
                 if (this is not LoginTask)
