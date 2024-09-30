@@ -14,10 +14,6 @@
   <ItemGroup>
     <Content Include="Parsers\**\*.html" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Parsers\CompleteImmediately\BuildingsWithQueueHasTwo.html" />
-  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Bogus" Version="35.6.1" />
