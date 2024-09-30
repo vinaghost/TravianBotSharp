@@ -14,6 +14,13 @@
   <ItemGroup>
     <Content Include="Parsers\**\*.html" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Parsers\Inventory\Buildings.html" />
+    <None Remove="Parsers\Inventory\HeroInventory.html" />
+    <None Remove="Parsers\Login\Buildings.html" />
+    <None Remove="Parsers\NavigationBar\Buildings.html" />
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Bogus" Version="35.6.1" />
