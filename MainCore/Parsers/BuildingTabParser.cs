@@ -10,7 +10,7 @@
             return navigationBar;
         }
 
-        public static IEnumerable<HtmlNode> GetTabs(HtmlDocument doc)
+        private static IEnumerable<HtmlNode> GetTabs(HtmlDocument doc)
         {
             var navigationBar = GetNavigationBar(doc);
             if (navigationBar is null) return Enumerable.Empty<HtmlNode>();
