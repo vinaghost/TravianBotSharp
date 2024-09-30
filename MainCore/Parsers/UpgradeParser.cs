@@ -6,12 +6,7 @@
         {
             var node = doc.GetElementbyId($"contract_building{(int)building}"); // building
             node ??= doc.GetElementbyId("contract"); // site
-
-            if (node is null) return null;
-
-            var contract = node.Descendants("div")
-                .FirstOrDefault(x => x.HasClass("contract"));
-            return contract;
+            return node;
         }
 
         public static List<HtmlNode> GetRequiredResource(HtmlDocument doc, BuildingEnums building)
@@ -49,6 +44,8 @@
 
         public static HtmlNode GetConstructButton(HtmlDocument doc, BuildingEnums building)
         {
+            if (building.IsResourceField()) return GetUpgradeButton(doc);
+
             var node = doc.GetElementbyId($"contract_building{(int)building}");
             if (node is null) return null;
 
