@@ -1,17 +1,9 @@
 using FluentAssertions;
-using HtmlAgilityPack;
 
 namespace MainCore.Test.Parsers
 {
-    public class AdventureParser
+    public class AdventureParser : BaseParser
     {
-        private readonly HtmlDocument _html;
-
-        public AdventureParser()
-        {
-            _html = new HtmlDocument();
-        }
-
         private const string AdventuresPage = "Parsers/Adventures/AdventuresPage.html";
         private const string AdventuresPageEmpty = "Parsers/Adventures/AdventuresPageEmpty.html";
         private const string AdventuresPageOnItsWay = "Parsers/Adventures/AdventuresPageOnItsWay.html";
