@@ -2,6 +2,7 @@
 {
     public enum BuildingEnums
     {
+        Unknown = -1,
         Site = 0,
         Woodcutter,
         ClayPit,
