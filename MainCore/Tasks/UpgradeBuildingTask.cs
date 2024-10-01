@@ -35,6 +35,7 @@ namespace MainCore.Tasks
                     {
                         return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
+
                     SetTimeQueueBuildingComplete();
                     return Skip.AutoBuilderBuildingQueueFull;
                 }
@@ -52,20 +53,18 @@ namespace MainCore.Tasks
                 if (result.IsFailed)
                 {
                     if (result.HasError<Continue>()) continue;
-                    if (!result.HasError<WaitResource>())
+                    if (!result.HasError<WaitResource>(out var waitResourceError))
                     {
                         return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
 
-                    var waitResourceError = result.Errors.OfType<WaitResource>().First();
-                    ExecuteAt = DateTime.Now.Add(waitResourceError.Time);
+                    ExecuteAt = DateTime.Now.Add(waitResourceError.First().Time);
                     return Skip.AutoBuilderNotEnoughResource;
                 }
 
-                handleUpgradeCommand = scoped.ServiceProvider.GetRequiredService<HandleUpgradeCommand>();
+                handleUpgradeCommand ??= scoped.ServiceProvider.GetRequiredService<HandleUpgradeCommand>();
                 result = await handleUpgradeCommand.Execute(plan, cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                return Result.Ok();
             }
         }
 
@@ -80,7 +79,6 @@ namespace MainCore.Tasks
             var buildingQueue = GetFirstQueueBuilding(VillageId);
             if (buildingQueue is null)
             {
-                ExecuteAt = DateTime.Now.AddSeconds(1);
                 return;
             }
 

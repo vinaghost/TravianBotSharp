@@ -2,6 +2,10 @@
 {
     public class JobCompleted : Error
     {
+        protected JobCompleted()
+        {
+        }
+
         public static JobCompleted Error => new();
     }
 }

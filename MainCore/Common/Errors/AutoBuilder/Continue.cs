@@ -2,7 +2,7 @@
 {
     public sealed class Continue : Error
     {
-        private Continue()
+        protected Continue()
         {
         }
 

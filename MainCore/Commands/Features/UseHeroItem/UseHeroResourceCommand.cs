@@ -18,7 +18,7 @@ namespace MainCore.Commands.Features.UseHeroItem
 
             Result result;
             result = IsEnoughResource(Data);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             var items = new Dictionary<HeroItemEnums, long>()
             {

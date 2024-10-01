@@ -1,13 +1,8 @@
 ﻿namespace MainCore.Common.Errors.AutoBuilder
 {
-    public sealed class WaitResource : Error
+    public sealed class WaitResource(TimeSpan time) : Error
     {
-        private WaitResource(TimeSpan time)
-        {
-            Time = time;
-        }
-
-        public TimeSpan Time { get; private set; }
+        public TimeSpan Time { get; } = time;
 
         public static WaitResource Error(TimeSpan time) => new(time);
     }
