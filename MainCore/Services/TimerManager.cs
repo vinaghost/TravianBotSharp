@@ -56,7 +56,7 @@ namespace MainCore.Services
                     }
 
                     args.Context.Properties.TryGetValue(contextTaskNameKey, out var taskName);
-                    logger.Warning("Retry {AttemptNumber} for {TaskName}", args.AttemptNumber, taskName);
+                    logger.Warning("Retry {AttemptNumber} for {TaskName}", args.AttemptNumber + 1, taskName);
 
                     args.Context.Properties.TryGetValue(contextAccountIdKey, out var accountId);
                     var chromeBrowser = _chromeManager.Get(accountId);
