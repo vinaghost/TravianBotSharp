@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.Abstract;
+using MainCore.Parsers;
 
 namespace MainCore.Commands.Features.StartAdventure
 {
@@ -13,7 +14,7 @@ namespace MainCore.Commands.Features.StartAdventure
             if (!AdventureParser.CanStartAdventure(html)) return Skip.NoAdventure;
 
             var adventure = AdventureParser.GetAdventure(html);
-            if (adventure is null) return Retry.ButtonNotFound("adventure place");
+            if (adventure is null) return Retry.ButtonNotFound("adventure");
 
             var logger = _dataService.Logger;
             logger.Information("Start adventure {Adventure}", AdventureParser.GetAdventureInfo(adventure));

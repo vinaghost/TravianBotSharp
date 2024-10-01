@@ -37,14 +37,14 @@ namespace MainCore.Common.Extensions
         public static int ParseInt(this string value)
         {
             var normValue = value.Normalized();
-            if (string.IsNullOrEmpty(normValue)) return 0;
+            if (string.IsNullOrEmpty(normValue)) return -1;
             return int.Parse(normValue);
         }
 
         public static long ParseLong(this string value)
         {
             var normValue = value.Normalized();
-            if (string.IsNullOrEmpty(normValue)) return 0;
+            if (string.IsNullOrEmpty(normValue)) return -1;
             return long.Parse(normValue);
         }
     }
