@@ -7,12 +7,13 @@ using MainCore.Common.Models;
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class HandleResourceCommand(DataService dataService, IMediator mediator, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand) : CommandBase(dataService), ICommand<NormalBuildPlan>
+    public class HandleResourceCommand(DataService dataService, IMediator mediator, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand, UpdateInventoryCommand updateInventoryCommand) : CommandBase(dataService), ICommand<NormalBuildPlan>
     {
         private readonly IMediator _mediator = mediator;
         private readonly UpdateStorageCommand _updateStorageCommand = updateStorageCommand;
         private readonly UseHeroResourceCommand _useHeroResourceCommand = useHeroResourceCommand;
         private readonly ToHeroInventoryCommand _toHeroInventoryCommand = toHeroInventoryCommand;
+        private readonly UpdateInventoryCommand _updateInventoryCommand = updateInventoryCommand;
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
 
         public async Task<Result> Execute(NormalBuildPlan plan, CancellationToken cancellationToken)
@@ -68,6 +69,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var url = _dataService.ChromeBrowser.CurrentUrl;
 
             result = await _toHeroInventoryCommand.Execute(cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await _updateInventoryCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var heroResourceResult = await _useHeroResourceCommand.Execute(missingResource, cancellationToken);

@@ -138,14 +138,14 @@ namespace MainCore.Commands.Features.UseHeroItem
                 .ToList();
 
             var errors = new List<Error>();
-
-            foreach (var type in types)
+            for (var i = 0; i < 4; i++)
             {
+                var type = types[i];
                 var item = items.Find(x => x.Type == type);
                 var amount = item?.Amount ?? 0;
-                if (amount < requiredResource[(int)type])
+                if (amount < requiredResource[i])
                 {
-                    errors.Add(Resource.Error($"{type}", amount, requiredResource[(int)type]));
+                    errors.Add(Resource.Error($"{type}", amount, requiredResource[i]));
                 }
             }
 

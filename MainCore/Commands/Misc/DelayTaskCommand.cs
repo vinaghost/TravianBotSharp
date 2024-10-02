@@ -10,7 +10,7 @@ namespace MainCore.Commands.Misc
             var accountId = _dataService.AccountId;
             var delay = new GetSetting().ByName(accountId, AccountSettingEnums.TaskDelayMin, AccountSettingEnums.TaskDelayMax);
 
-            var result = await Result.Try(() => Task.Delay(delay, cancellationToken), x => Cancel.Error);
+            var result = await Result.Try(() => Task.Delay(delay, cancellationToken), static _ => Cancel.Error);
             return result;
         }
     }
