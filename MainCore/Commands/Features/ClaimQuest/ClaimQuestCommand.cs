@@ -3,13 +3,13 @@
 namespace MainCore.Commands.Features.ClaimQuest
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class ClaimQuestCommand(DataService dataService, IMediator mediator, SwitchTabCommand switchTabCommand, DelayClickCommand delayClickCommand) : CommandBase(dataService)
+    public class ClaimQuestCommand(DataService dataService, IMediator mediator, SwitchTabCommand switchTabCommand, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand
     {
         private readonly IMediator _mediator = mediator;
         private readonly SwitchTabCommand _switchTabCommand = switchTabCommand;
         private readonly DelayClickCommand _delayClickCommand = delayClickCommand;
 
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(CancellationToken cancellationToken)
         {
             var chromeBrowser = _dataService.ChromeBrowser;
             var accountId = _dataService.AccountId;

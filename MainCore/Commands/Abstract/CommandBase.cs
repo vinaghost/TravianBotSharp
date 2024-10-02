@@ -1,20 +1,17 @@
 ﻿namespace MainCore.Commands.Abstract
 {
-    public abstract class CommandBase(DataService dataService) : ICommand
+    public abstract class CommandBase(DataService dataService)
     {
         protected DataService _dataService = dataService;
-
-        public abstract Task<Result> Execute(CancellationToken cancellationToken);
     }
 
-    public abstract class CommandBase<T>(DataService dataService) : CommandBase(dataService), ICommand<T>
+    public interface ICommand
     {
-        public T Data { get; protected set; }
+        Task<Result> Execute(CancellationToken cancellationToken);
+    }
 
-        public Task<Result> Execute(T data, CancellationToken cancellationToken)
-        {
-            Data = data;
-            return Execute(cancellationToken);
-        }
+    public interface ICommand<in T>
+    {
+        Task<Result> Execute(T data, CancellationToken cancellationToken);
     }
 }

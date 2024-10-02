@@ -7,7 +7,7 @@ using MainCore.Common.Models;
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class HandleResourceCommand(DataService dataService, IMediator mediator, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand) : CommandBase<NormalBuildPlan>(dataService)
+    public class HandleResourceCommand(DataService dataService, IMediator mediator, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand) : CommandBase(dataService), ICommand<NormalBuildPlan>
     {
         private readonly IMediator _mediator = mediator;
         private readonly UpdateStorageCommand _updateStorageCommand = updateStorageCommand;
@@ -15,10 +15,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         private readonly ToHeroInventoryCommand _toHeroInventoryCommand = toHeroInventoryCommand;
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
 
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(NormalBuildPlan plan, CancellationToken cancellationToken)
         {
-            var plan = Data;
-
             Result result;
             result = await _updateStorageCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));

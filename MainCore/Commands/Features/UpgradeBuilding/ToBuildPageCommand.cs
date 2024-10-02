@@ -4,14 +4,13 @@ using MainCore.Common.Models;
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class ToBuildPageCommand(DataService dataService, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand) : CommandBase<NormalBuildPlan>(dataService)
+    public class ToBuildPageCommand(DataService dataService, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand) : CommandBase(dataService), ICommand<NormalBuildPlan>
     {
         private readonly ToBuildingCommand _toBuildingCommand = toBuildingCommand;
         private readonly SwitchTabCommand _switchTabCommand = switchTabCommand;
 
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(NormalBuildPlan plan, CancellationToken cancellationToken)
         {
-            var plan = Data;
             var villageId = _dataService.VillageId;
 
             Result result;

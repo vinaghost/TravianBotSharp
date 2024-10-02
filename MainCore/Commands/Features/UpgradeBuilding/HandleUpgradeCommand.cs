@@ -4,7 +4,7 @@ using MainCore.Common.Models;
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class HandleUpgradeCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand) : CommandBase<NormalBuildPlan>(dataService)
+    public class HandleUpgradeCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand<NormalBuildPlan>
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
         private readonly DelayClickCommand _delayClickCommand = delayClickCommand;
@@ -15,9 +15,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             BuildingEnums.CommandCenter
         ];
 
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(NormalBuildPlan plan, CancellationToken cancellationToken)
         {
-            var plan = Data;
             Result result;
 
             if (IsUpgradeable(plan))
