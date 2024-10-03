@@ -4,7 +4,7 @@ using MainCore.Common.Errors.TrainTroop;
 namespace MainCore.Commands.Features.TrainTroop
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class TrainTroopCommand(DataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand) : CommandBase<BuildingEnums>(dataService)
+    public class TrainTroopCommand(DataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand) : CommandBase(dataService), ICommand<BuildingEnums>
     {
         private readonly ToDorfCommand _toDorfCommand = toDorfCommand;
         private readonly UpdateBuildingCommand _updateBuildingCommand = updateBuildingCommand;
@@ -24,18 +24,16 @@ namespace MainCore.Commands.Features.TrainTroop
             {BuildingEnums.Workshop, (VillageSettingEnums.WorkshopAmountMin,VillageSettingEnums.WorkshopAmountMax ) },
         };
 
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(BuildingEnums building, CancellationToken cancellationToken)
         {
-            var buildingType = Data;
-
             Result result;
-            result = await ToTrainBuilding(buildingType, cancellationToken);
+            result = await ToTrainBuilding(building, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var troopSeting = BuildingSettings[buildingType];
+            var troopSeting = BuildingSettings[building];
             var troop = (TroopEnums)new GetSetting().ByName(_dataService.VillageId, troopSeting);
 
-            var (_, isFailed, amount, errors) = GetAmount(buildingType, troop);
+            var (_, isFailed, amount, errors) = GetAmount(building, troop);
             if (isFailed) return Result.Fail(errors).WithError(TraceMessage.Error(TraceMessage.Line()));
 
             result = await TrainTroop(troop, amount, cancellationToken);

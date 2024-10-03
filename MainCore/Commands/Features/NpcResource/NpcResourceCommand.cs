@@ -3,7 +3,7 @@
 namespace MainCore.Commands.Features.NpcResource
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class NpcResourceCommand(DataService dataService) : CommandBase(dataService)
+    public class NpcResourceCommand(DataService dataService) : CommandBase(dataService), ICommand
     {
         private static readonly List<VillageSettingEnums> _settingNames = [
             VillageSettingEnums.AutoNPCWood,
@@ -12,7 +12,7 @@ namespace MainCore.Commands.Features.NpcResource
             VillageSettingEnums.AutoNPCCrop,
         ];
 
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(CancellationToken cancellationToken)
         {
             Result result;
             result = await OpenNPCDialog(cancellationToken);

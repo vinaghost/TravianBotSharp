@@ -3,11 +3,11 @@
 namespace MainCore.Commands.Features
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class LoginCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory) : CommandBase(dataService)
+    public class LoginCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
 
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(CancellationToken cancellationToken)
         {
             var accountId = _dataService.AccountId;
             var chromeBrowser = _dataService.ChromeBrowser;

@@ -1,23 +1,22 @@
 ﻿using MainCore.Commands.Abstract;
-using MainCore.Parsers;
 
 namespace MainCore.Commands.Features.StartAdventure
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class ExploreAdventureCommand(DataService dataService) : CommandBase(dataService)
+    public class ExploreAdventureCommand(DataService dataService) : CommandBase(dataService), ICommand
     {
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(CancellationToken cancellationToken)
         {
             var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;
 
             if (!AdventureParser.CanStartAdventure(html)) return Skip.NoAdventure;
 
-            var adventure = AdventureParser.GetAdventure(html);
-            if (adventure is null) return Retry.ButtonNotFound("adventure");
+            var adventureButton = AdventureParser.GetAdventureButton(html);
+            if (adventureButton is null) return Retry.ButtonNotFound("adventure");
 
             var logger = _dataService.Logger;
-            logger.Information("Start adventure {Adventure}", AdventureParser.GetAdventureInfo(adventure));
+            logger.Information("Start adventure {Adventure}", AdventureParser.GetAdventureInfo(adventureButton));
 
             static bool continueShow(IWebDriver driver)
             {
@@ -28,7 +27,7 @@ namespace MainCore.Commands.Features.StartAdventure
             }
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(adventure.XPath), continueShow, cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(adventureButton.XPath), continueShow, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

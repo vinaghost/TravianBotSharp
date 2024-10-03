@@ -116,15 +116,8 @@ namespace MainCore.Services
                 _driver.Navigate().Refresh();
             }
 
-            try
-            {
-                await Task.Run(refresh);
-                return Result.Ok();
-            }
-            catch (Exception exception)
-            {
-                return Stop.Exception(exception);
-            }
+            var result = await Result.Try(() => Task.Run(refresh), Retry.Exception);
+            return result;
         }
 
         public async Task<Result> Refresh(CancellationToken cancellationToken)
@@ -147,16 +140,8 @@ namespace MainCore.Services
             {
                 _driver.Navigate().GoToUrl(url);
             }
-
-            try
-            {
-                await Task.Run(goToUrl);
-                return Result.Ok();
-            }
-            catch (Exception exception)
-            {
-                return Stop.Exception(exception);
-            }
+            var result = await Result.Try(() => Task.Run(goToUrl), Retry.Exception);
+            return result;
         }
 
         public async Task<Result> Navigate(string url, CancellationToken cancellationToken)
@@ -187,7 +172,9 @@ namespace MainCore.Services
             catch
             {
                 var specialClick = new Actions(_driver).Click(element).Perform;
-                await Task.Run(specialClick);
+
+                var result = await Result.Try(() => Task.Run(specialClick), Retry.Exception);
+                return result;
             }
 
             return Result.Ok();
@@ -298,12 +285,12 @@ namespace MainCore.Services
                 element.SendKeys(Keys.Shift + Keys.End);
                 element.SendKeys(content);
             }
-            await Task.Run(input);
 
-            return Result.Ok();
+            var result = await Result.Try(() => Task.Run(input), Retry.Exception);
+            return result;
         }
 
-        private async Task ExecuteJsScript(string javascript)
+        private async Task<Result> ExecuteJsScript(string javascript)
         {
             var js = Driver as IJavaScriptExecutor;
             void execute()
@@ -311,23 +298,19 @@ namespace MainCore.Services
                 js.ExecuteScript(javascript);
             }
 
-            await Task.Run(execute);
+            var result = await Result.Try(() => Task.Run(execute), Retry.Exception);
+            return result;
         }
 
         public async Task<Result> ExecuteJsScript(string javascript, string url, CancellationToken cancellationToken)
         {
-            await ExecuteJsScript(javascript);
-
             Result result;
-            result = await WaitPageChanged(url, cancellationToken);
-            if (result.IsFailed)
-            {
-                await ExecuteJsScript(javascript);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await ExecuteJsScript(javascript);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                result = await WaitPageChanged(url, cancellationToken);
-                return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            }
+            result = await WaitPageChanged(url, cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
             result = await WaitPageLoaded(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
@@ -335,25 +318,18 @@ namespace MainCore.Services
 
         public async Task<Result> Wait(Func<IWebDriver, bool> condition, CancellationToken cancellationToken)
         {
-            Result wait()
+            void wait()
             {
                 _wait.Until(driver =>
                 {
                     if (cancellationToken.IsCancellationRequested) return true;
                     return condition(driver);
                 });
-                if (cancellationToken.IsCancellationRequested) return Cancel.Error;
-                return Result.Ok();
             }
 
-            try
-            {
-                return await Task.Run(wait);
-            }
-            catch (WebDriverTimeoutException)
-            {
-                return Stop.PageNotLoad;
-            }
+            var result = await Result.Try(() => Task.Run(wait), ex => ex is WebDriverTimeoutException ? Stop.PageNotLoad : Retry.Exception(ex));
+            if (cancellationToken.IsCancellationRequested) return Cancel.Error;
+            return result;
         }
 
         public async Task<Result> WaitPageLoaded(CancellationToken cancellationToken)

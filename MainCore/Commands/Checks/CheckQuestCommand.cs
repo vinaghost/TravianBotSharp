@@ -3,11 +3,11 @@
 namespace MainCore.Commands.Checks
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class CheckQuestCommand(DataService dataService, IMediator mediator) : CommandBase(dataService)
+    public class CheckQuestCommand(DataService dataService, IMediator mediator) : CommandBase(dataService), ICommand
     {
         private readonly IMediator _mediator = mediator;
 
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(CancellationToken cancellationToken)
         {
             var html = _dataService.ChromeBrowser.Html;
             if (!QuestParser.IsQuestClaimable(html)) return Result.Ok();

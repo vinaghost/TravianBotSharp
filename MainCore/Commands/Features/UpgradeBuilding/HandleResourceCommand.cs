@@ -7,17 +7,17 @@ using MainCore.Common.Models;
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class HandleResourceCommand(DataService dataService, IMediator mediator, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory) : CommandBase<NormalBuildPlan>(dataService)
+    public class HandleResourceCommand(DataService dataService, IMediator mediator, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand, UpdateInventoryCommand updateInventoryCommand) : CommandBase(dataService), ICommand<NormalBuildPlan>
     {
         private readonly IMediator _mediator = mediator;
         private readonly UpdateStorageCommand _updateStorageCommand = updateStorageCommand;
         private readonly UseHeroResourceCommand _useHeroResourceCommand = useHeroResourceCommand;
+        private readonly ToHeroInventoryCommand _toHeroInventoryCommand = toHeroInventoryCommand;
+        private readonly UpdateInventoryCommand _updateInventoryCommand = updateInventoryCommand;
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
 
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(NormalBuildPlan plan, CancellationToken cancellationToken)
         {
-            var plan = Data;
-
             Result result;
             result = await _updateStorageCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -30,38 +30,72 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 return Result.Ok();
             }
 
-            if (result.HasError<FreeCrop>())
+            if (result.HasError<FreeCrop>(out var freeCropErrors))
             {
+                foreach (var item in freeCropErrors)
+                {
+                    item.Log(_dataService.Logger);
+                }
                 await AddCropland(cancellationToken);
                 return Continue.Error;
             }
 
-            if (result.HasError<GranaryLimit>() || result.HasError<WarehouseLimit>())
+            if (result.HasError<StorageLimit>(out var storageLimitErrors))
             {
-                return result
-                    .WithError(Stop.NotEnoughStorageCapacity)
-                    .WithError(TraceMessage.Error(TraceMessage.Line()));
+                foreach (var item in storageLimitErrors)
+                {
+                    item.Log(_dataService.Logger);
+                }
+                return Stop.NotEnoughStorageCapacity;
             }
 
             if (!IsUseHeroResource())
             {
+                if (result.HasError<Resource>(out var resourceErrors))
+                {
+                    foreach (var item in resourceErrors)
+                    {
+                        item.Log(_dataService.Logger);
+                    }
+                }
+
                 var time = UpgradeParser.GetTimeWhenEnoughResource(_dataService.ChromeBrowser.Html, plan.Type);
-                return result
-                    .WithError(WaitResource.Error(time))
-                    .WithError(TraceMessage.Error(TraceMessage.Line()));
+                return WaitResource.Error(time);
             }
 
+            _dataService.Logger.Information("Use hero resource to upgrade building");
             var missingResource = new GetMissingResource(_contextFactory).Execute(_dataService.VillageId, requiredResource);
+
+            var url = _dataService.ChromeBrowser.CurrentUrl;
+
+            result = await _toHeroInventoryCommand.Execute(cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await _updateInventoryCommand.Execute(cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
             var heroResourceResult = await _useHeroResourceCommand.Execute(missingResource, cancellationToken);
             if (heroResourceResult.IsFailed)
             {
                 if (heroResourceResult.HasError<Retry>()) return heroResourceResult.WithError(TraceMessage.Error(TraceMessage.Line()));
 
+                if (heroResourceResult.HasError<Resource>(out var resourceErrors))
+                {
+                    foreach (var item in resourceErrors)
+                    {
+                        item.Log(_dataService.Logger);
+                    }
+                }
+
+                result = await _dataService.ChromeBrowser.Navigate(url, cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
                 var time = UpgradeParser.GetTimeWhenEnoughResource(_dataService.ChromeBrowser.Html, plan.Type);
-                return result
-                    .WithError(WaitResource.Error(time))
-                    .WithError(TraceMessage.Error(TraceMessage.Line()));
+                return WaitResource.Error(time);
             }
+
+            result = await _dataService.ChromeBrowser.Navigate(url, cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }
@@ -94,6 +128,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             };
 
             new AddJobCommand(_contextFactory).ToTop(_dataService.VillageId, plan);
+            var logger = _dataService.Logger;
+            logger.Information($"Add cropland to top of the job queue");
             await _mediator.Publish(new JobUpdated(_dataService.AccountId, _dataService.VillageId), cancellationToken);
         }
 

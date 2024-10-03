@@ -4,14 +4,14 @@ using MainCore.Common.Errors.TrainTroop;
 namespace MainCore.Commands.Features.NpcResource
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class ToNpcResourcePageCommand(DataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand) : CommandBase(dataService)
+    public class ToNpcResourcePageCommand(DataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand) : CommandBase(dataService), ICommand
     {
         private readonly ToDorfCommand _toDorfCommand = toDorfCommand;
         private readonly UpdateBuildingCommand _updateBuildingCommand = updateBuildingCommand;
         private readonly ToBuildingCommand _toBuildingCommand = toBuildingCommand;
         private readonly SwitchTabCommand _switchTabCommand = switchTabCommand;
 
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(CancellationToken cancellationToken)
         {
             Result result;
             result = await _toDorfCommand.Execute(2, cancellationToken);
