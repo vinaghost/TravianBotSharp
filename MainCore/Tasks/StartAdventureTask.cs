@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.Features.StartAdventure;
+using MainCore.Parsers;
 using MainCore.Tasks.Base;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,7 +28,7 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var chromeBrowser = scoped.ServiceProvider.GetRequiredService<DataService>().ChromeBrowser;
-            var adventureDuration = AdventureParser.GetAdventureDuration(chromeBrowser);
+            var adventureDuration = AdventureParser.GetAdventureDuration(chromeBrowser.Html);
             await SetNextExecute(adventureDuration);
 
             return Result.Ok();

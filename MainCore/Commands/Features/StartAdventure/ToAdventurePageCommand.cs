@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.Abstract;
+using MainCore.Parsers;
 
 namespace MainCore.Commands.Features.StartAdventure
 {
@@ -10,7 +11,7 @@ namespace MainCore.Commands.Features.StartAdventure
             var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;
 
-            var adventure = AdventureParser.GetHeroAdventure(html);
+            var adventure = AdventureParser.GetHeroAdventureButton(html);
             if (adventure is null) return Retry.ButtonNotFound("hero adventure");
 
             static bool tableShow(IWebDriver driver)

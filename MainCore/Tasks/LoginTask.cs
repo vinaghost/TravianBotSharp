@@ -25,7 +25,7 @@ namespace MainCore.Tasks
             var dataService = scoped.ServiceProvider.GetRequiredService<DataService>();
             var chromeBrowser = dataService.ChromeBrowser;
 
-            var contextualHelpEnable = OptionParser.IsContextualHelpEnable(chromeBrowser);
+            var contextualHelpEnable = OptionParser.IsContextualHelpEnable(chromeBrowser.Html);
             if (!contextualHelpEnable) return Result.Ok();
 
             Result result;
