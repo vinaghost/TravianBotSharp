@@ -35,10 +35,9 @@
             return serverTime is not null;
         }
 
-        public static bool IsLoginPage(IChromeBrowser chromeBrowser)
+        public static bool IsLoginPage(HtmlDocument doc)
         {
-            var html = chromeBrowser.Html;
-            var loginButton = GetLoginButton(html);
+            var loginButton = GetLoginButton(doc);
             return loginButton is not null;
         }
     }

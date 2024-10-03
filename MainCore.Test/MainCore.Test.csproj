@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -11,6 +11,10 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Include="Parsers\**\*.html" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="Bogus" Version="35.6.1" />
     <PackageReference Include="coverlet.collector" Version="6.0.2">
@@ -32,6 +36,6 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="FluentAssertions" />    
   </ItemGroup>
-
 </Project>

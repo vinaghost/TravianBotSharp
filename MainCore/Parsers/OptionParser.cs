@@ -2,10 +2,9 @@
 {
     public static class OptionParser
     {
-        public static bool IsContextualHelpEnable(IChromeBrowser chromeBrowser)
+        public static bool IsContextualHelpEnable(HtmlDocument doc)
         {
-            var html = chromeBrowser.Html;
-            var node = html.GetElementbyId("contextualHelp");
+            var node = doc.GetElementbyId("contextualHelp");
             return node is not null;
         }
 
