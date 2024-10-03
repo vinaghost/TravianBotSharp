@@ -42,13 +42,13 @@ namespace MainCore.Commands.Queries
 
             if (storage.Granary < requiredResource[3])
             {
-                result.WithError(GranaryLimit.Error(storage.Granary, requiredResource[3]));
+                result.WithError(StorageLimit.Error("granary", storage.Granary, requiredResource[3]));
             }
 
             var max = requiredResource.Take(3).Max();
             if (storage.Warehouse < max)
             {
-                result.WithError(WarehouseLimit.Error(storage.Warehouse, max));
+                result.WithError(StorageLimit.Error("warehouse", storage.Warehouse, max));
             }
 
             return result;

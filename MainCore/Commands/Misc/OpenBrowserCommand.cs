@@ -4,13 +4,12 @@ using MainCore.Common.Models;
 namespace MainCore.Commands.Misc
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class OpenBrowserCommand(DataService dataService) : CommandBase<AccessDto>(dataService)
+    public class OpenBrowserCommand(DataService dataService) : CommandBase(dataService), ICommand<AccessDto>
     {
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(AccessDto access, CancellationToken cancellationToken)
         {
             var chromeBrowser = _dataService.ChromeBrowser;
             var accountId = _dataService.AccountId;
-            var access = Data;
 
             var account = new GetAccount().Execute(accountId);
             var uri = new Uri(account.Server);

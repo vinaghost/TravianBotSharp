@@ -4,28 +4,28 @@ using MainCore.Common.Errors.Storage;
 namespace MainCore.Commands.Features.UseHeroItem
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class UseHeroResourceCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand) : CommandBase<long[]>(dataService)
+    public class UseHeroResourceCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand<long[]>
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
         private readonly DelayClickCommand _delayClickCommand = delayClickCommand;
 
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(long[] resource, CancellationToken cancellationToken)
         {
             for (var i = 0; i < 4; i++)
             {
-                Data[i] = RoundUpTo100(Data[i]);
+                resource[i] = RoundUpTo100(resource[i]);
             }
 
             Result result;
-            result = IsEnoughResource(Data);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = IsEnoughResource(resource);
+            if (result.IsFailed) return result;
 
             var items = new Dictionary<HeroItemEnums, long>()
             {
-                { HeroItemEnums.Wood, Data[0]},
-                { HeroItemEnums.Clay, Data[1]},
-                { HeroItemEnums.Iron, Data[2]},
-                { HeroItemEnums.Crop, Data[3]},
+                { HeroItemEnums.Wood, resource[0]},
+                { HeroItemEnums.Clay, resource[1]},
+                { HeroItemEnums.Iron, resource[2]},
+                { HeroItemEnums.Crop, resource[3]},
             };
 
             foreach (var item in items)
@@ -138,14 +138,14 @@ namespace MainCore.Commands.Features.UseHeroItem
                 .ToList();
 
             var errors = new List<Error>();
-
-            foreach (var type in types)
+            for (var i = 0; i < 4; i++)
             {
+                var type = types[i];
                 var item = items.Find(x => x.Type == type);
                 var amount = item?.Amount ?? 0;
-                if (amount < requiredResource[(int)type])
+                if (amount < requiredResource[i])
                 {
-                    errors.Add(Resource.Error($"{type}", amount, requiredResource[(int)type]));
+                    errors.Add(Resource.Error($"{type}", amount, requiredResource[i]));
                 }
             }
 

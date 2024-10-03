@@ -3,12 +3,12 @@
 namespace MainCore.Commands.Update
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class UpdateStorageCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService)
+    public class UpdateStorageCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
         private readonly IMediator _mediator = mediator;
 
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(CancellationToken cancellationToken)
         {
             var accountId = _dataService.AccountId;
             var villageId = _dataService.VillageId;

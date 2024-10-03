@@ -3,9 +3,9 @@
 namespace MainCore.Commands.Features
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class SleepCommand(DataService dataService) : CommandBase(dataService)
+    public class SleepCommand(DataService dataService) : CommandBase(dataService), ICommand
     {
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(CancellationToken cancellationToken)
         {
             var chromeBrowser = _dataService.ChromeBrowser;
             await chromeBrowser.Close();

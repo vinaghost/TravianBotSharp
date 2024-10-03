@@ -3,11 +3,11 @@
 namespace MainCore.Commands.Features.CompleteImmediately
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class CompleteImmediatelyCommand(DataService dataService, IMediator mediator) : CommandBase(dataService)
+    public class CompleteImmediatelyCommand(DataService dataService, IMediator mediator) : CommandBase(dataService), ICommand
     {
         private readonly IMediator _mediator = mediator;
 
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(CancellationToken cancellationToken)
         {
             var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;

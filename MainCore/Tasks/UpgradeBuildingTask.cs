@@ -27,19 +27,18 @@ namespace MainCore.Tasks
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
                 handleJobCommand ??= scoped.ServiceProvider.GetRequiredService<HandleJobCommand>();
-                result = await handleJobCommand.Execute(cancellationToken);
-                if (result.IsFailed)
+                var (_, isFalied, plan, errors) = await handleJobCommand.Execute(cancellationToken);
+                if (isFalied)
                 {
-                    if (result.HasError<Continue>()) continue;
-                    if (!result.HasError<BuildingQueueFull>())
+                    if (errors.OfType<Continue>().Any()) continue;
+                    if (!errors.OfType<BuildingQueueFull>().Any())
                     {
-                        return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                        return Result.Fail(errors).WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
+
                     SetTimeQueueBuildingComplete();
                     return Skip.AutoBuilderBuildingQueueFull;
                 }
-
-                var plan = handleJobCommand.Data;
 
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
 
@@ -48,24 +47,22 @@ namespace MainCore.Tasks
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 handleResourceCommand ??= scoped.ServiceProvider.GetRequiredService<HandleResourceCommand>();
-                result = await handleResourceCommand.Execute(cancellationToken);
+                result = await handleResourceCommand.Execute(plan, cancellationToken);
                 if (result.IsFailed)
                 {
                     if (result.HasError<Continue>()) continue;
-                    if (!result.HasError<WaitResource>())
+                    if (!result.HasError<WaitResource>(out var waitResourceError))
                     {
                         return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                     }
 
-                    var waitResourceError = result.Errors.OfType<WaitResource>().First();
-                    ExecuteAt = DateTime.Now.Add(waitResourceError.Time);
+                    ExecuteAt = DateTime.Now.Add(waitResourceError.First().Time);
                     return Skip.AutoBuilderNotEnoughResource;
                 }
 
-                handleUpgradeCommand = scoped.ServiceProvider.GetRequiredService<HandleUpgradeCommand>();
+                handleUpgradeCommand ??= scoped.ServiceProvider.GetRequiredService<HandleUpgradeCommand>();
                 result = await handleUpgradeCommand.Execute(plan, cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                return Result.Ok();
             }
         }
 
@@ -80,7 +77,6 @@ namespace MainCore.Tasks
             var buildingQueue = GetFirstQueueBuilding(VillageId);
             if (buildingQueue is null)
             {
-                ExecuteAt = DateTime.Now.AddSeconds(1);
                 return;
             }
 

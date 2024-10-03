@@ -3,14 +3,14 @@
 namespace MainCore.Commands.Misc
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class DelayTaskCommand(DataService dataService) : CommandBase(dataService)
+    public class DelayTaskCommand(DataService dataService) : CommandBase(dataService), ICommand
     {
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(CancellationToken cancellationToken)
         {
             var accountId = _dataService.AccountId;
             var delay = new GetSetting().ByName(accountId, AccountSettingEnums.TaskDelayMin, AccountSettingEnums.TaskDelayMax);
 
-            var result = await Result.Try(() => Task.Delay(delay, cancellationToken), x => Cancel.Error);
+            var result = await Result.Try(() => Task.Delay(delay, cancellationToken), static _ => Cancel.Error);
             return result;
         }
     }

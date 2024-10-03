@@ -1,8 +1,8 @@
 ﻿namespace MainCore.Common.Errors.AutoBuilder
 {
-    public sealed class Continue : Error
+    public class Continue : Error
     {
-        private Continue()
+        protected Continue()
         {
         }
 

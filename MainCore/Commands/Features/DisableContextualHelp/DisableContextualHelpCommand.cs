@@ -3,9 +3,9 @@
 namespace MainCore.Commands.Features.DisableContextualHelp
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class DisableContextualHelpCommand(DataService dataService) : CommandBase(dataService)
+    public class DisableContextualHelpCommand(DataService dataService) : CommandBase(dataService), ICommand
     {
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(CancellationToken cancellationToken)
         {
             var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;

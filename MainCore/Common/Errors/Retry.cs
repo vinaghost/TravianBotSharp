@@ -6,6 +6,8 @@
         {
         }
 
+        public static Retry Exception(Exception exception) => new(exception.Message);
+
         public static Retry NotFound(string name, string type) => new($"Cannot find {type} [{name}] ");
 
         public static Retry TextboxNotFound(string name) => NotFound(name, "textbox");

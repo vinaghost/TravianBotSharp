@@ -3,9 +3,9 @@
 namespace MainCore.Commands.Navigate
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class SwitchVillageCommand(DataService dataService) : CommandBase(dataService)
+    public class SwitchVillageCommand(DataService dataService) : CommandBase(dataService), ICommand
     {
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(CancellationToken cancellationToken)
         {
             var villageId = _dataService.VillageId;
             var chromeBrowser = _dataService.ChromeBrowser;

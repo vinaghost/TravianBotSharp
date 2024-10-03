@@ -6,7 +6,7 @@ using System.Text.Json;
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class HandleJobCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand) : CommandBase<NormalBuildPlan>(dataService)
+    public class HandleJobCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand) : CommandBase(dataService)
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
         private readonly IMediator _mediator = mediator;
@@ -29,7 +29,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             {ResourcePlanEnums.OnlyCrop, _resourceTypes.Skip(3).ToList()},
         };
 
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result<NormalBuildPlan>> Execute(CancellationToken cancellationToken)
         {
             var (_, isFailed, job, errors) = await GetJob(cancellationToken);
             if (isFailed) return Result.Fail(errors).WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -56,8 +56,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 return Continue.Error;
             }
 
-            Data = plan;
-            return Result.Ok();
+            return plan;
         }
 
         #region GetJob

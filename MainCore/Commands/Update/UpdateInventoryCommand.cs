@@ -1,16 +1,22 @@
-﻿namespace MainCore.Commands.Update
-{
-    public class UpdateInventoryCommand(IDbContextFactory<AppDbContext> contextFactory = null, IMediator mediator = null)
-    {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-        private readonly IMediator _mediator = mediator ?? Locator.Current.GetService<IMediator>();
+﻿using MainCore.Commands.Abstract;
 
-        public async Task Execute(AccountId accountId, IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
+namespace MainCore.Commands.Update
+{
+    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    public class UpdateInventoryCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
+    {
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
+        private readonly IMediator _mediator = mediator;
+
+        public async Task<Result> Execute(CancellationToken cancellationToken)
         {
+            var accountId = _dataService.AccountId;
+            var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;
             var dtos = GetItems(html);
             Update(accountId, dtos.ToList());
             await _mediator.Publish(new HeroItemUpdated(accountId), cancellationToken);
+            return Result.Ok();
         }
 
         private static IEnumerable<HeroItemDto> GetItems(HtmlDocument doc)

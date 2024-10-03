@@ -3,32 +3,32 @@
 namespace MainCore.Commands.Navigate
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class ToDorfCommand(DataService dataService) : CommandBase<int>(dataService)
+    public class ToDorfCommand(DataService dataService) : CommandBase(dataService), ICommand<int>
     {
-        public override async Task<Result> Execute(CancellationToken cancellationToken)
+        public async Task<Result> Execute(int dorf, CancellationToken cancellationToken)
         {
             var chromeBrowser = _dataService.ChromeBrowser;
 
             var currentUrl = chromeBrowser.CurrentUrl;
             var currentDorf = GetCurrentDorf(currentUrl);
-            if (Data == 0)
+            if (dorf == 0)
             {
-                if (currentDorf == 0) Data = 1;
-                else Data = currentDorf;
+                if (currentDorf == 0) dorf = 1;
+                else dorf = currentDorf;
             }
 
-            if (currentDorf != 0 && Data == currentDorf)
+            if (currentDorf != 0 && dorf == currentDorf)
             {
                 return Result.Ok();
             }
 
             var html = chromeBrowser.Html;
 
-            var button = NavigationBarParser.GetDorfButton(html, Data);
-            if (button is null) return Retry.ButtonNotFound($"dorf{Data}");
+            var button = NavigationBarParser.GetDorfButton(html, dorf);
+            if (button is null) return Retry.ButtonNotFound($"dorf{dorf}");
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath), $"dorf{Data}", cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(button.XPath), $"dorf{dorf}", cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
