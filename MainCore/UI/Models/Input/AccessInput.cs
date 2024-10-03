@@ -7,6 +7,8 @@ namespace MainCore.UI.Models.Input
     {
         public void Clear()
         {
+            Id = AccessId.Empty;
+            Username = "";
             Password = "";
             ProxyHost = "";
             ProxyPort = 0;
@@ -18,6 +20,8 @@ namespace MainCore.UI.Models.Input
 
         public void CopyTo(AccessInput target)
         {
+            target.Id = Id;
+            target.Username = Username;
             target.Password = Password;
             target.ProxyHost = ProxyHost;
             target.ProxyPort = ProxyPort;
@@ -31,6 +35,8 @@ namespace MainCore.UI.Models.Input
         {
             return new AccessInput()
             {
+                Id = Id,
+                Username = Username,
                 Password = Password,
                 ProxyHost = ProxyHost,
                 ProxyPort = ProxyPort,
@@ -42,6 +48,7 @@ namespace MainCore.UI.Models.Input
         }
 
         public AccessId Id { get; set; }
+        private string _username;
         private string _password;
         private string _proxyHost;
         private int _proxyPort;
@@ -49,6 +56,12 @@ namespace MainCore.UI.Models.Input
         private string _proxyPassword;
         private string _useragent;
         private DateTime _lastUsed;
+
+        public string Username
+        {
+            get => _username;
+            set => this.RaiseAndSetIfChanged(ref _username, value);
+        }
 
         public string Password
         {
