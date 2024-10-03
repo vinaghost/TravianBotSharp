@@ -1,5 +1,3 @@
-using FluentAssertions;
-
 namespace MainCore.Test.Parsers
 {
     public class AdventureParser : BaseParser
@@ -46,10 +44,10 @@ namespace MainCore.Test.Parsers
         }
 
         [Fact]
-        public void GetAdventure()
+        public void GetAdventureButton()
         {
             _html.Load(AdventuresPage);
-            var actual = MainCore.Parsers.AdventureParser.GetAdventure(_html);
+            var actual = MainCore.Parsers.AdventureParser.GetAdventureButton(_html);
             actual.Should().NotBeNull();
         }
 
@@ -65,8 +63,8 @@ namespace MainCore.Test.Parsers
         public void GetAdventureInfo()
         {
             _html.Load(AdventuresPage);
-            var adventure = MainCore.Parsers.AdventureParser.GetAdventure(_html);
-            var actual = MainCore.Parsers.AdventureParser.GetAdventureInfo(adventure);
+            var adventureButton = MainCore.Parsers.AdventureParser.GetAdventureButton(_html);
+            var actual = MainCore.Parsers.AdventureParser.GetAdventureInfo(adventureButton);
             actual.Should().NotContain("unknown");
             actual.Should().NotContain("[~|~]");
         }

@@ -49,7 +49,7 @@
             return adventureAvailabe;
         }
 
-        public static HtmlNode GetAdventure(HtmlDocument doc)
+        public static HtmlNode GetAdventureButton(HtmlDocument doc)
         {
             var adventures = doc.GetElementbyId("heroAdventure");
             if (adventures is null) return null;
