@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using MainCore.Commands.UI.Tabs.AddAccount;
+using MainCore.Commands.UI.Tabs;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
