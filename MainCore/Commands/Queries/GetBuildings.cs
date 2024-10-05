@@ -4,7 +4,8 @@ using System.Text.Json;
 
 namespace MainCore.Commands.Queries
 {
-    public class GetBuildings(IDbContextFactory<AppDbContext> contextFactory = null) : QueryBase(contextFactory)
+    [RegisterSingleton<GetBuildings>]
+    public class GetBuildings(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
     {
         public List<BuildingItem> Execute(VillageId villageId, bool ignoreJobBuilding = false)
         {

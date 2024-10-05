@@ -42,21 +42,21 @@ namespace MainCore.Tasks
                 }
             }
 
-            new SetSettingCommand().Execute(VillageId, settings);
+            Locator.Current.GetService<SetSettingCommand>().Execute(VillageId, settings);
             await SetNextExecute();
             return Result.Ok();
         }
 
         private async Task SetNextExecute()
         {
-            var seconds = new GetSetting().ByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
+            var seconds = Locator.Current.GetService<GetSetting>().ByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
         }
 
         protected override void SetName()
         {
-            var name = new GetVillageName().Execute(VillageId);
+            var name = Locator.Current.GetService<GetVillageName>().Execute(VillageId);
             _name = $"Training troop in {name}";
         }
 

@@ -5,9 +5,16 @@ using Microsoft.Extensions.DependencyInjection;
 namespace MainCore.Tasks
 {
     [RegisterTransient(Registration = RegistrationStrategy.Self)]
-    public class StartFarmListTask(ITaskManager taskManager) : AccountTask
+    public class StartFarmListTask : AccountTask
     {
-        private readonly ITaskManager _taskManager = taskManager;
+        private readonly ITaskManager _taskManager;
+        private readonly GetSetting _getSetting;
+
+        public StartFarmListTask(ITaskManager taskManager, GetSetting getSetting)
+        {
+            _taskManager = taskManager;
+            _getSetting = getSetting;
+        }
 
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
         {
@@ -17,7 +24,7 @@ namespace MainCore.Tasks
             result = await toFarmListPageCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var useStartAllButton = new GetSetting().BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
+            var useStartAllButton = _getSetting.BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
             if (useStartAllButton)
             {
                 var startAllFarmListCommand = scoped.ServiceProvider.GetRequiredService<StartAllFarmListCommand>();
@@ -36,7 +43,7 @@ namespace MainCore.Tasks
 
         private async Task SetNextExecute()
         {
-            var seconds = new GetSetting().ByName(AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
+            var seconds = _getSetting.ByName(AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
         }

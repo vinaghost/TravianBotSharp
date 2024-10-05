@@ -48,14 +48,16 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Buildings { get; } = new();
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
+        private readonly GetBuildings _getBuildings;
 
-        public BuildViewModel(IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, IDialogService dialogService, ITaskManager taskManager, IValidator<ResourceBuildInput> resourceBuildInputValidator)
+        public BuildViewModel(IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, IDialogService dialogService, ITaskManager taskManager, IValidator<ResourceBuildInput> resourceBuildInputValidator, GetBuildings getBuildings)
         {
             _mediator = mediator;
             _contextFactory = contextFactory;
             _dialogService = dialogService;
             _taskManager = taskManager;
             _resourceBuildInputValidator = resourceBuildInputValidator;
+            _getBuildings = getBuildings;
 
             BuildNormal = ReactiveCommand.CreateFromTask(BuildNormalHandler);
             BuildResource = ReactiveCommand.CreateFromTask(ResourceNormalHandler);
@@ -127,7 +129,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await LoadQueue.Execute(villageId);
         }
 
-        private static List<ListBoxItem> LoadBuildingHandler(VillageId villageId)
+        private List<ListBoxItem> LoadBuildingHandler(VillageId villageId)
         {
             var buildings = GetBuildingItems(villageId);
             return buildings;
@@ -155,7 +157,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private async Task BuildNormalHandler()
         {
             var location = Buildings.SelectedIndex + 1;
-            await new BuildNormalCommand().Execute(AccountId, VillageId, NormalBuildInput, location);
+            var buildNormalCommand = Locator.Current.GetService<BuildNormalCommand>();
+            await buildNormalCommand.Execute(AccountId, VillageId, NormalBuildInput, location);
         }
 
         private async Task UpgradeOneLevelHandler()
@@ -252,7 +255,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task ImportHandler()
         {
-            await new ImportCommand().Execute(AccountId, VillageId);
+            var importCommand = Locator.Current.GetService<ImportCommand>();
+            await importCommand.Execute(AccountId, VillageId);
         }
 
         private async Task ExportHandler()
@@ -266,9 +270,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             _dialogService.ShowMessageBox("Information", "Job list exported");
         }
 
-        private static List<ListBoxItem> GetBuildingItems(VillageId villageId)
+        private List<ListBoxItem> GetBuildingItems(VillageId villageId)
         {
-            var items = new GetBuildings().Execute(villageId).Select(x => ToListBoxItem(x)).ToList();
+            var items = _getBuildings.Execute(villageId).Select(x => ToListBoxItem(x)).ToList();
             return items;
         }
 
@@ -299,7 +303,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private List<BuildingEnums> GetNormalBuilding(VillageId villageId, BuildingId buildingId)
         {
-            var buildingItems = new GetBuildings().Execute(villageId);
+            var buildingItems = _getBuildings.Execute(villageId);
             var type = buildingItems
                 .Where(x => x.Id == buildingId)
                 .Select(x => x.Type)
@@ -427,7 +431,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return;
             }
 
-            var buildings = new GetBuildings().Execute(villageId);
+            var buildings = _getBuildings.Execute(villageId);
             var building = buildings.Find(x => x.Location == location);
 
             if (building is null) return;

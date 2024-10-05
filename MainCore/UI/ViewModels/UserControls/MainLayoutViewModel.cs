@@ -23,8 +23,10 @@ namespace MainCore.UI.ViewModels.UserControls
         private readonly AccountTabStore _accountTabStore;
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
+        private readonly GetSetting _getSetting;
+        private readonly GetAccess _getAccess;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, ILogService logService, ITimerManager timerManager, IChromeManager chromeManager, IDialogService dialogService)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IMediator mediator, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, ILogService logService, ITimerManager timerManager, IChromeManager chromeManager, IDialogService dialogService, GetSetting getSetting, GetAccess getAccess)
         {
             _accountTabStore = accountTabStore;
             _mediator = mediator;
@@ -35,6 +37,7 @@ namespace MainCore.UI.ViewModels.UserControls
             _timerManager = timerManager;
             _chromeManager = chromeManager;
             _dialogService = dialogService;
+            _getSetting = getSetting;
 
             var isEnable = this.WhenAnyValue(x => x.Accounts.IsEnable);
             AddAccount = ReactiveCommand.Create(AddAccountHandler, isEnable);
@@ -85,6 +88,7 @@ namespace MainCore.UI.ViewModels.UserControls
                     Restart.IsExecuting.Select(x => !x)
                 )
                 .BindTo(Accounts, x => x.IsEnable);
+            _getAccess = getAccess;
         }
 
         public async Task Load()
@@ -137,7 +141,7 @@ namespace MainCore.UI.ViewModels.UserControls
             }
             var accountId = new AccountId(Accounts.SelectedItemId);
 
-            var tribe = (TribeEnums)new GetSetting().ByName(accountId, AccountSettingEnums.Tribe);
+            var tribe = (TribeEnums)_getSetting.ByName(accountId, AccountSettingEnums.Tribe);
             if (tribe == TribeEnums.Any)
             {
                 _dialogService.ShowMessageBox("Warning", "Choose tribe first");
@@ -153,7 +157,7 @@ namespace MainCore.UI.ViewModels.UserControls
             await _taskManager.SetStatus(accountId, StatusEnums.Starting);
             var logger = _logService.GetLogger(accountId);
 
-            var result = new GetAccess().Execute(accountId, true);
+            var result = _getAccess.Execute(accountId, true);
 
             if (result.IsFailed)
             {
@@ -175,7 +179,11 @@ namespace MainCore.UI.ViewModels.UserControls
                 AccountId = accountId,
             };
 
-            result = await new OpenBrowserCommand(dataService).Execute(access, CancellationToken.None);
+            var getAccount = Locator.Current.GetService<GetAccount>();
+            var getSetting = Locator.Current.GetService<GetSetting>();
+
+            var openBrowserCommand = new OpenBrowserCommand(dataService, getAccount, getSetting);
+            result = await openBrowserCommand.Execute(access, CancellationToken.None);
             if (result.IsFailed)
             {
                 _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());

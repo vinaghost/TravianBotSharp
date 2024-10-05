@@ -15,6 +15,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private readonly IValidator<AccessInput> _accessInputValidator;
         private readonly IDialogService _dialogService;
+        private readonly GetAccount _getAccount;
         public ReactiveCommand<Unit, Unit> AddAccess { get; }
         public ReactiveCommand<Unit, Unit> EditAccess { get; }
         public ReactiveCommand<Unit, Unit> DeleteAccess { get; }
@@ -22,10 +23,11 @@ namespace MainCore.UI.ViewModels.Tabs
 
         public ReactiveCommand<AccountId, AccountDto> LoadAccount { get; }
 
-        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService)
+        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, GetAccount getAccount)
         {
             _accessInputValidator = accessInputValidator;
             _dialogService = dialogService;
+            _getAccount = getAccount;
 
             AddAccess = ReactiveCommand.Create(AddAccessHandler);
             EditAccess = ReactiveCommand.Create(EditAccessHandler);
@@ -94,7 +96,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private AccountDto LoadAccountHandler(AccountId accountId)
         {
-            var account = new GetAccount().Execute(AccountId, true);
+            var account = _getAccount.Execute(AccountId, true);
             return account;
         }
 

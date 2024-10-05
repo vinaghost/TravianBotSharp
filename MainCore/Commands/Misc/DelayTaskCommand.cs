@@ -2,13 +2,20 @@
 
 namespace MainCore.Commands.Misc
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class DelayTaskCommand(DataService dataService) : CommandBase(dataService), ICommand
+    [RegisterScoped<DelayTaskCommand>]
+    public class DelayTaskCommand : CommandBase, ICommand
     {
+        private readonly GetSetting _getSetting;
+
+        public DelayTaskCommand(DataService dataService, GetSetting getSetting) : base(dataService)
+        {
+            _getSetting = getSetting;
+        }
+
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {
             var accountId = _dataService.AccountId;
-            var delay = new GetSetting().ByName(accountId, AccountSettingEnums.TaskDelayMin, AccountSettingEnums.TaskDelayMax);
+            var delay = _getSetting.ByName(accountId, AccountSettingEnums.TaskDelayMin, AccountSettingEnums.TaskDelayMax);
 
             var result = await Result.Try(() => Task.Delay(delay, cancellationToken), static _ => Cancel.Error);
             return result;

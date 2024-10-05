@@ -14,7 +14,7 @@ namespace MainCore.UI.ViewModels.Tabs
     public class FarmingViewModel : AccountTabViewModelBase
     {
         private readonly IValidator<FarmListSettingInput> _farmListSettingInputValidator;
-
+        private readonly GetSetting _getSetting;
         public FarmListSettingInput FarmListSettingInput { get; } = new();
         public ListBoxItemViewModel FarmLists { get; } = new();
 
@@ -39,13 +39,14 @@ namespace MainCore.UI.ViewModels.Tabs
             { Color.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, IValidator<FarmListSettingInput> farmListSettingInputValidator)
+        public FarmingViewModel(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, IValidator<FarmListSettingInput> farmListSettingInputValidator, GetSetting getSetting)
         {
             _mediator = mediator;
             _dialogService = dialogService;
             _taskManager = taskManager;
             _contextFactory = contextFactory;
             _farmListSettingInputValidator = farmListSettingInputValidator;
+            _getSetting = getSetting;
 
             UpdateFarmList = ReactiveCommand.CreateFromTask(UpdateFarmListHandler);
             Start = ReactiveCommand.CreateFromTask(StartHandler);
@@ -95,7 +96,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task StartHandler()
         {
-            var useStartAllButton = new GetSetting().BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
+            var useStartAllButton = _getSetting.BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
             if (!useStartAllButton)
             {
                 var count = CountActive(AccountId);
@@ -156,9 +157,9 @@ namespace MainCore.UI.ViewModels.Tabs
             await _mediator.Publish(new FarmListUpdated(AccountId));
         }
 
-        private static Dictionary<AccountSettingEnums, int> LoadSettingHandler(AccountId accountId)
+        private Dictionary<AccountSettingEnums, int> LoadSettingHandler(AccountId accountId)
         {
-            var items = new GetSetting().Get(accountId);
+            var items = _getSetting.Get(accountId);
             return items;
         }
 

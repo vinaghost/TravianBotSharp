@@ -4,16 +4,26 @@ using MainCore.Common.Models;
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class HandleUpgradeCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand<NormalBuildPlan>
+    public class HandleUpgradeCommand : CommandBase, ICommand<NormalBuildPlan>
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly DelayClickCommand _delayClickCommand = delayClickCommand;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly DelayClickCommand _delayClickCommand;
+        private readonly GetSetting _getSetting;
+        private readonly GetBuilding _getBuilding;
 
         private readonly List<BuildingEnums> _buildings = [
             BuildingEnums.Residence,
             BuildingEnums.Palace,
             BuildingEnums.CommandCenter
         ];
+
+        public HandleUpgradeCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, GetSetting getSetting, GetBuilding getBuilding) : base(dataService)
+        {
+            _contextFactory = contextFactory;
+            _delayClickCommand = delayClickCommand;
+            _getSetting = getSetting;
+            _getBuilding = getBuilding;
+        }
 
         public async Task<Result> Execute(NormalBuildPlan plan, CancellationToken cancellationToken)
         {
@@ -53,7 +63,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (plan.Type.IsResourceField())
             {
                 var villageId = _dataService.VillageId;
-                var dto = new GetBuilding().Execute(villageId, plan.Location);
+                var dto = _getBuilding.Execute(villageId, plan.Location);
                 if (dto.Level == 0) return false;
             }
             return true;
@@ -62,7 +72,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         private bool IsSpecialUpgrade()
         {
             var villageId = _dataService.VillageId;
-            var useSpecialUpgrade = new GetSetting().BooleanByName(villageId, VillageSettingEnums.UseSpecialUpgrade);
+            var useSpecialUpgrade = _getSetting.BooleanByName(villageId, VillageSettingEnums.UseSpecialUpgrade);
             return useSpecialUpgrade;
         }
 

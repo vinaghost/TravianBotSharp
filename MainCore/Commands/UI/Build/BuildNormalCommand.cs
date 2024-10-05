@@ -5,6 +5,7 @@ using MainCore.UI.Models.Input;
 
 namespace MainCore.Commands.UI.Build
 {
+    [RegisterSingleton<BuildNormalCommand>]
     public class BuildNormalCommand
     {
         private readonly IDialogService _dialogService;
@@ -12,13 +13,15 @@ namespace MainCore.Commands.UI.Build
 
         private readonly ITaskManager _taskManager;
         private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
+        private readonly GetBuildings _getBuildings;
 
-        public BuildNormalCommand(IDialogService dialogService = null, IMediator mediator = null, ITaskManager taskManager = null, IValidator<NormalBuildInput> normalBuildInputValidator = null)
+        public BuildNormalCommand(IDialogService dialogService, IMediator mediator, ITaskManager taskManager, IValidator<NormalBuildInput> normalBuildInputValidator, GetBuildings getBuildings)
         {
-            _dialogService = dialogService ?? Locator.Current.GetService<IDialogService>();
-            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
-            _taskManager = taskManager ?? Locator.Current.GetService<ITaskManager>();
-            _normalBuildInputValidator = normalBuildInputValidator ?? Locator.Current.GetService<IValidator<NormalBuildInput>>();
+            _dialogService = dialogService;
+            _mediator = mediator;
+            _taskManager = taskManager;
+            _normalBuildInputValidator = normalBuildInputValidator;
+            _getBuildings = getBuildings;
         }
 
         public async Task Execute(AccountId accountId, VillageId villageId, NormalBuildInput normalBuildInput, int location)
@@ -49,7 +52,7 @@ namespace MainCore.Commands.UI.Build
 
         private async Task NormalBuild(AccountId accountId, VillageId villageId, NormalBuildPlan plan)
         {
-            var buildings = new GetBuildings().Execute(villageId);
+            var buildings = _getBuildings.Execute(villageId);
 
             var building = buildings.Find(x => x.Location == plan.Location);
 

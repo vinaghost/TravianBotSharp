@@ -5,9 +5,16 @@ using Microsoft.Extensions.DependencyInjection;
 namespace MainCore.Tasks
 {
     [RegisterTransient(Registration = RegistrationStrategy.Self)]
-    public class NpcTask(IMediator mediator) : VillageTask
+    public class NpcTask : VillageTask
     {
-        private readonly IMediator _mediator = mediator;
+        private readonly IMediator _mediator;
+        private readonly GetVillageName _getVillageName;
+
+        public NpcTask(IMediator mediator, GetVillageName getVillageName)
+        {
+            _mediator = mediator;
+            _getVillageName = getVillageName;
+        }
 
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
         {
@@ -30,7 +37,7 @@ namespace MainCore.Tasks
 
         protected override void SetName()
         {
-            var village = new GetVillageName().Execute(VillageId);
+            var village = _getVillageName.Execute(VillageId);
             _name = $"NPC in {village}";
         }
     }

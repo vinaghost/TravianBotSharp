@@ -3,7 +3,7 @@
 namespace MainCore.Commands.Features.NpcResource
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class NpcResourceCommand(DataService dataService) : CommandBase(dataService), ICommand
+    public class NpcResourceCommand : CommandBase, ICommand
     {
         private static readonly List<VillageSettingEnums> _settingNames = [
             VillageSettingEnums.AutoNPCWood,
@@ -11,6 +11,13 @@ namespace MainCore.Commands.Features.NpcResource
             VillageSettingEnums.AutoNPCIron,
             VillageSettingEnums.AutoNPCCrop,
         ];
+
+        private readonly GetSetting _getSetting;
+
+        public NpcResourceCommand(DataService dataService, GetSetting getSetting) : base(dataService)
+        {
+            _getSetting = getSetting;
+        }
 
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {
@@ -80,7 +87,7 @@ namespace MainCore.Commands.Features.NpcResource
 
         private long[] GetRatio()
         {
-            var settings = new GetSetting().ByName(_dataService.VillageId, _settingNames);
+            var settings = _getSetting.ByName(_dataService.VillageId, _settingNames);
 
             var ratio = new long[4]
             {

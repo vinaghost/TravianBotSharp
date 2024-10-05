@@ -5,16 +5,18 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerUpgradeBuildingTaskHandler : INotificationHandler<AccountInit>, INotificationHandler<JobUpdated>, INotificationHandler<CompleteImmediatelyMessage>
     {
         private readonly ITaskManager _taskManager;
+        private readonly GetVillage _getVillage;
 
-        public TriggerUpgradeBuildingTaskHandler(ITaskManager taskManager)
+        public TriggerUpgradeBuildingTaskHandler(ITaskManager taskManager, GetVillage getVillage)
         {
             _taskManager = taskManager;
+            _getVillage = getVillage;
         }
 
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
-            var hasBuildingJobVillages = new GetVillage().HasBuildingJob(accountId);
+            var hasBuildingJobVillages = _getVillage.HasBuildingJob(accountId);
             foreach (var village in hasBuildingJobVillages)
             {
                 await Trigger(accountId, village);

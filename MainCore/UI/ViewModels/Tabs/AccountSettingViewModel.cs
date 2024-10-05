@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
+    [RegisterSingleton<AccountSettingViewModel>]
     public class AccountSettingViewModel : AccountTabViewModelBase
     {
         public AccountSettingInput AccountSettingInput { get; } = new();
@@ -15,17 +15,19 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly IMediator _mediator;
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
         private readonly IDialogService _dialogService;
+        private readonly GetSetting _getSetting;
         public ReactiveCommand<Unit, Unit> Save { get; }
         public ReactiveCommand<Unit, Unit> Export { get; }
         public ReactiveCommand<Unit, Unit> Import { get; }
 
         public ReactiveCommand<AccountId, Dictionary<AccountSettingEnums, int>> LoadSettings { get; }
 
-        public AccountSettingViewModel(IMediator mediator, IValidator<AccountSettingInput> accountsettingInputValidator, IDialogService dialogService)
+        public AccountSettingViewModel(IMediator mediator, IValidator<AccountSettingInput> accountsettingInputValidator, IDialogService dialogService, GetSetting getSetting)
         {
             _mediator = mediator;
             _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;
+            _getSetting = getSetting;
 
             Save = ReactiveCommand.CreateFromTask(SaveHandler);
             Export = ReactiveCommand.CreateFromTask(ExportHandler);
@@ -96,15 +98,15 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             var path = _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
-            var settings = new GetSetting().Get(AccountId);
+            var settings = _getSetting.Get(AccountId);
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString);
             _dialogService.ShowMessageBox("Information", "Settings exported");
         }
 
-        private static Dictionary<AccountSettingEnums, int> LoadSettingsHandler(AccountId accountId)
+        private Dictionary<AccountSettingEnums, int> LoadSettingsHandler(AccountId accountId)
         {
-            var settings = new GetSetting().Get(accountId);
+            var settings = _getSetting.Get(accountId);
             return settings;
         }
     }

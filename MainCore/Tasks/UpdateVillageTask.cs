@@ -60,14 +60,14 @@ namespace MainCore.Tasks
 
         private async Task SetNextExecute()
         {
-            var seconds = new GetSetting().ByName(VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
+            var seconds = Locator.Current.GetService<GetSetting>().ByName(VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
         }
 
         protected override void SetName()
         {
-            var village = new GetVillageName().Execute(VillageId);
+            var village = Locator.Current.GetService<GetVillageName>().Execute(VillageId);
             _name = $"Update village in {village}";
         }
     }

@@ -26,12 +26,15 @@ namespace MainCore.UI.ViewModels.Tabs
         public ReactiveCommand<Unit, Unit> LoadAll { get; }
         public ReactiveCommand<AccountId, List<ListBoxItem>> LoadVillage { get; }
 
-        public VillageViewModel(VillageTabStore villageTabStore, IDbContextFactory<AppDbContext> contextFactory, ITaskManager taskManager, IDialogService dialogService)
+        private readonly GetVillage _getVillage;
+
+        public VillageViewModel(VillageTabStore villageTabStore, IDbContextFactory<AppDbContext> contextFactory, ITaskManager taskManager, IDialogService dialogService, GetVillage getVillage)
         {
             _villageTabStore = villageTabStore;
             _contextFactory = contextFactory;
             _taskManager = taskManager;
             _dialogService = dialogService;
+            _getVillage = getVillage;
 
             LoadCurrent = ReactiveCommand.CreateFromTask(LoadCurrentHandler);
             LoadUnload = ReactiveCommand.CreateFromTask(LoadUnloadHandler);
@@ -78,7 +81,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task LoadUnloadHandler()
         {
-            var villages = new GetVillage().Missing(AccountId);
+            var villages = _getVillage.Missing(AccountId);
             foreach (var village in villages)
             {
                 await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
@@ -88,7 +91,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task LoadAllHandler()
         {
-            var villages = new GetVillage().All(AccountId);
+            var villages = _getVillage.All(AccountId);
             foreach (var village in villages)
             {
                 await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);

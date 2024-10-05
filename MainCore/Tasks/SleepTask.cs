@@ -8,10 +8,14 @@ namespace MainCore.Tasks
     public class SleepTask : AccountTask
     {
         private readonly ITaskManager _taskManager;
+        private readonly GetAccess _getAccess;
+        private readonly GetSetting _getSetting;
 
-        public SleepTask(ITaskManager taskManager)
+        public SleepTask(ITaskManager taskManager, GetSetting getSetting, GetAccess getAccess)
         {
             _taskManager = taskManager;
+            _getSetting = getSetting;
+            _getAccess = getAccess;
         }
 
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
@@ -21,7 +25,7 @@ namespace MainCore.Tasks
             result = await sleepCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var accessResult = new GetAccess().Execute(AccountId);
+            var accessResult = _getAccess.Execute(AccountId);
             if (accessResult.IsFailed) return Result.Fail(accessResult.Errors).WithError(TraceMessage.Error(TraceMessage.Line()));
             var access = accessResult.Value;
 
@@ -36,7 +40,7 @@ namespace MainCore.Tasks
 
         private async Task SetNextExecute()
         {
-            var workTime = new GetSetting().ByName(AccountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
+            var workTime = _getSetting.ByName(AccountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
             ExecuteAt = DateTime.Now.AddMinutes(workTime);
             await _taskManager.ReOrder(AccountId);
         }

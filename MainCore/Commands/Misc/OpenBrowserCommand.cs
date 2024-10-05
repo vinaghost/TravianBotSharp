@@ -3,21 +3,30 @@ using MainCore.Common.Models;
 
 namespace MainCore.Commands.Misc
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class OpenBrowserCommand(DataService dataService) : CommandBase(dataService), ICommand<AccessDto>
+    [RegisterScoped<OpenBrowserCommand>]
+    public class OpenBrowserCommand : CommandBase, ICommand<AccessDto>
     {
+        private readonly GetAccount _getAccount;
+        private readonly GetSetting _getSetting;
+
+        public OpenBrowserCommand(DataService dataService, GetAccount getAccount, GetSetting getSetting) : base(dataService)
+        {
+            _getAccount = getAccount;
+            _getSetting = getSetting;
+        }
+
         public async Task<Result> Execute(AccessDto access, CancellationToken cancellationToken)
         {
             var chromeBrowser = _dataService.ChromeBrowser;
             var accountId = _dataService.AccountId;
 
-            var account = new GetAccount().Execute(accountId);
+            var account = _getAccount.Execute(accountId);
             var uri = new Uri(account.Server);
 
             var serverFolderName = uri.Host.Replace(".", "_");
             var accountFolderName = account.Username;
 
-            var headlessChrome = new GetSetting().BooleanByName(accountId, AccountSettingEnums.HeadlessChrome);
+            var headlessChrome = _getSetting.BooleanByName(accountId, AccountSettingEnums.HeadlessChrome);
             var profilePath = Path.Combine(serverFolderName, accountFolderName);
             var chromeSetting = new ChromeSetting()
             {

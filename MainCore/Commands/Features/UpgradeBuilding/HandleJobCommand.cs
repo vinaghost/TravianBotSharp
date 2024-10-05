@@ -6,13 +6,15 @@ using System.Text.Json;
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class HandleJobCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand) : CommandBase(dataService)
+    public class HandleJobCommand : CommandBase
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly IMediator _mediator = mediator;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IMediator _mediator;
 
-        private readonly ToDorfCommand _toDorfCommand = toDorfCommand;
-        private readonly UpdateBuildingCommand _updateBuildingCommand = updateBuildingCommand;
+        private readonly ToDorfCommand _toDorfCommand;
+        private readonly UpdateBuildingCommand _updateBuildingCommand;
+        private readonly GetSetting _getSetting;
+        private readonly GetBuildings _getBuildings;
 
         private static readonly List<BuildingEnums> _resourceTypes =
         [
@@ -28,6 +30,16 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             {ResourcePlanEnums.ExcludeCrop, _resourceTypes.Take(3).ToList()},
             {ResourcePlanEnums.OnlyCrop, _resourceTypes.Skip(3).ToList()},
         };
+
+        public HandleJobCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, GetSetting getSetting, GetBuildings getBuildings) : base(dataService)
+        {
+            _contextFactory = contextFactory;
+            _mediator = mediator;
+            _toDorfCommand = toDorfCommand;
+            _updateBuildingCommand = updateBuildingCommand;
+            _getSetting = getSetting;
+            _getBuildings = getBuildings;
+        }
 
         public async Task<Result<NormalBuildPlan>> Execute(CancellationToken cancellationToken)
         {
@@ -75,7 +87,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             }
 
             var plusActive = IsPlusActive();
-            var applyRomanQueueLogic = new GetSetting().BooleanByName(_dataService.VillageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
+            var applyRomanQueueLogic = _getSetting.BooleanByName(_dataService.VillageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
 
             if (countQueueBuilding == 1)
             {
@@ -353,7 +365,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var villageId = _dataService.VillageId;
             var resourceTypes = _fieldList[plan.Plan];
 
-            var buildings = new GetBuildings().Execute(villageId, true);
+            var buildings = _getBuildings.Execute(villageId, true);
 
             buildings = buildings
                 .Where(x => resourceTypes.Contains(x.Type))

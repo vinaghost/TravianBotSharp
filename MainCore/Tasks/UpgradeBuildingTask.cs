@@ -68,7 +68,7 @@ namespace MainCore.Tasks
 
         protected override void SetName()
         {
-            var village = new GetVillageName().Execute(VillageId);
+            var village = Locator.Current.GetService<GetVillageName>().Execute(VillageId);
             _name = $"Upgrade building in {village}";
         }
 

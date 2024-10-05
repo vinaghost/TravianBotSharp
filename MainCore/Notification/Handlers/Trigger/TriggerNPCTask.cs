@@ -6,11 +6,13 @@ namespace MainCore.Notification.Handlers.Trigger
     {
         private readonly ITaskManager _taskManager;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly GetSetting _getSetting;
 
-        public TriggerNpcTask(ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
+        public TriggerNpcTask(ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, GetSetting getSetting)
         {
             _taskManager = taskManager;
             _contextFactory = contextFactory;
+            _getSetting = getSetting;
         }
 
         public async Task Handle(StorageUpdated notification, CancellationToken cancellationToken)
@@ -29,11 +31,11 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
-            var autoNPCEnable = new GetSetting().BooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
+            var autoNPCEnable = _getSetting.BooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
             if (autoNPCEnable)
             {
                 var granaryPercent = GetGranaryPercent(villageId);
-                var autoNPCGranaryPercent = new GetSetting().ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
+                var autoNPCGranaryPercent = _getSetting.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
 
                 if (granaryPercent < autoNPCGranaryPercent) return;
                 if (_taskManager.IsExist<NpcTask>(accountId, villageId)) return;

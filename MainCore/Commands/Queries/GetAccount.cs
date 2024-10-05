@@ -2,7 +2,8 @@
 
 namespace MainCore.Commands.Queries
 {
-    public class GetAccount(IDbContextFactory<AppDbContext> contextFactory = null) : QueryBase(contextFactory)
+    [RegisterSingleton<GetAccount>]
+    public class GetAccount(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
     {
         public AccountDto Execute(AccountId accountId, bool includeAccess = false)
         {

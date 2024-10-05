@@ -15,12 +15,13 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private readonly IValidator<VillageSettingInput> _villageSettingInputValidator;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
+        private readonly GetSetting _getSetting;
         public ReactiveCommand<Unit, Unit> SaveCommand { get; }
         public ReactiveCommand<Unit, Unit> ExportCommand { get; }
         public ReactiveCommand<Unit, Unit> ImportCommand { get; }
         public ReactiveCommand<VillageId, Dictionary<VillageSettingEnums, int>> LoadSetting { get; }
 
-        public VillageSettingViewModel(IMediator mediator, IValidator<VillageSettingInput> villageSettingInputValidator, IDialogService dialogService)
+        public VillageSettingViewModel(IMediator mediator, IValidator<VillageSettingInput> villageSettingInputValidator, IDialogService dialogService, GetSetting getSetting)
         {
             _mediator = mediator;
             _villageSettingInputValidator = villageSettingInputValidator;
@@ -32,6 +33,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             LoadSetting = ReactiveCommand.Create<VillageId, Dictionary<VillageSettingEnums, int>>(LoadSettingHandler);
 
             LoadSetting.Subscribe(settings => VillageSettingInput.Set(settings));
+            _getSetting = getSetting;
         }
 
         public async Task SettingRefresh(VillageId villageId)
@@ -94,15 +96,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             var path = _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
-            var settings = new GetSetting().Get(VillageId);
+            var settings = _getSetting.Get(VillageId);
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString);
             _dialogService.ShowMessageBox("Information", "Settings exported");
         }
 
-        private static Dictionary<VillageSettingEnums, int> LoadSettingHandler(VillageId villageId)
+        private Dictionary<VillageSettingEnums, int> LoadSettingHandler(VillageId villageId)
         {
-            var settings = new GetSetting().Get(villageId);
+            var settings = _getSetting.Get(villageId);
             return settings;
         }
     }
