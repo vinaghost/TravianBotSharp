@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+﻿using MainCore.Commands.UI.Tabs;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
@@ -12,8 +12,7 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         public AccountSettingInput AccountSettingInput { get; } = new();
 
-        private readonly IMediator _mediator;
-        private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
+        private readonly SaveSettingCommand _saveSettingCommand;
         private readonly IDialogService _dialogService;
         private readonly GetSetting _getSetting;
         public ReactiveCommand<Unit, Unit> Save { get; }
@@ -22,19 +21,18 @@ namespace MainCore.UI.ViewModels.Tabs
 
         public ReactiveCommand<AccountId, Dictionary<AccountSettingEnums, int>> LoadSettings { get; }
 
-        public AccountSettingViewModel(IMediator mediator, IValidator<AccountSettingInput> accountsettingInputValidator, IDialogService dialogService, GetSetting getSetting)
+        public AccountSettingViewModel(IDialogService dialogService, GetSetting getSetting, SaveSettingCommand saveSettingCommand)
         {
-            _mediator = mediator;
-            _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;
             _getSetting = getSetting;
+            _saveSettingCommand = saveSettingCommand;
 
             Save = ReactiveCommand.CreateFromTask(SaveHandler);
             Export = ReactiveCommand.CreateFromTask(ExportHandler);
             Import = ReactiveCommand.CreateFromTask(ImportHandler);
             LoadSettings = ReactiveCommand.Create<AccountId, Dictionary<AccountSettingEnums, int>>(LoadSettingsHandler);
 
-            LoadSettings.Subscribe(x => AccountSettingInput.Set(x));
+            LoadSettings.Subscribe(AccountSettingInput.Set);
         }
 
         public async Task SettingRefresh(AccountId accountId)
@@ -51,17 +49,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task SaveHandler()
         {
-            var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
-            if (!result.IsValid)
-            {
-                _dialogService.ShowMessageBox("Error", result.ToString());
-                return;
-            }
-
-            var settings = AccountSettingInput.Get();
-            new SetSettingCommand().Execute(AccountId, settings);
-            await _mediator.Publish(new AccountSettingUpdated(AccountId));
-            _dialogService.ShowMessageBox("Information", message: "Settings saved");
+            await _saveSettingCommand.Execute((AccountId, AccountSettingInput), CancellationToken.None);
         }
 
         private async Task ImportHandler()
@@ -80,18 +68,7 @@ namespace MainCore.UI.ViewModels.Tabs
             }
 
             AccountSettingInput.Set(settings);
-            var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
-            if (!result.IsValid)
-            {
-                _dialogService.ShowMessageBox("Error", result.ToString());
-                return;
-            }
-
-            settings = AccountSettingInput.Get();
-            new SetSettingCommand().Execute(AccountId, settings);
-            await _mediator.Publish(new AccountSettingUpdated(AccountId));
-
-            _dialogService.ShowMessageBox("Information", "Settings imported");
+            await _saveSettingCommand.Execute((AccountId, AccountSettingInput), CancellationToken.None);
         }
 
         private async Task ExportHandler()
