@@ -48,9 +48,6 @@ namespace MainCore.Tasks
             await _taskManager.ReOrder(AccountId);
         }
 
-        protected override void SetName()
-        {
-            _name = "Start farm list";
-        }
+        protected override string TaskName => "Start farm list";
     }
 }

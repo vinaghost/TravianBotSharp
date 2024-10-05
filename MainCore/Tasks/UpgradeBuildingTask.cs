@@ -66,11 +66,7 @@ namespace MainCore.Tasks
             }
         }
 
-        protected override void SetName()
-        {
-            var village = Locator.Current.GetService<GetVillageName>().Execute(VillageId);
-            _name = $"Upgrade building in {village}";
-        }
+        protected override string TaskName => "Upgrade building";
 
         private void SetTimeQueueBuildingComplete()
         {

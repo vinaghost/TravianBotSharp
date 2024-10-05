@@ -22,9 +22,6 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        protected override void SetName()
-        {
-            _name = "Update farm lists";
-        }
+        protected override string TaskName => "Update farm list";
     }
 }

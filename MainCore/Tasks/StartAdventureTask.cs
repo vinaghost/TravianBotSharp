@@ -1,5 +1,4 @@
 ﻿using MainCore.Commands.Features.StartAdventure;
-using MainCore.Parsers;
 using MainCore.Tasks.Base;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -40,9 +39,6 @@ namespace MainCore.Tasks
             await _taskManager.ReOrder(AccountId);
         }
 
-        protected override void SetName()
-        {
-            _name = "Start adventure";
-        }
+        protected override string TaskName => "Start adventure";
     }
 }

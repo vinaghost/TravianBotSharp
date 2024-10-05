@@ -54,11 +54,7 @@ namespace MainCore.Tasks
             await _taskManager.ReOrder(AccountId);
         }
 
-        protected override void SetName()
-        {
-            var name = Locator.Current.GetService<GetVillageName>().Execute(VillageId);
-            _name = $"Training troop in {name}";
-        }
+        protected override string TaskName => "Train troop";
 
         private List<BuildingEnums> GetTrainTroopBuilding(VillageId villageId)
         {

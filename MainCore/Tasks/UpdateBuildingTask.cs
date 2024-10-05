@@ -56,10 +56,6 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        protected override void SetName()
-        {
-            var village = Locator.Current.GetService<GetVillageName>().Execute(VillageId);
-            _name = $"Update all buildings in {village}";
-        }
+        protected override string TaskName => "Update building";
     }
 }

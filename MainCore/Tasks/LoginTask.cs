@@ -43,9 +43,6 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        protected override void SetName()
-        {
-            _name = "Login task";
-        }
+        protected override string TaskName => "Login";
     }
 }

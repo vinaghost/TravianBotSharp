@@ -45,9 +45,6 @@ namespace MainCore.Tasks
             await _taskManager.ReOrder(AccountId);
         }
 
-        protected override void SetName()
-        {
-            _name = "Sleep task";
-        }
+        protected override string TaskName => "Sleep";
     }
 }

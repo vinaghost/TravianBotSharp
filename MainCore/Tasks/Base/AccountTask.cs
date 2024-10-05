@@ -12,6 +12,10 @@ namespace MainCore.Tasks.Base
             AccountId = accountId;
         }
 
+        protected abstract string TaskName { get; }
+
+        public override string GetName() => TaskName;
+
         protected override async Task<Result> PreExecute(IServiceScope scoped, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested) return Cancel.Error;

@@ -8,12 +8,10 @@ namespace MainCore.Tasks
     public class NpcTask : VillageTask
     {
         private readonly IMediator _mediator;
-        private readonly GetVillageName _getVillageName;
 
-        public NpcTask(IMediator mediator, GetVillageName getVillageName)
+        public NpcTask(IMediator mediator)
         {
             _mediator = mediator;
-            _getVillageName = getVillageName;
         }
 
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
@@ -35,10 +33,6 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        protected override void SetName()
-        {
-            var village = _getVillageName.Execute(VillageId);
-            _name = $"NPC in {village}";
-        }
+        protected override string TaskName => "NPC";
     }
 }

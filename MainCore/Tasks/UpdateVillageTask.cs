@@ -65,10 +65,6 @@ namespace MainCore.Tasks
             await _taskManager.ReOrder(AccountId);
         }
 
-        protected override void SetName()
-        {
-            var village = Locator.Current.GetService<GetVillageName>().Execute(VillageId);
-            _name = $"Update village in {village}";
-        }
+        protected override string TaskName => "Update village";
     }
 }

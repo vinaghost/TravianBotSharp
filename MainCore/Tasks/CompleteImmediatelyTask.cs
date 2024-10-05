@@ -7,13 +7,6 @@ namespace MainCore.Tasks
     [RegisterTransient(Registration = RegistrationStrategy.Self)]
     public class CompleteImmediatelyTask : VillageTask
     {
-        private readonly GetVillageName _getVillageName;
-
-        public CompleteImmediatelyTask(GetVillageName getVillageName)
-        {
-            _getVillageName = getVillageName;
-        }
-
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
         {
             Result result;
@@ -32,10 +25,6 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        protected override void SetName()
-        {
-            var villageName = _getVillageName.Execute(VillageId);
-            _name = $"Complete immediately in {villageName}";
-        }
+        protected override string TaskName => "Complete immediately";
     }
 }
