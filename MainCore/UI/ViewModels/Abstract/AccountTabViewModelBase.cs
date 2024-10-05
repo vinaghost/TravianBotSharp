@@ -20,7 +20,8 @@ namespace MainCore.UI.ViewModels.Abstract
             AccountChanged = ReactiveCommand.CreateFromTask<AccountId>(AccountChangedHandler);
 
             var accountIdObservable = this.WhenAnyValue(vm => vm._selectedItemStore.Account)
-                                        .Select(x => new AccountId(x?.Id ?? 0));
+                                        .WhereNotNull()
+                                        .Select(x => new AccountId(x.Id));
 
             accountIdObservable.ToProperty(this, vm => vm.AccountId, out _accountId);
             accountIdObservable.InvokeCommand(AccountChanged);

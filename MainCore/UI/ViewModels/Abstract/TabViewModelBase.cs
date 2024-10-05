@@ -1,5 +1,4 @@
 ﻿using ReactiveUI;
-using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Abstract
 {
@@ -7,25 +6,32 @@ namespace MainCore.UI.ViewModels.Abstract
     {
         private bool _isActive;
 
+        protected readonly ReactiveCommand<bool, Unit> Command;
+
         protected TabViewModelBase()
         {
-            var isActiveObservable = this.WhenAnyValue(x => x.IsActive);
+            Command = ReactiveCommand.CreateFromTask<bool>(Execute);
 
-            isActiveObservable
-                .Where(active => active)
-                .Select(x => Unit.Default)
-                .InvokeCommand(ReactiveCommand.CreateFromTask(OnActive));
-
-            isActiveObservable
-                .Where(active => !active)
-                .Select(x => Unit.Default)
-                .InvokeCommand(ReactiveCommand.CreateFromTask(OnDeactive));
+            this.WhenAnyValue(x => x.IsActive)
+                .InvokeCommand(Command);
         }
 
         public bool IsActive
         {
             get => _isActive;
             set => this.RaiseAndSetIfChanged(ref _isActive, value);
+        }
+
+        private async Task Execute(bool isActive)
+        {
+            if (isActive)
+            {
+                await OnActive();
+            }
+            else
+            {
+                await OnDeactive();
+            }
         }
 
         protected virtual Task OnActive()
