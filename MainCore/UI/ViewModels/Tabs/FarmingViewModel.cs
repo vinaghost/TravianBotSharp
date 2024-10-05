@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using MainCore.Commands.UI.Tabs;
 using MainCore.Tasks;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
@@ -13,7 +14,6 @@ namespace MainCore.UI.ViewModels.Tabs
     [RegisterSingleton(Registration = RegistrationStrategy.Self)]
     public class FarmingViewModel : AccountTabViewModelBase
     {
-        private readonly IValidator<FarmListSettingInput> _farmListSettingInputValidator;
         private readonly GetSetting _getSetting;
         public FarmListSettingInput FarmListSettingInput { get; } = new();
         public ListBoxItemViewModel FarmLists { get; } = new();
@@ -23,6 +23,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly ITaskManager _taskManager;
 
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly SaveSettingCommand _saveSettingCommand;
 
         public ReactiveCommand<Unit, Unit> UpdateFarmList { get; }
         public ReactiveCommand<Unit, Unit> Save { get; }
@@ -39,14 +40,14 @@ namespace MainCore.UI.ViewModels.Tabs
             { Color.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, IValidator<FarmListSettingInput> farmListSettingInputValidator, GetSetting getSetting)
+        public FarmingViewModel(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, GetSetting getSetting, SaveSettingCommand saveSettingCommand)
         {
             _mediator = mediator;
             _dialogService = dialogService;
             _taskManager = taskManager;
             _contextFactory = contextFactory;
-            _farmListSettingInputValidator = farmListSettingInputValidator;
             _getSetting = getSetting;
+            _saveSettingCommand = saveSettingCommand;
 
             UpdateFarmList = ReactiveCommand.CreateFromTask(UpdateFarmListHandler);
             Start = ReactiveCommand.CreateFromTask(StartHandler);
@@ -121,18 +122,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task SaveHandler()
         {
-            var result = await _farmListSettingInputValidator.ValidateAsync(FarmListSettingInput);
-            if (!result.IsValid)
-            {
-                _dialogService.ShowMessageBox("Error", result.ToString());
-                return;
-            }
-
-            var settings = FarmListSettingInput.Get();
-            new SetSettingCommand().Execute(AccountId, settings);
-            await _mediator.Publish(new AccountSettingUpdated(AccountId));
-
-            _dialogService.ShowMessageBox("Information", "Settings saved");
+            await _saveSettingCommand.Execute((AccountId, FarmListSettingInput), CancellationToken.None);
         }
 
         private async Task ActiveFarmListHandler()

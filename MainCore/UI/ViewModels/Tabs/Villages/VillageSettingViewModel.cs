@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+﻿using MainCore.Commands.UI.Tabs;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
@@ -12,28 +12,26 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
     {
         public VillageSettingInput VillageSettingInput { get; } = new();
 
-        private readonly IValidator<VillageSettingInput> _villageSettingInputValidator;
         private readonly IDialogService _dialogService;
-        private readonly IMediator _mediator;
         private readonly GetSetting _getSetting;
+        private readonly SaveSettingCommand _saveSettingCommand;
         public ReactiveCommand<Unit, Unit> SaveCommand { get; }
         public ReactiveCommand<Unit, Unit> ExportCommand { get; }
         public ReactiveCommand<Unit, Unit> ImportCommand { get; }
         public ReactiveCommand<VillageId, Dictionary<VillageSettingEnums, int>> LoadSetting { get; }
 
-        public VillageSettingViewModel(IMediator mediator, IValidator<VillageSettingInput> villageSettingInputValidator, IDialogService dialogService, GetSetting getSetting)
+        public VillageSettingViewModel(IDialogService dialogService, GetSetting getSetting, SaveSettingCommand saveSettingCommand)
         {
-            _mediator = mediator;
-            _villageSettingInputValidator = villageSettingInputValidator;
             _dialogService = dialogService;
+            _getSetting = getSetting;
+            _saveSettingCommand = saveSettingCommand;
 
             SaveCommand = ReactiveCommand.CreateFromTask(SaveHandler);
             ExportCommand = ReactiveCommand.CreateFromTask(ExportHandler);
             ImportCommand = ReactiveCommand.CreateFromTask(ImportHandler);
             LoadSetting = ReactiveCommand.Create<VillageId, Dictionary<VillageSettingEnums, int>>(LoadSettingHandler);
 
-            LoadSetting.Subscribe(settings => VillageSettingInput.Set(settings));
-            _getSetting = getSetting;
+            LoadSetting.Subscribe(VillageSettingInput.Set);
         }
 
         public async Task SettingRefresh(VillageId villageId)
@@ -50,17 +48,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task SaveHandler()
         {
-            var result = await _villageSettingInputValidator.ValidateAsync(VillageSettingInput);
-            if (!result.IsValid)
-            {
-                _dialogService.ShowMessageBox("Error", result.ToString());
-                return;
-            }
-            var settings = VillageSettingInput.Get();
-            new SetSettingCommand().Execute(VillageId, settings);
-            await _mediator.Publish(new VillageSettingUpdated(AccountId, VillageId));
-
-            _dialogService.ShowMessageBox("Information", "Settings saved");
+            await _saveSettingCommand.Execute((AccountId, VillageId, VillageSettingInput), CancellationToken.None);
         }
 
         private async Task ImportHandler()
@@ -79,17 +67,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
 
             VillageSettingInput.Set(settings);
-            var result = await _villageSettingInputValidator.ValidateAsync(VillageSettingInput);
-            if (!result.IsValid)
-            {
-                _dialogService.ShowMessageBox("Error", result.ToString());
-                return;
-            }
-            settings = VillageSettingInput.Get();
-            new SetSettingCommand().Execute(VillageId, settings);
-            await _mediator.Publish(new VillageSettingUpdated(AccountId, VillageId));
-
-            _dialogService.ShowMessageBox("Information", "Settings imported");
+            await _saveSettingCommand.Execute((AccountId, VillageId, VillageSettingInput), CancellationToken.None);
         }
 
         private async Task ExportHandler()
