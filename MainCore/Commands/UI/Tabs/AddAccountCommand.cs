@@ -12,7 +12,7 @@ namespace MainCore.Commands.UI.Tabs
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IUseragentManager _useragentManager;
 
-        public AddAccountCommand(IDialogService dialogService, WaitingOverlayViewModel waitingOverlayViewModel, IMediator mediator, IValidator<AccountInput> accountInputValidator, IDbContextFactory<AppDbContext> contextFactory, IUseragentManager useragentManager) : base(dialogService, waitingOverlayViewModel, mediator)
+        public AddAccountCommand(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IMediator mediator, IValidator<AccountInput> accountInputValidator, IDbContextFactory<AppDbContext> contextFactory, IUseragentManager useragentManager) : base(dialogService, waitingOverlayViewModel, mediator)
         {
             _accountInputValidator = accountInputValidator;
             _contextFactory = contextFactory;
@@ -84,7 +84,7 @@ namespace MainCore.Commands.UI.Tabs
             using var context = _contextFactory.CreateDbContext();
 
             var accounts = context.Accounts
-            .ToDto()
+                .ToDto()
                 .ToList();
 
             var dtos = accountDetails
@@ -106,9 +106,20 @@ namespace MainCore.Commands.UI.Tabs
                 access.Useragent = _useragentManager.Get();
             }
 
+            account.Info = new();
+
+            account.Settings = [];
+            foreach (var (setting, value) in AppDbContext.AccountDefaultSettings)
+            {
+                account.Settings.Add(new AccountSetting
+                {
+                    Setting = setting,
+                    Value = value,
+                });
+            }
+
             context.Add(account);
             context.SaveChanges();
-            context.FillAccountSettings(new(account.Id));
         }
     }
 }

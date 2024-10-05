@@ -8,10 +8,10 @@ namespace MainCore.UI.ViewModels
     public class MainViewModel : ViewModelBase
     {
         private MainLayoutViewModel _mainLayoutViewModel;
-        private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
         private readonly IMediator _mediator;
 
-        public MainViewModel(IMediator mediator, WaitingOverlayViewModel waitingOverlayViewModel)
+        public MainViewModel(IMediator mediator, IWaitingOverlayViewModel waitingOverlayViewModel)
         {
             _mediator = mediator;
             _waitingOverlayViewModel = waitingOverlayViewModel;
