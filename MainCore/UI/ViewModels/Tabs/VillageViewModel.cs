@@ -14,10 +14,9 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         private readonly VillageTabStore _villageTabStore;
 
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
+        private readonly GetVillage _getVillage;
         public ListBoxItemViewModel Villages { get; } = new();
 
         public VillageTabStore VillageTabStore => _villageTabStore;
@@ -26,12 +25,9 @@ namespace MainCore.UI.ViewModels.Tabs
         public ReactiveCommand<Unit, Unit> LoadAll { get; }
         public ReactiveCommand<AccountId, List<ListBoxItem>> LoadVillage { get; }
 
-        private readonly GetVillage _getVillage;
-
-        public VillageViewModel(VillageTabStore villageTabStore, IDbContextFactory<AppDbContext> contextFactory, ITaskManager taskManager, IDialogService dialogService, GetVillage getVillage)
+        public VillageViewModel(VillageTabStore villageTabStore, ITaskManager taskManager, IDialogService dialogService, GetVillage getVillage)
         {
             _villageTabStore = villageTabStore;
-            _contextFactory = contextFactory;
             _taskManager = taskManager;
             _dialogService = dialogService;
             _getVillage = getVillage;
@@ -50,7 +46,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 _villageTabStore.SetTabType(tabType);
             });
 
-            LoadVillage.Subscribe(villages => Villages.Load(villages));
+            LoadVillage.Subscribe(Villages.Load);
         }
 
         public async Task VillageListRefresh(AccountId accountId)
@@ -101,18 +97,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private List<ListBoxItem> LoadVillageHandler(AccountId accountId)
         {
-            using var context = _contextFactory.CreateDbContext();
-
-            var villages = context.Villages
-                .Where(x => x.AccountId == accountId.Value)
-                .OrderBy(x => x.Name)
-                .Select(x => new ListBoxItem()
-                {
-                    Id = x.Id,
-                    Content = $"{x.Name}{Environment.NewLine}({x.X}|{x.Y})",
-                })
-                .ToList();
-            return villages;
+            return _getVillage.Info(accountId);
         }
     }
 }
