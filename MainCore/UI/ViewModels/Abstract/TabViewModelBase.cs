@@ -1,4 +1,5 @@
 ﻿using ReactiveUI;
+using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Abstract
 {
@@ -13,6 +14,7 @@ namespace MainCore.UI.ViewModels.Abstract
             Command = ReactiveCommand.CreateFromTask<bool>(Execute);
 
             this.WhenAnyValue(x => x.IsActive)
+                .ObserveOn(RxApp.TaskpoolScheduler)
                 .InvokeCommand(Command);
         }
 

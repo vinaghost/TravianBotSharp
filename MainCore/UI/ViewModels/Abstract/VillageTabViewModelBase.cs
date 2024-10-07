@@ -32,9 +32,12 @@ namespace MainCore.UI.ViewModels.Abstract
                                             .WhereNotNull()
                                             .Select(x => new VillageId(x.Id));
 
-            villageIdObservable.ToProperty(this, vm => vm.VillageId, out _villageId);
+            villageIdObservable
+                .ToProperty(this, vm => vm.VillageId, out _villageId);
 
-            villageIdObservable.InvokeCommand(VillageChanged);
+            villageIdObservable
+                .ObserveOn(RxApp.TaskpoolScheduler)
+                .InvokeCommand(VillageChanged);
         }
 
         private async Task VillageChangedHandler(VillageId villageId)

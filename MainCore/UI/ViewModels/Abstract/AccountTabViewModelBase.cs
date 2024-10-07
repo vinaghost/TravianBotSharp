@@ -24,7 +24,9 @@ namespace MainCore.UI.ViewModels.Abstract
                                         .Select(x => new AccountId(x.Id));
 
             accountIdObservable.ToProperty(this, vm => vm.AccountId, out _accountId);
-            accountIdObservable.InvokeCommand(AccountChanged);
+            accountIdObservable
+                .ObserveOn(RxApp.TaskpoolScheduler)
+                .InvokeCommand(AccountChanged);
         }
 
         private async Task AccountChangedHandler(AccountId accountId)
