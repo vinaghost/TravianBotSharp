@@ -365,7 +365,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var villageId = _dataService.VillageId;
             var resourceTypes = _fieldList[plan.Plan];
 
-            var buildings = _getBuildings.Execute(villageId, true);
+            var buildings = _getBuildings.Layout(villageId, true);
 
             buildings = buildings
                 .Where(x => resourceTypes.Contains(x.Type))

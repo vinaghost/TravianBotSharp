@@ -1,7 +1,7 @@
 ﻿using MainCore.Common.Models;
 using System.Text.Json;
 
-namespace MainCore.Commands.UI.Build
+namespace MainCore.Commands.UI.Tabs.Villages
 {
     [RegisterSingleton<ImportCommand>]
     public class ImportCommand
@@ -64,7 +64,7 @@ namespace MainCore.Commands.UI.Build
 
         private IEnumerable<JobDto> GetModifiedJobs(VillageId villageId, List<JobDto> jobs)
         {
-            var buildings = _getBuildings.Execute(villageId);
+            var buildings = _getBuildings.Layout(villageId);
 
             var changedLocations = new Dictionary<int, int>();
             foreach (var job in jobs)
