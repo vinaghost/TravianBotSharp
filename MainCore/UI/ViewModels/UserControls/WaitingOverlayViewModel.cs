@@ -1,12 +1,20 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
+using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
-    [RegisterSingleton<IWaitingOverlayViewModel>]
+    [RegisterSingleton<IWaitingOverlayViewModel, WaitingOverlayViewModel>]
     public class WaitingOverlayViewModel : ViewModelBase, IWaitingOverlayViewModel
     {
+        [RegisterServices]
+        public static void Register(IServiceCollection services)
+        {
+            services
+                .AddSingleton(x => x.GetService<IWaitingOverlayViewModel>() as WaitingOverlayViewModel);
+        }
+
         public WaitingOverlayViewModel()
         {
             Message = "is initializing";
