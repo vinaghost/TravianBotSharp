@@ -350,7 +350,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var normalBuildPlan = GetNormalBuildPlan(resourceBuildPlan);
             if (normalBuildPlan is null)
             {
-                new DeleteJobCommand().ByJobId(job.Id);
+                var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
+                deleteJobCommand.ByJobId(job.Id);
             }
             else
             {
@@ -402,7 +403,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         {
             if (IsJobComplete(job))
             {
-                new DeleteJobCommand().ByJobId(job.Id);
+                var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
+                deleteJobCommand.ByJobId(job.Id);
                 await _mediator.Publish(new JobUpdated(_dataService.AccountId, _dataService.VillageId));
                 return true;
             }
