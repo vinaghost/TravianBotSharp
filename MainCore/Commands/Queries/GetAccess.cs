@@ -1,46 +1,120 @@
 ﻿using MainCore.Commands.Abstract;
+using System.Net;
 
 namespace MainCore.Commands.Queries
 {
     [RegisterSingleton<GetAccess>]
-    public class GetAccess : QueryBase
+    public sealed class GetAccess : QueryBase, IDisposable
     {
         private readonly ILogService _logService;
         private readonly IGetSetting _getSetting;
+
+        private readonly NetworkCredential _networkCredential;
+        private readonly WebProxy _proxyWithAuth;
+        private readonly WebProxy _proxyWithoutAuth;
+
+        private readonly HttpClient _proxyWithoutAuthHttpClient;
+        private readonly HttpClient _proxyWithAuthHttpClient;
+        private readonly HttpClient _defaultHttpClient;
+
+        private const string TRAVIAN_PAGE = "https://www.travian.com/international";
 
         public GetAccess(IDbContextFactory<AppDbContext> contextFactory, ILogService logService, IGetSetting getSetting) : base(contextFactory)
         {
             _logService = logService;
             _getSetting = getSetting;
+
+            _networkCredential = new NetworkCredential();
+            _proxyWithAuth = new WebProxy()
+            {
+                Credentials = _networkCredential,
+            };
+            _proxyWithoutAuth = new WebProxy();
+
+            var proxyHttpClientHandler = new HttpClientHandler()
+            {
+                Proxy = _proxyWithoutAuth,
+                UseProxy = true,
+            };
+            _proxyWithoutAuthHttpClient = new HttpClient(proxyHttpClientHandler);
+
+            var proxyWithAuthHttpClientHandler = new HttpClientHandler()
+            {
+                Proxy = _proxyWithAuth,
+                UseProxy = true,
+            };
+            _proxyWithAuthHttpClient = new HttpClient(proxyWithAuthHttpClientHandler);
+
+            var defaultHttpClientHandler = new HttpClientHandler()
+            {
+                UseProxy = false,
+            };
+
+            _defaultHttpClient = new HttpClient(defaultHttpClientHandler);
         }
 
-        public Result<AccessDto> Execute(AccountId accountId, bool ignoreSleepTime = false)
+        public async Task<Result<AccessDto>> Execute(AccountId accountId, bool ignoreSleepTime = false)
         {
-            var accesses = GetAccesses(accountId);
-            var logger = _logService.GetLogger(accountId);
-
-            var access = GetValidAccess(accesses, logger);
-
+            var access = await GetValidAccess(accountId);
             if (access is null) return Stop.AllAccessNotWorking;
 
-            UpdateAccessLastUsed(access.Id);
-
-            if (accesses.Count == 1) return access;
+            var count = CountAccesses(accountId);
+            if (count == 1) return access;
             if (ignoreSleepTime) return access;
 
             var minSleep = _getSetting.ByName(accountId, AccountSettingEnums.SleepTimeMin);
-
             var timeValid = DateTime.Now.AddMinutes(-minSleep);
             if (access.LastUsed > timeValid) return Stop.LackOfAccess;
             return access;
         }
 
-        private static AccessDto GetValidAccess(List<AccessDto> accesses, ILogger logger)
+        private async Task<AccessDto> GetValidAccess(AccountId accountId)
         {
-            if (accesses.Count == 0) return null;
-            var access = accesses[0];
-            logger.Information("Using connection {Proxy}", access.Proxy);
-            return access;
+            var accesses = GetAccesses(accountId);
+            var logger = _logService.GetLogger(accountId);
+
+            foreach (var access in accesses)
+            {
+                if (await IsValid(access, logger))
+                {
+                    return access;
+                }
+            }
+
+            return null;
+        }
+
+        private async Task<bool> IsValid(AccessDto access, ILogger logger)
+        {
+            var client = GetClient(access);
+            logger.Information("Checking access {Proxy}, last used {LastUsed}", access.Proxy, access.LastUsed);
+            try
+            {
+                var response = await client.GetAsync(TRAVIAN_PAGE);
+                logger.Information("Access {Proxy} is good", access.Proxy);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "There is exception");
+                return false;
+            }
+        }
+
+        private HttpClient GetClient(AccessDto access)
+        {
+            if (string.IsNullOrEmpty(access.ProxyHost)) return _defaultHttpClient;
+
+            if (string.IsNullOrEmpty(access.ProxyUsername))
+            {
+                _proxyWithoutAuth.Address = new Uri($"http://{access.ProxyHost}:{access.ProxyPort}");
+                return _proxyWithoutAuthHttpClient;
+            }
+
+            _networkCredential.UserName = access.ProxyUsername;
+            _networkCredential.Password = access.ProxyPassword;
+            _proxyWithAuth.Address = new Uri($"http://{access.ProxyHost}:{access.ProxyPort}");
+            return _proxyWithAuthHttpClient;
         }
 
         private List<AccessDto> GetAccesses(AccountId accountId)
@@ -54,12 +128,19 @@ namespace MainCore.Commands.Queries
             return accessess;
         }
 
-        private void UpdateAccessLastUsed(AccessId accessId)
+        private int CountAccesses(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();
-            context.Accesses
-               .Where(x => x.Id == accessId.Value)
-               .ExecuteUpdate(x => x.SetProperty(x => x.LastUsed, x => DateTime.Now));
+            return context.Accesses
+               .Where(x => x.AccountId == accountId.Value)
+               .Count();
+        }
+
+        public void Dispose()
+        {
+            _proxyWithoutAuthHttpClient.Dispose();
+            _proxyWithAuthHttpClient.Dispose();
+            _defaultHttpClient.Dispose();
         }
     }
 }

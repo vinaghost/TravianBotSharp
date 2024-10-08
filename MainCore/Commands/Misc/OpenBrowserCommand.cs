@@ -6,10 +6,12 @@ namespace MainCore.Commands.Misc
     public class OpenBrowserCommand
     {
         private readonly IChromeManager _chromeManager;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public OpenBrowserCommand(IChromeManager chromeManager)
+        public OpenBrowserCommand(IChromeManager chromeManager, IDbContextFactory<AppDbContext> contextFactory)
         {
             _chromeManager = chromeManager;
+            _contextFactory = contextFactory;
         }
 
         public async Task<Result> Execute(AccountId accountId, AccessDto access, CancellationToken cancellationToken)
@@ -42,7 +44,17 @@ namespace MainCore.Commands.Misc
 
             result = await chromeBrowser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            UpdateAccessLastUsed(access.Id);
             return Result.Ok();
+        }
+
+        private void UpdateAccessLastUsed(AccessId accessId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            context.Accesses
+               .Where(x => x.Id == accessId.Value)
+               .ExecuteUpdate(x => x.SetProperty(x => x.LastUsed, x => DateTime.Now));
         }
     }
 }

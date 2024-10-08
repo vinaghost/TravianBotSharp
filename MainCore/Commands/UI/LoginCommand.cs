@@ -40,7 +40,7 @@
             var logger = _logService.GetLogger(accountId);
 
             var getAccess = Locator.Current.GetService<GetAccess>();
-            var result = getAccess.Execute(accountId, true);
+            var result = await getAccess.Execute(accountId, true);
 
             if (result.IsFailed)
             {
@@ -52,6 +52,7 @@
                 return;
             }
             var access = result.Value;
+
             logger.Information("Using connection {Proxy} to start chrome", access.Proxy);
 
             var openBrowserCommand = Locator.Current.GetService<OpenBrowserCommand>();
