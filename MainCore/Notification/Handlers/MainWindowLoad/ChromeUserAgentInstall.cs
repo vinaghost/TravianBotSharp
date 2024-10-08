@@ -5,9 +5,9 @@ namespace MainCore.Notification.Handlers.MainWindowLoad
     public class ChromeUserAgentInstall : INotificationHandler<MainWindowLoaded>
     {
         private readonly IUseragentManager _useragentManager;
-        private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
 
-        public ChromeUserAgentInstall(IUseragentManager useragentManager, WaitingOverlayViewModel waitingOverlayViewModel)
+        public ChromeUserAgentInstall(IUseragentManager useragentManager, IWaitingOverlayViewModel waitingOverlayViewModel)
         {
             _useragentManager = useragentManager;
             _waitingOverlayViewModel = waitingOverlayViewModel;

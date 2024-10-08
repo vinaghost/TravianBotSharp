@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton(Registration=RegistrationStrategy.ImplementedInterfaces)]
+    [RegisterSingleton(Registration = RegistrationStrategy.ImplementedInterfaces)]
     public sealed class UseragentManager : IUseragentManager
     {
         private List<string> _userAgentList;
@@ -41,6 +41,7 @@ namespace MainCore.Services
                 await Update();
                 return;
             }
+
             var userAgentJsonString = await File.ReadAllTextAsync(pathFile);
             var modelLoaded = JsonSerializer.Deserialize<Model>(userAgentJsonString);
             _userAgentList = modelLoaded.UserAgentList;

@@ -2,7 +2,8 @@
 
 namespace MainCore.Commands.Queries
 {
-    public class GetMissingResource(IDbContextFactory<AppDbContext> contextFactory = null) : QueryBase(contextFactory)
+    [RegisterSingleton<GetMissingResource>]
+    public class GetMissingResource(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
     {
         public long[] Execute(VillageId villageId, long[] requiredResource)
         {

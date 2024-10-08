@@ -39,17 +39,6 @@ namespace MainCore.Tasks.Base
             return Task.FromResult(Result.Ok());
         }
 
-        public string GetName()
-        {
-            if (string.IsNullOrWhiteSpace(_name))
-            {
-                SetName();
-            }
-            return _name;
-        }
-
-        protected string _name;
-
-        protected abstract void SetName();
+        public abstract string GetName();
     }
 }

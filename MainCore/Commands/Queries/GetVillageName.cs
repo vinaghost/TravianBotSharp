@@ -2,7 +2,8 @@
 
 namespace MainCore.Commands.Queries
 {
-    public class GetVillageName(IDbContextFactory<AppDbContext> contextFactory = null) : QueryBase(contextFactory)
+    [RegisterSingleton<GetVillageName>]
+    public class GetVillageName(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
     {
         public string Execute(VillageId villageId)
         {

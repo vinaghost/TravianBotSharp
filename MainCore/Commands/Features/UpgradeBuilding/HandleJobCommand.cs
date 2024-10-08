@@ -5,14 +5,16 @@ using System.Text.Json;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class HandleJobCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand) : CommandBase(dataService)
+    [RegisterScoped<HandleJobCommand>]
+    public class HandleJobCommand : CommandBase
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly IMediator _mediator = mediator;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IMediator _mediator;
 
-        private readonly ToDorfCommand _toDorfCommand = toDorfCommand;
-        private readonly UpdateBuildingCommand _updateBuildingCommand = updateBuildingCommand;
+        private readonly ToDorfCommand _toDorfCommand;
+        private readonly UpdateBuildingCommand _updateBuildingCommand;
+        private readonly IGetSetting _getSetting;
+        private readonly GetBuildings _getBuildings;
 
         private static readonly List<BuildingEnums> _resourceTypes =
         [
@@ -28,6 +30,16 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             {ResourcePlanEnums.ExcludeCrop, _resourceTypes.Take(3).ToList()},
             {ResourcePlanEnums.OnlyCrop, _resourceTypes.Skip(3).ToList()},
         };
+
+        public HandleJobCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, IGetSetting getSetting, GetBuildings getBuildings) : base(dataService)
+        {
+            _contextFactory = contextFactory;
+            _mediator = mediator;
+            _toDorfCommand = toDorfCommand;
+            _updateBuildingCommand = updateBuildingCommand;
+            _getSetting = getSetting;
+            _getBuildings = getBuildings;
+        }
 
         public async Task<Result<NormalBuildPlan>> Execute(CancellationToken cancellationToken)
         {
@@ -75,7 +87,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             }
 
             var plusActive = IsPlusActive();
-            var applyRomanQueueLogic = new GetSetting().BooleanByName(_dataService.VillageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
+            var applyRomanQueueLogic = _getSetting.BooleanByName(_dataService.VillageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
 
             if (countQueueBuilding == 1)
             {
@@ -338,11 +350,13 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var normalBuildPlan = GetNormalBuildPlan(resourceBuildPlan);
             if (normalBuildPlan is null)
             {
-                new DeleteJobCommand().ByJobId(job.Id);
+                var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
+                deleteJobCommand.ByJobId(job.Id);
             }
             else
             {
-                new AddJobCommand().ToTop(villageId, normalBuildPlan);
+                var addJobCommand = Locator.Current.GetService<AddJobCommand>();
+                addJobCommand.ToTop(villageId, normalBuildPlan);
             }
             await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
             return Result.Ok();
@@ -353,7 +367,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var villageId = _dataService.VillageId;
             var resourceTypes = _fieldList[plan.Plan];
 
-            var buildings = new GetBuildings().Execute(villageId, true);
+            var buildings = _getBuildings.Layout(villageId, true);
 
             buildings = buildings
                 .Where(x => resourceTypes.Contains(x.Type))
@@ -390,7 +404,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         {
             if (IsJobComplete(job))
             {
-                new DeleteJobCommand().ByJobId(job.Id);
+                var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
+                deleteJobCommand.ByJobId(job.Id);
                 await _mediator.Publish(new JobUpdated(_dataService.AccountId, _dataService.VillageId));
                 return true;
             }

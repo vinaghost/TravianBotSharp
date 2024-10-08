@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
+    [RegisterTransient<CompleteImmediatelyTask>]
     public class CompleteImmediatelyTask : VillageTask
     {
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
@@ -25,10 +25,6 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        protected override void SetName()
-        {
-            var villageName = new GetVillageName().Execute(VillageId);
-            _name = $"Complete immediately in {villageName}";
-        }
+        protected override string TaskName => "Complete immediately";
     }
 }

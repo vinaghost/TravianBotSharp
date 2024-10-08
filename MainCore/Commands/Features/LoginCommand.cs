@@ -2,8 +2,8 @@
 
 namespace MainCore.Commands.Features
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class LoginCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory) : CommandBase(dataService), ICommand
+    [RegisterScoped<LoginCommand>]
+    public class LoginCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
 
@@ -35,20 +35,18 @@ namespace MainCore.Commands.Features
             return Result.Ok();
         }
 
-        private (string, string) GetLoginInfo(AccountId accountId)
+        private (string username, string password) GetLoginInfo(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();
-            var username = context.Accounts
-                .Where(x => x.Id == accountId.Value)
-                .Select(x => x.Username)
-                .FirstOrDefault();
-
-            var password = context.Accesses
+            var data = context.Accesses
                 .Where(x => x.AccountId == accountId.Value)
                 .OrderByDescending(x => x.LastUsed)
-                .Select(x => x.Password)
+                .Select(x => new { x.Username, x.Password })
                 .FirstOrDefault();
-            return (username, password);
+
+            if (data is null) return ("", "");
+
+            return (data.Username, data.Password);
         }
     }
 }

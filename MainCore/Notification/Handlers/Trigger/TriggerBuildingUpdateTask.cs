@@ -5,10 +5,14 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerBuildingUpdateTask : INotificationHandler<VillageUpdated>
     {
         private readonly ITaskManager _taskManager;
+        private readonly GetVillage _getVillage;
+        private readonly IGetSetting _getSetting;
 
-        public TriggerBuildingUpdateTask(ITaskManager taskManager)
+        public TriggerBuildingUpdateTask(ITaskManager taskManager, GetVillage getVillage, IGetSetting getSetting)
         {
             _taskManager = taskManager;
+            _getVillage = getVillage;
+            _getSetting = getSetting;
         }
 
         public async Task Handle(VillageUpdated notification, CancellationToken cancellationToken)
@@ -20,10 +24,10 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId)
         {
-            var autoLoadVillageBuilding = new GetSetting().BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
+            var autoLoadVillageBuilding = _getSetting.BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             if (!autoLoadVillageBuilding) return;
 
-            var villages = new GetVillage().Missing(accountId);
+            var villages = _getVillage.Missing(accountId);
 
             foreach (var village in villages)
             {

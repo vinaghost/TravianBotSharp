@@ -23,11 +23,12 @@ namespace WPFUI.Views.Tabs
                 this.BindCommand(ViewModel, vm => vm.DeleteAccess, v => v.DeleteAccessButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.AddAccount, v => v.AddAccountButton).DisposeWith(d);
 
-                this.Bind(ViewModel, vm => vm.AccountInput.Username, v => v.UsernameTextBox.Text).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountInput.Username, v => v.NicknameTextBox.Text).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountInput.Server, v => v.ServerTextBox.Text).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.AccountInput.Accesses, v => v.ProxiesDataGrid.ItemsSource).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.SelectedAccess, v => v.ProxiesDataGrid.SelectedItem).DisposeWith(d);
 
+                this.Bind(ViewModel, vm => vm.AccessInput.Username, v => v.UsernameTextBox.Text).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccessInput.Password, v => v.PasswordTextBox.Text).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccessInput.ProxyHost, v => v.ProxyHostTextBox.Text).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccessInput.ProxyPort, v => v.ProxyPortTextBox.Text).DisposeWith(d);

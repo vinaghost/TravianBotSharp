@@ -1,27 +1,20 @@
 ﻿using FluentValidation;
+using MainCore.Commands.UI.Tabs;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
-using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
 using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
+    [RegisterSingleton<EditAccountViewModel>]
     public class EditAccountViewModel : AccountTabViewModelBase
     {
         public AccountInput AccountInput { get; } = new();
         public AccessInput AccessInput { get; } = new();
 
-        private readonly IMediator _mediator;
-
         private readonly IValidator<AccessInput> _accessInputValidator;
-        private readonly IValidator<AccountInput> _accountInputValidator;
-
-        private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
         private readonly IDialogService _dialogService;
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IUseragentManager _useragentManager;
         public ReactiveCommand<Unit, Unit> AddAccess { get; }
         public ReactiveCommand<Unit, Unit> EditAccess { get; }
         public ReactiveCommand<Unit, Unit> DeleteAccess { get; }
@@ -29,15 +22,10 @@ namespace MainCore.UI.ViewModels.Tabs
 
         public ReactiveCommand<AccountId, AccountDto> LoadAccount { get; }
 
-        public EditAccountViewModel(IMediator mediator, IValidator<AccessInput> accessInputValidator, IValidator<AccountInput> accountInputValidator, WaitingOverlayViewModel waitingOverlayViewModel, IDialogService dialogService, IDbContextFactory<AppDbContext> contextFactory, IUseragentManager useragentManager)
+        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService)
         {
-            _mediator = mediator;
             _accessInputValidator = accessInputValidator;
-            _accountInputValidator = accountInputValidator;
-            _waitingOverlayViewModel = waitingOverlayViewModel;
             _dialogService = dialogService;
-            _contextFactory = contextFactory;
-            _useragentManager = useragentManager;
 
             AddAccess = ReactiveCommand.Create(AddAccessHandler);
             EditAccess = ReactiveCommand.Create(EditAccessHandler);
@@ -69,14 +57,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
-            if (AccountInput.Accesses.Count == 0)
-            {
-                AccountInput.Accesses.Add(AccessInput.Clone());
-            }
-            else
-            {
-                _dialogService.ShowMessageBox("Error", "Only one access is allowed because new rule. Please check TBS's discord server");
-            }
+            AccountInput.Accesses.Add(AccessInput.Clone());
         }
 
         private void EditAccessHandler()
@@ -99,29 +80,15 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task EditAccountHandler()
         {
-            var results = await _accountInputValidator.ValidateAsync(AccountInput);
-
-            if (!results.IsValid)
-            {
-                _dialogService.ShowMessageBox("Error", results.ToString());
-                return;
-            }
-
-            await _waitingOverlayViewModel.Show("editing account");
-
-            var dto = AccountInput.ToDto();
-            Update(dto);
-            await _mediator.Publish(new AccountUpdated());
+            var updateAccountCommand = Locator.Current.GetService<UpdateAccountCommand>();
+            await updateAccountCommand.Execute(AccountInput, default);
             await LoadAccount.Execute();
-
-            await _waitingOverlayViewModel.Hide();
-
-            _dialogService.ShowMessageBox("Information", "Edited account");
         }
 
         private AccountDto LoadAccountHandler(AccountId accountId)
         {
-            var account = new GetAccount().Execute(AccountId, true);
+            var getAccount = Locator.Current.GetService<GetAccount>();
+            var account = getAccount.Execute(AccountId, true);
             return account;
         }
 
@@ -141,26 +108,6 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             get => _selectedAccess;
             set => this.RaiseAndSetIfChanged(ref _selectedAccess, value);
-        }
-
-        private void Update(AccountDto dto)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            var account = dto.ToEntity();
-            foreach (var access in account.Accesses.Where(access => string.IsNullOrWhiteSpace(access.Useragent)))
-            {
-                access.Useragent = _useragentManager.Get();
-            }
-
-            // Remove accesses not present in the DTO
-            var existingAccessIds = dto.Accesses.Select(a => a.Id.Value).ToList();
-            context.Accesses
-                .Where(a => a.AccountId == account.Id && !existingAccessIds.Contains(a.Id))
-                .ExecuteDelete();
-
-            context.Update(account);
-            context.SaveChanges();
         }
     }
 }
