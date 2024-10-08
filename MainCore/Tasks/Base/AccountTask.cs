@@ -20,7 +20,7 @@ namespace MainCore.Tasks.Base
         {
             if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-            var dataService = scoped.ServiceProvider.GetRequiredService<DataService>();
+            var dataService = scoped.ServiceProvider.GetRequiredService<IDataService>();
             dataService.AccountId = AccountId;
             var chromeManager = Locator.Current.GetService<IChromeManager>();
             var chromeBrowser = chromeManager.Get(AccountId);

@@ -15,7 +15,7 @@ namespace MainCore.Tasks
 
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
         {
-            var dataService = scoped.ServiceProvider.GetRequiredService<DataService>();
+            var dataService = scoped.ServiceProvider.GetRequiredService<IDataService>();
             var chromeBrowser = dataService.ChromeBrowser;
             var url = chromeBrowser.CurrentUrl;
             Result result;

@@ -355,7 +355,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             }
             else
             {
-                new AddJobCommand().ToTop(villageId, normalBuildPlan);
+                var addJobCommand = Locator.Current.GetService<AddJobCommand>();
+                addJobCommand.ToTop(villageId, normalBuildPlan);
             }
             await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
             return Result.Ok();

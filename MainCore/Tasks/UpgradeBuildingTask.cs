@@ -19,7 +19,7 @@ namespace MainCore.Tasks
             HandleResourceCommand handleResourceCommand = null;
             HandleUpgradeCommand handleUpgradeCommand = null;
 
-            var dataService = scoped.ServiceProvider.GetRequiredService<DataService>();
+            var dataService = scoped.ServiceProvider.GetRequiredService<IDataService>();
             var logger = dataService.Logger;
 
             while (true)

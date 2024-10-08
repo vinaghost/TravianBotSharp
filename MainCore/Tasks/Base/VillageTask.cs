@@ -26,7 +26,7 @@ namespace MainCore.Tasks.Base
             result = await base.PreExecute(scoped, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var dataService = scoped.ServiceProvider.GetRequiredService<DataService>();
+            var dataService = scoped.ServiceProvider.GetRequiredService<IDataService>();
             dataService.VillageId = VillageId;
 
             var switchVillageCommand = scoped.ServiceProvider.GetRequiredService<SwitchVillageCommand>();

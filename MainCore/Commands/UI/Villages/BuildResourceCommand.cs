@@ -33,7 +33,8 @@ namespace MainCore.Commands.UI.Tabs.Villages
                 Plan = type,
                 Level = level,
             };
-            new AddJobCommand().ToBottom(villageId, plan);
+            var addJobCommand = Locator.Current.GetService<AddJobCommand>();
+            addJobCommand.ToBottom(villageId, plan);
             await _mediator.Publish(new JobUpdated(accountId, villageId));
         }
     }

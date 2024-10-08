@@ -22,7 +22,7 @@ namespace MainCore.Tasks
 
         private static async Task<Result> DisableContextualHelp(IServiceScope scoped, CancellationToken cancellationToken)
         {
-            var dataService = scoped.ServiceProvider.GetRequiredService<DataService>();
+            var dataService = scoped.ServiceProvider.GetRequiredService<IDataService>();
             var chromeBrowser = dataService.ChromeBrowser;
 
             var contextualHelpEnable = OptionParser.IsContextualHelpEnable(chromeBrowser.Html);

@@ -57,8 +57,8 @@ namespace MainCore.Commands.UI.Tabs.Villages
                 }
                 Validate(buildings, plan);
             }
-
-            new AddJobCommand().ToBottom(villageId, plan);
+            var addJobCommand = Locator.Current.GetService<AddJobCommand>();
+            addJobCommand.ToBottom(villageId, plan);
             await _mediator.Publish(new JobUpdated(accountId, villageId));
         }
 

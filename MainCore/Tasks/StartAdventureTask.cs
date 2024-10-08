@@ -26,7 +26,7 @@ namespace MainCore.Tasks
             result = await exploreAdventureCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var chromeBrowser = scoped.ServiceProvider.GetRequiredService<DataService>().ChromeBrowser;
+            var chromeBrowser = scoped.ServiceProvider.GetRequiredService<IDataService>().ChromeBrowser;
             var adventureDuration = AdventureParser.GetAdventureDuration(chromeBrowser.Html);
             await SetNextExecute(adventureDuration);
 
