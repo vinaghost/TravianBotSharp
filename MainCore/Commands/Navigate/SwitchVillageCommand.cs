@@ -2,7 +2,7 @@
 
 namespace MainCore.Commands.Navigate
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    [RegisterScoped<SwitchVillageCommand>]
     public class SwitchVillageCommand(DataService dataService) : CommandBase(dataService), ICommand
     {
         public async Task<Result> Execute(CancellationToken cancellationToken)

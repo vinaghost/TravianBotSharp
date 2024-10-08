@@ -3,7 +3,7 @@ using MainCore.Common.Errors.TrainTroop;
 
 namespace MainCore.Commands.Features.NpcResource
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    [RegisterScoped<ToNpcResourcePageCommand>]
     public class ToNpcResourcePageCommand : CommandBase, ICommand
     {
         private readonly ToDorfCommand _toDorfCommand;

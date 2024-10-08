@@ -1,9 +1,8 @@
 ﻿using MainCore.Commands.Abstract;
-using MainCore.Parsers;
 
 namespace MainCore.Commands.Features.StartAdventure
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    [RegisterScoped<ToAdventurePageCommand>]
     public class ToAdventurePageCommand(DataService dataService) : CommandBase(dataService), ICommand
     {
         public async Task<Result> Execute(CancellationToken cancellationToken)

@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
+    [RegisterTransient<UpdateBuildingTask>]
     public class UpdateBuildingTask : VillageTask
     {
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)

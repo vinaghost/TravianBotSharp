@@ -2,7 +2,7 @@
 
 namespace MainCore.Commands.Features.StartAdventure
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    [RegisterScoped<ExploreAdventureCommand>]
     public class ExploreAdventureCommand(DataService dataService) : CommandBase(dataService), ICommand
     {
         public async Task<Result> Execute(CancellationToken cancellationToken)

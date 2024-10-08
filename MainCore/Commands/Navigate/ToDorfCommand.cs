@@ -2,7 +2,7 @@
 
 namespace MainCore.Commands.Navigate
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    [RegisterScoped<ToDorfCommand>]
     public class ToDorfCommand(DataService dataService) : CommandBase(dataService), ICommand<int>
     {
         public async Task<Result> Execute(int dorf, CancellationToken cancellationToken)

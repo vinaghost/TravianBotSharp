@@ -2,7 +2,7 @@
 
 namespace MainCore.Commands.Checks
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    [RegisterScoped<CheckAdventureCommand>]
     public class CheckAdventureCommand(DataService dataService, IMediator mediator) : CommandBase(dataService), ICommand
     {
         private readonly IMediator _mediator = mediator;

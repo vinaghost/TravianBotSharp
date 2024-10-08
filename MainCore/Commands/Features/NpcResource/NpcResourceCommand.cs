@@ -2,7 +2,7 @@
 
 namespace MainCore.Commands.Features.NpcResource
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    [RegisterScoped<NpcResourceCommand>]
     public class NpcResourceCommand : CommandBase, ICommand
     {
         private static readonly List<VillageSettingEnums> _settingNames = [

@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
+    [RegisterTransient<TrainTroopTask>]
     public class TrainTroopTask : VillageTask
     {
         private readonly ITaskManager _taskManager;

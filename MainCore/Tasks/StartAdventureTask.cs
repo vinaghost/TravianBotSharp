@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
+    [RegisterTransient<StartAdventureTask>]
     public class StartAdventureTask : AccountTask
     {
         private readonly ITaskManager _taskManager;

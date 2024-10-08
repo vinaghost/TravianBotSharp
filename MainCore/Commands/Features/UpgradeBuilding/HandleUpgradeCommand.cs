@@ -3,7 +3,7 @@ using MainCore.Common.Models;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    [RegisterScoped<HandleUpgradeCommand>]
     public class HandleUpgradeCommand : CommandBase, ICommand<NormalBuildPlan>
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;

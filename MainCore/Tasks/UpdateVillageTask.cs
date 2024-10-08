@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
+    [RegisterTransient<UpdateVillageTask>]
     public class UpdateVillageTask : VillageTask
     {
         private readonly ITaskManager _taskManager;

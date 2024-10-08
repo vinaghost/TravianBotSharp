@@ -5,7 +5,7 @@ using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Commands.UI.Tabs
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
+    [RegisterTransient<AddAccountCommand>]
     public class AddAccountCommand : CommandUIBase, ICommand<AccountInput>, ICommand<List<AccountDetailDto>>
     {
         private readonly IValidator<AccountInput> _accountInputValidator;

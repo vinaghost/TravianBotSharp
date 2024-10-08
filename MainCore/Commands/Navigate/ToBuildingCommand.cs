@@ -3,7 +3,7 @@ using System.Web;
 
 namespace MainCore.Commands.Navigate
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    [RegisterScoped<ToBuildingCommand>]
     public class ToBuildingCommand(DataService dataService) : CommandBase(dataService), ICommand<int>
     {
         public async Task<Result> Execute(int location, CancellationToken cancellationToken)

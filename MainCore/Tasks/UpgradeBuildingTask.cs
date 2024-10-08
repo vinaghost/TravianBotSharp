@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
+    [RegisterTransient<UpgradeBuildingTask>]
     public class UpgradeBuildingTask(IDbContextFactory<AppDbContext> contextFactory) : VillageTask
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;

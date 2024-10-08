@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    [RegisterScoped<HandleJobCommand>]
     public class HandleJobCommand : CommandBase
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;

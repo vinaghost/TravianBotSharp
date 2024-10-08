@@ -2,7 +2,7 @@
 
 namespace MainCore.Commands.Features
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    [RegisterScoped<SleepCommand>]
     public class SleepCommand : CommandBase, ICommand
     {
         private readonly GetSetting _getSetting;

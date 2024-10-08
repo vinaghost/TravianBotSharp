@@ -2,7 +2,7 @@
 
 namespace MainCore.Commands.Update
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    [RegisterScoped<UpdateFarmlistCommand>]
     public class UpdateFarmlistCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;

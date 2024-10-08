@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
+    [RegisterTransient<SleepTask>]
     public class SleepTask : AccountTask
     {
         private readonly ITaskManager _taskManager;

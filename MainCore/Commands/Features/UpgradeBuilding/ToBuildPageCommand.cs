@@ -3,7 +3,7 @@ using MainCore.Common.Models;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    [RegisterScoped<ToBuildPageCommand>]
     public class ToBuildPageCommand : CommandBase, ICommand<NormalBuildPlan>
     {
         private readonly ToBuildingCommand _toBuildingCommand;

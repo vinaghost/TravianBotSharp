@@ -3,7 +3,7 @@ using MainCore.Common.Errors.TrainTroop;
 
 namespace MainCore.Commands.Features.TrainTroop
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
+    [RegisterScoped<TrainTroopCommand>]
     public class TrainTroopCommand : CommandBase, ICommand<BuildingEnums>
     {
         private readonly ToDorfCommand _toDorfCommand;
