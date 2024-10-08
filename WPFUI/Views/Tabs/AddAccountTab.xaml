@@ -27,7 +27,7 @@
                     <ColumnDefinition Width="3*" />
                 </Grid.ColumnDefinitions>
                 <TextBox x:Name="ServerTextBox"    Grid.Row="0" materialDesign:HintAssist.Hint="Server Url" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
-                <TextBox x:Name="UsernameTextBox"  Grid.Row="1" materialDesign:HintAssist.Hint="Username" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
+                <TextBox x:Name="NicknameTextBox"  Grid.Row="1" materialDesign:HintAssist.Hint="Nickname" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
             </Grid>
         </Border>
         <Border Style="{DynamicResource Box}"  Grid.Row="1">
@@ -43,7 +43,8 @@
                     <ColumnDefinition Width="3*" />
                     <ColumnDefinition Width="5*" />
                 </Grid.ColumnDefinitions>
-                <TextBox x:Name="PasswordTextBox"       Grid.Column="0" Grid.Row="0" materialDesign:HintAssist.Hint="Password (*)" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
+                <TextBox x:Name="UsernameTextBox"       Grid.Column="0" Grid.Row="0" materialDesign:HintAssist.Hint="Username (*)" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
+                <TextBox x:Name="PasswordTextBox"       Grid.Column="1" Grid.Row="0" materialDesign:HintAssist.Hint="Password (*)" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
                 <TextBox x:Name="ProxyHostTextBox"      Grid.Column="0" Grid.Row="1" materialDesign:HintAssist.Hint="Proxy's host" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
                 <TextBox x:Name="ProxyPortTextBox"      Grid.Column="2" Grid.Row="1" materialDesign:HintAssist.Hint="Proxy's port" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
                 <TextBox x:Name="ProxyUsernameTextBox"  Grid.Column="0" Grid.Row="2" materialDesign:HintAssist.Hint="Proxy's username" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
@@ -67,6 +68,7 @@
         <Border Style="{DynamicResource Box}"  Grid.Row="3">
             <DataGrid x:Name="ProxiesDataGrid" IsReadOnly="True" AutoGenerateColumns="False">
                 <DataGrid.Columns>
+                    <DataGridTextColumn Header="Username" Binding="{Binding Username}" />
                     <DataGridTextColumn Header="Password" Binding="{Binding Password}" />
                     <DataGridTextColumn Header="Proxy's host" Binding="{Binding ProxyHost}" />
                     <DataGridTextColumn Header="Proxy's port" Binding="{Binding ProxyPort}" />

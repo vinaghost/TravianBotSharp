@@ -5,10 +5,14 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerRefreshVillageTask : INotificationHandler<VillageSettingUpdated>, INotificationHandler<AccountInit>
     {
         private readonly ITaskManager _taskManager;
+        private readonly IGetSetting _getSetting;
+        private readonly GetVillage _getVillage;
 
-        public TriggerRefreshVillageTask(ITaskManager taskManager)
+        public TriggerRefreshVillageTask(ITaskManager taskManager, IGetSetting getSetting, GetVillage getVillage)
         {
             _taskManager = taskManager;
+            _getSetting = getSetting;
+            _getVillage = getVillage;
         }
 
         public async Task Handle(VillageSettingUpdated notification, CancellationToken cancellationToken)
@@ -22,7 +26,7 @@ namespace MainCore.Notification.Handlers.Trigger
         {
             var accountId = notification.AccountId;
 
-            var villages = new GetVillage().All(accountId);
+            var villages = _getVillage.All(accountId);
             foreach (var village in villages)
             {
                 await Trigger(accountId, village);
@@ -31,7 +35,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
-            var autoRefreshEnable = new GetSetting().BooleanByName(villageId, VillageSettingEnums.AutoRefreshEnable);
+            var autoRefreshEnable = _getSetting.BooleanByName(villageId, VillageSettingEnums.AutoRefreshEnable);
             if (autoRefreshEnable)
             {
                 if (_taskManager.IsExist<UpdateVillageTask>(accountId, villageId)) return;

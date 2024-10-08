@@ -9,12 +9,10 @@ using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
+    [RegisterSingleton<VillageViewModel>]
     public class VillageViewModel : AccountTabViewModelBase
     {
         private readonly VillageTabStore _villageTabStore;
-
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
@@ -26,10 +24,9 @@ namespace MainCore.UI.ViewModels.Tabs
         public ReactiveCommand<Unit, Unit> LoadAll { get; }
         public ReactiveCommand<AccountId, List<ListBoxItem>> LoadVillage { get; }
 
-        public VillageViewModel(VillageTabStore villageTabStore, IDbContextFactory<AppDbContext> contextFactory, ITaskManager taskManager, IDialogService dialogService)
+        public VillageViewModel(VillageTabStore villageTabStore, ITaskManager taskManager, IDialogService dialogService)
         {
             _villageTabStore = villageTabStore;
-            _contextFactory = contextFactory;
             _taskManager = taskManager;
             _dialogService = dialogService;
 
@@ -47,7 +44,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 _villageTabStore.SetTabType(tabType);
             });
 
-            LoadVillage.Subscribe(villages => Villages.Load(villages));
+            LoadVillage.Subscribe(Villages.Load);
         }
 
         public async Task VillageListRefresh(AccountId accountId)
@@ -78,7 +75,8 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task LoadUnloadHandler()
         {
-            var villages = new GetVillage().Missing(AccountId);
+            var getVillage = Locator.Current.GetService<GetVillage>();
+            var villages = getVillage.Missing(AccountId);
             foreach (var village in villages)
             {
                 await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
@@ -88,7 +86,8 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task LoadAllHandler()
         {
-            var villages = new GetVillage().All(AccountId);
+            var getVillage = Locator.Current.GetService<GetVillage>();
+            var villages = getVillage.All(AccountId);
             foreach (var village in villages)
             {
                 await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
@@ -96,20 +95,10 @@ namespace MainCore.UI.ViewModels.Tabs
             _dialogService.ShowMessageBox("Information", $"Added update task");
         }
 
-        private List<ListBoxItem> LoadVillageHandler(AccountId accountId)
+        private static List<ListBoxItem> LoadVillageHandler(AccountId accountId)
         {
-            using var context = _contextFactory.CreateDbContext();
-
-            var villages = context.Villages
-                .Where(x => x.AccountId == accountId.Value)
-                .OrderBy(x => x.Name)
-                .Select(x => new ListBoxItem()
-                {
-                    Id = x.Id,
-                    Content = $"{x.Name}{Environment.NewLine}({x.X}|{x.Y})",
-                })
-                .ToList();
-            return villages;
+            var getVillage = Locator.Current.GetService<GetVillage>();
+            return getVillage.Info(accountId);
         }
     }
 }

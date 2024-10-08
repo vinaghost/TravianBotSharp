@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
+    [RegisterTransient<UpdateFarmListTask>]
     public class UpdateFarmListTask : AccountTask
     {
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
@@ -22,9 +22,6 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        protected override void SetName()
-        {
-            _name = "Update farm lists";
-        }
+        protected override string TaskName => "Update farm list";
     }
 }

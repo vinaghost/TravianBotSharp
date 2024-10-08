@@ -23,15 +23,21 @@ namespace MainCore.UI.ViewModels.Abstract
             VillageChanged = ReactiveCommand.CreateFromTask<VillageId>(VillageChangedHandler);
 
             var accountIdObservable = this.WhenAnyValue(vm => vm._selectedItemStore.Account)
-                                       .Select(x => new AccountId(x?.Id ?? 0));
+                                            .WhereNotNull()
+                                            .Select(x => new AccountId(x.Id));
 
             accountIdObservable.ToProperty(this, vm => vm.AccountId, out _accountId);
 
             var villageIdObservable = this.WhenAnyValue(vm => vm._selectedItemStore.Village)
-                                        .Select(x => new VillageId(x?.Id ?? 0));
+                                            .WhereNotNull()
+                                            .Select(x => new VillageId(x.Id));
 
-            villageIdObservable.ToProperty(this, vm => vm.VillageId, out _villageId);
-            villageIdObservable.InvokeCommand(VillageChanged);
+            villageIdObservable
+                .ToProperty(this, vm => vm.VillageId, out _villageId);
+
+            villageIdObservable
+                .ObserveOn(RxApp.TaskpoolScheduler)
+                .InvokeCommand(VillageChanged);
         }
 
         private async Task VillageChangedHandler(VillageId villageId)

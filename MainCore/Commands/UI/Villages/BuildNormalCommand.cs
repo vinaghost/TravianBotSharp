@@ -3,33 +3,27 @@ using Humanizer;
 using MainCore.Common.Models;
 using MainCore.UI.Models.Input;
 
-namespace MainCore.Commands.UI.Build
+namespace MainCore.Commands.UI.Tabs.Villages
 {
+    [RegisterSingleton<BuildNormalCommand>]
     public class BuildNormalCommand
     {
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
 
-        private readonly ITaskManager _taskManager;
         private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
+        private readonly GetBuildings _getBuildings;
 
-        public BuildNormalCommand(IDialogService dialogService = null, IMediator mediator = null, ITaskManager taskManager = null, IValidator<NormalBuildInput> normalBuildInputValidator = null)
+        public BuildNormalCommand(IDialogService dialogService, IMediator mediator, ITaskManager taskManager, IValidator<NormalBuildInput> normalBuildInputValidator, GetBuildings getBuildings)
         {
-            _dialogService = dialogService ?? Locator.Current.GetService<IDialogService>();
-            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
-            _taskManager = taskManager ?? Locator.Current.GetService<ITaskManager>();
-            _normalBuildInputValidator = normalBuildInputValidator ?? Locator.Current.GetService<IValidator<NormalBuildInput>>();
+            _dialogService = dialogService;
+            _mediator = mediator;
+            _normalBuildInputValidator = normalBuildInputValidator;
+            _getBuildings = getBuildings;
         }
 
         public async Task Execute(AccountId accountId, VillageId villageId, NormalBuildInput normalBuildInput, int location)
         {
-            var status = _taskManager.GetStatus(accountId);
-            if (status == StatusEnums.Online)
-            {
-                _dialogService.ShowMessageBox("Warning", "Please pause account before modifing building queue");
-                return;
-            }
-
             var result = await _normalBuildInputValidator.ValidateAsync(normalBuildInput);
             if (!result.IsValid)
             {
@@ -49,7 +43,7 @@ namespace MainCore.Commands.UI.Build
 
         private async Task NormalBuild(AccountId accountId, VillageId villageId, NormalBuildPlan plan)
         {
-            var buildings = new GetBuildings().Execute(villageId);
+            var buildings = _getBuildings.Layout(villageId);
 
             var building = buildings.Find(x => x.Location == plan.Location);
 
