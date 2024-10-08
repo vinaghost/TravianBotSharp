@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
+    [RegisterTransient<UpdateVillageTask>]
     public class UpdateVillageTask : VillageTask
     {
         private readonly ITaskManager _taskManager;
@@ -60,15 +60,11 @@ namespace MainCore.Tasks
 
         private async Task SetNextExecute()
         {
-            var seconds = new GetSetting().ByName(VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
+            var seconds = Locator.Current.GetService<IGetSetting>().ByName(VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
         }
 
-        protected override void SetName()
-        {
-            var village = new GetVillageName().Execute(VillageId);
-            _name = $"Update village in {village}";
-        }
+        protected override string TaskName => "Update village";
     }
 }

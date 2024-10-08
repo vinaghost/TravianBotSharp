@@ -5,10 +5,14 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerTrainTroopTask : INotificationHandler<VillageSettingUpdated>, INotificationHandler<AccountInit>
     {
         private readonly ITaskManager _taskManager;
+        private readonly IGetSetting _getSetting;
+        private readonly GetVillage _getVillage;
 
-        public TriggerTrainTroopTask(ITaskManager taskManager)
+        public TriggerTrainTroopTask(ITaskManager taskManager, IGetSetting getSetting, GetVillage getVillage)
         {
             _taskManager = taskManager;
+            _getSetting = getSetting;
+            _getVillage = getVillage;
         }
 
         public async Task Handle(VillageSettingUpdated notification, CancellationToken cancellationToken)
@@ -18,7 +22,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
         {
-            var villages = new GetVillage().All(notification.AccountId);
+            var villages = _getVillage.All(notification.AccountId);
             foreach (var village in villages)
             {
                 await Trigger(notification.AccountId, village);
@@ -27,7 +31,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
-            var trainTroopEnable = new GetSetting().BooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
+            var trainTroopEnable = _getSetting.BooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
             if (trainTroopEnable)
             {
                 if (_taskManager.IsExist<TrainTroopTask>(accountId, villageId)) return;

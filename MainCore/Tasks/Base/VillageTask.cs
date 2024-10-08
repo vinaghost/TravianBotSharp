@@ -7,10 +7,17 @@ namespace MainCore.Tasks.Base
     {
         public VillageId VillageId { get; protected set; }
 
+        protected string VillageName { get; private set; }
+
+        public override string GetName() => $"{TaskName} in {VillageName}";
+
         public void Setup(AccountId accountId, VillageId villageId)
         {
             AccountId = accountId;
             VillageId = villageId;
+
+            var villageName = Locator.Current.GetService<GetVillageName>();
+            VillageName = villageName.Execute(villageId);
         }
 
         protected override async Task<Result> PreExecute(IServiceScope scoped, CancellationToken cancellationToken)

@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
+    [RegisterTransient<UpgradeBuildingTask>]
     public class UpgradeBuildingTask(IDbContextFactory<AppDbContext> contextFactory) : VillageTask
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
@@ -66,11 +66,7 @@ namespace MainCore.Tasks
             }
         }
 
-        protected override void SetName()
-        {
-            var village = new GetVillageName().Execute(VillageId);
-            _name = $"Upgrade building in {village}";
-        }
+        protected override string TaskName => "Upgrade building";
 
         private void SetTimeQueueBuildingComplete()
         {

@@ -6,15 +6,29 @@ using MainCore.Common.Models;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class HandleResourceCommand(DataService dataService, IMediator mediator, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand, UpdateInventoryCommand updateInventoryCommand) : CommandBase(dataService), ICommand<NormalBuildPlan>
+    [RegisterScoped<HandleResourceCommand>]
+    public class HandleResourceCommand : CommandBase, ICommand<NormalBuildPlan>
     {
-        private readonly IMediator _mediator = mediator;
-        private readonly UpdateStorageCommand _updateStorageCommand = updateStorageCommand;
-        private readonly UseHeroResourceCommand _useHeroResourceCommand = useHeroResourceCommand;
-        private readonly ToHeroInventoryCommand _toHeroInventoryCommand = toHeroInventoryCommand;
-        private readonly UpdateInventoryCommand _updateInventoryCommand = updateInventoryCommand;
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
+        private readonly IMediator _mediator;
+        private readonly UpdateStorageCommand _updateStorageCommand;
+        private readonly UseHeroResourceCommand _useHeroResourceCommand;
+        private readonly ToHeroInventoryCommand _toHeroInventoryCommand;
+        private readonly UpdateInventoryCommand _updateInventoryCommand;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IsResourceEnough _isResourceEnough;
+        private readonly IGetSetting _getSetting;
+
+        public HandleResourceCommand(IDataService dataService, IMediator mediator, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand, UpdateInventoryCommand updateInventoryCommand, IsResourceEnough isResourceEnough, IGetSetting getSetting) : base(dataService)
+        {
+            _mediator = mediator;
+            _updateStorageCommand = updateStorageCommand;
+            _useHeroResourceCommand = useHeroResourceCommand;
+            _toHeroInventoryCommand = toHeroInventoryCommand;
+            _updateInventoryCommand = updateInventoryCommand;
+            _contextFactory = contextFactory;
+            _isResourceEnough = isResourceEnough;
+            _getSetting = getSetting;
+        }
 
         public async Task<Result> Execute(NormalBuildPlan plan, CancellationToken cancellationToken)
         {
@@ -24,7 +38,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             var requiredResource = GetRequiredResource(plan.Type);
 
-            result = new IsResourceEnough(_contextFactory).Execute(_dataService.VillageId, requiredResource);
+            result = _isResourceEnough.Execute(_dataService.VillageId, requiredResource);
             if (!result.IsFailed)
             {
                 return Result.Ok();
@@ -136,7 +150,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         private bool IsUseHeroResource()
         {
             var villageId = _dataService.VillageId;
-            var useHeroResource = new GetSetting().BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
+            var useHeroResource = _getSetting.BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
             return useHeroResource;
         }
 

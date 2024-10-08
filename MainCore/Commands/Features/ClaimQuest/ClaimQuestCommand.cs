@@ -2,8 +2,8 @@
 
 namespace MainCore.Commands.Features.ClaimQuest
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class ClaimQuestCommand(DataService dataService, IMediator mediator, SwitchTabCommand switchTabCommand, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand
+    [RegisterScoped<ClaimQuestCommand>]
+    public class ClaimQuestCommand(IDataService dataService, IMediator mediator, SwitchTabCommand switchTabCommand, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand
     {
         private readonly IMediator _mediator = mediator;
         private readonly SwitchTabCommand _switchTabCommand = switchTabCommand;
