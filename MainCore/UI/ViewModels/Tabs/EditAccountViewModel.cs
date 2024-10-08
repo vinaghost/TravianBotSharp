@@ -7,7 +7,7 @@ using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
+    [RegisterSingleton<EditAccountViewModel>]
     public class EditAccountViewModel : AccountTabViewModelBase
     {
         public AccountInput AccountInput { get; } = new();
@@ -15,7 +15,6 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private readonly IValidator<AccessInput> _accessInputValidator;
         private readonly IDialogService _dialogService;
-        private readonly GetAccount _getAccount;
         public ReactiveCommand<Unit, Unit> AddAccess { get; }
         public ReactiveCommand<Unit, Unit> EditAccess { get; }
         public ReactiveCommand<Unit, Unit> DeleteAccess { get; }
@@ -23,11 +22,10 @@ namespace MainCore.UI.ViewModels.Tabs
 
         public ReactiveCommand<AccountId, AccountDto> LoadAccount { get; }
 
-        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, GetAccount getAccount)
+        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService)
         {
             _accessInputValidator = accessInputValidator;
             _dialogService = dialogService;
-            _getAccount = getAccount;
 
             AddAccess = ReactiveCommand.Create(AddAccessHandler);
             EditAccess = ReactiveCommand.Create(EditAccessHandler);
@@ -59,14 +57,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
-            if (AccountInput.Accesses.Count == 0)
-            {
-                AccountInput.Accesses.Add(AccessInput.Clone());
-            }
-            else
-            {
-                _dialogService.ShowMessageBox("Error", "Only one access is allowed because new rule. Please check TBS's discord server");
-            }
+            AccountInput.Accesses.Add(AccessInput.Clone());
         }
 
         private void EditAccessHandler()
@@ -96,7 +87,8 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private AccountDto LoadAccountHandler(AccountId accountId)
         {
-            var account = _getAccount.Execute(AccountId, true);
+            var getAccount = Locator.Current.GetService<GetAccount>();
+            var account = getAccount.Execute(AccountId, true);
             return account;
         }
 
