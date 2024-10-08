@@ -39,9 +39,8 @@ namespace MainCore.Commands.UI.Tabs
             _dialogService.ShowMessageBox("Information", message: "Settings saved");
         }
 
-        public async Task Execute((AccountId, FarmListSettingInput) data, CancellationToken cancellationToken)
+        public async Task Execute(AccountId accountId, FarmListSettingInput farmListSettingInput, CancellationToken cancellationToken)
         {
-            var (accountId, farmListSettingInput) = data;
             var result = await _farmListSettingInputValidator.ValidateAsync(farmListSettingInput);
             if (!result.IsValid)
             {

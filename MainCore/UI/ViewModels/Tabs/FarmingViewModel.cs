@@ -11,10 +11,9 @@ using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
+    [RegisterSingleton<FarmingViewModel>]
     public class FarmingViewModel : AccountTabViewModelBase
     {
-        private readonly GetSetting _getSetting;
         public FarmListSettingInput FarmListSettingInput { get; } = new();
         public ListBoxItemViewModel FarmLists { get; } = new();
 
@@ -23,7 +22,6 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly ITaskManager _taskManager;
 
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly SaveSettingCommand _saveSettingCommand;
 
         public ReactiveCommand<Unit, Unit> UpdateFarmList { get; }
         public ReactiveCommand<Unit, Unit> Save { get; }
@@ -40,14 +38,12 @@ namespace MainCore.UI.ViewModels.Tabs
             { Color.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, GetSetting getSetting, SaveSettingCommand saveSettingCommand)
+        public FarmingViewModel(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
         {
             _mediator = mediator;
             _dialogService = dialogService;
             _taskManager = taskManager;
             _contextFactory = contextFactory;
-            _getSetting = getSetting;
-            _saveSettingCommand = saveSettingCommand;
 
             UpdateFarmList = ReactiveCommand.CreateFromTask(UpdateFarmListHandler);
             Start = ReactiveCommand.CreateFromTask(StartHandler);
@@ -68,12 +64,20 @@ namespace MainCore.UI.ViewModels.Tabs
                     ActiveText = _activeTexts[color];
                 }
             });
-            LoadSetting.Subscribe(items => FarmListSettingInput.Set(items));
+            LoadSetting.Subscribe(FarmListSettingInput.Set);
             ActiveFarmList.Subscribe(x =>
             {
                 var color = FarmLists.SelectedItem?.Color ?? Color.Black;
                 ActiveText = _activeTexts[color];
             });
+
+            this.WhenAnyValue(x => x.FarmLists.SelectedItem)
+                .WhereNotNull()
+                .Subscribe(selectedItem =>
+                {
+                    var color = selectedItem.Color;
+                    ActiveText = _activeTexts[color];
+                });
         }
 
         public async Task FarmListRefresh(AccountId accountId)
@@ -97,7 +101,8 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task StartHandler()
         {
-            var useStartAllButton = _getSetting.BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
+            var getSetting = Locator.Current.GetService<GetSetting>();
+            var useStartAllButton = getSetting.BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
             if (!useStartAllButton)
             {
                 var count = CountActive(AccountId);
@@ -122,7 +127,8 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task SaveHandler()
         {
-            await _saveSettingCommand.Execute((AccountId, FarmListSettingInput), CancellationToken.None);
+            var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
+            await saveSettingCommand.Execute(AccountId, FarmListSettingInput, CancellationToken.None);
         }
 
         private async Task ActiveFarmListHandler()
@@ -134,22 +140,15 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
-            using (var context = await _contextFactory.CreateDbContextAsync())
-            {
-                // sqlite no async
-#pragma warning disable S6966 // Awaitable method should be used
-                context.FarmLists
-                   .Where(x => x.Id == selectedFarmList.Id)
-                   .ExecuteUpdate(x => x.SetProperty(x => x.IsActive, x => !x.IsActive));
-#pragma warning restore S6966 // Awaitable method should be used
-            }
+            UpdateFarm(new FarmId(selectedFarmList.Id));
 
             await _mediator.Publish(new FarmListUpdated(AccountId));
         }
 
-        private Dictionary<AccountSettingEnums, int> LoadSettingHandler(AccountId accountId)
+        private static Dictionary<AccountSettingEnums, int> LoadSettingHandler(AccountId accountId)
         {
-            var items = _getSetting.Get(accountId);
+            var getSetting = Locator.Current.GetService<GetSetting>();
+            var items = getSetting.Get(accountId);
             return items;
         }
 
@@ -187,6 +186,14 @@ namespace MainCore.UI.ViewModels.Tabs
                 .Where(x => x.IsActive)
                 .Count();
             return count;
+        }
+
+        private void UpdateFarm(FarmId farmId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            context.FarmLists
+               .Where(x => x.Id == farmId.Value)
+               .ExecuteUpdate(x => x.SetProperty(x => x.IsActive, x => !x.IsActive));
         }
     }
 }
