@@ -6,13 +6,13 @@ using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
+    [RegisterSingleton<AddAccountsViewModel>]
     public class AddAccountsViewModel : TabViewModelBase
     {
         public ReactiveCommand<Unit, Unit> AddAccount { get; }
         private ReactiveCommand<string, List<AccountDetailDto>> Parse { get; }
 
-        public ObservableCollection<AccountDetailDto> Accounts { get; } = new();
+        public ObservableCollection<AccountDetailDto> Accounts { get; } = [];
         private string _input;
 
         public string Input
@@ -27,14 +27,12 @@ namespace MainCore.UI.ViewModels.Tabs
             Parse = ReactiveCommand.Create<string, List<AccountDetailDto>>(ParseHandler);
 
             this.WhenAnyValue(x => x.Input)
-
                 .ObserveOn(RxApp.TaskpoolScheduler)
-
                 .InvokeCommand(Parse);
 
             Parse.Subscribe(UpdateTable);
 
-            AddAccount.Subscribe(x => Clear());
+            AddAccount.Subscribe(_ => Clear());
         }
 
         private void UpdateTable(List<AccountDetailDto> data)
@@ -57,13 +55,13 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private static List<AccountDetailDto> ParseHandler(string input)
         {
-            if (string.IsNullOrEmpty(input)) return new List<AccountDetailDto>();
+            if (string.IsNullOrEmpty(input)) return [];
 
             var accounts = input
                 .Trim()
                 .Split('\n')
                 .AsParallel()
-                .Select(x => ParseLine(x))
+                .Select(ParseLine)
                 .Where(x => x is not null)
                 .ToList();
 
