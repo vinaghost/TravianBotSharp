@@ -11,21 +11,16 @@ namespace MainCore.UI.ViewModels.Tabs
     public class AccountSettingViewModel : AccountTabViewModelBase
     {
         public AccountSettingInput AccountSettingInput { get; } = new();
-
-        private readonly SaveSettingCommand _saveSettingCommand;
         private readonly IDialogService _dialogService;
-        private readonly GetSetting _getSetting;
         public ReactiveCommand<Unit, Unit> Save { get; }
         public ReactiveCommand<Unit, Unit> Export { get; }
         public ReactiveCommand<Unit, Unit> Import { get; }
 
         public ReactiveCommand<AccountId, Dictionary<AccountSettingEnums, int>> LoadSettings { get; }
 
-        public AccountSettingViewModel(IDialogService dialogService, GetSetting getSetting, SaveSettingCommand saveSettingCommand)
+        public AccountSettingViewModel(IDialogService dialogService)
         {
             _dialogService = dialogService;
-            _getSetting = getSetting;
-            _saveSettingCommand = saveSettingCommand;
 
             Save = ReactiveCommand.CreateFromTask(SaveHandler);
             Export = ReactiveCommand.CreateFromTask(ExportHandler);
@@ -49,7 +44,8 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task SaveHandler()
         {
-            await _saveSettingCommand.Execute((AccountId, AccountSettingInput), CancellationToken.None);
+            var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
+            await saveSettingCommand.Execute(AccountId, AccountSettingInput, CancellationToken.None);
         }
 
         private async Task ImportHandler()
@@ -68,22 +64,27 @@ namespace MainCore.UI.ViewModels.Tabs
             }
 
             AccountSettingInput.Set(settings);
-            await _saveSettingCommand.Execute((AccountId, AccountSettingInput), CancellationToken.None);
+            var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
+            await saveSettingCommand.Execute(AccountId, AccountSettingInput, CancellationToken.None);
         }
 
         private async Task ExportHandler()
         {
             var path = _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
-            var settings = _getSetting.Get(AccountId);
+
+            var getSetting = Locator.Current.GetService<GetSetting>();
+            var settings = getSetting.Get(AccountId);
+
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString);
             _dialogService.ShowMessageBox("Information", "Settings exported");
         }
 
-        private Dictionary<AccountSettingEnums, int> LoadSettingsHandler(AccountId accountId)
+        private static Dictionary<AccountSettingEnums, int> LoadSettingsHandler(AccountId accountId)
         {
-            var settings = _getSetting.Get(accountId);
+            var getSetting = Locator.Current.GetService<GetSetting>();
+            var settings = getSetting.Get(accountId);
             return settings;
         }
     }

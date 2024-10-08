@@ -1,15 +1,10 @@
 ﻿using FluentValidation;
-using MainCore.Commands.Abstract;
 using MainCore.UI.Models.Input;
 
 namespace MainCore.Commands.UI.Tabs
 {
     [RegisterSingleton<SaveSettingCommand>]
-    public class SaveSettingCommand :
-        ICommand<(AccountId, AccountSettingInput)>,
-        ICommand<(AccountId, FarmListSettingInput)>,
-        ICommand<(AccountId, VillageId, VillageSettingInput)>,
-        ICommand<(AccountId, VillageId, Dictionary<VillageSettingEnums, int>)>
+    public class SaveSettingCommand
     {
         private readonly IValidator<VillageSettingInput> _villageSettingInputValidator;
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
@@ -28,68 +23,61 @@ namespace MainCore.Commands.UI.Tabs
             _farmListSettingInputValidator = farmListSettingInputValidator;
         }
 
-        public async Task<Result> Execute((AccountId, AccountSettingInput) data, CancellationToken cancellationToken)
+        public async Task Execute(AccountId accountId, AccountSettingInput accountSettingInput, CancellationToken cancellationToken)
         {
-            var (accountId, accountSettingInput) = data;
-            var result = await _accountsettingInputValidator.ValidateAsync(accountSettingInput);
+            var result = await _accountsettingInputValidator.ValidateAsync(accountSettingInput, cancellationToken);
             if (!result.IsValid)
             {
                 _dialogService.ShowMessageBox("Error", result.ToString());
-                return Result.Ok();
+                return;
             }
 
             var settings = accountSettingInput.Get();
             Execute(accountId, settings);
 
-            await _mediator.Publish(new AccountSettingUpdated(accountId));
+            await _mediator.Publish(new AccountSettingUpdated(accountId), cancellationToken);
             _dialogService.ShowMessageBox("Information", message: "Settings saved");
-            return Result.Ok();
         }
 
-        public async Task<Result> Execute((AccountId, FarmListSettingInput) data, CancellationToken cancellationToken)
+        public async Task Execute((AccountId, FarmListSettingInput) data, CancellationToken cancellationToken)
         {
             var (accountId, farmListSettingInput) = data;
             var result = await _farmListSettingInputValidator.ValidateAsync(farmListSettingInput);
             if (!result.IsValid)
             {
                 _dialogService.ShowMessageBox("Error", result.ToString());
-                return Result.Ok();
+                return;
             }
 
             var settings = farmListSettingInput.Get();
             Execute(accountId, settings);
 
             await _mediator.Publish(new AccountSettingUpdated(accountId));
-            _dialogService.ShowMessageBox("Information", message: "Settings saved");
-            return Result.Ok();
+            _dialogService.ShowMessageBox("Information", "Settings saved");
         }
 
-        public async Task<Result> Execute((AccountId, VillageId, VillageSettingInput) data, CancellationToken cancellationToken)
+        public async Task Execute(AccountId accountId, VillageId villageId, VillageSettingInput villageSettingInput, CancellationToken cancellationToken)
         {
-            var (accountId, villageId, villageSettingInput) = data;
-            var result = await _villageSettingInputValidator.ValidateAsync(villageSettingInput);
+            var result = await _villageSettingInputValidator.ValidateAsync(villageSettingInput, cancellationToken);
             if (!result.IsValid)
             {
                 _dialogService.ShowMessageBox("Error", result.ToString());
-                return Result.Ok();
+                return;
             }
 
             var settings = villageSettingInput.Get();
             Execute(villageId, settings);
 
-            await _mediator.Publish(new VillageSettingUpdated(accountId, villageId));
+            await _mediator.Publish(new VillageSettingUpdated(accountId, villageId), cancellationToken);
             _dialogService.ShowMessageBox("Information", "Settings saved");
-            return Result.Ok();
         }
 
-        public async Task<Result> Execute((AccountId, VillageId, Dictionary<VillageSettingEnums, int>) data, CancellationToken cancellationToken)
+        public async Task Execute(AccountId accountId, VillageId villageId, Dictionary<VillageSettingEnums, int> settings, CancellationToken cancellationToken)
         {
-            var (accountId, villageId, settings) = data;
             Execute(villageId, settings);
 
-            await _mediator.Publish(new VillageSettingUpdated(accountId, villageId));
+            await _mediator.Publish(new VillageSettingUpdated(accountId, villageId), cancellationToken);
             _dialogService.ShowMessageBox("Information", "Settings saved");
-            return Result.Ok();
         }
 
         private void Execute(AccountId accountId, Dictionary<AccountSettingEnums, int> settings)
