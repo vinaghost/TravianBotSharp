@@ -7,24 +7,20 @@ using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
-    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
+    [RegisterSingleton<VillageSettingViewModel>]
     public class VillageSettingViewModel : VillageTabViewModelBase
     {
         public VillageSettingInput VillageSettingInput { get; } = new();
 
         private readonly IDialogService _dialogService;
-        private readonly GetSetting _getSetting;
-        private readonly SaveSettingCommand _saveSettingCommand;
         public ReactiveCommand<Unit, Unit> SaveCommand { get; }
         public ReactiveCommand<Unit, Unit> ExportCommand { get; }
         public ReactiveCommand<Unit, Unit> ImportCommand { get; }
         public ReactiveCommand<VillageId, Dictionary<VillageSettingEnums, int>> LoadSetting { get; }
 
-        public VillageSettingViewModel(IDialogService dialogService, GetSetting getSetting, SaveSettingCommand saveSettingCommand)
+        public VillageSettingViewModel(IDialogService dialogService)
         {
             _dialogService = dialogService;
-            _getSetting = getSetting;
-            _saveSettingCommand = saveSettingCommand;
 
             SaveCommand = ReactiveCommand.CreateFromTask(SaveHandler);
             ExportCommand = ReactiveCommand.CreateFromTask(ExportHandler);
@@ -48,7 +44,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task SaveHandler()
         {
-            await _saveSettingCommand.Execute(AccountId, VillageId, VillageSettingInput, CancellationToken.None);
+            var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
+            await saveSettingCommand.Execute(AccountId, VillageId, VillageSettingInput, CancellationToken.None);
         }
 
         private async Task ImportHandler()
@@ -67,22 +64,25 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
 
             VillageSettingInput.Set(settings);
-            await _saveSettingCommand.Execute(AccountId, VillageId, VillageSettingInput, CancellationToken.None);
+            var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
+            await saveSettingCommand.Execute(AccountId, VillageId, VillageSettingInput, CancellationToken.None);
         }
 
         private async Task ExportHandler()
         {
             var path = _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
-            var settings = _getSetting.Get(VillageId);
+            var getSetting = Locator.Current.GetService<GetSetting>();
+            var settings = getSetting.Get(VillageId);
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString);
             _dialogService.ShowMessageBox("Information", "Settings exported");
         }
 
-        private Dictionary<VillageSettingEnums, int> LoadSettingHandler(VillageId villageId)
+        private static Dictionary<VillageSettingEnums, int> LoadSettingHandler(VillageId villageId)
         {
-            var settings = _getSetting.Get(villageId);
+            var getSetting = Locator.Current.GetService<GetSetting>();
+            var settings = getSetting.Get(villageId);
             return settings;
         }
     }

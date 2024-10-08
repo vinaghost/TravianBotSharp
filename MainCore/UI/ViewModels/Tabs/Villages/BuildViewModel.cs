@@ -9,7 +9,7 @@ using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
-    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
+    [RegisterSingleton<BuildViewModel>]
     public class BuildViewModel : VillageTabViewModelBase
     {
         private readonly IMediator _mediator;
