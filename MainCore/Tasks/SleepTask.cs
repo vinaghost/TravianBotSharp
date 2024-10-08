@@ -25,9 +25,8 @@ namespace MainCore.Tasks
             result = await sleepCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var accessResult = _getAccess.Execute(AccountId);
-            if (accessResult.IsFailed) return Result.Fail(accessResult.Errors).WithError(TraceMessage.Error(TraceMessage.Line()));
-            var access = accessResult.Value;
+            var (_, isFailed, access, errors) = await _getAccess.Execute(AccountId);
+            if (isFailed) return Result.Fail(errors).WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var openBrowserCommand = scoped.ServiceProvider.GetRequiredService<OpenBrowserCommand>();
             result = await openBrowserCommand.Execute(AccountId, access, cancellationToken);
