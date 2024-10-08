@@ -44,7 +44,7 @@
                     <ColumnDefinition Width="5*" />
                 </Grid.ColumnDefinitions>
                 <TextBox x:Name="UsernameTextBox"       Grid.Column="0" Grid.Row="0" materialDesign:HintAssist.Hint="Username (*)" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
-                <TextBox x:Name="PasswordTextBox"       Grid.Column="1" Grid.Row="0" materialDesign:HintAssist.Hint="Password (*)" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
+                <TextBox x:Name="PasswordTextBox"       Grid.Column="2" Grid.Row="0" materialDesign:HintAssist.Hint="Password (*)" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
                 <TextBox x:Name="ProxyHostTextBox"      Grid.Column="0" Grid.Row="1" materialDesign:HintAssist.Hint="Proxy's host" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
                 <TextBox x:Name="ProxyPortTextBox"      Grid.Column="2" Grid.Row="1" materialDesign:HintAssist.Hint="Proxy's port" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
                 <TextBox x:Name="ProxyUsernameTextBox"  Grid.Column="0" Grid.Row="2" materialDesign:HintAssist.Hint="Proxy's username" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
