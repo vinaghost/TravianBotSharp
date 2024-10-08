@@ -16,7 +16,6 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
-        private readonly GetVillage _getVillage;
         public ListBoxItemViewModel Villages { get; } = new();
 
         public VillageTabStore VillageTabStore => _villageTabStore;
@@ -25,12 +24,11 @@ namespace MainCore.UI.ViewModels.Tabs
         public ReactiveCommand<Unit, Unit> LoadAll { get; }
         public ReactiveCommand<AccountId, List<ListBoxItem>> LoadVillage { get; }
 
-        public VillageViewModel(VillageTabStore villageTabStore, ITaskManager taskManager, IDialogService dialogService, GetVillage getVillage)
+        public VillageViewModel(VillageTabStore villageTabStore, ITaskManager taskManager, IDialogService dialogService)
         {
             _villageTabStore = villageTabStore;
             _taskManager = taskManager;
             _dialogService = dialogService;
-            _getVillage = getVillage;
 
             LoadCurrent = ReactiveCommand.CreateFromTask(LoadCurrentHandler);
             LoadUnload = ReactiveCommand.CreateFromTask(LoadUnloadHandler);
@@ -77,7 +75,8 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task LoadUnloadHandler()
         {
-            var villages = _getVillage.Missing(AccountId);
+            var getVillage = Locator.Current.GetService<GetVillage>();
+            var villages = getVillage.Missing(AccountId);
             foreach (var village in villages)
             {
                 await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
@@ -87,7 +86,8 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task LoadAllHandler()
         {
-            var villages = _getVillage.All(AccountId);
+            var getVillage = Locator.Current.GetService<GetVillage>();
+            var villages = getVillage.All(AccountId);
             foreach (var village in villages)
             {
                 await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
@@ -95,9 +95,10 @@ namespace MainCore.UI.ViewModels.Tabs
             _dialogService.ShowMessageBox("Information", $"Added update task");
         }
 
-        private List<ListBoxItem> LoadVillageHandler(AccountId accountId)
+        private static List<ListBoxItem> LoadVillageHandler(AccountId accountId)
         {
-            return _getVillage.Info(accountId);
+            var getVillage = Locator.Current.GetService<GetVillage>();
+            return getVillage.Info(accountId);
         }
     }
 }

@@ -45,7 +45,7 @@ namespace MainCore.Tasks
                 }
             }
 
-            await _saveSettingCommand.Execute((AccountId, VillageId, settings), cancellationToken);
+            await _saveSettingCommand.Execute(AccountId, VillageId, settings, cancellationToken);
             await SetNextExecute();
             return Result.Ok();
         }

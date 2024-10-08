@@ -48,7 +48,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task SaveHandler()
         {
-            await _saveSettingCommand.Execute((AccountId, VillageId, VillageSettingInput), CancellationToken.None);
+            await _saveSettingCommand.Execute(AccountId, VillageId, VillageSettingInput, CancellationToken.None);
         }
 
         private async Task ImportHandler()
@@ -67,7 +67,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
 
             VillageSettingInput.Set(settings);
-            await _saveSettingCommand.Execute((AccountId, VillageId, VillageSettingInput), CancellationToken.None);
+            await _saveSettingCommand.Execute(AccountId, VillageId, VillageSettingInput, CancellationToken.None);
         }
 
         private async Task ExportHandler()
