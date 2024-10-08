@@ -9,10 +9,10 @@ namespace MainCore.Commands.Features.TrainTroop
         private readonly ToDorfCommand _toDorfCommand;
         private readonly UpdateBuildingCommand _updateBuildingCommand;
         private readonly ToBuildingCommand _toBuildingCommand;
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
         private readonly GetBuildingLocation _getBuildingLocation;
 
-        public TrainTroopCommand(DataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, GetSetting getSetting, GetBuildingLocation getBuildingLocation) : base(dataService)
+        public TrainTroopCommand(IDataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, IGetSetting getSetting, GetBuildingLocation getBuildingLocation) : base(dataService)
         {
             _toDorfCommand = toDorfCommand;
             _updateBuildingCommand = updateBuildingCommand;

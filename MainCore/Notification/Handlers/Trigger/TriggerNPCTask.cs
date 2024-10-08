@@ -6,9 +6,9 @@ namespace MainCore.Notification.Handlers.Trigger
     {
         private readonly ITaskManager _taskManager;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
 
-        public TriggerNpcTask(ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, GetSetting getSetting)
+        public TriggerNpcTask(ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, IGetSetting getSetting)
         {
             _taskManager = taskManager;
             _contextFactory = contextFactory;

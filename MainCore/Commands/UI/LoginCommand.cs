@@ -22,7 +22,7 @@
 
         public async Task Execute(AccountId accountId, CancellationToken cancellationToken)
         {
-            var getSetting = Locator.Current.GetService<GetSetting>();
+            var getSetting = Locator.Current.GetService<IGetSetting>();
             var tribe = (TribeEnums)getSetting.ByName(accountId, AccountSettingEnums.Tribe);
             if (tribe == TribeEnums.Any)
             {

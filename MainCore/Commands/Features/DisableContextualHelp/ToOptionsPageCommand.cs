@@ -3,7 +3,7 @@
 namespace MainCore.Commands.Features.DisableContextualHelp
 {
     [RegisterScoped<ToOptionsPageCommand>]
-    public class ToOptionsPageCommand(DataService dataService) : CommandBase(dataService), ICommand
+    public class ToOptionsPageCommand(IDataService dataService) : CommandBase(dataService), ICommand
     {
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {

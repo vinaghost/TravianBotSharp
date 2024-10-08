@@ -3,7 +3,7 @@
 namespace MainCore.Commands.Features.CompleteImmediately
 {
     [RegisterScoped<CompleteImmediatelyCommand>]
-    public class CompleteImmediatelyCommand(DataService dataService, IMediator mediator) : CommandBase(dataService), ICommand
+    public class CompleteImmediatelyCommand(IDataService dataService, IMediator mediator) : CommandBase(dataService), ICommand
     {
         private readonly IMediator _mediator = mediator;
 

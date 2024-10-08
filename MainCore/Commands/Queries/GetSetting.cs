@@ -2,8 +2,8 @@
 
 namespace MainCore.Commands.Queries
 {
-    [RegisterSingleton<GetSetting>]
-    public class GetSetting(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
+    [RegisterSingleton<IGetSetting>]
+    public class GetSetting(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory), IGetSetting
     {
         private static readonly Func<AppDbContext, int, VillageSettingEnums, int> ByNameVillageSettingQuery =
             EF.CompileQuery((AppDbContext context, int villageId, VillageSettingEnums setting) =>

@@ -3,7 +3,7 @@ using MainCore.Commands.Abstract;
 namespace MainCore.Commands.Features.StartFarmList
 {
     [RegisterScoped<StartAllFarmListCommand>]
-    public class StartAllFarmListCommand(DataService dataService) : CommandBase(dataService), ICommand
+    public class StartAllFarmListCommand(IDataService dataService) : CommandBase(dataService), ICommand
     {
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {

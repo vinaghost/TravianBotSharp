@@ -73,7 +73,7 @@ namespace MainCore.UI.ViewModels.Tabs
             var path = _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
 
-            var getSetting = Locator.Current.GetService<GetSetting>();
+            var getSetting = Locator.Current.GetService<IGetSetting>();
             var settings = getSetting.Get(AccountId);
 
             var jsonString = JsonSerializer.Serialize(settings);
@@ -83,7 +83,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private static Dictionary<AccountSettingEnums, int> LoadSettingsHandler(AccountId accountId)
         {
-            var getSetting = Locator.Current.GetService<GetSetting>();
+            var getSetting = Locator.Current.GetService<IGetSetting>();
             var settings = getSetting.Get(accountId);
             return settings;
         }

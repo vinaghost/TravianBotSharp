@@ -10,7 +10,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         private readonly SwitchTabCommand _switchTabCommand;
         private readonly GetBuilding _getBuilding;
 
-        public ToBuildPageCommand(DataService dataService, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, GetBuilding getBuilding) : base(dataService)
+        public ToBuildPageCommand(IDataService dataService, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, GetBuilding getBuilding) : base(dataService)
         {
             _toBuildingCommand = toBuildingCommand;
             _switchTabCommand = switchTabCommand;

@@ -8,9 +8,9 @@ namespace MainCore.Tasks
     public class StartFarmListTask : AccountTask
     {
         private readonly ITaskManager _taskManager;
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
 
-        public StartFarmListTask(ITaskManager taskManager, GetSetting getSetting)
+        public StartFarmListTask(ITaskManager taskManager, IGetSetting getSetting)
         {
             _taskManager = taskManager;
             _getSetting = getSetting;

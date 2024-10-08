@@ -1,7 +1,7 @@
 ﻿namespace MainCore.Commands.Abstract
 {
-    public abstract class CommandBase(DataService dataService)
+    public abstract class CommandBase(IDataService dataService)
     {
-        protected DataService _dataService = dataService;
+        protected IDataService _dataService = dataService;
     }
 }

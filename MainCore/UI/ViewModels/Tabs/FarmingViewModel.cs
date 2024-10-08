@@ -101,7 +101,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task StartHandler()
         {
-            var getSetting = Locator.Current.GetService<GetSetting>();
+            var getSetting = Locator.Current.GetService<IGetSetting>();
             var useStartAllButton = getSetting.BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
             if (!useStartAllButton)
             {
@@ -147,7 +147,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private static Dictionary<AccountSettingEnums, int> LoadSettingHandler(AccountId accountId)
         {
-            var getSetting = Locator.Current.GetService<GetSetting>();
+            var getSetting = Locator.Current.GetService<IGetSetting>();
             var items = getSetting.Get(accountId);
             return items;
         }

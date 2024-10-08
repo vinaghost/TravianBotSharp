@@ -12,9 +12,9 @@ namespace MainCore.Commands.Features.NpcResource
             VillageSettingEnums.AutoNPCCrop,
         ];
 
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
 
-        public NpcResourceCommand(DataService dataService, GetSetting getSetting) : base(dataService)
+        public NpcResourceCommand(IDataService dataService, IGetSetting getSetting) : base(dataService)
         {
             _getSetting = getSetting;
         }

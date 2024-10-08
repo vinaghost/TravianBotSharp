@@ -3,7 +3,7 @@
 namespace MainCore.Commands.Features.StartAdventure
 {
     [RegisterScoped<ToAdventurePageCommand>]
-    public class ToAdventurePageCommand(DataService dataService) : CommandBase(dataService), ICommand
+    public class ToAdventurePageCommand(IDataService dataService) : CommandBase(dataService), ICommand
     {
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {

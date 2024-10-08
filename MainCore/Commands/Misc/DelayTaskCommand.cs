@@ -5,9 +5,9 @@ namespace MainCore.Commands.Misc
     [RegisterScoped<DelayTaskCommand>]
     public class DelayTaskCommand : CommandBase, ICommand
     {
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
 
-        public DelayTaskCommand(DataService dataService, GetSetting getSetting) : base(dataService)
+        public DelayTaskCommand(IDataService dataService, IGetSetting getSetting) : base(dataService)
         {
             _getSetting = getSetting;
         }

@@ -3,7 +3,7 @@
 namespace MainCore.Commands.Features.StartFarmList
 {
     [RegisterScoped<ToFarmListPageCommand>]
-    public class ToFarmListPageCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, SwitchVillageCommand switchVillageCommand, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand
+    public class ToFarmListPageCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, SwitchVillageCommand switchVillageCommand, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
         private readonly SwitchVillageCommand _switchVillageCommand = switchVillageCommand;

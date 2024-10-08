@@ -9,9 +9,9 @@ namespace MainCore.Tasks
     {
         private readonly ITaskManager _taskManager;
         private readonly GetAccess _getAccess;
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
 
-        public SleepTask(ITaskManager taskManager, GetSetting getSetting, GetAccess getAccess)
+        public SleepTask(ITaskManager taskManager, IGetSetting getSetting, GetAccess getAccess)
         {
             _taskManager = taskManager;
             _getSetting = getSetting;

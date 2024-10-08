@@ -6,9 +6,9 @@ namespace MainCore.Commands.Queries
     public class GetAccess : QueryBase
     {
         private readonly ILogService _logService;
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
 
-        public GetAccess(IDbContextFactory<AppDbContext> contextFactory, ILogService logService, GetSetting getSetting) : base(contextFactory)
+        public GetAccess(IDbContextFactory<AppDbContext> contextFactory, ILogService logService, IGetSetting getSetting) : base(contextFactory)
         {
             _logService = logService;
             _getSetting = getSetting;

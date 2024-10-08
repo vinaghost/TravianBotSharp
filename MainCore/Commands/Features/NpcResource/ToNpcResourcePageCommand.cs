@@ -12,7 +12,7 @@ namespace MainCore.Commands.Features.NpcResource
         private readonly SwitchTabCommand _switchTabCommand;
         private readonly GetBuildingLocation _getBuildingLocation;
 
-        public ToNpcResourcePageCommand(DataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, GetBuildingLocation getBuildingLocation) : base(dataService)
+        public ToNpcResourcePageCommand(IDataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, GetBuildingLocation getBuildingLocation) : base(dataService)
         {
             _toDorfCommand = toDorfCommand;
             _updateBuildingCommand = updateBuildingCommand;

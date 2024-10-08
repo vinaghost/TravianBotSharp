@@ -5,9 +5,9 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerClaimQuestTask : INotificationHandler<QuestUpdated>, INotificationHandler<VillageSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
 
-        public TriggerClaimQuestTask(ITaskManager taskManager, GetSetting getSetting)
+        public TriggerClaimQuestTask(ITaskManager taskManager, IGetSetting getSetting)
         {
             _taskManager = taskManager;
             _getSetting = getSetting;

@@ -5,10 +5,10 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerTrainTroopTask : INotificationHandler<VillageSettingUpdated>, INotificationHandler<AccountInit>
     {
         private readonly ITaskManager _taskManager;
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
         private readonly GetVillage _getVillage;
 
-        public TriggerTrainTroopTask(ITaskManager taskManager, GetSetting getSetting, GetVillage getVillage)
+        public TriggerTrainTroopTask(ITaskManager taskManager, IGetSetting getSetting, GetVillage getVillage)
         {
             _taskManager = taskManager;
             _getSetting = getSetting;

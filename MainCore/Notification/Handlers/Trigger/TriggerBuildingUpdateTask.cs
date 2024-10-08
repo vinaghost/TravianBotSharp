@@ -6,9 +6,9 @@ namespace MainCore.Notification.Handlers.Trigger
     {
         private readonly ITaskManager _taskManager;
         private readonly GetVillage _getVillage;
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
 
-        public TriggerBuildingUpdateTask(ITaskManager taskManager, GetVillage getVillage, GetSetting getSetting)
+        public TriggerBuildingUpdateTask(ITaskManager taskManager, GetVillage getVillage, IGetSetting getSetting)
         {
             _taskManager = taskManager;
             _getVillage = getVillage;

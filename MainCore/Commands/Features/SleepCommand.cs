@@ -5,9 +5,9 @@ namespace MainCore.Commands.Features
     [RegisterScoped<SleepCommand>]
     public class SleepCommand : CommandBase, ICommand
     {
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
 
-        public SleepCommand(DataService dataService, GetSetting getSetting) : base(dataService)
+        public SleepCommand(IDataService dataService, IGetSetting getSetting) : base(dataService)
         {
             _getSetting = getSetting;
         }

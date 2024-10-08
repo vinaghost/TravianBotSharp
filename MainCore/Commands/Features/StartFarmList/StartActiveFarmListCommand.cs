@@ -3,7 +3,7 @@
 namespace MainCore.Commands.Features.StartFarmList
 {
     [RegisterScoped<StartActiveFarmListCommand>]
-    public class StartActiveFarmListCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand
+    public class StartActiveFarmListCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
         private readonly DelayClickCommand _delayClickCommand = delayClickCommand;

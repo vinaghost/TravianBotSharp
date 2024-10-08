@@ -13,7 +13,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private readonly ToDorfCommand _toDorfCommand;
         private readonly UpdateBuildingCommand _updateBuildingCommand;
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
         private readonly GetBuildings _getBuildings;
 
         private static readonly List<BuildingEnums> _resourceTypes =
@@ -31,7 +31,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             {ResourcePlanEnums.OnlyCrop, _resourceTypes.Skip(3).ToList()},
         };
 
-        public HandleJobCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, GetSetting getSetting, GetBuildings getBuildings) : base(dataService)
+        public HandleJobCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, IGetSetting getSetting, GetBuildings getBuildings) : base(dataService)
         {
             _contextFactory = contextFactory;
             _mediator = mediator;

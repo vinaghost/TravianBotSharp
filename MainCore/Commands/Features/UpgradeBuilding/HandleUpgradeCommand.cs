@@ -8,7 +8,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly DelayClickCommand _delayClickCommand;
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
         private readonly GetBuilding _getBuilding;
 
         private readonly List<BuildingEnums> _buildings = [
@@ -17,7 +17,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             BuildingEnums.CommandCenter
         ];
 
-        public HandleUpgradeCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, GetSetting getSetting, GetBuilding getBuilding) : base(dataService)
+        public HandleUpgradeCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IGetSetting getSetting, GetBuilding getBuilding) : base(dataService)
         {
             _contextFactory = contextFactory;
             _delayClickCommand = delayClickCommand;

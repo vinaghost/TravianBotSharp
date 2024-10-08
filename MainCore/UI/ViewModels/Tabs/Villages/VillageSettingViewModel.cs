@@ -72,7 +72,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             var path = _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
-            var getSetting = Locator.Current.GetService<GetSetting>();
+            var getSetting = Locator.Current.GetService<IGetSetting>();
             var settings = getSetting.Get(VillageId);
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString);
@@ -81,7 +81,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private static Dictionary<VillageSettingEnums, int> LoadSettingHandler(VillageId villageId)
         {
-            var getSetting = Locator.Current.GetService<GetSetting>();
+            var getSetting = Locator.Current.GetService<IGetSetting>();
             var settings = getSetting.Get(villageId);
             return settings;
         }

@@ -16,9 +16,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         private readonly UpdateInventoryCommand _updateInventoryCommand;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IsResourceEnough _isResourceEnough;
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
 
-        public HandleResourceCommand(DataService dataService, IMediator mediator, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand, UpdateInventoryCommand updateInventoryCommand, IsResourceEnough isResourceEnough, GetSetting getSetting) : base(dataService)
+        public HandleResourceCommand(IDataService dataService, IMediator mediator, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand, UpdateInventoryCommand updateInventoryCommand, IsResourceEnough isResourceEnough, IGetSetting getSetting) : base(dataService)
         {
             _mediator = mediator;
             _updateStorageCommand = updateStorageCommand;

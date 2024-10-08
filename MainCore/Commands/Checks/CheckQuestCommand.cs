@@ -3,7 +3,7 @@
 namespace MainCore.Commands.Checks
 {
     [RegisterScoped<CheckQuestCommand>]
-    public class CheckQuestCommand(DataService dataService, IMediator mediator) : CommandBase(dataService), ICommand
+    public class CheckQuestCommand(IDataService dataService, IMediator mediator) : CommandBase(dataService), ICommand
     {
         private readonly IMediator _mediator = mediator;
 

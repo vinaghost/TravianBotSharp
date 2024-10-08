@@ -5,9 +5,9 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerStartAdventureTask : INotificationHandler<AdventureUpdated>, INotificationHandler<AccountInit>, INotificationHandler<AccountSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
 
-        public TriggerStartAdventureTask(ITaskManager taskManager, GetSetting getSetting)
+        public TriggerStartAdventureTask(ITaskManager taskManager, IGetSetting getSetting)
         {
             _taskManager = taskManager;
             _getSetting = getSetting;

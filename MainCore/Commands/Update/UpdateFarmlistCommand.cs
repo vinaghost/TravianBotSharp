@@ -3,7 +3,7 @@
 namespace MainCore.Commands.Update
 {
     [RegisterScoped<UpdateFarmlistCommand>]
-    public class UpdateFarmlistCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
+    public class UpdateFarmlistCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
         private readonly IMediator _mediator = mediator;

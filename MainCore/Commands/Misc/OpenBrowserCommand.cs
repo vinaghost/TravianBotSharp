@@ -23,7 +23,7 @@ namespace MainCore.Commands.Misc
             var serverFolderName = uri.Host.Replace(".", "_");
             var accountFolderName = account.Username;
 
-            var getSetting = Locator.Current.GetService<GetSetting>();
+            var getSetting = Locator.Current.GetService<IGetSetting>();
             var headlessChrome = getSetting.BooleanByName(accountId, AccountSettingEnums.HeadlessChrome);
             var profilePath = Path.Combine(serverFolderName, accountFolderName);
 

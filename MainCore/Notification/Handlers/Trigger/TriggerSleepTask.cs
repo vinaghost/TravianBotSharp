@@ -5,9 +5,9 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerSleepTask : INotificationHandler<AccountInit>
     {
         private readonly ITaskManager _taskManager;
-        private readonly GetSetting _getSetting;
+        private readonly IGetSetting _getSetting;
 
-        public TriggerSleepTask(ITaskManager taskManager, GetSetting getSetting)
+        public TriggerSleepTask(ITaskManager taskManager, IGetSetting getSetting)
         {
             _taskManager = taskManager;
             _getSetting = getSetting;

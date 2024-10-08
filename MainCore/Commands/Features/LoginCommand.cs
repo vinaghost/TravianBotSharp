@@ -3,7 +3,7 @@
 namespace MainCore.Commands.Features
 {
     [RegisterScoped<LoginCommand>]
-    public class LoginCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory) : CommandBase(dataService), ICommand
+    public class LoginCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
 
