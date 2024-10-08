@@ -1,33 +1,32 @@
-﻿using MainCore.Commands.Abstract;
-using MainCore.Common.Models;
+﻿using MainCore.Common.Models;
 
 namespace MainCore.Commands.Misc
 {
-    [RegisterScoped<OpenBrowserCommand>]
-    public class OpenBrowserCommand : CommandBase, ICommand<AccessDto>
+    [RegisterSingleton<OpenBrowserCommand>]
+    public class OpenBrowserCommand
     {
-        private readonly GetAccount _getAccount;
-        private readonly GetSetting _getSetting;
+        private readonly IChromeManager _chromeManager;
 
-        public OpenBrowserCommand(DataService dataService, GetAccount getAccount, GetSetting getSetting) : base(dataService)
+        public OpenBrowserCommand(IChromeManager chromeManager)
         {
-            _getAccount = getAccount;
-            _getSetting = getSetting;
+            _chromeManager = chromeManager;
         }
 
-        public async Task<Result> Execute(AccessDto access, CancellationToken cancellationToken)
+        public async Task<Result> Execute(AccountId accountId, AccessDto access, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var accountId = _dataService.AccountId;
+            var chromeBrowser = _chromeManager.Get(accountId);
 
-            var account = _getAccount.Execute(accountId);
+            var getAccount = Locator.Current.GetService<GetAccount>();
+            var account = getAccount.Execute(accountId);
             var uri = new Uri(account.Server);
 
             var serverFolderName = uri.Host.Replace(".", "_");
             var accountFolderName = account.Username;
 
-            var headlessChrome = _getSetting.BooleanByName(accountId, AccountSettingEnums.HeadlessChrome);
+            var getSetting = Locator.Current.GetService<GetSetting>();
+            var headlessChrome = getSetting.BooleanByName(accountId, AccountSettingEnums.HeadlessChrome);
             var profilePath = Path.Combine(serverFolderName, accountFolderName);
+
             var chromeSetting = new ChromeSetting()
             {
                 UserAgent = access.Useragent,

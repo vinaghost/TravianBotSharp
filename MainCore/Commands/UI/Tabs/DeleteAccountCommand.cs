@@ -1,5 +1,6 @@
 ﻿namespace MainCore.Commands.UI.Tabs
 {
+    [RegisterSingleton<DeleteAccountCommand>]
     public class DeleteAccountCommand
     {
         private readonly ITaskManager _taskManager;

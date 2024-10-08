@@ -30,7 +30,7 @@ namespace MainCore.Tasks
             var access = accessResult.Value;
 
             var openBrowserCommand = scoped.ServiceProvider.GetRequiredService<OpenBrowserCommand>();
-            result = await openBrowserCommand.Execute(access, cancellationToken);
+            result = await openBrowserCommand.Execute(AccountId, access, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await SetNextExecute();
