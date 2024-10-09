@@ -74,6 +74,7 @@
         <Border Style="{DynamicResource Box}"  Grid.Row="2">
             <DataGrid x:Name="ProxiesDataGrid" IsReadOnly="True" AutoGenerateColumns="False">
                 <DataGrid.Columns>
+                    <DataGridTextColumn Header="Username" Binding="{Binding Username}" />
                     <DataGridTextColumn Header="Password" Binding="{Binding Password}" />
                     <DataGridTextColumn Header="Proxy's host" Binding="{Binding ProxyHost}" />
                     <DataGridTextColumn Header="Proxy's port" Binding="{Binding ProxyPort}" />
