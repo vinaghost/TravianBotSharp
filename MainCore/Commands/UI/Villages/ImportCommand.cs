@@ -1,19 +1,22 @@
 ﻿using MainCore.Common.Models;
 using System.Text.Json;
 
-namespace MainCore.Commands.UI.Build
+namespace MainCore.Commands.UI.Tabs.Villages
 {
+    [RegisterSingleton<ImportCommand>]
     public class ImportCommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
+        private readonly GetBuildings _getBuildings;
 
-        public ImportCommand(IDbContextFactory<AppDbContext> contextFactory = null, IDialogService dialogService = null, IMediator mediator = null)
+        public ImportCommand(IDbContextFactory<AppDbContext> contextFactory, IDialogService dialogService, IMediator mediator, GetBuildings getBuildings)
         {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-            _dialogService = dialogService ?? Locator.Current.GetService<IDialogService>();
-            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
+            _contextFactory = contextFactory;
+            _dialogService = dialogService;
+            _mediator = mediator;
+            _getBuildings = getBuildings;
         }
 
         private static readonly List<int> _excludedLocations = new() { 26, 39, 40 }; //main building, rallypoint and wall
@@ -59,9 +62,9 @@ namespace MainCore.Commands.UI.Build
             _dialogService.ShowMessageBox("Information", "Jobs imported");
         }
 
-        private static IEnumerable<JobDto> GetModifiedJobs(VillageId villageId, List<JobDto> jobs)
+        private IEnumerable<JobDto> GetModifiedJobs(VillageId villageId, List<JobDto> jobs)
         {
-            var buildings = new GetBuildings().Execute(villageId);
+            var buildings = _getBuildings.Layout(villageId);
 
             var changedLocations = new Dictionary<int, int>();
             foreach (var job in jobs)

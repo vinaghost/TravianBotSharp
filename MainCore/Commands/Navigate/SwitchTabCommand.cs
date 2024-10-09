@@ -2,8 +2,8 @@
 
 namespace MainCore.Commands.Navigate
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class SwitchTabCommand(DataService dataService) : CommandBase(dataService), ICommand<int>
+    [RegisterScoped<SwitchTabCommand>]
+    public class SwitchTabCommand(IDataService dataService) : CommandBase(dataService), ICommand<int>
     {
         public async Task<Result> Execute(int tabIndex, CancellationToken cancellationToken)
         {

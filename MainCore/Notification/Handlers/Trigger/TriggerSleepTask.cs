@@ -5,10 +5,12 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerSleepTask : INotificationHandler<AccountInit>
     {
         private readonly ITaskManager _taskManager;
+        private readonly IGetSetting _getSetting;
 
-        public TriggerSleepTask(ITaskManager taskManager)
+        public TriggerSleepTask(ITaskManager taskManager, IGetSetting getSetting)
         {
             _taskManager = taskManager;
+            _getSetting = getSetting;
         }
 
         public async Task Handle(AccountInit notification, CancellationToken cancellationToken)
@@ -20,7 +22,7 @@ namespace MainCore.Notification.Handlers.Trigger
         private async Task Trigger(AccountId accountId)
         {
             if (_taskManager.IsExist<SleepTask>(accountId)) return;
-            var workTime = new GetSetting().ByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
+            var workTime = _getSetting.ByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
             await _taskManager.Add<SleepTask>(accountId, executeTime: DateTime.Now.AddMinutes(workTime));
         }
     }

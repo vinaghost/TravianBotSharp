@@ -3,11 +3,19 @@ using MainCore.Common.Models;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class ToBuildPageCommand(DataService dataService, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand) : CommandBase(dataService), ICommand<NormalBuildPlan>
+    [RegisterScoped<ToBuildPageCommand>]
+    public class ToBuildPageCommand : CommandBase, ICommand<NormalBuildPlan>
     {
-        private readonly ToBuildingCommand _toBuildingCommand = toBuildingCommand;
-        private readonly SwitchTabCommand _switchTabCommand = switchTabCommand;
+        private readonly ToBuildingCommand _toBuildingCommand;
+        private readonly SwitchTabCommand _switchTabCommand;
+        private readonly GetBuilding _getBuilding;
+
+        public ToBuildPageCommand(IDataService dataService, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, GetBuilding getBuilding) : base(dataService)
+        {
+            _toBuildingCommand = toBuildingCommand;
+            _switchTabCommand = switchTabCommand;
+            _getBuilding = getBuilding;
+        }
 
         public async Task<Result> Execute(NormalBuildPlan plan, CancellationToken cancellationToken)
         {
@@ -17,7 +25,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             result = await _toBuildingCommand.Execute(plan.Location, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var building = new GetBuilding().Execute(villageId, plan.Location);
+            var building = _getBuilding.Execute(villageId, plan.Location);
             if (building.Type == BuildingEnums.Site)
             {
                 var tabIndex = plan.Type.GetBuildingsCategory();

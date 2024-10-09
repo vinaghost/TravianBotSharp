@@ -5,9 +5,9 @@ namespace MainCore.Notification.Handlers.MainWindowLoad
     public class LogInstall : INotificationHandler<MainWindowLoaded>
     {
         private readonly ILogService _logService;
-        private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
 
-        public LogInstall(ILogService logService, WaitingOverlayViewModel waitingOverlayViewModel)
+        public LogInstall(ILogService logService, IWaitingOverlayViewModel waitingOverlayViewModel)
         {
             _logService = logService;
             _waitingOverlayViewModel = waitingOverlayViewModel;

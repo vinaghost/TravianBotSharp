@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+﻿using MainCore.Commands.UI.Tabs;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
@@ -7,13 +7,10 @@ using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
+    [RegisterSingleton<AccountSettingViewModel>]
     public class AccountSettingViewModel : AccountTabViewModelBase
     {
         public AccountSettingInput AccountSettingInput { get; } = new();
-
-        private readonly IMediator _mediator;
-        private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
         private readonly IDialogService _dialogService;
         public ReactiveCommand<Unit, Unit> Save { get; }
         public ReactiveCommand<Unit, Unit> Export { get; }
@@ -21,10 +18,8 @@ namespace MainCore.UI.ViewModels.Tabs
 
         public ReactiveCommand<AccountId, Dictionary<AccountSettingEnums, int>> LoadSettings { get; }
 
-        public AccountSettingViewModel(IMediator mediator, IValidator<AccountSettingInput> accountsettingInputValidator, IDialogService dialogService)
+        public AccountSettingViewModel(IDialogService dialogService)
         {
-            _mediator = mediator;
-            _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;
 
             Save = ReactiveCommand.CreateFromTask(SaveHandler);
@@ -32,7 +27,7 @@ namespace MainCore.UI.ViewModels.Tabs
             Import = ReactiveCommand.CreateFromTask(ImportHandler);
             LoadSettings = ReactiveCommand.Create<AccountId, Dictionary<AccountSettingEnums, int>>(LoadSettingsHandler);
 
-            LoadSettings.Subscribe(x => AccountSettingInput.Set(x));
+            LoadSettings.Subscribe(AccountSettingInput.Set);
         }
 
         public async Task SettingRefresh(AccountId accountId)
@@ -49,17 +44,8 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private async Task SaveHandler()
         {
-            var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
-            if (!result.IsValid)
-            {
-                _dialogService.ShowMessageBox("Error", result.ToString());
-                return;
-            }
-
-            var settings = AccountSettingInput.Get();
-            new SetSettingCommand().Execute(AccountId, settings);
-            await _mediator.Publish(new AccountSettingUpdated(AccountId));
-            _dialogService.ShowMessageBox("Information", message: "Settings saved");
+            var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
+            await saveSettingCommand.Execute(AccountId, AccountSettingInput, CancellationToken.None);
         }
 
         private async Task ImportHandler()
@@ -78,25 +64,18 @@ namespace MainCore.UI.ViewModels.Tabs
             }
 
             AccountSettingInput.Set(settings);
-            var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
-            if (!result.IsValid)
-            {
-                _dialogService.ShowMessageBox("Error", result.ToString());
-                return;
-            }
-
-            settings = AccountSettingInput.Get();
-            new SetSettingCommand().Execute(AccountId, settings);
-            await _mediator.Publish(new AccountSettingUpdated(AccountId));
-
-            _dialogService.ShowMessageBox("Information", "Settings imported");
+            var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
+            await saveSettingCommand.Execute(AccountId, AccountSettingInput, CancellationToken.None);
         }
 
         private async Task ExportHandler()
         {
             var path = _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
-            var settings = new GetSetting().Get(AccountId);
+
+            var getSetting = Locator.Current.GetService<IGetSetting>();
+            var settings = getSetting.Get(AccountId);
+
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString);
             _dialogService.ShowMessageBox("Information", "Settings exported");
@@ -104,7 +83,8 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private static Dictionary<AccountSettingEnums, int> LoadSettingsHandler(AccountId accountId)
         {
-            var settings = new GetSetting().Get(accountId);
+            var getSetting = Locator.Current.GetService<IGetSetting>();
+            var settings = getSetting.Get(accountId);
             return settings;
         }
     }

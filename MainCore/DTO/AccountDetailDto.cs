@@ -42,16 +42,16 @@ namespace MainCore.DTO
     [Mapper]
     public static partial class AccountDetailMapper
     {
-        public static Account ToEnitty(this AccountDetailDto dto)
+        public static AccountDto ToDto(this AccountDetailDto dto)
         {
             var account = dto.ToAccount();
             var access = dto.ToAccess();
-            account.Accesses = new List<Access>() { access };
+            account.Accesses = [access];
             return account;
         }
 
-        private static partial Account ToAccount(this AccountDetailDto dto);
+        private static partial AccountDto ToAccount(this AccountDetailDto dto);
 
-        private static partial Access ToAccess(this AccountDetailDto dto);
+        private static partial AccessDto ToAccess(this AccountDetailDto dto);
     }
 }

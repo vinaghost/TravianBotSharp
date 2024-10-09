@@ -4,10 +4,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
-    public class NpcTask(IMediator mediator) : VillageTask
+    [RegisterTransient<NpcTask>]
+    public class NpcTask : VillageTask
     {
-        private readonly IMediator _mediator = mediator;
+        private readonly IMediator _mediator;
+
+        public NpcTask(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
 
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
         {
@@ -28,10 +33,6 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        protected override void SetName()
-        {
-            var village = new GetVillageName().Execute(VillageId);
-            _name = $"NPC in {village}";
-        }
+        protected override string TaskName => "NPC";
     }
 }

@@ -12,11 +12,15 @@ namespace MainCore.Tasks.Base
             AccountId = accountId;
         }
 
+        protected abstract string TaskName { get; }
+
+        public override string GetName() => TaskName;
+
         protected override async Task<Result> PreExecute(IServiceScope scoped, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-            var dataService = scoped.ServiceProvider.GetRequiredService<DataService>();
+            var dataService = scoped.ServiceProvider.GetRequiredService<IDataService>();
             dataService.AccountId = AccountId;
             var chromeManager = Locator.Current.GetService<IChromeManager>();
             var chromeBrowser = chromeManager.Get(AccountId);

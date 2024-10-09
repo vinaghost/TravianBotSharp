@@ -4,10 +4,10 @@ namespace MainCore.Notification.Handlers.MainWindowLoad
 {
     public class DatabaseInstall : INotificationHandler<MainWindowLoaded>
     {
-        private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public DatabaseInstall(IDbContextFactory<AppDbContext> contextFactory, WaitingOverlayViewModel waitingOverlayViewModel)
+        public DatabaseInstall(IDbContextFactory<AppDbContext> contextFactory, IWaitingOverlayViewModel waitingOverlayViewModel)
         {
             _contextFactory = contextFactory;
             _waitingOverlayViewModel = waitingOverlayViewModel;
