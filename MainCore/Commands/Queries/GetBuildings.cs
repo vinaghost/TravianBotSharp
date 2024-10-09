@@ -158,6 +158,7 @@ namespace MainCore.Commands.Queries
             BuildingEnums.WW,
             BuildingEnums.StoneWall,
             BuildingEnums.MakeshiftWall,
+            BuildingEnums.Unknown,
         ];
 
         private static readonly IEnumerable<BuildingEnums> AvailableBuildings = Enum.GetValues(typeof(BuildingEnums))
