@@ -1,7 +1,7 @@
 ﻿namespace MainCore.Services
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class DataService
+    [RegisterScoped<IDataService>]
+    public class DataService : IDataService
     {
         public AccountId AccountId { get; set; }
         public VillageId VillageId { get; set; }

@@ -2,8 +2,8 @@
 
 namespace MainCore.Commands.Features.ClaimQuest
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class ToQuestPageCommand(DataService dataService) : CommandBase(dataService), ICommand
+    [RegisterScoped<ToQuestPageCommand>]
+    public class ToQuestPageCommand(IDataService dataService) : CommandBase(dataService), ICommand
     {
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {

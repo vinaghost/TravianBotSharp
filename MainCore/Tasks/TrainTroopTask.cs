@@ -1,20 +1,23 @@
 ﻿using MainCore.Commands.Features.TrainTroop;
+using MainCore.Commands.UI.Tabs;
 using MainCore.Common.Errors.TrainTroop;
 using MainCore.Tasks.Base;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
+    [RegisterTransient<TrainTroopTask>]
     public class TrainTroopTask : VillageTask
     {
         private readonly ITaskManager _taskManager;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly SaveSettingCommand _saveSettingCommand;
 
-        public TrainTroopTask(ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
+        public TrainTroopTask(ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, SaveSettingCommand saveSettingCommand)
         {
             _taskManager = taskManager;
             _contextFactory = contextFactory;
+            _saveSettingCommand = saveSettingCommand;
         }
 
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
@@ -42,23 +45,19 @@ namespace MainCore.Tasks
                 }
             }
 
-            new SetSettingCommand().Execute(VillageId, settings);
+            await _saveSettingCommand.Execute(AccountId, VillageId, settings, cancellationToken);
             await SetNextExecute();
             return Result.Ok();
         }
 
         private async Task SetNextExecute()
         {
-            var seconds = new GetSetting().ByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
+            var seconds = Locator.Current.GetService<IGetSetting>().ByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
             ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await _taskManager.ReOrder(AccountId);
         }
 
-        protected override void SetName()
-        {
-            var name = new GetVillageName().Execute(VillageId);
-            _name = $"Training troop in {name}";
-        }
+        protected override string TaskName => "Train troop";
 
         private List<BuildingEnums> GetTrainTroopBuilding(VillageId villageId)
         {

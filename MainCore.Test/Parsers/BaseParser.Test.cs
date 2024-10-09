@@ -6,7 +6,7 @@ namespace MainCore.Test.Parsers
     {
         protected readonly HtmlDocument _html;
 
-        public BaseParser()
+        protected BaseParser()
         {
             _html = new HtmlDocument();
         }

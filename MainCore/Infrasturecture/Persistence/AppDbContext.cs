@@ -96,24 +96,6 @@ namespace MainCore.Infrasturecture.Persistence
             SaveChanges();
         }
 
-        public void FillAccountSettings(AccountId accountId)
-        {
-            var settings = new List<AccountSetting>();
-
-            foreach (var (setting, value) in AccountDefaultSettings)
-            {
-                settings.Add(new AccountSetting
-                {
-                    AccountId = accountId.Value,
-                    Setting = setting,
-                    Value = value,
-                });
-            }
-
-            AddRange(settings);
-            SaveChanges();
-        }
-
         #endregion account setting
 
         #region village setting

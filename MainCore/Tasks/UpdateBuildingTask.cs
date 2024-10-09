@@ -3,12 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
+    [RegisterTransient<UpdateBuildingTask>]
     public class UpdateBuildingTask : VillageTask
     {
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
         {
-            var dataService = scoped.ServiceProvider.GetRequiredService<DataService>();
+            var dataService = scoped.ServiceProvider.GetRequiredService<IDataService>();
             var chromeBrowser = dataService.ChromeBrowser;
             var url = chromeBrowser.CurrentUrl;
             Result result;
@@ -56,10 +56,6 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        protected override void SetName()
-        {
-            var village = new GetVillageName().Execute(VillageId);
-            _name = $"Update all buildings in {village}";
-        }
+        protected override string TaskName => "Update building";
     }
 }

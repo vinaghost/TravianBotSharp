@@ -2,7 +2,8 @@
 
 namespace MainCore.Commands.Queries
 {
-    public class GetBuilding(IDbContextFactory<AppDbContext> contextFactory = null) : QueryBase(contextFactory)
+    [RegisterSingleton<GetBuilding>]
+    public class GetBuilding(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
     {
         public BuildingDto Execute(VillageId villageId, int location)
         {

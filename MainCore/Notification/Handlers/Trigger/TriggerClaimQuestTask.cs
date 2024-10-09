@@ -5,10 +5,12 @@ namespace MainCore.Notification.Handlers.Trigger
     public class TriggerClaimQuestTask : INotificationHandler<QuestUpdated>, INotificationHandler<VillageSettingUpdated>
     {
         private readonly ITaskManager _taskManager;
+        private readonly IGetSetting _getSetting;
 
-        public TriggerClaimQuestTask(ITaskManager taskManager)
+        public TriggerClaimQuestTask(ITaskManager taskManager, IGetSetting getSetting)
         {
             _taskManager = taskManager;
+            _getSetting = getSetting;
         }
 
         public async Task Handle(QuestUpdated notification, CancellationToken cancellationToken)
@@ -23,7 +25,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
         private async Task Trigger(AccountId accountId, VillageId villageId)
         {
-            var autoClaimQuest = new GetSetting().BooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
+            var autoClaimQuest = _getSetting.BooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
             if (autoClaimQuest)
             {
                 if (_taskManager.IsExist<ClaimQuestTask>(accountId, villageId)) return;

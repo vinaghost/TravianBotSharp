@@ -3,12 +3,23 @@ using MainCore.Common.Errors.TrainTroop;
 
 namespace MainCore.Commands.Features.TrainTroop
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class TrainTroopCommand(DataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand) : CommandBase(dataService), ICommand<BuildingEnums>
+    [RegisterScoped<TrainTroopCommand>]
+    public class TrainTroopCommand : CommandBase, ICommand<BuildingEnums>
     {
-        private readonly ToDorfCommand _toDorfCommand = toDorfCommand;
-        private readonly UpdateBuildingCommand _updateBuildingCommand = updateBuildingCommand;
-        private readonly ToBuildingCommand _toBuildingCommand = toBuildingCommand;
+        private readonly ToDorfCommand _toDorfCommand;
+        private readonly UpdateBuildingCommand _updateBuildingCommand;
+        private readonly ToBuildingCommand _toBuildingCommand;
+        private readonly IGetSetting _getSetting;
+        private readonly GetBuildingLocation _getBuildingLocation;
+
+        public TrainTroopCommand(IDataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, IGetSetting getSetting, GetBuildingLocation getBuildingLocation) : base(dataService)
+        {
+            _toDorfCommand = toDorfCommand;
+            _updateBuildingCommand = updateBuildingCommand;
+            _toBuildingCommand = toBuildingCommand;
+            _getSetting = getSetting;
+            _getBuildingLocation = getBuildingLocation;
+        }
 
         public static Dictionary<BuildingEnums, VillageSettingEnums> BuildingSettings { get; } = new()
         {
@@ -31,7 +42,7 @@ namespace MainCore.Commands.Features.TrainTroop
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var troopSeting = BuildingSettings[building];
-            var troop = (TroopEnums)new GetSetting().ByName(_dataService.VillageId, troopSeting);
+            var troop = (TroopEnums)_getSetting.ByName(_dataService.VillageId, troopSeting);
 
             var (_, isFailed, amount, errors) = GetAmount(building, troop);
             if (isFailed) return Result.Fail(errors).WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -50,7 +61,7 @@ namespace MainCore.Commands.Features.TrainTroop
             result = await _updateBuildingCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var buildingLocation = new GetBuildingLocation().Execute(_dataService.VillageId, building);
+            var buildingLocation = _getBuildingLocation.Execute(_dataService.VillageId, building);
             if (buildingLocation == default)
             {
                 return MissingBuilding.Error(building);
@@ -66,7 +77,7 @@ namespace MainCore.Commands.Features.TrainTroop
         {
             var villageId = _dataService.VillageId;
             var (minSetting, maxSetting) = AmountSettings[building];
-            var amount = new GetSetting().ByName(villageId, minSetting, maxSetting);
+            var amount = _getSetting.ByName(villageId, minSetting, maxSetting);
 
             var html = _dataService.ChromeBrowser.Html;
 
@@ -82,7 +93,7 @@ namespace MainCore.Commands.Features.TrainTroop
                 return amount;
             }
 
-            var trainWhenLowResource = new GetSetting().BooleanByName(villageId, VillageSettingEnums.TrainWhenLowResource);
+            var trainWhenLowResource = _getSetting.BooleanByName(villageId, VillageSettingEnums.TrainWhenLowResource);
             if (!trainWhenLowResource)
             {
                 return MissingResource.Error(building);

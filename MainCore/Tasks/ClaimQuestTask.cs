@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient(Registration = RegistrationStrategy.Self)]
+    [RegisterTransient<ClaimQuestTask>]
     public class ClaimQuestTask : VillageTask
     {
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
@@ -21,10 +21,6 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        protected override void SetName()
-        {
-            var village = new GetVillageName().Execute(VillageId);
-            _name = $"Claim quest in {village}";
-        }
+        protected override string TaskName => "Claim quest";
     }
 }

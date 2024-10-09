@@ -2,8 +2,8 @@
 
 namespace MainCore.Commands.Features.UseHeroItem
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class ToHeroInventoryCommand(DataService dataService) : CommandBase(dataService), ICommand
+    [RegisterScoped<ToHeroInventoryCommand>]
+    public class ToHeroInventoryCommand(IDataService dataService) : CommandBase(dataService), ICommand
     {
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {

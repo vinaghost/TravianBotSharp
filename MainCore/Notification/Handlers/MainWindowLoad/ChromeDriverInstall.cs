@@ -5,9 +5,9 @@ namespace MainCore.Notification.Handlers.MainWindowLoad
     public class ChromeDriverInstall : INotificationHandler<MainWindowLoaded>
     {
         private readonly IChromeDriverInstaller _chromeDriverInstaller;
-        private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
 
-        public ChromeDriverInstall(IChromeDriverInstaller chromeDriverInstaller, WaitingOverlayViewModel waitingOverlayViewModel)
+        public ChromeDriverInstall(IChromeDriverInstaller chromeDriverInstaller, IWaitingOverlayViewModel waitingOverlayViewModel)
         {
             _chromeDriverInstaller = chromeDriverInstaller;
             _waitingOverlayViewModel = waitingOverlayViewModel;
