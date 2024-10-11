@@ -4,7 +4,8 @@ using System.Text.Json;
 
 namespace MainCore.Commands.Misc
 {
-    public class AddJobCommand(IDbContextFactory<AppDbContext> contextFactory = null) : QueryBase(contextFactory)
+    [RegisterSingleton<AddJobCommand>]
+    public class AddJobCommand(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
     {
         private static readonly Dictionary<Type, JobTypeEnums> _jobTypes = new()
         {

@@ -11,7 +11,7 @@ using System.Text;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    [RegisterSingleton(Registration = RegistrationStrategy.Self)]
+    [RegisterSingleton<DebugViewModel>]
     public class DebugViewModel : AccountTabViewModelBase
     {
         private readonly LogSink _logSink;
@@ -20,7 +20,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private static readonly MessageTemplateTextFormatter _formatter = new("{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
         private const string NotOpen = "Chrome didn't open yet";
 
-        public ObservableCollection<TaskItem> Tasks { get; } = new();
+        public ObservableCollection<TaskItem> Tasks { get; } = [];
 
         private string _logs;
 
@@ -56,14 +56,9 @@ namespace MainCore.UI.ViewModels.Tabs
                 Tasks.Clear();
                 items.ForEach(Tasks.Add);
             });
-            LoadLog.Subscribe(logs =>
-            {
-                Logs = logs;
-            });
-            LoadEndpointAddress.Subscribe(address =>
-            {
-                EndpointAddress = address;
-            });
+
+            LoadLog.BindTo(this, vm => vm.Logs);
+            LoadEndpointAddress.BindTo(this, vm => vm.EndpointAddress);
         }
 
         private void LogEmitted(AccountId accountId, LogEvent logEvent)

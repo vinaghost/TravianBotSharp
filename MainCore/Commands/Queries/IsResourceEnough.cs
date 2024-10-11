@@ -3,6 +3,7 @@ using MainCore.Common.Errors.Storage;
 
 namespace MainCore.Commands.Queries
 {
+    [RegisterSingleton<IsResourceEnough>]
     public class IsResourceEnough(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
     {
         public Result Execute(VillageId villageId, long[] requiredResource)

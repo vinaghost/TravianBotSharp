@@ -2,8 +2,8 @@
 
 namespace MainCore.Commands.Update
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class UpdateAccountInfoCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
+    [RegisterScoped<UpdateAccountInfoCommand>]
+    public class UpdateAccountInfoCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
         private readonly IMediator _mediator = mediator;

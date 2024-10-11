@@ -5,9 +5,9 @@ namespace MainCore.Notification.Handlers.MainWindowLoad
     public class ChromeExtensionInstall : INotificationHandler<MainWindowLoaded>
     {
         private readonly IChromeManager _chromeManager;
-        private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
 
-        public ChromeExtensionInstall(IChromeManager chromeManager, WaitingOverlayViewModel waitingOverlayViewModel)
+        public ChromeExtensionInstall(IChromeManager chromeManager, IWaitingOverlayViewModel waitingOverlayViewModel)
         {
             _chromeManager = chromeManager;
             _waitingOverlayViewModel = waitingOverlayViewModel;
