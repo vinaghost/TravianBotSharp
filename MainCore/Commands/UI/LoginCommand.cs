@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.UI.Tabs
+﻿namespace MainCore.Commands.UI
 {
     [RegisterSingleton<LoginCommand>]
     public class LoginCommand

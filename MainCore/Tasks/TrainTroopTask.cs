@@ -1,5 +1,5 @@
 ﻿using MainCore.Commands.Features.TrainTroop;
-using MainCore.Commands.UI.Tabs;
+using MainCore.Commands.UI;
 using MainCore.Common.Errors.TrainTroop;
 using MainCore.Tasks.Base;
 using Microsoft.Extensions.DependencyInjection;

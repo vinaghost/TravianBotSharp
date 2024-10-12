@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.UI.Tabs.Villages;
+﻿using MainCore.Commands.UI.Villages;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;

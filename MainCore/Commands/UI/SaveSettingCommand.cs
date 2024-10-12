@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using MainCore.UI.Models.Input;
 
-namespace MainCore.Commands.UI.Tabs
+namespace MainCore.Commands.UI
 {
     [RegisterSingleton<SaveSettingCommand>]
     public class SaveSettingCommand

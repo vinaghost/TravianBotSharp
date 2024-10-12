@@ -3,7 +3,7 @@ using Humanizer;
 using MainCore.Common.Models;
 using MainCore.UI.Models.Input;
 
-namespace MainCore.Commands.UI.Tabs.Villages
+namespace MainCore.Commands.UI.Villages
 {
     [RegisterSingleton<BuildNormalCommand>]
     public class BuildNormalCommand

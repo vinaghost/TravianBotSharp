@@ -2,7 +2,7 @@
 using MainCore.Common.Models;
 using MainCore.UI.Models.Input;
 
-namespace MainCore.Commands.UI.Tabs.Villages
+namespace MainCore.Commands.UI.Villages
 {
     [RegisterSingleton<BuildResourceCommand>]
     public class BuildResourceCommand

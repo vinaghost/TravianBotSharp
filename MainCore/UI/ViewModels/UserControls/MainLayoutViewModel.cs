@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.UI.Tabs;
+﻿using MainCore.Commands.UI;
 using MainCore.UI.Enums;
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;

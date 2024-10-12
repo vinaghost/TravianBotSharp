@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.UI.Tabs;
+﻿using MainCore.Commands.UI;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;

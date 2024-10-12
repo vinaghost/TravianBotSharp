@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.UI.Tabs
+﻿namespace MainCore.Commands.UI
 {
     [RegisterSingleton<PauseCommand>]
     public class PauseCommand

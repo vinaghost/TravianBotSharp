@@ -1,6 +1,6 @@
 ﻿using MainCore.UI.ViewModels.UserControls;
 
-namespace MainCore.Commands.UI.Tabs.Villages
+namespace MainCore.Commands.UI.Villages
 {
     [RegisterSingleton<MoveJobCommand>]
     public class MoveJobCommand

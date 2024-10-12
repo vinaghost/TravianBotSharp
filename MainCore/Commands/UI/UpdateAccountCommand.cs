@@ -3,8 +3,9 @@ using MainCore.Commands.Abstract;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.UserControls;
 
-namespace MainCore.Commands.UI.Tabs
+namespace MainCore.Commands.UI
 {
+    [RegisterSingleton<UpdateAccountCommand>]
     public class UpdateAccountCommand : CommandUIBase, ICommand<AccountInput>
     {
         private readonly IValidator<AccountInput> _accountInputValidator;

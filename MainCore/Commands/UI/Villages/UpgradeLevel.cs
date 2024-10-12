@@ -1,6 +1,6 @@
 ﻿using MainCore.Common.Models;
 
-namespace MainCore.Commands.UI.Tabs.Villages
+namespace MainCore.Commands.UI.Villages
 {
     [RegisterSingleton<UpgradeLevel>]
     public class UpgradeLevel

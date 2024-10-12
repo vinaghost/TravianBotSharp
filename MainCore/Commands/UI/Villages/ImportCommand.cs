@@ -1,7 +1,7 @@
 ﻿using MainCore.Common.Models;
 using System.Text.Json;
 
-namespace MainCore.Commands.UI.Tabs.Villages
+namespace MainCore.Commands.UI.Villages
 {
     [RegisterSingleton<ImportCommand>]
     public class ImportCommand

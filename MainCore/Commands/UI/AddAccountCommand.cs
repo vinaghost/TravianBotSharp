@@ -3,7 +3,7 @@ using MainCore.Commands.Abstract;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.UserControls;
 
-namespace MainCore.Commands.UI.Tabs
+namespace MainCore.Commands.UI
 {
     [RegisterTransient<AddAccountCommand>]
     public class AddAccountCommand : CommandUIBase, ICommand<AccountInput>, ICommand<List<AccountDetailDto>>

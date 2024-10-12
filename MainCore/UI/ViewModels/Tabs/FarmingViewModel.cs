@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using MainCore.Commands.UI.Tabs;
+using MainCore.Commands.UI;
 using MainCore.Tasks;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
