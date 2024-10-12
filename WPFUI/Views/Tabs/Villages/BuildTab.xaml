@@ -100,6 +100,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
@@ -107,47 +108,38 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <Button x:Name="ImportButton"       Grid.Column="0" Content="Import" Margin="5" />
-                <Button x:Name="ExportButton"       Grid.Column="1" Content="Export" Margin="5" />
+                <Button x:Name="ImportButton" Grid.Column="0" Content="Import" Margin="5" />
+                <Button x:Name="ExportButton" Grid.Column="1" Content="Export" Margin="5" />
             </Grid>
             <Border Grid.Row="1" Style="{DynamicResource Box}">
-                <ListBox x:Name="JobsGrid" SelectionMode="Single" ItemTemplate="{DynamicResource ListBoxColorItem}">
-                    <ListBox.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem x:Name="TopButton" Header="Top">
-                                <MenuItem.Icon>
-                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="ArrowUpBold" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem x:Name="UpButton" Header="Up">
-                                <MenuItem.Icon>
-                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="ArrowUp" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem x:Name="DownButton" Header="Down">
-                                <MenuItem.Icon>
-                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="ArrowDown" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem x:Name="BottomButton" Header="Bottom">
-                                <MenuItem.Icon>
-                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="ArrowDownBold" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem x:Name="DeleteButton" Header="Delete">
-                                <MenuItem.Icon>
-                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Delete" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem x:Name="DeleteAllButton" Header="Delete all">
-                                <MenuItem.Icon>
-                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="DeleteForever" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                        </ContextMenu>
-                    </ListBox.ContextMenu>
-                </ListBox>
+                <ListBox x:Name="JobsGrid" SelectionMode="Single" ItemTemplate="{DynamicResource ListBoxColorItem}" />
             </Border>
+            <Grid Grid.Row="2" Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Button x:Name="TopButton" Grid.Column="0" Grid.Row="0" Margin="2" ToolTip="Top">
+                    <materialDesign:PackIcon Kind="ArrowUpBold" />
+                </Button>
+                <Button x:Name="UpButton" Grid.Column="1" Grid.Row="0" Margin="2" ToolTip="Up">
+                    <materialDesign:PackIcon Kind="ArrowUp" />
+                </Button>
+                <Button x:Name="DownButton" Grid.Column="2" Grid.Row="0" Margin="2" ToolTip="Down">
+                    <materialDesign:PackIcon Kind="ArrowDown" />
+                </Button>
+                <Button x:Name="BottomButton" Grid.Column="3" Grid.Row="0" Margin="2" ToolTip="Bottom">
+                    <materialDesign:PackIcon Kind="ArrowDownBold" />
+                </Button>
+                <Button x:Name="DeleteButton" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Margin="2" Content="Delete" />
+                <Button x:Name="DeleteAllButton" Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2" Margin="2" Content="Delete All" />
+            </Grid>
         </Grid>
     </Grid>
 </v:BuildTabBase>

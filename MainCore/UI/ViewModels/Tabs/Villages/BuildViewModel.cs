@@ -187,6 +187,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private async Task UpHandler()
         {
             if (!IsAccountPaused(AccountId)) return;
+            if (Jobs.SelectedItem == null) return;
             var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
             await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Up);
         }
@@ -194,6 +195,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private async Task DownHandler()
         {
             if (!IsAccountPaused(AccountId)) return;
+            if (Jobs.SelectedItem == null) return;
             var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
             await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Down);
         }
@@ -201,6 +203,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private async Task TopHandler()
         {
             if (!IsAccountPaused(AccountId)) return;
+            if (Jobs.SelectedItem == null) return;
             var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
             await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Top);
         }
@@ -208,6 +211,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private async Task BottomHandler()
         {
             if (!IsAccountPaused(AccountId)) return;
+            if (Jobs.SelectedItem == null) return;
             var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
             await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Bottom);
         }
@@ -215,7 +219,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private async Task DeleteHandler()
         {
             if (!IsAccountPaused(AccountId)) return;
-            if (!Jobs.IsSelected) return;
+            if (Jobs.SelectedItem == null) return;
             var jobId = Jobs.SelectedItemId;
 
             var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
@@ -237,7 +241,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var importCommand = Locator.Current.GetService<ImportCommand>();
             await importCommand.Execute(AccountId, VillageId);
         }
-
+    
         private async Task ExportHandler()
         {
             var path = _dialogService.SaveFileDialog();
