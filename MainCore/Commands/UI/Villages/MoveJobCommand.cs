@@ -1,30 +1,21 @@
 ﻿using MainCore.UI.ViewModels.UserControls;
 
-namespace MainCore.Commands.UI.Build
+namespace MainCore.Commands.UI.Villages
 {
+    [RegisterSingleton<MoveJobCommand>]
     public class MoveJobCommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
-        private readonly ITaskManager _taskManager;
 
-        public MoveJobCommand(IDbContextFactory<AppDbContext> contextFactory = null, IDialogService dialogService = null, IMediator mediator = null, ITaskManager taskManager = null)
+        public MoveJobCommand(IDbContextFactory<AppDbContext> contextFactory, IMediator mediator)
         {
-            _contextFactory = contextFactory ?? Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
-            _dialogService = dialogService ?? Locator.Current.GetService<IDialogService>();
-            _mediator = mediator ?? Locator.Current.GetService<IMediator>();
-            _taskManager = taskManager ?? Locator.Current.GetService<ITaskManager>();
+            _contextFactory = contextFactory;
+            _mediator = mediator;
         }
 
         public async Task Execute(AccountId accountId, VillageId villageId, ListBoxItemViewModel jobs, MoveEnums move)
         {
-            var status = _taskManager.GetStatus(accountId);
-            if (status == StatusEnums.Online)
-            {
-                _dialogService.ShowMessageBox("Warning", "Please pause account before modifing building queue");
-                return;
-            }
             if (!jobs.IsSelected) return;
 
             var oldIndex = jobs.SelectedIndex;

@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton(Registration=RegistrationStrategy.ImplementedInterfaces)]
+    [RegisterSingleton<IChromeDriverInstaller, ChromeDriverInstaller>]
     public sealed class ChromeDriverInstaller : IChromeDriverInstaller
     {
         private readonly HttpClient httpClient = new();

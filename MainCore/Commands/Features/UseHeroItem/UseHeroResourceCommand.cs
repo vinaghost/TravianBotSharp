@@ -3,8 +3,8 @@ using MainCore.Common.Errors.Storage;
 
 namespace MainCore.Commands.Features.UseHeroItem
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class UseHeroResourceCommand(DataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand<long[]>
+    [RegisterScoped<UseHeroResourceCommand>]
+    public class UseHeroResourceCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand<long[]>
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
         private readonly DelayClickCommand _delayClickCommand = delayClickCommand;

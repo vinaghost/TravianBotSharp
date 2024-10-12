@@ -2,9 +2,16 @@
 
 namespace MainCore.Commands.Features
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class SleepCommand(DataService dataService) : CommandBase(dataService), ICommand
+    [RegisterScoped<SleepCommand>]
+    public class SleepCommand : CommandBase, ICommand
     {
+        private readonly IGetSetting _getSetting;
+
+        public SleepCommand(IDataService dataService, IGetSetting getSetting) : base(dataService)
+        {
+            _getSetting = getSetting;
+        }
+
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {
             var chromeBrowser = _dataService.ChromeBrowser;
@@ -13,7 +20,7 @@ namespace MainCore.Commands.Features
             var logger = _dataService.Logger;
             var accountId = _dataService.AccountId;
 
-            var sleepTimeMinutes = new GetSetting().ByName(accountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
+            var sleepTimeMinutes = _getSetting.ByName(accountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
             var sleepEnd = DateTime.Now.AddMinutes(sleepTimeMinutes);
             int lastMinute = 0;
             while (true)

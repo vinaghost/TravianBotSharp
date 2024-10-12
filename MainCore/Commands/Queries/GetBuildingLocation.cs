@@ -2,7 +2,8 @@
 
 namespace MainCore.Commands.Queries
 {
-    public class GetBuildingLocation(IDbContextFactory<AppDbContext> contextFactory = null) : QueryBase(contextFactory)
+    [RegisterSingleton<GetBuildingLocation>]
+    public class GetBuildingLocation(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
     {
         public int Execute(VillageId villageId, BuildingEnums building)
         {

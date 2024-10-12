@@ -2,8 +2,8 @@
 
 namespace MainCore.Commands.Features.DisableContextualHelp
 {
-    [RegisterScoped(Registration = RegistrationStrategy.Self)]
-    public class DisableContextualHelpCommand(DataService dataService) : CommandBase(dataService), ICommand
+    [RegisterScoped<DisableContextualHelpCommand>]
+    public class DisableContextualHelpCommand(IDataService dataService) : CommandBase(dataService), ICommand
     {
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {

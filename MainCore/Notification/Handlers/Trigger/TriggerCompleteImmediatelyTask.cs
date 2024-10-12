@@ -7,11 +7,13 @@ namespace MainCore.Notification.Handlers.Trigger
         private readonly ITaskManager _taskManager;
 
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IGetSetting _getSetting;
 
-        public TriggerCompleteImmediatelyTask(ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
+        public TriggerCompleteImmediatelyTask(ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, IGetSetting getSetting)
         {
             _taskManager = taskManager;
             _contextFactory = contextFactory;
+            _getSetting = getSetting;
         }
 
         public async Task Handle(QueueBuildingUpdated notification, CancellationToken cancellationToken)
@@ -32,12 +34,12 @@ namespace MainCore.Notification.Handlers.Trigger
             var count = Count(villageId);
             if (count == 0) return;
 
-            var completeImmediatelyEnable = new GetSetting().BooleanByName(villageId, VillageSettingEnums.CompleteImmediately);
+            var completeImmediatelyEnable = _getSetting.BooleanByName(villageId, VillageSettingEnums.CompleteImmediately);
             if (!completeImmediatelyEnable) return;
 
             if (!IsSkippableBuilding(villageId)) return;
 
-            var completeImmediatelyTime = new GetSetting().ByName(villageId, VillageSettingEnums.CompleteImmediatelyTime);
+            var completeImmediatelyTime = _getSetting.ByName(villageId, VillageSettingEnums.CompleteImmediatelyTime);
 
             var requiredTime = DateTime.Now.AddMinutes(completeImmediatelyTime);
             var queueTime = GetQueueTime(villageId);
