@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton(Registration = RegistrationStrategy.ImplementedInterfaces)]
+    [RegisterSingleton<ITaskManager, TaskManager>]
     public sealed class TaskManager : ITaskManager
     {
         public class TaskInfo
