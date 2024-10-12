@@ -5,7 +5,7 @@ using Timer = System.Timers.Timer;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton(Registration = RegistrationStrategy.ImplementedInterfaces)]
+    [RegisterSingleton<ITimerManager, TimerManager>]
     public sealed class TimerManager : ITimerManager
     {
         private readonly Dictionary<AccountId, Timer> _timers = [];

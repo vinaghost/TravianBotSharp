@@ -1,7 +1,7 @@
 ﻿namespace MainCore.Services
 {
-    [RegisterSingleton(Registration=RegistrationStrategy.ImplementedInterfaces)]
-    public class DialogService : IDialogService
+    [RegisterSingleton<IDialogService, DialogService>]
+    public sealed class DialogService : IDialogService
     {
         public Action<string, string> MessageBoxFunc { get; set; }
         public Func<string, string, bool> ConfirmBoxFunc { get; set; }
