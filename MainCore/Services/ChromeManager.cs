@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton(Registration=RegistrationStrategy.ImplementedInterfaces)]
+    [RegisterSingleton<IChromeManager, ChromeManager>]
     public sealed class ChromeManager : IChromeManager
     {
         private readonly ConcurrentDictionary<AccountId, ChromeBrowser> _dictionary = new();
