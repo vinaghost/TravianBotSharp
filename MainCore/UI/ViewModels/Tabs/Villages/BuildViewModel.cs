@@ -197,21 +197,25 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task UpHandler()
         {
+            if (Jobs.SelectedItem == null) return;
             await new MoveJobCommand().Execute(AccountId, VillageId, Jobs, MoveEnums.Up);
         }
 
         private async Task DownHandler()
         {
+            if (Jobs.SelectedItem == null) return;
             await new MoveJobCommand().Execute(AccountId, VillageId, Jobs, MoveEnums.Down);
         }
 
         private async Task TopHandler()
         {
+            if (Jobs.SelectedItem == null) return;
             await new MoveJobCommand().Execute(AccountId, VillageId, Jobs, MoveEnums.Top);
         }
 
         private async Task BottomHandler()
         {
+            if (Jobs.SelectedItem == null) return;
             await new MoveJobCommand().Execute(AccountId, VillageId, Jobs, MoveEnums.Bottom);
         }
 
@@ -220,10 +224,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var status = _taskManager.GetStatus(AccountId);
             if (status == StatusEnums.Online)
             {
-                _dialogService.ShowMessageBox("Warning", "Please pause account before modifing building queue");
+                _dialogService.ShowMessageBox("Warning", "Please pause account before modifying building queue");
                 return;
             }
-            if (!Jobs.IsSelected) return;
+            if (Jobs.SelectedItem == null) return;
             var jobId = Jobs.SelectedItemId;
 
             new DeleteJobCommand().ByJobId(new JobId(jobId));

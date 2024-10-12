@@ -27,8 +27,8 @@ namespace WPFUI.Views.Tabs.Villages
                 this.Bind(ViewModel, vm => vm.Jobs.SelectedIndex, v => v.JobsGrid.SelectedIndex).DisposeWith(d);
 
                 this.OneWayBind(ViewModel, vm => vm.Queue.Items, v => v.QueueGrid.ItemsSource).DisposeWith(d);
-                this.Bind(ViewModel, vm => vm.Jobs.SelectedItem, v => v.QueueGrid.SelectedItem).DisposeWith(d);
-                this.Bind(ViewModel, vm => vm.Jobs.SelectedIndex, v => v.QueueGrid.SelectedIndex).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.Queue.SelectedItem, v => v.QueueGrid.SelectedItem).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.Queue.SelectedIndex, v => v.QueueGrid.SelectedIndex).DisposeWith(d);
 
                 this.BindCommand(ViewModel, vm => vm.UpgradeOneLevel, v => v.UpgradeOneLevelButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.UpgradeMaxLevel, v => v.UpgradeMaxLevelButton).DisposeWith(d);
@@ -36,9 +36,9 @@ namespace WPFUI.Views.Tabs.Villages
                 this.BindCommand(ViewModel, vm => vm.Import, v => v.ImportButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.Export, v => v.ExportButton).DisposeWith(d);
 
+                this.BindCommand(ViewModel, vm => vm.Top, v => v.TopButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.Up, v => v.UpButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.Down, v => v.DownButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.Top, v => v.TopButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.Bottom, v => v.BottomButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.Delete, v => v.DeleteButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.DeleteAll, v => v.DeleteAllButton).DisposeWith(d);
