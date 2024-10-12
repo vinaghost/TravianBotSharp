@@ -21,28 +21,22 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Border Style="{DynamicResource Box}" Grid.Row="0">
                 <ListBox x:Name="QueueGrid" SelectionMode="Single" ItemTemplate="{DynamicResource ListBoxItem}" />
             </Border>
             <Border Style="{DynamicResource Box}" Grid.Row="1">
-                <ListBox x:Name="BuildingsGrid" SelectionMode="Single" ItemTemplate="{DynamicResource ListBoxBlackColorItem}">
-                    <ListBox.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem x:Name="UpgradeOneLevelButton" Header="Upgrade one level">
-                                <MenuItem.Icon>
-                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Hammer" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem x:Name="UpgradeMaxLevelButton" Header="Upgrade max level">
-                                <MenuItem.Icon>
-                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Hammer" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                        </ContextMenu>
-                    </ListBox.ContextMenu>
-                </ListBox>
+                <ListBox x:Name="BuildingsGrid" SelectionMode="Single" ItemTemplate="{DynamicResource ListBoxBlackColorItem}" />
             </Border>
+            <Grid Grid.Row="2" Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button x:Name="UpgradeOneLevelButton" Grid.Column="0" Content="Upgrade One Level" Margin="2" />
+                <Button x:Name="UpgradeMaxLevelButton" Grid.Column="1" Content="Upgrade Max Level" Margin="2" />
+            </Grid>
         </Grid>
         <Grid Grid.Column="2">
             <Grid.RowDefinitions>
