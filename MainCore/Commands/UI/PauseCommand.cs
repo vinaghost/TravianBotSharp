@@ -1,4 +1,7 @@
-﻿namespace MainCore.Commands.UI
+﻿using MainCore.UI.Models.Output;
+using System.Reactive.Linq;
+
+namespace MainCore.Commands.UI
 {
     [RegisterSingleton<PauseCommand>]
     public class PauseCommand
@@ -28,7 +31,7 @@
                 return;
             }
 
-            _dialogService.ShowMessageBox("Information", $"Account is {status}");
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Account is {status}"));
         }
     }
 }

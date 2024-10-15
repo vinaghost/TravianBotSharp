@@ -97,11 +97,11 @@ namespace MainCore.UI.ViewModels.UserControls
         {
             if (!Accounts.IsSelected)
             {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No account selected"));
                 return;
             }
 
-            var result = _dialogService.ShowConfirmBox("Information", $"Are you sure want to delete \n {Accounts.SelectedItem.Content}");
+            var result = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Information", $"Are you sure want to delete \n {Accounts.SelectedItem.Content}"));
             if (!result) return;
 
             var accountId = new AccountId(Accounts.SelectedItemId);
@@ -113,7 +113,7 @@ namespace MainCore.UI.ViewModels.UserControls
         {
             if (!Accounts.IsSelected)
             {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No account selected"));
                 return;
             }
 
@@ -126,7 +126,7 @@ namespace MainCore.UI.ViewModels.UserControls
         {
             if (!Accounts.IsSelected)
             {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No account selected"));
                 return;
             }
 
@@ -140,7 +140,7 @@ namespace MainCore.UI.ViewModels.UserControls
         {
             if (!Accounts.IsSelected)
             {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No account selected"));
                 return;
             }
 
@@ -153,7 +153,7 @@ namespace MainCore.UI.ViewModels.UserControls
         {
             if (!Accounts.IsSelected)
             {
-                _dialogService.ShowMessageBox("Warning", "No account selected");
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No account selected"));
                 return;
             }
 

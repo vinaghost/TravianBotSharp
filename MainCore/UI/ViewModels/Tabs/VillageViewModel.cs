@@ -63,14 +63,14 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (!Villages.IsSelected)
             {
-                _dialogService.ShowMessageBox("Warning", "No village selected");
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No village selected"));
                 return;
             }
 
             var villageId = new VillageId(Villages.SelectedItemId);
             await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, villageId);
 
-            _dialogService.ShowMessageBox("Information", $"Added update task");
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
 
         private async Task LoadUnloadHandler()
@@ -81,7 +81,7 @@ namespace MainCore.UI.ViewModels.Tabs
             {
                 await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
             }
-            _dialogService.ShowMessageBox("Information", $"Added update task");
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
 
         private async Task LoadAllHandler()
@@ -92,7 +92,7 @@ namespace MainCore.UI.ViewModels.Tabs
             {
                 await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
             }
-            _dialogService.ShowMessageBox("Information", $"Added update task");
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
 
         private static List<ListBoxItem> LoadVillageHandler(AccountId accountId)
