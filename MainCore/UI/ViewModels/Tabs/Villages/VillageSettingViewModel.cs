@@ -1,5 +1,6 @@
 ﻿using MainCore.Commands.UI;
 using MainCore.UI.Models.Input;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
 using System.Reactive.Linq;
@@ -50,7 +51,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task ImportHandler()
         {
-            var path = _dialogService.OpenFileDialog();
+            var path = await _dialogService.OpenFileDialog.Handle(Unit.Default);
             Dictionary<VillageSettingEnums, int> settings;
             try
             {
@@ -59,7 +60,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
             catch
             {
-                _dialogService.ShowMessageBox("Warning", "Invalid file.");
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Invalid file."));
                 return;
             }
 
@@ -70,13 +71,13 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task ExportHandler()
         {
-            var path = _dialogService.SaveFileDialog();
+            var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
             if (string.IsNullOrEmpty(path)) return;
             var getSetting = Locator.Current.GetService<IGetSetting>();
             var settings = getSetting.Get(VillageId);
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString);
-            _dialogService.ShowMessageBox("Information", "Settings exported");
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings exported"));
         }
 
         private static Dictionary<VillageSettingEnums, int> LoadSettingHandler(VillageId villageId)

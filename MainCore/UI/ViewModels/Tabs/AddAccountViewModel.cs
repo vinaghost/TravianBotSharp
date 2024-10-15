@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using MainCore.Commands.UI;
 using MainCore.UI.Models.Input;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
 using System.Reactive.Linq;
@@ -26,8 +27,8 @@ namespace MainCore.UI.ViewModels.Tabs
             _accessInputValidator = accessInputValidator;
             _dialogService = dialogService;
 
-            AddAccess = ReactiveCommand.Create(AddAccessHandler);
-            EditAccess = ReactiveCommand.Create(EditAccessHandler);
+            AddAccess = ReactiveCommand.CreateFromTask(AddAccessHandler);
+            EditAccess = ReactiveCommand.CreateFromTask(EditAccessHandler);
             DeleteAccess = ReactiveCommand.Create(DeleteAccessHandler);
             AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler);
 
@@ -43,26 +44,26 @@ namespace MainCore.UI.ViewModels.Tabs
             });
         }
 
-        private void AddAccessHandler()
+        private async Task AddAccessHandler()
         {
             var result = _accessInputValidator.Validate(AccessInput);
 
             if (!result.IsValid)
             {
-                _dialogService.ShowMessageBox("Error", result.ToString());
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
                 return;
             }
 
             AccountInput.Accesses.Add(AccessInput.Clone());
         }
 
-        private void EditAccessHandler()
+        private async Task EditAccessHandler()
         {
             var result = _accessInputValidator.Validate(AccessInput);
 
             if (!result.IsValid)
             {
-                _dialogService.ShowMessageBox("Error", result.ToString());
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
                 return;
             }
 

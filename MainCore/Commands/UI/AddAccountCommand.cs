@@ -1,7 +1,9 @@
 ﻿using FluentValidation;
 using MainCore.Commands.Abstract;
 using MainCore.UI.Models.Input;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.UserControls;
+using System.Reactive.Linq;
 
 namespace MainCore.Commands.UI
 {
@@ -25,7 +27,7 @@ namespace MainCore.Commands.UI
 
             if (!results.IsValid)
             {
-                _dialogService.ShowMessageBox("Error", results.ToString());
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", results.ToString()));
                 return Result.Ok();
             }
 
@@ -35,7 +37,7 @@ namespace MainCore.Commands.UI
 
             if (IsExist(dto))
             {
-                _dialogService.ShowMessageBox("Information", "Account is duplicated");
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Account is duplicated"));
                 await _waitingOverlayViewModel.Hide();
                 return Result.Ok();
             }
@@ -43,7 +45,7 @@ namespace MainCore.Commands.UI
             Add(dto);
 
             await _mediator.Publish(new AccountUpdated(), cancellationToken);
-            _dialogService.ShowMessageBox("Information", "Added account");
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added account"));
             await _waitingOverlayViewModel.Hide();
 
             return Result.Ok();
@@ -57,14 +59,14 @@ namespace MainCore.Commands.UI
 
             if (dtos.Count == 0)
             {
-                _dialogService.ShowMessageBox("Information", "All accounts are duplicated");
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "All accounts are duplicated"));
                 await _waitingOverlayViewModel.Hide();
                 return Result.Ok();
             }
             dtos.ForEach(Add);
 
             await _mediator.Publish(new AccountUpdated(), cancellationToken);
-            _dialogService.ShowMessageBox("Information", $"Added {dtos.Count} accounts");
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added {dtos.Count} accounts"));
             await _waitingOverlayViewModel.Hide();
             return Result.Ok();
         }

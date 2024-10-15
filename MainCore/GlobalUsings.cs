@@ -19,5 +19,6 @@ global using MediatR;
 global using Microsoft.EntityFrameworkCore;
 global using OpenQA.Selenium;
 global using Splat;
+global using System.Reactive.Linq;
 global using ILogger = Serilog.ILogger;
 global using Unit = System.Reactive.Unit;

@@ -1,4 +1,7 @@
-﻿namespace MainCore.Commands.UI
+﻿using MainCore.UI.Models.Output;
+using System.Reactive.Linq;
+
+namespace MainCore.Commands.UI
 {
     [RegisterSingleton<LoginCommand>]
     public class LoginCommand
@@ -26,13 +29,13 @@
             var tribe = (TribeEnums)getSetting.ByName(accountId, AccountSettingEnums.Tribe);
             if (tribe == TribeEnums.Any)
             {
-                _dialogService.ShowMessageBox("Warning", "Choose tribe first");
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Choose tribe first"));
                 return;
             }
 
             if (_taskManager.GetStatus(accountId) != StatusEnums.Offline)
             {
-                _dialogService.ShowMessageBox("Warning", "Account's browser is already opened");
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Account's browser is already opened"));
                 return;
             }
 
@@ -44,7 +47,7 @@
 
             if (result.IsFailed)
             {
-                _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.Errors.Select(x => x.Message).First()));
                 var errors = result.Errors.Select(x => x.Message).ToList();
                 logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
 
@@ -59,7 +62,7 @@
             result = await openBrowserCommand.Execute(accountId, access, cancellationToken);
             if (result.IsFailed)
             {
-                _dialogService.ShowMessageBox("Error", result.Errors.Select(x => x.Message).First());
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.Errors.Select(x => x.Message).First()));
                 var errors = result.Errors.Select(x => x.Message).ToList();
                 logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
                 await _taskManager.SetStatus(accountId, StatusEnums.Offline);

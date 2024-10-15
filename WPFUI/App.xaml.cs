@@ -3,10 +3,11 @@ using MainCore.Services;
 using MainCore.UI;
 using MainCore.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Win32;
 using ReactiveUI;
 using Splat;
 using System;
+using System.Reactive;
+using System.Threading.Tasks;
 using System.Windows;
 using WPFUI.Views;
 
@@ -31,27 +32,50 @@ namespace WPFUI
                 ViewModel = Locator.Current.GetService<MainViewModel>(),
             };
 
-            var dialogService = Locator.Current.GetService<IDialogService>() as DialogService;
-            dialogService.MessageBoxFunc = ShowMessage;
-            dialogService.ConfirmBoxFunc = ShowConfirm;
-            dialogService.SaveFileDialogFunc = SaveFileDialog;
-            dialogService.OpenFileDialogFunc = OpenFileDialog;
+            var dialogService = Locator.Current.GetService<IDialogService>();
+            dialogService.MessageBox.RegisterHandler(async context =>
+            {
+                ShowMessage(context.Input.Title, context.Input.Message);
+                context.SetOutput(Unit.Default);
+                await Task.CompletedTask;
+            });
+
+            dialogService.ConfirmBox.RegisterHandler(async context =>
+            {
+                var result = ShowConfirm(context.Input.Title, context.Input.Message);
+                context.SetOutput(result);
+                await Task.CompletedTask;
+            });
+
+            dialogService.OpenFileDialog.RegisterHandler(async context =>
+            {
+                var result = OpenFileDialog();
+                context.SetOutput(result);
+                await Task.CompletedTask;
+            });
+
+            dialogService.SaveFileDialog.RegisterHandler(async context =>
+            {
+                var result = SaveFileDialog();
+                context.SetOutput(result);
+                await Task.CompletedTask;
+            });
         }
 
-        private void ShowMessage(string title, string message)
+        private static void ShowMessage(string title, string message)
         {
             MessageBox.Show(message, title);
         }
 
-        private bool ShowConfirm(string title, string message)
+        private static bool ShowConfirm(string title, string message)
         {
             var answer = MessageBox.Show(message, title, MessageBoxButton.YesNo);
             return answer == MessageBoxResult.Yes;
         }
 
-        private string SaveFileDialog()
+        private static string SaveFileDialog()
         {
-            var svd = new SaveFileDialog
+            var svd = new Microsoft.Win32.SaveFileDialog
             {
                 InitialDirectory = AppContext.BaseDirectory,
                 Filter = "TBS files (*.tbs)|*.tbs|All files (*.*)|*.*",
@@ -60,9 +84,9 @@ namespace WPFUI
             return svd.FileName;
         }
 
-        private string OpenFileDialog()
+        private static string OpenFileDialog()
         {
-            var ofd = new OpenFileDialog
+            var ofd = new Microsoft.Win32.OpenFileDialog
             {
                 InitialDirectory = AppContext.BaseDirectory,
                 Filter = "TBS files (*.tbs)|*.tbs|All files (*.*)|*.*",
