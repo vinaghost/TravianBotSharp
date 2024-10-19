@@ -74,9 +74,7 @@ namespace MainCore.Commands.UI
         public async Task Execute(AccountId accountId, VillageId villageId, Dictionary<VillageSettingEnums, int> settings, CancellationToken cancellationToken)
         {
             Execute(villageId, settings);
-
             await _mediator.Publish(new VillageSettingUpdated(accountId, villageId), cancellationToken);
-            _dialogService.ShowMessageBox("Information", "Settings saved");
         }
 
         private void Execute(AccountId accountId, Dictionary<AccountSettingEnums, int> settings)
