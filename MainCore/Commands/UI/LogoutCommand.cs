@@ -1,4 +1,7 @@
-﻿namespace MainCore.Commands.UI
+﻿using MainCore.UI.Models.Output;
+using System.Reactive.Linq;
+
+namespace MainCore.Commands.UI
 {
     [RegisterSingleton<LogoutCommand>]
     public class LogoutCommand
@@ -20,13 +23,13 @@
             switch (status)
             {
                 case StatusEnums.Offline:
-                    _dialogService.ShowMessageBox("Warning", "Account's browser is already closed");
+                    await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Account's browser is already closed"));
                     return;
 
                 case StatusEnums.Starting:
                 case StatusEnums.Pausing:
                 case StatusEnums.Stopping:
-                    _dialogService.ShowMessageBox("Warning", $"TBS is {status}. Please waiting");
+                    await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", $"TBS is {status}. Please waiting"));
                     return;
 
                 case StatusEnums.Online:

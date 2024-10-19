@@ -96,7 +96,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private async Task UpdateFarmListHandler()
         {
             await _taskManager.AddOrUpdate<UpdateFarmListTask>(AccountId);
-            _dialogService.ShowMessageBox("Information", "Added update farm list task");
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added update farm list task"));
         }
 
         private async Task StartHandler()
@@ -108,12 +108,12 @@ namespace MainCore.UI.ViewModels.Tabs
                 var count = CountActive(AccountId);
                 if (count == 0)
                 {
-                    _dialogService.ShowMessageBox("Information", "There is no active farm or use start all button is disable");
+                    await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "There is no active farm or use start all button is disable"));
                     return;
                 }
             }
             await _taskManager.AddOrUpdate<StartFarmListTask>(AccountId);
-            _dialogService.ShowMessageBox("Information", "Added start farm list task");
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added start farm list task"));
         }
 
         private async Task StopHandler()
@@ -122,7 +122,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             if (task is not null) await _taskManager.Remove(AccountId, task);
 
-            _dialogService.ShowMessageBox("Information", "Removed start farm list task");
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Removed start farm list task"));
         }
 
         private async Task SaveHandler()
@@ -136,7 +136,7 @@ namespace MainCore.UI.ViewModels.Tabs
             var selectedFarmList = FarmLists.SelectedItem;
             if (selectedFarmList is null)
             {
-                _dialogService.ShowMessageBox("Warning", "No farm list selected");
+                await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "No farm list selected"));
                 return;
             }
 

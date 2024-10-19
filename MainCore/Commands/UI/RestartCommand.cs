@@ -1,4 +1,7 @@
-﻿namespace MainCore.Commands.UI
+﻿using MainCore.UI.Models.Output;
+using System.Reactive.Linq;
+
+namespace MainCore.Commands.UI
 {
     [RegisterSingleton<RestartCommand>]
     public class RestartCommand
@@ -24,11 +27,11 @@
                 case StatusEnums.Starting:
                 case StatusEnums.Pausing:
                 case StatusEnums.Stopping:
-                    _dialogService.ShowMessageBox("Information", $"Account is {status}");
+                    await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Account is {status}"));
                     return;
 
                 case StatusEnums.Online:
-                    _dialogService.ShowMessageBox("Information", $"Account should be paused first");
+                    await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Account should be paused first"));
                     return;
 
                 case StatusEnums.Paused:

@@ -16,7 +16,7 @@ namespace MainCore.Test.Commands.UI.Tabs
         private readonly IMediator _mediator = Substitute.For<IMediator>();
         private readonly IValidator<AccountInput> _accountInputValidator = Substitute.For<IValidator<AccountInput>>();
         private readonly IUseragentManager _useragentManager = Substitute.For<IUseragentManager>();
-        private readonly MainCore.Commands.UI.Tabs.AddAccountCommand _addAccountCommand;
+        private readonly MainCore.Commands.UI.AddAccountCommand _addAccountCommand;
 
         public AddAccountCommand() : base()
         {
