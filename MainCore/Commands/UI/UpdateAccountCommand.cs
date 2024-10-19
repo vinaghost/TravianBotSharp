@@ -1,7 +1,9 @@
 ﻿using FluentValidation;
 using MainCore.Commands.Abstract;
 using MainCore.UI.Models.Input;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.UserControls;
+using System.Reactive.Linq;
 
 namespace MainCore.Commands.UI
 {
@@ -25,7 +27,7 @@ namespace MainCore.Commands.UI
 
             if (!results.IsValid)
             {
-                _dialogService.ShowMessageBox("Error", results.ToString());
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", results.ToString()));
                 return Result.Ok();
             }
 
@@ -36,7 +38,7 @@ namespace MainCore.Commands.UI
             await _mediator.Publish(new AccountUpdated());
             await _waitingOverlayViewModel.Hide();
 
-            _dialogService.ShowMessageBox("Information", "Edited account");
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Edited account"));
             return Result.Ok();
         }
 

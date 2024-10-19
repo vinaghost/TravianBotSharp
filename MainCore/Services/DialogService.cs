@@ -1,19 +1,22 @@
-﻿namespace MainCore.Services
+﻿using MainCore.UI.Models.Output;
+using ReactiveUI;
+
+namespace MainCore.Services
 {
     [RegisterSingleton<IDialogService, DialogService>]
     public sealed class DialogService : IDialogService
     {
-        public Action<string, string> MessageBoxFunc { get; set; }
-        public Func<string, string, bool> ConfirmBoxFunc { get; set; }
-        public Func<string> OpenFileDialogFunc { get; set; }
-        public Func<string> SaveFileDialogFunc { get; set; }
+        public Interaction<MessageBoxData, bool> ConfirmBox { get; }
+        public Interaction<MessageBoxData, Unit> MessageBox { get; }
+        public Interaction<Unit, string> OpenFileDialog { get; }
+        public Interaction<Unit, string> SaveFileDialog { get; }
 
-        public string OpenFileDialog() => OpenFileDialogFunc?.Invoke();
-
-        public string SaveFileDialog() => SaveFileDialogFunc?.Invoke();
-
-        public void ShowMessageBox(string title, string message) => MessageBoxFunc?.Invoke(title, message);
-
-        public bool ShowConfirmBox(string title, string message) => ConfirmBoxFunc?.Invoke(title, message) ?? false;
+        public DialogService()
+        {
+            ConfirmBox = new Interaction<MessageBoxData, bool>();
+            MessageBox = new Interaction<MessageBoxData, Unit>();
+            OpenFileDialog = new Interaction<Unit, string>();
+            SaveFileDialog = new Interaction<Unit, string>();
+        }
     }
 }

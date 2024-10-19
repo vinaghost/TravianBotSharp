@@ -1,4 +1,5 @@
-﻿using ReactiveUI;
+﻿using MainCore.UI.Models.Output;
+using ReactiveUI;
 using Serilog;
 using System.Diagnostics;
 using System.Reactive.Concurrency;
@@ -36,11 +37,12 @@ namespace MainCore.UI
             Log.Error(exception, "UI execption");
             if (Debugger.IsAttached)
             {
-                Debugger.Break();
                 RxApp.MainThreadScheduler.Schedule(() => { throw exception; });
+                Debugger.Break();
             }
 
-            _dialogService.ShowMessageBox("Error", "There is something wrong. Please check logs/logs-Other.txt.");
+            _dialogService.MessageBox.Handle(new MessageBoxData("Error", "There is something wrong. Please check logs/logs-Other.txt."))
+                .Subscribe();
         }
     }
 }

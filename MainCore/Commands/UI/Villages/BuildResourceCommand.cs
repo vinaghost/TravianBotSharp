@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using MainCore.Common.Models;
 using MainCore.UI.Models.Input;
+using MainCore.UI.Models.Output;
+using System.Reactive.Linq;
 
 namespace MainCore.Commands.UI.Villages
 {
@@ -23,7 +25,7 @@ namespace MainCore.Commands.UI.Villages
             var result = await _resourceBuildInputValidator.ValidateAsync(resourceBuildInput);
             if (!result.IsValid)
             {
-                _dialogService.ShowMessageBox("Error", result.ToString());
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
                 return;
             }
 

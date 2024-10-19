@@ -2,6 +2,8 @@
 using Humanizer;
 using MainCore.Common.Models;
 using MainCore.UI.Models.Input;
+using MainCore.UI.Models.Output;
+using System.Reactive.Linq;
 
 namespace MainCore.Commands.UI.Villages
 {
@@ -27,7 +29,7 @@ namespace MainCore.Commands.UI.Villages
             var result = await _normalBuildInputValidator.ValidateAsync(normalBuildInput);
             if (!result.IsValid)
             {
-                _dialogService.ShowMessageBox("Error", result.ToString());
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
                 return;
             }
 
@@ -52,7 +54,7 @@ namespace MainCore.Commands.UI.Villages
                 var result = CheckRequirements(buildings, plan);
                 if (result.IsFailed)
                 {
-                    _dialogService.ShowMessageBox("Error", result.Errors[0].Message);
+                    await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.Errors[0].Message));
                     return;
                 }
                 Validate(buildings, plan);

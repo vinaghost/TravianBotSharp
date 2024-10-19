@@ -178,7 +178,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task ResourceNormalHandler()
         {
-            if (!IsAccountPaused(AccountId)) return;
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
 
             var buildResourceCommand = Locator.Current.GetService<BuildResourceCommand>();
             await buildResourceCommand.Execute(AccountId, VillageId, ResourceBuildInput);
@@ -186,35 +190,55 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task UpHandler()
         {
-            if (!IsAccountPaused(AccountId)) return;
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
             var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
             await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Up);
         }
 
         private async Task DownHandler()
         {
-            if (!IsAccountPaused(AccountId)) return;
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
             var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
             await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Down);
         }
 
         private async Task TopHandler()
         {
-            if (!IsAccountPaused(AccountId)) return;
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
             var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
             await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Top);
         }
 
         private async Task BottomHandler()
         {
-            if (!IsAccountPaused(AccountId)) return;
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
             var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
             await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Bottom);
         }
 
         private async Task DeleteHandler()
         {
-            if (!IsAccountPaused(AccountId)) return;
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
             if (!Jobs.IsSelected) return;
             var jobId = Jobs.SelectedItemId;
 
@@ -225,7 +249,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task DeleteAllHandler()
         {
-            if (!IsAccountPaused(AccountId)) return;
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
             var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
             deleteJobCommand.ByVillageId(VillageId);
             await _mediator.Publish(new JobUpdated(AccountId, VillageId));
@@ -233,21 +261,25 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private async Task ImportHandler()
         {
-            if (!IsAccountPaused(AccountId)) return;
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
             var importCommand = Locator.Current.GetService<ImportCommand>();
             await importCommand.Execute(AccountId, VillageId);
         }
 
         private async Task ExportHandler()
         {
-            var path = _dialogService.SaveFileDialog();
+            var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
             if (string.IsNullOrEmpty(path)) return;
             var getJobs = Locator.Current.GetService<GetJobs>();
             var jobs = getJobs.Dtos(VillageId);
             jobs.ForEach(job => job.Id = JobId.Empty);
             var jsonString = JsonSerializer.Serialize(jobs);
             await File.WriteAllTextAsync(path, jsonString);
-            _dialogService.ShowMessageBox("Information", "Job list exported");
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Job list exported"));
         }
 
         private bool IsAccountPaused(AccountId accountId)
@@ -255,7 +287,6 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var status = _taskManager.GetStatus(accountId);
             if (status == StatusEnums.Online)
             {
-                _dialogService.ShowMessageBox("Warning", "Please pause account before modifing building queue");
                 return false;
             }
             return true;

@@ -1,4 +1,6 @@
 ﻿using MainCore.Common.Models;
+using MainCore.UI.Models.Output;
+using System.Reactive.Linq;
 using System.Text.Json;
 
 namespace MainCore.Commands.UI.Villages
@@ -38,7 +40,7 @@ namespace MainCore.Commands.UI.Villages
 
         public async Task Execute(AccountId accountId, VillageId villageId)
         {
-            var path = _dialogService.OpenFileDialog();
+            var path = await _dialogService.OpenFileDialog.Handle(Unit.Default);
             List<JobDto> jobs;
             try
             {
@@ -47,19 +49,18 @@ namespace MainCore.Commands.UI.Villages
             }
             catch
             {
-                _dialogService.ShowMessageBox("Warning", "Invalid file.");
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Invalid file."));
                 return;
             }
 
-            var confirm = _dialogService.ShowConfirmBox("Warning", "TBS will remove resource field build job if its position doesn't match with current village.");
+            var confirm = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "TBS will remove resource field build job if its position doesn't match with current village."));
             if (!confirm) return;
 
             var modifiedJobs = GetModifiedJobs(villageId, jobs);
             AddJobToDatabase(villageId, modifiedJobs);
 
             await _mediator.Publish(new JobUpdated(accountId, villageId));
-
-            _dialogService.ShowMessageBox("Information", "Jobs imported");
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Jobs imported"));
         }
 
         private IEnumerable<JobDto> GetModifiedJobs(VillageId villageId, List<JobDto> jobs)
@@ -198,12 +199,13 @@ namespace MainCore.Commands.UI.Villages
                .Where(x => !_excludedLocations.Contains(x))
                .ToList();
 
-            if (!changedLocations.ContainsKey(plan.Location))
+            if (!changedLocations.TryGetValue(plan.Location, out int value))
             {
-                changedLocations[plan.Location] = GetRandomLocation(freeLocations);
+                value = GetRandomLocation(freeLocations);
+                changedLocations[plan.Location] = value;
             }
 
-            plan.Location = changedLocations[plan.Location];
+            plan.Location = value;
         }
 
         private static int GetRandomLocation(List<int> freeLocations)

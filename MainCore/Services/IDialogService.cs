@@ -1,13 +1,13 @@
-﻿namespace MainCore.Services
+﻿using MainCore.UI.Models.Output;
+using ReactiveUI;
+
+namespace MainCore.Services
 {
     public interface IDialogService
     {
-        string OpenFileDialog();
-
-        string SaveFileDialog();
-
-        bool ShowConfirmBox(string title, string message);
-
-        void ShowMessageBox(string title, string message);
+        Interaction<MessageBoxData, bool> ConfirmBox { get; }
+        Interaction<MessageBoxData, Unit> MessageBox { get; }
+        Interaction<Unit, string> OpenFileDialog { get; }
+        Interaction<Unit, string> SaveFileDialog { get; }
     }
 }

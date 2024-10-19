@@ -1,4 +1,6 @@
-﻿namespace MainCore.Commands.UI
+﻿using MainCore.UI.Models.Output;
+
+namespace MainCore.Commands.UI
 {
     [RegisterSingleton<DeleteAccountCommand>]
     public class DeleteAccountCommand
@@ -21,7 +23,7 @@
             var status = _taskManager.GetStatus(accountId);
             if (status != StatusEnums.Offline)
             {
-                _dialogService.ShowMessageBox("Warning", "Account should be offline");
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Account should be offline"));
                 return;
             }
 
