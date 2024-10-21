@@ -29,6 +29,14 @@
         StableAmountMin,
         StableAmountMax,
 
+        GreatBarrackTroop,
+        GreatBarrackAmountMin,
+        GreatBarrackAmountMax,
+
+        GreatStableTroop,
+        GreatStableAmountMin,
+        GreatStableAmountMax,
+
         WorkshopTroop,
         WorkshopAmountMin,
         WorkshopAmountMax,
