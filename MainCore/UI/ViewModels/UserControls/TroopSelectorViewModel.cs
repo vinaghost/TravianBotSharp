@@ -47,6 +47,8 @@ namespace MainCore.UI.ViewModels.UserControls
             {
                 BuildingEnums.Barracks => GetInfantryTroops(tribe),
                 BuildingEnums.Stable => GetCavalryTroops(tribe),
+                BuildingEnums.GreatBarracks => GetInfantryTroops(tribe),
+                BuildingEnums.GreatStable => GetCavalryTroops(tribe),
                 BuildingEnums.Workshop => GetSiegeTroops(tribe),
                 _ => new List<TroopEnums>(),
             };

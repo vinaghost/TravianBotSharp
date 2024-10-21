@@ -18,11 +18,15 @@ namespace MainCore.UI.Models.Input
 
         public TroopSelectorViewModel BarrackTroop { get; } = new();
         public TroopSelectorViewModel StableTroop { get; } = new();
+        public TroopSelectorViewModel GreatBarrackTroop { get; } = new();
+        public TroopSelectorViewModel GreatStableTroop { get; } = new();
         public TroopSelectorViewModel WorkshopTroop { get; } = new();
 
         public RangeInputViewModel TrainTroopRepeatTime { get; } = new();
         public RangeInputViewModel BarrackAmount { get; } = new();
         public RangeInputViewModel StableAmount { get; } = new();
+        public RangeInputViewModel GreatBarrackAmount { get; } = new();
+        public RangeInputViewModel GreatStableAmount { get; } = new();
         public RangeInputViewModel WorkshopAmount { get; } = new();
 
         private bool _autoNPCEnable;
@@ -67,6 +71,16 @@ namespace MainCore.UI.Models.Input
             StableAmount.Set(
                 settings.GetValueOrDefault(VillageSettingEnums.StableAmountMin),
                 settings.GetValueOrDefault(VillageSettingEnums.StableAmountMax));
+            var greatBarrackTroop = (TroopEnums)settings.GetValueOrDefault(VillageSettingEnums.GreatBarrackTroop);
+            GreatBarrackTroop.Set(greatBarrackTroop, BuildingEnums.GreatBarracks, tribe);
+            GreatBarrackAmount.Set(
+                settings.GetValueOrDefault(VillageSettingEnums.GreatBarrackAmountMin),
+                settings.GetValueOrDefault(VillageSettingEnums.GreatBarrackAmountMax));
+            var greatStableTroop = (TroopEnums)settings.GetValueOrDefault(VillageSettingEnums.GreatStableTroop);
+            GreatStableTroop.Set(greatStableTroop, BuildingEnums.GreatStable, tribe);
+            GreatStableAmount.Set(
+                settings.GetValueOrDefault(VillageSettingEnums.GreatStableAmountMin),
+                settings.GetValueOrDefault(VillageSettingEnums.GreatStableAmountMax));
             var workshopTroop = (TroopEnums)settings.GetValueOrDefault(VillageSettingEnums.WorkshopTroop);
             WorkshopTroop.Set(workshopTroop, BuildingEnums.Workshop, tribe);
             WorkshopAmount.Set(
@@ -107,6 +121,10 @@ namespace MainCore.UI.Models.Input
             var (barrackAmountMin, barrackAmountMax) = BarrackAmount.Get();
             var stableTroop = (int)StableTroop.Get();
             var (stableAmountMin, stableAmountMax) = StableAmount.Get();
+            var greatBarrackTroop = (int)GreatBarrackTroop.Get();
+            var (greatBarrackAmountMin, greatBarrackAmountMax) = GreatBarrackAmount.Get();
+            var greatStableTroop = (int)GreatStableTroop.Get();
+            var (greatStableAmountMin, greatStableAmountMax) = GreatStableAmount.Get();
             var workshopTroop = (int)WorkshopTroop.Get();
             var (workshopAmountMin, workshopAmountMax) = WorkshopAmount.Get();
 
@@ -138,6 +156,12 @@ namespace MainCore.UI.Models.Input
                 { VillageSettingEnums.StableTroop, stableTroop },
                 { VillageSettingEnums.StableAmountMin, stableAmountMin },
                 { VillageSettingEnums.StableAmountMax, stableAmountMax },
+                { VillageSettingEnums.GreatBarrackTroop, greatBarrackTroop },
+                { VillageSettingEnums.GreatBarrackAmountMin, greatBarrackAmountMin },
+                { VillageSettingEnums.GreatBarrackAmountMax, greatBarrackAmountMax },
+                { VillageSettingEnums.GreatStableTroop, greatStableTroop },
+                { VillageSettingEnums.GreatStableAmountMin, greatStableAmountMin },
+                { VillageSettingEnums.GreatStableAmountMax, greatStableAmountMax },
                 { VillageSettingEnums.WorkshopTroop, workshopTroop },
                 { VillageSettingEnums.WorkshopAmountMin, workshopAmountMin },
                 { VillageSettingEnums.WorkshopAmountMax, workshopAmountMax },
@@ -165,6 +189,8 @@ namespace MainCore.UI.Models.Input
                 {
                     BarrackTroop.ChangeTribe(BuildingEnums.Barracks, tribe);
                     StableTroop.ChangeTribe(BuildingEnums.Stable, tribe);
+                    GreatBarrackTroop.ChangeTribe(BuildingEnums.GreatBarracks, tribe);
+                    GreatStableTroop.ChangeTribe(BuildingEnums.GreatStable, tribe);
                     WorkshopTroop.ChangeTribe(BuildingEnums.Workshop, tribe);
                 });
         }

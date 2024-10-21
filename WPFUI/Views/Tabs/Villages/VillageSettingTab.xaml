@@ -84,10 +84,14 @@
                         <StackPanel Orientation="Horizontal">
                             <uc:TroopSelectorUc x:Name="BarrackTroop" Text="Train in barrack" />
                             <uc:RangeInputUc x:Name="BarrackAmount" Text="for" Unit="units" Margin="10,0,0,0" />
+                            <uc:TroopSelectorUc x:Name="GreatBarrackTroop" Text="Train in greatbarrack" Margin="10,0,0,0" />
+                            <uc:RangeInputUc x:Name="GreatBarrackAmount" Text="for" Unit="units" Margin="10,0,0,0" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <uc:TroopSelectorUc x:Name="StableTroop" Text="Train in stable" />
                             <uc:RangeInputUc x:Name="StableAmount" Text="for" Unit="units" Margin="10,0,0,0" />
+                            <uc:TroopSelectorUc x:Name="GreatStableTroop" Text="Train in greatstable" Margin="10,0,0,0" />
+                            <uc:RangeInputUc x:Name="GreatStableAmount" Text="for" Unit="units" Margin="10,0,0,0" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <uc:TroopSelectorUc x:Name="WorkshopTroop" Text="Train in workshop" />

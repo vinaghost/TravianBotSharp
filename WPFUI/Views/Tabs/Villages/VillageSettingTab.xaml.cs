@@ -37,6 +37,10 @@ namespace WPFUI.Views.Tabs.Villages
                 this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.BarrackAmount, v => v.BarrackAmount.ViewModel).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.StableTroop, v => v.StableTroop.ViewModel).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.StableAmount, v => v.StableAmount.ViewModel).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.GreatBarrackTroop, v => v.GreatBarrackTroop.ViewModel).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.GreatBarrackAmount, v => v.GreatBarrackAmount.ViewModel).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.GreatStableTroop, v => v.GreatStableTroop.ViewModel).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.GreatStableAmount, v => v.GreatStableAmount.ViewModel).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.WorkshopTroop, v => v.WorkshopTroop.ViewModel).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.WorkshopAmount, v => v.WorkshopAmount.ViewModel).DisposeWith(d);
 
