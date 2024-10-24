@@ -1,6 +1,5 @@
 ﻿using MainCore.Common.Models;
 using MainCore.UI.Models.Output;
-using System.Reactive.Linq;
 using System.Text.Json;
 
 namespace MainCore.Commands.UI.Villages
@@ -194,18 +193,25 @@ namespace MainCore.Commands.UI.Villages
         private static void ModifyRandom(List<BuildingItem> buildings, NormalBuildPlan plan, Dictionary<int, int> changedLocations)
         {
             var freeLocations = buildings
-               .Where(x => x.Type == BuildingEnums.Site)
-               .Select(x => x.Location)
-               .Where(x => !_excludedLocations.Contains(x))
-               .ToList();
+              .Where(x => x.Type == BuildingEnums.Site)
+              .Select(x => x.Location)
+              .Where(x => !_excludedLocations.Contains(x))
+              .ToList();
 
-            if (!changedLocations.TryGetValue(plan.Location, out int value))
+            if (freeLocations.Count == 0)
             {
-                value = GetRandomLocation(freeLocations);
-                changedLocations[plan.Location] = value;
+                plan.Location = -1;
             }
+            else
+            {
+                if (!changedLocations.TryGetValue(plan.Location, out int value))
+                {
+                    value = GetRandomLocation(freeLocations);
+                    changedLocations[plan.Location] = value;
+                }
 
-            plan.Location = value;
+                plan.Location = value;
+            }
         }
 
         private static int GetRandomLocation(List<int> freeLocations)
