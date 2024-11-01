@@ -54,6 +54,11 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
+            if (string.IsNullOrEmpty(AccountInput.Username))
+            {
+                AccountInput.Username = AccessInput.Username;
+            }
+
             AccountInput.Accesses.Add(AccessInput.Clone());
         }
 
