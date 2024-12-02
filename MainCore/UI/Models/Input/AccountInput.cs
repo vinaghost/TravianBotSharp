@@ -2,6 +2,7 @@
 using ReactiveUI;
 using Riok.Mapperly.Abstractions;
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 
 namespace MainCore.UI.Models.Input
 {
@@ -43,6 +44,8 @@ namespace MainCore.UI.Models.Input
     {
         public static AccountDto ToDto(this AccountInput input)
         {
+            input.Username = Regex.Replace(input.Username, @"[^a-zA-Z0-9\s]", "").Replace(' ', '_');
+
             var dto = input.MapToDto();
 
             Uri.TryCreate(input.Server, UriKind.Absolute, out var url);
