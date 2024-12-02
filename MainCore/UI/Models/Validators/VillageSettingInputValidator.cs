@@ -32,6 +32,20 @@ namespace MainCore.UI.Models.Validators
                 .GreaterThanOrEqualTo(0)
                 .WithMessage("Minimum stable amount troop ({PropertyValue}) should be positive number");
 
+            RuleFor(x => x.GreatBarrackAmount.Min)
+                .LessThanOrEqualTo(x => x.GreatBarrackAmount.Max)
+                .WithMessage("Minimum greatbarrack amount troop ({PropertyValue}) should be less than maximum greatbarrack amount troop ({ComparisonValue})");
+            RuleFor(x => x.GreatBarrackAmount.Min)
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Minimum greatbarrack amount troop ({PropertyValue}) should be positive number");
+
+            RuleFor(x => x.GreatStableAmount.Min)
+                .LessThanOrEqualTo(x => x.GreatStableAmount.Max)
+                .WithMessage("Minimum greatstable amount troop ({PropertyValue}) should be less than maximum greatstable amount troop ({ComparisonValue})");
+            RuleFor(x => x.GreatStableAmount.Min)
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Minimum greatstable amount troop ({PropertyValue}) should be positive number");
+
             RuleFor(x => x.WorkshopAmount.Min)
                 .LessThanOrEqualTo(x => x.WorkshopAmount.Max)
                 .WithMessage("Minimum workshop amount troop ({PropertyValue}) should be less than maximum workshop amount troop ({ComparisonValue})");
