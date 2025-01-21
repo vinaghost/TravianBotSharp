@@ -6,7 +6,6 @@ using Serilog.Events;
 using Serilog.Formatting.Display;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Reactive.Linq;
 using System.Text;
 
 namespace MainCore.UI.ViewModels.Tabs
@@ -16,7 +15,6 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         private readonly LogSink _logSink;
         private readonly ITaskManager _taskManager;
-        private readonly IChromeManager _chromeManager;
         private static readonly MessageTemplateTextFormatter _formatter = new("{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
         private const string NotOpen = "Chrome didn't open yet";
 
@@ -38,10 +36,9 @@ namespace MainCore.UI.ViewModels.Tabs
             set => this.RaiseAndSetIfChanged(ref _endpointAddress, value);
         }
 
-        public DebugViewModel(ILogEventSink logSink, ITaskManager taskManager, IChromeManager chromeManager)
+        public DebugViewModel(ILogEventSink logSink, ITaskManager taskManager)
         {
             _taskManager = taskManager;
-            _chromeManager = chromeManager;
             _logSink = logSink as LogSink;
             _logSink.LogEmitted += LogEmitted;
 
@@ -114,8 +111,7 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             var status = _taskManager.GetStatus(accountId);
             if (status == StatusEnums.Offline) return NotOpen;
-            var chromeBrowser = _chromeManager.Get(accountId);
-            var address = chromeBrowser.EndpointAddress;
+            var address = "address enpoint is disabled";
             if (string.IsNullOrEmpty(address)) return NotOpen;
             return address;
         }
