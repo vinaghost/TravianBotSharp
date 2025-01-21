@@ -47,7 +47,6 @@ namespace MainCore.Services
             options.AddArguments("--mute-audio", "--disable-gpu", "--disable-search-engine-choice-screen");
 
             options.AddExcludedArgument("enable-automation");
-            options.AddExcludedArgument("test-type");
             options.AddAdditionalOption("useAutomationExtension", "undefined");
 
             options.AddArgument("--disable-background-timer-throttling");
