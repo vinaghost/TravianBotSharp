@@ -15,15 +15,6 @@ namespace MainCore.Services
         private readonly string[] _extensionsPath;
         private readonly HtmlDocument _htmlDoc = new();
 
-        public string EndpointAddress
-        {
-            get
-            {
-                if (_driver is null) return "";
-                return _driver.GetDevToolsSession().EndpointAddress;
-            }
-        }
-
         public ChromeBrowser(string[] extensionsPath)
         {
             _extensionsPath = extensionsPath;
@@ -51,23 +42,24 @@ namespace MainCore.Services
             }
 
             options.AddArgument($"--user-agent={setting.UserAgent}");
-
-            // So websites (Travian) can't detect the bot
-            options.AddExcludedArgument("enable-automation");
-            options.AddAdditionalOption("useAutomationExtension", false);
-            options.AddArgument("--disable-blink-features=AutomationControlled");
-            options.AddArgument("--disable-features=UserAgentClientHint");
-            options.AddArgument("--disable-logging");
             options.AddArgument("--ignore-certificate-errors");
+            options.AddArguments("--no-default-browser-check", "--no-first-run", "--ash-no-nudges");
+            options.AddArguments("--mute-audio", "--disable-gpu", "--disable-search-engine-choice-screen");
 
-            options.AddArguments("--mute-audio", "--disable-gpu");
+            options.AddExcludedArgument("enable-automation");
+            options.AddExcludedArgument("test-type");
+            options.AddAdditionalOption("useAutomationExtension", "undefined");
 
-            options.AddArguments("--no-default-browser-check", "--no-first-run");
-            options.AddArguments("--no-sandbox", "--test-type");
+            options.AddArgument("--disable-background-timer-throttling");
+            options.AddArgument("--disable-backgrounding-occluded-windows");
+            options.AddArgument("--disable-features=CalculateNativeWinOcclusion");
+            options.AddArgument("--disable-features=UserAgentClientHint");
+            options.AddArgument("--disable-blink-features=AutomationControlled");
 
             if (setting.IsHeadless)
             {
                 options.AddArgument("--headless=new");
+                options.AddArgument("--disable-dev-shm-usage");
             }
             else
             {
@@ -83,7 +75,6 @@ namespace MainCore.Services
             _driver = await Task.Run(() => new ChromeDriver(_chromeService, options, TimeSpan.FromMinutes(3)));
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(3);
-            _driver.GetDevToolsSession();
             _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3)); // watch ads
 
             return Result.Ok();
