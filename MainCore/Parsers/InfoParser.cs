@@ -18,11 +18,13 @@
 
         public static bool HasPlusAccount(HtmlDocument doc)
         {
-            var market = doc.DocumentNode.Descendants("a").FirstOrDefault(x => x.HasClass("market") && x.HasClass("round"));
-            if (market is null) return false;
+            var boxLink = doc.GetElementbyId("sidebarBoxLinklist");
+            if (boxLink is null) return false;
+            var editButton = boxLink.Descendants("a").FirstOrDefault(x => x.HasClass("edit") && x.HasClass("round"));
+            if (editButton is null) return false;
 
-            if (market.HasClass("green")) return true;
-            if (market.HasClass("gold")) return false;
+            if (editButton.HasClass("green")) return true;
+            if (editButton.HasClass("gold")) return false;
             return false;
         }
     }
