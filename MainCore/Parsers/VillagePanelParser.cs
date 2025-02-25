@@ -65,7 +65,7 @@
         {
             var villsNode = doc.GetElementbyId("sidebarBoxVillagelist");
             if (villsNode is null) return new();
-            return villsNode.Descendants("div").Where(x => x.HasClass("listEntry")).ToList();
+            return villsNode.Descendants("div").Where(x => x.HasClass("listEntry") && x.HasClass("village")).ToList();
         }
 
         private static bool IsUnderAttack(HtmlNode node)
