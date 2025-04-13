@@ -23,7 +23,6 @@
     <PackageReference Include="MediatR" Version="12.4.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-    <PackageReference Include="OpenQA.Selenium.Chrome.ChromeDriverExtensions" Version="1.2.0" />
     <PackageReference Include="Polly" Version="8.4.1" />
     <PackageReference Include="ReactiveUI" Version="20.1.1" />
     <PackageReference Include="Riok.Mapperly" Version="3.6.0" />
