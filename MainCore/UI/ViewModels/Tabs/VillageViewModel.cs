@@ -5,12 +5,12 @@ using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
-using System.Reactive.Linq;
+using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
     [RegisterSingleton<VillageViewModel>]
-    public class VillageViewModel : AccountTabViewModelBase
+    public partial class VillageViewModel : AccountTabViewModelBase
     {
         private readonly VillageTabStore _villageTabStore;
 
@@ -19,21 +19,12 @@ namespace MainCore.UI.ViewModels.Tabs
         public ListBoxItemViewModel Villages { get; } = new();
 
         public VillageTabStore VillageTabStore => _villageTabStore;
-        public ReactiveCommand<Unit, Unit> LoadCurrent { get; }
-        public ReactiveCommand<Unit, Unit> LoadUnload { get; }
-        public ReactiveCommand<Unit, Unit> LoadAll { get; }
-        public ReactiveCommand<AccountId, List<ListBoxItem>> LoadVillage { get; }
 
         public VillageViewModel(VillageTabStore villageTabStore, ITaskManager taskManager, IDialogService dialogService)
         {
             _villageTabStore = villageTabStore;
             _taskManager = taskManager;
             _dialogService = dialogService;
-
-            LoadCurrent = ReactiveCommand.CreateFromTask(LoadCurrentHandler);
-            LoadUnload = ReactiveCommand.CreateFromTask(LoadUnloadHandler);
-            LoadAll = ReactiveCommand.CreateFromTask(LoadAllHandler);
-            LoadVillage = ReactiveCommand.Create<AccountId, List<ListBoxItem>>(LoadVillageHandler);
 
             var villageObservable = this.WhenAnyValue(x => x.Villages.SelectedItem);
             villageObservable.BindTo(_selectedItemStore, vm => vm.Village);
@@ -44,22 +35,23 @@ namespace MainCore.UI.ViewModels.Tabs
                 _villageTabStore.SetTabType(tabType);
             });
 
-            LoadVillage.Subscribe(Villages.Load);
+            LoadVillageCommand.Subscribe(Villages.Load);
         }
 
         public async Task VillageListRefresh(AccountId accountId)
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadVillage.Execute(accountId);
+            await LoadVillageCommand.Execute(accountId);
         }
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadVillage.Execute(accountId);
+            await LoadVillageCommand.Execute(accountId);
         }
 
-        private async Task LoadCurrentHandler()
+        [ReactiveCommand]
+        private async Task LoadCurrent()
         {
             if (!Villages.IsSelected)
             {
@@ -73,7 +65,8 @@ namespace MainCore.UI.ViewModels.Tabs
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
 
-        private async Task LoadUnloadHandler()
+        [ReactiveCommand]
+        private async Task LoadUnload()
         {
             var getVillage = Locator.Current.GetService<GetVillage>();
             var villages = getVillage.Missing(AccountId);
@@ -84,7 +77,8 @@ namespace MainCore.UI.ViewModels.Tabs
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
 
-        private async Task LoadAllHandler()
+        [ReactiveCommand]
+        private async Task LoadAll()
         {
             var getVillage = Locator.Current.GetService<GetVillage>();
             var villages = getVillage.All(AccountId);
@@ -95,7 +89,8 @@ namespace MainCore.UI.ViewModels.Tabs
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
 
-        private static List<ListBoxItem> LoadVillageHandler(AccountId accountId)
+        [ReactiveCommand]
+        private static List<ListBoxItem> LoadVillage(AccountId accountId)
         {
             var getVillage = Locator.Current.GetService<GetVillage>();
             return getVillage.Info(accountId);

@@ -6,12 +6,13 @@ using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 using System.Drawing;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
     [RegisterSingleton<FarmingViewModel>]
-    public class FarmingViewModel : AccountTabViewModelBase
+    public partial class FarmingViewModel : AccountTabViewModelBase
     {
         public AccountSettingInput AccountSettingInput { get; } = new();
         public ListBoxItemViewModel FarmLists { get; } = new();
@@ -21,14 +22,6 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly ITaskManager _taskManager;
 
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
-        public ReactiveCommand<Unit, Unit> UpdateFarmList { get; }
-        public ReactiveCommand<Unit, Unit> Save { get; }
-        public ReactiveCommand<Unit, Unit> ActiveFarmList { get; }
-        public ReactiveCommand<Unit, Unit> Start { get; }
-        public ReactiveCommand<Unit, Unit> Stop { get; }
-        public ReactiveCommand<AccountId, List<ListBoxItem>> LoadFarmList { get; }
-        public ReactiveCommand<AccountId, Dictionary<AccountSettingEnums, int>> LoadSetting { get; }
 
         private static readonly Dictionary<Color, string> _activeTexts = new()
         {
@@ -44,17 +37,7 @@ namespace MainCore.UI.ViewModels.Tabs
             _taskManager = taskManager;
             _contextFactory = contextFactory;
 
-            UpdateFarmList = ReactiveCommand.CreateFromTask(UpdateFarmListHandler);
-            Start = ReactiveCommand.CreateFromTask(StartHandler);
-            Stop = ReactiveCommand.CreateFromTask(StopHandler);
-
-            Save = ReactiveCommand.CreateFromTask(SaveHandler);
-            ActiveFarmList = ReactiveCommand.CreateFromTask(ActiveFarmListHandler);
-
-            LoadFarmList = ReactiveCommand.Create<AccountId, List<ListBoxItem>>(LoadFarmListHandler);
-            LoadSetting = ReactiveCommand.Create<AccountId, Dictionary<AccountSettingEnums, int>>(LoadSettingHandler);
-
-            LoadFarmList.Subscribe(items =>
+            LoadFarmListCommand.Subscribe(items =>
             {
                 FarmLists.Load(items);
                 if (items.Count > 0)
@@ -63,8 +46,8 @@ namespace MainCore.UI.ViewModels.Tabs
                     ActiveText = _activeTexts[color];
                 }
             });
-            LoadSetting.Subscribe(AccountSettingInput.Set);
-            ActiveFarmList.Subscribe(x =>
+            LoadSettingCommand.Subscribe(AccountSettingInput.Set);
+            ActiveFarmListCommand.Subscribe(x =>
             {
                 var color = FarmLists.SelectedItem?.Color ?? Color.Black;
                 ActiveText = _activeTexts[color];
@@ -83,22 +66,24 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadFarmList.Execute(accountId);
+            await LoadFarmListCommand.Execute(accountId);
         }
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadFarmList.Execute(accountId);
-            await LoadSetting.Execute(accountId);
+            await LoadFarmListCommand.Execute(accountId);
+            await LoadSettingCommand.Execute(accountId);
         }
 
-        private async Task UpdateFarmListHandler()
+        [ReactiveCommand]
+        private async Task UpdateFarmList()
         {
             await _taskManager.AddOrUpdate<UpdateFarmListTask>(AccountId);
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added update farm list task"));
         }
 
-        private async Task StartHandler()
+        [ReactiveCommand]
+        private async Task Start()
         {
             var getSetting = Locator.Current.GetService<IGetSetting>();
             var useStartAllButton = getSetting.BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
@@ -115,7 +100,8 @@ namespace MainCore.UI.ViewModels.Tabs
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added start farm list task"));
         }
 
-        private async Task StopHandler()
+        [ReactiveCommand]
+        private async Task Stop()
         {
             var task = _taskManager.Get<StartFarmListTask>(AccountId);
 
@@ -124,13 +110,15 @@ namespace MainCore.UI.ViewModels.Tabs
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Removed start farm list task"));
         }
 
-        private async Task SaveHandler()
+        [ReactiveCommand]
+        private async Task Save()
         {
             var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
             await saveSettingCommand.Execute(AccountId, AccountSettingInput, CancellationToken.None);
         }
 
-        private async Task ActiveFarmListHandler()
+        [ReactiveCommand]
+        private async Task ActiveFarmList()
         {
             var selectedFarmList = FarmLists.SelectedItem;
             if (selectedFarmList is null)
@@ -144,14 +132,16 @@ namespace MainCore.UI.ViewModels.Tabs
             await _mediator.Publish(new FarmListUpdated(AccountId));
         }
 
-        private static Dictionary<AccountSettingEnums, int> LoadSettingHandler(AccountId accountId)
+        [ReactiveCommand]
+        private static Dictionary<AccountSettingEnums, int> LoadSetting(AccountId accountId)
         {
             var getSetting = Locator.Current.GetService<IGetSetting>();
             var items = getSetting.Get(accountId);
             return items;
         }
 
-        private List<ListBoxItem> LoadFarmListHandler(AccountId accountId)
+        [ReactiveCommand]
+        private List<ListBoxItem> LoadFarmList(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();
 

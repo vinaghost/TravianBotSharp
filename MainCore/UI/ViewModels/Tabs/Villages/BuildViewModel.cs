@@ -4,36 +4,17 @@ using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
-using System.Reactive.Linq;
+using ReactiveUI.SourceGenerators;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     [RegisterSingleton<BuildViewModel>]
-    public class BuildViewModel : VillageTabViewModelBase
+    public partial class BuildViewModel : VillageTabViewModelBase
     {
         private readonly IMediator _mediator;
         private readonly IDialogService _dialogService;
         private readonly ITaskManager _taskManager;
-
-        private ReactiveCommand<ListBoxItem, List<BuildingEnums>> LoadBuildNormal { get; }
-
-        public ReactiveCommand<Unit, Unit> BuildNormal { get; }
-        public ReactiveCommand<Unit, Unit> BuildResource { get; }
-        public ReactiveCommand<Unit, Unit> UpgradeOneLevel { get; }
-        public ReactiveCommand<Unit, Unit> UpgradeMaxLevel { get; }
-
-        public ReactiveCommand<Unit, Unit> Up { get; }
-        public ReactiveCommand<Unit, Unit> Down { get; }
-        public ReactiveCommand<Unit, Unit> Top { get; }
-        public ReactiveCommand<Unit, Unit> Bottom { get; }
-        public ReactiveCommand<Unit, Unit> Delete { get; }
-        public ReactiveCommand<Unit, Unit> DeleteAll { get; }
-        public ReactiveCommand<Unit, Unit> Import { get; }
-        public ReactiveCommand<Unit, Unit> Export { get; }
-        public ReactiveCommand<VillageId, List<ListBoxItem>> LoadBuilding { get; }
-        public ReactiveCommand<VillageId, List<ListBoxItem>> LoadJob { get; }
-        public ReactiveCommand<VillageId, List<ListBoxItem>> LoadQueue { get; }
 
         public NormalBuildInput NormalBuildInput { get; } = new();
 
@@ -49,34 +30,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             _dialogService = dialogService;
             _taskManager = taskManager;
 
-            BuildNormal = ReactiveCommand.CreateFromTask(BuildNormalHandler);
-            BuildResource = ReactiveCommand.CreateFromTask(ResourceNormalHandler);
-            UpgradeOneLevel = ReactiveCommand.CreateFromTask(UpgradeOneLevelHandler);
-            UpgradeMaxLevel = ReactiveCommand.CreateFromTask(UpgradeMaxLevelHandler);
-
-            Up = ReactiveCommand.CreateFromTask(UpHandler);
-            Down = ReactiveCommand.CreateFromTask(DownHandler);
-            Top = ReactiveCommand.CreateFromTask(TopHandler);
-            Bottom = ReactiveCommand.CreateFromTask(BottomHandler);
-            Delete = ReactiveCommand.CreateFromTask(DeleteHandler);
-            DeleteAll = ReactiveCommand.CreateFromTask(DeleteAllHandler);
-            Import = ReactiveCommand.CreateFromTask(ImportHandler);
-            Export = ReactiveCommand.CreateFromTask(ExportHandler);
-
-            LoadBuilding = ReactiveCommand.Create<VillageId, List<ListBoxItem>>(LoadBuildingHandler);
-            LoadJob = ReactiveCommand.Create<VillageId, List<ListBoxItem>>(LoadJobHandler);
-            LoadQueue = ReactiveCommand.Create<VillageId, List<ListBoxItem>>(LoadQueueHandler);
-            LoadBuildNormal = ReactiveCommand.Create<ListBoxItem, List<BuildingEnums>>(LoadBuildNormalHanlder);
-
             this.WhenAnyValue(vm => vm.Buildings.SelectedItem)
                 .ObserveOn(RxApp.TaskpoolScheduler)
-                .InvokeCommand(LoadBuildNormal);
+                .InvokeCommand(LoadBuildNormalCommand);
 
-            LoadBuilding.Subscribe(Buildings.Load);
-            LoadJob.Subscribe(Jobs.Load);
-            LoadQueue.Subscribe(Queue.Load);
+            LoadBuildingCommand.Subscribe(Buildings.Load);
+            LoadJobCommand.Subscribe(Jobs.Load);
+            LoadQueueCommand.Subscribe(Queue.Load);
 
-            LoadBuildNormal.Subscribe(buildings =>
+            LoadBuildNormalCommand.Subscribe(buildings =>
             {
                 switch (buildings.Count)
                 {
@@ -95,53 +57,57 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
-            await LoadQueue.Execute(villageId);
+            await LoadQueueCommand.Execute(villageId);
         }
 
         public async Task BuildingListRefresh(VillageId villageId)
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
-            await LoadBuilding.Execute(villageId);
+            await LoadBuildingCommand.Execute(villageId);
         }
 
         public async Task JobListRefresh(VillageId villageId)
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
-            await LoadJob.Execute(villageId);
-            await LoadBuilding.Execute(villageId);
+            await LoadJobCommand.Execute(villageId);
+            await LoadBuildingCommand.Execute(villageId);
         }
 
         protected override async Task Load(VillageId villageId)
         {
-            await LoadJob.Execute(villageId);
-            await LoadBuilding.Execute(villageId);
-            await LoadQueue.Execute(villageId);
+            await LoadJobCommand.Execute(villageId);
+            await LoadBuildingCommand.Execute(villageId);
+            await LoadQueueCommand.Execute(villageId);
         }
 
-        private static List<ListBoxItem> LoadBuildingHandler(VillageId villageId)
+        [ReactiveCommand]
+        private static List<ListBoxItem> LoadBuilding(VillageId villageId)
         {
             var getBuildings = Locator.Current.GetService<GetBuildings>();
             var items = getBuildings.LayoutItems(villageId);
             return items;
         }
 
-        private static List<ListBoxItem> LoadQueueHandler(VillageId villageId)
+        [ReactiveCommand]
+        private static List<ListBoxItem> LoadQueue(VillageId villageId)
         {
             var getBuildings = Locator.Current.GetService<GetBuildings>();
             var items = getBuildings.QueueItems(villageId);
             return items;
         }
 
-        private static List<ListBoxItem> LoadJobHandler(VillageId villageId)
+        [ReactiveCommand]
+        private static List<ListBoxItem> LoadJob(VillageId villageId)
         {
             var getJobs = Locator.Current.GetService<GetJobs>();
             var jobs = getJobs.Items(villageId);
             return jobs;
         }
 
-        private List<BuildingEnums> LoadBuildNormalHanlder(ListBoxItem item)
+        [ReactiveCommand]
+        private List<BuildingEnums> LoadBuildNormal(ListBoxItem item)
         {
             if (item is null) return [];
             var getBuildings = Locator.Current.GetService<GetBuildings>();
@@ -149,7 +115,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             return buildings;
         }
 
-        private async Task BuildNormalHandler()
+        [ReactiveCommand]
+        private async Task BuildNormal()
         {
             if (!IsAccountPaused(AccountId)) return;
 
@@ -158,7 +125,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await buildNormalCommand.Execute(AccountId, VillageId, NormalBuildInput, location);
         }
 
-        private async Task UpgradeOneLevelHandler()
+        [ReactiveCommand]
+        private async Task UpgradeOneLevel()
         {
             if (!IsAccountPaused(AccountId)) return;
 
@@ -167,7 +135,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await upgradeLevel.Execute(AccountId, VillageId, location, false);
         }
 
-        private async Task UpgradeMaxLevelHandler()
+        [ReactiveCommand]
+        private async Task UpgradeMaxLevel()
         {
             if (!IsAccountPaused(AccountId)) return;
 
@@ -176,7 +145,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await upgradeLevel.Execute(AccountId, VillageId, location, true);
         }
 
-        private async Task ResourceNormalHandler()
+        [ReactiveCommand]
+        private async Task BuildResource()
         {
             if (!IsAccountPaused(AccountId))
             {
@@ -188,7 +158,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await buildResourceCommand.Execute(AccountId, VillageId, ResourceBuildInput);
         }
 
-        private async Task UpHandler()
+        [ReactiveCommand]
+        private async Task Up()
         {
             if (!IsAccountPaused(AccountId))
             {
@@ -199,7 +170,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Up);
         }
 
-        private async Task DownHandler()
+        [ReactiveCommand]
+        private async Task Down()
         {
             if (!IsAccountPaused(AccountId))
             {
@@ -210,7 +182,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Down);
         }
 
-        private async Task TopHandler()
+        [ReactiveCommand]
+        private async Task Top()
         {
             if (!IsAccountPaused(AccountId))
             {
@@ -221,7 +194,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Top);
         }
 
-        private async Task BottomHandler()
+        [ReactiveCommand]
+        private async Task Bottom()
         {
             if (!IsAccountPaused(AccountId))
             {
@@ -232,7 +206,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Bottom);
         }
 
-        private async Task DeleteHandler()
+        [ReactiveCommand]
+        private async Task Delete()
         {
             if (!IsAccountPaused(AccountId))
             {
@@ -247,7 +222,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await _mediator.Publish(new JobUpdated(AccountId, VillageId));
         }
 
-        private async Task DeleteAllHandler()
+        [ReactiveCommand]
+        private async Task DeleteAll()
         {
             if (!IsAccountPaused(AccountId))
             {
@@ -259,7 +235,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await _mediator.Publish(new JobUpdated(AccountId, VillageId));
         }
 
-        private async Task ImportHandler()
+        [ReactiveCommand]
+        private async Task Import()
         {
             if (!IsAccountPaused(AccountId))
             {
@@ -270,7 +247,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await importCommand.Execute(AccountId, VillageId);
         }
 
-        private async Task ExportHandler()
+        [ReactiveCommand]
+        private async Task Export()
         {
             var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
             if (string.IsNullOrEmpty(path)) return;

@@ -3,53 +3,46 @@ using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
-using System.Reactive.Linq;
+using ReactiveUI.SourceGenerators;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     [RegisterSingleton<VillageSettingViewModel>]
-    public class VillageSettingViewModel : VillageTabViewModelBase
+    public partial class VillageSettingViewModel : VillageTabViewModelBase
     {
         public VillageSettingInput VillageSettingInput { get; } = new();
 
         private readonly IDialogService _dialogService;
-        public ReactiveCommand<Unit, Unit> SaveCommand { get; }
-        public ReactiveCommand<Unit, Unit> ExportCommand { get; }
-        public ReactiveCommand<Unit, Unit> ImportCommand { get; }
-        public ReactiveCommand<VillageId, Dictionary<VillageSettingEnums, int>> LoadSetting { get; }
 
         public VillageSettingViewModel(IDialogService dialogService)
         {
             _dialogService = dialogService;
 
-            SaveCommand = ReactiveCommand.CreateFromTask(SaveHandler);
-            ExportCommand = ReactiveCommand.CreateFromTask(ExportHandler);
-            ImportCommand = ReactiveCommand.CreateFromTask(ImportHandler);
-            LoadSetting = ReactiveCommand.Create<VillageId, Dictionary<VillageSettingEnums, int>>(LoadSettingHandler);
-
-            LoadSetting.Subscribe(VillageSettingInput.Set);
+            LoadSettingCommand.Subscribe(VillageSettingInput.Set);
         }
 
         public async Task SettingRefresh(VillageId villageId)
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
-            await LoadSetting.Execute(villageId);
+            await LoadSettingCommand.Execute(villageId);
         }
 
         protected override async Task Load(VillageId villageId)
         {
-            await LoadSetting.Execute(villageId);
+            await LoadSettingCommand.Execute(villageId);
         }
 
-        private async Task SaveHandler()
+        [ReactiveCommand]
+        private async Task Save()
         {
             var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
             await saveSettingCommand.Execute(AccountId, VillageId, VillageSettingInput, CancellationToken.None);
         }
 
-        private async Task ImportHandler()
+        [ReactiveCommand]
+        private async Task Import()
         {
             var path = await _dialogService.OpenFileDialog.Handle(Unit.Default);
             Dictionary<VillageSettingEnums, int> settings;
@@ -69,7 +62,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await saveSettingCommand.Execute(AccountId, VillageId, VillageSettingInput, CancellationToken.None);
         }
 
-        private async Task ExportHandler()
+        [ReactiveCommand]
+        private async Task Export()
         {
             var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
             if (string.IsNullOrEmpty(path)) return;
@@ -80,7 +74,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings exported"));
         }
 
-        private static Dictionary<VillageSettingEnums, int> LoadSettingHandler(VillageId villageId)
+        [ReactiveCommand]
+        private static Dictionary<VillageSettingEnums, int> LoadSetting(VillageId villageId)
         {
             var getSetting = Locator.Current.GetService<IGetSetting>();
             var settings = getSetting.Get(villageId);

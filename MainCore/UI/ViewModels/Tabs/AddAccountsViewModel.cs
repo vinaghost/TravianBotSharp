@@ -1,17 +1,14 @@
 ﻿using MainCore.Commands.UI;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 using System.Collections.ObjectModel;
-using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
     [RegisterSingleton<AddAccountsViewModel>]
-    public class AddAccountsViewModel : TabViewModelBase
+    public partial class AddAccountsViewModel : TabViewModelBase
     {
-        public ReactiveCommand<Unit, Unit> AddAccount { get; }
-        private ReactiveCommand<string, List<AccountDetailDto>> Parse { get; }
-
         public ObservableCollection<AccountDetailDto> Accounts { get; } = [];
         private string _input;
 
@@ -23,16 +20,13 @@ namespace MainCore.UI.ViewModels.Tabs
 
         public AddAccountsViewModel()
         {
-            AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler);
-            Parse = ReactiveCommand.Create<string, List<AccountDetailDto>>(ParseHandler);
-
             this.WhenAnyValue(x => x.Input)
                 .ObserveOn(RxApp.TaskpoolScheduler)
-                .InvokeCommand(Parse);
+                .InvokeCommand(ParseCommand);
 
-            Parse.Subscribe(UpdateTable);
+            ParseCommand.Subscribe(UpdateTable);
 
-            AddAccount.Subscribe(_ => Clear());
+            AddAccountCommand.Subscribe(_ => Clear());
         }
 
         private void UpdateTable(List<AccountDetailDto> data)
@@ -47,13 +41,15 @@ namespace MainCore.UI.ViewModels.Tabs
             Input = "";
         }
 
-        private async Task AddAccountHandler()
+        [ReactiveCommand]
+        private async Task AddAccount()
         {
             var addAccountCommand = Locator.Current.GetService<AddAccountCommand>();
             await addAccountCommand.Execute([.. Accounts], default);
         }
 
-        private static List<AccountDetailDto> ParseHandler(string input)
+        [ReactiveCommand]
+        private static List<AccountDetailDto> Parse(string input)
         {
             if (string.IsNullOrEmpty(input)) return [];
 
