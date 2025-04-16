@@ -9,11 +9,9 @@ namespace MainCore.DTO
         public int Value { get; set; }
     }
 
-    [Mapper]
+    [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
     public static partial class VillageSettingMapper
     {
-        public static partial VillageSettingDto ToDto(this VillageSetting dto);
-
         public static VillageSetting ToEntity(this VillageSettingDto dto, VillageId villageId)
         {
             var entity = ToEntity(dto);
@@ -21,6 +19,9 @@ namespace MainCore.DTO
             return entity;
         }
 
+        [MapperIgnoreTarget(nameof(VillageSetting.VillageId))]
         private static partial VillageSetting ToEntity(this VillageSettingDto dto);
+
+        public static partial VillageSettingDto ToDto(this VillageSetting dto);
     }
 }

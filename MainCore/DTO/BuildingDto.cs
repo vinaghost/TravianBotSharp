@@ -11,7 +11,7 @@ namespace MainCore.DTO
         public int Location { get; set; }
     }
 
-    [Mapper]
+    [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
     public static partial class BuildingMapper
     {
         public static Building ToEntity(this BuildingDto dto, VillageId villageId)
@@ -21,9 +21,10 @@ namespace MainCore.DTO
             return entity;
         }
 
+        [MapperIgnoreTarget(nameof(Building.VillageId))]
         private static partial Building ToEntity(this BuildingDto dto);
 
-        [MapperIgnoreSource(nameof(BuildingDto.Id))]
+        [MapperIgnoreTarget(nameof(Building.VillageId))]
         public static partial void To(this BuildingDto dto, Building entity);
 
         public static partial BuildingDto ToDto(this Building entity);

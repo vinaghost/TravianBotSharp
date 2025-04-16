@@ -13,7 +13,7 @@ namespace MainCore.DTO
         public long FreeCrop { get; set; }
     }
 
-    [Mapper]
+    [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
     public static partial class StorageMapper
     {
         public static Storage ToEntity(this StorageDto dto, VillageId villageId)
@@ -23,8 +23,12 @@ namespace MainCore.DTO
             return entity;
         }
 
+        [MapperIgnoreTarget(nameof(Storage.Id))]
+        [MapperIgnoreTarget(nameof(Storage.VillageId))]
         public static partial void To(this StorageDto dto, Storage entity);
 
+        [MapperIgnoreTarget(nameof(Storage.Id))]
+        [MapperIgnoreTarget(nameof(Storage.VillageId))]
         private static partial Storage ToEntity(this StorageDto dto);
     }
 }

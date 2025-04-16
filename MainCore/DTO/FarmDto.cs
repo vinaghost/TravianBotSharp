@@ -9,7 +9,7 @@ namespace MainCore.DTO
         public bool IsActive { get; set; }
     }
 
-    [Mapper]
+    [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
     public static partial class FarmMapper
     {
         public static Farm ToEntity(this FarmDto dto, AccountId accountId)
@@ -19,10 +19,10 @@ namespace MainCore.DTO
             return entity;
         }
 
-        [MapperIgnoreSource(nameof(FarmDto.Id))]
-        [MapperIgnoreSource(nameof(FarmDto.IsActive))]
+        [MapperIgnoreTarget(nameof(Farm.AccountId))]
         public static partial void To(this FarmDto dto, Farm entity);
 
+        [MapperIgnoreTarget(nameof(Farm.AccountId))]
         private static partial Farm ToEntity(this FarmDto dto);
 
         private static int ToInt(this FarmId farmId) => farmId.Value;
