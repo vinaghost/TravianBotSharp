@@ -99,15 +99,6 @@
           "Microsoft.Extensions.Options": "8.0.0"
         }
       },
-      "OpenQA.Selenium.Chrome.ChromeDriverExtensions": {
-        "type": "Direct",
-        "requested": "[1.2.0, )",
-        "resolved": "1.2.0",
-        "contentHash": "z5/MAdjFlHcECXN4sxS356Hul5iJD1vHznAwINo9YR3j+PXVU2PjgmkLEB6zvRLxzouL8qfNBioSWkxfvlsbMg==",
-        "dependencies": {
-          "Selenium.WebDriver": "3.141.0"
-        }
-      },
       "Polly": {
         "type": "Direct",
         "requested": "[8.4.1, )",

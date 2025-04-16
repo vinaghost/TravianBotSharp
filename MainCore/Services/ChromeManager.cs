@@ -31,9 +31,10 @@ namespace MainCore.Services
         public void LoadExtension()
         {
             var extenstionDir = Path.Combine(AppContext.BaseDirectory, "ExtensionFile");
-            var isCreated = false;
-            if (Directory.Exists(extenstionDir)) isCreated = true;
-            else Directory.CreateDirectory(extenstionDir);
+            if (!Directory.Exists(extenstionDir))
+            {
+                Directory.CreateDirectory(extenstionDir);
+            }
 
             var asmb = Assembly.GetExecutingAssembly();
             var extensionsName = asmb.GetManifestResourceNames();
@@ -44,7 +45,8 @@ namespace MainCore.Services
                 if (!extensionName.Contains(".crx")) continue;
                 var path = Path.Combine(extenstionDir, extensionName);
                 list.Add(path);
-                if (!isCreated)
+
+                if (!File.Exists(path))
                 {
                     using Stream input = asmb.GetManifestResourceStream(extensionName);
                     using Stream output = File.Create(path);
