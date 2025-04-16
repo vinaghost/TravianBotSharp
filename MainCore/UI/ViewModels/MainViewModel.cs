@@ -1,13 +1,16 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.ViewModels
 {
     [RegisterSingleton<MainViewModel>]
-    public class MainViewModel : ViewModelBase
+    public partial class MainViewModel : ViewModelBase
     {
+        [Reactive]
         private MainLayoutViewModel _mainLayoutViewModel;
+
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
         private readonly IMediator _mediator;
 
@@ -15,12 +18,10 @@ namespace MainCore.UI.ViewModels
         {
             _mediator = mediator;
             _waitingOverlayViewModel = waitingOverlayViewModel;
-
-            Load = ReactiveCommand.CreateFromTask(LoadHandler);
-            Unload = ReactiveCommand.CreateFromTask(UnloadHandler);
         }
 
-        private async Task LoadHandler()
+        [ReactiveCommand]
+        private async Task Load()
         {
             await _waitingOverlayViewModel.Show();
             await _mediator.Publish(new MainWindowLoaded());
@@ -31,18 +32,10 @@ namespace MainCore.UI.ViewModels
             await _waitingOverlayViewModel.Hide();
         }
 
-        private async Task UnloadHandler()
+        [ReactiveCommand]
+        private async Task Unload()
         {
             await _mediator.Publish(new MainWindowUnloaded());
         }
-
-        public MainLayoutViewModel MainLayoutViewModel
-        {
-            get => _mainLayoutViewModel;
-            set => this.RaiseAndSetIfChanged(ref _mainLayoutViewModel, value);
-        }
-
-        public ReactiveCommand<Unit, Unit> Load { get; }
-        public ReactiveCommand<Unit, Unit> Unload { get; }
     }
 }
