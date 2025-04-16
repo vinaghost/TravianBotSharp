@@ -1,9 +1,9 @@
 ﻿using ReactiveUI;
-using Riok.Mapperly.Abstractions;
+using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.Models.Input
 {
-    public class AccessInput : ReactiveObject
+    public partial class AccessInput : ReactiveObject
     {
         public void Clear()
         {
@@ -48,69 +48,64 @@ namespace MainCore.UI.Models.Input
         }
 
         public AccessId Id { get; set; }
+
+        [Reactive]
         private string _username;
+
+        [Reactive]
         private string _password;
+
+        [Reactive]
         private string _proxyHost;
+
+        [Reactive]
         private int _proxyPort;
+
+        [Reactive]
         private string _proxyUsername;
+
+        [Reactive]
         private string _proxyPassword;
+
+        [Reactive]
         private string _useragent;
+
+        [Reactive]
         private DateTime _lastUsed;
-
-        public string Username
-        {
-            get => _username;
-            set => this.RaiseAndSetIfChanged(ref _username, value);
-        }
-
-        public string Password
-        {
-            get => _password;
-            set => this.RaiseAndSetIfChanged(ref _password, value);
-        }
-
-        public string ProxyHost
-        {
-            get => _proxyHost;
-            set => this.RaiseAndSetIfChanged(ref _proxyHost, value);
-        }
-
-        public int ProxyPort
-        {
-            get => _proxyPort;
-            set => this.RaiseAndSetIfChanged(ref _proxyPort, value);
-        }
-
-        public string ProxyUsername
-        {
-            get => _proxyUsername;
-            set => this.RaiseAndSetIfChanged(ref _proxyUsername, value);
-        }
-
-        public string ProxyPassword
-        {
-            get => _proxyPassword;
-            set => this.RaiseAndSetIfChanged(ref _proxyPassword, value);
-        }
-
-        public string Useragent
-        {
-            get => _useragent;
-            set => this.RaiseAndSetIfChanged(ref _useragent, value);
-        }
-
-        public DateTime LastUsed
-        {
-            get => _lastUsed;
-            set => this.RaiseAndSetIfChanged(ref _lastUsed, value);
-        }
     }
 
-    [Mapper]
-    public static partial class AccessInputMapper
+    public static class AccessInputExtensions
     {
-        public static partial AccessDto ToDto(this AccessInput input);
+        public static AccessInput ToInput(this AccessDto dto)
+        {
+            return new AccessInput()
+            {
+                Id = dto.Id,
+                Username = dto.Username,
+                Password = dto.Password,
+                ProxyHost = dto.ProxyHost,
+                ProxyPort = dto.ProxyPort,
+                ProxyUsername = dto.ProxyUsername,
+                ProxyPassword = dto.ProxyPassword,
+                Useragent = dto.Useragent,
+                LastUsed = dto.LastUsed,
+            };
+        }
 
-        public static partial AccessInput ToInput(this AccessDto dto);
+        public static AccessDto ToDto(this AccessInput input)
+        {
+            return new AccessDto()
+            {
+                Id = input.Id,
+                Username = input.Username,
+                Password = input.Password,
+                ProxyHost = input.ProxyHost,
+                ProxyPort = input.ProxyPort,
+                ProxyUsername = input.ProxyUsername,
+                ProxyPassword = input.ProxyPassword,
+                Useragent = input.Useragent,
+                LastUsed = input.LastUsed,
+            };
+        }
     }
 }

@@ -4,12 +4,12 @@ using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
-using System.Reactive.Linq;
+using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
     [RegisterSingleton<AddAccountViewModel>]
-    public class AddAccountViewModel : TabViewModelBase
+    public partial class AddAccountViewModel : TabViewModelBase
     {
         public AccountInput AccountInput { get; } = new();
         public AccessInput AccessInput { get; } = new();
@@ -17,34 +17,25 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly IValidator<AccessInput> _accessInputValidator;
         private readonly IDialogService _dialogService;
 
-        public ReactiveCommand<Unit, Unit> AddAccess { get; }
-        public ReactiveCommand<Unit, Unit> EditAccess { get; }
-        public ReactiveCommand<Unit, Unit> DeleteAccess { get; }
-        public ReactiveCommand<Unit, Unit> AddAccount { get; }
-
         public AddAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService)
         {
             _accessInputValidator = accessInputValidator;
             _dialogService = dialogService;
 
-            AddAccess = ReactiveCommand.CreateFromTask(AddAccessHandler);
-            EditAccess = ReactiveCommand.CreateFromTask(EditAccessHandler);
-            DeleteAccess = ReactiveCommand.Create(DeleteAccessHandler);
-            AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler);
-
             this.WhenAnyValue(vm => vm.SelectedAccess)
                 .WhereNotNull()
                 .Subscribe(x => x.CopyTo(AccessInput));
 
-            DeleteAccess.Subscribe(x => SelectedAccess = null);
-            AddAccount.Subscribe(x =>
+            DeleteAccessCommand.Subscribe(x => SelectedAccess = null);
+            AddAccountCommand.Subscribe(x =>
             {
                 AccountInput.Clear();
                 AccessInput.Clear();
             });
         }
 
-        private async Task AddAccessHandler()
+        [ReactiveCommand]
+        private async Task AddAccess()
         {
             var result = _accessInputValidator.Validate(AccessInput);
 
@@ -62,7 +53,8 @@ namespace MainCore.UI.ViewModels.Tabs
             AccountInput.Accesses.Add(AccessInput.Clone());
         }
 
-        private async Task EditAccessHandler()
+        [ReactiveCommand]
+        private async Task EditAccess()
         {
             var result = _accessInputValidator.Validate(AccessInput);
 
@@ -75,23 +67,20 @@ namespace MainCore.UI.ViewModels.Tabs
             AccessInput.CopyTo(SelectedAccess);
         }
 
-        private void DeleteAccessHandler()
+        [ReactiveCommand]
+        private void DeleteAccess()
         {
             AccountInput.Accesses.Remove(SelectedAccess);
         }
 
-        private async Task AddAccountHandler()
+        [ReactiveCommand]
+        private async Task AddAccount()
         {
             var addAccountCommand = Locator.Current.GetService<AddAccountCommand>();
             await addAccountCommand.Execute(AccountInput, default);
         }
 
+        [Reactive]
         private AccessInput _selectedAccess;
-
-        public AccessInput SelectedAccess
-        {
-            get => _selectedAccess;
-            set => this.RaiseAndSetIfChanged(ref _selectedAccess, value);
-        }
     }
 }

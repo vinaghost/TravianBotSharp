@@ -7,14 +7,13 @@ using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
 using System.Drawing;
-using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
     [RegisterSingleton<FarmingViewModel>]
     public class FarmingViewModel : AccountTabViewModelBase
     {
-        public FarmListSettingInput FarmListSettingInput { get; } = new();
+        public AccountSettingInput AccountSettingInput { get; } = new();
         public ListBoxItemViewModel FarmLists { get; } = new();
 
         private readonly IMediator _mediator;
@@ -64,7 +63,7 @@ namespace MainCore.UI.ViewModels.Tabs
                     ActiveText = _activeTexts[color];
                 }
             });
-            LoadSetting.Subscribe(FarmListSettingInput.Set);
+            LoadSetting.Subscribe(AccountSettingInput.Set);
             ActiveFarmList.Subscribe(x =>
             {
                 var color = FarmLists.SelectedItem?.Color ?? Color.Black;
@@ -128,7 +127,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private async Task SaveHandler()
         {
             var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
-            await saveSettingCommand.Execute(AccountId, FarmListSettingInput, CancellationToken.None);
+            await saveSettingCommand.Execute(AccountId, AccountSettingInput, CancellationToken.None);
         }
 
         private async Task ActiveFarmListHandler()

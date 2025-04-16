@@ -1,8 +1,9 @@
 ﻿using System.Net;
+using System.Text.RegularExpressions;
 
 namespace MainCore.Common.Extensions
 {
-    public static class StringExtension
+    public static partial class StringExtension
     {
         public static TimeSpan ToDuration(this string value)
         {
@@ -46,6 +47,17 @@ namespace MainCore.Common.Extensions
             var normValue = value.Normalized();
             if (string.IsNullOrEmpty(normValue)) return -1;
             return long.Parse(normValue);
+        }
+
+        [GeneratedRegex(@"[^a-zA-Z0-9\s]")]
+        private static partial Regex NonAlphanumericRegex();
+
+        public static string Sanitize(this string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return "";
+
+            return NonAlphanumericRegex().Replace(input, "").Replace(' ', '_');
         }
     }
 }

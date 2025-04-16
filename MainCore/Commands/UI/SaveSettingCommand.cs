@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
-using System.Reactive.Linq;
 
 namespace MainCore.Commands.UI
 {
@@ -10,19 +9,17 @@ namespace MainCore.Commands.UI
     {
         private readonly IValidator<VillageSettingInput> _villageSettingInputValidator;
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
-        private readonly IValidator<FarmListSettingInput> _farmListSettingInputValidator;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
 
-        public SaveSettingCommand(IValidator<AccountSettingInput> accountsettingInputValidator, IDialogService dialogService, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, IValidator<VillageSettingInput> villageSettingInputValidator, IValidator<FarmListSettingInput> farmListSettingInputValidator)
+        public SaveSettingCommand(IValidator<AccountSettingInput> accountsettingInputValidator, IDialogService dialogService, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, IValidator<VillageSettingInput> villageSettingInputValidator)
         {
             _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;
             _mediator = mediator;
             _contextFactory = contextFactory;
             _villageSettingInputValidator = villageSettingInputValidator;
-            _farmListSettingInputValidator = farmListSettingInputValidator;
         }
 
         public async Task Execute(AccountId accountId, AccountSettingInput accountSettingInput, CancellationToken cancellationToken)
@@ -38,22 +35,6 @@ namespace MainCore.Commands.UI
             Execute(accountId, settings);
 
             await _mediator.Publish(new AccountSettingUpdated(accountId), cancellationToken);
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings saved"));
-        }
-
-        public async Task Execute(AccountId accountId, FarmListSettingInput farmListSettingInput, CancellationToken cancellationToken)
-        {
-            var result = await _farmListSettingInputValidator.ValidateAsync(farmListSettingInput);
-            if (!result.IsValid)
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
-                return;
-            }
-
-            var settings = farmListSettingInput.Get();
-            Execute(accountId, settings);
-
-            await _mediator.Publish(new AccountSettingUpdated(accountId));
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings saved"));
         }
 

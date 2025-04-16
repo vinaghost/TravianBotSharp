@@ -1,10 +1,11 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.Models.Input
 {
-    public class AccountSettingInput : ViewModelBase
+    public partial class AccountSettingInput : ViewModelBase
     {
         public void Set(Dictionary<AccountSettingEnums, int> settings)
         {
@@ -16,6 +17,8 @@ namespace MainCore.UI.Models.Input
             EnableAutoLoadVillage = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoLoadVillageBuilding) == 1;
             HeadlessChrome = settings.GetValueOrDefault(AccountSettingEnums.HeadlessChrome) == 1;
             EnableAutoStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoStartAdventure) == 1;
+            FarmInterval.Set(settings.GetValueOrDefault(AccountSettingEnums.FarmIntervalMin), settings.GetValueOrDefault(AccountSettingEnums.FarmIntervalMax));
+            UseStartAllButton = settings.GetValueOrDefault(AccountSettingEnums.UseStartAllButton) == 1;
         }
 
         public Dictionary<AccountSettingEnums, int> Get()
@@ -28,18 +31,28 @@ namespace MainCore.UI.Models.Input
             var (sleepTimeMin, sleepTimeMax) = SleepTime.Get();
             var headlessChrome = HeadlessChrome ? 1 : 0;
             var autoStartAdventure = EnableAutoStartAdventure ? 1 : 0;
+
+            var (farmIntervalMin, farmIntervalMax) = FarmInterval.Get();
+            var useStartAllButton = UseStartAllButton ? 1 : 0;
+
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
                 { AccountSettingEnums.ClickDelayMin, clickDelayMin },
                 { AccountSettingEnums.ClickDelayMax, clickDelayMax },
                 { AccountSettingEnums.TaskDelayMin, taskDelayMin },
                 { AccountSettingEnums.TaskDelayMax, taskDelayMax },
+                { AccountSettingEnums.EnableAutoLoadVillageBuilding, isAutoLoadVillage },
+
+                { AccountSettingEnums.FarmIntervalMin, farmIntervalMin },
+                { AccountSettingEnums.FarmIntervalMax, farmIntervalMax },
+                { AccountSettingEnums.UseStartAllButton, useStartAllButton },
+
+                { AccountSettingEnums.Tribe, tribe },
                 { AccountSettingEnums.WorkTimeMax, workTimeMax },
                 { AccountSettingEnums.WorkTimeMin, workTimeMin },
                 { AccountSettingEnums.SleepTimeMax, sleepTimeMax },
                 { AccountSettingEnums.SleepTimeMin, sleepTimeMin },
-                { AccountSettingEnums.EnableAutoLoadVillageBuilding, isAutoLoadVillage },
-                { AccountSettingEnums.Tribe, tribe },
+
                 { AccountSettingEnums.HeadlessChrome, headlessChrome },
                 { AccountSettingEnums.EnableAutoStartAdventure, autoStartAdventure },
             };
@@ -52,29 +65,18 @@ namespace MainCore.UI.Models.Input
 
         public RangeInputViewModel WorkTime { get; } = new();
         public RangeInputViewModel SleepTime { get; } = new();
+        public RangeInputViewModel FarmInterval { get; } = new();
 
+        [Reactive]
         private bool _enableAutoLoadVillage;
 
-        public bool EnableAutoLoadVillage
-        {
-            get => _enableAutoLoadVillage;
-            set => this.RaiseAndSetIfChanged(ref _enableAutoLoadVillage, value);
-        }
-
+        [Reactive]
         private bool _headlessChrome;
 
-        public bool HeadlessChrome
-        {
-            get => _headlessChrome;
-            set => this.RaiseAndSetIfChanged(ref _headlessChrome, value);
-        }
-
+        [Reactive]
         private bool _enableAutoStartAdventure;
 
-        public bool EnableAutoStartAdventure
-        {
-            get => _enableAutoStartAdventure;
-            set => this.RaiseAndSetIfChanged(ref _enableAutoStartAdventure, value);
-        }
+        [Reactive]
+        private bool _useStartAllButton;
     }
 }

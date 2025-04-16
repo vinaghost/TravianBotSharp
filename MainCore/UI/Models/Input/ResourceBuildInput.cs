@@ -1,12 +1,12 @@
 ﻿using Humanizer;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 using System.Collections.ObjectModel;
 
 namespace MainCore.UI.Models.Input
 {
-    public class ResourceBuildInput : ViewModelBase
+    public partial class ResourceBuildInput : ViewModelBase
     {
         public ResourceBuildInput()
         {
@@ -26,20 +26,10 @@ namespace MainCore.UI.Models.Input
             new ComboBoxItem<ResourcePlanEnums>(ResourcePlanEnums.ExcludeCrop, ResourcePlanEnums.ExcludeCrop.Humanize()),
         };
 
+        [Reactive]
         private ComboBoxItem<ResourcePlanEnums> _selectedPlan;
 
-        public ComboBoxItem<ResourcePlanEnums> SelectedPlan
-        {
-            get => _selectedPlan;
-            set => this.RaiseAndSetIfChanged(ref _selectedPlan, value);
-        }
-
+        [Reactive]
         private int _level;
-
-        public int Level
-        {
-            get => _level;
-            set => this.RaiseAndSetIfChanged(ref _level, value);
-        }
     }
 }

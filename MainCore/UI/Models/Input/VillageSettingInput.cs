@@ -1,19 +1,30 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
-using System.Reactive.Linq;
+using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.Models.Input
 {
-    public class VillageSettingInput : ViewModelBase
+    public partial class VillageSettingInput : ViewModelBase
     {
+        [Reactive]
         private bool _useHeroResourceForBuilding;
+
+        [Reactive]
         private bool _applyRomanQueueLogicWhenBuilding;
+
+        [Reactive]
         private bool _useSpecialUpgrade;
+
+        [Reactive]
         private bool _completeImmediately;
+
         public TribeSelectorViewModel Tribe { get; } = new();
 
+        [Reactive]
         private bool _trainTroopEnable;
+
+        [Reactive]
         private bool _trainWhenLowResource;
 
         public TroopSelectorViewModel BarrackTroop { get; } = new();
@@ -29,22 +40,25 @@ namespace MainCore.UI.Models.Input
         public RangeInputViewModel GreatStableAmount { get; } = new();
         public RangeInputViewModel WorkshopAmount { get; } = new();
 
+        [Reactive]
         private bool _autoNPCEnable;
+
+        [Reactive]
         private bool _autoNPCOverflow;
+
         public AmountInputViewModel AutoNPCGranaryPercent { get; } = new();
         public ResourceInputViewModel AutoNPCRatio { get; } = new();
 
+        [Reactive]
         private bool _autoRefreshEnable;
+
         public RangeInputViewModel AutoRefreshTime { get; } = new();
+
+        [Reactive]
         private bool _autoClaimQuestEnable;
 
+        [Reactive]
         private int _completeImmediatelyTime;
-
-        public int CompleteImmediatelyTime
-        {
-            get => _completeImmediatelyTime;
-            set => this.RaiseAndSetIfChanged(ref _completeImmediatelyTime, value);
-        }
 
         public void Set(Dictionary<VillageSettingEnums, int> settings)
         {
@@ -193,66 +207,6 @@ namespace MainCore.UI.Models.Input
                     GreatStableTroop.ChangeTribe(BuildingEnums.GreatStable, tribe);
                     WorkshopTroop.ChangeTribe(BuildingEnums.Workshop, tribe);
                 });
-        }
-
-        public bool UseHeroResourceForBuilding
-        {
-            get => _useHeroResourceForBuilding;
-            set => this.RaiseAndSetIfChanged(ref _useHeroResourceForBuilding, value);
-        }
-
-        public bool CompleteImmediately
-        {
-            get => _completeImmediately;
-            set => this.RaiseAndSetIfChanged(ref _completeImmediately, value);
-        }
-
-        public bool ApplyRomanQueueLogicWhenBuilding
-        {
-            get => _applyRomanQueueLogicWhenBuilding;
-            set => this.RaiseAndSetIfChanged(ref _applyRomanQueueLogicWhenBuilding, value);
-        }
-
-        public bool UseSpecialUpgrade
-        {
-            get => _useSpecialUpgrade;
-            set => this.RaiseAndSetIfChanged(ref _useSpecialUpgrade, value);
-        }
-
-        public bool TrainTroopEnable
-        {
-            get => _trainTroopEnable;
-            set => this.RaiseAndSetIfChanged(ref _trainTroopEnable, value);
-        }
-
-        public bool TrainWhenLowResource
-        {
-            get => _trainWhenLowResource;
-            set => this.RaiseAndSetIfChanged(ref _trainWhenLowResource, value);
-        }
-
-        public bool AutoNPCEnable
-        {
-            get => _autoNPCEnable;
-            set => this.RaiseAndSetIfChanged(ref _autoNPCEnable, value);
-        }
-
-        public bool AutoNPCOverflow
-        {
-            get => _autoNPCOverflow;
-            set => this.RaiseAndSetIfChanged(ref _autoNPCOverflow, value);
-        }
-
-        public bool AutoRefreshEnable
-        {
-            get => _autoRefreshEnable;
-            set => this.RaiseAndSetIfChanged(ref _autoRefreshEnable, value);
-        }
-
-        public bool AutoClaimQuestEnable
-        {
-            get => _autoClaimQuestEnable;
-            set => this.RaiseAndSetIfChanged(ref _autoClaimQuestEnable, value);
         }
     }
 }

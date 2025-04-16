@@ -1,16 +1,20 @@
 ﻿using DynamicData;
 using ReactiveUI;
-using Riok.Mapperly.Abstractions;
+using ReactiveUI.SourceGenerators;
 using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
 
 namespace MainCore.UI.Models.Input
 {
-    public class AccountInput : ReactiveObject
+    public partial class AccountInput : ReactiveObject
     {
         public AccountId Id { get; set; }
+
+        [Reactive]
         private string _username;
+
+        [Reactive]
         private string _server;
+
         public ObservableCollection<AccessInput> Accesses { get; } = new();
 
         public void SetAccesses(IEnumerable<AccessInput> accesses)
@@ -25,46 +29,31 @@ namespace MainCore.UI.Models.Input
             Username = "";
             Accesses.Clear();
         }
-
-        public string Username
-        {
-            get => _username;
-            set => this.RaiseAndSetIfChanged(ref _username, value);
-        }
-
-        public string Server
-        {
-            get => _server;
-            set => this.RaiseAndSetIfChanged(ref _server, value);
-        }
     }
 
-    [Mapper]
-    public static partial class AccountInputMapper
+    public static partial class AccountInputExtension
     {
+        public static AccountInput ToInput(this AccountDto dto)
+        {
+            var input = new AccountInput
+            {
+                Id = dto.Id,
+                Username = dto.Username,
+                Server = dto.Server,
+            };
+            input.SetAccesses(dto.Accesses.Select(a => a.ToInput()));
+            return input;
+        }
+
         public static AccountDto ToDto(this AccountInput input)
         {
-            input.Username = Regex.Replace(input.Username, @"[^a-zA-Z0-9\s]", "").Replace(' ', '_');
-
-            var dto = input.MapToDto();
-
-            Uri.TryCreate(input.Server, UriKind.Absolute, out var url);
-            var host = url.GetLeftPart(UriPartial.Authority);
-            dto.Server = host;
-            return dto;
+            return new AccountDto
+            {
+                Id = input.Id,
+                Username = input.Username.Sanitize(),
+                Server = input.Server,
+                Accesses = input.Accesses.Select(a => a.ToDto()).ToList(),
+            };
         }
-
-        [MapperIgnoreTarget(nameof(AccountInput.Server))]
-        private static partial AccountDto MapToDto(this AccountInput input);
-
-        public static void To(this AccountDto account, AccountInput input)
-        {
-            account.MapTo(input);
-            input.Accesses.Clear();
-            input.Accesses.AddRange(account.Accesses.Select(x => x.ToInput()));
-        }
-
-        [MapperIgnoreTarget(nameof(AccountInput.Accesses))]
-        private static partial void MapTo(this AccountDto account, AccountInput input);
     }
 }
