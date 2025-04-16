@@ -465,14 +465,6 @@
         "resolved": "1.1.39",
         "contentHash": "8PZKqw9QOcu42xk8puY4P1+EXHL9YGOR9b7qhaYx5cILHul456H073tj99vyPcCt0W0781T9RwHqkx507ZyUpQ=="
       },
-      "OpenQA.Selenium.Chrome.ChromeDriverExtensions": {
-        "type": "Transitive",
-        "resolved": "1.2.0",
-        "contentHash": "z5/MAdjFlHcECXN4sxS356Hul5iJD1vHznAwINo9YR3j+PXVU2PjgmkLEB6zvRLxzouL8qfNBioSWkxfvlsbMg==",
-        "dependencies": {
-          "Selenium.WebDriver": "3.141.0"
-        }
-      },
       "Polly": {
         "type": "Transitive",
         "resolved": "8.4.1",
@@ -655,7 +647,6 @@
           "MediatR": "[12.4.1, )",
           "Microsoft.EntityFrameworkCore.Sqlite": "[8.0.8, )",
           "Microsoft.Extensions.Hosting": "[8.0.0, )",
-          "OpenQA.Selenium.Chrome.ChromeDriverExtensions": "[1.2.0, )",
           "Polly": "[8.4.1, )",
           "ReactiveUI": "[20.1.1, )",
           "Riok.Mapperly": "[3.6.0, )",
