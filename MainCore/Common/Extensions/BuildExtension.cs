@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-
-namespace MainCore.Common.Extensions
+﻿namespace MainCore.Common.Extensions
 {
     public struct PrerequisiteBuilding
     {
@@ -229,16 +227,16 @@ namespace MainCore.Common.Extensions
             return buildingInt < 5 && buildingInt > 0;
         }
 
-        public static Color GetColor(this BuildingEnums building)
+        public static SplatColor GetColor(this BuildingEnums building)
         {
             return building switch
             {
-                BuildingEnums.Site => Color.White,
-                BuildingEnums.Woodcutter => Color.Lime,
-                BuildingEnums.ClayPit => Color.Orange,
-                BuildingEnums.IronMine => Color.LightGray,
-                BuildingEnums.Cropland => Color.Yellow,
-                _ => Color.LightCyan,
+                BuildingEnums.Site => SplatColor.White,
+                BuildingEnums.Woodcutter => SplatColor.Lime,
+                BuildingEnums.ClayPit => SplatColor.Orange,
+                BuildingEnums.IronMine => SplatColor.LightGray,
+                BuildingEnums.Cropland => SplatColor.Yellow,
+                _ => SplatColor.LightCyan,
             };
         }
 

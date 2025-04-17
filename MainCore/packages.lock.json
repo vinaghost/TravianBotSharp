@@ -193,6 +193,15 @@
         "resolved": "15.3.1",
         "contentHash": "zyu98Mwp8gTi3MlS6EGtvcacmw5W/qA4/h/DVeZ28A1dR6mcM628ujHck6LK5SM6LwroR5LzBonWgeFtwo2Afg=="
       },
+      "Splat.Drawing": {
+        "type": "Direct",
+        "requested": "[15.3.1, )",
+        "resolved": "15.3.1",
+        "contentHash": "cnSYZ3/zRE0Kh14SqCEV6NtlkS1mOeUTSsgeREivLSdWtHdjWoNj+NyekaZ+fPQatFc+ACyTphFHC/8vMtQcmQ==",
+        "dependencies": {
+          "Splat": "15.3.1"
+        }
+      },
       "Splat.Microsoft.Extensions.DependencyInjection": {
         "type": "Direct",
         "requested": "[15.3.1, )",

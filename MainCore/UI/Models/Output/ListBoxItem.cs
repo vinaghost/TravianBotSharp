@@ -1,25 +1,16 @@
 ﻿using ReactiveUI;
-using System.Drawing;
+using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.Models.Output
 {
-    public class ListBoxItem : ReactiveObject
+    public partial class ListBoxItem : ReactiveObject
     {
         public int Id { get; set; }
+
+        [Reactive]
         private string _content;
 
-        public string Content
-        {
-            get => _content;
-            set => this.RaiseAndSetIfChanged(ref _content, value);
-        }
-
-        private Color _color = Color.Black;
-
-        public Color Color
-        {
-            get => _color;
-            set => this.RaiseAndSetIfChanged(ref _color, value);
-        }
+        [Reactive]
+        private SplatColor _color = SplatColor.Black;
     }
 }

@@ -7,7 +7,6 @@ using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
-using System.Drawing;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
@@ -23,11 +22,11 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        private static readonly Dictionary<Color, string> _activeTexts = new()
+        private static readonly Dictionary<SplatColor, string> _activeTexts = new()
         {
-            { Color.Green , "Deactive" },
-            { Color.Red , "Active" },
-            { Color.Black , "No farmlist selected" },
+            { SplatColor.Green , "Deactive" },
+            { SplatColor.Red , "Active" },
+            { SplatColor.Black , "No farmlist selected" },
         };
 
         public FarmingViewModel(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
@@ -42,14 +41,14 @@ namespace MainCore.UI.ViewModels.Tabs
                 FarmLists.Load(items);
                 if (items.Count > 0)
                 {
-                    var color = FarmLists.SelectedItem?.Color ?? Color.Black;
+                    var color = FarmLists.SelectedItem?.Color ?? SplatColor.Black;
                     ActiveText = _activeTexts[color];
                 }
             });
             LoadSettingCommand.Subscribe(AccountSettingInput.Set);
             ActiveFarmListCommand.Subscribe(x =>
             {
-                var color = FarmLists.SelectedItem?.Color ?? Color.Black;
+                var color = FarmLists.SelectedItem?.Color ?? SplatColor.Black;
                 ActiveText = _activeTexts[color];
             });
 
@@ -150,7 +149,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 .Select(x => new ListBoxItem()
                 {
                     Id = x.Id,
-                    Color = x.IsActive ? Color.Green : Color.Red,
+                    Color = x.IsActive ? SplatColor.Green : SplatColor.Red,
                     Content = x.Name,
                 })
                 .ToList();

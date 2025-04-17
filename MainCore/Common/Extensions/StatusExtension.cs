@@ -1,20 +1,18 @@
-﻿using System.Drawing;
-
-namespace MainCore.Common.Extensions
+﻿namespace MainCore.Common.Extensions
 {
     public static class StatusExtension
     {
-        public static Color GetColor(this StatusEnums status)
+        public static SplatColor GetColor(this StatusEnums status)
         {
             return status switch
             {
-                StatusEnums.Online => Color.Green,
-                StatusEnums.Starting => Color.Orange,
-                StatusEnums.Pausing => Color.Orange,
-                StatusEnums.Stopping => Color.Orange,
-                StatusEnums.Offline => Color.Black,
-                StatusEnums.Paused => Color.Red,
-                _ => Color.Black,
+                StatusEnums.Online => SplatColor.Green,
+                StatusEnums.Starting => SplatColor.Orange,
+                StatusEnums.Pausing => SplatColor.Orange,
+                StatusEnums.Stopping => SplatColor.Orange,
+                StatusEnums.Offline => SplatColor.Black,
+                StatusEnums.Paused => SplatColor.Red,
+                _ => SplatColor.Black,
             };
         }
     }
