@@ -2,7 +2,7 @@
 
 namespace MainCore.Notification.Handlers.MainWindowLoad
 {
-    public class ChromeDriverInstall : INotificationHandler<MainWindowLoaded>
+    public class ChromeDriverInstall : INotificationHandler<MainWindowLoaded>, IEnableLogger
     {
         private readonly IChromeDriverInstaller _chromeDriverInstaller;
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
@@ -16,7 +16,9 @@ namespace MainCore.Notification.Handlers.MainWindowLoad
         public async Task Handle(MainWindowLoaded notification, CancellationToken cancellationToken)
         {
             await _waitingOverlayViewModel.ChangeMessage("installing chrome driver");
+            this.Log().Info("Installing chrome driver");
             await Task.Run(_chromeDriverInstaller.Install, cancellationToken);
+            this.Log().Info("Chrome driver installed");
         }
     }
 }

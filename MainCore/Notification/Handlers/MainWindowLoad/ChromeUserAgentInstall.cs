@@ -2,7 +2,7 @@
 
 namespace MainCore.Notification.Handlers.MainWindowLoad
 {
-    public class ChromeUserAgentInstall : INotificationHandler<MainWindowLoaded>
+    public class ChromeUserAgentInstall : INotificationHandler<MainWindowLoaded>, IEnableLogger
     {
         private readonly IUseragentManager _useragentManager;
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
@@ -16,7 +16,9 @@ namespace MainCore.Notification.Handlers.MainWindowLoad
         public async Task Handle(MainWindowLoaded notification, CancellationToken cancellationToken)
         {
             await _waitingOverlayViewModel.ChangeMessage("loading chrome useragent");
+            this.Log().Info("Loading chrome useragent");
             await Task.Run(_useragentManager.Load, cancellationToken);
+            this.Log().Info("Chrome useragent loaded");
         }
     }
 }
