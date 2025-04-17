@@ -11,25 +11,12 @@ namespace MainCore.Services
         private readonly Dictionary<AccountId, ILogger> _loggers = [];
 
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IServiceProvider _serviceProvider;
         private readonly LogSink _logSink;
 
-        public LogService(IDbContextFactory<AppDbContext> contextFactory, IServiceProvider serviceProvider, ILogEventSink logSink)
+        public LogService(IDbContextFactory<AppDbContext> contextFactory, ILogEventSink logSink)
         {
             _contextFactory = contextFactory;
-            _serviceProvider = serviceProvider;
             _logSink = logSink as LogSink;
-        }
-
-        public void Load()
-        {
-            Log.Logger = new LoggerConfiguration()
-              .ReadFrom.Services(_serviceProvider)
-              .WriteTo.Map("Account", "Other", (acc, wt) =>
-                    wt.File($"./logs/log-{acc}-.txt",
-                            rollingInterval: RollingInterval.Day,
-                            outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}"))
-              .CreateLogger();
         }
 
         public void Shutdown()

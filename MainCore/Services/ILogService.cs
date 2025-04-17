@@ -8,8 +8,6 @@ namespace MainCore.Services
 
         ILogger GetLogger(AccountId accountId);
 
-        void Load();
-
         void Shutdown();
     }
 }
