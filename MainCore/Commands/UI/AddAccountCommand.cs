@@ -3,7 +3,6 @@ using MainCore.Commands.Abstract;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.UserControls;
-using System.Reactive.Linq;
 
 namespace MainCore.Commands.UI
 {

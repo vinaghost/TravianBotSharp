@@ -157,13 +157,8 @@ namespace MainCore.UI.ViewModels.Tabs
             return items;
         }
 
+        [Reactive]
         private string _activeText = "No farmlist selected";
-
-        public string ActiveText
-        {
-            get => _activeText;
-            set => this.RaiseAndSetIfChanged(ref _activeText, value);
-        }
 
         private int CountActive(AccountId accountId)
         {

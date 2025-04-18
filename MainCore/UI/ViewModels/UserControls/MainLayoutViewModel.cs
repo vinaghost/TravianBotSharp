@@ -4,14 +4,14 @@ using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 using Serilog;
-using System.Reactive.Linq;
 using System.Reflection;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
     [RegisterSingleton<MainLayoutViewModel>]
-    public class MainLayoutViewModel : ViewModelBase
+    public partial class MainLayoutViewModel : ViewModelBase
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
@@ -20,26 +20,15 @@ namespace MainCore.UI.ViewModels.UserControls
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
+        private IObservable<bool> _canExecute;
+
         public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, ITaskManager taskManager, IDialogService dialogService)
         {
             _accountTabStore = accountTabStore;
             _taskManager = taskManager;
             _dialogService = dialogService;
 
-            var isEnable = this.WhenAnyValue(x => x.Accounts.IsEnable);
-            AddAccount = ReactiveCommand.Create(AddAccountHandler, isEnable);
-            AddAccounts = ReactiveCommand.Create(AddAccountsHandler, isEnable);
-            DeleteAccount = ReactiveCommand.CreateFromTask(DeleteAccountHandler, isEnable);
-
-            Login = ReactiveCommand.CreateFromTask(LoginHandler, isEnable);
-            Logout = ReactiveCommand.CreateFromTask(LogoutTask, isEnable);
-            Pause = ReactiveCommand.CreateFromTask(PauseTask, isEnable);
-            Restart = ReactiveCommand.CreateFromTask(RestartTask, isEnable);
-
-            LoadVersion = ReactiveCommand.Create(LoadVersionHandler);
-            LoadAccount = ReactiveCommand.Create(LoadAccountHandler);
-            GetAccount = ReactiveCommand.Create<AccountId, ListBoxItem>(GetAccountHandler);
-            GetStatus = ReactiveCommand.Create<AccountId, StatusEnums>(GetStatusHandler);
+            _canExecute = this.WhenAnyValue(x => x.Accounts.IsEnable);
 
             var accountObservable = this.WhenAnyValue(x => x.Accounts.SelectedItem);
             accountObservable.BindTo(selectedItemStore, vm => vm.Account);
@@ -55,45 +44,48 @@ namespace MainCore.UI.ViewModels.UserControls
                 .WhereNotNull()
                 .Select(x => new AccountId(x.Id))
                 .ObserveOn(RxApp.TaskpoolScheduler)
-                .InvokeCommand(GetStatus);
+                .InvokeCommand(GetStatusCommand);
 
-            LoadVersion
+            _versionHelper = LoadVersionCommand
                 .Do(version => Log.Information("===============> Current version: {Version} <===============", version))
-                .ToProperty(this, x => x.Version, out _version);
+                .ToProperty(this, x => x.Version);
 
-            LoadAccount.Subscribe(Accounts.Load);
+            LoadAccountCommand.Subscribe(Accounts.Load);
 
-            GetStatus.Subscribe(SetPauseText);
+            GetStatusCommand.Subscribe(SetPauseText);
 
             Observable
                 .Merge(
-                    Login.IsExecuting.Select(x => !x),
-                    Logout.IsExecuting.Select(x => !x),
-                    Pause.IsExecuting.Select(x => !x),
-                    Restart.IsExecuting.Select(x => !x)
+                    LoginCommand.IsExecuting.Select(x => !x),
+                    LogoutCommand.IsExecuting.Select(x => !x),
+                    PauseCommand.IsExecuting.Select(x => !x),
+                    RestartCommand.IsExecuting.Select(x => !x)
                 )
                 .BindTo(Accounts, x => x.IsEnable);
         }
 
         public async Task Load()
         {
-            await LoadVersion.Execute();
-            await LoadAccount.Execute();
+            await LoadVersionCommand.Execute();
+            await LoadAccountCommand.Execute();
         }
 
-        private void AddAccountHandler()
+        [ReactiveCommand(CanExecute = nameof(_canExecute))]
+        private void AddAccount()
         {
             Accounts.SelectedItem = null;
             _accountTabStore.SetTabType(AccountTabType.AddAccount);
         }
 
-        private void AddAccountsHandler()
+        [ReactiveCommand(CanExecute = nameof(_canExecute))]
+        private void AddAccounts()
         {
             Accounts.SelectedItem = null;
             _accountTabStore.SetTabType(AccountTabType.AddAccounts);
         }
 
-        private async Task DeleteAccountHandler()
+        [ReactiveCommand(CanExecute = nameof(_canExecute))]
+        private async Task DeleteAccount()
         {
             if (!Accounts.IsSelected)
             {
@@ -109,7 +101,8 @@ namespace MainCore.UI.ViewModels.UserControls
             await deleteAccountCommand.Execute(accountId, CancellationToken.None);
         }
 
-        private async Task LoginHandler()
+        [ReactiveCommand(CanExecute = nameof(_canExecute))]
+        private async Task Login()
         {
             if (!Accounts.IsSelected)
             {
@@ -122,7 +115,8 @@ namespace MainCore.UI.ViewModels.UserControls
             await loginCommand.Execute(accountId, CancellationToken.None);
         }
 
-        private async Task LogoutTask()
+        [ReactiveCommand(CanExecute = nameof(_canExecute))]
+        private async Task Logout()
         {
             if (!Accounts.IsSelected)
             {
@@ -136,7 +130,8 @@ namespace MainCore.UI.ViewModels.UserControls
             await logoutCommand.Execute(accountId, CancellationToken.None);
         }
 
-        private async Task PauseTask()
+        [ReactiveCommand(CanExecute = nameof(_canExecute))]
+        private async Task Pause()
         {
             if (!Accounts.IsSelected)
             {
@@ -149,7 +144,8 @@ namespace MainCore.UI.ViewModels.UserControls
             await pauseCommand.Execute(accountId, CancellationToken.None);
         }
 
-        private async Task RestartTask()
+        [ReactiveCommand(CanExecute = nameof(_canExecute))]
+        private async Task Restart()
         {
             if (!Accounts.IsSelected)
             {
@@ -164,31 +160,35 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public async Task LoadStatus(AccountId accountId, StatusEnums status)
         {
-            GetAccount.Execute(accountId).Subscribe(account => account.Color = status.GetColor());
+            GetAccountCommand.Execute(accountId).Subscribe(account => account.Color = status.GetColor());
             if (accountId.Value != Accounts.SelectedItemId) return;
-            await GetStatus.Execute(accountId);
+            await GetStatusCommand.Execute(accountId);
         }
 
-        private StatusEnums GetStatusHandler(AccountId accountId)
+        [ReactiveCommand]
+        private StatusEnums GetStatus(AccountId accountId)
         {
             if (accountId == AccountId.Empty) return StatusEnums.Starting;
             return _taskManager.GetStatus(accountId);
         }
 
-        private static List<ListBoxItem> LoadAccountHandler()
+        [ReactiveCommand]
+        private static List<ListBoxItem> LoadAccount()
         {
             var getAccount = Locator.Current.GetService<GetAccount>();
             var items = getAccount.Items();
             return items;
         }
 
-        private ListBoxItem GetAccountHandler(AccountId accountId)
+        [ReactiveCommand]
+        private ListBoxItem GetAccount(AccountId accountId)
         {
             var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
             return account;
         }
 
-        private static string LoadVersionHandler()
+        [ReactiveCommand]
+        private static string LoadVersion()
         {
             var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
             var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
@@ -219,27 +219,10 @@ namespace MainCore.UI.ViewModels.UserControls
             }
         }
 
-        private readonly ObservableAsPropertyHelper<string> _version;
-        public string Version => _version.Value;
+        [ObservableAsProperty]
+        private string _version;
 
+        [Reactive]
         private string _pauseText = "[~~!~~]";
-
-        public string PauseText
-        {
-            get => _pauseText;
-            set => this.RaiseAndSetIfChanged(ref _pauseText, value);
-        }
-
-        public ReactiveCommand<Unit, Unit> AddAccount { get; }
-        public ReactiveCommand<Unit, Unit> AddAccounts { get; }
-        public ReactiveCommand<Unit, Unit> DeleteAccount { get; }
-        public ReactiveCommand<Unit, Unit> Login { get; }
-        public ReactiveCommand<Unit, Unit> Logout { get; }
-        public ReactiveCommand<Unit, Unit> Pause { get; }
-        public ReactiveCommand<Unit, Unit> Restart { get; }
-        public ReactiveCommand<Unit, string> LoadVersion { get; }
-        public ReactiveCommand<Unit, List<ListBoxItem>> LoadAccount { get; }
-        public ReactiveCommand<AccountId, ListBoxItem> GetAccount { get; }
-        public ReactiveCommand<AccountId, StatusEnums> GetStatus { get; }
     }
 }

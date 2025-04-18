@@ -10,13 +10,9 @@ namespace MainCore.UI.ViewModels.Tabs
     public partial class AddAccountsViewModel : TabViewModelBase
     {
         public ObservableCollection<AccountDetailDto> Accounts { get; } = [];
-        private string _input;
 
-        public string Input
-        {
-            get => _input;
-            set => this.RaiseAndSetIfChanged(ref _input, value);
-        }
+        [Reactive]
+        private string _input;
 
         public AddAccountsViewModel()
         {

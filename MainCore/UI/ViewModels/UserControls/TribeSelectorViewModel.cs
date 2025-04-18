@@ -1,11 +1,11 @@
 ﻿using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 using System.Collections.ObjectModel;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
-    public class TribeSelectorViewModel : ViewModelBase
+    public partial class TribeSelectorViewModel : ViewModelBase
     {
         public TribeSelectorViewModel()
         {
@@ -30,12 +30,8 @@ namespace MainCore.UI.ViewModels.UserControls
         }
 
         public ObservableCollection<TribeItem> Items { get; }
-        private TribeItem _selectedItem;
 
-        public TribeItem SelectedItem
-        {
-            get => _selectedItem;
-            set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
-        }
+        [Reactive]
+        private TribeItem _selectedItem;
     }
 }

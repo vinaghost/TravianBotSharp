@@ -95,12 +95,7 @@ namespace MainCore.UI.ViewModels.Tabs
             AccessInput.Clear();
         }
 
+        [Reactive]
         private AccessInput _selectedAccess;
-
-        public AccessInput SelectedAccess
-        {
-            get => _selectedAccess;
-            set => this.RaiseAndSetIfChanged(ref _selectedAccess, value);
-        }
     }
 }
