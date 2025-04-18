@@ -1,4 +1,6 @@
-﻿using Serilog.Core;
+﻿using Serilog;
+using Serilog.Configuration;
+using Serilog.Core;
 using Serilog.Events;
 
 namespace MainCore.Services
@@ -38,6 +40,16 @@ namespace MainCore.Services
             }
 
             LogEmitted?.Invoke(accountId, logEvent);
+        }
+    }
+
+    public static class LogSinkExtensions
+    {
+        public static LoggerConfiguration LogSink(
+                  this LoggerSinkConfiguration loggerConfiguration,
+                  IFormatProvider formatProvider = null)
+        {
+            return loggerConfiguration.Sink(Locator.Current.GetService<ILogEventSink>());
         }
     }
 }

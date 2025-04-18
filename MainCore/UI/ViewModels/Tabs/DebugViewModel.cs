@@ -4,7 +4,7 @@ using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Formatting.Display;
+using Serilog.Templates;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
@@ -16,7 +16,7 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         private readonly LogSink _logSink;
         private readonly ITaskManager _taskManager;
-        private static readonly MessageTemplateTextFormatter _formatter = new("{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
+        private static readonly ExpressionTemplate _template = new("{@t:HH:mm:ss} [{@l:u3}] {@m}\n{@x}");
         private const string NotOpen = "Chrome didn't open yet";
 
         public ObservableCollection<TaskItem> Tasks { get; } = [];
@@ -89,7 +89,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             foreach (var log in logs)
             {
-                _formatter.Format(log, buffer);
+                _template.Format(log, buffer);
             }
             return buffer.ToString();
         }

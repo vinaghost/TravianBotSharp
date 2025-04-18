@@ -4,10 +4,7 @@ using MainCore.UI;
 using MainCore.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
-using Serilog;
-using Serilog.Templates;
 using Splat;
-using Splat.Serilog;
 using System;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -29,15 +26,6 @@ namespace WPFUI
         {
             Container = DependencyInjection.Setup();
             RxApp.DefaultExceptionHandler = Locator.Current.GetService<ObservableExceptionHandler>();
-            Log.Logger = new LoggerConfiguration()
-              .ReadFrom.Services(Container)
-              .WriteTo.Map("Account", "Other", (acc, wt) =>
-                  wt.File(new ExpressionTemplate("[{@t:HH:mm:ss} {@l:u3} {#if SourceContext is not null} ({SourceContext}){#end}] {@m}\n{@x}"),
-                        path: $"./logs/log-{acc}-.txt",
-                        rollingInterval: RollingInterval.Day))
-              .CreateLogger();
-
-            Locator.CurrentMutable.UseSerilogFullLogger();
 
             _mainWindow = new MainWindow()
             {

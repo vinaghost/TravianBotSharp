@@ -4,7 +4,10 @@ using MainCore.UI.Models.Validators;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ReactiveUI;
+using Serilog;
+using Serilog.Templates;
 using Splat.Microsoft.Extensions.DependencyInjection;
+using Splat.Serilog;
 
 namespace MainCore
 {
@@ -55,15 +58,30 @@ namespace MainCore
                    resolver.InitializeSplat();
                    resolver.InitializeReactiveUI();
 
-                   services
-                       .AddCoreServices();
+                   services.AddCoreServices();
+
+                   Log.Logger = new LoggerConfiguration()
+                        .Filter.ByExcluding("SourceContext like 'ReactiveUI.POCOObservableForProperty' and Contains(@m, 'WhenAny will only return a single value')")
+                        .WriteTo.Map("Account", "Other", (acc, wt) =>
+                        {
+                            wt.File(new ExpressionTemplate("[{@t:HH:mm:ss} {@l:u3}{#if SourceContext is not null} ({SourceContext}){#end}] {@m}\n{@x}"),
+                                path: $"./logs/log-{acc}-.txt",
+                                rollingInterval: RollingInterval.Day);
+                            wt.LogSink();
+                        })
+                        .CreateLogger();
+
+                   resolver.UseSerilogFullLogger();
                })
                .UseDefaultServiceProvider(config =>
                {
                    config.ValidateOnBuild = true;
+                   config.ValidateScopes = true;
                })
                .Build();
+
             var container = host.Services;
+
             container.UseMicrosoftDependencyResolver();
             return container;
         }

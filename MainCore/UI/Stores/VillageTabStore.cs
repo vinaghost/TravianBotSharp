@@ -1,17 +1,20 @@
 ﻿using MainCore.UI.Enums;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.Tabs.Villages;
-using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.Stores
 {
     [RegisterSingleton<VillageTabStore>]
-    public class VillageTabStore : ViewModelBase
+    public partial class VillageTabStore : ViewModelBase
     {
         private readonly bool[] _tabVisibility = new bool[2];
         private VillageTabType _currentTabType;
 
+        [Reactive]
         private bool _isNoVillageTabVisible = true;
+
+        [Reactive]
         private bool _isNormalTabVisible;
 
         private readonly NoVillageViewModel _noVillageViewModel;
@@ -54,18 +57,6 @@ namespace MainCore.UI.Stores
                 default:
                     break;
             }
-        }
-
-        public bool IsNoVillageTabVisible
-        {
-            get => _isNoVillageTabVisible;
-            set => this.RaiseAndSetIfChanged(ref _isNoVillageTabVisible, value);
-        }
-
-        public bool IsNormalTabVisible
-        {
-            get => _isNormalTabVisible;
-            set => this.RaiseAndSetIfChanged(ref _isNormalTabVisible, value);
         }
 
         public NoVillageViewModel NoVillageViewModel => _noVillageViewModel;

@@ -1,58 +1,49 @@
 ﻿using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
-using System.Reactive.Linq;
+using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.Stores
 {
     [RegisterSingleton<SelectedItemStore>]
-    public class SelectedItemStore : ViewModelBase
+    public partial class SelectedItemStore : ViewModelBase
     {
         public SelectedItemStore()
         {
             var accountObservable = this.WhenAnyValue(vm => vm.Account);
-            accountObservable
+
+            _isAccountSelectedHelper = accountObservable
                 .Select(x => x is not null)
-                .ToProperty(this, vm => vm.IsAccountSelected, out _isAccountSelected);
-            accountObservable
+                .ToProperty(this, vm => vm.IsAccountSelected);
+            _isAccountNotSelectedHelper = accountObservable
                 .Select(x => x is null)
-                .ToProperty(this, vm => vm.IsAccountNotSelected, out _isAccountNotSelected);
+                .ToProperty(this, vm => vm.IsAccountNotSelected);
 
             var villageObservable = this.WhenAnyValue(vm => vm.Village);
-            villageObservable
+            _isVillageSelectedHelper = villageObservable
                 .Select(x => x is not null)
-                .ToProperty(this, vm => vm.IsVillageSelected, out _isVillageSelected);
-            villageObservable
+                .ToProperty(this, vm => vm.IsVillageSelected);
+            _isVillageNotSelectedHelper = villageObservable
                 .Select(x => x is null)
-                .ToProperty(this, vm => vm.IsVillageNotSelected, out _isVillageNotSelected);
+                .ToProperty(this, vm => vm.IsVillageNotSelected);
         }
 
+        [Reactive]
         private ListBoxItem _account;
 
-        public ListBoxItem Account
-        {
-            get => _account;
-            set => this.RaiseAndSetIfChanged(ref _account, value);
-        }
-
-        private readonly ObservableAsPropertyHelper<bool> _isAccountSelected;
-        private readonly ObservableAsPropertyHelper<bool> _isAccountNotSelected;
-
-        public bool IsAccountSelected => _isAccountSelected.Value;
-        public bool IsAccountNotSelected => _isAccountNotSelected.Value;
-
+        [Reactive]
         private ListBoxItem _village;
 
-        public ListBoxItem Village
-        {
-            get => _village;
-            set => this.RaiseAndSetIfChanged(ref _village, value);
-        }
+        [ObservableAsProperty]
+        private bool _isAccountSelected;
 
-        private readonly ObservableAsPropertyHelper<bool> _isVillageSelected;
-        private readonly ObservableAsPropertyHelper<bool> _isVillageNotSelected;
+        [ObservableAsProperty]
+        private bool _isAccountNotSelected;
 
-        public bool IsVillageSelected => _isVillageSelected.Value;
-        public bool IsVillageNotSelected => _isVillageNotSelected.Value;
+        [ObservableAsProperty]
+        private bool _isVillageSelected;
+
+        [ObservableAsProperty]
+        private bool _isVillageNotSelected;
     }
 }
