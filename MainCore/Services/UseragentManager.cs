@@ -49,7 +49,7 @@ namespace MainCore.Services
             _userAgentList = modelLoaded.UserAgentList;
             _dateTime = modelLoaded.DateTime;
 
-            if (_dateTime < DateTime.Now || _userAgentList.Count < 1000)
+            if (_dateTime < DateTime.Now || _userAgentList.Count < 100)
             {
                 this.Log().Info("User agent file is outdated, updating.");
                 await Update();
