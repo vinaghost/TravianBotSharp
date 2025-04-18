@@ -1,9 +1,4 @@
 ﻿namespace MainCore.Notification.Message
 {
-    public class AccountLogout : ByAccountIdBase, INotification
-    {
-        public AccountLogout(AccountId accountId) : base(accountId)
-        {
-        }
-    }
+    public record AccountLogout(AccountId AccountId) : ByAccountIdBase(AccountId), INotification;
 }

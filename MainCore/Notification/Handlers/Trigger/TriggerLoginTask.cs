@@ -1,7 +1,21 @@
-﻿using MainCore.Tasks;
+﻿using Immediate.Handlers.Shared;
+using MainCore.Tasks;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
+    [Handler]
+    public static partial class LoginTrigger
+    {
+        private static async ValueTask HandleAsync(
+            AccountInit command,
+            ITaskManager taskManager,
+            CancellationToken cancellationToken
+        )
+        {
+            await taskManager.AddOrUpdate<LoginTask>(command.AccountId, first: true);
+        }
+    }
+
     public class TriggerLoginTask : INotificationHandler<AccountInit>, INotificationHandler<AccountLogout>
     {
         private readonly ITaskManager _taskManager;

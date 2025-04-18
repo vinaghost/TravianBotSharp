@@ -8,7 +8,6 @@ global using MainCore.Commands.Update;
 global using MainCore.Common.Enums;
 global using MainCore.Common.Errors;
 global using MainCore.Common.Extensions;
-global using MainCore.Common.MediatR;
 global using MainCore.DTO;
 global using MainCore.Entities;
 global using MainCore.Infrasturecture.Persistence;

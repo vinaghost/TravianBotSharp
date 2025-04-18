@@ -1,9 +1,4 @@
 ﻿namespace MainCore.Notification.Message
 {
-    public class CompleteImmediatelyMessage : ByAccountVillageIdBase, INotification
-    {
-        public CompleteImmediatelyMessage(AccountId accountId, VillageId villageId) : base(accountId, villageId)
-        {
-        }
-    }
+    public record CompleteImmediatelyMessage(AccountId AccountId, VillageId VillageId) : ByAccountVillageIdBase(AccountId, VillageId), INotification;
 }

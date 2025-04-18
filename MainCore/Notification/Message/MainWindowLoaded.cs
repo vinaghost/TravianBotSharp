@@ -1,6 +1,4 @@
 ﻿namespace MainCore.Notification.Message
 {
-    public class MainWindowLoaded : INotification
-    {
-    }
+    public record MainWindowLoaded() : INotification;
 }

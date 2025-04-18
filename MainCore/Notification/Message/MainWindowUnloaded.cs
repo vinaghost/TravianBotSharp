@@ -1,6 +1,4 @@
 ﻿namespace MainCore.Notification.Message
 {
-    public class MainWindowUnloaded : INotification
-    {
-    }
+    public record MainWindowUnloaded : INotification;
 }

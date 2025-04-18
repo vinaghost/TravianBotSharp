@@ -1,9 +1,4 @@
 ﻿namespace MainCore.Notification.Message
 {
-    public class QueueBuildingUpdated : ByAccountVillageIdBase, INotification
-    {
-        public QueueBuildingUpdated(AccountId accountId, VillageId villageId) : base(accountId, villageId)
-        {
-        }
-    }
+    public record QueueBuildingUpdated(AccountId AccountId, VillageId VillageId) : ByAccountVillageIdBase(AccountId, VillageId), INotification;
 }

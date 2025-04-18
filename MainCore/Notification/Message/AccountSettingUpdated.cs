@@ -1,9 +1,4 @@
 ﻿namespace MainCore.Notification.Message
 {
-    public class AccountSettingUpdated : ByAccountIdBase, INotification
-    {
-        public AccountSettingUpdated(AccountId accountId) : base(accountId)
-        {
-        }
-    }
+    public record AccountSettingUpdated(AccountId AccountId) : ByAccountIdBase(AccountId), INotification;
 }

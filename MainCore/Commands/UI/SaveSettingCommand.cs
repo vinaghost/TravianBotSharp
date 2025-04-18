@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using MainCore.Notification;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 
@@ -12,14 +13,16 @@ namespace MainCore.Commands.UI
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IDialogService _dialogService;
         private readonly IMediator _mediator;
+        private readonly Publisher _publisher;
 
-        public SaveSettingCommand(IValidator<AccountSettingInput> accountsettingInputValidator, IDialogService dialogService, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, IValidator<VillageSettingInput> villageSettingInputValidator)
+        public SaveSettingCommand(IValidator<AccountSettingInput> accountsettingInputValidator, IDialogService dialogService, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, IValidator<VillageSettingInput> villageSettingInputValidator, Publisher publisher)
         {
             _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;
             _mediator = mediator;
             _contextFactory = contextFactory;
             _villageSettingInputValidator = villageSettingInputValidator;
+            _publisher = publisher;
         }
 
         public async Task Execute(AccountId accountId, AccountSettingInput accountSettingInput, CancellationToken cancellationToken)
@@ -34,7 +37,7 @@ namespace MainCore.Commands.UI
             var settings = accountSettingInput.Get();
             Execute(accountId, settings);
 
-            await _mediator.Publish(new AccountSettingUpdated(accountId), cancellationToken);
+            await _publisher.Publish(new AccountSettingUpdated(accountId), cancellationToken);
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings saved"));
         }
 

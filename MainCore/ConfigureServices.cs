@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using MainCore.Notification;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Validators;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +33,10 @@ namespace MainCore
                 {
                     cfg.RegisterServicesFromAssemblyContaining<AppDbContext>();
                 });
+            services
+                .AddTransient(typeof(Publisher<>))
+                .AddMainCoreHandlers(ServiceLifetime.Transient);
+
             return services;
         }
 

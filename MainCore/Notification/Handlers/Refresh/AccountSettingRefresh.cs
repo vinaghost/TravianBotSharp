@@ -1,19 +1,18 @@
-﻿using MainCore.UI.ViewModels.Tabs;
+﻿using Immediate.Handlers.Shared;
+using MainCore.UI.ViewModels.Tabs;
 
 namespace MainCore.Notification.Handlers.Refresh
 {
-    public class AccountSettingRefresh : INotificationHandler<AccountSettingUpdated>
+    [Handler]
+    public static partial class AccountSettingRefreshTrigger
     {
-        private readonly AccountSettingViewModel _viewModel;
-
-        public AccountSettingRefresh(AccountSettingViewModel viewModel)
+        private static async ValueTask HandleAsync(
+            AccountSettingUpdated @event,
+            AccountSettingViewModel viewModel,
+            CancellationToken cancellationToken
+        )
         {
-            _viewModel = viewModel;
-        }
-
-        public async Task Handle(AccountSettingUpdated notification, CancellationToken cancellationToken)
-        {
-            await _viewModel.SettingRefresh(notification.AccountId);
+            await viewModel.SettingRefresh(@event.AccountId);
         }
     }
 }
