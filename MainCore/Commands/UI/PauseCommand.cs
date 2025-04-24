@@ -1,5 +1,4 @@
 ﻿using MainCore.UI.Models.Output;
-using System.Reactive.Linq;
 
 namespace MainCore.Commands.UI
 {
@@ -8,26 +7,29 @@ namespace MainCore.Commands.UI
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
+        private readonly ITimerManager _timeManager;
+        private readonly StopCurrentTask.Handler _stopCurrentTask;
 
-        public PauseCommand(ITaskManager taskManager, IDialogService dialogService)
+        public PauseCommand(ITaskManager taskManager, IDialogService dialogService, ITimerManager timeManager, StopCurrentTask.Handler stopCurrentTask)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
+            _timeManager = timeManager;
+            _stopCurrentTask = stopCurrentTask;
         }
 
         public async Task Execute(AccountId accountId, CancellationToken cancellationToken)
         {
-            var status = _taskManager.GetStatus(accountId);
+            var status = _timeManager.GetStatus(accountId);
             if (status == StatusEnums.Paused)
             {
-                await _taskManager.SetStatus(accountId, StatusEnums.Online);
+                await _timeManager.SetStatus(accountId, StatusEnums.Online);
                 return;
             }
 
             if (status == StatusEnums.Online)
             {
-                await _taskManager.StopCurrentTask(accountId);
-                await _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                await _stopCurrentTask.HandleAsync(new(accountId), cancellationToken);
                 return;
             }
 

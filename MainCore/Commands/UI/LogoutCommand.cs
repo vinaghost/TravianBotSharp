@@ -1,5 +1,4 @@
 ﻿using MainCore.UI.Models.Output;
-using System.Reactive.Linq;
 
 namespace MainCore.Commands.UI
 {
@@ -8,18 +7,20 @@ namespace MainCore.Commands.UI
     {
         private readonly IChromeManager _chromeManager;
         private readonly IDialogService _dialogService;
-        private readonly ITaskManager _taskManager;
+        private readonly ITimerManager _timerManager;
+        private readonly StopCurrentTask.Handler _stopCurrentTask;
 
-        public LogoutCommand(IChromeManager chromeManager, IDialogService dialogService, ITaskManager taskManager)
+        public LogoutCommand(IChromeManager chromeManager, IDialogService dialogService, ITimerManager timerManager, StopCurrentTask.Handler stopCurrentTask)
         {
             _chromeManager = chromeManager;
             _dialogService = dialogService;
-            _taskManager = taskManager;
+            _timerManager = timerManager;
+            _stopCurrentTask = stopCurrentTask;
         }
 
         public async Task Execute(AccountId accountId, CancellationToken cancellationToken)
         {
-            var status = _taskManager.GetStatus(accountId);
+            var status = _timerManager.GetStatus(accountId);
             switch (status)
             {
                 case StatusEnums.Offline:
@@ -40,13 +41,13 @@ namespace MainCore.Commands.UI
                     break;
             }
 
-            await _taskManager.SetStatus(accountId, StatusEnums.Stopping);
-            await _taskManager.StopCurrentTask(accountId);
+            await _timerManager.SetStatus(accountId, StatusEnums.Stopping);
+            await _stopCurrentTask.HandleAsync(new(accountId), cancellationToken);
 
             var chromeBrowser = _chromeManager.Get(accountId);
             await chromeBrowser.Close();
 
-            await _taskManager.SetStatus(accountId, StatusEnums.Offline);
+            await _timerManager.SetStatus(accountId, StatusEnums.Offline);
         }
     }
 }

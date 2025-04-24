@@ -6,19 +6,21 @@ namespace MainCore.Commands.UI
     public class RestartCommand
     {
         private readonly ITaskManager _taskManager;
+        private readonly ITimerManager _timerManager;
         private readonly IDialogService _dialogService;
         private readonly AccountInit.Handler _accountInit;
 
-        public RestartCommand(ITaskManager taskManager, IDialogService dialogService, AccountInit.Handler accountInit)
+        public RestartCommand(ITaskManager taskManager, IDialogService dialogService, AccountInit.Handler accountInit, ITimerManager timerManager)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
             _accountInit = accountInit;
+            _timerManager = timerManager;
         }
 
         public async Task Execute(AccountId accountId, CancellationToken cancellationToken)
         {
-            var status = _taskManager.GetStatus(accountId);
+            var status = _timerManager.GetStatus(accountId);
 
             switch (status)
             {
@@ -34,10 +36,10 @@ namespace MainCore.Commands.UI
                     return;
 
                 case StatusEnums.Paused:
-                    await _taskManager.SetStatus(accountId, StatusEnums.Starting);
+                    await _timerManager.SetStatus(accountId, StatusEnums.Starting);
                     await _taskManager.Clear(accountId);
                     await _accountInit.HandleAsync(new(accountId), cancellationToken);
-                    await _taskManager.SetStatus(accountId, StatusEnums.Online);
+                    await _timerManager.SetStatus(accountId, StatusEnums.Online);
                     return;
             }
         }

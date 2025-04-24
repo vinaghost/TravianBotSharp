@@ -18,17 +18,9 @@ namespace MainCore.Services
 
         VillageTask Get<T>(AccountId accountId, VillageId villageId) where T : VillageTask;
 
-        CancellationTokenSource GetCancellationTokenSource(AccountId accountId);
-
         TaskBase GetCurrentTask(AccountId accountId);
 
-        StatusEnums GetStatus(AccountId accountId);
-
-        TaskManager.TaskInfo GetTaskInfo(AccountId accountId);
-
         List<TaskBase> GetTaskList(AccountId accountId);
-
-        bool IsExecuting(AccountId accountId);
 
         bool IsExist<T>(AccountId accountId) where T : AccountTask;
 
@@ -37,9 +29,5 @@ namespace MainCore.Services
         Task Remove(AccountId accountId, TaskBase task);
 
         Task ReOrder(AccountId accountId);
-
-        Task SetStatus(AccountId accountId, StatusEnums status);
-
-        Task StopCurrentTask(AccountId accountId);
     }
 }

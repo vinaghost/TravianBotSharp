@@ -32,13 +32,13 @@ namespace MainCore.Commands.UI
                 return;
             }
 
-            if (_taskManager.GetStatus(accountId) != StatusEnums.Offline)
+            if (_timerManager.GetStatus(accountId) != StatusEnums.Offline)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Account's browser is already opened"));
                 return;
             }
 
-            await _taskManager.SetStatus(accountId, StatusEnums.Starting);
+            await _timerManager.SetStatus(accountId, StatusEnums.Starting);
             var logger = _logService.GetLogger(accountId);
 
             var getAccess = Locator.Current.GetService<GetAccess>();
@@ -50,7 +50,7 @@ namespace MainCore.Commands.UI
                 var errors = result.Errors.Select(x => x.Message).ToList();
                 logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
 
-                await _taskManager.SetStatus(accountId, StatusEnums.Offline);
+                await _timerManager.SetStatus(accountId, StatusEnums.Offline);
                 return;
             }
             var access = result.Value;
@@ -64,7 +64,7 @@ namespace MainCore.Commands.UI
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.Errors.Select(x => x.Message).First()));
                 var errors = result.Errors.Select(x => x.Message).ToList();
                 logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
-                await _taskManager.SetStatus(accountId, StatusEnums.Offline);
+                await _timerManager.SetStatus(accountId, StatusEnums.Offline);
 
                 var chromeBrowser = _chromeManager.Get(accountId);
                 await chromeBrowser.Close();
@@ -74,7 +74,7 @@ namespace MainCore.Commands.UI
             await _accountInit.HandleAsync(new(accountId), cancellationToken);
 
             _timerManager.Start(accountId);
-            await _taskManager.SetStatus(accountId, StatusEnums.Online);
+            await _timerManager.SetStatus(accountId, StatusEnums.Online);
         }
     }
 }

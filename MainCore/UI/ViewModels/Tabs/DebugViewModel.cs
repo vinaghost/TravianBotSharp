@@ -16,6 +16,7 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         private readonly LogSink _logSink;
         private readonly ITaskManager _taskManager;
+        private readonly ITimerManager _timerManager;
         private static readonly ExpressionTemplate _template = new("{@t:HH:mm:ss} [{@l:u3}] {@m}\n{@x}");
         private const string NotOpen = "Chrome didn't open yet";
 
@@ -27,7 +28,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private string _endpointAddress;
 
-        public DebugViewModel(ILogEventSink logSink, ITaskManager taskManager)
+        public DebugViewModel(ILogEventSink logSink, ITaskManager taskManager, ITimerManager timerManager)
         {
             _taskManager = taskManager;
             _logSink = logSink as LogSink;
@@ -41,6 +42,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             LoadLogCommand.BindTo(this, vm => vm.Logs);
             LoadEndpointAddressCommand.BindTo(this, vm => vm.EndpointAddress);
+            _timerManager = timerManager;
         }
 
         private void LogEmitted(AccountId accountId, LogEvent logEvent)
@@ -97,7 +99,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private string LoadEndpointAddress(AccountId accountId)
         {
-            var status = _taskManager.GetStatus(accountId);
+            var status = _timerManager.GetStatus(accountId);
             if (status == StatusEnums.Offline) return NotOpen;
             var address = "address enpoint is disabled";
             if (string.IsNullOrEmpty(address)) return NotOpen;

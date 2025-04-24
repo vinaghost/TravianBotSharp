@@ -14,7 +14,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
     {
         private readonly JobUpdated.Handler _jobUpdated;
         private readonly IDialogService _dialogService;
-        private readonly ITaskManager _taskManager;
+        private readonly ITimerManager _timerManager;
 
         public NormalBuildInput NormalBuildInput { get; } = new();
 
@@ -24,10 +24,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(IDialogService dialogService, ITaskManager taskManager, JobUpdated.Handler jobUpdated)
+        public BuildViewModel(IDialogService dialogService, ITimerManager timerManager, JobUpdated.Handler jobUpdated)
         {
             _dialogService = dialogService;
-            _taskManager = taskManager;
+            _timerManager = timerManager;
             _jobUpdated = jobUpdated;
 
             this.WhenAnyValue(vm => vm.Buildings.SelectedItem)
@@ -262,7 +262,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private bool IsAccountPaused(AccountId accountId)
         {
-            var status = _taskManager.GetStatus(accountId);
+            var status = _timerManager.GetStatus(accountId);
             if (status == StatusEnums.Online)
             {
                 return false;

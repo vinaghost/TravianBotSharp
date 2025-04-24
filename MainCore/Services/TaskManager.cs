@@ -6,87 +6,18 @@ namespace MainCore.Services
     [RegisterSingleton<ITaskManager, TaskManager>]
     public sealed class TaskManager : ITaskManager
     {
-        public class TaskInfo
-        {
-            public bool IsExecuting { get; set; } = false;
-            public StatusEnums Status { get; set; } = StatusEnums.Offline;
-            public CancellationTokenSource CancellationTokenSource { get; set; } = null;
-
-            public List<TaskBase> TaskList { get; set; } = new();
-        }
-
-        private readonly Dictionary<AccountId, TaskInfo> _tasks = new();
-        private readonly StatusUpdated.Handler _statusUpdated;
+        private readonly Dictionary<AccountId, List<TaskBase>> _tasks = new();
         private readonly TaskUpdated.Handler _taskUpdated;
 
-        public TaskManager(StatusUpdated.Handler statusUpdated, TaskUpdated.Handler taskUpdated)
+        public TaskManager(TaskUpdated.Handler taskUpdated)
         {
-            _statusUpdated = statusUpdated;
             _taskUpdated = taskUpdated;
-        }
-
-        public TaskInfo GetTaskInfo(AccountId accountId)
-        {
-            var task = _tasks.GetValueOrDefault(accountId);
-            if (task is null)
-            {
-                task = new();
-                _tasks.Add(accountId, task);
-            }
-            return task;
-        }
-
-        public List<TaskBase> GetTaskList(AccountId accountId)
-        {
-            var taskInfo = GetTaskInfo(accountId);
-            return taskInfo.TaskList;
-        }
-
-        public StatusEnums GetStatus(AccountId accountId)
-        {
-            var taskInfo = GetTaskInfo(accountId);
-            return taskInfo.Status;
-        }
-
-        public async Task SetStatus(AccountId accountId, StatusEnums status)
-        {
-            var taskInfo = GetTaskInfo(accountId);
-            taskInfo.Status = status;
-            await _statusUpdated.HandleAsync(new(accountId));
-        }
-
-        public bool IsExecuting(AccountId accountId)
-        {
-            var taskInfo = GetTaskInfo(accountId);
-            return taskInfo.IsExecuting;
-        }
-
-        public CancellationTokenSource GetCancellationTokenSource(AccountId accountId)
-        {
-            var taskInfo = GetTaskInfo(accountId);
-            return taskInfo.CancellationTokenSource;
         }
 
         public TaskBase GetCurrentTask(AccountId accountId)
         {
             var tasks = GetTaskList(accountId);
             return tasks.Find(x => x.Stage == StageEnums.Executing);
-        }
-
-        public async Task StopCurrentTask(AccountId accountId)
-        {
-            var cts = GetCancellationTokenSource(accountId);
-            if (cts is null) return;
-            await cts.CancelAsync();
-            TaskBase currentTask;
-            do
-            {
-                currentTask = GetCurrentTask(accountId);
-                if (currentTask is null) return;
-                await Task.Delay(500);
-            }
-            while (currentTask.Stage != StageEnums.Waiting);
-            await SetStatus(accountId, StatusEnums.Offline);
         }
 
         public async Task AddOrUpdate<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask
@@ -251,6 +182,20 @@ namespace MainCore.Services
         {
             tasks.Sort((x, y) => DateTime.Compare(x.ExecuteAt, y.ExecuteAt));
             await _taskUpdated.HandleAsync(new(accountId));
+        }
+
+        public List<TaskBase> GetTaskList(AccountId accountId)
+        {
+            if (_tasks.ContainsKey(accountId))
+            {
+                return _tasks[accountId];
+            }
+            else
+            {
+                var tasks = new List<TaskBase>();
+                _tasks.Add(accountId, tasks);
+                return tasks;
+            }
         }
     }
 }

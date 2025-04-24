@@ -19,6 +19,7 @@ public static class HandlerServiceCollectionExtensions
 		ServiceLifetime lifetime = ServiceLifetime.Scoped
 	)
 	{
+		global::MainCore.Commands.Misc.StopCurrentTask.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Handlers.MainWindowLoad.ChromeDriverInstall.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Handlers.MainWindowLoad.ChromeExtensionInstall.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Handlers.MainWindowLoad.ChromeUserAgentInstall.AddHandlers(services, lifetime);

@@ -6,21 +6,23 @@ namespace MainCore.Commands.UI
     public class DeleteAccountCommand
     {
         private readonly ITaskManager _taskManager;
+        private readonly ITimerManager _timerManager;
         private readonly IDialogService _dialogService;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly AccountUpdated.Handler _accountUpdated;
 
-        public DeleteAccountCommand(ITaskManager taskManager, IDialogService dialogService, IDbContextFactory<AppDbContext> contextFactory, AccountUpdated.Handler accountUpdated)
+        public DeleteAccountCommand(ITaskManager taskManager, IDialogService dialogService, IDbContextFactory<AppDbContext> contextFactory, AccountUpdated.Handler accountUpdated, ITimerManager timerManager)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
             _contextFactory = contextFactory;
             _accountUpdated = accountUpdated;
+            _timerManager = timerManager;
         }
 
         public async Task Execute(AccountId accountId, CancellationToken cancellationToken)
         {
-            var status = _taskManager.GetStatus(accountId);
+            var status = _timerManager.GetStatus(accountId);
             if (status != StatusEnums.Offline)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Account should be offline"));

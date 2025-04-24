@@ -9,6 +9,8 @@ namespace MainCore.Services
     public sealed class TimerManager : ITimerManager
     {
         private readonly Dictionary<AccountId, Timer> _timers = [];
+        private readonly Dictionary<AccountId, TaskData> _taskData = new();
+        private readonly StatusUpdated.Handler _statusUpdated;
 
         private bool _isShutdown = false;
 
@@ -23,12 +25,37 @@ namespace MainCore.Services
 
         private readonly ResiliencePipeline<Result> _pipeline;
 
-        public TimerManager(ITaskManager taskManager, ILogService logService, IChromeManager chromeManager, IServiceScopeFactory serviceScopeFactory)
+        public TimerManager(ITaskManager taskManager, ILogService logService, IChromeManager chromeManager, IServiceScopeFactory serviceScopeFactory, StatusUpdated.Handler statusUpdated)
         {
             _taskManager = taskManager;
             _chromeManager = chromeManager;
             _logService = logService;
             _serviceScopeFactory = serviceScopeFactory;
+            _statusUpdated = statusUpdated;
+
+            Func<OnRetryArguments<Result>, ValueTask> OnRetry = async args =>
+            {
+                args.Context.Properties.TryGetValue(contextLoggerKey, out var logger);
+                logger.Warning("There is something wrong.");
+                var error = args.Outcome;
+                if (error.Exception is null)
+                {
+                    var errors = error.Result.Reasons.Select(x => x.Message).ToList();
+                    logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
+                }
+                else
+                {
+                    var exception = error.Exception;
+                    logger.Error(exception, "{Message}", exception.Message);
+                }
+
+                args.Context.Properties.TryGetValue(contextTaskNameKey, out var taskName);
+                logger.Warning("Retry {AttemptNumber} for {TaskName}", args.AttemptNumber + 1, taskName);
+
+                args.Context.Properties.TryGetValue(contextAccountIdKey, out var accountId);
+                var chromeBrowser = _chromeManager.Get(accountId);
+                await chromeBrowser.Refresh(args.Context.CancellationToken);
+            };
 
             var retryOptions = new RetryStrategyOptions<Result>()
             {
@@ -39,29 +66,7 @@ namespace MainCore.Services
                 ShouldHandle = new PredicateBuilder<Result>()
                    .Handle<Exception>()
                    .HandleResult(static x => x.HasError<Retry>()),
-                OnRetry = async args =>
-                {
-                    args.Context.Properties.TryGetValue(contextLoggerKey, out var logger);
-                    logger.Warning("There is something wrong.");
-                    var error = args.Outcome;
-                    if (error.Exception is null)
-                    {
-                        var errors = error.Result.Reasons.Select(x => x.Message).ToList();
-                        logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
-                    }
-                    else
-                    {
-                        var exception = error.Exception;
-                        logger.Error(exception, "{Message}", exception.Message);
-                    }
-
-                    args.Context.Properties.TryGetValue(contextTaskNameKey, out var taskName);
-                    logger.Warning("Retry {AttemptNumber} for {TaskName}", args.AttemptNumber + 1, taskName);
-
-                    args.Context.Properties.TryGetValue(contextAccountIdKey, out var accountId);
-                    var chromeBrowser = _chromeManager.Get(accountId);
-                    await chromeBrowser.Refresh(args.Context.CancellationToken);
-                }
+                OnRetry = OnRetry
             };
 
             _pipeline = new ResiliencePipelineBuilder<Result>()
@@ -71,7 +76,7 @@ namespace MainCore.Services
 
         public async Task Execute(AccountId accountId)
         {
-            var status = _taskManager.GetStatus(accountId);
+            var status = GetStatus(accountId);
             if (status != StatusEnums.Online) return;
             var tasks = _taskManager.GetTaskList(accountId);
             if (tasks.Count == 0) return;
@@ -81,11 +86,11 @@ namespace MainCore.Services
 
             var logger = _logService.GetLogger(accountId);
 
-            var taskInfo = _taskManager.GetTaskInfo(accountId);
-            taskInfo.IsExecuting = true;
+            var taskData = GetTaskData(accountId);
+            taskData.IsExecuting = true;
             task.Stage = StageEnums.Executing;
             var cts = new CancellationTokenSource();
-            taskInfo.CancellationTokenSource = cts;
+            taskData.CancellationTokenSource = cts;
 
             var cacheExecuteTime = task.ExecuteAt;
 
@@ -108,17 +113,17 @@ namespace MainCore.Services
             logger.Information("{TaskName} is finished", task.GetName());
 
             task.Stage = StageEnums.Waiting;
-            taskInfo.IsExecuting = false;
+            taskData.IsExecuting = false;
 
             cts.Dispose();
-            taskInfo.CancellationTokenSource = null;
+            taskData.CancellationTokenSource = null;
 
             if (poliResult.Exception is not null)
             {
                 logger.Warning("There is something wrong. Bot is pausing. Last exception is");
                 var ex = poliResult.Exception;
                 logger.Error(ex, "{Message}", ex.Message);
-                await _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                await SetStatus(accountId, StatusEnums.Paused);
             }
             else
             {
@@ -130,7 +135,7 @@ namespace MainCore.Services
 
                     if (result.HasError<Stop>() || result.HasError<Retry>())
                     {
-                        await _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                        await SetStatus(accountId, StatusEnums.Paused);
                     }
                     else if (result.HasError<Skip>())
                     {
@@ -145,7 +150,7 @@ namespace MainCore.Services
                     }
                     else if (result.HasError<Cancel>())
                     {
-                        await _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                        await SetStatus(accountId, StatusEnums.Paused);
                     }
                 }
                 else
@@ -188,6 +193,52 @@ namespace MainCore.Services
                 _timers.Add(accountId, timer);
                 timer.Start();
             }
+        }
+
+        public class TaskData
+        {
+            public bool IsExecuting { get; set; } = false;
+            public StatusEnums Status { get; set; } = StatusEnums.Offline;
+            public CancellationTokenSource CancellationTokenSource { get; set; } = null;
+        }
+
+        private TaskData GetTaskData(AccountId accountId)
+        {
+            if (_taskData.ContainsKey(accountId))
+            {
+                return _taskData[accountId];
+            }
+            else
+            {
+                var data = new TaskData();
+                _taskData.Add(accountId, data);
+                return data;
+            }
+        }
+
+        public StatusEnums GetStatus(AccountId accountId)
+        {
+            var taskInfo = GetTaskData(accountId);
+            return taskInfo.Status;
+        }
+
+        public async Task SetStatus(AccountId accountId, StatusEnums status)
+        {
+            var taskInfo = GetTaskData(accountId);
+            taskInfo.Status = status;
+            await _statusUpdated.HandleAsync(new(accountId));
+        }
+
+        public bool IsExecuting(AccountId accountId)
+        {
+            var taskInfo = GetTaskData(accountId);
+            return taskInfo.IsExecuting;
+        }
+
+        public CancellationTokenSource GetCancellationTokenSource(AccountId accountId)
+        {
+            var taskInfo = GetTaskData(accountId);
+            return taskInfo.CancellationTokenSource;
         }
     }
 }
