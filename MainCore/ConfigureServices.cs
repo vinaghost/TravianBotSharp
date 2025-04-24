@@ -55,17 +55,7 @@ namespace MainCore
 
         public static IServiceProvider Setup()
         {
-            var host = Host.CreateDefaultBuilder()
-               .ConfigureServices((_context, services) =>
-               {
-                   services.UseMicrosoftDependencyResolver();
-                   var resolver = Locator.CurrentMutable;
-                   resolver.InitializeSplat();
-                   resolver.InitializeReactiveUI();
-
-                   services.AddCoreServices();
-
-                   Log.Logger = new LoggerConfiguration()
+            Log.Logger = new LoggerConfiguration()
                         .Filter.ByExcluding("SourceContext like 'ReactiveUI.POCOObservableForProperty' and Contains(@m, 'WhenAny will only return a single value')")
                         .WriteTo.Map("Account", "Other", (acc, wt) =>
                         {
@@ -75,7 +65,15 @@ namespace MainCore
                             wt.LogSink();
                         })
                         .CreateLogger();
-
+            var host = Host.CreateDefaultBuilder()
+               .ConfigureServices((_context, services) =>
+               {
+                   services.UseMicrosoftDependencyResolver();
+                   var resolver = Locator.CurrentMutable;
+                   resolver.InitializeSplat();
+                   resolver.InitializeReactiveUI();
+                   services.AddCoreServices();
+                   services.AddSerilog();
                    resolver.UseSerilogFullLogger();
                })
                .UseDefaultServiceProvider(config =>

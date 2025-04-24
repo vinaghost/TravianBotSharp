@@ -2,18 +2,15 @@
 
 namespace MainCore.Notification.Handlers.Refresh
 {
-    public class VillageListRefresh : INotificationHandler<VillageUpdated>
+    [Handler]
+    public static partial class VillageListRefresh
     {
-        private readonly VillageViewModel _viewModel;
-
-        public VillageListRefresh(VillageViewModel viewModel)
+        private static async ValueTask HandleAsync(
+            VillageUpdated notification,
+            VillageViewModel viewModel,
+            CancellationToken cancellationToken)
         {
-            _viewModel = viewModel;
-        }
-
-        public async Task Handle(VillageUpdated notification, CancellationToken cancellationToken)
-        {
-            await _viewModel.VillageListRefresh(notification.AccountId);
+            await viewModel.VillageListRefresh(notification.AccountId);
         }
     }
 }

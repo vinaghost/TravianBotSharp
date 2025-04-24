@@ -1,11 +1,17 @@
 ﻿namespace MainCore.Notification.Handlers.MainWindowUnload
 {
-    public class ProxyCacheClean : INotificationHandler<MainWindowUnloaded>
+    [Handler]
+    public static partial class ProxyCacheClean
     {
-        public async Task Handle(MainWindowUnloaded notification, CancellationToken cancellationToken)
+        private static async ValueTask HandleAsync(
+            MainWindowUnloaded notification,
+            CancellationToken cancellationToken)
         {
             var path = Path.Combine(AppContext.BaseDirectory, "Plugins");
-            if (Directory.Exists(path)) await Task.Run(() => Directory.Delete(path, true), cancellationToken);
+            if (Directory.Exists(path))
+            {
+                await Task.Run(() => Directory.Delete(path, true), cancellationToken);
+            }
         }
     }
 }

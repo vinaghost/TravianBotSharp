@@ -1,17 +1,16 @@
-﻿namespace MainCore.Notification.Handlers.MainWindowUnload
+﻿using Immediate.Handlers.Shared;
+
+namespace MainCore.Notification.Handlers.MainWindowUnload
 {
-    public class UseragentClean : INotificationHandler<MainWindowUnloaded>
+    [Handler]
+    public static partial class UseragentClean
     {
-        private readonly IUseragentManager _useragentManager;
-
-        public UseragentClean(IUseragentManager useragentManager)
+        private static async ValueTask HandleAsync(
+            MainWindowUnloaded notification,
+            IUseragentManager useragentManager,
+            CancellationToken cancellationToken)
         {
-            _useragentManager = useragentManager;
-        }
-
-        public async Task Handle(MainWindowUnloaded notification, CancellationToken cancellationToken)
-        {
-            await Task.Run(_useragentManager.Dispose, cancellationToken);
+            await Task.Run(useragentManager.Dispose, cancellationToken);
         }
     }
 }

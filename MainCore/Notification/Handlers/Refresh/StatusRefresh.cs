@@ -2,18 +2,15 @@
 
 namespace MainCore.Notification.Handlers.Refresh
 {
-    public class StatusRefresh : INotificationHandler<StatusUpdated>
+    [Handler]
+    public static partial class StatusRefresh
     {
-        private readonly MainLayoutViewModel _mainlayoutViewModel;
-
-        public StatusRefresh(MainLayoutViewModel mainlayoutViewModel)
+        private static async ValueTask HandleAsync(
+            StatusUpdated notification,
+            MainLayoutViewModel mainLayoutViewModel,
+            CancellationToken cancellationToken)
         {
-            _mainlayoutViewModel = mainlayoutViewModel;
-        }
-
-        public async Task Handle(StatusUpdated notification, CancellationToken cancellationToken)
-        {
-            await _mainlayoutViewModel.LoadStatus(notification.AccountId, notification.Status);
+            await mainLayoutViewModel.LoadStatus(notification.AccountId, notification.Status);
         }
     }
 }

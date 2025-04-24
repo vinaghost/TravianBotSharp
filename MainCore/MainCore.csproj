@@ -7,12 +7,16 @@
     <SelfContained>true</SelfContained>
 	
     <AssemblyVersion>1975.4.30</AssemblyVersion>
-	
-    <UserSecretsId>076cc5b1-3a4d-42ca-a18b-b6c8c5913261</UserSecretsId>
   </PropertyGroup>
-
+  <PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <GeneratedFolder>Generated</GeneratedFolder>
+    <CompilerGeneratedFilesOutputPath>$(GeneratedFolder)\$(TargetFramework)</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Misc\ExtensionFiles\**" />
+    <!-- Exclude the output of source generators from the compilation -->
+    <Compile Remove="$(GeneratedFolder)/**/*.cs" />
   </ItemGroup>
 
   <ItemGroup>

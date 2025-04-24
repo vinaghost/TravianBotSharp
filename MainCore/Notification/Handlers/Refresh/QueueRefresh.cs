@@ -2,18 +2,15 @@
 
 namespace MainCore.Notification.Handlers.Refresh
 {
-    public class QueueRefresh : INotificationHandler<QueueBuildingUpdated>
+    [Handler]
+    public static partial class QueueRefresh
     {
-        private readonly BuildViewModel _viewModel;
-
-        public QueueRefresh(BuildViewModel viewModel)
+        private static async ValueTask HandleAsync(
+            QueueBuildingUpdated notification,
+            BuildViewModel viewModel,
+            CancellationToken cancellationToken)
         {
-            _viewModel = viewModel;
-        }
-
-        public async Task Handle(QueueBuildingUpdated notification, CancellationToken cancellationToken)
-        {
-            await _viewModel.QueueRefresh(notification.VillageId);
+            await viewModel.QueueRefresh(notification.VillageId);
         }
     }
 }

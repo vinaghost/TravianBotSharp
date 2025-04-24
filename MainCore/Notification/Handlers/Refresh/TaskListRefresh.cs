@@ -2,18 +2,15 @@
 
 namespace MainCore.Notification.Handlers.Refresh
 {
-    public class TaskListRefresh : INotificationHandler<TaskUpdated>
+    [Handler]
+    public static partial class TaskListRefresh
     {
-        private readonly DebugViewModel _viewModel;
-
-        public TaskListRefresh(DebugViewModel viewModel)
+        private static async ValueTask HandleAsync(
+            TaskUpdated notification,
+            DebugViewModel viewModel,
+            CancellationToken cancellationToken)
         {
-            _viewModel = viewModel;
-        }
-
-        public async Task Handle(TaskUpdated notification, CancellationToken cancellationToken)
-        {
-            await _viewModel.TaskListRefresh(notification.AccountId);
+            await viewModel.TaskListRefresh(notification.AccountId);
         }
     }
 }

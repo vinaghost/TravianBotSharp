@@ -2,18 +2,15 @@
 
 namespace MainCore.Notification.Handlers.Refresh
 {
-    internal class JobListRefresh : INotificationHandler<JobUpdated>
+    [Handler]
+    public static partial class JobListRefresh
     {
-        private readonly BuildViewModel _viewModel;
-
-        public JobListRefresh(BuildViewModel viewModel)
+        private static async ValueTask HandleAsync(
+            JobUpdated notification,
+            BuildViewModel viewModel,
+            CancellationToken cancellationToken)
         {
-            _viewModel = viewModel;
-        }
-
-        public async Task Handle(JobUpdated notification, CancellationToken cancellationToken)
-        {
-            await _viewModel.JobListRefresh(notification.VillageId);
+            await viewModel.JobListRefresh(notification.VillageId);
         }
     }
 }

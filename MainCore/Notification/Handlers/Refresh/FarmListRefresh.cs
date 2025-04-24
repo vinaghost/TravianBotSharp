@@ -2,18 +2,15 @@
 
 namespace MainCore.Notification.Handlers.Refresh
 {
-    public class FarmListRefresh : INotificationHandler<FarmListUpdated>
+    [Handler]
+    public static partial class FarmListRefresh
     {
-        private readonly FarmingViewModel _viewModel;
-
-        public FarmListRefresh(FarmingViewModel viewModel)
+        private static async ValueTask HandleAsync(
+            FarmListUpdated notification,
+            FarmingViewModel farmingViewModel,
+            CancellationToken cancellationToken)
         {
-            _viewModel = viewModel;
-        }
-
-        public async Task Handle(FarmListUpdated notification, CancellationToken cancellationToken)
-        {
-            await _viewModel.FarmListRefresh(notification.AccountId);
+            await farmingViewModel.FarmListRefresh(notification.AccountId);
         }
     }
 }

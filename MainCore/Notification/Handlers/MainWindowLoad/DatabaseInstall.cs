@@ -1,30 +1,30 @@
 ﻿using MainCore.UI.ViewModels.UserControls;
+using Microsoft.Extensions.Logging;
 
 namespace MainCore.Notification.Handlers.MainWindowLoad
 {
-    public class DatabaseInstall : INotificationHandler<MainWindowLoaded>, IEnableLogger
+    [Handler]
+    public static partial class DatabaseInstall
     {
-        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private static async ValueTask HandleAsync(
 
-        public DatabaseInstall(IDbContextFactory<AppDbContext> contextFactory, IWaitingOverlayViewModel waitingOverlayViewModel)
+            MainWindowLoaded notification,
+            IDbContextFactory<AppDbContext> contextFactory, IWaitingOverlayViewModel waitingOverlayViewModel, ILogger<MainWindowLoaded> logger,
+            CancellationToken cancellationToken)
         {
-            _contextFactory = contextFactory;
-            _waitingOverlayViewModel = waitingOverlayViewModel;
-        }
+            await waitingOverlayViewModel.ChangeMessage("loading database");
+            logger.LogInformation("Loading database");
 
-        public async Task Handle(MainWindowLoaded notification, CancellationToken cancellationToken)
-        {
-            await _waitingOverlayViewModel.ChangeMessage("loading database");
-            this.Log().Info("Loading database");
-            using var context = await _contextFactory.CreateDbContextAsync();
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
             var notExist = await context.Database.EnsureCreatedAsync(cancellationToken);
+
             if (!notExist)
             {
                 await Task.Run(context.FillAccountSettings, cancellationToken);
                 await Task.Run(context.FillVillageSettings, cancellationToken);
             }
-            this.Log().Info("Database loaded");
+
+            logger.LogInformation("Database loaded");
         }
     }
 }

@@ -1,17 +1,14 @@
 ﻿namespace MainCore.Notification.Handlers.MainWindowUnload
 {
-    public class ChromeClean : INotificationHandler<MainWindowUnloaded>
+    [Handler]
+    public static partial class ChromeClean
     {
-        private readonly IChromeManager _chromeManager;
-
-        public ChromeClean(IChromeManager chromeManager)
+        private static async ValueTask HandleAsync(
+            MainWindowUnloaded notification,
+            IChromeManager chromeManager,
+            CancellationToken cancellationToken)
         {
-            _chromeManager = chromeManager;
-        }
-
-        public async Task Handle(MainWindowUnloaded notification, CancellationToken cancellationToken)
-        {
-            await Task.Run(_chromeManager.Shutdown, cancellationToken);
+            await Task.Run(chromeManager.Shutdown, cancellationToken);
         }
     }
 }

@@ -1,24 +1,20 @@
 ﻿using MainCore.UI.ViewModels.UserControls;
+using Microsoft.Extensions.Logging;
 
 namespace MainCore.Notification.Handlers.MainWindowLoad
 {
-    public class ChromeUserAgentInstall : INotificationHandler<MainWindowLoaded>, IEnableLogger
+    [Handler]
+    public static partial class ChromeUserAgentInstall
     {
-        private readonly IUseragentManager _useragentManager;
-        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
-
-        public ChromeUserAgentInstall(IUseragentManager useragentManager, IWaitingOverlayViewModel waitingOverlayViewModel)
+        private static async ValueTask HandleAsync(
+            MainWindowLoaded notification,
+            IUseragentManager useragentManager, IWaitingOverlayViewModel waitingOverlayViewModel, ILogger<MainWindowLoaded> logger,
+            CancellationToken cancellationToken)
         {
-            _useragentManager = useragentManager;
-            _waitingOverlayViewModel = waitingOverlayViewModel;
-        }
-
-        public async Task Handle(MainWindowLoaded notification, CancellationToken cancellationToken)
-        {
-            await _waitingOverlayViewModel.ChangeMessage("loading chrome useragent");
-            this.Log().Info("Loading chrome useragent");
-            await Task.Run(_useragentManager.Load, cancellationToken);
-            this.Log().Info("Chrome useragent loaded");
+            await waitingOverlayViewModel.ChangeMessage("loading chrome useragent");
+            logger.LogInformation("Loading chrome useragent");
+            await Task.Run(useragentManager.Load, cancellationToken);
+            logger.LogInformation("Chrome useragent loaded");
         }
     }
 }

@@ -1,20 +1,16 @@
 ﻿using MainCore.UI.ViewModels.UserControls;
-using System.Reactive.Linq;
 
 namespace MainCore.Notification.Handlers.Refresh
 {
-    public class AccountListRefresh : INotificationHandler<AccountUpdated>
+    [Handler]
+    public static partial class AccountListRefresh
     {
-        private readonly MainLayoutViewModel _mainlayoutViewModel;
-
-        public AccountListRefresh(MainLayoutViewModel mainlayoutViewModel)
+        private static async ValueTask HandleAsync(
+            AccountUpdated notification,
+            MainLayoutViewModel mainLayoutViewModel,
+            CancellationToken cancellationToken)
         {
-            _mainlayoutViewModel = mainlayoutViewModel;
-        }
-
-        public async Task Handle(AccountUpdated notification, CancellationToken cancellationToken)
-        {
-            await _mainlayoutViewModel.LoadAccountCommand.Execute();
+            await mainLayoutViewModel.LoadAccountCommand.Execute();
         }
     }
 }

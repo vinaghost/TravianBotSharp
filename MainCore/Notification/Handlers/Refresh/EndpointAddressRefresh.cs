@@ -2,18 +2,15 @@
 
 namespace MainCore.Notification.Handlers.Refresh
 {
-    public class EndpointAddressRefresh : INotificationHandler<StatusUpdated>
+    [Handler]
+    public static partial class EndpointAddressRefresh
     {
-        private readonly DebugViewModel _debugViewModel;
-
-        public EndpointAddressRefresh(DebugViewModel debugViewModel)
+        private static async ValueTask HandleAsync(
+            StatusUpdated notification,
+            DebugViewModel debugViewModel,
+            CancellationToken cancellationToken)
         {
-            _debugViewModel = debugViewModel;
-        }
-
-        public async Task Handle(StatusUpdated notification, CancellationToken cancellationToken)
-        {
-            await _debugViewModel.EndpointAddressRefresh(notification.AccountId);
+            await debugViewModel.EndpointAddressRefresh(notification.AccountId);
         }
     }
 }
