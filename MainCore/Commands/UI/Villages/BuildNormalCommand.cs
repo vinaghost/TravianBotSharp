@@ -3,7 +3,6 @@ using Humanizer;
 using MainCore.Common.Models;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
-using System.Reactive.Linq;
 
 namespace MainCore.Commands.UI.Villages
 {
@@ -11,17 +10,17 @@ namespace MainCore.Commands.UI.Villages
     public class BuildNormalCommand
     {
         private readonly IDialogService _dialogService;
-        private readonly IMediator _mediator;
+        private readonly JobUpdated.Handler _jobUpdated;
 
         private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
         private readonly GetBuildings _getBuildings;
 
-        public BuildNormalCommand(IDialogService dialogService, IMediator mediator, ITaskManager taskManager, IValidator<NormalBuildInput> normalBuildInputValidator, GetBuildings getBuildings)
+        public BuildNormalCommand(IDialogService dialogService, ITaskManager taskManager, IValidator<NormalBuildInput> normalBuildInputValidator, GetBuildings getBuildings, JobUpdated.Handler jobUpdated)
         {
             _dialogService = dialogService;
-            _mediator = mediator;
             _normalBuildInputValidator = normalBuildInputValidator;
             _getBuildings = getBuildings;
+            _jobUpdated = jobUpdated;
         }
 
         public async Task Execute(AccountId accountId, VillageId villageId, NormalBuildInput normalBuildInput, int location)
@@ -61,7 +60,7 @@ namespace MainCore.Commands.UI.Villages
             }
             var addJobCommand = Locator.Current.GetService<AddJobCommand>();
             addJobCommand.ToBottom(villageId, plan);
-            await _mediator.Publish(new JobUpdated(accountId, villageId));
+            await _jobUpdated.HandleAsync(new(accountId, villageId));
         }
 
         private static Result CheckRequirements(List<BuildingItem> buildings, NormalBuildPlan plan)

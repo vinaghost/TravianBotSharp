@@ -7,11 +7,11 @@ namespace MainCore.Tasks
     [RegisterTransient<NpcTask>]
     public class NpcTask : VillageTask
     {
-        private readonly IMediator _mediator;
+        private readonly StorageUpdated.Handler _storageUpdated;
 
-        public NpcTask(IMediator mediator)
+        public NpcTask(StorageUpdated.Handler storageUpdated)
         {
-            _mediator = mediator;
+            _storageUpdated = storageUpdated;
         }
 
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
@@ -29,7 +29,7 @@ namespace MainCore.Tasks
             result = await updateStorageCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            await _mediator.Publish(new StorageUpdated(AccountId, VillageId), cancellationToken);
+            await _storageUpdated.HandleAsync(new(AccountId, VillageId), cancellationToken);
             return Result.Ok();
         }
 

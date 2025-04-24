@@ -1,5 +1,4 @@
 ﻿using MainCore.UI.Models.Output;
-using System.Reactive.Linq;
 
 namespace MainCore.Commands.UI
 {
@@ -8,13 +7,13 @@ namespace MainCore.Commands.UI
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
-        private readonly IMediator _mediator;
+        private readonly AccountInit.Handler _accountInit;
 
-        public RestartCommand(ITaskManager taskManager, IDialogService dialogService, IMediator mediator)
+        public RestartCommand(ITaskManager taskManager, IDialogService dialogService, AccountInit.Handler accountInit)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
-            _mediator = mediator;
+            _accountInit = accountInit;
         }
 
         public async Task Execute(AccountId accountId, CancellationToken cancellationToken)
@@ -37,7 +36,7 @@ namespace MainCore.Commands.UI
                 case StatusEnums.Paused:
                     await _taskManager.SetStatus(accountId, StatusEnums.Starting);
                     await _taskManager.Clear(accountId);
-                    await _mediator.Publish(new AccountInit(accountId), cancellationToken);
+                    await _accountInit.HandleAsync(new(accountId), cancellationToken);
                     await _taskManager.SetStatus(accountId, StatusEnums.Online);
                     return;
             }

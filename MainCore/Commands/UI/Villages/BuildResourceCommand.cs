@@ -2,20 +2,19 @@
 using MainCore.Common.Models;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
-using System.Reactive.Linq;
 
 namespace MainCore.Commands.UI.Villages
 {
     [RegisterSingleton<BuildResourceCommand>]
     public class BuildResourceCommand
     {
-        private readonly IMediator _mediator;
+        private readonly JobUpdated.Handler _jobUpdated;
         private readonly IDialogService _dialogService;
         private readonly IValidator<ResourceBuildInput> _resourceBuildInputValidator;
 
-        public BuildResourceCommand(IMediator mediator, IDialogService dialogService, IValidator<ResourceBuildInput> resourceBuildInputValidator)
+        public BuildResourceCommand(JobUpdated.Handler jobUpdated, IDialogService dialogService, IValidator<ResourceBuildInput> resourceBuildInputValidator)
         {
-            _mediator = mediator;
+            _jobUpdated = jobUpdated;
             _dialogService = dialogService;
             _resourceBuildInputValidator = resourceBuildInputValidator;
         }
@@ -37,7 +36,7 @@ namespace MainCore.Commands.UI.Villages
             };
             var addJobCommand = Locator.Current.GetService<AddJobCommand>();
             addJobCommand.ToBottom(villageId, plan);
-            await _mediator.Publish(new JobUpdated(accountId, villageId));
+            await _jobUpdated.HandleAsync(new(accountId, villageId));
         }
     }
 }

@@ -8,7 +8,7 @@ namespace MainCore.Notification.Message
     {
         public sealed record Notification(AccountId AccountId, VillageId VillageId) : ByAccountVillageIdBase(AccountId, VillageId), INotification;
 
-        public static async ValueTask HandleAsync(
+        private static async ValueTask HandleAsync(
             Notification notification,
             UpgradeBuildingTaskTrigger.Handler upgradeBuildingTaskTrigger,
             JobListRefresh.Handler jobListRefresh,

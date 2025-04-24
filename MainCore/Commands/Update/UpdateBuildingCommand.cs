@@ -3,10 +3,10 @@
 namespace MainCore.Commands.Update
 {
     [RegisterScoped<UpdateBuildingCommand>]
-    public class UpdateBuildingCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
+    public class UpdateBuildingCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, QueueBuildingUpdated.Handler queueBuildingUpdated) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly IMediator _mediator = mediator;
+        private readonly QueueBuildingUpdated.Handler _queueBuildingUpdated = queueBuildingUpdated;
 
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {
@@ -28,7 +28,7 @@ namespace MainCore.Commands.Update
 
             var dtoUnderConstructionBuildings = dtoBuilding.Where(x => x.IsUnderConstruction).ToList();
             UpdateQueueToDatabase(villageId, dtoUnderConstructionBuildings);
-            await _mediator.Publish(new QueueBuildingUpdated(accountId, villageId), cancellationToken);
+            await _queueBuildingUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
 
             return Result.Ok();
         }

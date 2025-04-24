@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     [RegisterScoped<HandleResourceCommand>]
     public class HandleResourceCommand : CommandBase, ICommand<NormalBuildPlan>
     {
-        private readonly IMediator _mediator;
+        private readonly JobUpdated.Handler _jobUpdated;
         private readonly UpdateStorageCommand _updateStorageCommand;
         private readonly UseHeroResourceCommand _useHeroResourceCommand;
         private readonly ToHeroInventoryCommand _toHeroInventoryCommand;
@@ -18,9 +18,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         private readonly IsResourceEnough _isResourceEnough;
         private readonly IGetSetting _getSetting;
 
-        public HandleResourceCommand(IDataService dataService, IMediator mediator, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand, UpdateInventoryCommand updateInventoryCommand, IsResourceEnough isResourceEnough, IGetSetting getSetting) : base(dataService)
+        public HandleResourceCommand(IDataService dataService, JobUpdated.Handler jobUpdated, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand, UpdateInventoryCommand updateInventoryCommand, IsResourceEnough isResourceEnough, IGetSetting getSetting) : base(dataService)
         {
-            _mediator = mediator;
+            _jobUpdated = jobUpdated;
             _updateStorageCommand = updateStorageCommand;
             _useHeroResourceCommand = useHeroResourceCommand;
             _toHeroInventoryCommand = toHeroInventoryCommand;
@@ -144,7 +144,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             new AddJobCommand(_contextFactory).ToTop(_dataService.VillageId, plan);
             var logger = _dataService.Logger;
             logger.Information($"Add cropland to top of the job queue");
-            await _mediator.Publish(new JobUpdated(_dataService.AccountId, _dataService.VillageId), cancellationToken);
+            await _jobUpdated.HandleAsync(new(_dataService.AccountId, _dataService.VillageId), cancellationToken);
         }
 
         private bool IsUseHeroResource()

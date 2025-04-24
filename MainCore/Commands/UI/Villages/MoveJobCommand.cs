@@ -6,12 +6,12 @@ namespace MainCore.Commands.UI.Villages
     public class MoveJobCommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IMediator _mediator;
+        private readonly JobUpdated.Handler _jobUpdated;
 
-        public MoveJobCommand(IDbContextFactory<AppDbContext> contextFactory, IMediator mediator)
+        public MoveJobCommand(IDbContextFactory<AppDbContext> contextFactory, JobUpdated.Handler jobUpdated)
         {
             _contextFactory = contextFactory;
-            _mediator = mediator;
+            _jobUpdated = jobUpdated;
         }
 
         public async Task Execute(AccountId accountId, VillageId villageId, ListBoxItemViewModel jobs, MoveEnums move)
@@ -41,7 +41,7 @@ namespace MainCore.Commands.UI.Villages
                     break;
             }
 
-            await _mediator.Publish(new JobUpdated(accountId, villageId));
+            await _jobUpdated.HandleAsync(new(accountId, villageId));
             jobs.SelectedIndex = newIndex;
         }
 

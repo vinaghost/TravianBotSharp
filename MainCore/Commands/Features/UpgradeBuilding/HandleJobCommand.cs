@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     public class HandleJobCommand : CommandBase
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IMediator _mediator;
+        private readonly JobUpdated.Handler _jobUpdated;
 
         private readonly ToDorfCommand _toDorfCommand;
         private readonly UpdateBuildingCommand _updateBuildingCommand;
@@ -31,14 +31,14 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             {ResourcePlanEnums.OnlyCrop, _resourceTypes.Skip(3).ToList()},
         };
 
-        public HandleJobCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, IGetSetting getSetting, GetBuildings getBuildings) : base(dataService)
+        public HandleJobCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, IGetSetting getSetting, GetBuildings getBuildings, JobUpdated.Handler jobUpdated) : base(dataService)
         {
             _contextFactory = contextFactory;
-            _mediator = mediator;
             _toDorfCommand = toDorfCommand;
             _updateBuildingCommand = updateBuildingCommand;
             _getSetting = getSetting;
             _getBuildings = getBuildings;
+            _jobUpdated = jobUpdated;
         }
 
         public async Task<Result<NormalBuildPlan>> Execute(CancellationToken cancellationToken)
@@ -358,7 +358,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 var addJobCommand = Locator.Current.GetService<AddJobCommand>();
                 addJobCommand.ToTop(villageId, normalBuildPlan);
             }
-            await _mediator.Publish(new JobUpdated(accountId, villageId), cancellationToken);
+            await _jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
             return Result.Ok();
         }
 
@@ -406,7 +406,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             {
                 var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
                 deleteJobCommand.ByJobId(job.Id);
-                await _mediator.Publish(new JobUpdated(_dataService.AccountId, _dataService.VillageId));
+                await _jobUpdated.HandleAsync(new(_dataService.AccountId, _dataService.VillageId));
                 return true;
             }
             return false;

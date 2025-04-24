@@ -3,9 +3,9 @@
 namespace MainCore.Commands.Checks
 {
     [RegisterScoped<CheckQuestCommand>]
-    public class CheckQuestCommand(IDataService dataService, IMediator mediator) : CommandBase(dataService), ICommand
+    public class CheckQuestCommand(IDataService dataService, QuestUpdated.Handler questUpdated) : CommandBase(dataService), ICommand
     {
-        private readonly IMediator _mediator = mediator;
+        private readonly QuestUpdated.Handler _questUpdated = questUpdated;
 
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {
@@ -15,7 +15,7 @@ namespace MainCore.Commands.Checks
             var accountId = _dataService.AccountId;
             var villageId = _dataService.VillageId;
 
-            await _mediator.Publish(new QuestUpdated(accountId, villageId), cancellationToken);
+            await _questUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
             return Result.Ok();
         }
     }

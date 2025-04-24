@@ -47,8 +47,8 @@ namespace MainCore.Tasks.Base
                 if (this is not LoginTask)
                 {
                     ExecuteAt = ExecuteAt.AddMilliseconds(1975);
-                    var mediator = Locator.Current.GetService<IMediator>();
-                    await mediator.Publish(new AccountLogout(AccountId), cancellationToken);
+                    var accountLogout = Locator.Current.GetService<AccountLogout.Handler>();
+                    await accountLogout.HandleAsync(new(AccountId), cancellationToken);
                     return Skip.AccountLogout;
                 }
 #pragma warning restore S3060 // "is" should not be used with "this"

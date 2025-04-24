@@ -9,14 +9,14 @@ namespace MainCore.Commands.UI.Villages
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IDialogService _dialogService;
-        private readonly IMediator _mediator;
+        private readonly JobUpdated.Handler _jobUpdated;
         private readonly GetBuildings _getBuildings;
 
-        public ImportCommand(IDbContextFactory<AppDbContext> contextFactory, IDialogService dialogService, IMediator mediator, GetBuildings getBuildings)
+        public ImportCommand(IDbContextFactory<AppDbContext> contextFactory, IDialogService dialogService, JobUpdated.Handler jobUpdated, GetBuildings getBuildings)
         {
             _contextFactory = contextFactory;
             _dialogService = dialogService;
-            _mediator = mediator;
+            _jobUpdated = jobUpdated;
             _getBuildings = getBuildings;
         }
 
@@ -58,7 +58,7 @@ namespace MainCore.Commands.UI.Villages
             var modifiedJobs = GetModifiedJobs(villageId, jobs);
             AddJobToDatabase(villageId, modifiedJobs);
 
-            await _mediator.Publish(new JobUpdated(accountId, villageId));
+            await _jobUpdated.HandleAsync(new(accountId, villageId));
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Jobs imported"));
         }
 

@@ -8,7 +8,7 @@ namespace MainCore.Notification.Message
     {
         public sealed record Notification(AccountId AccountId) : ByAccountIdBase(AccountId), INotification;
 
-        public static async ValueTask HandleAsync(
+        private static async ValueTask HandleAsync(
             Notification notification,
             StartAdventureTaskTrigger.Handler startAdventureTaskTrigger,
             AccountSettingRefresh.Handler accountSettingRefresh,

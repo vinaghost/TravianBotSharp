@@ -3,10 +3,10 @@
 namespace MainCore.Commands.Update
 {
     [RegisterScoped<UpdateStorageCommand>]
-    public class UpdateStorageCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
+    public class UpdateStorageCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, StorageUpdated.Handler storageUpdated) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly IMediator _mediator = mediator;
+        private readonly StorageUpdated.Handler _storageUpdated = storageUpdated;
 
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {
@@ -16,7 +16,7 @@ namespace MainCore.Commands.Update
             var html = chromeBrowser.Html;
             var dto = Get(html);
             UpdateToDatabase(villageId, dto);
-            await _mediator.Publish(new StorageUpdated(accountId, villageId), cancellationToken);
+            await _storageUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
             return Result.Ok();
         }
 

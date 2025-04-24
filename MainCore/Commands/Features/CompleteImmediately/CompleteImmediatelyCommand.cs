@@ -3,9 +3,9 @@
 namespace MainCore.Commands.Features.CompleteImmediately
 {
     [RegisterScoped<CompleteImmediatelyCommand>]
-    public class CompleteImmediatelyCommand(IDataService dataService, IMediator mediator) : CommandBase(dataService), ICommand
+    public class CompleteImmediatelyCommand(IDataService dataService, CompleteImmediatelyMessage.Handler completeImmediatelyMessage) : CommandBase(dataService), ICommand
     {
-        private readonly IMediator _mediator = mediator;
+        private readonly CompleteImmediatelyMessage.Handler _completeImmediatelyMessage = completeImmediatelyMessage;
 
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {
@@ -45,7 +45,7 @@ namespace MainCore.Commands.Features.CompleteImmediately
             result = await chromeBrowser.Click(By.XPath(confirmButton.XPath), queueDifferent, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            await _mediator.Publish(new CompleteImmediatelyMessage(_dataService.AccountId, _dataService.VillageId), cancellationToken);
+            await _completeImmediatelyMessage.HandleAsync(new(_dataService.AccountId, _dataService.VillageId), cancellationToken);
 
             return Result.Ok();
         }

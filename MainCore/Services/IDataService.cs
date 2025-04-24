@@ -1,5 +1,4 @@
-﻿
-namespace MainCore.Services
+﻿namespace MainCore.Services
 {
     public interface IDataService
     {

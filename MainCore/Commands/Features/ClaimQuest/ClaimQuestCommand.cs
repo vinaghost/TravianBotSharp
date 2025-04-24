@@ -3,9 +3,9 @@
 namespace MainCore.Commands.Features.ClaimQuest
 {
     [RegisterScoped<ClaimQuestCommand>]
-    public class ClaimQuestCommand(IDataService dataService, IMediator mediator, SwitchTabCommand switchTabCommand, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand
+    public class ClaimQuestCommand(IDataService dataService, StorageUpdated.Handler storageUpdate, SwitchTabCommand switchTabCommand, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand
     {
-        private readonly IMediator _mediator = mediator;
+        private readonly StorageUpdated.Handler _storageUpdate = storageUpdate;
         private readonly SwitchTabCommand _switchTabCommand = switchTabCommand;
         private readonly DelayClickCommand _delayClickCommand = delayClickCommand;
 
@@ -27,7 +27,7 @@ namespace MainCore.Commands.Features.ClaimQuest
                     result = await ClaimAccountQuest(cancellationToken);
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                    await _mediator.Publish(new StorageUpdated(accountId, villageId), cancellationToken);
+                    await _storageUpdate.HandleAsync(new(accountId, villageId), cancellationToken);
                     return Result.Ok();
                 }
 
@@ -37,7 +37,7 @@ namespace MainCore.Commands.Features.ClaimQuest
             }
             while (QuestParser.IsQuestClaimable(html));
 
-            await _mediator.Publish(new StorageUpdated(accountId, villageId), cancellationToken);
+            await _storageUpdate.HandleAsync(new(accountId, villageId), cancellationToken);
 
             return Result.Ok();
         }

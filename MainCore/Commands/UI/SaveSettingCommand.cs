@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using MainCore.Notification;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 
@@ -12,17 +11,17 @@ namespace MainCore.Commands.UI
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IDialogService _dialogService;
-        private readonly IMediator _mediator;
-        private readonly Publisher _publisher;
+        private readonly AccountSettingUpdated.Handler _accountSettingUpdated;
+        private readonly VillageSettingUpdated.Handler _villageSettingUpdated;
 
-        public SaveSettingCommand(IValidator<AccountSettingInput> accountsettingInputValidator, IDialogService dialogService, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory, IValidator<VillageSettingInput> villageSettingInputValidator, Publisher publisher)
+        public SaveSettingCommand(IValidator<AccountSettingInput> accountsettingInputValidator, IDialogService dialogService, IDbContextFactory<AppDbContext> contextFactory, IValidator<VillageSettingInput> villageSettingInputValidator, AccountSettingUpdated.Handler accountSettingUpdated, VillageSettingUpdated.Handler villageSettingUpdated)
         {
             _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;
-            _mediator = mediator;
             _contextFactory = contextFactory;
             _villageSettingInputValidator = villageSettingInputValidator;
-            _publisher = publisher;
+            _accountSettingUpdated = accountSettingUpdated;
+            _villageSettingUpdated = villageSettingUpdated;
         }
 
         public async Task Execute(AccountId accountId, AccountSettingInput accountSettingInput, CancellationToken cancellationToken)
@@ -37,7 +36,7 @@ namespace MainCore.Commands.UI
             var settings = accountSettingInput.Get();
             Execute(accountId, settings);
 
-            await _publisher.Publish(new AccountSettingUpdated(accountId), cancellationToken);
+            await _accountSettingUpdated.HandleAsync(new(accountId), cancellationToken);
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings saved"));
         }
 
@@ -53,14 +52,14 @@ namespace MainCore.Commands.UI
             var settings = villageSettingInput.Get();
             Execute(villageId, settings);
 
-            await _mediator.Publish(new VillageSettingUpdated(accountId, villageId), cancellationToken);
+            await _villageSettingUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings saved"));
         }
 
         public async Task Execute(AccountId accountId, VillageId villageId, Dictionary<VillageSettingEnums, int> settings, CancellationToken cancellationToken)
         {
             Execute(villageId, settings);
-            await _mediator.Publish(new VillageSettingUpdated(accountId, villageId), cancellationToken);
+            await _villageSettingUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
         }
 
         private void Execute(AccountId accountId, Dictionary<AccountSettingEnums, int> settings)

@@ -1,5 +1,4 @@
 ﻿using MainCore.UI.Models.Output;
-using System.Reactive.Linq;
 
 namespace MainCore.Commands.UI
 {
@@ -9,18 +8,18 @@ namespace MainCore.Commands.UI
         private readonly IChromeManager _chromeManager;
         private readonly IDialogService _dialogService;
         private readonly ITaskManager _taskManager;
-        private readonly IMediator _mediator;
         private readonly ILogService _logService;
         private readonly ITimerManager _timerManager;
+        private readonly AccountInit.Handler _accountInit;
 
-        public LoginCommand(IChromeManager chromeManager, IDialogService dialogService, ITaskManager taskManager, IMediator mediator, ILogService logService, ITimerManager timerManager)
+        public LoginCommand(IChromeManager chromeManager, IDialogService dialogService, ITaskManager taskManager, ILogService logService, ITimerManager timerManager, AccountInit.Handler accountInit)
         {
             _chromeManager = chromeManager;
             _dialogService = dialogService;
             _taskManager = taskManager;
-            _mediator = mediator;
             _logService = logService;
             _timerManager = timerManager;
+            _accountInit = accountInit;
         }
 
         public async Task Execute(AccountId accountId, CancellationToken cancellationToken)
@@ -72,7 +71,7 @@ namespace MainCore.Commands.UI
 
                 return;
             }
-            await _mediator.Publish(new AccountInit(accountId), CancellationToken.None);
+            await _accountInit.HandleAsync(new(accountId), cancellationToken);
 
             _timerManager.Start(accountId);
             await _taskManager.SetStatus(accountId, StatusEnums.Online);

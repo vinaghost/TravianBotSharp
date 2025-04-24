@@ -5,12 +5,12 @@ namespace MainCore.Commands.UI.Villages
     [RegisterSingleton<UpgradeLevel>]
     public class UpgradeLevel
     {
-        private readonly IMediator _mediator;
+        private readonly JobUpdated.Handler _jobUpdated;
         private readonly GetBuildings _getBuildings;
 
-        public UpgradeLevel(IMediator mediator, GetBuildings getBuildings)
+        public UpgradeLevel(JobUpdated.Handler jobUpdated, GetBuildings getBuildings)
         {
-            _mediator = mediator;
+            _jobUpdated = jobUpdated;
             _getBuildings = getBuildings;
         }
 
@@ -42,7 +42,7 @@ namespace MainCore.Commands.UI.Villages
 
             var addJobCommand = Locator.Current.GetService<AddJobCommand>();
             addJobCommand.ToBottom(villageId, plan);
-            await _mediator.Publish(new JobUpdated(accountId, villageId));
+            await _jobUpdated.HandleAsync(new(accountId, villageId));
         }
     }
 }

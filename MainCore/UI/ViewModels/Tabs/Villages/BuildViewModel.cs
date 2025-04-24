@@ -12,7 +12,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
     [RegisterSingleton<BuildViewModel>]
     public partial class BuildViewModel : VillageTabViewModelBase
     {
-        private readonly IMediator _mediator;
+        private readonly JobUpdated.Handler _jobUpdated;
         private readonly IDialogService _dialogService;
         private readonly ITaskManager _taskManager;
 
@@ -24,11 +24,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(IMediator mediator, IDialogService dialogService, ITaskManager taskManager)
+        public BuildViewModel(IDialogService dialogService, ITaskManager taskManager, JobUpdated.Handler jobUpdated)
         {
-            _mediator = mediator;
             _dialogService = dialogService;
             _taskManager = taskManager;
+            _jobUpdated = jobUpdated;
 
             this.WhenAnyValue(vm => vm.Buildings.SelectedItem)
                 .ObserveOn(RxApp.TaskpoolScheduler)
@@ -219,7 +219,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
             deleteJobCommand.ByJobId(new JobId(jobId));
-            await _mediator.Publish(new JobUpdated(AccountId, VillageId));
+            await _jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
         [ReactiveCommand]
@@ -232,7 +232,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
             var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
             deleteJobCommand.ByVillageId(VillageId);
-            await _mediator.Publish(new JobUpdated(AccountId, VillageId));
+            await _jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
         [ReactiveCommand]
