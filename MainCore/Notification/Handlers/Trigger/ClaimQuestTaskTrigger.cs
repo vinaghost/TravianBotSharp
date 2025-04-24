@@ -6,29 +6,13 @@ namespace MainCore.Notification.Handlers.Trigger
     public static partial class ClaimQuestTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            QuestUpdated notification,
+            ByAccountVillageIdBase notification,
             ITaskManager taskManager,
             IGetSetting getSetting,
             CancellationToken cancellationToken)
         {
-            await Trigger(notification.AccountId, notification.VillageId, taskManager, getSetting);
-        }
-
-        private static async ValueTask HandleAsync(
-            VillageSettingUpdated notification,
-            ITaskManager taskManager,
-            IGetSetting getSetting,
-            CancellationToken cancellationToken)
-        {
-            await Trigger(notification.AccountId, notification.VillageId, taskManager, getSetting);
-        }
-
-        private static async Task Trigger(
-            AccountId accountId,
-            VillageId villageId,
-            ITaskManager taskManager,
-            IGetSetting getSetting)
-        {
+            var accountId = notification.AccountId;
+            var villageId = notification.VillageId;
             var autoClaimQuest = getSetting.BooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
             if (autoClaimQuest)
             {

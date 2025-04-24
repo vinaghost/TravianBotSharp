@@ -6,42 +6,12 @@ namespace MainCore.Notification.Handlers.Trigger
     public static partial class UpgradeBuildingTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            AccountInit notification,
+            ByAccountVillageIdBase notification,
             ITaskManager taskManager,
-            GetVillage getVillage,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
-            var hasBuildingJobVillages = getVillage.HasBuildingJob(accountId);
-            foreach (var village in hasBuildingJobVillages)
-            {
-                await Trigger(accountId, village, taskManager);
-            }
-        }
-
-        private static async ValueTask HandleAsync(
-            JobUpdated notification,
-            ITaskManager taskManager,
-            GetVillage getVillage,
-            CancellationToken cancellationToken)
-        {
-            await Trigger(notification.AccountId, notification.VillageId, taskManager);
-        }
-
-        private static async ValueTask HandleAsync(
-            CompleteImmediatelyMessage notification,
-            ITaskManager taskManager,
-            GetVillage getVillage,
-            CancellationToken cancellationToken)
-        {
-            await Trigger(notification.AccountId, notification.VillageId, taskManager);
-        }
-
-        private static async Task Trigger(
-            AccountId accountId,
-            VillageId villageId,
-            ITaskManager taskManager)
-        {
+            var villageId = notification.VillageId;
             await taskManager.AddOrUpdate<UpgradeBuildingTask>(accountId, villageId);
         }
     }

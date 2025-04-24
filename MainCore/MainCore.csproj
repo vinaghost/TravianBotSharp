@@ -11,12 +11,14 @@
   <PropertyGroup>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <GeneratedFolder>Generated</GeneratedFolder>
-    <CompilerGeneratedFilesOutputPath>$(GeneratedFolder)\$(TargetFramework)</CompilerGeneratedFilesOutputPath>
+    <CompilerGeneratedFilesOutputPath>$(GeneratedFolder)</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Misc\ExtensionFiles\**" />
     <!-- Exclude the output of source generators from the compilation -->
     <Compile Remove="$(GeneratedFolder)/**/*.cs" />
+    <None Include="$(GeneratedFolder)/**/*.cs"/>
+
   </ItemGroup>
 
   <ItemGroup>

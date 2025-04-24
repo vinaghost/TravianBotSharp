@@ -6,23 +6,11 @@ namespace MainCore.Notification.Handlers.Trigger
     public static partial class LoginTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            AccountInit notification,
+            ByAccountIdBase notification,
             ITaskManager taskManager,
             CancellationToken cancellationToken)
         {
-            await Trigger(notification.AccountId, taskManager);
-        }
-
-        private static async ValueTask HandleAsync(
-            AccountLogout notification,
-            ITaskManager taskManager,
-            CancellationToken cancellationToken)
-        {
-            await Trigger(notification.AccountId, taskManager);
-        }
-
-        private static async Task Trigger(AccountId accountId, ITaskManager taskManager)
-        {
+            var accountId = notification.AccountId;
             await taskManager.AddOrUpdate<LoginTask>(accountId, first: true);
         }
     }

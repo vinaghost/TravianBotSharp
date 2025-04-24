@@ -6,37 +6,13 @@ namespace MainCore.Notification.Handlers.Trigger
     public static partial class RefreshVillageTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            VillageSettingUpdated notification,
+            ByAccountVillageIdBase notification,
             ITaskManager taskManager,
             IGetSetting getSetting,
-            GetVillage getVillage,
-            CancellationToken cancellationToken)
-        {
-            await Trigger(notification.AccountId, notification.VillageId, taskManager, getSetting);
-        }
-
-        private static async ValueTask HandleAsync(
-            AccountInit notification,
-            ITaskManager taskManager,
-            IGetSetting getSetting,
-            GetVillage getVillage,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
-            var villages = getVillage.All(accountId);
-
-            foreach (var village in villages)
-            {
-                await Trigger(accountId, village, taskManager, getSetting);
-            }
-        }
-
-        private static async Task Trigger(
-            AccountId accountId,
-            VillageId villageId,
-            ITaskManager taskManager,
-            IGetSetting getSetting)
-        {
+            var villageId = notification.VillageId;
             var autoRefreshEnable = getSetting.BooleanByName(villageId, VillageSettingEnums.AutoRefreshEnable);
             if (autoRefreshEnable)
             {

@@ -6,35 +6,13 @@ namespace MainCore.Notification.Handlers.Trigger
     public static partial class TrainTroopTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            VillageSettingUpdated notification,
+            ByAccountVillageIdBase notification,
             ITaskManager taskManager,
             IGetSetting getSetting,
-            GetVillage getVillage,
             CancellationToken cancellationToken)
         {
-            await Trigger(notification.AccountId, notification.VillageId, taskManager, getSetting);
-        }
-
-        private static async ValueTask HandleAsync(
-            AccountInit notification,
-            ITaskManager taskManager,
-            IGetSetting getSetting,
-            GetVillage getVillage,
-            CancellationToken cancellationToken)
-        {
-            var villages = getVillage.All(notification.AccountId);
-            foreach (var village in villages)
-            {
-                await Trigger(notification.AccountId, village, taskManager, getSetting);
-            }
-        }
-
-        private static async Task Trigger(
-            AccountId accountId,
-            VillageId villageId,
-            ITaskManager taskManager,
-            IGetSetting getSetting)
-        {
+            var accountId = notification.AccountId;
+            var villageId = notification.VillageId;
             var trainTroopEnable = getSetting.BooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
             if (trainTroopEnable)
             {

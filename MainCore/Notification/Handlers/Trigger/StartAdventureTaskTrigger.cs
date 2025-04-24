@@ -6,37 +6,12 @@ namespace MainCore.Notification.Handlers.Trigger
     public static partial class StartAdventureTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            AdventureUpdated notification,
+            ByAccountIdBase notification,
             ITaskManager taskManager,
             IGetSetting getSetting,
             CancellationToken cancellationToken)
         {
-            await Trigger(notification.AccountId, taskManager, getSetting);
-        }
-
-        private static async ValueTask HandleAsync(
-            AccountInit notification,
-            ITaskManager taskManager,
-            IGetSetting getSetting,
-            CancellationToken cancellationToken)
-        {
-            await Trigger(notification.AccountId, taskManager, getSetting);
-        }
-
-        private static async ValueTask HandleAsync(
-            AccountSettingUpdated notification,
-            ITaskManager taskManager,
-            IGetSetting getSetting,
-            CancellationToken cancellationToken)
-        {
-            await Trigger(notification.AccountId, taskManager, getSetting);
-        }
-
-        private static async Task Trigger(
-            AccountId accountId,
-            ITaskManager taskManager,
-            IGetSetting getSetting)
-        {
+            var accountId = notification.AccountId;
             var autoStartAdventure = getSetting.BooleanByName(accountId, AccountSettingEnums.EnableAutoStartAdventure);
             if (autoStartAdventure)
             {

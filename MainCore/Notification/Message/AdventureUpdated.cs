@@ -1,4 +1,18 @@
-﻿namespace MainCore.Notification.Message
+﻿using MainCore.Notification.Handlers.Trigger;
+
+namespace MainCore.Notification.Message
 {
-    public record AdventureUpdated(AccountId AccountId) : ByAccountIdBase(AccountId), INotification;
+    [Handler]
+    public static partial class AdventureUpdated
+    {
+        public sealed record Notification(AccountId AccountId) : ByAccountIdBase(AccountId), INotification;
+
+        public static async ValueTask HandleAsync(
+            Notification notification,
+            StartAdventureTaskTrigger.Handler startAdventureTaskTrigger,
+            CancellationToken cancellationToken)
+        {
+            await startAdventureTaskTrigger.HandleAsync(notification, cancellationToken);
+        }
+    }
 }

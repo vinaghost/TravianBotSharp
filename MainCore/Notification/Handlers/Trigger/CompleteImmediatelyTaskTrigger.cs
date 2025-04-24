@@ -6,58 +6,41 @@ namespace MainCore.Notification.Handlers.Trigger
     public static partial class CompleteImmediatelyTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            QueueBuildingUpdated notification,
+            ByAccountVillageIdBase notification,
             ITaskManager taskManager,
             IDbContextFactory<AppDbContext> contextFactory,
             IGetSetting getSetting,
             CancellationToken cancellationToken)
         {
-            await Trigger(notification.AccountId, notification.VillageId, taskManager, contextFactory, getSetting);
-        }
-
-        private static async ValueTask HandleAsync(
-            VillageSettingUpdated notification,
-            ITaskManager taskManager,
-            IDbContextFactory<AppDbContext> contextFactory,
-            IGetSetting getSetting,
-            CancellationToken cancellationToken)
-        {
-            await Trigger(notification.AccountId, notification.VillageId, taskManager, contextFactory, getSetting);
-        }
-
-        private static async Task Trigger(
-            AccountId accountId,
-            VillageId villageId,
-            ITaskManager taskManager,
-            IDbContextFactory<AppDbContext> contextFactory,
-            IGetSetting getSetting)
-        {
+            var accountId = notification.AccountId;
+            var villageId = notification.VillageId;
             if (taskManager.IsExist<CompleteImmediatelyTask>(accountId, villageId)) return;
-            Clean(villageId, contextFactory);
+            using var context = contextFactory.CreateDbContext();
 
-            var count = Count(villageId, contextFactory);
+            Clean(context, villageId);
+
+            var count = Count(context, villageId);
             if (count == 0) return;
 
             var completeImmediatelyEnable = getSetting.BooleanByName(villageId, VillageSettingEnums.CompleteImmediately);
             if (!completeImmediatelyEnable) return;
 
-            if (!IsSkippableBuilding(villageId, contextFactory)) return;
+            if (!IsSkippableBuilding(context, villageId)) return;
 
             var completeImmediatelyTime = getSetting.ByName(villageId, VillageSettingEnums.CompleteImmediatelyTime);
 
             var requiredTime = DateTime.Now.AddMinutes(completeImmediatelyTime);
-            var queueTime = GetQueueTime(villageId, contextFactory);
+            var queueTime = GetQueueTime(context, villageId);
 
             if (requiredTime > queueTime) return;
 
-            if (!IsSkippableBuilding(villageId, contextFactory)) return;
+            if (!IsSkippableBuilding(context, villageId)) return;
 
             await taskManager.Add<CompleteImmediatelyTask>(accountId, villageId);
         }
 
-        private static DateTime GetQueueTime(VillageId villageId, IDbContextFactory<AppDbContext> contextFactory)
+        private static DateTime GetQueueTime(AppDbContext context, VillageId villageId)
         {
-            using var context = contextFactory.CreateDbContext();
             var queueBuilding = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Type != BuildingEnums.Site)
@@ -67,10 +50,8 @@ namespace MainCore.Notification.Handlers.Trigger
             return queueBuilding;
         }
 
-        private static bool IsSkippableBuilding(VillageId villageId, IDbContextFactory<AppDbContext> contextFactory)
+        private static bool IsSkippableBuilding(AppDbContext context, VillageId villageId)
         {
-            using var context = contextFactory.CreateDbContext();
-
             var buildings = new List<BuildingEnums>
             {
                 BuildingEnums.Site,
@@ -86,9 +67,8 @@ namespace MainCore.Notification.Handlers.Trigger
             return queueBuilding;
         }
 
-        private static void Clean(VillageId villageId, IDbContextFactory<AppDbContext> contextFactory)
+        private static void Clean(AppDbContext context, VillageId villageId)
         {
-            using var context = contextFactory.CreateDbContext();
             var now = DateTime.Now;
             var completeBuildingQuery = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
@@ -111,10 +91,8 @@ namespace MainCore.Notification.Handlers.Trigger
                 .ExecuteUpdate(x => x.SetProperty(x => x.Type, BuildingEnums.Site));
         }
 
-        private static int Count(VillageId villageId, IDbContextFactory<AppDbContext> contextFactory)
+        private static int Count(AppDbContext context, VillageId villageId)
         {
-            using var context = contextFactory.CreateDbContext();
-
             var count = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Type != BuildingEnums.Site)

@@ -6,19 +6,12 @@ namespace MainCore.Notification.Handlers.Trigger
     public static partial class SleepTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            AccountInit notification,
+            ByAccountIdBase notification,
             ITaskManager taskManager,
             IGetSetting getSetting,
             CancellationToken cancellationToken)
         {
-            await Trigger(notification.AccountId, taskManager, getSetting);
-        }
-
-        private static async Task Trigger(
-            AccountId accountId,
-            ITaskManager taskManager,
-            IGetSetting getSetting)
-        {
+            var accountId = notification.AccountId;
             if (taskManager.IsExist<SleepTask>(accountId)) return;
             var workTime = getSetting.ByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
             await taskManager.Add<SleepTask>(accountId, executeTime: DateTime.Now.AddMinutes(workTime));

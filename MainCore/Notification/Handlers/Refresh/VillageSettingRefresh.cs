@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Refresh
     public static partial class VillageSettingRefresh
     {
         private static async ValueTask HandleAsync(
-            VillageSettingUpdated notification,
+            ByAccountVillageIdBase notification,
             VillageSettingViewModel viewModel,
             CancellationToken cancellationToken)
         {

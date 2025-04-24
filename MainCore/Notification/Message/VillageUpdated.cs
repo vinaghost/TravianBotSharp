@@ -1,4 +1,5 @@
-﻿using MainCore.Notification.Handlers.Trigger;
+﻿using MainCore.Notification.Handlers.Refresh;
+using MainCore.Notification.Handlers.Trigger;
 
 namespace MainCore.Notification.Message
 {
@@ -10,9 +11,11 @@ namespace MainCore.Notification.Message
         private static async ValueTask HandleAsync(
             Notification notification,
             BuildingUpdateTaskTrigger.Handler buildingUpdateTaskTrigger,
+            VillageListRefresh.Handler villageListRefresh,
             CancellationToken cancellationToken)
         {
             await buildingUpdateTaskTrigger.HandleAsync(notification, cancellationToken);
+            await villageListRefresh.HandleAsync(notification, cancellationToken);
         }
     }
 }

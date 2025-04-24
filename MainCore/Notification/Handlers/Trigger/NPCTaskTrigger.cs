@@ -6,36 +6,19 @@ namespace MainCore.Notification.Handlers.Trigger
     public static partial class NpcTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            StorageUpdated notification,
+            ByAccountVillageIdBase notification,
             ITaskManager taskManager,
             IDbContextFactory<AppDbContext> contextFactory,
             IGetSetting getSetting,
             CancellationToken cancellationToken)
         {
-            await Trigger(notification.AccountId, notification.VillageId, taskManager, contextFactory, getSetting);
-        }
-
-        private static async ValueTask HandleAsync(
-            VillageSettingUpdated notification,
-            ITaskManager taskManager,
-            IDbContextFactory<AppDbContext> contextFactory,
-            IGetSetting getSetting,
-            CancellationToken cancellationToken)
-        {
-            await Trigger(notification.AccountId, notification.VillageId, taskManager, contextFactory, getSetting);
-        }
-
-        private static async Task Trigger(
-            AccountId accountId,
-            VillageId villageId,
-            ITaskManager taskManager,
-            IDbContextFactory<AppDbContext> contextFactory,
-            IGetSetting getSetting)
-        {
+            var accountId = notification.AccountId;
+            var villageId = notification.VillageId;
             var autoNPCEnable = getSetting.BooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
             if (autoNPCEnable)
             {
-                var granaryPercent = GetGranaryPercent(villageId, contextFactory);
+                using var context = await contextFactory.CreateDbContextAsync();
+                var granaryPercent = GetGranaryPercent(context, villageId);
                 var autoNPCGranaryPercent = getSetting.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
 
                 if (granaryPercent < autoNPCGranaryPercent) return;
@@ -50,9 +33,8 @@ namespace MainCore.Notification.Handlers.Trigger
             }
         }
 
-        private static int GetGranaryPercent(VillageId villageId, IDbContextFactory<AppDbContext> contextFactory)
+        private static int GetGranaryPercent(AppDbContext context, VillageId villageId)
         {
-            using var context = contextFactory.CreateDbContext();
             var percent = context.Storages
                 .Where(x => x.VillageId == villageId.Value)
                 .Select(x => x.Crop * 100f / x.Granary)

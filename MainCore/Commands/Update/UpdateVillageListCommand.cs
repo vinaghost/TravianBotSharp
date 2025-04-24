@@ -17,7 +17,7 @@ namespace MainCore.Commands.Update
             if (!dtos.Any()) return Result.Ok();
 
             UpdateToDatabase(accountId, dtos.ToList());
-            await _mediator.Publish(new VillageUpdated(accountId), cancellationToken);
+            await _mediator.Publish(new VillageUpdated.Notification(accountId), cancellationToken);
             return Result.Ok();
         }
 
