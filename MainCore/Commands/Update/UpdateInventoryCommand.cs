@@ -3,10 +3,10 @@
 namespace MainCore.Commands.Update
 {
     [RegisterScoped<UpdateInventoryCommand>]
-    public class UpdateInventoryCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
+    public class UpdateInventoryCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, HeroItemUpdated.Handler heroItemUpdated) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly IMediator _mediator = mediator;
+        private readonly HeroItemUpdated.Handler _heroItemUpdated = heroItemUpdated;
 
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {
@@ -15,7 +15,7 @@ namespace MainCore.Commands.Update
             var html = chromeBrowser.Html;
             var dtos = GetItems(html);
             Update(accountId, dtos.ToList());
-            await _mediator.Publish(new HeroItemUpdated(accountId), cancellationToken);
+            await _heroItemUpdated.HandleAsync(new(accountId), cancellationToken);
             return Result.Ok();
         }
 

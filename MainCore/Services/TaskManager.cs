@@ -16,11 +16,13 @@ namespace MainCore.Services
         }
 
         private readonly Dictionary<AccountId, TaskInfo> _tasks = new();
-        private readonly IMediator _mediator;
+        private readonly StatusUpdated.Handler _statusUpdated;
+        private readonly TaskUpdated.Handler _taskUpdated;
 
-        public TaskManager(IMediator mediator)
+        public TaskManager(StatusUpdated.Handler statusUpdated, TaskUpdated.Handler taskUpdated)
         {
-            _mediator = mediator;
+            _statusUpdated = statusUpdated;
+            _taskUpdated = taskUpdated;
         }
 
         public TaskInfo GetTaskInfo(AccountId accountId)
@@ -50,7 +52,7 @@ namespace MainCore.Services
         {
             var taskInfo = GetTaskInfo(accountId);
             taskInfo.Status = status;
-            await _mediator.Publish(new StatusUpdated(accountId, status));
+            await _statusUpdated.HandleAsync(new(accountId));
         }
 
         public bool IsExecuting(AccountId accountId)
@@ -242,13 +244,13 @@ namespace MainCore.Services
         {
             var tasks = GetTaskList(accountId);
             tasks.Clear();
-            await _mediator.Publish(new TaskUpdated(accountId));
+            await _taskUpdated.HandleAsync(new(accountId));
         }
 
         private async Task ReOrder(AccountId accountId, List<TaskBase> tasks)
         {
             tasks.Sort((x, y) => DateTime.Compare(x.ExecuteAt, y.ExecuteAt));
-            await _mediator.Publish(new TaskUpdated(accountId));
+            await _taskUpdated.HandleAsync(new(accountId));
         }
     }
 }

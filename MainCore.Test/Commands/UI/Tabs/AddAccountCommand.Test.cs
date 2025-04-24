@@ -5,7 +5,6 @@ using MainCore.Infrasturecture.Persistence;
 using MainCore.Services;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.UserControls;
-using MediatR;
 
 namespace MainCore.Test.Commands.UI.Tabs
 {
@@ -13,15 +12,15 @@ namespace MainCore.Test.Commands.UI.Tabs
     {
         private readonly IDialogService _dialogService = Substitute.For<IDialogService>();
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel = Substitute.For<IWaitingOverlayViewModel>();
-        private readonly IMediator _mediator = Substitute.For<IMediator>();
         private readonly IValidator<AccountInput> _accountInputValidator = Substitute.For<IValidator<AccountInput>>();
         private readonly IUseragentManager _useragentManager = Substitute.For<IUseragentManager>();
         private readonly MainCore.Commands.UI.AddAccountCommand _addAccountCommand;
+        private readonly MainCore.Notification.Message.AccountUpdated.Handler _accountUpdated = Substitute.For<MainCore.Notification.Message.AccountUpdated.Handler>();
 
         public AddAccountCommand() : base()
         {
             _accountInputValidator.ValidateAsync(Arg.Any<AccountInput>(), Arg.Any<CancellationToken>()).Returns(new ValidationResult());
-            _addAccountCommand = new(_dialogService, _waitingOverlayViewModel, _mediator, _accountInputValidator, _contextFactory, _useragentManager);
+            _addAccountCommand = new(_dialogService, _waitingOverlayViewModel, _accountInputValidator, _contextFactory, _useragentManager, _accountUpdated);
         }
 
         [Fact]

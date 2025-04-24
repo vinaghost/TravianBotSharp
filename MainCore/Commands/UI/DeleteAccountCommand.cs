@@ -7,15 +7,15 @@ namespace MainCore.Commands.UI
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
-        private readonly IMediator _mediator;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly AccountUpdated.Handler _accountUpdated;
 
-        public DeleteAccountCommand(ITaskManager taskManager, IDialogService dialogService, IMediator mediator, IDbContextFactory<AppDbContext> contextFactory)
+        public DeleteAccountCommand(ITaskManager taskManager, IDialogService dialogService, IDbContextFactory<AppDbContext> contextFactory, AccountUpdated.Handler accountUpdated)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
-            _mediator = mediator;
             _contextFactory = contextFactory;
+            _accountUpdated = accountUpdated;
         }
 
         public async Task Execute(AccountId accountId, CancellationToken cancellationToken)
@@ -28,7 +28,7 @@ namespace MainCore.Commands.UI
             }
 
             DeleteAccountFromDatabase(accountId);
-            await _mediator.Publish(new AccountUpdated(), cancellationToken);
+            await _accountUpdated.HandleAsync(new(), cancellationToken);
         }
 
         private void DeleteAccountFromDatabase(AccountId accountId)

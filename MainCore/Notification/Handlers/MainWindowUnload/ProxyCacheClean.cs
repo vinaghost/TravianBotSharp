@@ -4,7 +4,7 @@
     public static partial class ProxyCacheClean
     {
         private static async ValueTask HandleAsync(
-            MainWindowUnloaded notification,
+            INotification notification,
             CancellationToken cancellationToken)
         {
             var path = Path.Combine(AppContext.BaseDirectory, "Plugins");

@@ -158,8 +158,9 @@ namespace MainCore.UI.ViewModels.UserControls
             await restartCommand.Execute(accountId, CancellationToken.None);
         }
 
-        public async Task LoadStatus(AccountId accountId, StatusEnums status)
+        public async Task LoadStatus(AccountId accountId)
         {
+            var status = GetStatus(accountId);
             GetAccountCommand.Execute(accountId).Subscribe(account => account.Color = status.GetColor());
             if (accountId.Value != Accounts.SelectedItemId) return;
             await GetStatusCommand.Execute(accountId);

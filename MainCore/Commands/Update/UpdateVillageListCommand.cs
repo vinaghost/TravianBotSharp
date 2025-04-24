@@ -3,10 +3,10 @@
 namespace MainCore.Commands.Update
 {
     [RegisterScoped<UpdateVillageListCommand>]
-    public class UpdateVillageListCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
+    public class UpdateVillageListCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, VillageUpdated.Handler villageUpdated) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly IMediator _mediator = mediator;
+        private readonly VillageUpdated.Handler _villageUpdated = villageUpdated;
 
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {
@@ -17,7 +17,7 @@ namespace MainCore.Commands.Update
             if (!dtos.Any()) return Result.Ok();
 
             UpdateToDatabase(accountId, dtos.ToList());
-            await _mediator.Publish(new VillageUpdated.Notification(accountId), cancellationToken);
+            await _villageUpdated.HandleAsync(new(accountId), cancellationToken);
             return Result.Ok();
         }
 

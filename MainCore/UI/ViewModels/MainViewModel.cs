@@ -12,19 +12,21 @@ namespace MainCore.UI.ViewModels
         private MainLayoutViewModel _mainLayoutViewModel;
 
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
-        private readonly IMediator _mediator;
+        private readonly MainWindowLoaded.Handler _mainWindowLoaded;
+        private readonly MainWindowUnloaded.Handler _mainWindowUnloaded;
 
-        public MainViewModel(IMediator mediator, IWaitingOverlayViewModel waitingOverlayViewModel)
+        public MainViewModel(IWaitingOverlayViewModel waitingOverlayViewModel, MainWindowLoaded.Handler mainWindowLoaded, MainWindowUnloaded.Handler mainWindowUnloaded)
         {
-            _mediator = mediator;
             _waitingOverlayViewModel = waitingOverlayViewModel;
+            _mainWindowLoaded = mainWindowLoaded;
+            _mainWindowUnloaded = mainWindowUnloaded;
         }
 
         [ReactiveCommand]
         private async Task Load()
         {
             await _waitingOverlayViewModel.Show();
-            await _mediator.Publish(new MainWindowLoaded());
+            await _mainWindowLoaded.HandleAsync(new());
 
             await _waitingOverlayViewModel.ChangeMessage("loading program layout");
             MainLayoutViewModel = Locator.Current.GetService<MainLayoutViewModel>();
@@ -35,7 +37,7 @@ namespace MainCore.UI.ViewModels
         [ReactiveCommand]
         private async Task Unload()
         {
-            await _mediator.Publish(new MainWindowUnloaded());
+            await _mainWindowUnloaded.HandleAsync(new());
         }
     }
 }

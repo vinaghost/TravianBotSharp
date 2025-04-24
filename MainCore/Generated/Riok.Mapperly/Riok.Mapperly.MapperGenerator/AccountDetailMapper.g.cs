@@ -4,7 +4,7 @@ namespace MainCore.DTO
 {
     public static partial class AccountDetailMapper
     {
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         [return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(dto))]
         private static partial global::MainCore.DTO.AccountDto? ToAccount(this global::MainCore.DTO.AccountDetailDto? dto)
         {
@@ -16,7 +16,7 @@ namespace MainCore.DTO
             return target;
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         [return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(dto))]
         private static partial global::MainCore.DTO.AccessDto? ToAccess(this global::MainCore.DTO.AccountDetailDto? dto)
         {

@@ -1,12 +1,10 @@
-﻿using Immediate.Handlers.Shared;
-
-namespace MainCore.Notification.Handlers.MainWindowUnload
+﻿namespace MainCore.Notification.Handlers.MainWindowUnload
 {
     [Handler]
     public static partial class UseragentClean
     {
         private static async ValueTask HandleAsync(
-            MainWindowUnloaded notification,
+            INotification notification,
             IUseragentManager useragentManager,
             CancellationToken cancellationToken)
         {

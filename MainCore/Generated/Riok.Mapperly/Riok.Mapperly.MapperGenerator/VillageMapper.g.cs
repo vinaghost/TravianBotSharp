@@ -4,7 +4,7 @@ namespace MainCore.DTO
 {
     public static partial class VillageMapper
     {
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         [return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(dto))]
         private static partial global::MainCore.Entities.Village? ToEntity(this global::MainCore.DTO.VillageDto? dto)
         {
@@ -20,7 +20,7 @@ namespace MainCore.DTO
             return target;
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         public static partial void To(this global::MainCore.DTO.VillageDto? dto, global::MainCore.Entities.Village? entity)
         {
             if (dto == null || entity == null)
@@ -33,7 +33,7 @@ namespace MainCore.DTO
             entity.IsUnderAttack = dto.IsUnderAttack;
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         [return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(dto))]
         public static partial global::MainCore.DTO.VillageDto? ToDto(this global::MainCore.Entities.Village? dto)
         {
@@ -49,14 +49,14 @@ namespace MainCore.DTO
             return target;
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         [return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(entities))]
         public static partial global::System.Linq.IQueryable<global::MainCore.DTO.VillageDto?>? ToDto(this global::System.Linq.IQueryable<global::MainCore.Entities.Village?>? entities)
         {
             if (entities == null)
                 return default;
 #nullable disable
-            return System.Linq.Queryable.Select(
+            return global::System.Linq.Queryable.Select(
                 entities,
                 x => new global::MainCore.DTO.VillageDto()
                 {

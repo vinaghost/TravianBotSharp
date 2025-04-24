@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Refresh
     public static partial class AccountListRefresh
     {
         private static async ValueTask HandleAsync(
-            AccountUpdated notification,
+            INotification notification,
             MainLayoutViewModel mainLayoutViewModel,
             CancellationToken cancellationToken)
         {

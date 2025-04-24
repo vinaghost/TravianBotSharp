@@ -6,11 +6,11 @@ namespace MainCore.Notification.Handlers.Refresh
     public static partial class StatusRefresh
     {
         private static async ValueTask HandleAsync(
-            StatusUpdated notification,
+            ByAccountIdBase notification,
             MainLayoutViewModel mainLayoutViewModel,
             CancellationToken cancellationToken)
         {
-            await mainLayoutViewModel.LoadStatus(notification.AccountId, notification.Status);
+            await mainLayoutViewModel.LoadStatus(notification.AccountId);
         }
     }
 }

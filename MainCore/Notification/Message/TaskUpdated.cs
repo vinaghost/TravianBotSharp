@@ -1,4 +1,18 @@
-﻿namespace MainCore.Notification.Message
+﻿using MainCore.Notification.Handlers.Refresh;
+
+namespace MainCore.Notification.Message
 {
-    public record TaskUpdated(AccountId AccountId) : ByAccountIdBase(AccountId), INotification;
+    [Handler]
+    public static partial class TaskUpdated
+    {
+        public sealed record Notification(AccountId AccountId) : ByAccountIdBase(AccountId), INotification;
+
+        private static async ValueTask HandleAsync(
+            Notification notification,
+            TaskListRefresh.Handler taskListRefresh,
+            CancellationToken cancellationToken)
+        {
+            await taskListRefresh.HandleAsync(notification, cancellationToken);
+        }
+    }
 }

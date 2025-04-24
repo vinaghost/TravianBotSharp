@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Refresh;
 
 partial class EndpointAddressRefresh
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Message.StatusUpdated, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.Refresh.EndpointAddressRefresh.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class EndpointAddressRefresh
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.Message.StatusUpdated request,
+			global::MainCore.Notification.ByAccountIdBase request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,7 +32,7 @@ partial class EndpointAddressRefresh
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.Message.StatusUpdated, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.UI.ViewModels.Tabs.DebugViewModel _debugViewModel;
 
@@ -44,7 +44,7 @@ partial class EndpointAddressRefresh
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.Message.StatusUpdated request,
+			global::MainCore.Notification.ByAccountIdBase request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -67,7 +67,7 @@ partial class EndpointAddressRefresh
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Refresh.EndpointAddressRefresh.Handler), typeof(global::MainCore.Notification.Handlers.Refresh.EndpointAddressRefresh.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Message.StatusUpdated, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Refresh.EndpointAddressRefresh.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Refresh.EndpointAddressRefresh.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Refresh.EndpointAddressRefresh.HandleBehavior), typeof(global::MainCore.Notification.Handlers.Refresh.EndpointAddressRefresh.HandleBehavior), lifetime));
 		return services;
 	}

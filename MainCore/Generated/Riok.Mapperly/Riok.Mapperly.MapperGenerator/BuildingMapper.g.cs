@@ -4,7 +4,7 @@ namespace MainCore.DTO
 {
     public static partial class BuildingMapper
     {
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         [return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(dto))]
         private static partial global::MainCore.Entities.Building? ToEntity(this global::MainCore.DTO.BuildingDto? dto)
         {
@@ -19,7 +19,7 @@ namespace MainCore.DTO
             return target;
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         public static partial void To(this global::MainCore.DTO.BuildingDto? dto, global::MainCore.Entities.Building? entity)
         {
             if (dto == null || entity == null)
@@ -31,7 +31,7 @@ namespace MainCore.DTO
             entity.Location = dto.Location;
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         [return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(entity))]
         public static partial global::MainCore.DTO.BuildingDto? ToDto(this global::MainCore.Entities.Building? entity)
         {
@@ -46,14 +46,14 @@ namespace MainCore.DTO
             return target;
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         [return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(entities))]
         public static partial global::System.Linq.IQueryable<global::MainCore.DTO.BuildingDto?>? ToDto(this global::System.Linq.IQueryable<global::MainCore.Entities.Building?>? entities)
         {
             if (entities == null)
                 return default;
 #nullable disable
-            return System.Linq.Queryable.Select(
+            return global::System.Linq.Queryable.Select(
                 entities,
                 x => new global::MainCore.DTO.BuildingDto()
                 {

@@ -4,7 +4,7 @@ namespace MainCore.DTO
 {
     public static partial class HeroItemMapper
     {
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         public static partial void To(this global::MainCore.DTO.HeroItemDto? dto, global::MainCore.Entities.HeroItem? entity)
         {
             if (dto == null || entity == null)
@@ -13,7 +13,7 @@ namespace MainCore.DTO
             entity.Amount = dto.Amount;
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         [return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(dto))]
         private static partial global::MainCore.Entities.HeroItem? ToEntity(this global::MainCore.DTO.HeroItemDto? dto)
         {

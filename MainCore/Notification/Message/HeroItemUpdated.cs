@@ -1,4 +1,15 @@
 ﻿namespace MainCore.Notification.Message
 {
-    public record HeroItemUpdated(AccountId AccountId) : ByAccountIdBase(AccountId), INotification;
+    [Handler]
+    public static partial class HeroItemUpdated
+    {
+        public sealed record Notification(AccountId AccountId) : ByAccountIdBase(AccountId), INotification;
+
+        private static async ValueTask HandleAsync(
+            Notification notification,
+            CancellationToken cancellationToken)
+        {
+            await ValueTask.CompletedTask;
+        }
+    }
 }

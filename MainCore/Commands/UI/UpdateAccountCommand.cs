@@ -3,7 +3,6 @@ using MainCore.Commands.Abstract;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.UserControls;
-using System.Reactive.Linq;
 
 namespace MainCore.Commands.UI
 {
@@ -13,12 +12,14 @@ namespace MainCore.Commands.UI
         private readonly IValidator<AccountInput> _accountInputValidator;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IUseragentManager _useragentManager;
+        private readonly AccountUpdated.Handler _accountUpdated;
 
-        public UpdateAccountCommand(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IMediator mediator, IValidator<AccountInput> accountInputValidator, IDbContextFactory<AppDbContext> contextFactory, IUseragentManager useragentManager) : base(dialogService, waitingOverlayViewModel, mediator)
+        public UpdateAccountCommand(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IValidator<AccountInput> accountInputValidator, IDbContextFactory<AppDbContext> contextFactory, IUseragentManager useragentManager, AccountUpdated.Handler accountUpdated) : base(dialogService, waitingOverlayViewModel)
         {
             _accountInputValidator = accountInputValidator;
             _contextFactory = contextFactory;
             _useragentManager = useragentManager;
+            _accountUpdated = accountUpdated;
         }
 
         public async Task<Result> Execute(AccountInput accountInput, CancellationToken cancellationToken)
@@ -35,7 +36,7 @@ namespace MainCore.Commands.UI
 
             var dto = accountInput.ToDto();
             Update(dto);
-            await _mediator.Publish(new AccountUpdated());
+            await _accountUpdated.HandleAsync(new(), cancellationToken);
             await _waitingOverlayViewModel.Hide();
 
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Edited account"));

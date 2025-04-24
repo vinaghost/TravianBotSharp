@@ -16,11 +16,11 @@ namespace MainCore.UI.ViewModels.Tabs
         public AccountSettingInput AccountSettingInput { get; } = new();
         public ListBoxItemViewModel FarmLists { get; } = new();
 
-        private readonly IMediator _mediator;
         private readonly IDialogService _dialogService;
         private readonly ITaskManager _taskManager;
 
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly FarmListUpdated.Handler _farmListUpdated;
 
         private static readonly Dictionary<SplatColor, string> _activeTexts = new()
         {
@@ -29,12 +29,12 @@ namespace MainCore.UI.ViewModels.Tabs
             { SplatColor.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
+        public FarmingViewModel(IDialogService dialogService, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, FarmListUpdated.Handler farmListUpdated)
         {
-            _mediator = mediator;
             _dialogService = dialogService;
             _taskManager = taskManager;
             _contextFactory = contextFactory;
+            _farmListUpdated = farmListUpdated;
 
             LoadFarmListCommand.Subscribe(items =>
             {
@@ -128,7 +128,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             UpdateFarm(new FarmId(selectedFarmList.Id));
 
-            await _mediator.Publish(new FarmListUpdated(AccountId));
+            await _farmListUpdated.HandleAsync(new(AccountId));
         }
 
         [ReactiveCommand]

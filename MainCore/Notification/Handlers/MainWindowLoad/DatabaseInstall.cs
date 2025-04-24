@@ -1,5 +1,4 @@
 ﻿using MainCore.UI.ViewModels.UserControls;
-using Microsoft.Extensions.Logging;
 
 namespace MainCore.Notification.Handlers.MainWindowLoad
 {
@@ -7,13 +6,11 @@ namespace MainCore.Notification.Handlers.MainWindowLoad
     public static partial class DatabaseInstall
     {
         private static async ValueTask HandleAsync(
-
-            MainWindowLoaded notification,
-            IDbContextFactory<AppDbContext> contextFactory, IWaitingOverlayViewModel waitingOverlayViewModel, ILogger<MainWindowLoaded> logger,
+            INotification notification,
+            IDbContextFactory<AppDbContext> contextFactory, IWaitingOverlayViewModel waitingOverlayViewModel,
             CancellationToken cancellationToken)
         {
             await waitingOverlayViewModel.ChangeMessage("loading database");
-            logger.LogInformation("Loading database");
 
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
             var notExist = await context.Database.EnsureCreatedAsync(cancellationToken);
@@ -23,8 +20,6 @@ namespace MainCore.Notification.Handlers.MainWindowLoad
                 await Task.Run(context.FillAccountSettings, cancellationToken);
                 await Task.Run(context.FillVillageSettings, cancellationToken);
             }
-
-            logger.LogInformation("Database loaded");
         }
     }
 }

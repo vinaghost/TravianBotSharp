@@ -4,7 +4,7 @@ namespace MainCore.DTO
 {
     public static partial class AccountInfoMapper
     {
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         public static partial void To(this global::MainCore.DTO.AccountInfoDto? dto, global::MainCore.Entities.AccountInfo? entity)
         {
             if (dto == null || entity == null)
@@ -15,7 +15,7 @@ namespace MainCore.DTO
             entity.HasPlusAccount = dto.HasPlusAccount;
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         [return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(dto))]
         private static partial global::MainCore.Entities.AccountInfo? ToEntity(global::MainCore.DTO.AccountInfoDto? dto)
         {

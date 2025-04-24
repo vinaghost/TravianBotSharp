@@ -582,15 +582,6 @@ namespace Microsoft.Extensions.DependencyInjection
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
                 global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Notification.Publisher),
-                    typeof(global::MainCore.Notification.Publisher),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
                     typeof(global::MainCore.Services.IChromeDriverInstaller),
                     typeof(global::MainCore.Services.ChromeDriverInstaller),
                     global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton

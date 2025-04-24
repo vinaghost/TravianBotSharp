@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Refresh
     public static partial class EndpointAddressRefresh
     {
         private static async ValueTask HandleAsync(
-            StatusUpdated notification,
+            ByAccountIdBase notification,
             DebugViewModel debugViewModel,
             CancellationToken cancellationToken)
         {

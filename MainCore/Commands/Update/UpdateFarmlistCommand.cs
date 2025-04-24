@@ -3,10 +3,10 @@
 namespace MainCore.Commands.Update
 {
     [RegisterScoped<UpdateFarmlistCommand>]
-    public class UpdateFarmlistCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
+    public class UpdateFarmlistCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, FarmListUpdated.Handler farmListUpdated) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly IMediator _mediator = mediator;
+        private readonly FarmListUpdated.Handler _farmListUpdated = farmListUpdated;
 
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {
@@ -15,7 +15,7 @@ namespace MainCore.Commands.Update
             var html = chromeBrowser.Html;
             var dtos = Get(html);
             UpdateToDatabase(accountId, dtos);
-            await _mediator.Publish(new FarmListUpdated(accountId), cancellationToken);
+            await _farmListUpdated.HandleAsync(new(accountId), cancellationToken);
 
             return Result.Ok();
         }

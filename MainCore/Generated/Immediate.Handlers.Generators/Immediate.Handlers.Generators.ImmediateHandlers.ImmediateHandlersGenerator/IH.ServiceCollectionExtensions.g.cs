@@ -48,15 +48,23 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Handlers.Trigger.TrainTroopTaskTrigger.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Handlers.Trigger.UpgradeBuildingTaskTrigger.AddHandlers(services, lifetime);
+		global::MainCore.Notification.Message.AccountInfoUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.AccountInit.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.AccountLogout.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.AccountSettingUpdated.AddHandlers(services, lifetime);
+		global::MainCore.Notification.Message.AccountUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.AdventureUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.CompleteImmediatelyMessage.AddHandlers(services, lifetime);
+		global::MainCore.Notification.Message.FarmListUpdated.AddHandlers(services, lifetime);
+		global::MainCore.Notification.Message.HeroItemUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.JobUpdated.AddHandlers(services, lifetime);
+		global::MainCore.Notification.Message.MainWindowLoaded.AddHandlers(services, lifetime);
+		global::MainCore.Notification.Message.MainWindowUnloaded.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.QuestUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.QueueBuildingUpdated.AddHandlers(services, lifetime);
+		global::MainCore.Notification.Message.StatusUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.StorageUpdated.AddHandlers(services, lifetime);
+		global::MainCore.Notification.Message.TaskUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.VillageSettingUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.VillageUpdated.AddHandlers(services, lifetime);
 		

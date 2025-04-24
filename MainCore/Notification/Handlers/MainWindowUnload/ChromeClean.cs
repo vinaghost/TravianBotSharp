@@ -4,7 +4,7 @@
     public static partial class ChromeClean
     {
         private static async ValueTask HandleAsync(
-            MainWindowUnloaded notification,
+            INotification notification,
             IChromeManager chromeManager,
             CancellationToken cancellationToken)
         {

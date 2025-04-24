@@ -3,10 +3,10 @@
 namespace MainCore.Commands.Update
 {
     [RegisterScoped<UpdateAccountInfoCommand>]
-    public class UpdateAccountInfoCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
+    public class UpdateAccountInfoCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, AccountInfoUpdated.Handler accountInfoUpdated) : CommandBase(dataService), ICommand
     {
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly IMediator _mediator = mediator;
+        private readonly AccountInfoUpdated.Handler _accountInfoUpdated = accountInfoUpdated;
 
         public async Task<Result> Execute(CancellationToken cancellationToken)
         {
@@ -17,7 +17,7 @@ namespace MainCore.Commands.Update
             var dto = Get(html);
             UpdateToDatabase(accountId, dto);
 
-            await _mediator.Publish(new AccountInfoUpdated(accountId), cancellationToken);
+            await _accountInfoUpdated.HandleAsync(new(accountId), cancellationToken);
             return Result.Ok();
         }
 

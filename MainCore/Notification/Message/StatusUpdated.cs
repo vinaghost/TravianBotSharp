@@ -1,4 +1,20 @@
-﻿namespace MainCore.Notification.Message
+﻿using MainCore.Notification.Handlers.Refresh;
+
+namespace MainCore.Notification.Message
 {
-    public record StatusUpdated(AccountId AccountId, StatusEnums Status) : ByAccountIdBase(AccountId), INotification;
+    [Handler]
+    public static partial class StatusUpdated
+    {
+        public sealed record Notification(AccountId AccountId) : ByAccountIdBase(AccountId), INotification;
+
+        private static async ValueTask HandleAsync(
+            Notification notification,
+            StatusRefresh.Handler statusRefresh,
+            EndpointAddressRefresh.Handler endpointAddressRefresh,
+            CancellationToken cancellationToken)
+        {
+            await statusRefresh.HandleAsync(notification, cancellationToken);
+            await endpointAddressRefresh.HandleAsync(notification, cancellationToken);
+        }
+    }
 }

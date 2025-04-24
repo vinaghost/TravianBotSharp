@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.MainWindowLoad;
 
 partial class ChromeUserAgentInstall
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Message.MainWindowLoaded, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.INotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.MainWindowLoad.ChromeUserAgentInstall.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class ChromeUserAgentInstall
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.Message.MainWindowLoaded request,
+			global::MainCore.Notification.INotification request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,25 +32,22 @@ partial class ChromeUserAgentInstall
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.Message.MainWindowLoaded, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.INotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.IUseragentManager _useragentManager;
 		private readonly global::MainCore.UI.ViewModels.UserControls.IWaitingOverlayViewModel _waitingOverlayViewModel;
-		private readonly global::Microsoft.Extensions.Logging.ILogger<global::MainCore.Notification.Message.MainWindowLoaded> _logger;
 
 		public HandleBehavior(
 			global::MainCore.Services.IUseragentManager useragentManager,
-			global::MainCore.UI.ViewModels.UserControls.IWaitingOverlayViewModel waitingOverlayViewModel,
-			global::Microsoft.Extensions.Logging.ILogger<global::MainCore.Notification.Message.MainWindowLoaded> logger
+			global::MainCore.UI.ViewModels.UserControls.IWaitingOverlayViewModel waitingOverlayViewModel
 		)
 		{
 			_useragentManager = useragentManager;
 			_waitingOverlayViewModel = waitingOverlayViewModel;
-			_logger = logger;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.Message.MainWindowLoaded request,
+			global::MainCore.Notification.INotification request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -59,7 +56,6 @@ partial class ChromeUserAgentInstall
 					request
 					, _useragentManager
 					, _waitingOverlayViewModel
-					, _logger
 					, cancellationToken
 				)
 				.ConfigureAwait(false);
@@ -75,7 +71,7 @@ partial class ChromeUserAgentInstall
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.MainWindowLoad.ChromeUserAgentInstall.Handler), typeof(global::MainCore.Notification.Handlers.MainWindowLoad.ChromeUserAgentInstall.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Message.MainWindowLoaded, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.MainWindowLoad.ChromeUserAgentInstall.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.INotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.MainWindowLoad.ChromeUserAgentInstall.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.MainWindowLoad.ChromeUserAgentInstall.HandleBehavior), typeof(global::MainCore.Notification.Handlers.MainWindowLoad.ChromeUserAgentInstall.HandleBehavior), lifetime));
 		return services;
 	}

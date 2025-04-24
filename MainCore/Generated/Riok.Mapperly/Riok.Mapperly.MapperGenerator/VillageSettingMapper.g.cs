@@ -4,7 +4,7 @@ namespace MainCore.DTO
 {
     public static partial class VillageSettingMapper
     {
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         [return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(dto))]
         private static partial global::MainCore.Entities.VillageSetting? ToEntity(this global::MainCore.DTO.VillageSettingDto? dto)
         {
@@ -17,7 +17,7 @@ namespace MainCore.DTO
             return target;
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCode("Riok.Mapperly", "4.2.1.0")]
         [return: global::System.Diagnostics.CodeAnalysis.NotNullIfNotNull(nameof(dto))]
         public static partial global::MainCore.DTO.VillageSettingDto? ToDto(this global::MainCore.Entities.VillageSetting? dto)
         {

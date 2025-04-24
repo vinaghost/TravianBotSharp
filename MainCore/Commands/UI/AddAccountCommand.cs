@@ -12,12 +12,14 @@ namespace MainCore.Commands.UI
         private readonly IValidator<AccountInput> _accountInputValidator;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IUseragentManager _useragentManager;
+        private readonly AccountUpdated.Handler _accountUpdated;
 
-        public AddAccountCommand(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IMediator mediator, IValidator<AccountInput> accountInputValidator, IDbContextFactory<AppDbContext> contextFactory, IUseragentManager useragentManager) : base(dialogService, waitingOverlayViewModel, mediator)
+        public AddAccountCommand(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IValidator<AccountInput> accountInputValidator, IDbContextFactory<AppDbContext> contextFactory, IUseragentManager useragentManager, AccountUpdated.Handler accountUpdated) : base(dialogService, waitingOverlayViewModel)
         {
             _accountInputValidator = accountInputValidator;
             _contextFactory = contextFactory;
             _useragentManager = useragentManager;
+            _accountUpdated = accountUpdated;
         }
 
         public async Task<Result> Execute(AccountInput accountInput, CancellationToken cancellationToken)
@@ -43,7 +45,7 @@ namespace MainCore.Commands.UI
 
             Add(dto);
 
-            await _mediator.Publish(new AccountUpdated(), cancellationToken);
+            await _accountUpdated.HandleAsync(new(), cancellationToken);
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added account"));
             await _waitingOverlayViewModel.Hide();
 
@@ -64,7 +66,7 @@ namespace MainCore.Commands.UI
             }
             dtos.ForEach(Add);
 
-            await _mediator.Publish(new AccountUpdated(), cancellationToken);
+            await _accountUpdated.HandleAsync(new(), cancellationToken);
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added {dtos.Count} accounts"));
             await _waitingOverlayViewModel.Hide();
             return Result.Ok();

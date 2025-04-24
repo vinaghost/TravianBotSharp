@@ -1,5 +1,4 @@
 ﻿using MainCore.UI.ViewModels.UserControls;
-using Microsoft.Extensions.Logging;
 
 namespace MainCore.Notification.Handlers.MainWindowLoad
 {
@@ -7,14 +6,12 @@ namespace MainCore.Notification.Handlers.MainWindowLoad
     public static partial class ChromeExtensionInstall
     {
         private static async ValueTask HandleAsync(
-            MainWindowLoaded notification,
-            IChromeManager chromeManager, IWaitingOverlayViewModel waitingOverlayViewModel, ILogger<MainWindowLoaded> logger,
+            INotification notification,
+            IChromeManager chromeManager, IWaitingOverlayViewModel waitingOverlayViewModel,
             CancellationToken cancellationToken)
         {
             await waitingOverlayViewModel.ChangeMessage("installing chrome extension");
-            logger.LogInformation("Installing chrome extension");
             await Task.Run(chromeManager.LoadExtension, cancellationToken);
-            logger.LogInformation("Chrome extension installed");
         }
     }
 }
