@@ -637,16 +637,6 @@
           "Splat": "15.3.1"
         }
       },
-      "Splat.Serilog": {
-        "type": "Transitive",
-        "resolved": "15.3.1",
-        "contentHash": "++ZyNCPk6uf3w3UO8ifIOT9fl63cKHUrKLiIlcq06z/5pKE1vU5NYd5JOMMlJ0pJSfWsAguHrBND/OX1jGswvQ==",
-        "dependencies": {
-          "Serilog": "4.2.0",
-          "Splat": "15.3.1",
-          "System.Collections.Immutable": "9.0.1"
-        }
-      },
       "SQLitePCLRaw.bundle_e_sqlite3": {
         "type": "Transitive",
         "resolved": "2.1.6",
@@ -676,11 +666,6 @@
         "dependencies": {
           "SQLitePCLRaw.core": "2.1.6"
         }
-      },
-      "System.Collections.Immutable": {
-        "type": "Transitive",
-        "resolved": "9.0.1",
-        "contentHash": "qt4+ClsZYKzar/Rw1zbt0t9iuBUCLVNsjXicEuVQyKL7143CwhWzI2gTwzz8AhSaFYVHnpcb8SBGA+zaY4weUg=="
       },
       "System.ComponentModel.Annotations": {
         "type": "Transitive",
@@ -814,8 +799,7 @@
           "Serilog.Sinks.Map": "[2.0.0, )",
           "Splat": "[15.3.1, )",
           "Splat.Drawing": "[15.3.1, )",
-          "Splat.Microsoft.Extensions.DependencyInjection": "[15.3.1, )",
-          "Splat.Serilog": "[15.3.1, )"
+          "Splat.Microsoft.Extensions.DependencyInjection": "[15.3.1, )"
         }
       }
     },

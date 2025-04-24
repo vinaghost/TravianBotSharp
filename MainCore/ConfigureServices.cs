@@ -7,7 +7,6 @@ using ReactiveUI;
 using Serilog;
 using Serilog.Templates;
 using Splat.Microsoft.Extensions.DependencyInjection;
-using Splat.Serilog;
 
 namespace MainCore
 {
@@ -49,16 +48,6 @@ namespace MainCore
 
         public static IServiceProvider Setup()
         {
-            Log.Logger = new LoggerConfiguration()
-                        .Filter.ByExcluding("SourceContext like 'ReactiveUI.POCOObservableForProperty' and Contains(@m, 'WhenAny will only return a single value')")
-                        .WriteTo.Map("Account", "Other", (acc, wt) =>
-                        {
-                            wt.File(new ExpressionTemplate("[{@t:HH:mm:ss} {@l:u3}{#if SourceContext is not null} ({SourceContext}){#end}] {@m}\n{@x}"),
-                                path: $"./logs/log-{acc}-.txt",
-                                rollingInterval: RollingInterval.Day);
-                            wt.LogSink();
-                        })
-                        .CreateLogger();
             var host = Host.CreateDefaultBuilder()
                .ConfigureServices((_context, services) =>
                {
@@ -67,8 +56,17 @@ namespace MainCore
                    resolver.InitializeSplat();
                    resolver.InitializeReactiveUI();
                    services.AddCoreServices();
-                   services.AddSerilog();
-                   resolver.UseSerilogFullLogger();
+                   services.AddSerilog(c =>
+                   {
+                       c.Filter.ByExcluding("SourceContext like 'ReactiveUI.POCOObservableForProperty' and Contains(@m, 'WhenAny will only return a single value')");
+                       c.WriteTo.Map("Account", "Other", (acc, wt) =>
+                       {
+                           wt.File(new ExpressionTemplate("[{@t:HH:mm:ss} {@l:u3}{#if SourceContext is not null} ({SourceContext}){#end}] {@m}\n{@x}"),
+                               path: $"./logs/log-{acc}-.txt",
+                               rollingInterval: RollingInterval.Day);
+                           wt.LogSink();
+                       });
+                   });
                })
                .UseDefaultServiceProvider(config =>
                {
