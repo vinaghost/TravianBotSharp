@@ -1,4 +1,5 @@
-﻿using MainCore.Commands.UI;
+﻿using FluentValidation;
+using MainCore.Commands.UI.Misc;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
@@ -14,10 +15,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public VillageSettingInput VillageSettingInput { get; } = new();
 
         private readonly IDialogService _dialogService;
+        private readonly IValidator<VillageSettingInput> _villageSettingInputValidator;
 
-        public VillageSettingViewModel(IDialogService dialogService)
+        public VillageSettingViewModel(IDialogService dialogService, IValidator<VillageSettingInput> villageSettingInputValidator)
         {
             _dialogService = dialogService;
+            _villageSettingInputValidator = villageSettingInputValidator;
 
             LoadSettingCommand.Subscribe(VillageSettingInput.Set);
         }
@@ -37,8 +40,14 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         [ReactiveCommand]
         private async Task Save()
         {
-            var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
-            await saveSettingCommand.Execute(AccountId, VillageId, VillageSettingInput, CancellationToken.None);
+            var result = await _villageSettingInputValidator.ValidateAsync(VillageSettingInput);
+            if (!result.IsValid)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                return;
+            }
+            var saveVillageSettingCommand = Locator.Current.GetService<SaveVillageSettingCommand.Handler>();
+            await saveVillageSettingCommand.HandleAsync(new(AccountId, VillageId, VillageSettingInput.Get()));
         }
 
         [ReactiveCommand]
@@ -58,8 +67,14 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
 
             VillageSettingInput.Set(settings);
-            var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
-            await saveSettingCommand.Execute(AccountId, VillageId, VillageSettingInput, CancellationToken.None);
+            var result = await _villageSettingInputValidator.ValidateAsync(VillageSettingInput);
+            if (!result.IsValid)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                return;
+            }
+            var saveVillageSettingCommand = Locator.Current.GetService<SaveVillageSettingCommand.Handler>();
+            await saveVillageSettingCommand.HandleAsync(new(AccountId, VillageId, VillageSettingInput.Get()));
         }
 
         [ReactiveCommand]

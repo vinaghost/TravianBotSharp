@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
-using MainCore.Commands.UI;
+using MainCore.Commands.UI.FarmingViewModel;
+using MainCore.Commands.UI.Misc;
 using MainCore.Tasks;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
@@ -17,10 +18,8 @@ namespace MainCore.UI.ViewModels.Tabs
         public ListBoxItemViewModel FarmLists { get; } = new();
 
         private readonly IDialogService _dialogService;
-        private readonly ITaskManager _taskManager;
-
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly FarmListUpdated.Handler _farmListUpdated;
+        private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
 
         private static readonly Dictionary<SplatColor, string> _activeTexts = new()
         {
@@ -29,12 +28,11 @@ namespace MainCore.UI.ViewModels.Tabs
             { SplatColor.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(IDialogService dialogService, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, FarmListUpdated.Handler farmListUpdated)
+        public FarmingViewModel(IDialogService dialogService, IDbContextFactory<AppDbContext> contextFactory, IValidator<AccountSettingInput> accountsettingInputValidator)
         {
+            _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;
-            _taskManager = taskManager;
             _contextFactory = contextFactory;
-            _farmListUpdated = farmListUpdated;
 
             LoadFarmListCommand.Subscribe(items =>
             {
@@ -77,7 +75,8 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task UpdateFarmList()
         {
-            await _taskManager.AddOrUpdate<UpdateFarmListTask>(AccountId);
+            var taskManager = Locator.Current.GetService<ITaskManager>();
+            await taskManager.AddOrUpdate<UpdateFarmListTask>(AccountId);
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added update farm list task"));
         }
 
@@ -95,16 +94,17 @@ namespace MainCore.UI.ViewModels.Tabs
                     return;
                 }
             }
-            await _taskManager.AddOrUpdate<StartFarmListTask>(AccountId);
+            var taskManager = Locator.Current.GetService<ITaskManager>();
+            await taskManager.AddOrUpdate<StartFarmListTask>(AccountId);
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added start farm list task"));
         }
 
         [ReactiveCommand]
         private async Task Stop()
         {
-            var task = _taskManager.Get<StartFarmListTask>(AccountId);
-
-            if (task is not null) await _taskManager.Remove(AccountId, task);
+            var taskManager = Locator.Current.GetService<ITaskManager>();
+            var task = taskManager.Get<StartFarmListTask>(AccountId);
+            if (task is not null) await taskManager.Remove(AccountId, task);
 
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Removed start farm list task"));
         }
@@ -112,23 +112,30 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task Save()
         {
-            var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
-            await saveSettingCommand.Execute(AccountId, AccountSettingInput, CancellationToken.None);
+            var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
+            if (!result.IsValid)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                return;
+            }
+
+            var saveAccountSettingCommand = Locator.Current.GetService<SaveAccountSettingCommand.Handler>();
+            await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
         }
 
         [ReactiveCommand]
         private async Task ActiveFarmList()
         {
-            var selectedFarmList = FarmLists.SelectedItem;
-            if (selectedFarmList is null)
+            if (!FarmLists.IsSelected)
             {
                 await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "No farm list selected"));
                 return;
             }
 
-            UpdateFarm(new FarmId(selectedFarmList.Id));
+            var selectedFarmList = FarmLists.SelectedItem;
 
-            await _farmListUpdated.HandleAsync(new(AccountId));
+            var activationCommand = Locator.Current.GetService<ActivationCommand.Handler>();
+            await activationCommand.HandleAsync(new(AccountId, new FarmId(selectedFarmList.Id)));
         }
 
         [ReactiveCommand]
@@ -140,20 +147,10 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private List<ListBoxItem> LoadFarmList(AccountId accountId)
+        private async Task<List<ListBoxItem>> LoadFarmList(AccountId accountId)
         {
-            using var context = _contextFactory.CreateDbContext();
-
-            var items = context.FarmLists
-                .Where(x => x.AccountId == accountId.Value)
-                .Select(x => new ListBoxItem()
-                {
-                    Id = x.Id,
-                    Color = x.IsActive ? SplatColor.Green : SplatColor.Red,
-                    Content = x.Name,
-                })
-                .ToList();
-
+            var getFarmListItemsQuery = Locator.Current.GetService<GetFarmListItemsQuery.Handler>();
+            var items = await getFarmListItemsQuery.HandleAsync(new(accountId));
             return items;
         }
 
@@ -169,14 +166,6 @@ namespace MainCore.UI.ViewModels.Tabs
                 .Where(x => x.IsActive)
                 .Count();
             return count;
-        }
-
-        private void UpdateFarm(FarmId farmId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            context.FarmLists
-               .Where(x => x.Id == farmId.Value)
-               .ExecuteUpdate(x => x.SetProperty(x => x.IsActive, x => !x.IsActive));
         }
     }
 }

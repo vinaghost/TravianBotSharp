@@ -38,7 +38,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>? _loadFarmListCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> LoadFarmListCommand { get => _loadFarmListCommand ??= ReactiveUI.ReactiveCommand.Create<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>(LoadFarmList); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> LoadFarmListCommand { get => _loadFarmListCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>(LoadFarmList); }
     }
 }
 #nullable restore

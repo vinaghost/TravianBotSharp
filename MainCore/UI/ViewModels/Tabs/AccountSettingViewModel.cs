@@ -1,4 +1,5 @@
-﻿using MainCore.Commands.UI;
+﻿using FluentValidation;
+using MainCore.Commands.UI.Misc;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
@@ -13,12 +14,14 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         public AccountSettingInput AccountSettingInput { get; } = new();
         private readonly IDialogService _dialogService;
+        private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
 
-        public AccountSettingViewModel(IDialogService dialogService)
+        public AccountSettingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator)
         {
             _dialogService = dialogService;
 
             LoadSettingsCommand.Subscribe(AccountSettingInput.Set);
+            _accountsettingInputValidator = accountsettingInputValidator;
         }
 
         public async Task SettingRefresh(AccountId accountId)
@@ -36,8 +39,14 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task Save()
         {
-            var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
-            await saveSettingCommand.Execute(AccountId, AccountSettingInput, CancellationToken.None);
+            var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
+            if (!result.IsValid)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                return;
+            }
+            var saveAccountSettingCommand = Locator.Current.GetService<SaveAccountSettingCommand.Handler>();
+            await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
         }
 
         [ReactiveCommand]
@@ -57,8 +66,14 @@ namespace MainCore.UI.ViewModels.Tabs
             }
 
             AccountSettingInput.Set(settings);
-            var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
-            await saveSettingCommand.Execute(AccountId, AccountSettingInput, CancellationToken.None);
+            var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
+            if (!result.IsValid)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                return;
+            }
+            var saveAccountSettingCommand = Locator.Current.GetService<SaveAccountSettingCommand.Handler>();
+            await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
         }
 
         [ReactiveCommand]

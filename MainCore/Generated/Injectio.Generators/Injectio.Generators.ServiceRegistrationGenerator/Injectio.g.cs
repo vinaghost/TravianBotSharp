@@ -411,15 +411,6 @@ namespace Microsoft.Extensions.DependencyInjection
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
                 global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.UI.SaveSettingCommand),
-                    typeof(global::MainCore.Commands.UI.SaveSettingCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
                     typeof(global::MainCore.Commands.UI.UpdateAccountCommand),
                     typeof(global::MainCore.Commands.UI.UpdateAccountCommand),
                     global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
