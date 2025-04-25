@@ -8,9 +8,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     {
         private readonly ToBuildingCommand _toBuildingCommand;
         private readonly SwitchTabCommand _switchTabCommand;
-        private readonly GetBuilding _getBuilding;
+        private readonly GetBuilding.Handler _getBuilding;
 
-        public ToBuildPageCommand(IDataService dataService, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, GetBuilding getBuilding) : base(dataService)
+        public ToBuildPageCommand(IDataService dataService, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, GetBuilding.Handler getBuilding) : base(dataService)
         {
             _toBuildingCommand = toBuildingCommand;
             _switchTabCommand = switchTabCommand;
@@ -25,7 +25,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             result = await _toBuildingCommand.Execute(plan.Location, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var building = _getBuilding.Execute(villageId, plan.Location);
+            var building = await _getBuilding.HandleAsync(new(villageId, plan.Location), cancellationToken);
             if (building.Type == BuildingEnums.Site)
             {
                 var tabIndex = plan.Type.GetBuildingsCategory();

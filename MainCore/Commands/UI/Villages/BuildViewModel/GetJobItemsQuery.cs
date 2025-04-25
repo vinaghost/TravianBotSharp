@@ -1,29 +1,23 @@
 ﻿using Humanizer;
-using MainCore.Commands.Abstract;
 using MainCore.Common.Models;
 using MainCore.UI.Models.Output;
 using System.Text.Json;
 
-namespace MainCore.Commands.Queries
+namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
-    [RegisterSingleton<GetJobs>]
-    public class GetJobs(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
+    [Handler]
+    public static partial class GetJobItemsQuery
     {
-        public List<JobDto> Dtos(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
+        public sealed record Query(VillageId VillageId) : ICustomQuery;
 
-            var dtos = context.Jobs
-                .Where(x => x.VillageId == villageId.Value)
-                .OrderBy(x => x.Position)
-                .ToDto()
-                .ToList();
-            return dtos;
-        }
-
-        public List<ListBoxItem> Items(VillageId villageId)
+        private static async ValueTask<List<ListBoxItem>> HandleAsync(
+            Query query,
+            IDbContextFactory<AppDbContext> contextFactory,
+            CancellationToken cancellationToken
+            )
         {
-            using var context = _contextFactory.CreateDbContext();
+            var villageId = query.VillageId;
+            using var context = await contextFactory.CreateDbContextAsync();
 
             var items = context.Jobs
                 .Where(x => x.VillageId == villageId.Value)

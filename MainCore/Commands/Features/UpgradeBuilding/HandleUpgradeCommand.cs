@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly DelayClickCommand _delayClickCommand;
         private readonly IGetSetting _getSetting;
-        private readonly GetBuilding _getBuilding;
+        private readonly GetBuilding.Handler _getBuilding;
 
         private readonly List<BuildingEnums> _buildings = [
             BuildingEnums.Residence,
@@ -17,7 +17,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             BuildingEnums.CommandCenter
         ];
 
-        public HandleUpgradeCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IGetSetting getSetting, GetBuilding getBuilding) : base(dataService)
+        public HandleUpgradeCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand, IGetSetting getSetting, GetBuilding.Handler getBuilding) : base(dataService)
         {
             _contextFactory = contextFactory;
             _delayClickCommand = delayClickCommand;
@@ -31,7 +31,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             if (IsUpgradeable(plan))
             {
-                if (IsSpecialUpgrade() && IsSpecialUpgradeable(plan))
+                if (IsSpecialUpgrade() && await IsSpecialUpgradeable(plan))
                 {
                     result = await SpecialUpgrade(cancellationToken);
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -56,14 +56,14 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return !IsEmptySite(plan.Location);
         }
 
-        private bool IsSpecialUpgradeable(NormalBuildPlan plan)
+        private async Task<bool> IsSpecialUpgradeable(NormalBuildPlan plan)
         {
             if (_buildings.Contains(plan.Type)) return false;
 
             if (plan.Type.IsResourceField())
             {
                 var villageId = _dataService.VillageId;
-                var dto = _getBuilding.Execute(villageId, plan.Location);
+                var dto = await _getBuilding.HandleAsync(new(villageId, plan.Location));
                 if (dto.Level == 0) return false;
             }
             return true;

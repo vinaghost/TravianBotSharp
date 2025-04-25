@@ -15,10 +15,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         private readonly ToHeroInventoryCommand _toHeroInventoryCommand;
         private readonly UpdateInventoryCommand _updateInventoryCommand;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IsResourceEnough _isResourceEnough;
+        private readonly IsResourceEnough.Handler _isResourceEnough;
         private readonly IGetSetting _getSetting;
 
-        public HandleResourceCommand(IDataService dataService, JobUpdated.Handler jobUpdated, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand, UpdateInventoryCommand updateInventoryCommand, IsResourceEnough isResourceEnough, IGetSetting getSetting) : base(dataService)
+        public HandleResourceCommand(IDataService dataService, JobUpdated.Handler jobUpdated, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand, UpdateInventoryCommand updateInventoryCommand, IsResourceEnough.Handler isResourceEnough, IGetSetting getSetting) : base(dataService)
         {
             _jobUpdated = jobUpdated;
             _updateStorageCommand = updateStorageCommand;
@@ -38,7 +38,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             var requiredResource = GetRequiredResource(plan.Type);
 
-            result = _isResourceEnough.Execute(_dataService.VillageId, requiredResource);
+            result = await _isResourceEnough.HandleAsync(new(_dataService.VillageId, requiredResource), cancellationToken);
             if (!result.IsFailed)
             {
                 return Result.Ok();
@@ -141,10 +141,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 Level = cropland.Level + 1,
             };
 
-            new AddJobCommand(_contextFactory).ToTop(_dataService.VillageId, plan);
+            var addJobCommand = Locator.Current.GetService<AddJobCommand.Handler>();
+            await addJobCommand.HandleAsync(new(_dataService.AccountId, _dataService.VillageId, plan.ToJob(_dataService.VillageId), true));
             var logger = _dataService.Logger;
             logger.Information($"Add cropland to top of the job queue");
-            await _jobUpdated.HandleAsync(new(_dataService.AccountId, _dataService.VillageId), cancellationToken);
         }
 
         private bool IsUseHeroResource()

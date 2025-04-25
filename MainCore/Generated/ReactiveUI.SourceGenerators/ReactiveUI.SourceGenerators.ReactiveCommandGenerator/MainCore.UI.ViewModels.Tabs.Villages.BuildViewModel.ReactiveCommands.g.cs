@@ -14,19 +14,19 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private ReactiveUI.ReactiveCommand<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>? _loadBuildingCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> LoadBuildingCommand { get => _loadBuildingCommand ??= ReactiveUI.ReactiveCommand.Create<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>(LoadBuilding); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> LoadBuildingCommand { get => _loadBuildingCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>(LoadBuilding); }
         private ReactiveUI.ReactiveCommand<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>? _loadQueueCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> LoadQueueCommand { get => _loadQueueCommand ??= ReactiveUI.ReactiveCommand.Create<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>(LoadQueue); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> LoadQueueCommand { get => _loadQueueCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>(LoadQueue); }
         private ReactiveUI.ReactiveCommand<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>? _loadJobCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> LoadJobCommand { get => _loadJobCommand ??= ReactiveUI.ReactiveCommand.Create<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>(LoadJob); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> LoadJobCommand { get => _loadJobCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>(LoadJob); }
         private ReactiveUI.ReactiveCommand<global::MainCore.UI.Models.Output.ListBoxItem, global::System.Collections.Generic.List<global::MainCore.Common.Enums.BuildingEnums>>? _loadBuildNormalCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.UI.Models.Output.ListBoxItem, global::System.Collections.Generic.List<global::MainCore.Common.Enums.BuildingEnums>> LoadBuildNormalCommand { get => _loadBuildNormalCommand ??= ReactiveUI.ReactiveCommand.Create<global::MainCore.UI.Models.Output.ListBoxItem, global::System.Collections.Generic.List<global::MainCore.Common.Enums.BuildingEnums>>(LoadBuildNormal); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.UI.Models.Output.ListBoxItem, global::System.Collections.Generic.List<global::MainCore.Common.Enums.BuildingEnums>> LoadBuildNormalCommand { get => _loadBuildNormalCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.UI.Models.Output.ListBoxItem, global::System.Collections.Generic.List<global::MainCore.Common.Enums.BuildingEnums>>(LoadBuildNormal); }
         private ReactiveUI.ReactiveCommand<global::System.Reactive.Unit, global::System.Reactive.Unit>? _buildNormalCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]

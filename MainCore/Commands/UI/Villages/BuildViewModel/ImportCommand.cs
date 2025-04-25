@@ -1,25 +1,12 @@
 ﻿using MainCore.Common.Models;
-using MainCore.UI.Models.Output;
 using System.Text.Json;
 
-namespace MainCore.Commands.UI.Villages
+namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
-    [RegisterSingleton<ImportCommand>]
-    public class ImportCommand
+    [Handler]
+    public static partial class ImportCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IDialogService _dialogService;
-        private readonly JobUpdated.Handler _jobUpdated;
-        private readonly GetBuildings _getBuildings;
-
-        public ImportCommand(IDbContextFactory<AppDbContext> contextFactory, IDialogService dialogService, JobUpdated.Handler jobUpdated, GetBuildings getBuildings)
-        {
-            _contextFactory = contextFactory;
-            _dialogService = dialogService;
-            _jobUpdated = jobUpdated;
-            _getBuildings = getBuildings;
-        }
-
+        public sealed record Command(AccountId AccountId, VillageId VillageId, List<JobDto> Jobs) : ICustomCommand;
         private static readonly List<int> _excludedLocations = new() { 26, 39, 40 }; //main building, rallypoint and wall
 
         private static readonly Dictionary<ResourcePlanEnums, List<BuildingEnums>> _fieldList = new()
@@ -37,35 +24,41 @@ namespace MainCore.Commands.UI.Villages
                 BuildingEnums.Cropland,}},
         };
 
-        public async Task Execute(AccountId accountId, VillageId villageId)
+        private static async ValueTask HandleAsync(
+            Command command,
+            IDbContextFactory<AppDbContext> contextFactory, GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
+            JobUpdated.Handler jobUpdated,
+            CancellationToken cancellationToken
+            )
         {
-            var path = await _dialogService.OpenFileDialog.Handle(Unit.Default);
-            List<JobDto> jobs;
-            try
-            {
-                var jsonString = await File.ReadAllTextAsync(path);
-                jobs = JsonSerializer.Deserialize<List<JobDto>>(jsonString);
-            }
-            catch
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Invalid file."));
-                return;
-            }
+            var (accountId, villageId, inputJobs) = command;
 
-            var confirm = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "TBS will remove resource field build job if its position doesn't match with current village."));
-            if (!confirm) return;
+            var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId));
+            var modifiedJobs = GetModifiedJobs(buildings, inputJobs);
 
-            var modifiedJobs = GetModifiedJobs(villageId, jobs);
-            AddJobToDatabase(villageId, modifiedJobs);
+            using var context = await contextFactory.CreateDbContextAsync();
+            var count = context.Jobs
+               .Where(x => x.VillageId == villageId.Value)
+               .Count();
 
-            await _jobUpdated.HandleAsync(new(accountId, villageId));
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Jobs imported"));
+            var jobs = modifiedJobs
+                .Select((job, index) => new Job()
+                {
+                    Position = count + index,
+                    VillageId = villageId.Value,
+                    Type = job.Type,
+                    Content = job.Content,
+                })
+                .ToList();
+
+            context.AddRange(jobs);
+            context.SaveChanges();
+
+            await jobUpdated.HandleAsync(new(accountId, villageId));
         }
 
-        private IEnumerable<JobDto> GetModifiedJobs(VillageId villageId, List<JobDto> jobs)
+        private static IEnumerable<JobDto> GetModifiedJobs(List<BuildingItem> buildings, List<JobDto> jobs)
         {
-            var buildings = _getBuildings.Layout(villageId);
-
             var changedLocations = new Dictionary<int, int>();
             foreach (var job in jobs)
             {
@@ -217,32 +210,6 @@ namespace MainCore.Commands.UI.Villages
         private static int GetRandomLocation(List<int> freeLocations)
         {
             return freeLocations[Random.Shared.Next(0, freeLocations.Count - 1)];
-        }
-
-        private void AddJobToDatabase(VillageId villageId, IEnumerable<JobDto> jobDtos)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var count = context.Jobs
-               .Where(x => x.VillageId == villageId.Value)
-               .Count();
-
-            var jobs = new List<Job>();
-            foreach (var jobDto in jobDtos)
-            {
-                var job = new Job()
-                {
-                    Position = count,
-                    VillageId = villageId.Value,
-                    Type = jobDto.Type,
-                    Content = jobDto.Content,
-                };
-
-                jobs.Add(job);
-                count++;
-            }
-
-            context.AddRange(jobs);
-            context.SaveChanges();
         }
     }
 }

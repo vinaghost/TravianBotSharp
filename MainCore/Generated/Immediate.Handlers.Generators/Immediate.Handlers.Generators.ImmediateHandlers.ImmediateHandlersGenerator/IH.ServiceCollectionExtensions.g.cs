@@ -19,10 +19,27 @@ public static class HandlerServiceCollectionExtensions
 		ServiceLifetime lifetime = ServiceLifetime.Scoped
 	)
 	{
+		global::MainCore.Commands.Misc.AddJobCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Misc.DeleteJobByIdCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Misc.StopCurrentTask.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Queries.GetBuilding.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Queries.GetLayoutBuildingsQuery.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Queries.IsResourceEnough.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.DebugViewModel.GetEndpointAdressQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.DebugViewModel.GetLogQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.DebugViewModel.GetTaskItemsQuery.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.Villages.BuildViewModel.DeleteJobByVillageIdCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.Villages.BuildViewModel.ExportCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.Villages.BuildViewModel.GetJobItemsQuery.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.Villages.BuildViewModel.GetLayoutBuildingItemsQuery.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.Villages.BuildViewModel.GetQueueBuildingItemsQuery.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.Villages.BuildViewModel.ImportCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.Villages.BuildViewModel.MoveCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.Villages.BuildViewModel.ResourceBuildCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.Villages.BuildViewModel.SwapCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.Villages.BuildViewModel.UpgradeCommand.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Handlers.MainWindowLoad.ChromeDriverInstall.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Handlers.MainWindowLoad.ChromeExtensionInstall.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Handlers.MainWindowLoad.ChromeUserAgentInstall.AddHandlers(services, lifetime);

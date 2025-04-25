@@ -231,15 +231,6 @@ namespace Microsoft.Extensions.DependencyInjection
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
                 global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Misc.AddJobCommand),
-                    typeof(global::MainCore.Commands.Misc.AddJobCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
                     typeof(global::MainCore.Commands.Misc.DelayClickCommand),
                     typeof(global::MainCore.Commands.Misc.DelayClickCommand),
                     global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped
@@ -252,15 +243,6 @@ namespace Microsoft.Extensions.DependencyInjection
                     typeof(global::MainCore.Commands.Misc.DelayTaskCommand),
                     typeof(global::MainCore.Commands.Misc.DelayTaskCommand),
                     global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Misc.DeleteJobCommand),
-                    typeof(global::MainCore.Commands.Misc.DeleteJobCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
                 )
             );
 
@@ -330,35 +312,8 @@ namespace Microsoft.Extensions.DependencyInjection
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
                 global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Queries.GetBuilding),
-                    typeof(global::MainCore.Commands.Queries.GetBuilding),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
                     typeof(global::MainCore.Commands.Queries.GetBuildingLocation),
                     typeof(global::MainCore.Commands.Queries.GetBuildingLocation),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Queries.GetBuildings),
-                    typeof(global::MainCore.Commands.Queries.GetBuildings),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Queries.GetJobs),
-                    typeof(global::MainCore.Commands.Queries.GetJobs),
                     global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
                 )
             );
@@ -395,15 +350,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
                     typeof(global::MainCore.Commands.Queries.GetVillageName),
                     typeof(global::MainCore.Commands.Queries.GetVillageName),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Queries.IsResourceEnough),
-                    typeof(global::MainCore.Commands.Queries.IsResourceEnough),
                     global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
                 )
             );
@@ -476,51 +422,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
                     typeof(global::MainCore.Commands.UI.UpdateAccountCommand),
                     typeof(global::MainCore.Commands.UI.UpdateAccountCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.UI.Villages.BuildNormalCommand),
-                    typeof(global::MainCore.Commands.UI.Villages.BuildNormalCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.UI.Villages.BuildResourceCommand),
-                    typeof(global::MainCore.Commands.UI.Villages.BuildResourceCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.UI.Villages.ImportCommand),
-                    typeof(global::MainCore.Commands.UI.Villages.ImportCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.UI.Villages.MoveJobCommand),
-                    typeof(global::MainCore.Commands.UI.Villages.MoveJobCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.UI.Villages.UpgradeLevel),
-                    typeof(global::MainCore.Commands.UI.Villages.UpgradeLevel),
                     global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
                 )
             );

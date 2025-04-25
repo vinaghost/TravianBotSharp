@@ -1,4 +1,5 @@
-﻿using MainCore.Commands.UI.Villages;
+﻿using FluentValidation;
+using MainCore.Commands.UI.Villages.BuildViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
@@ -12,23 +13,22 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
     [RegisterSingleton<BuildViewModel>]
     public partial class BuildViewModel : VillageTabViewModelBase
     {
-        private readonly JobUpdated.Handler _jobUpdated;
         private readonly IDialogService _dialogService;
-        private readonly ITimerManager _timerManager;
+        private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
+        private readonly IValidator<ResourceBuildInput> _resourceBuildInputValidator;
 
         public NormalBuildInput NormalBuildInput { get; } = new();
-
         public ResourceBuildInput ResourceBuildInput { get; } = new();
 
         public ListBoxItemViewModel Buildings { get; } = new();
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(IDialogService dialogService, ITimerManager timerManager, JobUpdated.Handler jobUpdated)
+        public BuildViewModel(IDialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator)
         {
             _dialogService = dialogService;
-            _timerManager = timerManager;
-            _jobUpdated = jobUpdated;
+            _normalBuildInputValidator = normalBuildInputValidator;
+            _resourceBuildInputValidator = resourceBuildInputValidator;
 
             this.WhenAnyValue(vm => vm.Buildings.SelectedItem)
                 .ObserveOn(RxApp.TaskpoolScheduler)
@@ -83,66 +83,83 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         }
 
         [ReactiveCommand]
-        private static List<ListBoxItem> LoadBuilding(VillageId villageId)
+        private static async Task<List<ListBoxItem>> LoadBuilding(VillageId villageId)
         {
-            var getBuildings = Locator.Current.GetService<GetBuildings>();
-            var items = getBuildings.LayoutItems(villageId);
+            var getLayoutBuildingItemsQuery = Locator.Current.GetService<GetLayoutBuildingItemsQuery.Handler>();
+            var items = await getLayoutBuildingItemsQuery.HandleAsync(new(villageId));
             return items;
         }
 
         [ReactiveCommand]
-        private static List<ListBoxItem> LoadQueue(VillageId villageId)
+        private static async Task<List<ListBoxItem>> LoadQueue(VillageId villageId)
         {
-            var getBuildings = Locator.Current.GetService<GetBuildings>();
-            var items = getBuildings.QueueItems(villageId);
+            var getQueueBuildingItemsQuery = Locator.Current.GetService<GetQueueBuildingItemsQuery.Handler>();
+            var items = await getQueueBuildingItemsQuery.HandleAsync(new(villageId));
             return items;
         }
 
         [ReactiveCommand]
-        private static List<ListBoxItem> LoadJob(VillageId villageId)
+        private static async Task<List<ListBoxItem>> LoadJob(VillageId villageId)
         {
-            var getJobs = Locator.Current.GetService<GetJobs>();
-            var jobs = getJobs.Items(villageId);
+            var getJobItemsQuery = Locator.Current.GetService<GetJobItemsQuery.Handler>();
+            var jobs = await getJobItemsQuery.HandleAsync(new(villageId));
             return jobs;
         }
 
         [ReactiveCommand]
-        private List<BuildingEnums> LoadBuildNormal(ListBoxItem item)
+        private async Task<List<BuildingEnums>> LoadBuildNormal(ListBoxItem item)
         {
             if (item is null) return [];
-            var getBuildings = Locator.Current.GetService<GetBuildings>();
-            var buildings = getBuildings.NormalBuilds(VillageId, new BuildingId(item.Id));
-            return buildings;
+            var getNormalBuildingsQuery = Locator.Current.GetService<GetNormalBuildingsQuery.Handler>();
+            var items = await getNormalBuildingsQuery.HandleAsync(new(VillageId, new BuildingId(item.Id)));
+            return items;
         }
 
         [ReactiveCommand]
         private async Task BuildNormal()
         {
-            if (!IsAccountPaused(AccountId)) return;
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
 
-            var buildNormalCommand = Locator.Current.GetService<BuildNormalCommand>();
+            var result = await _normalBuildInputValidator.ValidateAsync(NormalBuildInput);
+            if (!result.IsValid)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                return;
+            }
+
             var location = Buildings.SelectedIndex + 1;
-            await buildNormalCommand.Execute(AccountId, VillageId, NormalBuildInput, location);
+            var normalBuildCommand = Locator.Current.GetService<NormalBuildCommand.Handler>();
+            await normalBuildCommand.HandleAsync(new(AccountId, VillageId, NormalBuildInput.ToPlan(location)));
         }
 
         [ReactiveCommand]
         private async Task UpgradeOneLevel()
         {
-            if (!IsAccountPaused(AccountId)) return;
-
-            var upgradeLevel = Locator.Current.GetService<UpgradeLevel>();
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
             var location = Buildings.SelectedIndex + 1;
-            await upgradeLevel.Execute(AccountId, VillageId, location, false);
+            var upgradeCommand = Locator.Current.GetService<UpgradeCommand.Handler>();
+            await upgradeCommand.HandleAsync(new(AccountId, VillageId, location, false));
         }
 
         [ReactiveCommand]
         private async Task UpgradeMaxLevel()
         {
-            if (!IsAccountPaused(AccountId)) return;
-
-            var upgradeLevel = Locator.Current.GetService<UpgradeLevel>();
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
             var location = Buildings.SelectedIndex + 1;
-            await upgradeLevel.Execute(AccountId, VillageId, location, true);
+            var upgradeCommand = Locator.Current.GetService<UpgradeCommand.Handler>();
+            await upgradeCommand.HandleAsync(new(AccountId, VillageId, location, true));
         }
 
         [ReactiveCommand]
@@ -154,8 +171,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return;
             }
 
-            var buildResourceCommand = Locator.Current.GetService<BuildResourceCommand>();
-            await buildResourceCommand.Execute(AccountId, VillageId, ResourceBuildInput);
+            var result = await _resourceBuildInputValidator.ValidateAsync(ResourceBuildInput);
+            if (!result.IsValid)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                return;
+            }
+
+            var resourceBuildCommand = Locator.Current.GetService<ResourceBuildCommand.Handler>();
+            await resourceBuildCommand.HandleAsync(new(AccountId, VillageId, ResourceBuildInput.ToPlan()));
         }
 
         [ReactiveCommand]
@@ -166,8 +190,16 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
-            await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Up);
+
+            if (!Jobs.IsSelected)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
+                return;
+            }
+
+            var swapCommand = Locator.Current.GetService<SwapCommand.Handler>();
+            var newIndex = await swapCommand.HandleAsync(new(AccountId, VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Up));
+            Jobs.SelectedIndex = newIndex;
         }
 
         [ReactiveCommand]
@@ -178,8 +210,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
-            await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Down);
+            if (!Jobs.IsSelected)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
+                return;
+            }
+
+            var swapCommand = Locator.Current.GetService<SwapCommand.Handler>();
+            var newIndex = await swapCommand.HandleAsync(new(AccountId, VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Down));
+            Jobs.SelectedIndex = newIndex;
         }
 
         [ReactiveCommand]
@@ -190,8 +229,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
-            await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Top);
+            if (!Jobs.IsSelected)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
+                return;
+            }
+
+            var moveCommand = Locator.Current.GetService<MoveCommand.Handler>();
+            var newIndex = await moveCommand.HandleAsync(new(AccountId, VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Top));
+            Jobs.SelectedIndex = newIndex;
         }
 
         [ReactiveCommand]
@@ -202,8 +248,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
-            await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Bottom);
+            if (!Jobs.IsSelected)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
+                return;
+            }
+
+            var moveCommand = Locator.Current.GetService<MoveCommand.Handler>();
+            var newIndex = await moveCommand.HandleAsync(new(AccountId, VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Bottom));
+            Jobs.SelectedIndex = newIndex;
         }
 
         [ReactiveCommand]
@@ -217,9 +270,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             if (!Jobs.IsSelected) return;
             var jobId = Jobs.SelectedItemId;
 
-            var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
-            deleteJobCommand.ByJobId(new JobId(jobId));
-            await _jobUpdated.HandleAsync(new(AccountId, VillageId));
+            var deleteJobByIdCommand = Locator.Current.GetService<DeleteJobByIdCommand.Handler>();
+            await deleteJobByIdCommand.HandleAsync(new(AccountId, VillageId, new JobId(jobId)));
         }
 
         [ReactiveCommand]
@@ -230,9 +282,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
-            deleteJobCommand.ByVillageId(VillageId);
-            await _jobUpdated.HandleAsync(new(AccountId, VillageId));
+
+            var deleteJobByVillageIdCommand = Locator.Current.GetService<DeleteJobByVillageIdCommand.Handler>();
+            await deleteJobByVillageIdCommand.HandleAsync(new(AccountId, VillageId));
         }
 
         [ReactiveCommand]
@@ -243,26 +295,47 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            var importCommand = Locator.Current.GetService<ImportCommand>();
-            await importCommand.Execute(AccountId, VillageId);
+            var path = await _dialogService.OpenFileDialog.Handle(Unit.Default);
+            if (string.IsNullOrEmpty(path)) return;
+            List<JobDto> jobs;
+            try
+            {
+                var jsonString = await File.ReadAllTextAsync(path);
+                jobs = JsonSerializer.Deserialize<List<JobDto>>(jsonString);
+            }
+            catch
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Invalid file."));
+                return;
+            }
+
+            var confirm = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "TBS will remove resource field build job if its position doesn't match with current village."));
+            if (!confirm) return;
+
+            var importCommand = Locator.Current.GetService<ImportCommand.Handler>();
+            await importCommand.HandleAsync(new(AccountId, VillageId, jobs));
         }
 
         [ReactiveCommand]
         private async Task Export()
         {
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
+
             var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
             if (string.IsNullOrEmpty(path)) return;
-            var getJobs = Locator.Current.GetService<GetJobs>();
-            var jobs = getJobs.Dtos(VillageId);
-            jobs.ForEach(job => job.Id = JobId.Empty);
-            var jsonString = JsonSerializer.Serialize(jobs);
-            await File.WriteAllTextAsync(path, jsonString);
+            var exportCommand = Locator.Current.GetService<ExportCommand.Handler>();
+            await exportCommand.HandleAsync(new(VillageId, path));
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Job list exported"));
         }
 
         private bool IsAccountPaused(AccountId accountId)
         {
-            var status = _timerManager.GetStatus(accountId);
+            var timerManager = Locator.Current.GetService<ITimerManager>();
+            var status = timerManager.GetStatus(accountId);
             if (status == StatusEnums.Online)
             {
                 return false;

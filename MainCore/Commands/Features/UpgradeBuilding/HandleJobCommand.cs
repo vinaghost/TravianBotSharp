@@ -14,7 +14,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         private readonly ToDorfCommand _toDorfCommand;
         private readonly UpdateBuildingCommand _updateBuildingCommand;
         private readonly IGetSetting _getSetting;
-        private readonly GetBuildings _getBuildings;
+        private readonly GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
 
         private static readonly List<BuildingEnums> _resourceTypes =
         [
@@ -31,13 +31,13 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             {ResourcePlanEnums.OnlyCrop, _resourceTypes.Skip(3).ToList()},
         };
 
-        public HandleJobCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, IGetSetting getSetting, GetBuildings getBuildings, JobUpdated.Handler jobUpdated) : base(dataService)
+        public HandleJobCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, IGetSetting getSetting, GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery, JobUpdated.Handler jobUpdated) : base(dataService)
         {
             _contextFactory = contextFactory;
             _toDorfCommand = toDorfCommand;
             _updateBuildingCommand = updateBuildingCommand;
             _getSetting = getSetting;
-            _getBuildings = getBuildings;
+            _getLayoutBuildingsQuery = getLayoutBuildingsQuery;
             _jobUpdated = jobUpdated;
         }
 
@@ -347,27 +347,26 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var villageId = _dataService.VillageId;
             var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content);
 
-            var normalBuildPlan = GetNormalBuildPlan(resourceBuildPlan);
+            var normalBuildPlan = await GetNormalBuildPlan(resourceBuildPlan);
             if (normalBuildPlan is null)
             {
-                var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
-                deleteJobCommand.ByJobId(job.Id);
+                var deleteJobByIdCommand = Locator.Current.GetService<DeleteJobByIdCommand.Handler>();
+                await deleteJobByIdCommand.HandleAsync(new(accountId, villageId, job.Id), cancellationToken);
             }
             else
             {
-                var addJobCommand = Locator.Current.GetService<AddJobCommand>();
-                addJobCommand.ToTop(villageId, normalBuildPlan);
+                var addJobCommand = Locator.Current.GetService<AddJobCommand.Handler>();
+                await addJobCommand.HandleAsync(new(accountId, villageId, normalBuildPlan.ToJob(villageId), true));
             }
-            await _jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
             return Result.Ok();
         }
 
-        private NormalBuildPlan GetNormalBuildPlan(ResourceBuildPlan plan)
+        private async Task<NormalBuildPlan> GetNormalBuildPlan(ResourceBuildPlan plan)
         {
             var villageId = _dataService.VillageId;
             var resourceTypes = _fieldList[plan.Plan];
 
-            var buildings = _getBuildings.Layout(villageId, true);
+            var buildings = await _getLayoutBuildingsQuery.HandleAsync(new(villageId, true));
 
             buildings = buildings
                 .Where(x => resourceTypes.Contains(x.Type))
@@ -404,9 +403,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         {
             if (IsJobComplete(job))
             {
-                var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
-                deleteJobCommand.ByJobId(job.Id);
-                await _jobUpdated.HandleAsync(new(_dataService.AccountId, _dataService.VillageId));
+                var deleteJobByIdCommand = Locator.Current.GetService<DeleteJobByIdCommand.Handler>();
+                await deleteJobByIdCommand.HandleAsync(new(_dataService.AccountId, _dataService.VillageId, job.Id));
                 return true;
             }
             return false;

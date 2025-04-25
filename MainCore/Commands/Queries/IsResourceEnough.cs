@@ -1,14 +1,21 @@
-﻿using MainCore.Commands.Abstract;
-using MainCore.Common.Errors.Storage;
+﻿using MainCore.Common.Errors.Storage;
 
 namespace MainCore.Commands.Queries
 {
-    [RegisterSingleton<IsResourceEnough>]
-    public class IsResourceEnough(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
+    [Handler]
+    public static partial class IsResourceEnough
     {
-        public Result Execute(VillageId villageId, long[] requiredResource)
+        public sealed record Query(VillageId VillageId, long[] RequiredResource) : ICustomQuery;
+
+        private static async ValueTask<Result> HandleAsync(
+            Query query,
+            IDbContextFactory<AppDbContext> contextFactory,
+            CancellationToken cancellationToken
+            )
         {
-            using var context = _contextFactory.CreateDbContext();
+            var villageId = query.VillageId;
+            var requiredResource = query.RequiredResource;
+            using var context = await contextFactory.CreateDbContextAsync();
             var storage = context.Storages
                 .Where(x => x.VillageId == villageId.Value)
                 .FirstOrDefault();

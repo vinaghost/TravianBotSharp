@@ -1,13 +1,18 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Queries
+﻿namespace MainCore.Commands.Queries
 {
-    [RegisterSingleton<GetBuilding>]
-    public class GetBuilding(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
+    [Handler]
+    public static partial class GetBuilding
     {
-        public BuildingDto Execute(VillageId villageId, int location)
+        public sealed record Query(VillageId VillageId, int Location) : ICustomQuery;
+
+        private static async ValueTask<BuildingDto> HandleAsync(
+            Query query,
+            IDbContextFactory<AppDbContext> contextFactory,
+            CancellationToken token
+        )
         {
-            using var context = _contextFactory.CreateDbContext();
+            var (villageId, location) = query;
+            using var context = await contextFactory.CreateDbContextAsync();
             var building = context.Buildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Location == location)
