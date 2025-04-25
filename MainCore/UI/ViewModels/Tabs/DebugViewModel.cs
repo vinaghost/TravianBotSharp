@@ -1,25 +1,18 @@
-﻿using MainCore.UI.Models.Output;
+﻿using MainCore.Commands.UI.DebugViewModel;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 using Serilog.Core;
 using Serilog.Events;
-using Serilog.Templates;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Text;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
     [RegisterSingleton<DebugViewModel>]
     public partial class DebugViewModel : AccountTabViewModelBase
     {
-        private readonly LogSink _logSink;
-        private readonly ITaskManager _taskManager;
-        private readonly ITimerManager _timerManager;
-        private static readonly ExpressionTemplate _template = new("{@t:HH:mm:ss} [{@l:u3}] {@m}\n{@x}");
-        private const string NotOpen = "Chrome didn't open yet";
-
         public ObservableCollection<TaskItem> Tasks { get; } = [];
 
         [Reactive]
@@ -28,11 +21,10 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private string _endpointAddress;
 
-        public DebugViewModel(ILogEventSink logSink, ITaskManager taskManager, ITimerManager timerManager)
+        public DebugViewModel()
         {
-            _taskManager = taskManager;
-            _logSink = logSink as LogSink;
-            _logSink.LogEmitted += LogEmitted;
+            var logSink = Locator.Current.GetService<ILogEventSink>() as LogSink;
+            logSink.LogEmitted += LogEmitted;
 
             LoadTaskCommand.Subscribe(items =>
             {
@@ -42,7 +34,6 @@ namespace MainCore.UI.ViewModels.Tabs
 
             LoadLogCommand.BindTo(this, vm => vm.Logs);
             LoadEndpointAddressCommand.BindTo(this, vm => vm.EndpointAddress);
-            _timerManager = timerManager;
         }
 
         private void LogEmitted(AccountId accountId, LogEvent logEvent)
@@ -74,35 +65,26 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private List<TaskItem> LoadTask(AccountId accountId)
+        private async Task<List<TaskItem>> LoadTask(AccountId accountId)
         {
-            var tasks = _taskManager.GetTaskList(accountId);
-
-            return tasks
-                .Select(x => new TaskItem(x))
-                .ToList();
+            var getTaskItemsQuery = Locator.Current.GetService<GetTaskItemsQuery.Handler>();
+            var tasks = await getTaskItemsQuery.HandleAsync(new(accountId), CancellationToken.None);
+            return tasks;
         }
 
         [ReactiveCommand]
-        private string LoadLog(AccountId accountId)
+        private async Task<string> LoadLog(AccountId accountId)
         {
-            var logs = _logSink.GetLogs(accountId);
-            var buffer = new StringWriter(new StringBuilder());
-
-            foreach (var log in logs)
-            {
-                _template.Format(log, buffer);
-            }
-            return buffer.ToString();
+            var getLogQuery = Locator.Current.GetService<GetLogQuery.Handler>();
+            var log = await getLogQuery.HandleAsync(new(accountId), CancellationToken.None);
+            return log;
         }
 
         [ReactiveCommand]
-        private string LoadEndpointAddress(AccountId accountId)
+        private async Task<string> LoadEndpointAddress(AccountId accountId)
         {
-            var status = _timerManager.GetStatus(accountId);
-            if (status == StatusEnums.Offline) return NotOpen;
-            var address = "address enpoint is disabled";
-            if (string.IsNullOrEmpty(address)) return NotOpen;
+            var getEndpointAdressQuery = Locator.Current.GetService<GetEndpointAdressQuery.Handler>();
+            var address = await getEndpointAdressQuery.HandleAsync(new(accountId), CancellationToken.None);
             return address;
         }
 

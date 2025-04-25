@@ -14,15 +14,15 @@ namespace MainCore.UI.ViewModels.Tabs
         private ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.TaskItem>>? _loadTaskCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.TaskItem>> LoadTaskCommand { get => _loadTaskCommand ??= ReactiveUI.ReactiveCommand.Create<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.TaskItem>>(LoadTask); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.TaskItem>> LoadTaskCommand { get => _loadTaskCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.TaskItem>>(LoadTask); }
         private ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, string>? _loadLogCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, string> LoadLogCommand { get => _loadLogCommand ??= ReactiveUI.ReactiveCommand.Create<global::MainCore.Entities.AccountId, string>(LoadLog); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, string> LoadLogCommand { get => _loadLogCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.AccountId, string>(LoadLog); }
         private ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, string>? _loadEndpointAddressCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, string> LoadEndpointAddressCommand { get => _loadEndpointAddressCommand ??= ReactiveUI.ReactiveCommand.Create<global::MainCore.Entities.AccountId, string>(LoadEndpointAddress); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, string> LoadEndpointAddressCommand { get => _loadEndpointAddressCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.AccountId, string>(LoadEndpointAddress); }
         private ReactiveUI.ReactiveCommand<global::System.Reactive.Unit, global::System.Reactive.Unit>? _leftCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
