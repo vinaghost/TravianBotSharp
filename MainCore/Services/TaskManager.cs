@@ -6,12 +6,14 @@ namespace MainCore.Services
     [RegisterSingleton<ITaskManager, TaskManager>]
     public sealed class TaskManager : ITaskManager
     {
-        private readonly Dictionary<AccountId, List<TaskBase>> _tasks = new();
+        private readonly Dictionary<AccountId, TaskQueue> _queues = new();
         private readonly TaskUpdated.Handler _taskUpdated;
+        private readonly StatusUpdated.Handler _statusUpdated;
 
-        public TaskManager(TaskUpdated.Handler taskUpdated)
+        public TaskManager(TaskUpdated.Handler taskUpdated, StatusUpdated.Handler statusUpdated)
         {
             _taskUpdated = taskUpdated;
+            _statusUpdated = statusUpdated;
         }
 
         public TaskBase GetCurrentTask(AccountId accountId)
@@ -158,44 +160,87 @@ namespace MainCore.Services
             await ReOrder(accountId, tasks);
         }
 
+        public async Task Remove(AccountId accountId, TaskBase task)
+        {
+            var tasks = GetTaskList(accountId);
+            if (tasks.Remove(task))
+            {
+                await ReOrder(accountId, tasks);
+            }
+        }
+
         public async Task ReOrder(AccountId accountId)
         {
             var tasks = GetTaskList(accountId);
             await ReOrder(accountId, tasks);
         }
 
-        public async Task Remove(AccountId accountId, TaskBase task)
-        {
-            var tasks = GetTaskList(accountId);
-            tasks.Remove(task);
-            await ReOrder(accountId, tasks);
-        }
-
         public async Task Clear(AccountId accountId)
         {
             var tasks = GetTaskList(accountId);
+            if (tasks.Count == 0) return;
             tasks.Clear();
             await _taskUpdated.HandleAsync(new(accountId));
         }
 
         private async Task ReOrder(AccountId accountId, List<TaskBase> tasks)
         {
+            if (tasks.Count <= 1) return;
             tasks.Sort((x, y) => DateTime.Compare(x.ExecuteAt, y.ExecuteAt));
             await _taskUpdated.HandleAsync(new(accountId));
         }
 
         public List<TaskBase> GetTaskList(AccountId accountId)
         {
-            if (_tasks.ContainsKey(accountId))
+            var queue = GetTaskQueue(accountId);
+            return queue.Tasks;
+        }
+
+        public StatusEnums GetStatus(AccountId accountId)
+        {
+            var queue = GetTaskQueue(accountId);
+            return queue.Status;
+        }
+
+        public async Task SetStatus(AccountId accountId, StatusEnums status)
+        {
+            var queue = GetTaskQueue(accountId);
+            queue.Status = status;
+            await _statusUpdated.HandleAsync(new(accountId));
+        }
+
+        public CancellationTokenSource GetCancellationTokenSource(AccountId accountId)
+        {
+            var queue = GetTaskQueue(accountId);
+            return queue.CancellationTokenSource;
+        }
+
+        public bool IsExecuting(AccountId accountId)
+        {
+            var queue = GetTaskQueue(accountId);
+            return queue.IsExecuting;
+        }
+
+        public TaskQueue GetTaskQueue(AccountId accountId)
+        {
+            if (_queues.ContainsKey(accountId))
             {
-                return _tasks[accountId];
+                return _queues[accountId];
             }
             else
             {
-                var tasks = new List<TaskBase>();
-                _tasks.Add(accountId, tasks);
-                return tasks;
+                var queue = new TaskQueue();
+                _queues.Add(accountId, queue);
+                return queue;
             }
         }
+    }
+
+    public class TaskQueue
+    {
+        public bool IsExecuting { get; set; } = false;
+        public StatusEnums Status { get; set; } = StatusEnums.Offline;
+        public CancellationTokenSource CancellationTokenSource { get; set; } = null;
+        public List<TaskBase> Tasks = [];
     }
 }

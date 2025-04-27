@@ -4,9 +4,9 @@ using MainCore.UI.Models.Output;
 namespace MainCore.Commands.Queries
 {
     [RegisterSingleton<GetAccount>]
-    public class GetAccount(IDbContextFactory<AppDbContext> contextFactory, ITimerManager timerManager) : QueryBase(contextFactory)
+    public class GetAccount(IDbContextFactory<AppDbContext> contextFactory, ITaskManager taskManager) : QueryBase(contextFactory)
     {
-        private readonly ITimerManager _timerManager = timerManager;
+        private readonly ITaskManager _taskManager = taskManager;
 
         public AccountDto Execute(AccountId accountId, bool includeAccess = false)
         {
@@ -34,7 +34,7 @@ namespace MainCore.Commands.Queries
                 .Select(x =>
                 {
                     var serverUrl = new Uri(x.Server);
-                    var status = _timerManager.GetStatus(new(x.Id));
+                    var status = _taskManager.GetStatus(new(x.Id));
                     return new ListBoxItem()
                     {
                         Id = x.Id,

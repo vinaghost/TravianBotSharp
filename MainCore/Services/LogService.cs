@@ -32,20 +32,19 @@ namespace MainCore.Services
 
         public ILogger GetLogger(AccountId accountId)
         {
-            var logger = _loggers.GetValueOrDefault(accountId);
-            if (logger is null)
-            {
-                using var context = _contextFactory.CreateDbContext();
-                var account = context.Accounts
-                    .Where(x => x.Id == accountId.Value)
-                    .First();
+            if (_loggers.ContainsKey(accountId)) return _loggers[accountId];
 
-                var uri = new Uri(account.Server);
-                logger = Log.ForContext("Account", $"{account.Username}_{uri.Host}")
-                            .ForContext("AccountId", accountId);
-                _loggers.Add(accountId, logger);
-                logger.Information("===============> Current version: {Version} <===============", GetVersion());
-            }
+            using var context = _contextFactory.CreateDbContext();
+            var account = context.Accounts
+                .Where(x => x.Id == accountId.Value)
+                .First();
+
+            var uri = new Uri(account.Server);
+            var logger = Log.ForContext("Account", $"{account.Username}_{uri.Host}")
+                        .ForContext("AccountId", accountId);
+            _loggers.Add(accountId, logger);
+            logger.Information("===============> Current version: {Version} <===============", GetVersion());
+
             return logger;
         }
 

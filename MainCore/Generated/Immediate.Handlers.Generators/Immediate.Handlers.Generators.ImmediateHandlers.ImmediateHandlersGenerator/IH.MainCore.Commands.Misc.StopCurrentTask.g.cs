@@ -35,15 +35,12 @@ partial class StopCurrentTask
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Misc.StopCurrentTask.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
-		private readonly global::MainCore.Services.ITimerManager _timerManager;
 
 		public HandleBehavior(
-			global::MainCore.Services.ITaskManager taskManager,
-			global::MainCore.Services.ITimerManager timerManager
+			global::MainCore.Services.ITaskManager taskManager
 		)
 		{
 			_taskManager = taskManager;
-			_timerManager = timerManager;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -55,7 +52,6 @@ partial class StopCurrentTask
 				.HandleAsync(
 					request
 					, _taskManager
-					, _timerManager
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

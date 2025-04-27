@@ -334,8 +334,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private bool IsAccountPaused(AccountId accountId)
         {
-            var timerManager = Locator.Current.GetService<ITimerManager>();
-            var status = timerManager.GetStatus(accountId);
+            var taskManager = Locator.Current.GetService<ITaskManager>();
+            var status = taskManager.GetStatus(accountId);
             if (status == StatusEnums.Online)
             {
                 return false;

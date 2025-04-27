@@ -9,8 +9,6 @@ namespace MainCore.Services
     public sealed class TimerManager : ITimerManager
     {
         private readonly Dictionary<AccountId, Timer> _timers = [];
-        private readonly Dictionary<AccountId, TaskData> _taskData = new();
-        private readonly StatusUpdated.Handler _statusUpdated;
 
         private bool _isShutdown = false;
 
@@ -19,23 +17,21 @@ namespace MainCore.Services
         private readonly ILogService _logService;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        private readonly ResiliencePropertyKey<ILogger> contextLoggerKey = new("logger");
-        private readonly ResiliencePropertyKey<string> contextTaskNameKey = new("task_name");
-        private readonly ResiliencePropertyKey<AccountId> contextAccountIdKey = new("account_id");
-
+        private readonly ResiliencePropertyKey<ContextData> contextDataKey = new(nameof(ContextData));
         private readonly ResiliencePipeline<Result> _pipeline;
 
-        public TimerManager(ITaskManager taskManager, ILogService logService, IChromeManager chromeManager, IServiceScopeFactory serviceScopeFactory, StatusUpdated.Handler statusUpdated)
+        public TimerManager(ITaskManager taskManager, ILogService logService, IChromeManager chromeManager, IServiceScopeFactory serviceScopeFactory)
         {
             _taskManager = taskManager;
             _chromeManager = chromeManager;
             _logService = logService;
             _serviceScopeFactory = serviceScopeFactory;
-            _statusUpdated = statusUpdated;
 
             Func<OnRetryArguments<Result>, ValueTask> OnRetry = async args =>
             {
-                args.Context.Properties.TryGetValue(contextLoggerKey, out var logger);
+                args.Context.Properties.TryGetValue(contextDataKey, out var contextData);
+
+                var (logger, taskName, accountId) = contextData;
                 logger.Warning("There is something wrong.");
                 var error = args.Outcome;
                 if (error.Exception is null)
@@ -49,10 +45,8 @@ namespace MainCore.Services
                     logger.Error(exception, "{Message}", exception.Message);
                 }
 
-                args.Context.Properties.TryGetValue(contextTaskNameKey, out var taskName);
                 logger.Warning("Retry {AttemptNumber} for {TaskName}", args.AttemptNumber + 1, taskName);
 
-                args.Context.Properties.TryGetValue(contextAccountIdKey, out var accountId);
                 var chromeBrowser = _chromeManager.Get(accountId);
                 await chromeBrowser.Refresh(args.Context.CancellationToken);
             };
@@ -76,9 +70,11 @@ namespace MainCore.Services
 
         public async Task Execute(AccountId accountId)
         {
-            var status = GetStatus(accountId);
+            var taskQueue = _taskManager.GetTaskQueue(accountId);
+
+            var status = taskQueue.Status;
             if (status != StatusEnums.Online) return;
-            var tasks = _taskManager.GetTaskList(accountId);
+            var tasks = taskQueue.Tasks;
             if (tasks.Count == 0) return;
             var task = tasks[0];
 
@@ -86,12 +82,11 @@ namespace MainCore.Services
 
             var logger = _logService.GetLogger(accountId);
 
-            var taskData = GetTaskData(accountId);
-            taskData.IsExecuting = true;
-            task.Stage = StageEnums.Executing;
+            taskQueue.IsExecuting = true;
             var cts = new CancellationTokenSource();
-            taskData.CancellationTokenSource = cts;
+            taskQueue.CancellationTokenSource = cts;
 
+            task.Stage = StageEnums.Executing;
             var cacheExecuteTime = task.ExecuteAt;
 
             logger.Information("{TaskName} is started", task.GetName());
@@ -99,9 +94,8 @@ namespace MainCore.Services
             ///===========================================================///
             var context = ResilienceContextPool.Shared.Get(cts.Token);
 
-            context.Properties.Set(contextLoggerKey, logger);
-            context.Properties.Set(contextTaskNameKey, task.GetName());
-            context.Properties.Set(contextAccountIdKey, accountId);
+            var contextData = new ContextData(logger, task.GetName(), accountId);
+            context.Properties.Set(contextDataKey, contextData);
 
             var poliResult = await _pipeline.ExecuteOutcomeAsync(
                 async (ctx, state) => Outcome.FromResult(await task.Handle(state, ctx.CancellationToken)),
@@ -113,17 +107,17 @@ namespace MainCore.Services
             logger.Information("{TaskName} is finished", task.GetName());
 
             task.Stage = StageEnums.Waiting;
-            taskData.IsExecuting = false;
+            taskQueue.IsExecuting = false;
 
             cts.Dispose();
-            taskData.CancellationTokenSource = null;
+            taskQueue.CancellationTokenSource = null;
 
             if (poliResult.Exception is not null)
             {
                 logger.Warning("There is something wrong. Bot is pausing. Last exception is");
                 var ex = poliResult.Exception;
                 logger.Error(ex, "{Message}", ex.Message);
-                await SetStatus(accountId, StatusEnums.Paused);
+                await _taskManager.SetStatus(accountId, StatusEnums.Paused);
             }
             else
             {
@@ -135,7 +129,7 @@ namespace MainCore.Services
 
                     if (result.HasError<Stop>() || result.HasError<Retry>())
                     {
-                        await SetStatus(accountId, StatusEnums.Paused);
+                        await _taskManager.SetStatus(accountId, StatusEnums.Paused);
                     }
                     else if (result.HasError<Skip>())
                     {
@@ -150,7 +144,7 @@ namespace MainCore.Services
                     }
                     else if (result.HasError<Cancel>())
                     {
-                        await SetStatus(accountId, StatusEnums.Paused);
+                        await _taskManager.SetStatus(accountId, StatusEnums.Paused);
                     }
                 }
                 else
@@ -194,51 +188,7 @@ namespace MainCore.Services
                 timer.Start();
             }
         }
-
-        public class TaskData
-        {
-            public bool IsExecuting { get; set; } = false;
-            public StatusEnums Status { get; set; } = StatusEnums.Offline;
-            public CancellationTokenSource CancellationTokenSource { get; set; } = null;
-        }
-
-        private TaskData GetTaskData(AccountId accountId)
-        {
-            if (_taskData.ContainsKey(accountId))
-            {
-                return _taskData[accountId];
-            }
-            else
-            {
-                var data = new TaskData();
-                _taskData.Add(accountId, data);
-                return data;
-            }
-        }
-
-        public StatusEnums GetStatus(AccountId accountId)
-        {
-            var taskInfo = GetTaskData(accountId);
-            return taskInfo.Status;
-        }
-
-        public async Task SetStatus(AccountId accountId, StatusEnums status)
-        {
-            var taskInfo = GetTaskData(accountId);
-            taskInfo.Status = status;
-            await _statusUpdated.HandleAsync(new(accountId));
-        }
-
-        public bool IsExecuting(AccountId accountId)
-        {
-            var taskInfo = GetTaskData(accountId);
-            return taskInfo.IsExecuting;
-        }
-
-        public CancellationTokenSource GetCancellationTokenSource(AccountId accountId)
-        {
-            var taskInfo = GetTaskData(accountId);
-            return taskInfo.CancellationTokenSource;
-        }
     }
+
+    public record ContextData(ILogger Logger, string TaskName, AccountId AccountId);
 }

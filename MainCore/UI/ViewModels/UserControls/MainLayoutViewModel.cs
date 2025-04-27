@@ -13,8 +13,6 @@ namespace MainCore.UI.ViewModels.UserControls
     [RegisterSingleton<MainLayoutViewModel>]
     public partial class MainLayoutViewModel : ViewModelBase
     {
-        private readonly ITaskManager _taskManager;
-        private readonly ITimerManager _timerManager;
         private readonly IDialogService _dialogService;
 
         private readonly AccountTabStore _accountTabStore;
@@ -23,11 +21,9 @@ namespace MainCore.UI.ViewModels.UserControls
 
         private IObservable<bool> _canExecute;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, ITaskManager taskManager, IDialogService dialogService, ITimerManager timerManager)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService)
         {
             _accountTabStore = accountTabStore;
-            _taskManager = taskManager;
-            _timerManager = timerManager;
             _dialogService = dialogService;
 
             _canExecute = this.WhenAnyValue(x => x.Accounts.IsEnable);
@@ -172,7 +168,8 @@ namespace MainCore.UI.ViewModels.UserControls
         private StatusEnums GetStatus(AccountId accountId)
         {
             if (accountId == AccountId.Empty) return StatusEnums.Starting;
-            return _timerManager.GetStatus(accountId);
+            var taskManager = Locator.Current.GetService<ITaskManager>();
+            return taskManager.GetStatus(accountId);
         }
 
         [ReactiveCommand]

@@ -10,11 +10,11 @@ namespace MainCore.Commands.Misc
 
         private static async ValueTask HandleAsync(
             Command command,
-            ITaskManager taskManager, ITimerManager timerManager,
+            ITaskManager taskManager,
             CancellationToken cancellationToken)
         {
             var accountId = command.AccountId;
-            var cts = timerManager.GetCancellationTokenSource(accountId);
+            var cts = taskManager.GetCancellationTokenSource(accountId);
             if (cts is null) return;
             await cts.CancelAsync();
             TaskBase currentTask;
@@ -25,7 +25,7 @@ namespace MainCore.Commands.Misc
                 await Task.Delay(500);
             }
             while (currentTask.Stage != StageEnums.Waiting);
-            await timerManager.SetStatus(accountId, StatusEnums.Paused);
+            await taskManager.SetStatus(accountId, StatusEnums.Paused);
         }
     }
 }

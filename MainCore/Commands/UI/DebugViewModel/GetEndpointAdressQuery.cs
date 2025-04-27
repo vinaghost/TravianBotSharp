@@ -8,12 +8,12 @@
 
         private static async ValueTask<string> HandleAsync(
             Query query,
-            ITimerManager _timerManager,
+            ITaskManager taskManager,
             CancellationToken token
         )
         {
             await Task.CompletedTask;
-            var status = _timerManager.GetStatus(query.AccountId);
+            var status = taskManager.GetStatus(query.AccountId);
             if (status == StatusEnums.Offline) return NotOpen;
             var address = "address enpoint is disabled";
             if (string.IsNullOrEmpty(address)) return NotOpen;

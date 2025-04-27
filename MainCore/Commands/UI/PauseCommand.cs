@@ -7,23 +7,21 @@ namespace MainCore.Commands.UI
     {
         private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
-        private readonly ITimerManager _timeManager;
         private readonly StopCurrentTask.Handler _stopCurrentTask;
 
-        public PauseCommand(ITaskManager taskManager, IDialogService dialogService, ITimerManager timeManager, StopCurrentTask.Handler stopCurrentTask)
+        public PauseCommand(ITaskManager taskManager, IDialogService dialogService, StopCurrentTask.Handler stopCurrentTask)
         {
             _taskManager = taskManager;
             _dialogService = dialogService;
-            _timeManager = timeManager;
             _stopCurrentTask = stopCurrentTask;
         }
 
         public async Task Execute(AccountId accountId, CancellationToken cancellationToken)
         {
-            var status = _timeManager.GetStatus(accountId);
+            var status = _taskManager.GetStatus(accountId);
             if (status == StatusEnums.Paused)
             {
-                await _timeManager.SetStatus(accountId, StatusEnums.Online);
+                await _taskManager.SetStatus(accountId, StatusEnums.Online);
                 return;
             }
 
