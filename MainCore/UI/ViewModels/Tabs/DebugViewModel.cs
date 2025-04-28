@@ -3,7 +3,6 @@ using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
-using Serilog.Core;
 using Serilog.Events;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -23,7 +22,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         public DebugViewModel()
         {
-            var logSink = Locator.Current.GetService<ILogEventSink>() as LogSink;
+            var logSink = Locator.Current.GetService<LogSink>();
             logSink.LogEmitted += LogEmitted;
 
             LoadTaskCommand.Subscribe(items =>

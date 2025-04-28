@@ -7,14 +7,15 @@ namespace MainCore.Notification.Handlers.Trigger
     {
         private static async ValueTask HandleAsync(
             ByAccountIdBase notification,
-            ITaskManager taskManager, GetVillage getVillage, IGetSetting getSetting,
+            ITaskManager taskManager, IGetSetting getSetting,
+            GetMissingBuildingVillagesQuery.Handler getMissingBuildingVillageQuery,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
             var autoLoadVillageBuilding = getSetting.BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             if (!autoLoadVillageBuilding) return;
 
-            var villages = getVillage.Missing(accountId);
+            var villages = await getMissingBuildingVillageQuery.HandleAsync(new(accountId));
 
             foreach (var village in villages)
             {

@@ -1,5 +1,4 @@
 ﻿using Serilog;
-using Serilog.Core;
 using Serilog.Events;
 using System.Reflection;
 
@@ -13,10 +12,10 @@ namespace MainCore.Services
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly LogSink _logSink;
 
-        public LogService(IDbContextFactory<AppDbContext> contextFactory, ILogEventSink logSink)
+        public LogService(IDbContextFactory<AppDbContext> contextFactory, LogSink logSink)
         {
             _contextFactory = contextFactory;
-            _logSink = logSink as LogSink;
+            _logSink = logSink;
         }
 
         public void Shutdown()

@@ -24,7 +24,10 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Commands.Misc.OpenBrowserCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.GetAccessQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.GetBuilding.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Queries.GetHasBuildJobVillagesQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.GetLayoutBuildingsQuery.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Queries.GetMissingBuildingVillagesQuery.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Queries.GetVillagesQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.IsResourceEnough.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.VerifyAccessQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.DebugViewModel.GetEndpointAdressQuery.AddHandlers(services, lifetime);
@@ -50,6 +53,7 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Commands.UI.Villages.BuildViewModel.ResourceBuildCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Villages.BuildViewModel.SwapCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Villages.BuildViewModel.UpgradeCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.VillageViewModel.GetVillageItemsQuery.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Handlers.MainWindowLoad.ChromeDriverInstall.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Handlers.MainWindowLoad.ChromeExtensionInstall.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Handlers.MainWindowLoad.ChromeUserAgentInstall.AddHandlers(services, lifetime);

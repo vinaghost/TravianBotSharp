@@ -1,4 +1,5 @@
-﻿using MainCore.Tasks;
+﻿using MainCore.Commands.UI.VillageViewModel;
+using MainCore.Tasks;
 using MainCore.UI.Enums;
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
@@ -14,16 +15,14 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         private readonly VillageTabStore _villageTabStore;
 
-        private readonly ITaskManager _taskManager;
         private readonly IDialogService _dialogService;
         public ListBoxItemViewModel Villages { get; } = new();
 
         public VillageTabStore VillageTabStore => _villageTabStore;
 
-        public VillageViewModel(VillageTabStore villageTabStore, ITaskManager taskManager, IDialogService dialogService)
+        public VillageViewModel(VillageTabStore villageTabStore, IDialogService dialogService)
         {
             _villageTabStore = villageTabStore;
-            _taskManager = taskManager;
             _dialogService = dialogService;
 
             var villageObservable = this.WhenAnyValue(x => x.Villages.SelectedItem);
@@ -60,7 +59,8 @@ namespace MainCore.UI.ViewModels.Tabs
             }
 
             var villageId = new VillageId(Villages.SelectedItemId);
-            await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, villageId);
+            var taskManager = Locator.Current.GetService<ITaskManager>();
+            await taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, villageId);
 
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
@@ -68,11 +68,12 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task LoadUnload()
         {
-            var getVillage = Locator.Current.GetService<GetVillage>();
-            var villages = getVillage.Missing(AccountId);
+            var getMissingBuildingVillageQuery = Locator.Current.GetService<GetMissingBuildingVillagesQuery.Handler>();
+            var villages = await getMissingBuildingVillageQuery.HandleAsync(new(AccountId));
+            var taskManager = Locator.Current.GetService<ITaskManager>();
             foreach (var village in villages)
             {
-                await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
+                await taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
             }
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
@@ -80,20 +81,21 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task LoadAll()
         {
-            var getVillage = Locator.Current.GetService<GetVillage>();
-            var villages = getVillage.All(AccountId);
+            var getVillagesQuery = Locator.Current.GetService<GetVillagesQuery.Handler>();
+            var villages = await getVillagesQuery.HandleAsync(new(AccountId));
+            var taskManager = Locator.Current.GetService<ITaskManager>();
             foreach (var village in villages)
             {
-                await _taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
+                await taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
             }
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
 
         [ReactiveCommand]
-        private static List<ListBoxItem> LoadVillage(AccountId accountId)
+        private static async Task<List<ListBoxItem>> LoadVillage(AccountId accountId)
         {
-            var getVillage = Locator.Current.GetService<GetVillage>();
-            return getVillage.Info(accountId);
+            var getVillageItemsQuery = Locator.Current.GetService<GetVillageItemsQuery.Handler>();
+            return await getVillageItemsQuery.HandleAsync(new(accountId));
         }
     }
 }

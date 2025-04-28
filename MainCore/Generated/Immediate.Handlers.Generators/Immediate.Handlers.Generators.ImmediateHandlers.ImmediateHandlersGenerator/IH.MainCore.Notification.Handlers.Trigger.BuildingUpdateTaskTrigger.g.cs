@@ -35,18 +35,18 @@ partial class BuildingUpdateTaskTrigger
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
-		private readonly global::MainCore.Commands.Queries.GetVillage _getVillage;
 		private readonly global::MainCore.Commands.Queries.IGetSetting _getSetting;
+		private readonly global::MainCore.Commands.Queries.GetMissingBuildingVillagesQuery.Handler _getMissingBuildingVillageQuery;
 
 		public HandleBehavior(
 			global::MainCore.Services.ITaskManager taskManager,
-			global::MainCore.Commands.Queries.GetVillage getVillage,
-			global::MainCore.Commands.Queries.IGetSetting getSetting
+			global::MainCore.Commands.Queries.IGetSetting getSetting,
+			global::MainCore.Commands.Queries.GetMissingBuildingVillagesQuery.Handler getMissingBuildingVillageQuery
 		)
 		{
 			_taskManager = taskManager;
-			_getVillage = getVillage;
 			_getSetting = getSetting;
+			_getMissingBuildingVillageQuery = getMissingBuildingVillageQuery;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -58,8 +58,8 @@ partial class BuildingUpdateTaskTrigger
 				.HandleAsync(
 					request
 					, _taskManager
-					, _getVillage
 					, _getSetting
+					, _getMissingBuildingVillageQuery
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

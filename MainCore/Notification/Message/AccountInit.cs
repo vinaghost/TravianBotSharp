@@ -9,8 +9,9 @@ namespace MainCore.Notification.Message
 
         private static async ValueTask HandleAsync(
             Notification notification,
+            GetVillagesQuery.Handler getVillagesQuery,
+            GetHasBuildJobVillagesQuery.Handler getHasBuildJobVillagesQuery,
             LoginTaskTrigger.Handler loginTaskTrigger,
-            GetVillage getVillage,
             RefreshVillageTaskTrigger.Handler refreshVillageTaskTrigger,
             SleepTaskTrigger.Handler sleepTaskTrigger,
             StartAdventureTaskTrigger.Handler startAdventureTaskTrigger,
@@ -24,7 +25,7 @@ namespace MainCore.Notification.Message
             await startAdventureTaskTrigger.HandleAsync(notification, cancellationToken);
 
             var accountId = notification.AccountId;
-            var villages = getVillage.All(accountId);
+            var villages = await getVillagesQuery.HandleAsync(new(accountId));
 
             foreach (var village in villages)
             {
@@ -32,7 +33,7 @@ namespace MainCore.Notification.Message
                 await trainTroopTaskTrigger.HandleAsync(new(accountId, village), cancellationToken);
             }
 
-            var hasBuildingJobVillages = getVillage.HasBuildingJob(accountId);
+            var hasBuildingJobVillages = await getHasBuildJobVillagesQuery.HandleAsync(new(accountId));
             foreach (var village in hasBuildingJobVillages)
             {
                 await upgradeBuildingTaskTrigger.HandleAsync(new(accountId, village), cancellationToken);

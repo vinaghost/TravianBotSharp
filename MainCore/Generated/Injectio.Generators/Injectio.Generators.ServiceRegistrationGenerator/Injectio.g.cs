@@ -321,15 +321,6 @@ namespace Microsoft.Extensions.DependencyInjection
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
                 global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Queries.GetVillage),
-                    typeof(global::MainCore.Commands.Queries.GetVillage),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
                     typeof(global::MainCore.Commands.Queries.GetVillageName),
                     typeof(global::MainCore.Commands.Queries.GetVillageName),
                     global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
@@ -457,6 +448,15 @@ namespace Microsoft.Extensions.DependencyInjection
                 serviceCollection,
                 global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
                     typeof(global::Serilog.Core.ILogEventSink),
+                    typeof(global::MainCore.Services.LogSink),
+                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
+                )
+            );
+
+            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
+                serviceCollection,
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
+                    typeof(global::MainCore.Services.LogSink),
                     typeof(global::MainCore.Services.LogSink),
                     global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
                 )

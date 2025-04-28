@@ -1,10 +1,11 @@
-﻿using System.Collections.Concurrent;
+﻿using Serilog;
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace MainCore.Services
 {
     [RegisterSingleton<IChromeManager, ChromeManager>]
-    public sealed class ChromeManager : IChromeManager, IEnableLogger
+    public sealed class ChromeManager : IChromeManager
     {
         private readonly ConcurrentDictionary<AccountId, ChromeBrowser> _dictionary = new();
         private string[] _extensionsPath;
@@ -34,7 +35,7 @@ namespace MainCore.Services
             if (!Directory.Exists(extenstionDir))
             {
                 Directory.CreateDirectory(extenstionDir);
-                this.Log().Info("Create directory {extenstionDir} for extension files.", extenstionDir);
+                Log.Information("Create directory {extenstionDir} for extension files.", extenstionDir);
             }
 
             var asmb = Assembly.GetExecutingAssembly();
@@ -52,12 +53,12 @@ namespace MainCore.Services
                     using Stream input = asmb.GetManifestResourceStream(extensionName);
                     using Stream output = File.Create(path);
                     input.CopyTo(output);
-                    this.Log().Info("Copy default extension file {extensionName} to {path}.", extensionName, path);
+                    Log.Information("Copy default extension file {extensionName} to {path}.", extensionName, path);
                 }
             }
 
             _extensionsPath = list.ToArray();
-            this.Log().Info("Loaded {count} extension files.", _extensionsPath.Length);
+            Log.Information("Loaded {count} extension files.", _extensionsPath.Length);
         }
     }
 }

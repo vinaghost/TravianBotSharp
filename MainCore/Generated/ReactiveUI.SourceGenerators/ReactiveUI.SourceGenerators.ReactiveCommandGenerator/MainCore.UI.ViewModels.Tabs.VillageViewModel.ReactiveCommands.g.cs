@@ -26,7 +26,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>? _loadVillageCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> LoadVillageCommand { get => _loadVillageCommand ??= ReactiveUI.ReactiveCommand.Create<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>(LoadVillage); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> LoadVillageCommand { get => _loadVillageCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>(LoadVillage); }
     }
 }
 #nullable restore

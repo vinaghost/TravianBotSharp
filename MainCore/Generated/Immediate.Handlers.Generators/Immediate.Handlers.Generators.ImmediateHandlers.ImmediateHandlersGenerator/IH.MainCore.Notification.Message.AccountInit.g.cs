@@ -34,8 +34,9 @@ partial class AccountInit
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.Message.AccountInit.Notification, global::System.ValueTuple>
 	{
+		private readonly global::MainCore.Commands.Queries.GetVillagesQuery.Handler _getVillagesQuery;
+		private readonly global::MainCore.Commands.Queries.GetHasBuildJobVillagesQuery.Handler _getHasBuildJobVillagesQuery;
 		private readonly global::MainCore.Notification.Handlers.Trigger.LoginTaskTrigger.Handler _loginTaskTrigger;
-		private readonly global::MainCore.Commands.Queries.GetVillage _getVillage;
 		private readonly global::MainCore.Notification.Handlers.Trigger.RefreshVillageTaskTrigger.Handler _refreshVillageTaskTrigger;
 		private readonly global::MainCore.Notification.Handlers.Trigger.SleepTaskTrigger.Handler _sleepTaskTrigger;
 		private readonly global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.Handler _startAdventureTaskTrigger;
@@ -43,8 +44,9 @@ partial class AccountInit
 		private readonly global::MainCore.Notification.Handlers.Trigger.UpgradeBuildingTaskTrigger.Handler _upgradeBuildingTaskTrigger;
 
 		public HandleBehavior(
+			global::MainCore.Commands.Queries.GetVillagesQuery.Handler getVillagesQuery,
+			global::MainCore.Commands.Queries.GetHasBuildJobVillagesQuery.Handler getHasBuildJobVillagesQuery,
 			global::MainCore.Notification.Handlers.Trigger.LoginTaskTrigger.Handler loginTaskTrigger,
-			global::MainCore.Commands.Queries.GetVillage getVillage,
 			global::MainCore.Notification.Handlers.Trigger.RefreshVillageTaskTrigger.Handler refreshVillageTaskTrigger,
 			global::MainCore.Notification.Handlers.Trigger.SleepTaskTrigger.Handler sleepTaskTrigger,
 			global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.Handler startAdventureTaskTrigger,
@@ -52,8 +54,9 @@ partial class AccountInit
 			global::MainCore.Notification.Handlers.Trigger.UpgradeBuildingTaskTrigger.Handler upgradeBuildingTaskTrigger
 		)
 		{
+			_getVillagesQuery = getVillagesQuery;
+			_getHasBuildJobVillagesQuery = getHasBuildJobVillagesQuery;
 			_loginTaskTrigger = loginTaskTrigger;
-			_getVillage = getVillage;
 			_refreshVillageTaskTrigger = refreshVillageTaskTrigger;
 			_sleepTaskTrigger = sleepTaskTrigger;
 			_startAdventureTaskTrigger = startAdventureTaskTrigger;
@@ -69,8 +72,9 @@ partial class AccountInit
 			await global::MainCore.Notification.Message.AccountInit
 				.HandleAsync(
 					request
+					, _getVillagesQuery
+					, _getHasBuildJobVillagesQuery
 					, _loginTaskTrigger
-					, _getVillage
 					, _refreshVillageTaskTrigger
 					, _sleepTaskTrigger
 					, _startAdventureTaskTrigger

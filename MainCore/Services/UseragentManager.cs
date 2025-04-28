@@ -1,10 +1,11 @@
-﻿using System.Net.Http.Json;
+﻿using Serilog;
+using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace MainCore.Services
 {
     [RegisterSingleton<IUseragentManager, UseragentManager>]
-    public sealed class UseragentManager : IUseragentManager, IEnableLogger
+    public sealed class UseragentManager : IUseragentManager
     {
         private List<string> _userAgentList;
         private DateTime _dateTime;
@@ -15,7 +16,7 @@ namespace MainCore.Services
         private async Task Update()
         {
             _userAgentList = await _httpClient.GetFromJsonAsync<List<string>>(_userAgentUrl);
-            this.Log().Info("User agent list loaded, count: {Count}", _userAgentList.Count);
+            Log.Information("User agent list loaded, count: {Count}", _userAgentList.Count);
             _dateTime = DateTime.Now.AddMonths(1); // need update after 1 month, thought so
             Save();
         }
@@ -39,7 +40,7 @@ namespace MainCore.Services
             var pathFile = Path.Combine(pathFolder, "useragent.json");
             if (!File.Exists(pathFile))
             {
-                this.Log().Info("User agent file not found, creating new one.");
+                Log.Information("User agent file not found, creating new one.");
                 await Update();
                 return;
             }
@@ -51,7 +52,7 @@ namespace MainCore.Services
 
             if (_dateTime < DateTime.Now || _userAgentList.Count < 100)
             {
-                this.Log().Info("User agent file is outdated, updating.");
+                Log.Information("User agent file is outdated, updating.");
                 await Update();
             }
         }
