@@ -25,7 +25,10 @@ namespace MainCore.Commands.Features.CompleteImmediately
 
             Result result;
 
-            result = await chromeBrowser.Click(By.XPath(completeNowButton.XPath), confirmShown, cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(completeNowButton.XPath));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await chromeBrowser.Wait(confirmShown, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             html = chromeBrowser.Html;
@@ -42,7 +45,10 @@ namespace MainCore.Commands.Features.CompleteImmediately
                 return oldQueueCount != newQueueCount;
             }
 
-            result = await chromeBrowser.Click(By.XPath(confirmButton.XPath), queueDifferent, cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(confirmButton.XPath));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await chromeBrowser.Wait(queueDifferent, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             await _completeImmediatelyMessage.HandleAsync(new(_dataService.AccountId, _dataService.VillageId), cancellationToken);

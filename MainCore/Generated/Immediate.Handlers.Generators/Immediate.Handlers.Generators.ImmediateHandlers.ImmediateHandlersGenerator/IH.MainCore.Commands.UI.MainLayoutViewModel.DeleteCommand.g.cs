@@ -35,15 +35,15 @@ partial class DeleteCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.MainLayoutViewModel.DeleteCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
-		private readonly global::MainCore.Notification.Message.FarmListUpdated.Handler _farmListUpdated;
+		private readonly global::MainCore.Notification.Message.AccountUpdated.Handler _accountUpdated;
 
 		public HandleBehavior(
 			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
-			global::MainCore.Notification.Message.FarmListUpdated.Handler farmListUpdated
+			global::MainCore.Notification.Message.AccountUpdated.Handler accountUpdated
 		)
 		{
 			_contextFactory = contextFactory;
-			_farmListUpdated = farmListUpdated;
+			_accountUpdated = accountUpdated;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -55,7 +55,7 @@ partial class DeleteCommand
 				.HandleAsync(
 					request
 					, _contextFactory
-					, _farmListUpdated
+					, _accountUpdated
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

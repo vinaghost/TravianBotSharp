@@ -25,12 +25,13 @@ namespace MainCore.Commands.Features
             var (username, password) = GetLoginInfo(accountId);
 
             Result result;
-            result = await chromeBrowser.InputTextbox(By.XPath(usernameNode.XPath), username);
+            result = await chromeBrowser.Input(By.XPath(usernameNode.XPath), username);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            result = await chromeBrowser.InputTextbox(By.XPath(passwordNode.XPath), password);
+            result = await chromeBrowser.Input(By.XPath(passwordNode.XPath), password);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            result = await chromeBrowser.Click(By.XPath(buttonNode.XPath), "dorf", cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(buttonNode.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await chromeBrowser.WaitPageChanged("dorf", cancellationToken);
 
             return Result.Ok();
         }

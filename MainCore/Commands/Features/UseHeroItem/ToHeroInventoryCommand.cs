@@ -20,7 +20,10 @@ namespace MainCore.Commands.Features.UseHeroItem
             }
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(avatar.XPath), "hero", tabActived, cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(avatar.XPath));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await chromeBrowser.WaitPageChanged("hero", tabActived, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

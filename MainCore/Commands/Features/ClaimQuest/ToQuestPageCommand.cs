@@ -20,7 +20,10 @@ namespace MainCore.Commands.Features.ClaimQuest
             }
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(adventure.XPath), "tasks", tableShow, cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(adventure.XPath));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await chromeBrowser.WaitPageChanged("tasks", tableShow, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

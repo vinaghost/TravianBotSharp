@@ -31,7 +31,7 @@ namespace MainCore.Commands.Features.ClaimQuest
                     return Result.Ok();
                 }
 
-                result = await chromeBrowser.Click(By.XPath(quest.XPath), cancellationToken);
+                result = await chromeBrowser.Click(By.XPath(quest.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 await _delayClickCommand.Execute(cancellationToken);
             }
@@ -55,7 +55,7 @@ namespace MainCore.Commands.Features.ClaimQuest
 
             if (quest is null) return Result.Ok();
 
-            result = await chromeBrowser.Click(By.XPath(quest.XPath), cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(quest.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

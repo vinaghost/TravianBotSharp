@@ -101,15 +101,13 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     }
                 }
 
-                result = await _dataService.ChromeBrowser.Navigate(url, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                await _dataService.ChromeBrowser.Navigate(url, cancellationToken);
 
                 var time = UpgradeParser.GetTimeWhenEnoughResource(_dataService.ChromeBrowser.Html, plan.Type);
                 return WaitResource.Error(time);
             }
 
-            result = await _dataService.ChromeBrowser.Navigate(url, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            await _dataService.ChromeBrowser.Navigate(url, cancellationToken);
 
             return Result.Ok();
         }

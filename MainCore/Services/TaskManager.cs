@@ -22,6 +22,22 @@ namespace MainCore.Services
             return tasks.Find(x => x.Stage == StageEnums.Executing);
         }
 
+        public async Task StopCurrentTast(AccountId accountId)
+        {
+            var cts = GetCancellationTokenSource(accountId);
+            if (cts is null) return;
+            await cts.CancelAsync();
+            TaskBase currentTask;
+            do
+            {
+                currentTask = GetCurrentTask(accountId);
+                if (currentTask is null) return;
+                await Task.Delay(500);
+            }
+            while (currentTask.Stage != StageEnums.Waiting);
+            await SetStatus(accountId, StatusEnums.Paused);
+        }
+
         public async Task AddOrUpdate<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask
         {
             var task = Get<T>(accountId);

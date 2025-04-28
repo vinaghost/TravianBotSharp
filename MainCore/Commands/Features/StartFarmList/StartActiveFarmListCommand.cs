@@ -23,7 +23,7 @@ namespace MainCore.Commands.Features.StartFarmList
                 var startButton = FarmListParser.GetStartButton(html, farmList);
                 if (startButton is null) return Retry.ButtonNotFound($"Start farm {farmList}");
 
-                result = await chromeBrowser.Click(By.XPath(startButton.XPath), CancellationToken.None);
+                result = await chromeBrowser.Click(By.XPath(startButton.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 await _delayClickCommand.Execute(cancellationToken);

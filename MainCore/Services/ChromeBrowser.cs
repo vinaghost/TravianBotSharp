@@ -2,6 +2,8 @@
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using Polly;
+using Polly.Retry;
 
 namespace MainCore.Services
 {
@@ -10,9 +12,51 @@ namespace MainCore.Services
         private ChromeDriver _driver;
         private readonly ChromeDriverService _chromeService;
         private WebDriverWait _wait;
+        private ILogger _logger;
 
         private readonly string[] _extensionsPath;
         private readonly HtmlDocument _htmlDoc = new();
+
+        public record ContextData(ILogger Logger, string TaskName);
+        private static readonly ResiliencePropertyKey<ContextData> _contextDataKey = new(nameof(ContextData));
+
+        private static readonly Func<OnRetryArguments<Result>, ValueTask> _onRetry = async args =>
+        {
+            await Task.CompletedTask;
+            args.Context.Properties.TryGetValue(_contextDataKey, out var contextData);
+
+            var (logger, taskName) = contextData;
+            logger.Warning("There is something wrong.");
+            var error = args.Outcome;
+            if (error.Exception is null)
+            {
+                var errors = error.Result.Reasons.Select(x => x.Message).ToList();
+                logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
+            }
+            else
+            {
+                var exception = error.Exception;
+                logger.Error(exception, "{Message}", exception.Message);
+            }
+
+            logger.Warning("Retry {AttemptNumber} for {TaskName}", args.AttemptNumber + 1, taskName);
+        };
+
+        private static readonly RetryStrategyOptions<Result> _retryOptions = new()
+        {
+            MaxRetryAttempts = 3,
+            Delay = TimeSpan.FromMinutes(5),
+            UseJitter = true,
+            BackoffType = DelayBackoffType.Linear,
+            ShouldHandle = new PredicateBuilder<Result>()
+               .Handle<Exception>()
+               .HandleResult(static x => x.HasError<Retry>()),
+            OnRetry = _onRetry
+        };
+
+        private static readonly ResiliencePipeline<Result> _pipeline = new ResiliencePipelineBuilder<Result>()
+            .AddRetry(_retryOptions)
+            .Build();
 
         public ChromeBrowser(string[] extensionsPath)
         {
@@ -22,7 +66,7 @@ namespace MainCore.Services
             _chromeService.HideCommandPromptWindow = true;
         }
 
-        public async Task<Result> Setup(ChromeSetting setting)
+        public async Task Setup(ChromeSetting setting, ILogger logger)
         {
             var options = new ChromeOptions();
 
@@ -74,8 +118,7 @@ namespace MainCore.Services
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(3);
             _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3)); // watch ads
-
-            return Result.Ok();
+            _logger = logger;
         }
 
         public ChromeDriver Driver => _driver;
@@ -98,173 +141,60 @@ namespace MainCore.Services
 
         public string CurrentUrl => _driver.Url;
 
-        private async Task<Result> Refresh()
+        public async Task Refresh(CancellationToken cancellationToken)
         {
-            void refresh()
+            async Task<Result> refresh(CancellationToken cancellationToken)
             {
-                _driver.Navigate().Refresh();
+                await _driver.Navigate().RefreshAsync();
+                var result = await WaitPageLoaded(cancellationToken);
+                return result;
             }
 
-            var result = await Result.Try(() => Task.Run(refresh), Retry.Exception);
-            return result;
+            var context = ResilienceContextPool.Shared.Get(cancellationToken);
+            var contextData = new ContextData(_logger, "refresh page");
+            context.Properties.Set(_contextDataKey, contextData);
+            var result = await _pipeline.ExecuteAsync(
+                async (ctx, state) => await refresh(context.CancellationToken),
+                context);
+            ResilienceContextPool.Shared.Return(context);
         }
 
-        public async Task<Result> Refresh(CancellationToken cancellationToken)
+        private static bool PageLoaded(IWebDriver driver) => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete");
+
+        private static bool PageChanged(IWebDriver driver, string url_nested) => driver.Url.Contains(url_nested) && PageLoaded(driver);
+
+        public async Task Navigate(string url, CancellationToken cancellationToken)
         {
-            Result result;
-            result = await Refresh();
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            await Task.Delay(600, CancellationToken.None);
-
-            result = await WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            return Result.Ok();
-        }
-
-        private async Task<Result> Navigate(string url)
-        {
-            void goToUrl()
+            async Task<Result> navigate(string url_nested, CancellationToken cancellationToken)
             {
-                _driver.Navigate().GoToUrl(url);
+                await _driver.Navigate().GoToUrlAsync(url_nested);
+                var result = await Wait(driver => PageChanged(driver, url_nested), cancellationToken);
+                return result;
             }
-            var result = await Result.Try(() => Task.Run(goToUrl), Retry.Exception);
-            return result;
+
+            var context = ResilienceContextPool.Shared.Get(cancellationToken);
+            var contextData = new ContextData(_logger, $"navigate to {url}");
+            context.Properties.Set(_contextDataKey, contextData);
+            var result = await _pipeline.ExecuteAsync(
+                async (ctx, state) => await navigate(url, context.CancellationToken),
+                context, url);
+            ResilienceContextPool.Shared.Return(context);
         }
 
-        public async Task<Result> Navigate(string url, CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await Navigate(url);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            await Task.Delay(600, CancellationToken.None);
-
-            result = await WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            return Result.Ok();
-        }
-
-        private async Task<Result> Click(By by)
+        public async Task<Result> Click(By by)
         {
             var elements = _driver.FindElements(by);
             if (elements.Count == 0) return Retry.ElementNotFound();
             var element = elements[0];
             if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable();
-            try
-            {
-                var normalClick = element.Click;
-                await Task.Run(normalClick);
-            }
-            catch
-            {
-                var specialClick = new Actions(_driver).Click(element).Perform;
-
-                var result = await Result.Try(() => Task.Run(specialClick), Retry.Exception);
-                return result;
-            }
-
+            await Task.Run(new Actions(_driver).Click(element).Perform);
             return Result.Ok();
         }
 
-        public async Task<Result> Click(By by, CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await Click(by);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            await Task.Delay(600, CancellationToken.None);
-
-            result = await WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            return Result.Ok();
-        }
-
-        public async Task<Result> Click(By by, string url, CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await Click(by);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await WaitPageChanged(url, cancellationToken);
-            if (result.IsFailed)
-            {
-                result = await Click(by);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-                result = await WaitPageChanged(url, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            }
-
-            result = await WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            return Result.Ok();
-        }
-
-        public async Task<Result> Click(By by, string url, Func<IWebDriver, bool> condition, CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await Click(by);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await WaitPageChanged(url, cancellationToken);
-            if (result.IsFailed)
-            {
-                result = await Click(by);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-                result = await WaitPageChanged(url, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            }
-            result = await WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await Wait(condition, cancellationToken);
-            if (result.IsFailed)
-            {
-                result = await Click(by);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-                result = await WaitPageChanged(url, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-                result = await WaitPageLoaded(cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-                result = await Wait(condition, cancellationToken);
-                return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            }
-
-            return Result.Ok();
-        }
-
-        public async Task<Result> Click(By by, Func<IWebDriver, bool> condition, CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await Click(by);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await Wait(condition, cancellationToken);
-            if (result.IsFailed)
-            {
-                result = await Click(by);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-                result = await Wait(condition, cancellationToken);
-                return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            }
-            return Result.Ok();
-        }
-
-        public async Task<Result> InputTextbox(By by, string content)
+        public async Task<Result> Input(By by, string content)
         {
             var elements = _driver.FindElements(by);
             if (elements.Count == 0) return Retry.ElementNotFound();
-
             var element = elements[0];
             if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable();
 
@@ -275,67 +205,49 @@ namespace MainCore.Services
                 element.SendKeys(content);
             }
 
-            var result = await Result.Try(() => Task.Run(input), Retry.Exception);
-            return result;
-        }
-
-        private async Task<Result> ExecuteJsScript(string javascript)
-        {
-            var js = Driver as IJavaScriptExecutor;
-            void execute()
-            {
-                js.ExecuteScript(javascript);
-            }
-
-            var result = await Result.Try(() => Task.Run(execute), Retry.Exception);
-            return result;
-        }
-
-        public async Task<Result> ExecuteJsScript(string javascript, string url, CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await ExecuteJsScript(javascript);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await WaitPageChanged(url, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            await Task.Run(input);
             return Result.Ok();
         }
 
-        public async Task<Result> Wait(Func<IWebDriver, bool> condition, CancellationToken cancellationToken)
+        public async Task<Result> ExecuteJsScript(string javascript)
+        {
+            await Task.CompletedTask;
+            var js = Driver as IJavaScriptExecutor;
+            js.ExecuteScript(javascript);
+            return Result.Ok();
+        }
+
+        public async Task<Result> Wait(Predicate<IWebDriver> condition, CancellationToken cancellationToken)
         {
             void wait()
             {
-                _wait.Until(driver =>
-                {
-                    if (cancellationToken.IsCancellationRequested) return true;
-                    return condition(driver);
-                });
+                _wait.Until(driver => condition(driver), cancellationToken);
             }
 
-            var result = await Result.Try(() => Task.Run(wait), ex => ex is WebDriverTimeoutException ? Stop.PageNotLoad : Retry.Exception(ex));
-            if (cancellationToken.IsCancellationRequested) return Cancel.Error;
-            return result;
+            try
+            {
+                await Task.Run(wait, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return Cancel.Error;
+            }
+            return Result.Ok();
         }
 
-        public async Task<Result> WaitPageLoaded(CancellationToken cancellationToken)
+        public Task<Result> WaitPageLoaded(CancellationToken cancellationToken)
         {
-            static bool pageLoaded(IWebDriver driver) => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete");
-
-            var result = await Wait(pageLoaded, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            return result;
+            return Wait(PageLoaded, cancellationToken);
         }
 
-        public async Task<Result> WaitPageChanged(string part, CancellationToken cancellationToken)
+        public Task<Result> WaitPageChanged(string part, CancellationToken cancellationToken)
         {
-            bool pageChanged(IWebDriver driver) => driver.Url.Contains(part);
-            var result = await Wait(pageChanged, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            return result;
+            return Wait(driver => PageChanged(driver, part), cancellationToken);
+        }
+
+        public Task<Result> WaitPageChanged(string part, Predicate<IWebDriver> customCondition, CancellationToken cancellationToken)
+        {
+            return Wait(driver => PageChanged(driver, part) && customCondition(driver), cancellationToken);
         }
 
         public async Task Close()

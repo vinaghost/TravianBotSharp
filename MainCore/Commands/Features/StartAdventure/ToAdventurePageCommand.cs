@@ -21,7 +21,9 @@ namespace MainCore.Commands.Features.StartAdventure
             }
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(adventure.XPath), "adventures", tableShow, cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(adventure.XPath));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await chromeBrowser.WaitPageChanged("adventures", tableShow, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

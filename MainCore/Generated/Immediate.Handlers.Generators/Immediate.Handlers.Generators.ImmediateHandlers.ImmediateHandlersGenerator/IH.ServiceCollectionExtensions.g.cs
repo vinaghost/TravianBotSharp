@@ -21,16 +21,21 @@ public static class HandlerServiceCollectionExtensions
 	{
 		global::MainCore.Commands.Misc.AddJobCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Misc.DeleteJobByIdCommand.AddHandlers(services, lifetime);
-		global::MainCore.Commands.Misc.StopCurrentTask.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Misc.OpenBrowserCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Queries.GetAccessQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.GetBuilding.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.GetLayoutBuildingsQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.IsResourceEnough.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Queries.VerifyAccessQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.DebugViewModel.GetEndpointAdressQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.DebugViewModel.GetLogQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.DebugViewModel.GetTaskItemsQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.FarmingViewModel.ActivationCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.FarmingViewModel.GetFarmListItemsQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.MainLayoutViewModel.DeleteCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.MainLayoutViewModel.GetAccountItemsQuery.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.MainLayoutViewModel.LoginCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.MainLayoutViewModel.LogoutCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Villages.BuildViewModel.DeleteJobByVillageIdCommand.AddHandlers(services, lifetime);

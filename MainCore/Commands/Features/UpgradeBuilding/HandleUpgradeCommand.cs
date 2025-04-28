@@ -96,7 +96,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var button = UpgradeParser.GetSpecialUpgradeButton(html);
             if (button is null) return Retry.ButtonNotFound("Watch ads upgrade");
 
-            var result = await chromeBrowser.Click(By.XPath(button.XPath), cancellationToken);
+            var result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var driver = chromeBrowser.Driver;
@@ -125,14 +125,14 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             {
                 var checkbox = videoFeature.Descendants("div").FirstOrDefault(x => x.HasClass("checkbox"));
                 if (checkbox is null) return Retry.ButtonNotFound("Don't show watch ads confirm again");
-                result = await chromeBrowser.Click(By.XPath(checkbox.XPath), cancellationToken);
+                result = await chromeBrowser.Click(By.XPath(checkbox.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 await _delayClickCommand.Execute(cancellationToken);
 
                 var watchButton = videoFeature.Descendants("button").FirstOrDefault(x => x.HasClass("green"));
                 if (watchButton is null) return Retry.ButtonNotFound("Watch ads");
-                result = await chromeBrowser.Click(By.XPath(watchButton.XPath), cancellationToken);
+                result = await chromeBrowser.Click(By.XPath(watchButton.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
 
@@ -142,7 +142,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var node = html.GetElementbyId("videoFeature");
             if (node is null) return Retry.ButtonNotFound($"play ads");
 
-            result = await chromeBrowser.Click(By.XPath(node.XPath), cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(node.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             driver.SwitchTo().DefaultContent();
@@ -160,7 +160,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 driver.Close();
                 driver.SwitchTo().Window(current);
 
-                result = await chromeBrowser.Click(By.XPath(node.XPath), cancellationToken);
+                result = await chromeBrowser.Click(By.XPath(node.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 driver.SwitchTo().DefaultContent();
@@ -178,14 +178,14 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var dontShowThisAgain = html.GetElementbyId("dontShowThisAgain");
             if (dontShowThisAgain is not null)
             {
-                result = await chromeBrowser.Click(By.XPath(dontShowThisAgain.XPath), cancellationToken);
+                result = await chromeBrowser.Click(By.XPath(dontShowThisAgain.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
                 await _delayClickCommand.Execute(cancellationToken);
 
                 var okButton = html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
                 if (okButton is null) return Retry.ButtonNotFound("ok");
-                result = await chromeBrowser.Click(By.XPath(okButton.XPath), cancellationToken);
+                result = await chromeBrowser.Click(By.XPath(okButton.XPath));
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
 
@@ -200,7 +200,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var button = UpgradeParser.GetUpgradeButton(html);
             if (button is null) return Retry.ButtonNotFound("upgrade");
 
-            var result = await chromeBrowser.Click(By.XPath(button.XPath), "dorf", cancellationToken);
+            var result = await chromeBrowser.Click(By.XPath(button.XPath));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await chromeBrowser.WaitPageChanged("dorf", cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
@@ -214,7 +217,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var button = UpgradeParser.GetConstructButton(html, building);
             if (button is null) return Retry.ButtonNotFound("construct");
 
-            var result = await chromeBrowser.Click(By.XPath(button.XPath), "dorf", cancellationToken);
+            var result = await chromeBrowser.Click(By.XPath(button.XPath));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await chromeBrowser.WaitPageChanged("dorf", cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }

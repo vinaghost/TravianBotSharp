@@ -13,13 +13,13 @@ namespace MainCore.Commands.Features.DisableContextualHelp
             if (option is null) return Retry.NotFound("hide contextual help", "option");
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(option.XPath), cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(option.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var button = OptionParser.GetSubmitButton(html);
             if (button is null) return Retry.ButtonNotFound("submit");
 
-            result = await chromeBrowser.Click(By.XPath(button.XPath), cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

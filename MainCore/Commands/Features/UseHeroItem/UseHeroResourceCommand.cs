@@ -74,7 +74,10 @@ namespace MainCore.Commands.Features.UseHeroItem
             }
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(node.XPath), loadingCompleted, cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(node.XPath));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await chromeBrowser.Wait(driver => loadingCompleted(driver), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
@@ -88,7 +91,7 @@ namespace MainCore.Commands.Features.UseHeroItem
             if (node is null) return Retry.TextboxNotFound("amount");
 
             Result result;
-            result = await chromeBrowser.InputTextbox(By.XPath(node.XPath), amount.ToString());
+            result = await chromeBrowser.Input(By.XPath(node.XPath), amount.ToString());
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }
@@ -108,8 +111,12 @@ namespace MainCore.Commands.Features.UseHeroItem
             }
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(node.XPath), loadingCompleted, cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(node.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await chromeBrowser.Wait(driver => loadingCompleted(driver), cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
             return Result.Ok();
         }
 

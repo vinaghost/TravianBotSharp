@@ -2,24 +2,26 @@
 
 namespace MainCore.Commands.Misc
 {
-    [RegisterSingleton<OpenBrowserCommand>]
-    public class OpenBrowserCommand
+    [Handler]
+    public static partial class OpenBrowserCommand
     {
-        private readonly IChromeManager _chromeManager;
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        public sealed record Command(AccountId accountId, AccessDto access) : ICustomCommand;
 
-        public OpenBrowserCommand(IChromeManager chromeManager, IDbContextFactory<AppDbContext> contextFactory)
+        private static async ValueTask HandleAsync(
+            Command command,
+            IChromeManager chromeManager, IDbContextFactory<AppDbContext> contextFactory, ILogService logService,
+            CancellationToken cancellationToken
+            )
         {
-            _chromeManager = chromeManager;
-            _contextFactory = contextFactory;
-        }
+            var (accountId, access) = command;
+            using var context = await contextFactory.CreateDbContextAsync();
+            var chromeBrowser = chromeManager.Get(accountId);
 
-        public async Task<Result> Execute(AccountId accountId, AccessDto access, CancellationToken cancellationToken)
-        {
-            var chromeBrowser = _chromeManager.Get(accountId);
+            var account = context.Accounts
+                .Where(x => x.Id == accountId.Value)
+                .ToDto()
+                .First();
 
-            var getAccount = Locator.Current.GetService<GetAccount>();
-            var account = getAccount.Execute(accountId);
             var uri = new Uri(account.Server);
 
             var serverFolderName = uri.Host.Replace(".", "_");
@@ -39,21 +41,12 @@ namespace MainCore.Commands.Misc
                 ProxyPassword = access.ProxyPassword,
                 IsHeadless = headlessChrome,
             };
-            var result = await chromeBrowser.Setup(chromeSetting);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await chromeBrowser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            await chromeBrowser.Setup(chromeSetting, logService.GetLogger(accountId));
+            await chromeBrowser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
 
-            UpdateAccessLastUsed(access.Id);
-            return Result.Ok();
-        }
-
-        private void UpdateAccessLastUsed(AccessId accessId)
-        {
-            using var context = _contextFactory.CreateDbContext();
             context.Accesses
-               .Where(x => x.Id == accessId.Value)
+               .Where(x => x.Id == access.Id.Value)
                .ExecuteUpdate(x => x.SetProperty(x => x.LastUsed, x => DateTime.Now));
         }
     }

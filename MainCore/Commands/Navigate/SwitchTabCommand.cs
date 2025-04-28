@@ -28,7 +28,9 @@ namespace MainCore.Commands.Navigate
             }
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(tab.XPath), tabActived, cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(tab.XPath));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await chromeBrowser.Wait(tabActived, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

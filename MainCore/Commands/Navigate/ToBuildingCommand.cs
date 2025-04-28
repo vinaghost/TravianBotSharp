@@ -20,13 +20,14 @@ namespace MainCore.Commands.Navigate
                 {
                     var currentUrl = new Uri(chromeBrowser.CurrentUrl);
                     var host = currentUrl.GetLeftPart(UriPartial.Authority);
-                    result = await chromeBrowser.Navigate($"{host}/build.php?id={location}", cancellationToken);
-                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                    await chromeBrowser.Navigate($"{host}/build.php?id={location}", cancellationToken);
                 }
                 else
                 {
                     var css = $"#villageContent > div.buildingSlot.a{location} > svg > path";
-                    result = await chromeBrowser.Click(By.CssSelector(css), "build.php", cancellationToken);
+                    result = await chromeBrowser.Click(By.CssSelector(css));
+                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                    result = await chromeBrowser.WaitPageChanged("build.php", cancellationToken);
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
             }
@@ -42,14 +43,16 @@ namespace MainCore.Commands.Navigate
 
                     var decodedJs = HttpUtility.HtmlDecode(javascript);
 
-                    result = await chromeBrowser.ExecuteJsScript(decodedJs, "build.php", cancellationToken);
+                    result = await chromeBrowser.ExecuteJsScript(decodedJs);
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
                 else
                 {
-                    result = await chromeBrowser.Click(By.XPath(node.XPath), "build.php", cancellationToken);
+                    result = await chromeBrowser.Click(By.XPath(node.XPath));
                     if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
                 }
+                result = await chromeBrowser.WaitPageChanged("build.php", cancellationToken);
+                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             return Result.Ok();
         }

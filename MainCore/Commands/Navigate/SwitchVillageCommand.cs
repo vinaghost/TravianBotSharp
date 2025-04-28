@@ -27,10 +27,15 @@ namespace MainCore.Commands.Navigate
             }
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(node.XPath), villageChanged, cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(node.XPath));
             if (result.IsFailed) return result
                     .WithError(new Error($"page stuck at changing village stage [Current: {current}] [Expected: {villageId}]"))
                     .WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await chromeBrowser.Wait(villageChanged, cancellationToken);
+            if (result.IsFailed) return result
+                   .WithError(new Error($"page stuck at changing village stage [Current: {current}] [Expected: {villageId}]"))
+                   .WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }

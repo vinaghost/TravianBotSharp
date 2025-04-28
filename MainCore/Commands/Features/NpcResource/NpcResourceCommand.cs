@@ -52,7 +52,9 @@ namespace MainCore.Commands.Features.NpcResource
             }
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath), dialogShown, cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(button.XPath));
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await chromeBrowser.Wait(dialogShown, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
@@ -79,7 +81,7 @@ namespace MainCore.Commands.Features.NpcResource
             Result result;
             for (var i = 0; i < 4; i++)
             {
-                result = await chromeBrowser.InputTextbox(By.XPath(inputs[i].XPath), $"{values[i]}");
+                result = await chromeBrowser.Input(By.XPath(inputs[i].XPath), $"{values[i]}");
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             return Result.Ok();
@@ -114,7 +116,7 @@ namespace MainCore.Commands.Features.NpcResource
             if (button is null) return Retry.ButtonNotFound("redeem");
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath), cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }

@@ -14,7 +14,7 @@ namespace MainCore.Commands.Features.DisableContextualHelp
             if (button is null) return Retry.ButtonNotFound("options");
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath), cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

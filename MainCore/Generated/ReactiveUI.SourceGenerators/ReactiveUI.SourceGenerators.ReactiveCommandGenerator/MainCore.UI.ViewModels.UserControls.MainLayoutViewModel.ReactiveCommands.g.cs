@@ -46,7 +46,7 @@ namespace MainCore.UI.ViewModels.UserControls
         private ReactiveUI.ReactiveCommand<global::System.Reactive.Unit, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>? _loadAccountCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::System.Reactive.Unit, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> LoadAccountCommand { get => _loadAccountCommand ??= ReactiveUI.ReactiveCommand.Create(LoadAccount); }
+        public ReactiveUI.ReactiveCommand<global::System.Reactive.Unit, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> LoadAccountCommand { get => _loadAccountCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask(LoadAccount); }
         private ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::MainCore.UI.Models.Output.ListBoxItem>? _getAccountCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]

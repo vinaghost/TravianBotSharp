@@ -37,5 +37,6 @@ namespace MainCore.Services
         Task ReOrder(AccountId accountId);
 
         Task SetStatus(AccountId accountId, StatusEnums status);
+        Task StopCurrentTast(AccountId accountId);
     }
 }

@@ -116,13 +116,13 @@ namespace MainCore.Commands.Features.TrainTroop
             if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
 
             Result result;
-            result = await chromeBrowser.InputTextbox(By.XPath(inputBox.XPath), $"{amount}");
+            result = await chromeBrowser.Input(By.XPath(inputBox.XPath), $"{amount}");
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var trainButton = TrainTroopParser.GetTrainButton(html);
             if (trainButton is null) return Retry.ButtonNotFound("train troop");
 
-            result = await chromeBrowser.Click(By.XPath(trainButton.XPath), cancellationToken);
+            result = await chromeBrowser.Click(By.XPath(trainButton.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

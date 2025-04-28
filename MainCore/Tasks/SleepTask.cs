@@ -8,14 +8,14 @@ namespace MainCore.Tasks
     public class SleepTask : AccountTask
     {
         private readonly ITaskManager _taskManager;
-        private readonly GetAccess _getAccess;
+        private readonly GetAccessQuery.Handler _getAccessQuery;
         private readonly IGetSetting _getSetting;
 
-        public SleepTask(ITaskManager taskManager, IGetSetting getSetting, GetAccess getAccess)
+        public SleepTask(ITaskManager taskManager, IGetSetting getSetting, GetAccessQuery.Handler getAccessQuery)
         {
             _taskManager = taskManager;
             _getSetting = getSetting;
-            _getAccess = getAccess;
+            _getAccessQuery = getAccessQuery;
         }
 
         protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
@@ -25,12 +25,11 @@ namespace MainCore.Tasks
             result = await sleepCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var (_, isFailed, access, errors) = await _getAccess.Execute(AccountId);
+            var (_, isFailed, access, errors) = await _getAccessQuery.HandleAsync(new(AccountId), cancellationToken);
             if (isFailed) return Result.Fail(errors).WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var openBrowserCommand = scoped.ServiceProvider.GetRequiredService<OpenBrowserCommand>();
-            result = await openBrowserCommand.Execute(AccountId, access, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            var openBrowserCommand = scoped.ServiceProvider.GetRequiredService<OpenBrowserCommand.Handler>();
+            await openBrowserCommand.HandleAsync(new(AccountId, access), cancellationToken);
 
             await SetNextExecute();
 

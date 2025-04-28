@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.UI;
+﻿using MainCore.Commands.UI.MainLayoutViewModel;
 using MainCore.UI.Enums;
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
@@ -91,12 +91,20 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
+            var taskManager = Locator.Current.GetService<ITaskManager>();
+            var accountId = new AccountId(Accounts.SelectedItemId);
+            var status = taskManager.GetStatus(accountId);
+            if (status != StatusEnums.Offline)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Account should be offline"));
+                return;
+            }
+
             var result = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Information", $"Are you sure want to delete \n {Accounts.SelectedItem.Content}"));
             if (!result) return;
 
-            var accountId = new AccountId(Accounts.SelectedItemId);
-            var deleteAccountCommand = Locator.Current.GetService<DeleteAccountCommand>();
-            await deleteAccountCommand.Execute(accountId, CancellationToken.None);
+            var deleteCommand = Locator.Current.GetService<DeleteCommand.Handler>();
+            await deleteCommand.HandleAsync(new(accountId));
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
@@ -109,8 +117,32 @@ namespace MainCore.UI.ViewModels.UserControls
             }
 
             var accountId = new AccountId(Accounts.SelectedItemId);
-            var loginCommand = Locator.Current.GetService<LoginCommand>();
-            await loginCommand.Execute(accountId, CancellationToken.None);
+
+            var getSetting = Locator.Current.GetService<IGetSetting>();
+            var tribe = (TribeEnums)getSetting.ByName(accountId, AccountSettingEnums.Tribe);
+            if (tribe == TribeEnums.Any)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Choose tribe first"));
+                return;
+            }
+
+            var taskManager = Locator.Current.GetService<ITaskManager>();
+            if (taskManager.GetStatus(accountId) != StatusEnums.Offline)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Account should be offline"));
+                return;
+            }
+
+            var getAccessQuery = Locator.Current.GetService<GetAccessQuery.Handler>();
+            var result = await getAccessQuery.HandleAsync(new(accountId));
+            if (result.IsFailed)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", result.Errors.First().Message));
+                return;
+            }
+
+            var loginCommand = Locator.Current.GetService<LoginCommand.Handler>();
+            await loginCommand.HandleAsync(new(accountId, result.Value));
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
@@ -124,8 +156,28 @@ namespace MainCore.UI.ViewModels.UserControls
 
             var accountId = new AccountId(Accounts.SelectedItemId);
 
-            var logoutCommand = Locator.Current.GetService<LogoutCommand>();
-            await logoutCommand.Execute(accountId, CancellationToken.None);
+            var taskManager = Locator.Current.GetService<ITaskManager>();
+            var status = taskManager.GetStatus(accountId);
+            switch (status)
+            {
+                case StatusEnums.Offline:
+                    await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Account's browser is already closed"));
+                    return;
+
+                case StatusEnums.Starting:
+                case StatusEnums.Pausing:
+                case StatusEnums.Stopping:
+                    await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", $"TBS is {status}. Please waiting"));
+                    return;
+
+                case StatusEnums.Online:
+                case StatusEnums.Paused:
+                default:
+                    break;
+            }
+
+            var logoutCommand = Locator.Current.GetService<LogoutCommand.Handler>();
+            await logoutCommand.HandleAsync(new(accountId));
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
@@ -138,8 +190,29 @@ namespace MainCore.UI.ViewModels.UserControls
             }
 
             var accountId = new AccountId(Accounts.SelectedItemId);
-            var pauseCommand = Locator.Current.GetService<PauseCommand>();
-            await pauseCommand.Execute(accountId, CancellationToken.None);
+
+            var taskManager = Locator.Current.GetService<ITaskManager>();
+            var status = taskManager.GetStatus(accountId);
+            switch (status)
+            {
+                case StatusEnums.Paused:
+                    await taskManager.SetStatus(accountId, StatusEnums.Online);
+                    break;
+
+                case StatusEnums.Online:
+                    await taskManager.StopCurrentTast(accountId);
+                    break;
+
+                case StatusEnums.Offline:
+                case StatusEnums.Starting:
+                case StatusEnums.Pausing:
+                case StatusEnums.Stopping:
+                    await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Account is {status}"));
+                    break;
+
+                default:
+                    break;
+            }
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
@@ -152,8 +225,29 @@ namespace MainCore.UI.ViewModels.UserControls
             }
 
             var accountId = new AccountId(Accounts.SelectedItemId);
-            var restartCommand = Locator.Current.GetService<RestartCommand>();
-            await restartCommand.Execute(accountId, CancellationToken.None);
+            var taskManager = Locator.Current.GetService<ITaskManager>();
+            var status = taskManager.GetStatus(accountId);
+
+            switch (status)
+            {
+                case StatusEnums.Offline:
+                case StatusEnums.Starting:
+                case StatusEnums.Pausing:
+                case StatusEnums.Stopping:
+                    await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Account is {status}"));
+                    return;
+
+                case StatusEnums.Online:
+                    await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Account should be paused first"));
+                    return;
+
+                case StatusEnums.Paused:
+                    await taskManager.SetStatus(accountId, StatusEnums.Starting);
+                    await taskManager.Clear(accountId);
+                    await Locator.Current.GetService<AccountInit.Handler>().HandleAsync(new(accountId));
+                    await taskManager.SetStatus(accountId, StatusEnums.Online);
+                    return;
+            }
         }
 
         public async Task LoadStatus(AccountId accountId)
@@ -173,10 +267,10 @@ namespace MainCore.UI.ViewModels.UserControls
         }
 
         [ReactiveCommand]
-        private static List<ListBoxItem> LoadAccount()
+        private static async Task<List<ListBoxItem>> LoadAccount()
         {
-            var getAccount = Locator.Current.GetService<GetAccount>();
-            var items = getAccount.Items();
+            var getAccountItemsQuery = Locator.Current.GetService<GetAccountItemsQuery.Handler>();
+            var items = await getAccountItemsQuery.HandleAsync(new());
             return items;
         }
 
