@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using MainCore.Commands.UI.AccountSettingViewModel;
 using MainCore.Commands.UI.FarmingViewModel;
 using MainCore.Commands.UI.Misc;
 using MainCore.Tasks;
@@ -139,10 +140,10 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private static Dictionary<AccountSettingEnums, int> LoadSetting(AccountId accountId)
+        private static async Task<Dictionary<AccountSettingEnums, int>> LoadSetting(AccountId accountId)
         {
-            var getSetting = Locator.Current.GetService<IGetSetting>();
-            var items = getSetting.Get(accountId);
+            var getSettingQuery = Locator.Current.GetService<GetSettingQuery.Handler>();
+            var items = await getSettingQuery.HandleAsync(new(accountId));
             return items;
         }
 

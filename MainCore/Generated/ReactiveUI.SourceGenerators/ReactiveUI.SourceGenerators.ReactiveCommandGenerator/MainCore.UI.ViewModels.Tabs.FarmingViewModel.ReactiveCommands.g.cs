@@ -34,7 +34,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>>? _loadSettingCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>> LoadSettingCommand { get => _loadSettingCommand ??= ReactiveUI.ReactiveCommand.Create<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>>(LoadSetting); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>> LoadSettingCommand { get => _loadSettingCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>>(LoadSetting); }
         private ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>? _loadFarmListCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]

@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using MainCore.Commands.UI.AccountSettingViewModel;
 using MainCore.Commands.UI.Misc;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
@@ -82,8 +83,8 @@ namespace MainCore.UI.ViewModels.Tabs
             var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
             if (string.IsNullOrEmpty(path)) return;
 
-            var getSetting = Locator.Current.GetService<IGetSetting>();
-            var settings = getSetting.Get(AccountId);
+            var getSettingQuery = Locator.Current.GetService<GetSettingQuery.Handler>();
+            var settings = getSettingQuery.HandleAsync(new(AccountId));
 
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString);
@@ -91,10 +92,10 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private static Dictionary<AccountSettingEnums, int> LoadSettings(AccountId accountId)
+        private static async Task<Dictionary<AccountSettingEnums, int>> LoadSettings(AccountId accountId)
         {
-            var getSetting = Locator.Current.GetService<IGetSetting>();
-            var settings = getSetting.Get(accountId);
+            var getSettingQuery = Locator.Current.GetService<GetSettingQuery.Handler>();
+            var settings = await getSettingQuery.HandleAsync(new(accountId));
             return settings;
         }
     }

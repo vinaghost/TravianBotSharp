@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using MainCore.Commands.UI.Misc;
+using MainCore.Commands.UI.Villages.VillageSettingViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
@@ -82,18 +83,18 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
             if (string.IsNullOrEmpty(path)) return;
-            var getSetting = Locator.Current.GetService<IGetSetting>();
-            var settings = getSetting.Get(VillageId);
+            var getSettingQuery = Locator.Current.GetService<GetSettingQuery.Handler>();
+            var settings = getSettingQuery.HandleAsync(new(VillageId));
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString);
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings exported"));
         }
 
         [ReactiveCommand]
-        private static Dictionary<VillageSettingEnums, int> LoadSetting(VillageId villageId)
+        private static async Task<Dictionary<VillageSettingEnums, int>> LoadSetting(VillageId villageId)
         {
-            var getSetting = Locator.Current.GetService<IGetSetting>();
-            var settings = getSetting.Get(villageId);
+            var getSettingQuery = Locator.Current.GetService<GetSettingQuery.Handler>();
+            var settings = await getSettingQuery.HandleAsync(new(villageId));
             return settings;
         }
     }

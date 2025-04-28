@@ -115,25 +115,5 @@ namespace MainCore.Commands.Queries
             var settingValue = ByNameAccountSettingBooleanQuery(context, accountId.Value, setting);
             return settingValue;
         }
-
-        public Dictionary<AccountSettingEnums, int> Get(AccountId accountId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            var settings = context.AccountsSetting
-                .Where(x => x.AccountId == accountId.Value)
-                .ToDictionary(x => x.Setting, x => x.Value);
-            return settings;
-        }
-
-        public Dictionary<VillageSettingEnums, int> Get(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            var settings = context.VillagesSetting
-                .Where(x => x.VillageId == villageId.Value)
-                .ToDictionary(x => x.Setting, x => x.Value);
-            return settings;
-        }
     }
 }

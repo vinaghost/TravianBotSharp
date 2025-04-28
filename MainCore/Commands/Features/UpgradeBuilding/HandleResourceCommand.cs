@@ -17,8 +17,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IsResourceEnough.Handler _isResourceEnough;
         private readonly IGetSetting _getSetting;
+        private readonly GetMissingResourceQuery.Handler _getMissingResourceQuery;
 
-        public HandleResourceCommand(IDataService dataService, JobUpdated.Handler jobUpdated, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand, UpdateInventoryCommand updateInventoryCommand, IsResourceEnough.Handler isResourceEnough, IGetSetting getSetting) : base(dataService)
+        public HandleResourceCommand(IDataService dataService, JobUpdated.Handler jobUpdated, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand, UpdateInventoryCommand updateInventoryCommand, IsResourceEnough.Handler isResourceEnough, IGetSetting getSetting, GetMissingResourceQuery.Handler getMissingResourceQuery) : base(dataService)
         {
             _jobUpdated = jobUpdated;
             _updateStorageCommand = updateStorageCommand;
@@ -28,6 +29,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             _contextFactory = contextFactory;
             _isResourceEnough = isResourceEnough;
             _getSetting = getSetting;
+            _getMissingResourceQuery = getMissingResourceQuery;
         }
 
         public async Task<Result> Execute(NormalBuildPlan plan, CancellationToken cancellationToken)
@@ -78,7 +80,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             }
 
             _dataService.Logger.Information("Use hero resource to upgrade building");
-            var missingResource = new GetMissingResourceQuery(_contextFactory).Execute(_dataService.VillageId, requiredResource);
+            var missingResource = await _getMissingResourceQuery.HandleAsync(new(_dataService.VillageId, requiredResource), cancellationToken);
 
             var url = _dataService.ChromeBrowser.CurrentUrl;
 

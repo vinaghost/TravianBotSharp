@@ -26,7 +26,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>>? _loadSettingsCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>> LoadSettingsCommand { get => _loadSettingsCommand ??= ReactiveUI.ReactiveCommand.Create<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>>(LoadSettings); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>> LoadSettingsCommand { get => _loadSettingsCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>>(LoadSettings); }
     }
 }
 #nullable restore

@@ -1,7 +1,7 @@
 ﻿namespace MainCore.Commands.Queries
 {
     [Handler]
-    public static partial class GetBuilding
+    public static partial class GetBuildingQuery
     {
         public sealed record Query(VillageId VillageId, int Location) : ICustomQuery;
 
