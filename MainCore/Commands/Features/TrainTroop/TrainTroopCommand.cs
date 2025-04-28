@@ -10,9 +10,9 @@ namespace MainCore.Commands.Features.TrainTroop
         private readonly UpdateBuildingCommand _updateBuildingCommand;
         private readonly ToBuildingCommand _toBuildingCommand;
         private readonly IGetSetting _getSetting;
-        private readonly GetBuildingLocation _getBuildingLocation;
+        private readonly GetBuildingLocationQuery.Handler _getBuildingLocation;
 
-        public TrainTroopCommand(IDataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, IGetSetting getSetting, GetBuildingLocation getBuildingLocation) : base(dataService)
+        public TrainTroopCommand(IDataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, IGetSetting getSetting, GetBuildingLocationQuery.Handler getBuildingLocation) : base(dataService)
         {
             _toDorfCommand = toDorfCommand;
             _updateBuildingCommand = updateBuildingCommand;
@@ -65,7 +65,7 @@ namespace MainCore.Commands.Features.TrainTroop
             result = await _updateBuildingCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var buildingLocation = _getBuildingLocation.Execute(_dataService.VillageId, building);
+            var buildingLocation = await _getBuildingLocation.HandleAsync(new(_dataService.VillageId, building), cancellationToken);
             if (buildingLocation == default)
             {
                 return MissingBuilding.Error(building);

@@ -75,7 +75,7 @@ namespace MainCore.Services
         public async Task Add<T>(AccountId accountId, VillageId villageId, bool first = false, DateTime executeTime = default) where T : VillageTask
         {
             var task = Locator.Current.GetService<T>();
-            task.Setup(accountId, villageId);
+            await task.Setup(accountId, villageId);
             task.ExecuteAt = executeTime;
             await Add(accountId, task, first, executeTime);
         }

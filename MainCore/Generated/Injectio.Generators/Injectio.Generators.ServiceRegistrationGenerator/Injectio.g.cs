@@ -285,24 +285,6 @@ namespace Microsoft.Extensions.DependencyInjection
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
                 global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Queries.GetAccount),
-                    typeof(global::MainCore.Commands.Queries.GetAccount),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Queries.GetBuildingLocation),
-                    typeof(global::MainCore.Commands.Queries.GetBuildingLocation),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
                     typeof(global::MainCore.Commands.Queries.GetMissingResource),
                     typeof(global::MainCore.Commands.Queries.GetMissingResource),
                     global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
@@ -314,15 +296,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
                     typeof(global::MainCore.Commands.Queries.IGetSetting),
                     typeof(global::MainCore.Commands.Queries.GetSetting),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Queries.GetVillageName),
-                    typeof(global::MainCore.Commands.Queries.GetVillageName),
                     global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
                 )
             );

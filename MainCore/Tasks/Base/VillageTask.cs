@@ -11,13 +11,13 @@ namespace MainCore.Tasks.Base
 
         public override string GetName() => $"{TaskName} in {VillageName}";
 
-        public void Setup(AccountId accountId, VillageId villageId)
+        public async Task Setup(AccountId accountId, VillageId villageId)
         {
             AccountId = accountId;
             VillageId = villageId;
 
-            var villageName = Locator.Current.GetService<GetVillageName>();
-            VillageName = villageName.Execute(villageId);
+            var getVillageNameQuery = Locator.Current.GetService<GetVillageNameQuery.Handler>();
+            VillageName = await getVillageNameQuery.HandleAsync(new(villageId));
         }
 
         protected override async Task<Result> PreExecute(IServiceScope scoped, CancellationToken cancellationToken)

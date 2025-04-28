@@ -24,9 +24,11 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Commands.Misc.OpenBrowserCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.GetAccessQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.GetBuilding.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Queries.GetBuildingLocationQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.GetHasBuildJobVillagesQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.GetLayoutBuildingsQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.GetMissingBuildingVillagesQuery.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Queries.GetVillageNameQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.GetVillagesQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.IsResourceEnough.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.VerifyAccessQuery.AddHandlers(services, lifetime);
@@ -35,6 +37,8 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Commands.UI.DebugViewModel.GetEndpointAdressQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.DebugViewModel.GetLogQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.DebugViewModel.GetTaskItemsQuery.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.EditAccountViewModel.GetAcccountQuery.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.EditAccountViewModel.UpdateAccountCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.FarmingViewModel.ActivationCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.FarmingViewModel.GetFarmListItemsQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.MainLayoutViewModel.DeleteCommand.AddHandlers(services, lifetime);
@@ -43,7 +47,6 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Commands.UI.MainLayoutViewModel.LogoutCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.AddHandlers(services, lifetime);
-		global::MainCore.Commands.UI.UpdateAccountViewModel.UpdateAccountCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Villages.BuildViewModel.DeleteJobByVillageIdCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Villages.BuildViewModel.ExportCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Villages.BuildViewModel.GetJobItemsQuery.AddHandlers(services, lifetime);

@@ -10,9 +10,9 @@ namespace MainCore.Commands.Features.NpcResource
         private readonly UpdateBuildingCommand _updateBuildingCommand;
         private readonly ToBuildingCommand _toBuildingCommand;
         private readonly SwitchTabCommand _switchTabCommand;
-        private readonly GetBuildingLocation _getBuildingLocation;
+        private readonly GetBuildingLocationQuery.Handler _getBuildingLocation;
 
-        public ToNpcResourcePageCommand(IDataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, GetBuildingLocation getBuildingLocation) : base(dataService)
+        public ToNpcResourcePageCommand(IDataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, GetBuildingLocationQuery.Handler getBuildingLocation) : base(dataService)
         {
             _toDorfCommand = toDorfCommand;
             _updateBuildingCommand = updateBuildingCommand;
@@ -30,7 +30,7 @@ namespace MainCore.Commands.Features.NpcResource
             result = await _updateBuildingCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var market = _getBuildingLocation.Execute(_dataService.VillageId, BuildingEnums.Marketplace);
+            var market = await _getBuildingLocation.HandleAsync(new(_dataService.VillageId, BuildingEnums.Marketplace), cancellationToken);
             if (market == default)
             {
                 return MissingBuilding.Error(BuildingEnums.Marketplace);

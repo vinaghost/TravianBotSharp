@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using MainCore.Commands.UI.UpdateAccountViewModel;
+using MainCore.Commands.UI.EditAccountViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
@@ -94,10 +94,10 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private AccountDto LoadAccount(AccountId accountId)
+        private async Task<AccountDto> LoadAccount(AccountId accountId)
         {
-            var getAccount = Locator.Current.GetService<GetAccount>();
-            var account = getAccount.Execute(AccountId, true);
+            var getAcccountQuery = Locator.Current.GetService<GetAcccountQuery.Handler>();
+            var account = await getAcccountQuery.HandleAsync(new(AccountId));
             return account;
         }
 

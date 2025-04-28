@@ -1,13 +1,19 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Queries
+﻿namespace MainCore.Commands.Queries
 {
-    [RegisterSingleton<GetVillageName>]
-    public class GetVillageName(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
+    [Handler]
+    public static partial class GetVillageNameQuery
     {
-        public string Execute(VillageId villageId)
+        public sealed record Query(VillageId VillageId) : ICustomQuery;
+
+        private static async ValueTask<string> HandleAsync(
+            Query query,
+            IDbContextFactory<AppDbContext> contextFactory,
+            CancellationToken cancellationToken
+            )
         {
-            using var context = _contextFactory.CreateDbContext();
+            var villageId = query.VillageId;
+            using var context = await contextFactory.CreateDbContextAsync();
+
             var villageName = context.Villages
                 .Where(x => x.Id == villageId.Value)
                 .Select(x => x.Name)

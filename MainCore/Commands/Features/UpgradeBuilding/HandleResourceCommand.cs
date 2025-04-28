@@ -78,7 +78,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             }
 
             _dataService.Logger.Information("Use hero resource to upgrade building");
-            var missingResource = new GetMissingResource(_contextFactory).Execute(_dataService.VillageId, requiredResource);
+            var missingResource = new GetMissingResourceQuery(_contextFactory).Execute(_dataService.VillageId, requiredResource);
 
             var url = _dataService.ChromeBrowser.CurrentUrl;
 

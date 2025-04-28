@@ -30,7 +30,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::MainCore.DTO.AccountDto>? _loadAccountCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::MainCore.DTO.AccountDto> LoadAccountCommand { get => _loadAccountCommand ??= ReactiveUI.ReactiveCommand.Create<global::MainCore.Entities.AccountId, global::MainCore.DTO.AccountDto>(LoadAccount); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::MainCore.DTO.AccountDto> LoadAccountCommand { get => _loadAccountCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.AccountId, global::MainCore.DTO.AccountDto>(LoadAccount); }
     }
 }
 #nullable restore

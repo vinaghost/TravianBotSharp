@@ -1,13 +1,19 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Queries
+﻿namespace MainCore.Commands.Queries
 {
-    [RegisterSingleton<GetMissingResource>]
-    public class GetMissingResource(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
+    [Handler]
+    public static partial class GetMissingResourceQuery
     {
-        public long[] Execute(VillageId villageId, long[] requiredResource)
+        public sealed record Query(VillageId VillageId, long[] RequiredResource) : ICustomQuery;
+
+        private static async ValueTask<long[]> HandleAsync(
+            Query query,
+            IDbContextFactory<AppDbContext> contextFactory,
+            CancellationToken cancellationToken
+            )
         {
-            using var context = _contextFactory.CreateDbContext();
+            var (villageId, requiredResource) = query;
+            using var context = await contextFactory.CreateDbContextAsync();
+
             var storage = context.Storages
                 .Where(x => x.VillageId == villageId.Value)
                 .FirstOrDefault();

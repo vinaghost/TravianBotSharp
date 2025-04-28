@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.UI.UpdateAccountViewModel
+﻿namespace MainCore.Commands.UI.EditAccountViewModel
 {
     [Handler]
     public static partial class UpdateAccountCommand
