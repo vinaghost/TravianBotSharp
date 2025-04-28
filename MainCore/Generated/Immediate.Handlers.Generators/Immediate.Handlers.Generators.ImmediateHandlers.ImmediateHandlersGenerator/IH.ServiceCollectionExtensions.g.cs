@@ -43,6 +43,7 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Commands.UI.MainLayoutViewModel.LogoutCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.UpdateAccountViewModel.UpdateAccountCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Villages.BuildViewModel.DeleteJobByVillageIdCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Villages.BuildViewModel.ExportCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Villages.BuildViewModel.GetJobItemsQuery.AddHandlers(services, lifetime);

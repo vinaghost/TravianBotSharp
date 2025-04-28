@@ -1,8 +1,9 @@
 ﻿using FluentValidation;
-using MainCore.Commands.UI;
+using MainCore.Commands.UI.UpdateAccountViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
+using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
@@ -15,11 +16,14 @@ namespace MainCore.UI.ViewModels.Tabs
         public AccessInput AccessInput { get; } = new();
 
         private readonly IValidator<AccessInput> _accessInputValidator;
+        private readonly IValidator<AccountInput> _accountInputValidator;
         private readonly IDialogService _dialogService;
+        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
 
-        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService)
+        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel)
         {
             _accessInputValidator = accessInputValidator;
+            _accountInputValidator = accountInputValidator;
             _dialogService = dialogService;
 
             this.WhenAnyValue(vm => vm.SelectedAccess)
@@ -28,6 +32,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             DeleteAccessCommand.Subscribe(x => SelectedAccess = null);
             LoadAccountCommand.Subscribe(SetAccount);
+            _waitingOverlayViewModel = waitingOverlayViewModel;
         }
 
         protected override async Task Load(AccountId accountId)
@@ -72,8 +77,19 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task EditAccount()
         {
-            var updateAccountCommand = Locator.Current.GetService<UpdateAccountCommand>();
-            await updateAccountCommand.Execute(AccountInput, default);
+            var results = await _accountInputValidator.ValidateAsync(AccountInput);
+
+            if (!results.IsValid)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", results.ToString()));
+                return;
+            }
+            await _waitingOverlayViewModel.Show("editing account");
+            var updateAccountCommand = Locator.Current.GetService<UpdateAccountCommand.Handler>();
+            await updateAccountCommand.HandleAsync(new(AccountInput.ToDto()));
+            await _waitingOverlayViewModel.Hide();
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Edited account"));
+
             await LoadAccountCommand.Execute();
         }
 
