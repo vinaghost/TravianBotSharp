@@ -30,6 +30,8 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Commands.Queries.GetVillagesQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.IsResourceEnough.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.VerifyAccessQuery.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.AddAccountsViewModel.AddAccountsCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.DebugViewModel.GetEndpointAdressQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.DebugViewModel.GetLogQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.DebugViewModel.GetTaskItemsQuery.AddHandlers(services, lifetime);

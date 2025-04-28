@@ -1,5 +1,7 @@
-﻿using MainCore.Commands.UI;
+﻿using MainCore.Commands.UI.AddAccountsViewModel;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
+using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 using System.Collections.ObjectModel;
@@ -9,13 +11,18 @@ namespace MainCore.UI.ViewModels.Tabs
     [RegisterSingleton<AddAccountsViewModel>]
     public partial class AddAccountsViewModel : TabViewModelBase
     {
+        private readonly IDialogService _dialogService;
+        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
         public ObservableCollection<AccountDetailDto> Accounts { get; } = [];
 
         [Reactive]
         private string _input;
 
-        public AddAccountsViewModel()
+        public AddAccountsViewModel(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel)
         {
+            _dialogService = dialogService;
+            _waitingOverlayViewModel = waitingOverlayViewModel;
+
             this.WhenAnyValue(x => x.Input)
                 .ObserveOn(RxApp.TaskpoolScheduler)
                 .InvokeCommand(ParseCommand);
@@ -40,8 +47,19 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task AddAccount()
         {
-            var addAccountCommand = Locator.Current.GetService<AddAccountCommand>();
-            await addAccountCommand.Execute([.. Accounts], default);
+            await _waitingOverlayViewModel.Show("adding accounts");
+
+            var addAccountsCommand = Locator.Current.GetService<AddAccountsCommand.Handler>();
+            var resultInput = await addAccountsCommand.HandleAsync(new([.. Accounts.Select(x => x.ToDto())]));
+            await _waitingOverlayViewModel.Hide();
+
+            if (resultInput.IsFailed)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", resultInput.Errors[0].Message));
+                return;
+            }
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added accounts"));
+            await _waitingOverlayViewModel.Hide();
         }
 
         [ReactiveCommand]

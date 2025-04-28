@@ -1,8 +1,9 @@
 ﻿using FluentValidation;
-using MainCore.Commands.UI;
+using MainCore.Commands.UI.AddAccountViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
+using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
@@ -15,12 +16,16 @@ namespace MainCore.UI.ViewModels.Tabs
         public AccessInput AccessInput { get; } = new();
 
         private readonly IValidator<AccessInput> _accessInputValidator;
+        private readonly IValidator<AccountInput> _accountInputValidator;
         private readonly IDialogService _dialogService;
+        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
 
-        public AddAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService)
+        public AddAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel)
         {
             _accessInputValidator = accessInputValidator;
             _dialogService = dialogService;
+            _accountInputValidator = accountInputValidator;
+            _waitingOverlayViewModel = waitingOverlayViewModel;
 
             this.WhenAnyValue(vm => vm.SelectedAccess)
                 .WhereNotNull()
@@ -76,8 +81,26 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task AddAccount()
         {
-            var addAccountCommand = Locator.Current.GetService<AddAccountCommand>();
-            await addAccountCommand.Execute(AccountInput, default);
+            var validateResult = await _accountInputValidator.ValidateAsync(AccountInput);
+
+            if (!validateResult.IsValid)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", validateResult.ToString()));
+                return;
+            }
+            await _waitingOverlayViewModel.Show("adding account");
+
+            var addAccountCommand = Locator.Current.GetService<AddAccountCommand.Handler>();
+            var resultInput = await addAccountCommand.HandleAsync(new(AccountInput.ToDto()));
+            await _waitingOverlayViewModel.Hide();
+
+            if (resultInput.IsFailed)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", resultInput.Errors[0].Message));
+                return;
+            }
+
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added account"));
         }
 
         [Reactive]

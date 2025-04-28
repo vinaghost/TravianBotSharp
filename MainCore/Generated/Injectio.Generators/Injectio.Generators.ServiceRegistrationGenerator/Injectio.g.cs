@@ -330,15 +330,6 @@ namespace Microsoft.Extensions.DependencyInjection
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
                 global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.UI.AddAccountCommand),
-                    typeof(global::MainCore.Commands.UI.AddAccountCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Transient
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
                     typeof(global::MainCore.Commands.UI.UpdateAccountCommand),
                     typeof(global::MainCore.Commands.UI.UpdateAccountCommand),
                     global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
