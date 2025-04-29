@@ -1,45 +1,40 @@
-﻿using MainCore.Commands.Abstract;
-using MainCore.Common.Errors.TrainTroop;
+﻿using MainCore.Common.Errors.TrainTroop;
 
 namespace MainCore.Commands.Features.NpcResource
 {
-    [RegisterScoped<ToNpcResourcePageCommand>]
-    public class ToNpcResourcePageCommand : CommandBase, ICommand
+    [Handler]
+    public static partial class ToNpcResourcePageCommand
     {
-        private readonly ToDorfCommand _toDorfCommand;
-        private readonly UpdateBuildingCommand _updateBuildingCommand;
-        private readonly ToBuildingCommand _toBuildingCommand;
-        private readonly SwitchTabCommand _switchTabCommand;
-        private readonly GetBuildingLocationQuery.Handler _getBuildingLocation;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
 
-        public ToNpcResourcePageCommand(IDataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, GetBuildingLocationQuery.Handler getBuildingLocation) : base(dataService)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeManager chromeManager,
+            ToDorfCommand.Handler toDorfCommand,
+            UpdateBuildingCommand.Handler updateBuildingCommand,
+            ToBuildingCommand.Handler toBuildingCommand,
+            SwitchTabCommand.Handler switchTabCommand,
+            GetBuildingLocationQuery.Handler getBuildingLocation,
+            CancellationToken cancellationToken)
         {
-            _toDorfCommand = toDorfCommand;
-            _updateBuildingCommand = updateBuildingCommand;
-            _toBuildingCommand = toBuildingCommand;
-            _switchTabCommand = switchTabCommand;
-            _getBuildingLocation = getBuildingLocation;
-        }
+            var (accountId, villageId) = command;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await _toDorfCommand.Execute(2, cancellationToken);
+            var result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _updateBuildingCommand.Execute(cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var market = await _getBuildingLocation.HandleAsync(new(_dataService.VillageId, BuildingEnums.Marketplace), cancellationToken);
+            var market = await getBuildingLocation.HandleAsync(new(villageId, BuildingEnums.Marketplace), cancellationToken);
             if (market == default)
             {
                 return MissingBuilding.Error(BuildingEnums.Marketplace);
             }
 
-            result = await _toBuildingCommand.Execute(market, cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(accountId, market), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _switchTabCommand.Execute(0, cancellationToken);
+            result = await switchTabCommand.HandleAsync(new(accountId, 0), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

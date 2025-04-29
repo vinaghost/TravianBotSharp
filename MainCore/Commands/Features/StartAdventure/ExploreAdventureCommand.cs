@@ -1,24 +1,27 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Features.StartAdventure
+﻿namespace MainCore.Commands.Features.StartAdventure
 {
-    [RegisterScoped<ExploreAdventureCommand>]
-    public class ExploreAdventureCommand(IDataService dataService) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class ExploreAdventureCommand
     {
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        public sealed record Command(AccountId AccountId) : ICustomCommand;
+
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeManager chromeManager,
+            ILogService logService,
+            CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
+            var chromeBrowser = chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
 
             if (!AdventureParser.CanStartAdventure(html)) return Skip.NoAdventure;
 
             var adventureButton = AdventureParser.GetAdventureButton(html);
             if (adventureButton is null) return Retry.ButtonNotFound("adventure");
-
-            var logger = _dataService.Logger;
+            var logger = logService.GetLogger(command.AccountId);
             logger.Information("Start adventure {Adventure}", AdventureParser.GetAdventureInfo(adventureButton));
 
-            static bool continueShow(IWebDriver driver)
+            static bool ContinueShow(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
@@ -26,10 +29,10 @@ namespace MainCore.Commands.Features.StartAdventure
                 return continueButton is not null;
             }
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(adventureButton.XPath));
+            var result = await chromeBrowser.Click(By.XPath(adventureButton.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            result = await chromeBrowser.Wait(continueShow, cancellationToken);
+
+            result = await chromeBrowser.Wait(ContinueShow, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

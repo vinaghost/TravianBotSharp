@@ -1,19 +1,22 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Features.DisableContextualHelp
+﻿namespace MainCore.Commands.Features.DisableContextualHelp
 {
-    [RegisterScoped<DisableContextualHelpCommand>]
-    public class DisableContextualHelpCommand(IDataService dataService) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class DisableContextualHelpCommand
     {
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        public sealed record Command(AccountId AccountId) : ICustomCommand;
+
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeManager chromeManager,
+            CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
+            var chromeBrowser = chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
+
             var option = OptionParser.GetHideContextualHelpOption(html);
             if (option is null) return Retry.NotFound("hide contextual help", "option");
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(option.XPath));
+            var result = await chromeBrowser.Click(By.XPath(option.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var button = OptionParser.GetSubmitButton(html);

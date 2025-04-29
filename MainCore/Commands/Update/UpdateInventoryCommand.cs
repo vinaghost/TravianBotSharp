@@ -1,21 +1,24 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
-    [RegisterScoped<UpdateInventoryCommand>]
-    public class UpdateInventoryCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, HeroItemUpdated.Handler heroItemUpdated) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class UpdateInventoryCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly HeroItemUpdated.Handler _heroItemUpdated = heroItemUpdated;
+        public sealed record Command(AccountId AccountId) : ICustomCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeManager chromeManager,
+            IDbContextFactory<AppDbContext> contextFactory,
+            HeroItemUpdated.Handler heroItemUpdated,
+            CancellationToken cancellationToken)
         {
-            var accountId = _dataService.AccountId;
-            var chromeBrowser = _dataService.ChromeBrowser;
+            var chromeBrowser = chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
+
             var dtos = GetItems(html);
-            Update(accountId, dtos.ToList());
-            await _heroItemUpdated.HandleAsync(new(accountId), cancellationToken);
+            Update(command.AccountId, dtos.ToList(), contextFactory);
+
+            await heroItemUpdated.HandleAsync(new(command.AccountId), cancellationToken);
             return Result.Ok();
         }
 
@@ -79,9 +82,9 @@ namespace MainCore.Commands.Update
             }
         }
 
-        private void Update(AccountId accountId, List<HeroItemDto> dtos)
+        private static void Update(AccountId accountId, List<HeroItemDto> dtos, IDbContextFactory<AppDbContext> contextFactory)
         {
-            using var context = _contextFactory.CreateDbContext();
+            using var context = contextFactory.CreateDbContext();
             var items = context.HeroItems
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();

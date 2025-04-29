@@ -1,22 +1,24 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
-    [RegisterScoped<UpdateStorageCommand>]
-    public class UpdateStorageCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, StorageUpdated.Handler storageUpdated) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class UpdateStorageCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly StorageUpdated.Handler _storageUpdated = storageUpdated;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeManager chromeManager,
+            IDbContextFactory<AppDbContext> contextFactory,
+            StorageUpdated.Handler storageUpdated,
+            CancellationToken cancellationToken)
         {
-            var accountId = _dataService.AccountId;
-            var villageId = _dataService.VillageId;
-            var chromeBrowser = _dataService.ChromeBrowser;
+            var chromeBrowser = chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
+
             var dto = Get(html);
-            UpdateToDatabase(villageId, dto);
-            await _storageUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
+            UpdateToDatabase(command.VillageId, dto, contextFactory);
+
+            await storageUpdated.HandleAsync(new(command.AccountId, command.VillageId), cancellationToken);
             return Result.Ok();
         }
 
@@ -35,9 +37,9 @@ namespace MainCore.Commands.Update
             return storage;
         }
 
-        private void UpdateToDatabase(VillageId villageId, StorageDto dto)
+        private static void UpdateToDatabase(VillageId villageId, StorageDto dto, IDbContextFactory<AppDbContext> contextFactory)
         {
-            using var context = _contextFactory.CreateDbContext();
+            using var context = contextFactory.CreateDbContext();
             var dbStorage = context.Storages
                 .Where(x => x.VillageId == villageId.Value)
                 .FirstOrDefault();

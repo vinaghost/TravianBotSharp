@@ -1,15 +1,20 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Navigate
+﻿namespace MainCore.Commands.Navigate
 {
-    [RegisterScoped<SwitchVillageCommand>]
-    public class SwitchVillageCommand(IDataService dataService) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class SwitchVillageCommand
     {
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
+
+        private static async ValueTask<Result> HandleAsync(
+           Command command,
+           IChromeManager chromeManager,
+           QuestUpdated.Handler questUpdated,
+           CancellationToken cancellationToken
+           )
         {
-            var villageId = _dataService.VillageId;
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+            var (accountId, villageId) = command;
+            var browser = chromeManager.Get(accountId);
+            var html = browser.Html;
             var node = VillagePanelParser.GetVillageNode(html, villageId);
             if (node is null) return Skip.VillageNotFound;
 
@@ -27,12 +32,12 @@ namespace MainCore.Commands.Navigate
             }
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(node.XPath));
+            result = await browser.Click(By.XPath(node.XPath));
             if (result.IsFailed) return result
                     .WithError(new Error($"page stuck at changing village stage [Current: {current}] [Expected: {villageId}]"))
                     .WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await chromeBrowser.Wait(villageChanged, cancellationToken);
+            result = await browser.Wait(villageChanged, cancellationToken);
             if (result.IsFailed) return result
                    .WithError(new Error($"page stuck at changing village stage [Current: {current}] [Expected: {villageId}]"))
                    .WithError(TraceMessage.Error(TraceMessage.Line()));

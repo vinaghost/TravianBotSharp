@@ -1,28 +1,30 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
-    [RegisterScoped<UpdateFarmlistCommand>]
-    public class UpdateFarmlistCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, FarmListUpdated.Handler farmListUpdated) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class UpdateFarmlistCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly FarmListUpdated.Handler _farmListUpdated = farmListUpdated;
+        public sealed record Command(AccountId AccountId) : ICustomCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeManager chromeManager,
+            IDbContextFactory<AppDbContext> contextFactory,
+            FarmListUpdated.Handler farmListUpdated,
+            CancellationToken cancellationToken)
         {
-            var accountId = _dataService.AccountId;
-            var chromeBrowser = _dataService.ChromeBrowser;
+            var chromeBrowser = chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
-            var dtos = Get(html);
-            UpdateToDatabase(accountId, dtos);
-            await _farmListUpdated.HandleAsync(new(accountId), cancellationToken);
 
+            var dtos = Get(html);
+            UpdateToDatabase(command.AccountId, dtos, contextFactory);
+
+            await farmListUpdated.HandleAsync(new(command.AccountId), cancellationToken);
             return Result.Ok();
         }
 
-        private void UpdateToDatabase(AccountId accountId, IEnumerable<FarmDto> dtos)
+        private static void UpdateToDatabase(AccountId accountId, IEnumerable<FarmDto> dtos, IDbContextFactory<AppDbContext> contextFactory)
         {
-            using var context = _contextFactory.CreateDbContext();
+            using var context = contextFactory.CreateDbContext();
             var farms = context.FarmLists
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();

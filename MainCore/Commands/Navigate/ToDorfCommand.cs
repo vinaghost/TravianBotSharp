@@ -1,15 +1,20 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Navigate
+﻿namespace MainCore.Commands.Navigate
 {
-    [RegisterScoped<ToDorfCommand>]
-    public class ToDorfCommand(IDataService dataService) : CommandBase(dataService), ICommand<int>
+    [Handler]
+    public static partial class ToDorfCommand
     {
-        public async Task<Result> Execute(int dorf, CancellationToken cancellationToken)
-        {
-            var chromeBrowser = _dataService.ChromeBrowser;
+        public sealed record Command(AccountId AccountId, int Dorf) : ICustomCommand;
 
-            var currentUrl = chromeBrowser.CurrentUrl;
+        private static async ValueTask<Result> HandleAsync(
+           Command command,
+           IChromeManager chromeManager,
+           CancellationToken cancellationToken
+           )
+        {
+            var (accountId, dorf) = command;
+            var browser = chromeManager.Get(accountId);
+
+            var currentUrl = browser.CurrentUrl;
             var currentDorf = GetCurrentDorf(currentUrl);
             if (dorf == 0)
             {
@@ -22,15 +27,15 @@ namespace MainCore.Commands.Navigate
                 return Result.Ok();
             }
 
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
 
             var button = NavigationBarParser.GetDorfButton(html, dorf);
             if (button is null) return Retry.ButtonNotFound($"dorf{dorf}");
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath));
+            result = await browser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            result = await chromeBrowser.WaitPageChanged($"dorf{dorf}", cancellationToken);
+            result = await browser.WaitPageChanged($"dorf{dorf}", cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             return Result.Ok();
         }

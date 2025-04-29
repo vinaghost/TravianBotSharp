@@ -1,18 +1,18 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
-    [RegisterScoped<UpdateBuildingCommand>]
-    public class UpdateBuildingCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, QueueBuildingUpdated.Handler queueBuildingUpdated) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class UpdateBuildingCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly QueueBuildingUpdated.Handler _queueBuildingUpdated = queueBuildingUpdated;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeManager chromeManager,
+            IDbContextFactory<AppDbContext> contextFactory,
+            QueueBuildingUpdated.Handler queueBuildingUpdated,
+            CancellationToken cancellationToken)
         {
-            var accountId = _dataService.AccountId;
-            var villageId = _dataService.VillageId;
-            var chromeBrowser = _dataService.ChromeBrowser;
+            var chromeBrowser = chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
 
             var dtoBuilding = GetBuildings(chromeBrowser.CurrentUrl, html);
@@ -23,12 +23,12 @@ namespace MainCore.Commands.Update
             var result = IsVaildQueueBuilding(queueBuildings);
             if (result.IsFailed) return result;
 
-            UpdateQueueToDatabase(villageId, queueBuildings);
-            UpdateBuildToDatabase(villageId, dtoBuilding.ToList());
+            UpdateQueueToDatabase(command.VillageId, queueBuildings, contextFactory);
+            UpdateBuildToDatabase(command.VillageId, dtoBuilding.ToList(), contextFactory);
 
             var dtoUnderConstructionBuildings = dtoBuilding.Where(x => x.IsUnderConstruction).ToList();
-            UpdateQueueToDatabase(villageId, dtoUnderConstructionBuildings);
-            await _queueBuildingUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
+            UpdateQueueToDatabase(command.VillageId, dtoUnderConstructionBuildings, contextFactory);
+            await queueBuildingUpdated.HandleAsync(new(command.AccountId, command.VillageId), cancellationToken);
 
             return Result.Ok();
         }
@@ -54,9 +54,9 @@ namespace MainCore.Commands.Update
             return Result.Ok();
         }
 
-        private void UpdateQueueToDatabase(VillageId villageId, List<BuildingDto> dtos)
+        private static void UpdateQueueToDatabase(VillageId villageId, List<BuildingDto> dtos, IDbContextFactory<AppDbContext> contextFactory)
         {
-            using var context = _contextFactory.CreateDbContext();
+            using var context = contextFactory.CreateDbContext();
             var queueBuildings = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Type != BuildingEnums.Site)
@@ -115,9 +115,9 @@ namespace MainCore.Commands.Update
             context.SaveChanges();
         }
 
-        private void UpdateQueueToDatabase(VillageId villageId, List<QueueBuildingDto> dtos)
+        private static void UpdateQueueToDatabase(VillageId villageId, List<QueueBuildingDto> dtos, IDbContextFactory<AppDbContext> contextFactory)
         {
-            using var context = _contextFactory.CreateDbContext();
+            using var context = contextFactory.CreateDbContext();
 
             context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
@@ -135,9 +135,9 @@ namespace MainCore.Commands.Update
             context.SaveChanges();
         }
 
-        private void UpdateBuildToDatabase(VillageId villageId, List<BuildingDto> dtos)
+        private static void UpdateBuildToDatabase(VillageId villageId, List<BuildingDto> dtos, IDbContextFactory<AppDbContext> contextFactory)
         {
-            using var context = _contextFactory.CreateDbContext();
+            using var context = contextFactory.CreateDbContext();
             var dbBuildings = context.Buildings
                 .Where(x => x.VillageId == villageId.Value)
                 .ToList();
@@ -146,7 +146,7 @@ namespace MainCore.Commands.Update
             {
                 if (dto.Location == 40)
                 {
-                    var tribe = (TribeEnums)new GetSetting(_contextFactory).ByName(villageId, VillageSettingEnums.Tribe);
+                    var tribe = (TribeEnums)new GetSetting(contextFactory).ByName(villageId, VillageSettingEnums.Tribe);
                     var wall = tribe.GetWall();
                     dto.Type = wall;
                 }

@@ -1,24 +1,37 @@
-﻿using MainCore.Commands.Abstract;
-using MainCore.Common.Errors.TrainTroop;
+﻿using MainCore.Common.Errors.TrainTroop;
 
 namespace MainCore.Commands.Features.TrainTroop
 {
-    [RegisterScoped<TrainTroopCommand>]
-    public class TrainTroopCommand : CommandBase, ICommand<BuildingEnums>
+    [Handler]
+    public static partial class TrainTroopCommand
     {
-        private readonly ToDorfCommand _toDorfCommand;
-        private readonly UpdateBuildingCommand _updateBuildingCommand;
-        private readonly ToBuildingCommand _toBuildingCommand;
-        private readonly IGetSetting _getSetting;
-        private readonly GetBuildingLocationQuery.Handler _getBuildingLocation;
+        public sealed record Command(AccountId AccountId, BuildingEnums Building) : ICustomCommand;
 
-        public TrainTroopCommand(IDataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, IGetSetting getSetting, GetBuildingLocationQuery.Handler getBuildingLocation) : base(dataService)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeManager chromeManager,
+            ToDorfCommand.Handler toDorfCommand,
+            UpdateBuildingCommand.Handler updateBuildingCommand,
+            ToBuildingCommand.Handler toBuildingCommand,
+            IGetSetting getSetting,
+            GetBuildingLocationQuery.Handler getBuildingLocation,
+            CancellationToken cancellationToken)
         {
-            _toDorfCommand = toDorfCommand;
-            _updateBuildingCommand = updateBuildingCommand;
-            _toBuildingCommand = toBuildingCommand;
-            _getSetting = getSetting;
-            _getBuildingLocation = getBuildingLocation;
+            var (accountId, building) = command;
+
+            var result = await ToTrainBuilding(accountId, building, chromeManager, toDorfCommand, updateBuildingCommand, toBuildingCommand, getBuildingLocation, cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            var troopSetting = BuildingSettings[building];
+            var troop = (TroopEnums)getSetting.ByName(chromeManager.Get(accountId).VillageId, troopSetting);
+
+            var (_, isFailed, amount, errors) = GetAmount(building, troop, chromeManager, getSetting);
+            if (isFailed) return Result.Fail(errors).WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            result = await TrainTroop(troop, amount, chromeManager, cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            return Result.Ok();
         }
 
         public static Dictionary<BuildingEnums, VillageSettingEnums> BuildingSettings { get; } = new()
@@ -39,51 +52,46 @@ namespace MainCore.Commands.Features.TrainTroop
             {BuildingEnums.Workshop, (VillageSettingEnums.WorkshopAmountMin,VillageSettingEnums.WorkshopAmountMax ) },
         };
 
-        public async Task<Result> Execute(BuildingEnums building, CancellationToken cancellationToken)
+        private static async ValueTask<Result> ToTrainBuilding(
+            AccountId accountId,
+            BuildingEnums building,
+            IChromeManager chromeManager,
+            ToDorfCommand.Handler toDorfCommand,
+            UpdateBuildingCommand.Handler updateBuildingCommand,
+            ToBuildingCommand.Handler toBuildingCommand,
+            GetBuildingLocationQuery.Handler getBuildingLocation,
+            CancellationToken cancellationToken)
         {
             Result result;
-            result = await ToTrainBuilding(building, cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var troopSeting = BuildingSettings[building];
-            var troop = (TroopEnums)_getSetting.ByName(_dataService.VillageId, troopSeting);
-
-            var (_, isFailed, amount, errors) = GetAmount(building, troop);
-            if (isFailed) return Result.Fail(errors).WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await TrainTroop(troop, amount, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            return Result.Ok();
-        }
-
-        private async Task<Result> ToTrainBuilding(BuildingEnums building, CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await _toDorfCommand.Execute(2, cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(accountId), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _updateBuildingCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var buildingLocation = await _getBuildingLocation.HandleAsync(new(_dataService.VillageId, building), cancellationToken);
+            var buildingLocation = await getBuildingLocation.HandleAsync(new(chromeManager.Get(accountId).VillageId, building), cancellationToken);
             if (buildingLocation == default)
             {
                 return MissingBuilding.Error(building);
             }
 
-            result = await _toBuildingCommand.Execute(buildingLocation, cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(accountId, buildingLocation), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }
 
-        private Result<long> GetAmount(BuildingEnums building, TroopEnums troop)
+        private static Result<long> GetAmount(
+            BuildingEnums building,
+            TroopEnums troop,
+            IChromeManager chromeManager,
+            IGetSetting getSetting)
         {
-            var villageId = _dataService.VillageId;
+            var villageId = chromeManager.GetVillageId();
             var (minSetting, maxSetting) = AmountSettings[building];
-            var amount = _getSetting.ByName(villageId, minSetting, maxSetting);
+            var amount = getSetting.ByName(villageId, minSetting, maxSetting);
 
-            var html = _dataService.ChromeBrowser.Html;
+            var html = chromeManager.GetHtml();
 
             var maxAmount = TrainTroopParser.GetMaxAmount(html, troop);
 
@@ -97,7 +105,7 @@ namespace MainCore.Commands.Features.TrainTroop
                 return amount;
             }
 
-            var trainWhenLowResource = _getSetting.BooleanByName(villageId, VillageSettingEnums.TrainWhenLowResource);
+            var trainWhenLowResource = getSetting.BooleanByName(villageId, VillageSettingEnums.TrainWhenLowResource);
             if (!trainWhenLowResource)
             {
                 return MissingResource.Error(building);
@@ -107,22 +115,25 @@ namespace MainCore.Commands.Features.TrainTroop
             return amount;
         }
 
-        private async Task<Result> TrainTroop(TroopEnums troop, long amount, CancellationToken cancellationToken)
+        private static async ValueTask<Result> TrainTroop(
+            TroopEnums troop,
+            long amount,
+            IChromeManager chromeManager,
+            CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+            var html = chromeManager.GetHtml();
 
             var inputBox = TrainTroopParser.GetInputBox(html, troop);
             if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
 
             Result result;
-            result = await chromeBrowser.Input(By.XPath(inputBox.XPath), $"{amount}");
+            result = await chromeManager.Input(By.XPath(inputBox.XPath), $"{amount}");
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var trainButton = TrainTroopParser.GetTrainButton(html);
             if (trainButton is null) return Retry.ButtonNotFound("train troop");
 
-            result = await chromeBrowser.Click(By.XPath(trainButton.XPath));
+            result = await chromeManager.Click(By.XPath(trainButton.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

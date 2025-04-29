@@ -1,24 +1,19 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Misc
+﻿namespace MainCore.Commands.Misc
 {
-    [RegisterScoped<DelayTaskCommand>]
-    public class DelayTaskCommand : CommandBase, ICommand
+    [Handler]
+    public static partial class DelayTaskCommand
     {
-        private readonly IGetSetting _getSetting;
+        public sealed record Command(AccountId AccountId) : ICustomCommand;
 
-        public DelayTaskCommand(IDataService dataService, IGetSetting getSetting) : base(dataService)
+        private static async ValueTask HandleAsync(
+            Command command,
+            IGetSetting getSetting,
+            CancellationToken cancellationToken)
         {
-            _getSetting = getSetting;
-        }
+            var accountId = command.AccountId;
+            var delay = getSetting.ByName(accountId, AccountSettingEnums.TaskDelayMin, AccountSettingEnums.TaskDelayMax);
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
-        {
-            var accountId = _dataService.AccountId;
-            var delay = _getSetting.ByName(accountId, AccountSettingEnums.TaskDelayMin, AccountSettingEnums.TaskDelayMax);
-
-            var result = await Result.Try(() => Task.Delay(delay, cancellationToken), static _ => Cancel.Error);
-            return result;
+            await Task.Delay(delay, cancellationToken);
         }
     }
 }

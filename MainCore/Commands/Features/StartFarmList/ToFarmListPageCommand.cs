@@ -1,56 +1,53 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Features.StartFarmList
+﻿namespace MainCore.Commands.Features.StartFarmList
 {
-    [RegisterScoped<ToFarmListPageCommand>]
-    public class ToFarmListPageCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, SwitchVillageCommand switchVillageCommand, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class ToFarmListPageCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly SwitchVillageCommand _switchVillageCommand = switchVillageCommand;
-        private readonly ToDorfCommand _toDorfCommand = toDorfCommand;
-        private readonly UpdateBuildingCommand _updateBuildingCommand = updateBuildingCommand;
-        private readonly ToBuildingCommand _toBuildingCommand = toBuildingCommand;
-        private readonly SwitchTabCommand _switchTabCommand = switchTabCommand;
-        private readonly DelayClickCommand _delayClickCommand = delayClickCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeManager chromeManager,
+            SwitchVillageCommand.Handler switchVillageCommand,
+            ToDorfCommand.Handler toDorfCommand,
+            UpdateBuildingCommand.Handler updateBuildingCommand,
+            ToBuildingCommand.Handler toBuildingCommand,
+            SwitchTabCommand.Handler switchTabCommand,
+            DelayClickCommand.Handler delayClickCommand,
+            IDbContextFactory<AppDbContext> contextFactory,
+            CancellationToken cancellationToken)
         {
-            var rallypointVillageId = GetVillageHasRallypoint();
+            var rallypointVillageId = GetVillageHasRallypoint(command.AccountId, contextFactory);
             if (rallypointVillageId == VillageId.Empty) return Skip.NoRallypoint;
-            _dataService.VillageId = rallypointVillageId;
 
-            Result result;
-            result = await _switchVillageCommand.Execute(cancellationToken);
+            var result = await switchVillageCommand.HandleAsync(new(command.AccountId, rallypointVillageId), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _toDorfCommand.Execute(2, cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(command.AccountId, 2), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _updateBuildingCommand.Execute(cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(command.AccountId, rallypointVillageId), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _toBuildingCommand.Execute(39, cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(command.AccountId, 39), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _switchTabCommand.Execute(4, cancellationToken);
+            result = await switchTabCommand.HandleAsync(new(command.AccountId, 4), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            await _delayClickCommand.Execute(cancellationToken);
+            await delayClickCommand.HandleAsync(new(command.AccountId), cancellationToken);
             return Result.Ok();
         }
 
-        private VillageId GetVillageHasRallypoint()
+        private static VillageId GetVillageHasRallypoint(AccountId accountId, IDbContextFactory<AppDbContext> contextFactory)
         {
-            var accountId = _dataService.AccountId;
-            using var context = _contextFactory.CreateDbContext();
-
-            var village = context.Villages
+            using var context = contextFactory.CreateDbContext();
+            return context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .Where(x => x.Buildings.Any(x => x.Type == BuildingEnums.RallyPoint && x.Level > 0))
                 .OrderByDescending(x => x.IsActive)
                 .Select(x => new VillageId(x.Id))
                 .FirstOrDefault();
-            return village;
         }
     }
 }

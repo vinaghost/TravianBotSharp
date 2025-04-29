@@ -1,16 +1,17 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Features
+﻿namespace MainCore.Commands.Features
 {
-    [RegisterScoped<LoginCommand>]
-    public class LoginCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class LoginCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
+        public sealed record Command(AccountId AccountId) : ICustomCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeManager chromeManager,
+            IDbContextFactory<AppDbContext> contextFactory,
+            CancellationToken cancellationToken)
         {
-            var accountId = _dataService.AccountId;
-            var chromeBrowser = _dataService.ChromeBrowser;
+            var chromeBrowser = chromeManager.Get(command.AccountId);
 
             var html = chromeBrowser.Html;
             if (LoginParser.IsIngamePage(html)) return Result.Ok();
@@ -22,7 +23,7 @@ namespace MainCore.Commands.Features
             var passwordNode = LoginParser.GetPasswordInput(html);
             if (passwordNode is null) return Retry.TextboxNotFound("password");
 
-            var (username, password) = GetLoginInfo(accountId);
+            var (username, password) = GetLoginInfo(command.AccountId, contextFactory);
 
             Result result;
             result = await chromeBrowser.Input(By.XPath(usernameNode.XPath), username);
@@ -36,9 +37,9 @@ namespace MainCore.Commands.Features
             return Result.Ok();
         }
 
-        private (string username, string password) GetLoginInfo(AccountId accountId)
+        private static (string username, string password) GetLoginInfo(AccountId accountId, IDbContextFactory<AppDbContext> contextFactory)
         {
-            using var context = _contextFactory.CreateDbContext();
+            using var context = contextFactory.CreateDbContext();
             var data = context.Accesses
                 .Where(x => x.AccountId == accountId.Value)
                 .OrderByDescending(x => x.LastUsed)

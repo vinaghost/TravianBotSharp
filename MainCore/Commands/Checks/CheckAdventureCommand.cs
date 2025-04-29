@@ -1,20 +1,22 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Checks
+﻿namespace MainCore.Commands.Checks
 {
-    [RegisterScoped<CheckAdventureCommand>]
-    public class CheckAdventureCommand(IDataService dataService, AdventureUpdated.Handler adventureUpdated) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class CheckAdventureCommand
     {
-        private readonly AdventureUpdated.Handler _adventureUpdated = adventureUpdated;
+        public sealed record Command(AccountId AccountId) : ICustomCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask HandleAsync(
+           Command command,
+           IChromeManager chromeManager,
+           AdventureUpdated.Handler adventureUpdated,
+           CancellationToken cancellationToken
+           )
         {
-            var html = _dataService.ChromeBrowser.Html;
-            if (!AdventureParser.CanStartAdventure(html)) return Result.Ok();
+            var accountId = command.AccountId;
+            var browser = chromeManager.Get(accountId);
+            if (!AdventureParser.CanStartAdventure(browser.Html)) return;
 
-            var accountId = _dataService.AccountId;
-            await _adventureUpdated.HandleAsync(new(accountId), cancellationToken);
-            return Result.Ok();
+            await adventureUpdated.HandleAsync(new(accountId), cancellationToken);
         }
     }
 }

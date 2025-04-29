@@ -1,22 +1,22 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Checks
+﻿namespace MainCore.Commands.Checks
 {
-    [RegisterScoped<CheckQuestCommand>]
-    public class CheckQuestCommand(IDataService dataService, QuestUpdated.Handler questUpdated) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class CheckQuestCommand
     {
-        private readonly QuestUpdated.Handler _questUpdated = questUpdated;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask HandleAsync(
+           Command command,
+           IChromeManager chromeManager,
+           QuestUpdated.Handler questUpdated,
+           CancellationToken cancellationToken
+           )
         {
-            var html = _dataService.ChromeBrowser.Html;
-            if (!QuestParser.IsQuestClaimable(html)) return Result.Ok();
+            var (accountId, villageId) = command;
+            var browser = chromeManager.Get(accountId);
+            if (!QuestParser.IsQuestClaimable(browser.Html)) return;
 
-            var accountId = _dataService.AccountId;
-            var villageId = _dataService.VillageId;
-
-            await _questUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
-            return Result.Ok();
+            await questUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
         }
     }
 }

@@ -1,68 +1,66 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Features.NpcResource
+﻿namespace MainCore.Commands.Features.NpcResource
 {
-    [RegisterScoped<NpcResourceCommand>]
-    public class NpcResourceCommand : CommandBase, ICommand
+    [Handler]
+    public static partial class NpcResourceCommand
     {
-        private static readonly List<VillageSettingEnums> _settingNames = [
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
+
+        private static readonly List<VillageSettingEnums> SettingNames = new()
+        {
             VillageSettingEnums.AutoNPCWood,
             VillageSettingEnums.AutoNPCClay,
             VillageSettingEnums.AutoNPCIron,
             VillageSettingEnums.AutoNPCCrop,
-        ];
+        };
 
-        private readonly IGetSetting _getSetting;
-
-        public NpcResourceCommand(IDataService dataService, IGetSetting getSetting) : base(dataService)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeManager chromeManager,
+            IGetSetting getSetting,
+            CancellationToken cancellationToken)
         {
-            _getSetting = getSetting;
-        }
+            var (accountId, villageId) = command;
+            var chromeBrowser = chromeManager.Get(accountId);
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await OpenNPCDialog(cancellationToken);
+            var result = await OpenNPCDialog(chromeBrowser, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var ratio = GetRatio();
+            var ratio = GetRatio(getSetting, villageId);
 
-            result = await InputAmount(ratio);
+            result = await InputAmount(chromeBrowser, ratio);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await Redeem(cancellationToken);
+            result = await Redeem(chromeBrowser, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }
 
-        private async Task<Result> OpenNPCDialog(CancellationToken cancellationToken)
+        private static async Task<Result> OpenNPCDialog(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;
 
             var button = NpcResourceParser.GetExchangeResourcesButton(html);
             if (button is null) return Retry.ButtonNotFound("Exchange resources");
 
-            static bool dialogShown(IWebDriver driver)
+            static bool DialogShown(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
                 return NpcResourceParser.IsNpcDialog(doc);
             }
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath));
+            var result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            result = await chromeBrowser.Wait(dialogShown, cancellationToken);
+
+            result = await chromeBrowser.Wait(DialogShown, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }
 
-        public async Task<Result> InputAmount(long[] ratio)
+        private static async Task<Result> InputAmount(IChromeBrowser chromeBrowser, long[] ratio)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;
 
             var sum = NpcResourceParser.GetSum(html);
@@ -78,18 +76,17 @@ namespace MainCore.Commands.Features.NpcResource
 
             var inputs = NpcResourceParser.GetInputs(html).ToArray();
 
-            Result result;
             for (var i = 0; i < 4; i++)
             {
-                result = await chromeBrowser.Input(By.XPath(inputs[i].XPath), $"{values[i]}");
+                var result = await chromeBrowser.Input(By.XPath(inputs[i].XPath), $"{values[i]}");
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             return Result.Ok();
         }
 
-        private long[] GetRatio()
+        private static long[] GetRatio(IGetSetting getSetting, VillageId villageId)
         {
-            var settings = _getSetting.ByName(_dataService.VillageId, _settingNames);
+            var settings = getSetting.ByName(villageId, SettingNames);
 
             var ratio = new long[4]
             {
@@ -107,17 +104,16 @@ namespace MainCore.Commands.Features.NpcResource
             return ratio;
         }
 
-        public async Task<Result> Redeem(CancellationToken cancellationToken)
+        private static async Task<Result> Redeem(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
             var html = chromeBrowser.Html;
 
             var button = NpcResourceParser.GetRedeemButton(html);
             if (button is null) return Retry.ButtonNotFound("redeem");
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath));
+            var result = await chromeBrowser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
             return Result.Ok();
         }
     }

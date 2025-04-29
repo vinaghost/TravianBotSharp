@@ -24,24 +24,6 @@ namespace Microsoft.Extensions.DependencyInjection
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
                 global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Checks.CheckAdventureCommand),
-                    typeof(global::MainCore.Commands.Checks.CheckAdventureCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Checks.CheckQuestCommand),
-                    typeof(global::MainCore.Commands.Checks.CheckQuestCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
                     typeof(global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand),
                     typeof(global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand),
                     global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped
@@ -242,42 +224,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
                     typeof(global::MainCore.Commands.Misc.DelayTaskCommand),
                     typeof(global::MainCore.Commands.Misc.DelayTaskCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Navigate.SwitchTabCommand),
-                    typeof(global::MainCore.Commands.Navigate.SwitchTabCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Navigate.SwitchVillageCommand),
-                    typeof(global::MainCore.Commands.Navigate.SwitchVillageCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Navigate.ToBuildingCommand),
-                    typeof(global::MainCore.Commands.Navigate.ToBuildingCommand),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped
-                )
-            );
-
-            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
-                serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Commands.Navigate.ToDorfCommand),
-                    typeof(global::MainCore.Commands.Navigate.ToDorfCommand),
                     global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped
                 )
             );

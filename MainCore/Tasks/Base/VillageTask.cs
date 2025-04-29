@@ -59,9 +59,8 @@ namespace MainCore.Tasks.Base
             result = await updateStorageCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var checkQuestCommand = scoped.ServiceProvider.GetRequiredService<CheckQuestCommand>();
-            result = await checkQuestCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            var checkQuestCommand = scoped.ServiceProvider.GetRequiredService<CheckQuestCommand.Handler>();
+            await checkQuestCommand.HandleAsync(new(AccountId, VillageId), cancellationToken);
             return Result.Ok();
         }
     }

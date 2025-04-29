@@ -1,23 +1,24 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
-    [RegisterScoped<UpdateAccountInfoCommand>]
-    public class UpdateAccountInfoCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, AccountInfoUpdated.Handler accountInfoUpdated) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class UpdateAccountInfoCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly AccountInfoUpdated.Handler _accountInfoUpdated = accountInfoUpdated;
+        public sealed record Command(AccountId AccountId) : ICustomCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeManager chromeManager,
+            IDbContextFactory<AppDbContext> contextFactory,
+            AccountInfoUpdated.Handler accountInfoUpdated,
+            CancellationToken cancellationToken)
         {
-            var accountId = _dataService.AccountId;
-            var chromeBrowser = _dataService.ChromeBrowser;
-
+            var chromeBrowser = chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
-            var dto = Get(html);
-            UpdateToDatabase(accountId, dto);
 
-            await _accountInfoUpdated.HandleAsync(new(accountId), cancellationToken);
+            var dto = Get(html);
+            UpdateToDatabase(command.AccountId, dto, contextFactory);
+
+            await accountInfoUpdated.HandleAsync(new(command.AccountId), cancellationToken);
             return Result.Ok();
         }
 
@@ -27,23 +28,21 @@ namespace MainCore.Commands.Update
             var silver = InfoParser.GetSilver(doc);
             var hasPlusAccount = InfoParser.HasPlusAccount(doc);
 
-            var dto = new AccountInfoDto()
+            return new AccountInfoDto
             {
                 Gold = gold,
                 Silver = silver,
                 HasPlusAccount = hasPlusAccount,
                 Tribe = TribeEnums.Any,
             };
-            return dto;
         }
 
-        private void UpdateToDatabase(AccountId accountId, AccountInfoDto dto)
+        private static void UpdateToDatabase(AccountId accountId, AccountInfoDto dto, IDbContextFactory<AppDbContext> contextFactory)
         {
-            using var context = _contextFactory.CreateDbContext();
+            using var context = contextFactory.CreateDbContext();
 
             var dbAccountInfo = context.AccountsInfo
-                .Where(x => x.AccountId == accountId.Value)
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.AccountId == accountId.Value);
 
             if (dbAccountInfo is null)
             {

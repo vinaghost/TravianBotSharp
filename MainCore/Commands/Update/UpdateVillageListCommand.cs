@@ -1,29 +1,32 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
-    [RegisterScoped<UpdateVillageListCommand>]
-    public class UpdateVillageListCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, VillageUpdated.Handler villageUpdated) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class UpdateVillageListCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly VillageUpdated.Handler _villageUpdated = villageUpdated;
+        public sealed record Command(AccountId AccountId) : ICustomCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeManager chromeManager,
+            IDbContextFactory<AppDbContext> contextFactory,
+            VillageUpdated.Handler villageUpdated,
+            CancellationToken cancellationToken)
         {
-            var accountId = _dataService.AccountId;
-            var chromeBrowser = _dataService.ChromeBrowser;
+            var chromeBrowser = chromeManager.Get(command.AccountId);
             var html = chromeBrowser.Html;
+
             var dtos = VillagePanelParser.Get(html);
             if (!dtos.Any()) return Result.Ok();
 
-            UpdateToDatabase(accountId, dtos.ToList());
-            await _villageUpdated.HandleAsync(new(accountId), cancellationToken);
+            UpdateToDatabase(command.AccountId, dtos.ToList(), contextFactory);
+
+            await villageUpdated.HandleAsync(new(command.AccountId), cancellationToken);
             return Result.Ok();
         }
 
-        private void UpdateToDatabase(AccountId accountId, List<VillageDto> dtos)
+        private static void UpdateToDatabase(AccountId accountId, List<VillageDto> dtos, IDbContextFactory<AppDbContext> contextFactory)
         {
-            using var context = _contextFactory.CreateDbContext();
+            using var context = contextFactory.CreateDbContext();
             var villages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();

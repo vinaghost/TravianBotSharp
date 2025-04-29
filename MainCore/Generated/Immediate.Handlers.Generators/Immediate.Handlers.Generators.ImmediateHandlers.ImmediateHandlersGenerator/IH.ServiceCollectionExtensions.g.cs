@@ -19,9 +19,15 @@ public static class HandlerServiceCollectionExtensions
 		ServiceLifetime lifetime = ServiceLifetime.Scoped
 	)
 	{
+		global::MainCore.Commands.Checks.CheckAdventureCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Checks.CheckQuestCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Misc.AddJobCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Misc.DeleteJobByIdCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Misc.OpenBrowserCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Navigate.SwitchTabCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Navigate.SwitchVillageCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Navigate.ToBuildingCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.Navigate.ToDorfCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.GetAccessQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.GetBuildingLocationQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Queries.GetBuildingQuery.AddHandlers(services, lifetime);

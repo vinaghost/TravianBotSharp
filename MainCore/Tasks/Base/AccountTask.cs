@@ -69,9 +69,8 @@ namespace MainCore.Tasks.Base
             result = await updateVillageListCommand.Execute(cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var checkAdventureCommand = scoped.ServiceProvider.GetRequiredService<CheckAdventureCommand>();
-            result = await checkAdventureCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            var checkAdventureCommand = scoped.ServiceProvider.GetRequiredService<CheckAdventureCommand.Handler>();
+            await checkAdventureCommand.HandleAsync(new(AccountId), cancellationToken);
 
             return Result.Ok();
         }
