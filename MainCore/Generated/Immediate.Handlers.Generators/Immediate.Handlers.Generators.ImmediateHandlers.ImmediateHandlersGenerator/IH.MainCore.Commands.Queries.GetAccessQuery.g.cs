@@ -35,12 +35,12 @@ partial class GetAccessQuery
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Queries.GetAccessQuery.Query, global::FluentResults.Result<global::MainCore.DTO.AccessDto>>
 	{
 		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
-		private readonly global::MainCore.Commands.Queries.IGetSetting _getSetting;
+		private readonly IGetSetting _getSetting;
 		private readonly global::MainCore.Commands.Queries.VerifyAccessQuery.Handler _verifyAccessQuery;
 
 		public HandleBehavior(
 			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
-			global::MainCore.Commands.Queries.IGetSetting getSetting,
+			IGetSetting getSetting,
 			global::MainCore.Commands.Queries.VerifyAccessQuery.Handler verifyAccessQuery
 		)
 		{

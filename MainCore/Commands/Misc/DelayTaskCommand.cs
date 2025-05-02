@@ -7,12 +7,12 @@
 
         private static async ValueTask HandleAsync(
             Command command,
-            IGetSetting getSetting,
+            IDbContextFactory<AppDbContext> contextFactory,
             CancellationToken cancellationToken)
         {
             var accountId = command.AccountId;
-            var delay = getSetting.ByName(accountId, AccountSettingEnums.TaskDelayMin, AccountSettingEnums.TaskDelayMax);
-
+            using var context = await contextFactory.CreateDbContextAsync();
+            var delay = context.ByName(accountId, AccountSettingEnums.TaskDelayMin, AccountSettingEnums.TaskDelayMax);
             await Task.Delay(delay, cancellationToken);
         }
     }

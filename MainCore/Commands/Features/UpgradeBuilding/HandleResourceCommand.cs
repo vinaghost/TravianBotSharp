@@ -1,96 +1,96 @@
-﻿using MainCore.Commands.Abstract;
-using MainCore.Commands.Features.UseHeroItem;
+﻿using MainCore.Commands.Features.UseHeroItem;
 using MainCore.Common.Errors.AutoBuilder;
 using MainCore.Common.Errors.Storage;
 using MainCore.Common.Models;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
-    [RegisterScoped<HandleResourceCommand>]
-    public class HandleResourceCommand : CommandBase, ICommand<NormalBuildPlan>
+    [Handler]
+    public static partial class HandleResourceCommand
     {
-        private readonly JobUpdated.Handler _jobUpdated;
-        private readonly UpdateStorageCommand _updateStorageCommand;
-        private readonly UseHeroResourceCommand _useHeroResourceCommand;
-        private readonly ToHeroInventoryCommand _toHeroInventoryCommand;
-        private readonly UpdateInventoryCommand _updateInventoryCommand;
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IsResourceEnough.Handler _isResourceEnough;
-        private readonly IGetSetting _getSetting;
-        private readonly GetMissingResourceQuery.Handler _getMissingResourceQuery;
+        public sealed record Command(AccountId accountId, VillageId villageId, NormalBuildPlan Plan) : ICustomCommand;
 
-        public HandleResourceCommand(IDataService dataService, JobUpdated.Handler jobUpdated, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand, UpdateInventoryCommand updateInventoryCommand, IsResourceEnough.Handler isResourceEnough, IGetSetting getSetting, GetMissingResourceQuery.Handler getMissingResourceQuery) : base(dataService)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            JobUpdated.Handler jobUpdated,
+            UpdateStorageCommand.Handler updateStorageCommand,
+            UseHeroResourceCommand.Handler useHeroResourceCommand,
+            ToHeroInventoryCommand.Handler toHeroInventoryCommand,
+            UpdateInventoryCommand.Handler updateInventoryCommand,
+            AddJobCommand.Handler addJobCommand,
+            IDbContextFactory<AppDbContext> contextFactory,
+            IChromeManager chromeManager,
+            ILogService logService,
+            CancellationToken cancellationToken)
         {
-            _jobUpdated = jobUpdated;
-            _updateStorageCommand = updateStorageCommand;
-            _useHeroResourceCommand = useHeroResourceCommand;
-            _toHeroInventoryCommand = toHeroInventoryCommand;
-            _updateInventoryCommand = updateInventoryCommand;
-            _contextFactory = contextFactory;
-            _isResourceEnough = isResourceEnough;
-            _getSetting = getSetting;
-            _getMissingResourceQuery = getMissingResourceQuery;
-        }
+            var (accountId, villageId, plan) = command;
 
-        public async Task<Result> Execute(NormalBuildPlan plan, CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await _updateStorageCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            var storage = await updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
 
-            var requiredResource = GetRequiredResource(plan.Type);
+            var browser = chromeManager.Get(accountId);
+            var requiredResource = GetRequiredResource(browser, plan.Type);
 
-            result = await _isResourceEnough.HandleAsync(new(_dataService.VillageId, requiredResource), cancellationToken);
-            if (!result.IsFailed)
-            {
-                return Result.Ok();
-            }
+            using var context = await contextFactory.CreateDbContextAsync();
 
+            Result result = storage.IsResourceEnough(requiredResource);
+            if (!result.IsFailed) return Result.Ok();
+
+            var logger = logService.GetLogger(accountId);
             if (result.HasError<FreeCrop>(out var freeCropErrors))
             {
-                foreach (var item in freeCropErrors)
+                var error = freeCropErrors.First();
+                error.Log(logger);
+                var cropland = context.GetLowestCropland(villageId);
+
+                var cropLandPlan = new NormalBuildPlan()
                 {
-                    item.Log(_dataService.Logger);
-                }
-                await AddCropland(cancellationToken);
+                    Location = cropland.Location,
+                    Type = cropland.Type,
+                    Level = cropland.Level + 1,
+                };
+
+                await addJobCommand.HandleAsync(new(accountId, villageId, cropLandPlan.ToJob(villageId), true), cancellationToken);
+                logger.Information($"Add cropland to top of the job queue");
                 return Continue.Error;
             }
 
             if (result.HasError<StorageLimit>(out var storageLimitErrors))
             {
-                foreach (var item in storageLimitErrors)
-                {
-                    item.Log(_dataService.Logger);
-                }
+                var error = storageLimitErrors.First();
+                error.Log(logger);
                 return Stop.NotEnoughStorageCapacity;
             }
 
-            if (!IsUseHeroResource())
+            var useHeroResource = context.BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
+
+            if (!useHeroResource)
             {
                 if (result.HasError<Resource>(out var resourceErrors))
                 {
-                    foreach (var item in resourceErrors)
+                    foreach (var error in resourceErrors)
                     {
-                        item.Log(_dataService.Logger);
+                        error.Log(logger);
                     }
                 }
 
-                var time = UpgradeParser.GetTimeWhenEnoughResource(_dataService.ChromeBrowser.Html, plan.Type);
+                var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
                 return WaitResource.Error(time);
             }
 
-            _dataService.Logger.Information("Use hero resource to upgrade building");
-            var missingResource = await _getMissingResourceQuery.HandleAsync(new(_dataService.VillageId, requiredResource), cancellationToken);
+            logger.Information("Use hero resource to upgrade building");
+            var missingResource = storage.GetMissingResource(requiredResource);
 
-            var url = _dataService.ChromeBrowser.CurrentUrl;
+            var url = browser.CurrentUrl;
 
-            result = await _toHeroInventoryCommand.Execute(cancellationToken);
+            result = await toHeroInventoryCommand.HandleAsync(new(accountId), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await _updateInventoryCommand.Execute(cancellationToken);
+            result = await updateInventoryCommand.HandleAsync(new(accountId), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var heroResourceResult = await _useHeroResourceCommand.Execute(missingResource, cancellationToken);
+            var heroResourceResult = await useHeroResourceCommand.HandleAsync(new(accountId, missingResource), cancellationToken);
+            await browser.Navigate(url, cancellationToken);
+
             if (heroResourceResult.IsFailed)
             {
                 if (heroResourceResult.HasError<Retry>()) return heroResourceResult.WithError(TraceMessage.Error(TraceMessage.Line()));
@@ -99,27 +99,23 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 {
                     foreach (var item in resourceErrors)
                     {
-                        item.Log(_dataService.Logger);
+                        item.Log(logger);
                     }
                 }
 
-                await _dataService.ChromeBrowser.Navigate(url, cancellationToken);
-
-                var time = UpgradeParser.GetTimeWhenEnoughResource(_dataService.ChromeBrowser.Html, plan.Type);
+                var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
                 return WaitResource.Error(time);
             }
-
-            await _dataService.ChromeBrowser.Navigate(url, cancellationToken);
 
             return Result.Ok();
         }
 
-        private long[] GetRequiredResource(BuildingEnums building)
+        private static long[] GetRequiredResource(IChromeBrowser browser, BuildingEnums building)
         {
-            var doc = _dataService.ChromeBrowser.Html;
+            var doc = browser.Html;
 
             var resources = UpgradeParser.GetRequiredResource(doc, building);
-            if (resources is null) return [0, 0, 0, 0, 0];
+            if (resources is null || resources.Count != 5) return new long[5];
 
             var resourceBuilding = new long[5];
             for (var i = 0; i < 5; i++)
@@ -130,34 +126,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return resourceBuilding;
         }
 
-        private async Task AddCropland(CancellationToken cancellationToken)
+        private static Building GetLowestCropland(this AppDbContext context, VillageId villageId)
         {
-            var cropland = GetCropland();
-
-            var plan = new NormalBuildPlan()
-            {
-                Location = cropland.Location,
-                Type = cropland.Type,
-                Level = cropland.Level + 1,
-            };
-
-            var addJobCommand = Locator.Current.GetService<AddJobCommand.Handler>();
-            await addJobCommand.HandleAsync(new(_dataService.AccountId, _dataService.VillageId, plan.ToJob(_dataService.VillageId), true));
-            var logger = _dataService.Logger;
-            logger.Information($"Add cropland to top of the job queue");
-        }
-
-        private bool IsUseHeroResource()
-        {
-            var villageId = _dataService.VillageId;
-            var useHeroResource = _getSetting.BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
-            return useHeroResource;
-        }
-
-        private Building GetCropland()
-        {
-            var villageId = _dataService.VillageId;
-            using var context = _contextFactory.CreateDbContext();
             var building = context.Buildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Type == BuildingEnums.Cropland)

@@ -1,9 +1,6 @@
-﻿using MainCore.Commands.Abstract;
-
-namespace MainCore.Commands.Queries
+﻿namespace MainCore.Commands.Queries
 {
-    [RegisterSingleton<IGetSetting>]
-    public class GetSetting(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory), IGetSetting
+    public static class GetSetting
     {
         private static readonly Func<AppDbContext, int, VillageSettingEnums, int> ByNameVillageSettingQuery =
             EF.CompileQuery((AppDbContext context, int villageId, VillageSettingEnums setting) =>
@@ -37,48 +34,46 @@ namespace MainCore.Commands.Queries
                     .Select(x => x.Value != 0)
                     .FirstOrDefault());
 
-        public int ByName(VillageId villageId, VillageSettingEnums setting)
+        public static int ByName(this AppDbContext context, VillageId villageId, VillageSettingEnums setting)
         {
-            using var context = _contextFactory.CreateDbContext();
             var settingValue = ByNameVillageSettingQuery(context, villageId.Value, setting);
             return settingValue;
         }
 
-        public int ByName(VillageId villageId, VillageSettingEnums settingMin, VillageSettingEnums settingMax, int multiplier = 1)
+        public static int ByName(this AppDbContext context, VillageId villageId, VillageSettingEnums settingMin, VillageSettingEnums settingMax, int multiplier = 1)
         {
             var settings = new List<VillageSettingEnums>
-            {
-                settingMin,
-                settingMax,
-            };
-            using var context = _contextFactory.CreateDbContext();
+                {
+                    settingMin,
+                    settingMax,
+                };
+
             var settingValues = context.VillagesSetting
                    .Where(x => x.VillageId == villageId.Value)
                    .Where(x => settings.Contains(x.Setting))
                    .Select(x => x.Value)
                    .ToList();
+
             if (settingValues.Count != 2) return 0;
             var min = settingValues.Min();
             var max = settingValues.Max();
             return Random.Shared.Next(min * multiplier, max * multiplier);
         }
 
-        public int ByName(AccountId accountId, AccountSettingEnums setting)
+        public static int ByName(this AppDbContext context, AccountId accountId, AccountSettingEnums setting)
         {
-            using var context = _contextFactory.CreateDbContext();
             var settingValue = ByNameAccountSettingQuery(context, accountId.Value, setting);
             return settingValue;
         }
 
-        public int ByName(AccountId accountId, AccountSettingEnums settingMin, AccountSettingEnums settingMax, int multiplier = 1)
+        public static int ByName(this AppDbContext context, AccountId accountId, AccountSettingEnums settingMin, AccountSettingEnums settingMax, int multiplier = 1)
         {
             var settings = new List<AccountSettingEnums>
-            {
-                settingMin,
-                settingMax,
-            };
+                {
+                    settingMin,
+                    settingMax,
+                };
 
-            using var context = _contextFactory.CreateDbContext();
             var settingValues = context.AccountsSetting
                    .Where(x => x.AccountId == accountId.Value)
                    .Where(x => settings.Contains(x.Setting))
@@ -92,9 +87,8 @@ namespace MainCore.Commands.Queries
             return Random.Shared.Next(min * multiplier, max * multiplier);
         }
 
-        public Dictionary<VillageSettingEnums, int> ByName(VillageId villageId, List<VillageSettingEnums> settings)
+        public static Dictionary<VillageSettingEnums, int> ByName(this AppDbContext context, VillageId villageId, List<VillageSettingEnums> settings)
         {
-            using var context = _contextFactory.CreateDbContext();
             var settingValues = context.VillagesSetting
                    .Where(x => x.VillageId == villageId.Value)
                    .Where(x => settings.Contains(x.Setting))
@@ -102,16 +96,14 @@ namespace MainCore.Commands.Queries
             return settingValues;
         }
 
-        public bool BooleanByName(VillageId villageId, VillageSettingEnums setting)
+        public static bool BooleanByName(this AppDbContext context, VillageId villageId, VillageSettingEnums setting)
         {
-            using var context = _contextFactory.CreateDbContext();
             var settingValue = ByNameVillageSettingBooleanQuery(context, villageId.Value, setting);
             return settingValue;
         }
 
-        public bool BooleanByName(AccountId accountId, AccountSettingEnums setting)
+        public static bool BooleanByName(this AppDbContext context, AccountId accountId, AccountSettingEnums setting)
         {
-            using var context = _contextFactory.CreateDbContext();
             var settingValue = ByNameAccountSettingBooleanQuery(context, accountId.Value, setting);
             return settingValue;
         }

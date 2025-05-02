@@ -159,8 +159,8 @@ namespace MainCore.Services
                     }
                 }
             }
-            var delayTaskCommand = scoped.ServiceProvider.GetService<DelayTaskCommand>();
-            await delayTaskCommand.Execute(CancellationToken.None);
+            var delayTaskCommand = scoped.ServiceProvider.GetService<DelayTaskCommand.Handler>();
+            await delayTaskCommand.HandleAsync(new(accountId));
         }
 
         public void Shutdown()

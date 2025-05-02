@@ -36,12 +36,12 @@ partial class NpcTaskTrigger
 	{
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
 		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
-		private readonly global::MainCore.Commands.Queries.IGetSetting _getSetting;
+		private readonly IGetSetting _getSetting;
 
 		public HandleBehavior(
 			global::MainCore.Services.ITaskManager taskManager,
 			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
-			global::MainCore.Commands.Queries.IGetSetting getSetting
+			IGetSetting getSetting
 		)
 		{
 			_taskManager = taskManager;

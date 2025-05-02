@@ -35,12 +35,12 @@ partial class BuildingUpdateTaskTrigger
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
-		private readonly global::MainCore.Commands.Queries.IGetSetting _getSetting;
+		private readonly IGetSetting _getSetting;
 		private readonly global::MainCore.Commands.Queries.GetMissingBuildingVillagesQuery.Handler _getMissingBuildingVillageQuery;
 
 		public HandleBehavior(
 			global::MainCore.Services.ITaskManager taskManager,
-			global::MainCore.Commands.Queries.IGetSetting getSetting,
+			IGetSetting getSetting,
 			global::MainCore.Commands.Queries.GetMissingBuildingVillagesQuery.Handler getMissingBuildingVillageQuery
 		)
 		{

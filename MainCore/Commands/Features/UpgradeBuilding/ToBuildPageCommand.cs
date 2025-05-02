@@ -1,42 +1,37 @@
-﻿using MainCore.Commands.Abstract;
-using MainCore.Common.Models;
+﻿using MainCore.Common.Models;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
-    [RegisterScoped<ToBuildPageCommand>]
-    public class ToBuildPageCommand : CommandBase, ICommand<NormalBuildPlan>
+    [Handler]
+    public static partial class ToBuildPageCommand
     {
-        private readonly ToBuildingCommand _toBuildingCommand;
-        private readonly SwitchTabCommand _switchTabCommand;
-        private readonly GetBuildingQuery.Handler _getBuilding;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : ICustomCommand;
 
-        public ToBuildPageCommand(IDataService dataService, ToBuildingCommand toBuildingCommand, SwitchTabCommand switchTabCommand, GetBuildingQuery.Handler getBuilding) : base(dataService)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            ToBuildingCommand.Handler toBuildingCommand,
+            SwitchTabCommand.Handler switchTabCommand,
+            GetBuildingQuery.Handler getBuilding,
+            CancellationToken cancellationToken)
         {
-            _toBuildingCommand = toBuildingCommand;
-            _switchTabCommand = switchTabCommand;
-            _getBuilding = getBuilding;
-        }
-
-        public async Task<Result> Execute(NormalBuildPlan plan, CancellationToken cancellationToken)
-        {
-            var villageId = _dataService.VillageId;
+            var (accountId, villageId, plan) = command;
 
             Result result;
-            result = await _toBuildingCommand.Execute(plan.Location, cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(accountId, plan.Location), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var building = await _getBuilding.HandleAsync(new(villageId, plan.Location), cancellationToken);
+            var building = await getBuilding.HandleAsync(new(villageId, plan.Location), cancellationToken);
             if (building.Type == BuildingEnums.Site)
             {
                 var tabIndex = plan.Type.GetBuildingsCategory();
-                result = await _switchTabCommand.Execute(tabIndex, cancellationToken);
+                result = await switchTabCommand.HandleAsync(new(accountId, tabIndex), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else
             {
                 if (building.Level < 1) return Result.Ok();
                 if (!building.Type.HasMultipleTabs()) return Result.Ok();
-                result = await _switchTabCommand.Execute(0, cancellationToken);
+                result = await switchTabCommand.HandleAsync(new(accountId, 0), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             return Result.Ok();

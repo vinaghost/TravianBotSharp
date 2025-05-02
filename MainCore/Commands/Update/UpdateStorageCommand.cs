@@ -5,21 +5,22 @@
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
 
-        private static async ValueTask<Result> HandleAsync(
+        private static async ValueTask<StorageDto> HandleAsync(
             Command command,
             IChromeManager chromeManager,
             IDbContextFactory<AppDbContext> contextFactory,
             StorageUpdated.Handler storageUpdated,
             CancellationToken cancellationToken)
         {
-            var chromeBrowser = chromeManager.Get(command.AccountId);
+            var (accountId, villageId) = command;
+            var chromeBrowser = chromeManager.Get(accountId);
             var html = chromeBrowser.Html;
 
             var dto = Get(html);
-            UpdateToDatabase(command.VillageId, dto, contextFactory);
-
-            await storageUpdated.HandleAsync(new(command.AccountId, command.VillageId), cancellationToken);
-            return Result.Ok();
+            using var context = await contextFactory.CreateDbContextAsync();
+            context.UpdateStorage(villageId, dto);
+            await storageUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
+            return dto;
         }
 
         private static StorageDto Get(HtmlDocument doc)
@@ -37,9 +38,8 @@
             return storage;
         }
 
-        private static void UpdateToDatabase(VillageId villageId, StorageDto dto, IDbContextFactory<AppDbContext> contextFactory)
+        private static void UpdateStorage(this AppDbContext context, VillageId villageId, StorageDto dto)
         {
-            using var context = contextFactory.CreateDbContext();
             var dbStorage = context.Storages
                 .Where(x => x.VillageId == villageId.Value)
                 .FirstOrDefault();
