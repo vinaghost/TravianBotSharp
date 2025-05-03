@@ -1,48 +1,44 @@
 ﻿using MainCore.Commands.Features;
 using MainCore.Tasks.Base;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient<SleepTask>]
-    public class SleepTask : AccountTask
+    [Handler]
+    public static partial class SleepTask
     {
-        private readonly ITaskManager _taskManager;
-        private readonly GetAccessQuery.Handler _getAccessQuery;
-        private readonly IGetSetting _getSetting;
-
-        public SleepTask(ITaskManager taskManager, IGetSetting getSetting, GetAccessQuery.Handler getAccessQuery)
+        public sealed class Task : AccountTask
         {
-            _taskManager = taskManager;
-            _getSetting = getSetting;
-            _getAccessQuery = getAccessQuery;
+            public Task(AccountId accountId, DateTime executeAt) : base(accountId, executeAt)
+            {
+            }
+
+            protected override string TaskName => "Sleep";
         }
 
-        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Task task,
+            IDbContextFactory<AppDbContext> contextFactory,
+            ITaskManager taskManager,
+            SleepCommand.Handler sleepCommand,
+            GetAccessQuery.Handler getAccessQuery,
+            OpenBrowserCommand.Handler openBrowserCommand,
+            ToDorfCommand.Handler toDorfCommand,
+            CancellationToken cancellationToken)
         {
             Result result;
-            var sleepCommand = scoped.ServiceProvider.GetRequiredService<SleepCommand>();
-            result = await sleepCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await sleepCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            if (result.IsFailed) return result;
+            var (_, isFailed, access, errors) = await getAccessQuery.HandleAsync(new(task.AccountId), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-            var (_, isFailed, access, errors) = await _getAccessQuery.HandleAsync(new(AccountId), cancellationToken);
-            if (isFailed) return Result.Fail(errors).WithError(TraceMessage.Error(TraceMessage.Line()));
+            await openBrowserCommand.HandleAsync(new(task.AccountId, access), cancellationToken);
 
-            var openBrowserCommand = scoped.ServiceProvider.GetRequiredService<OpenBrowserCommand.Handler>();
-            await openBrowserCommand.HandleAsync(new(AccountId, access), cancellationToken);
-
-            await SetNextExecute();
+            using var context = await contextFactory.CreateDbContextAsync();
+            var workTime = context.ByName(task.AccountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
+            task.ExecuteAt = DateTime.Now.AddMinutes(workTime);
+            await taskManager.ReOrder(task.AccountId);
 
             return Result.Ok();
         }
-
-        private async Task SetNextExecute()
-        {
-            var workTime = _getSetting.ByName(AccountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
-            ExecuteAt = DateTime.Now.AddMinutes(workTime);
-            await _taskManager.ReOrder(AccountId);
-        }
-
-        protected override string TaskName => "Sleep";
     }
 }

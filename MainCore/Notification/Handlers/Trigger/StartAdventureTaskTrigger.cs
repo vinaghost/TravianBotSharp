@@ -8,11 +8,12 @@ namespace MainCore.Notification.Handlers.Trigger
         private static async ValueTask HandleAsync(
             ByAccountIdBase notification,
             ITaskManager taskManager,
-            IGetSetting getSetting,
+            IDbContextFactory<AppDbContext> contextFactory,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
-            var autoStartAdventure = getSetting.BooleanByName(accountId, AccountSettingEnums.EnableAutoStartAdventure);
+            using var context = await contextFactory.CreateDbContextAsync();
+            var autoStartAdventure = context.BooleanByName(accountId, AccountSettingEnums.EnableAutoStartAdventure);
             if (autoStartAdventure)
             {
                 if (taskManager.IsExist<StartAdventureTask>(accountId)) return;

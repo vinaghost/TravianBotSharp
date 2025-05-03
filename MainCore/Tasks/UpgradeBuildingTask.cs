@@ -1,87 +1,76 @@
 ﻿using MainCore.Commands.Features.UpgradeBuilding;
 using MainCore.Common.Errors.AutoBuilder;
 using MainCore.Tasks.Base;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient<UpgradeBuildingTask>]
-    public class UpgradeBuildingTask(IDbContextFactory<AppDbContext> contextFactory) : VillageTask
+    [Handler]
+    public static partial class UpgradeBuildingTask
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
+        public sealed class Task : VillageTask
+        {
+            public Task(AccountId accountId, VillageId villageId, string villageName, DateTime executeAt) : base(accountId, villageId, villageName, executeAt)
+            {
+            }
 
-        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
+            protected override string TaskName => "Upgrade building";
+        }
+
+        private static async ValueTask<Result> HandleAsync(
+            Task task,
+            ITaskManager taskManager,
+            IChromeManager chromeManager,
+            ILogService logService,
+            IDbContextFactory<AppDbContext> contextFactory,
+            HandleJobCommand.Handler handleJobCommand,
+            ToBuildPageCommand.Handler toBuildPageCommand,
+            HandleResourceCommand.Handler handleResourceCommand,
+            HandleUpgradeCommand.Handler handleUpgradeCommand,
+            CancellationToken cancellationToken)
         {
             Result result;
-
-            HandleJobCommand handleJobCommand = null;
-            ToBuildPageCommand toBuildPageCommand = null;
-            HandleResourceCommand handleResourceCommand = null;
-            HandleUpgradeCommand handleUpgradeCommand = null;
-
-            var dataService = scoped.ServiceProvider.GetRequiredService<IDataService>();
-            var logger = dataService.Logger;
-
+            var logger = logService.GetLogger(task.AccountId);
             while (true)
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-                handleJobCommand ??= scoped.ServiceProvider.GetRequiredService<HandleJobCommand>();
-                var (_, isFalied, plan, errors) = await handleJobCommand.Execute(cancellationToken);
+                using var context = await contextFactory.CreateDbContextAsync();
+
+                var (_, isFalied, plan, errors) = await handleJobCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (isFalied)
                 {
                     if (errors.OfType<Continue>().Any()) continue;
-                    if (!errors.OfType<BuildingQueueFull>().Any())
-                    {
-                        return Result.Fail(errors).WithError(TraceMessage.Error(TraceMessage.Line()));
-                    }
 
-                    SetTimeQueueBuildingComplete();
+                    var buildingQueue = context.GetFirstQueueBuilding(task.VillageId);
+                    task.ExecuteAt = buildingQueue.CompleteTime.AddSeconds(3);
                     return Skip.AutoBuilderBuildingQueueFull;
                 }
 
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
 
-                toBuildPageCommand ??= scoped.ServiceProvider.GetRequiredService<ToBuildPageCommand>();
-                result = await toBuildPageCommand.Execute(plan, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await toBuildPageCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
+                if (result.IsFailed) return result;
 
-                handleResourceCommand ??= scoped.ServiceProvider.GetRequiredService<HandleResourceCommand>();
-                result = await handleResourceCommand.Execute(plan, cancellationToken);
+                result = await handleResourceCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
                 if (result.IsFailed)
                 {
                     if (result.HasError<Continue>()) continue;
                     if (!result.HasError<WaitResource>(out var waitResourceError))
                     {
-                        return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                        return result;
                     }
 
-                    ExecuteAt = DateTime.Now.Add(waitResourceError.First().Time);
+                    task.ExecuteAt = DateTime.Now.Add(waitResourceError.First().Time);
                     return Skip.AutoBuilderNotEnoughResource;
                 }
 
-                handleUpgradeCommand ??= scoped.ServiceProvider.GetRequiredService<HandleUpgradeCommand>();
-                result = await handleUpgradeCommand.Execute(plan, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await handleUpgradeCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
+                if (result.IsFailed) return result;
             }
         }
 
-        protected override string TaskName => "Upgrade building";
-
-        private void SetTimeQueueBuildingComplete()
+        private static QueueBuilding GetFirstQueueBuilding(this AppDbContext context, VillageId villageId)
         {
-            var buildingQueue = GetFirstQueueBuilding(VillageId);
-            if (buildingQueue is null)
-            {
-                return;
-            }
-
-            ExecuteAt = buildingQueue.CompleteTime.AddSeconds(3);
-        }
-
-        private QueueBuilding GetFirstQueueBuilding(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
             var queueBuilding = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Type != BuildingEnums.Site)

@@ -1,53 +1,48 @@
 ﻿using MainCore.Commands.Features.StartFarmList;
 using MainCore.Tasks.Base;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient<StartFarmListTask>]
-    public class StartFarmListTask : AccountTask
+    [Handler]
+    public static partial class StartFarmListTask
     {
-        private readonly ITaskManager _taskManager;
-        private readonly IGetSetting _getSetting;
-
-        public StartFarmListTask(ITaskManager taskManager, IGetSetting getSetting)
+        public sealed class Task : AccountTask
         {
-            _taskManager = taskManager;
-            _getSetting = getSetting;
+            public Task(AccountId accountId, DateTime executeAt) : base(accountId, executeAt)
+            {
+            }
+
+            protected override string TaskName => "Start farm list";
         }
 
-        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Task task,
+            IDbContextFactory<AppDbContext> contextFactory,
+            ITaskManager taskManager,
+            ToFarmListPageCommand.Handler toFarmListPageCommand,
+            StartAllFarmListCommand.Handler startAllFarmListCommand,
+            StartActiveFarmListCommand.Handler startActiveFarmListCommand,
+            CancellationToken cancellationToken)
         {
             Result result;
-
-            var toFarmListPageCommand = scoped.ServiceProvider.GetRequiredService<ToFarmListPageCommand>();
-            result = await toFarmListPageCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var useStartAllButton = _getSetting.BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
+            result = await toFarmListPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            if (result.IsFailed) return result;
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+            var useStartAllButton = context.BooleanByName(task.AccountId, AccountSettingEnums.UseStartAllButton);
             if (useStartAllButton)
             {
-                var startAllFarmListCommand = scoped.ServiceProvider.GetRequiredService<StartAllFarmListCommand>();
-                result = await startAllFarmListCommand.Execute(cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await startAllFarmListCommand.HandleAsync(new(task.AccountId), cancellationToken);
+                if (result.IsFailed) return result;
             }
             else
             {
-                var startActiveFarmListCommand = scoped.ServiceProvider.GetRequiredService<StartActiveFarmListCommand>();
-                result = await startActiveFarmListCommand.Execute(cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await startActiveFarmListCommand.HandleAsync(new(task.AccountId), cancellationToken);
+                if (result.IsFailed) return result;
             }
-            await SetNextExecute();
+            var seconds = context.ByName(task.AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
+            task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
+            await taskManager.ReOrder(task.AccountId);
             return Result.Ok();
         }
-
-        private async Task SetNextExecute()
-        {
-            var seconds = _getSetting.ByName(AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
-            ExecuteAt = DateTime.Now.AddSeconds(seconds);
-            await _taskManager.ReOrder(AccountId);
-        }
-
-        protected override string TaskName => "Start farm list";
     }
 }

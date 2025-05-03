@@ -33,14 +33,10 @@
 
             Result result;
             result = await browser.Click(By.XPath(node.XPath));
-            if (result.IsFailed) return result
-                    .WithError(new Error($"page stuck at changing village stage [Current: {current}] [Expected: {villageId}]"))
-                    .WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await browser.Wait(villageChanged, cancellationToken);
-            if (result.IsFailed) return result
-                   .WithError(new Error($"page stuck at changing village stage [Current: {current}] [Expected: {villageId}]"))
-                   .WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

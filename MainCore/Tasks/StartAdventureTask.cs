@@ -1,44 +1,40 @@
 ﻿using MainCore.Commands.Features.StartAdventure;
 using MainCore.Tasks.Base;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient<StartAdventureTask>]
-    public class StartAdventureTask : AccountTask
+    [Handler]
+    public static partial class StartAdventureTask
     {
-        private readonly ITaskManager _taskManager;
-
-        public StartAdventureTask(ITaskManager taskManager)
+        public sealed class Task : AccountTask
         {
-            _taskManager = taskManager;
+            public Task(AccountId accountId, DateTime executeAt) : base(accountId, executeAt)
+            {
+            }
+
+            protected override string TaskName => "Start adventure";
         }
 
-        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Task task,
+            ITaskManager taskManager,
+            IChromeManager chromeManager,
+            ToAdventurePageCommand.Handler toAdventurePageCommand,
+            ExploreAdventureCommand.Handler exploreAdventureCommand,
+            CancellationToken cancellationToken)
         {
             Result result;
+            result = await toAdventurePageCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            if (result.IsFailed) return result;
+            result = await exploreAdventureCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            if (result.IsFailed) return result;
 
-            var toAdventurePageCommand = scoped.ServiceProvider.GetRequiredService<ToAdventurePageCommand>();
-            result = await toAdventurePageCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var exploreAdventureCommand = scoped.ServiceProvider.GetRequiredService<ExploreAdventureCommand>();
-            result = await exploreAdventureCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var chromeBrowser = scoped.ServiceProvider.GetRequiredService<IDataService>().ChromeBrowser;
-            var adventureDuration = AdventureParser.GetAdventureDuration(chromeBrowser.Html);
-            await SetNextExecute(adventureDuration);
-
+            var browser = chromeManager.Get(task.AccountId);
+            var adventureDuration = AdventureParser.GetAdventureDuration(browser.Html);
+            task.ExecuteAt = DateTime.Now.Add(adventureDuration * 2);
+            await taskManager.ReOrder(task.AccountId);
             return Result.Ok();
         }
-
-        private async Task SetNextExecute(TimeSpan duration)
-        {
-            ExecuteAt = DateTime.Now.Add(duration * 2);
-            await _taskManager.ReOrder(AccountId);
-        }
-
-        protected override string TaskName => "Start adventure";
     }
+}}
 }

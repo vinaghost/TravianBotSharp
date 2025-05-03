@@ -9,15 +9,21 @@ partial class UpdateAccountInfoCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateAccountInfoCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Update.UpdateAccountInfoCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Update.UpdateAccountInfoCommand.Command, global::FluentResults.Result> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Update.UpdateAccountInfoCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.Update.UpdateAccountInfoCommand.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Update.UpdateAccountInfoCommand.Command, global::FluentResults.Result> loggingBehavior
 		)
 		{
 			var handlerType = typeof(UpdateAccountInfoCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -25,7 +31,7 @@ partial class UpdateAccountInfoCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

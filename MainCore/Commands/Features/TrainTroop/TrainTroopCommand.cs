@@ -5,30 +5,46 @@ namespace MainCore.Commands.Features.TrainTroop
     [Handler]
     public static partial class TrainTroopCommand
     {
-        public sealed record Command(AccountId AccountId, BuildingEnums Building) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, BuildingEnums Building) : ICustomCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeManager chromeManager,
+            IDbContextFactory<AppDbContext> contextFactory,
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToBuildingCommand.Handler toBuildingCommand,
-            IGetSetting getSetting,
             GetBuildingLocationQuery.Handler getBuildingLocation,
             CancellationToken cancellationToken)
         {
-            var (accountId, building) = command;
+            var (accountId, villageId, building) = command;
 
-            var result = await ToTrainBuilding(accountId, building, chromeManager, toDorfCommand, updateBuildingCommand, toBuildingCommand, getBuildingLocation, cancellationToken);
+            Result result;
+            result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var troopSetting = BuildingSettings[building];
-            var troop = (TroopEnums)getSetting.ByName(chromeManager.Get(accountId).VillageId, troopSetting);
+            result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var (_, isFailed, amount, errors) = GetAmount(building, troop, chromeManager, getSetting);
+            var buildingLocation = await getBuildingLocation.HandleAsync(new(villageId, building), cancellationToken);
+            if (buildingLocation == default)
+            {
+                return MissingBuilding.Error(building);
+            }
+
+            result = await toBuildingCommand.HandleAsync(new(accountId, buildingLocation), cancellationToken);
+            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+
+            using var context = await contextFactory.CreateDbContextAsync();
+            var troopSetting = BuildingSettings[building];
+            var troop = (TroopEnums)context.ByName(villageId, troopSetting);
+
+            var browser = chromeManager.Get(accountId);
+
+            var (_, isFailed, amount, errors) = GetAmount(context, browser, villageId, building, troop);
             if (isFailed) return Result.Fail(errors).WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await TrainTroop(troop, amount, chromeManager, cancellationToken);
+            result = await TrainTroop(browser, troop, amount, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
@@ -43,7 +59,7 @@ namespace MainCore.Commands.Features.TrainTroop
             {BuildingEnums.Workshop, VillageSettingEnums.WorkshopTroop },
         };
 
-        private static Dictionary<BuildingEnums, (VillageSettingEnums, VillageSettingEnums)> AmountSettings { get; } = new()
+        public static Dictionary<BuildingEnums, (VillageSettingEnums, VillageSettingEnums)> AmountSettings { get; } = new()
         {
             {BuildingEnums.Barracks, (VillageSettingEnums.BarrackAmountMin,VillageSettingEnums.BarrackAmountMax ) },
             {BuildingEnums.Stable, (VillageSettingEnums.StableAmountMin,VillageSettingEnums.StableAmountMax ) },
@@ -52,46 +68,14 @@ namespace MainCore.Commands.Features.TrainTroop
             {BuildingEnums.Workshop, (VillageSettingEnums.WorkshopAmountMin,VillageSettingEnums.WorkshopAmountMax ) },
         };
 
-        private static async ValueTask<Result> ToTrainBuilding(
-            AccountId accountId,
-            BuildingEnums building,
-            IChromeManager chromeManager,
-            ToDorfCommand.Handler toDorfCommand,
-            UpdateBuildingCommand.Handler updateBuildingCommand,
-            ToBuildingCommand.Handler toBuildingCommand,
-            GetBuildingLocationQuery.Handler getBuildingLocation,
-            CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await updateBuildingCommand.HandleAsync(new(accountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var buildingLocation = await getBuildingLocation.HandleAsync(new(chromeManager.Get(accountId).VillageId, building), cancellationToken);
-            if (buildingLocation == default)
-            {
-                return MissingBuilding.Error(building);
-            }
-
-            result = await toBuildingCommand.HandleAsync(new(accountId, buildingLocation), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            return Result.Ok();
-        }
-
         private static Result<long> GetAmount(
+            AppDbContext context,
+            IChromeBrowser browser,
+            VillageId villageId,
             BuildingEnums building,
-            TroopEnums troop,
-            IChromeManager chromeManager,
-            IGetSetting getSetting)
+            TroopEnums troop)
         {
-            var villageId = chromeManager.GetVillageId();
-            var (minSetting, maxSetting) = AmountSettings[building];
-            var amount = getSetting.ByName(villageId, minSetting, maxSetting);
-
-            var html = chromeManager.GetHtml();
+            var html = browser.Html;
 
             var maxAmount = TrainTroopParser.GetMaxAmount(html, troop);
 
@@ -100,12 +84,14 @@ namespace MainCore.Commands.Features.TrainTroop
                 return MissingResource.Error(building);
             }
 
+            var (minSetting, maxSetting) = AmountSettings[building];
+            var amount = context.ByName(villageId, minSetting, maxSetting);
             if (amount < maxAmount)
             {
                 return amount;
             }
 
-            var trainWhenLowResource = getSetting.BooleanByName(villageId, VillageSettingEnums.TrainWhenLowResource);
+            var trainWhenLowResource = context.BooleanByName(villageId, VillageSettingEnums.TrainWhenLowResource);
             if (!trainWhenLowResource)
             {
                 return MissingResource.Error(building);
@@ -116,24 +102,24 @@ namespace MainCore.Commands.Features.TrainTroop
         }
 
         private static async ValueTask<Result> TrainTroop(
+            IChromeBrowser browser,
             TroopEnums troop,
             long amount,
-            IChromeManager chromeManager,
             CancellationToken cancellationToken)
         {
-            var html = chromeManager.GetHtml();
+            var html = browser.Html;
 
             var inputBox = TrainTroopParser.GetInputBox(html, troop);
             if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
 
             Result result;
-            result = await chromeManager.Input(By.XPath(inputBox.XPath), $"{amount}");
+            result = await browser.Input(By.XPath(inputBox.XPath), $"{amount}");
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             var trainButton = TrainTroopParser.GetTrainButton(html);
             if (trainButton is null) return Retry.ButtonNotFound("train troop");
 
-            result = await chromeManager.Click(By.XPath(trainButton.XPath));
+            result = await browser.Click(By.XPath(trainButton.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

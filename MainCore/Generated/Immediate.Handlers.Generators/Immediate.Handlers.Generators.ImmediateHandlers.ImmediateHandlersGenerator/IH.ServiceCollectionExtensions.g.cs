@@ -10,6 +10,8 @@ public static class HandlerServiceCollectionExtensions
 	public static IServiceCollection AddMainCoreBehaviors(
 		this IServiceCollection services)
 	{
+		services.TryAddTransient(typeof(global::MainCore.Tasks.Behaviors.LoggingBehavior<,>));
+		services.TryAddTransient(typeof(global::MainCore.Tasks.Behaviors.AccountTaskBehavior<,>));
 		
 		return services;
 	}
@@ -127,7 +129,6 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Notification.Handlers.Trigger.UpgradeBuildingTaskTrigger.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.AccountInfoUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.AccountInit.AddHandlers(services, lifetime);
-		global::MainCore.Notification.Message.AccountLogout.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.AccountSettingUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.AccountUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.AdventureUpdated.AddHandlers(services, lifetime);

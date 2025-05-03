@@ -5,7 +5,7 @@
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
 
-        private static async ValueTask HandleAsync(
+        private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeManager chromeManager,
             StorageUpdated.Handler storageUpdate, SwitchTabCommand.Handler switchTabCommand, DelayClickCommand.Handler delayClickCommand,
@@ -18,32 +18,33 @@
 
             do
             {
-                if (cancellationToken.IsCancellationRequested) return;
+                cancellationToken.ThrowIfCancellationRequested();
                 html = browser.Html;
                 var quest = QuestParser.GetQuestCollectButton(html);
 
                 if (quest is null)
                 {
                     result = await switchTabCommand.HandleAsync(new(accountId, 1), cancellationToken);
-                    if (result.IsFailed) return;
+                    if (result.IsFailed) return result;
 
                     await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
 
                     quest = QuestParser.GetQuestCollectButton(browser.Html);
-                    if (quest is null) return;
+                    if (quest is null) return Result.Ok();
 
                     result = await browser.Click(By.XPath(quest.XPath));
                     await storageUpdate.HandleAsync(new(accountId, villageId), cancellationToken);
-                    return;
+                    continue;
                 }
 
                 result = await browser.Click(By.XPath(quest.XPath));
-                if (result.IsFailed) break;
+                if (result.IsFailed) return result;
                 await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
             }
             while (QuestParser.IsQuestClaimable(html));
 
             await storageUpdate.HandleAsync(new(accountId, villageId), cancellationToken);
+            return Result.Ok();
         }
     }
 }

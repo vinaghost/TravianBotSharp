@@ -8,14 +8,15 @@
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeManager chromeManager,
-            IGetSetting getSetting,
+            IDbContextFactory<AppDbContext> contextFactory,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             var chromeBrowser = chromeManager.Get(command.AccountId);
             await chromeBrowser.Close();
 
-            var sleepTimeMinutes = getSetting.ByName(command.AccountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
+            using var context = await contextFactory.CreateDbContextAsync();
+            var sleepTimeMinutes = context.ByName(command.AccountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
             var sleepEnd = DateTime.Now.AddMinutes(sleepTimeMinutes);
             int lastMinute = 0;
 

@@ -3,7 +3,7 @@
     [Handler]
     public static partial class ToFarmListPageCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId) : ICustomCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

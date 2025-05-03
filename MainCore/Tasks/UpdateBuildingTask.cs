@@ -1,61 +1,66 @@
 ﻿using MainCore.Tasks.Base;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient<UpdateBuildingTask>]
-    public class UpdateBuildingTask : VillageTask
+    [Handler]
+    public static partial class UpdateBuildingTask
     {
-        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
+        public sealed class Task : VillageTask
         {
-            var dataService = scoped.ServiceProvider.GetRequiredService<IDataService>();
-            var chromeBrowser = dataService.ChromeBrowser;
-            var url = chromeBrowser.CurrentUrl;
+            public Task(AccountId accountId, VillageId villageId, string villageName, DateTime executeAt) : base(accountId, villageId, villageName, executeAt)
+            {
+            }
+
+            protected override string TaskName => "Update building";
+        }
+
+        private static async ValueTask<Result> HandleAsync(
+            Task task,
+            IChromeManager chromeManager,
+            UpdateBuildingCommand.Handler updateBuildingCommand,
+            ToDorfCommand.Handler toDorfCommand,
+            CancellationToken cancellationToken)
+        {
+            var browser = chromeManager.Get(task.AccountId);
+            var url = browser.CurrentUrl;
             Result result;
-
-            var updateBuildingCommand = scoped.ServiceProvider.GetRequiredService<UpdateBuildingCommand>();
-            var toDorfCommand = scoped.ServiceProvider.GetRequiredService<ToDorfCommand>();
-
             if (url.Contains("dorf1"))
             {
-                result = await updateBuildingCommand.Execute(cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                if (result.IsFailed) return result;
 
-                result = await toDorfCommand.Execute(2, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await toDorfCommand.HandleAsync(new(task.AccountId, 2), cancellationToken);
+                if (result.IsFailed) return result;
 
-                result = await updateBuildingCommand.Execute(cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                if (result.IsFailed) return result;
             }
             else if (url.Contains("dorf2"))
             {
-                result = await updateBuildingCommand.Execute(cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                if (result.IsFailed) return result;
 
-                result = await toDorfCommand.Execute(1, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await toDorfCommand.HandleAsync(new(task.AccountId, 1), cancellationToken);
+                if (result.IsFailed) return result;
 
-                result = await updateBuildingCommand.Execute(cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                if (result.IsFailed) return result;
             }
             else
             {
-                result = await toDorfCommand.Execute(2, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await toDorfCommand.HandleAsync(new(task.AccountId, 2), cancellationToken);
+                if (result.IsFailed) return result;
 
-                result = await updateBuildingCommand.Execute(cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                if (result.IsFailed) return result;
 
-                result = await toDorfCommand.Execute(1, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await toDorfCommand.HandleAsync(new(task.AccountId, 1), cancellationToken);
+                if (result.IsFailed) return result;
 
-                result = await updateBuildingCommand.Execute(cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                if (result.IsFailed) return result;
             }
-
             return Result.Ok();
         }
-
-        protected override string TaskName => "Update building";
     }
 }

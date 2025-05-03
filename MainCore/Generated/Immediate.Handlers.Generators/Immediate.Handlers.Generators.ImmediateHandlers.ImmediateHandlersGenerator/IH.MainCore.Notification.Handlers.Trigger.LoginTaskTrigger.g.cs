@@ -9,15 +9,21 @@ partial class LoginTaskTrigger
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.Trigger.LoginTaskTrigger.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Notification.Handlers.Trigger.LoginTaskTrigger.HandleBehavior handleBehavior
+			global::MainCore.Notification.Handlers.Trigger.LoginTaskTrigger.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple> loggingBehavior
 		)
 		{
 			var handlerType = typeof(LoginTaskTrigger);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -25,7 +31,7 @@ partial class LoginTaskTrigger
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

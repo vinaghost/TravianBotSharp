@@ -1,26 +1,32 @@
 ﻿using MainCore.Commands.Features.ClaimQuest;
 using MainCore.Tasks.Base;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient<ClaimQuestTask>]
-    public class ClaimQuestTask : VillageTask
+    [Handler]
+    public static partial class ClaimQuestTask
     {
-        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
+        public sealed class Task : VillageTask
         {
-            Result result;
-            var toQuestPageCommand = scoped.ServiceProvider.GetRequiredService<ToQuestPageCommand>();
-            result = await toQuestPageCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            public Task(AccountId accountId, VillageId villageId, string villageName, DateTime executeAt) : base(accountId, villageId, villageName, executeAt)
+            {
+            }
 
-            var claimQuestCommand = scoped.ServiceProvider.GetRequiredService<ClaimQuestCommand>();
-            result = await claimQuestCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            return Result.Ok();
+            protected override string TaskName => "Claim quest";
         }
 
-        protected override string TaskName => "Claim quest";
+        private static async ValueTask<Result> HandleAsync(
+            Task task,
+            ToQuestPageCommand.Handler toQuestPageCommand,
+            ClaimQuestCommand.Handler claimQuestCommand,
+            CancellationToken cancellationToken)
+        {
+            Result result;
+            result = await toQuestPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            if (result.IsFailed) return result;
+            result = await claimQuestCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            if (result.IsFailed) return result;
+            return Result.Ok();
+        }
     }
 }

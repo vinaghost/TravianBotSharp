@@ -8,12 +8,13 @@ namespace MainCore.Notification.Handlers.Trigger
         private static async ValueTask HandleAsync(
             ByAccountVillageIdBase notification,
             ITaskManager taskManager,
-            IGetSetting getSetting,
+            IDbContextFactory<AppDbContext> contextFactory,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
-            var autoRefreshEnable = getSetting.BooleanByName(villageId, VillageSettingEnums.AutoRefreshEnable);
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+            var autoRefreshEnable = context.BooleanByName(villageId, VillageSettingEnums.AutoRefreshEnable);
             if (autoRefreshEnable)
             {
                 if (taskManager.IsExist<UpdateVillageTask>(accountId, villageId)) return;

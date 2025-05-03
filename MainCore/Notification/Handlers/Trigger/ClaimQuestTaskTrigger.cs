@@ -8,12 +8,13 @@ namespace MainCore.Notification.Handlers.Trigger
         private static async ValueTask HandleAsync(
             ByAccountVillageIdBase notification,
             ITaskManager taskManager,
-            IGetSetting getSetting,
+            IDbContextFactory<AppDbContext> contextFactory,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
-            var autoClaimQuest = getSetting.BooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+            var autoClaimQuest = context.BooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
             if (autoClaimQuest)
             {
                 if (taskManager.IsExist<ClaimQuestTask>(accountId, villageId)) return;

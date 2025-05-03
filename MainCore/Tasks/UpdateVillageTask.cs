@@ -1,70 +1,61 @@
 ﻿using MainCore.Tasks.Base;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient<UpdateVillageTask>]
-    public class UpdateVillageTask : VillageTask
+    [Handler]
+    public static partial class UpdateVillageTask
     {
-        private readonly ITaskManager _taskManager;
-
-        public UpdateVillageTask(ITaskManager taskManager)
+        public sealed class Task : VillageTask
         {
-            _taskManager = taskManager;
+            public Task(AccountId accountId, VillageId villageId, string villageName, DateTime executeAt) : base(accountId, villageId, villageName, executeAt)
+            {
+            }
+
+            protected override string TaskName => "Update village";
         }
 
-        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Task task,
+            ITaskManager taskManager,
+            IChromeManager chromeManager,
+            IDbContextFactory<AppDbContext> contextFactory,
+            UpdateBuildingCommand.Handler updateBuildingCommand,
+            ToDorfCommand.Handler toDorfCommand,
+            CancellationToken cancellationToken)
         {
-            var dataService = scoped.ServiceProvider.GetRequiredService<IDataService>();
-            var chromeBrowser = dataService.ChromeBrowser;
-            var url = chromeBrowser.CurrentUrl;
+            var browser = chromeManager.Get(task.AccountId);
+            var url = browser.CurrentUrl;
             Result result;
-
-            await chromeBrowser.Refresh(cancellationToken);
-
-            var updateBuildingCommand = scoped.ServiceProvider.GetRequiredService<UpdateBuildingCommand>();
-            var toDorfCommand = scoped.ServiceProvider.GetRequiredService<ToDorfCommand>();
 
             if (url.Contains("dorf1"))
             {
-                result = await updateBuildingCommand.Execute(cancellationToken);
+                result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else if (url.Contains("dorf2"))
             {
-                result = await updateBuildingCommand.Execute(cancellationToken);
+                result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                result = await toDorfCommand.Execute(1, cancellationToken);
+                result = await toDorfCommand.HandleAsync(new(task.AccountId, 1), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                result = await updateBuildingCommand.Execute(cancellationToken);
+                result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             else
             {
-                result = await toDorfCommand.Execute(1, cancellationToken);
+                result = await toDorfCommand.HandleAsync(new(task.AccountId, 1), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-                result = await updateBuildingCommand.Execute(cancellationToken);
+                result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
-
-            var updateStorageCommand = scoped.ServiceProvider.GetRequiredService<UpdateStorageCommand>();
-            result = await updateStorageCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            await SetNextExecute();
+            using var context = contextFactory.CreateDbContext();
+            var seconds = context.ByName(task.VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
+            task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
+            await taskManager.ReOrder(task.AccountId);
             return Result.Ok();
         }
-
-        private async Task SetNextExecute()
-        {
-            var seconds = Locator.Current.GetService<IGetSetting>().ByName(VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
-            ExecuteAt = DateTime.Now.AddSeconds(seconds);
-            await _taskManager.ReOrder(AccountId);
-        }
-
-        protected override string TaskName => "Update village";
     }
 }

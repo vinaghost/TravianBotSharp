@@ -9,15 +9,21 @@ partial class MainWindowLoaded
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Message.MainWindowLoaded.Notification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Message.MainWindowLoaded.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Notification.Message.MainWindowLoaded.Notification, global::System.ValueTuple> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Notification.Message.MainWindowLoaded.HandleBehavior handleBehavior
+			global::MainCore.Notification.Message.MainWindowLoaded.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Notification.Message.MainWindowLoaded.Notification, global::System.ValueTuple> loggingBehavior
 		)
 		{
 			var handlerType = typeof(MainWindowLoaded);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -25,7 +31,7 @@ partial class MainWindowLoaded
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

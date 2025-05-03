@@ -9,15 +9,21 @@ partial class GetAcccountQuery
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.EditAccountViewModel.GetAcccountQuery.Query, global::MainCore.DTO.AccountDto>
 	{
 		private readonly global::MainCore.Commands.UI.EditAccountViewModel.GetAcccountQuery.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.EditAccountViewModel.GetAcccountQuery.Query, global::MainCore.DTO.AccountDto> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.UI.EditAccountViewModel.GetAcccountQuery.HandleBehavior handleBehavior
+			global::MainCore.Commands.UI.EditAccountViewModel.GetAcccountQuery.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.EditAccountViewModel.GetAcccountQuery.Query, global::MainCore.DTO.AccountDto> loggingBehavior
 		)
 		{
 			var handlerType = typeof(GetAcccountQuery);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::MainCore.DTO.AccountDto> HandleAsync(
@@ -25,7 +31,7 @@ partial class GetAcccountQuery
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

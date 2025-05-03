@@ -84,8 +84,9 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task Start()
         {
-            var getSetting = Locator.Current.GetService<IGetSetting>();
-            var useStartAllButton = getSetting.BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
+            var contextFactory = Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+            using var context = contextFactory.CreateDbContext();
+            var useStartAllButton = context.BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
             if (!useStartAllButton)
             {
                 var count = CountActive(AccountId);

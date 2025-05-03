@@ -9,15 +9,21 @@ partial class GetVillageItemsQuery
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.VillageViewModel.GetVillageItemsQuery.Query, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>
 	{
 		private readonly global::MainCore.Commands.UI.VillageViewModel.GetVillageItemsQuery.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.VillageViewModel.GetVillageItemsQuery.Query, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.UI.VillageViewModel.GetVillageItemsQuery.HandleBehavior handleBehavior
+			global::MainCore.Commands.UI.VillageViewModel.GetVillageItemsQuery.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.VillageViewModel.GetVillageItemsQuery.Query, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> loggingBehavior
 		)
 		{
 			var handlerType = typeof(GetVillageItemsQuery);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> HandleAsync(
@@ -25,7 +31,7 @@ partial class GetVillageItemsQuery
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

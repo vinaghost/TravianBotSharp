@@ -9,15 +9,21 @@ partial class HandleJobCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.Command, global::FluentResults.Result<global::MainCore.Common.Models.NormalBuildPlan>>
 	{
 		private readonly global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.Command, global::FluentResults.Result<global::MainCore.Common.Models.NormalBuildPlan>> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.Command, global::FluentResults.Result<global::MainCore.Common.Models.NormalBuildPlan>> loggingBehavior
 		)
 		{
 			var handlerType = typeof(HandleJobCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result<global::MainCore.Common.Models.NormalBuildPlan>> HandleAsync(
@@ -25,7 +31,7 @@ partial class HandleJobCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -34,7 +40,6 @@ partial class HandleJobCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.Command, global::FluentResults.Result<global::MainCore.Common.Models.NormalBuildPlan>>
 	{
-		private readonly IGetSetting _getSetting;
 		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
 		private readonly global::MainCore.Commands.Navigate.ToDorfCommand.Handler _toDorfCommand;
 		private readonly global::MainCore.Commands.Update.UpdateBuildingCommand.Handler _updateBuildingCommand;
@@ -43,7 +48,6 @@ partial class HandleJobCommand
 		private readonly global::MainCore.Commands.Misc.AddJobCommand.Handler _addJobCommand;
 
 		public HandleBehavior(
-			IGetSetting getSetting,
 			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
 			global::MainCore.Commands.Navigate.ToDorfCommand.Handler toDorfCommand,
 			global::MainCore.Commands.Update.UpdateBuildingCommand.Handler updateBuildingCommand,
@@ -52,7 +56,6 @@ partial class HandleJobCommand
 			global::MainCore.Commands.Misc.AddJobCommand.Handler addJobCommand
 		)
 		{
-			_getSetting = getSetting;
 			_contextFactory = contextFactory;
 			_toDorfCommand = toDorfCommand;
 			_updateBuildingCommand = updateBuildingCommand;
@@ -69,7 +72,6 @@ partial class HandleJobCommand
 			return await global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand
 				.HandleAsync(
 					request
-					, _getSetting
 					, _contextFactory
 					, _toDorfCommand
 					, _updateBuildingCommand

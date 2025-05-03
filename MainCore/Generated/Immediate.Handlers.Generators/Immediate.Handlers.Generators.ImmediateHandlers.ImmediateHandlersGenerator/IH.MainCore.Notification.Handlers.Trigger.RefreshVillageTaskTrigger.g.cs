@@ -9,15 +9,21 @@ partial class RefreshVillageTaskTrigger
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.ByAccountVillageIdBase, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.Trigger.RefreshVillageTaskTrigger.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Notification.ByAccountVillageIdBase, global::System.ValueTuple> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Notification.Handlers.Trigger.RefreshVillageTaskTrigger.HandleBehavior handleBehavior
+			global::MainCore.Notification.Handlers.Trigger.RefreshVillageTaskTrigger.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Notification.ByAccountVillageIdBase, global::System.ValueTuple> loggingBehavior
 		)
 		{
 			var handlerType = typeof(RefreshVillageTaskTrigger);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -25,7 +31,7 @@ partial class RefreshVillageTaskTrigger
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -35,15 +41,15 @@ partial class RefreshVillageTaskTrigger
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.ByAccountVillageIdBase, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
-		private readonly IGetSetting _getSetting;
+		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
 
 		public HandleBehavior(
 			global::MainCore.Services.ITaskManager taskManager,
-			IGetSetting getSetting
+			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory
 		)
 		{
 			_taskManager = taskManager;
-			_getSetting = getSetting;
+			_contextFactory = contextFactory;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -55,7 +61,7 @@ partial class RefreshVillageTaskTrigger
 				.HandleAsync(
 					request
 					, _taskManager
-					, _getSetting
+					, _contextFactory
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

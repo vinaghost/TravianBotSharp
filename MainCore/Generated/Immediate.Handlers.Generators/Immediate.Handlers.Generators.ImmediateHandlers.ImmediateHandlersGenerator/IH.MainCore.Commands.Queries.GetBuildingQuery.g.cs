@@ -9,15 +9,21 @@ partial class GetBuildingQuery
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Queries.GetBuildingQuery.Query, global::MainCore.DTO.BuildingDto>
 	{
 		private readonly global::MainCore.Commands.Queries.GetBuildingQuery.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Queries.GetBuildingQuery.Query, global::MainCore.DTO.BuildingDto> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Queries.GetBuildingQuery.HandleBehavior handleBehavior
+			global::MainCore.Commands.Queries.GetBuildingQuery.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Queries.GetBuildingQuery.Query, global::MainCore.DTO.BuildingDto> loggingBehavior
 		)
 		{
 			var handlerType = typeof(GetBuildingQuery);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::MainCore.DTO.BuildingDto> HandleAsync(
@@ -25,7 +31,7 @@ partial class GetBuildingQuery
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

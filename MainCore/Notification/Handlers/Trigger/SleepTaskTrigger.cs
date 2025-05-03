@@ -8,12 +8,13 @@ namespace MainCore.Notification.Handlers.Trigger
         private static async ValueTask HandleAsync(
             ByAccountIdBase notification,
             ITaskManager taskManager,
-            IGetSetting getSetting,
+            IDbContextFactory<AppDbContext> contextFactory,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
             if (taskManager.IsExist<SleepTask>(accountId)) return;
-            var workTime = getSetting.ByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
+            using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+            var workTime = context.ByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
             await taskManager.Add<SleepTask>(accountId, executeTime: DateTime.Now.AddMinutes(workTime));
         }
     }

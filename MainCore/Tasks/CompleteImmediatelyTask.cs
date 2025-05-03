@@ -1,30 +1,35 @@
 ﻿using MainCore.Commands.Features.CompleteImmediately;
 using MainCore.Tasks.Base;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient<CompleteImmediatelyTask>]
-    public class CompleteImmediatelyTask : VillageTask
+    [Handler]
+    public static partial class CompleteImmediatelyTask
     {
-        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
+        public sealed class Task : VillageTask
         {
-            Result result;
-            var toDorfCommand = scoped.ServiceProvider.GetRequiredService<ToDorfCommand>();
-            result = await toDorfCommand.Execute(0, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            public Task(AccountId accountId, VillageId villageId, string villageName, DateTime executeAt) : base(accountId, villageId, villageName, executeAt)
+            {
+            }
 
-            var completeImmediatelyCommand = scoped.ServiceProvider.GetRequiredService<CompleteImmediatelyCommand>();
-            result = await completeImmediatelyCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var updateBuildingCommand = scoped.ServiceProvider.GetRequiredService<UpdateBuildingCommand>();
-            result = await updateBuildingCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            return Result.Ok();
+            protected override string TaskName => "Complete immediately";
         }
 
-        protected override string TaskName => "Complete immediately";
+        private static async ValueTask<Result> HandleAsync(
+            Task task,
+            ToDorfCommand.Handler toDorfCommand,
+            CompleteImmediatelyCommand.Handler completeImmediatelyCommand,
+            UpdateBuildingCommand.Handler updateBuildingCommand,
+            CancellationToken cancellationToken)
+        {
+            Result result;
+            result = await toDorfCommand.HandleAsync(new(task.AccountId, 0), cancellationToken);
+            if (result.IsFailed) return result;
+            result = await completeImmediatelyCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            if (result.IsFailed) return result;
+            result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            if (result.IsFailed) return result;
+            return Result.Ok();
+        }
     }
 }

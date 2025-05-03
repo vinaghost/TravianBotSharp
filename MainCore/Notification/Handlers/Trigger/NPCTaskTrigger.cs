@@ -9,17 +9,16 @@ namespace MainCore.Notification.Handlers.Trigger
             ByAccountVillageIdBase notification,
             ITaskManager taskManager,
             IDbContextFactory<AppDbContext> contextFactory,
-            IGetSetting getSetting,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
-            var autoNPCEnable = getSetting.BooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
+            using var context = await contextFactory.CreateDbContextAsync();
+            var autoNPCEnable = context.BooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
             if (autoNPCEnable)
             {
-                using var context = await contextFactory.CreateDbContextAsync();
-                var granaryPercent = GetGranaryPercent(context, villageId);
-                var autoNPCGranaryPercent = getSetting.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
+                var granaryPercent = context.GetGranaryPercent(villageId);
+                var autoNPCGranaryPercent = context.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
 
                 if (granaryPercent < autoNPCGranaryPercent) return;
                 if (taskManager.IsExist<NpcTask>(accountId, villageId)) return;
@@ -33,7 +32,7 @@ namespace MainCore.Notification.Handlers.Trigger
             }
         }
 
-        private static int GetGranaryPercent(AppDbContext context, VillageId villageId)
+        private static int GetGranaryPercent(this AppDbContext context, VillageId villageId)
         {
             var percent = context.Storages
                 .Where(x => x.VillageId == villageId.Value)

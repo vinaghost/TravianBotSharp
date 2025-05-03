@@ -9,15 +9,21 @@ partial class GetHasBuildJobVillagesQuery
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Queries.GetHasBuildJobVillagesQuery.Query, global::System.Collections.Generic.List<global::MainCore.Entities.VillageId>>
 	{
 		private readonly global::MainCore.Commands.Queries.GetHasBuildJobVillagesQuery.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Queries.GetHasBuildJobVillagesQuery.Query, global::System.Collections.Generic.List<global::MainCore.Entities.VillageId>> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Queries.GetHasBuildJobVillagesQuery.HandleBehavior handleBehavior
+			global::MainCore.Commands.Queries.GetHasBuildJobVillagesQuery.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Queries.GetHasBuildJobVillagesQuery.Query, global::System.Collections.Generic.List<global::MainCore.Entities.VillageId>> loggingBehavior
 		)
 		{
 			var handlerType = typeof(GetHasBuildJobVillagesQuery);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.Collections.Generic.List<global::MainCore.Entities.VillageId>> HandleAsync(
@@ -25,7 +31,7 @@ partial class GetHasBuildJobVillagesQuery
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

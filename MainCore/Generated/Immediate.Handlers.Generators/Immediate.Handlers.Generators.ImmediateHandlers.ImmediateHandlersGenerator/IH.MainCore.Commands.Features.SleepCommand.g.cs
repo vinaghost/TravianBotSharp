@@ -9,15 +9,21 @@ partial class SleepCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.SleepCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Features.SleepCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Features.SleepCommand.Command, global::FluentResults.Result> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Features.SleepCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.Features.SleepCommand.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Features.SleepCommand.Command, global::FluentResults.Result> loggingBehavior
 		)
 		{
 			var handlerType = typeof(SleepCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -25,7 +31,7 @@ partial class SleepCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -35,17 +41,17 @@ partial class SleepCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.SleepCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Services.IChromeManager _chromeManager;
-		private readonly IGetSetting _getSetting;
+		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
 		private readonly global::Serilog.ILogger _logger;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeManager chromeManager,
-			IGetSetting getSetting,
+			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
 			global::Serilog.ILogger logger
 		)
 		{
 			_chromeManager = chromeManager;
-			_getSetting = getSetting;
+			_contextFactory = contextFactory;
 			_logger = logger;
 		}
 
@@ -58,7 +64,7 @@ partial class SleepCommand
 				.HandleAsync(
 					request
 					, _chromeManager
-					, _getSetting
+					, _contextFactory
 					, _logger
 					, cancellationToken
 				)

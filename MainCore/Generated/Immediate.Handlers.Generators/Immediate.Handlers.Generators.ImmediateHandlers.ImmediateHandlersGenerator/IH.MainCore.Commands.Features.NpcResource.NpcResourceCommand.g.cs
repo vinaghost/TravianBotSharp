@@ -9,15 +9,21 @@ partial class NpcResourceCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.NpcResource.NpcResourceCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Features.NpcResource.NpcResourceCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Features.NpcResource.NpcResourceCommand.Command, global::FluentResults.Result> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Features.NpcResource.NpcResourceCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.Features.NpcResource.NpcResourceCommand.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Features.NpcResource.NpcResourceCommand.Command, global::FluentResults.Result> loggingBehavior
 		)
 		{
 			var handlerType = typeof(NpcResourceCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -25,7 +31,7 @@ partial class NpcResourceCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -35,15 +41,15 @@ partial class NpcResourceCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.NpcResource.NpcResourceCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Services.IChromeManager _chromeManager;
-		private readonly IGetSetting _getSetting;
+		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeManager chromeManager,
-			IGetSetting getSetting
+			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory
 		)
 		{
 			_chromeManager = chromeManager;
-			_getSetting = getSetting;
+			_contextFactory = contextFactory;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -55,7 +61,7 @@ partial class NpcResourceCommand
 				.HandleAsync(
 					request
 					, _chromeManager
-					, _getSetting
+					, _contextFactory
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

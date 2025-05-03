@@ -9,15 +9,21 @@ partial class GetLogQuery
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.DebugViewModel.GetLogQuery.Query, string>
 	{
 		private readonly global::MainCore.Commands.UI.DebugViewModel.GetLogQuery.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.DebugViewModel.GetLogQuery.Query, string> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.UI.DebugViewModel.GetLogQuery.HandleBehavior handleBehavior
+			global::MainCore.Commands.UI.DebugViewModel.GetLogQuery.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.DebugViewModel.GetLogQuery.Query, string> loggingBehavior
 		)
 		{
 			var handlerType = typeof(GetLogQuery);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<string> HandleAsync(
@@ -25,7 +31,7 @@ partial class GetLogQuery
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

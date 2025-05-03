@@ -9,15 +9,21 @@ partial class SaveVillageSettingCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.Command, global::System.ValueTuple> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.Command, global::System.ValueTuple> loggingBehavior
 		)
 		{
 			var handlerType = typeof(SaveVillageSettingCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -25,7 +31,7 @@ partial class SaveVillageSettingCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

@@ -16,29 +16,31 @@
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeManager chromeManager,
-            IGetSetting getSetting,
+            IDbContextFactory<AppDbContext> contextFactory,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
-            var chromeBrowser = chromeManager.Get(accountId);
+            var browser = chromeManager.Get(accountId);
 
-            var result = await OpenNPCDialog(chromeBrowser, cancellationToken);
+            var result = await OpenNPCDialog(browser, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            var ratio = GetRatio(getSetting, villageId);
+            using var context = await contextFactory.CreateDbContextAsync();
+            var settings = context.ByName(villageId, SettingNames);
+            var ratio = GetRatio(settings, villageId);
 
-            result = await InputAmount(chromeBrowser, ratio);
+            result = await InputAmount(browser, ratio);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await Redeem(chromeBrowser, cancellationToken);
+            result = await Redeem(browser, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }
 
-        private static async Task<Result> OpenNPCDialog(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
+        private static async Task<Result> OpenNPCDialog(IChromeBrowser browser, CancellationToken cancellationToken)
         {
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
 
             var button = NpcResourceParser.GetExchangeResourcesButton(html);
             if (button is null) return Retry.ButtonNotFound("Exchange resources");
@@ -50,18 +52,18 @@
                 return NpcResourceParser.IsNpcDialog(doc);
             }
 
-            var result = await chromeBrowser.Click(By.XPath(button.XPath));
+            var result = await browser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
-            result = await chromeBrowser.Wait(DialogShown, cancellationToken);
+            result = await browser.Wait(DialogShown, cancellationToken);
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }
 
-        private static async Task<Result> InputAmount(IChromeBrowser chromeBrowser, long[] ratio)
+        private static async Task<Result> InputAmount(IChromeBrowser browser, long[] ratio)
         {
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
 
             var sum = NpcResourceParser.GetSum(html);
             var sumRatio = ratio.Sum();
@@ -78,16 +80,14 @@
 
             for (var i = 0; i < 4; i++)
             {
-                var result = await chromeBrowser.Input(By.XPath(inputs[i].XPath), $"{values[i]}");
+                var result = await browser.Input(By.XPath(inputs[i].XPath), $"{values[i]}");
                 if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
             }
             return Result.Ok();
         }
 
-        private static long[] GetRatio(IGetSetting getSetting, VillageId villageId)
+        private static long[] GetRatio(Dictionary<VillageSettingEnums, int> settings, VillageId villageId)
         {
-            var settings = getSetting.ByName(villageId, SettingNames);
-
             var ratio = new long[4]
             {
                 settings[VillageSettingEnums.AutoNPCWood],
@@ -104,14 +104,14 @@
             return ratio;
         }
 
-        private static async Task<Result> Redeem(IChromeBrowser chromeBrowser, CancellationToken cancellationToken)
+        private static async Task<Result> Redeem(IChromeBrowser browser, CancellationToken cancellationToken)
         {
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
 
             var button = NpcResourceParser.GetRedeemButton(html);
             if (button is null) return Retry.ButtonNotFound("redeem");
 
-            var result = await chromeBrowser.Click(By.XPath(button.XPath));
+            var result = await browser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();

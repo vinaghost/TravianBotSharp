@@ -118,8 +118,9 @@ namespace MainCore.UI.ViewModels.UserControls
 
             var accountId = new AccountId(Accounts.SelectedItemId);
 
-            var getSetting = Locator.Current.GetService<IGetSetting>();
-            var tribe = (TribeEnums)getSetting.ByName(accountId, AccountSettingEnums.Tribe);
+            var contextFactory = Locator.Current.GetService<IDbContextFactory<AppDbContext>>();
+            using var context = contextFactory.CreateDbContext();
+            var tribe = (TribeEnums)context.ByName(accountId, AccountSettingEnums.Tribe);
             if (tribe == TribeEnums.Any)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Choose tribe first"));

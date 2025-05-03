@@ -1,78 +1,11 @@
-﻿using MainCore.Commands.Checks;
-using Microsoft.Extensions.DependencyInjection;
+﻿using MainCore.Tasks.Constraints;
 
 namespace MainCore.Tasks.Base
 {
-    public abstract class AccountTask : TaskBase
+    public abstract class AccountTask(AccountId accountId, DateTime executeAt) : TaskBase(executeAt), IAccountTask
     {
-        public AccountId AccountId { get; protected set; }
+        public AccountId AccountId { get; } = accountId;
 
-        public void Setup(AccountId accountId)
-        {
-            AccountId = accountId;
-        }
-
-        protected abstract string TaskName { get; }
-
-        public override string GetName() => TaskName;
-
-        protected override async Task<Result> PreExecute(IServiceScope scoped, CancellationToken cancellationToken)
-        {
-            if (cancellationToken.IsCancellationRequested) return Cancel.Error;
-
-            var dataService = scoped.ServiceProvider.GetRequiredService<IDataService>();
-            dataService.AccountId = AccountId;
-            var chromeManager = Locator.Current.GetService<IChromeManager>();
-            var chromeBrowser = chromeManager.Get(AccountId);
-            dataService.ChromeBrowser = chromeBrowser;
-            var logService = Locator.Current.GetService<ILogService>();
-            dataService.Logger = logService.GetLogger(AccountId);
-
-            if (LoginParser.IsIngamePage(chromeBrowser.Html))
-            {
-                Result result;
-                var updateAccountInfoCommand = scoped.ServiceProvider.GetRequiredService<UpdateAccountInfoCommand>();
-                result = await updateAccountInfoCommand.Execute(cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-                var updateVillageListCommand = scoped.ServiceProvider.GetRequiredService<UpdateVillageListCommand>();
-                result = await updateVillageListCommand.Execute(cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-                return Result.Ok();
-            }
-
-            if (LoginParser.IsLoginPage(chromeBrowser.Html))
-            {
-#pragma warning disable S3060 // "is" should not be used with "this"
-                if (this is not LoginTask)
-                {
-                    ExecuteAt = ExecuteAt.AddMilliseconds(1975);
-                    var accountLogout = Locator.Current.GetService<AccountLogout.Handler>();
-                    await accountLogout.HandleAsync(new(AccountId), cancellationToken);
-                    return Skip.AccountLogout;
-                }
-#pragma warning restore S3060 // "is" should not be used with "this"
-                return Result.Ok();
-            }
-
-            return Stop.NotTravianPage;
-        }
-
-        protected override async Task<Result> PostExecute(IServiceScope scoped, CancellationToken cancellationToken)
-        {
-            Result result;
-            var updateAccountInfoCommand = scoped.ServiceProvider.GetRequiredService<UpdateAccountInfoCommand>();
-            result = await updateAccountInfoCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var updateVillageListCommand = scoped.ServiceProvider.GetRequiredService<UpdateVillageListCommand>();
-            result = await updateVillageListCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var checkAdventureCommand = scoped.ServiceProvider.GetRequiredService<CheckAdventureCommand.Handler>();
-            await checkAdventureCommand.HandleAsync(new(AccountId), cancellationToken);
-
-            return Result.Ok();
-        }
+        public override string Description => TaskName;
     }
 }

@@ -9,15 +9,21 @@ partial class AddAccountCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.Command, global::FluentResults.Result> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.Command, global::FluentResults.Result> loggingBehavior
 		)
 		{
 			var handlerType = typeof(AddAccountCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -25,7 +31,7 @@ partial class AddAccountCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

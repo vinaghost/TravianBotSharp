@@ -9,15 +9,21 @@ partial class GetAccessQuery
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Queries.GetAccessQuery.Query, global::FluentResults.Result<global::MainCore.DTO.AccessDto>>
 	{
 		private readonly global::MainCore.Commands.Queries.GetAccessQuery.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Queries.GetAccessQuery.Query, global::FluentResults.Result<global::MainCore.DTO.AccessDto>> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Queries.GetAccessQuery.HandleBehavior handleBehavior
+			global::MainCore.Commands.Queries.GetAccessQuery.HandleBehavior handleBehavior,
+			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Queries.GetAccessQuery.Query, global::FluentResults.Result<global::MainCore.DTO.AccessDto>> loggingBehavior
 		)
 		{
 			var handlerType = typeof(GetAccessQuery);
 
 			_handleBehavior = handleBehavior;
 
+			_loggingBehavior = loggingBehavior;
+			_loggingBehavior.HandlerType = handlerType;
+
+			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result<global::MainCore.DTO.AccessDto>> HandleAsync(
@@ -25,7 +31,7 @@ partial class GetAccessQuery
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _loggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -35,17 +41,14 @@ partial class GetAccessQuery
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Queries.GetAccessQuery.Query, global::FluentResults.Result<global::MainCore.DTO.AccessDto>>
 	{
 		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
-		private readonly IGetSetting _getSetting;
 		private readonly global::MainCore.Commands.Queries.VerifyAccessQuery.Handler _verifyAccessQuery;
 
 		public HandleBehavior(
 			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
-			IGetSetting getSetting,
 			global::MainCore.Commands.Queries.VerifyAccessQuery.Handler verifyAccessQuery
 		)
 		{
 			_contextFactory = contextFactory;
-			_getSetting = getSetting;
 			_verifyAccessQuery = verifyAccessQuery;
 		}
 
@@ -58,7 +61,6 @@ partial class GetAccessQuery
 				.HandleAsync(
 					request
 					, _contextFactory
-					, _getSetting
 					, _verifyAccessQuery
 					, cancellationToken
 				)

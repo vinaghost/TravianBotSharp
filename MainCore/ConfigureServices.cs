@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using MainCore.Tasks.Behaviors;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Validators;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +8,12 @@ using ReactiveUI;
 using Serilog;
 using Serilog.Templates;
 using Splat.Microsoft.Extensions.DependencyInjection;
+
+[assembly: Behaviors(
+    typeof(LoggingBehavior<,>),
+    typeof(AccountTaskBehavior<,>),
+    typeof(VillageTaskBehavior<,>)
+)]
 
 namespace MainCore
 {
@@ -28,6 +35,7 @@ namespace MainCore
                 .AddMainCore()
                 .AddValidator();
             services
+                .AddMainCoreBehaviors()
                 .AddMainCoreHandlers(ServiceLifetime.Transient);
 
             return services;

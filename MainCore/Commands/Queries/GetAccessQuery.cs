@@ -7,7 +7,7 @@
 
         private static async ValueTask<Result<AccessDto>> HandleAsync(
             Query query,
-            IDbContextFactory<AppDbContext> contextFactory, IGetSetting getSetting,
+            IDbContextFactory<AppDbContext> contextFactory,
             VerifyAccessQuery.Handler verifyAccessQuery,
             CancellationToken cancellationToken
             )
@@ -39,7 +39,7 @@
             if (count == 1) return access;
             if (ignoreSleepTime) return access;
 
-            var minSleep = getSetting.ByName(accountId, AccountSettingEnums.SleepTimeMin);
+            var minSleep = context.ByName(accountId, AccountSettingEnums.SleepTimeMin);
             var timeValid = DateTime.Now.AddMinutes(-minSleep);
             if (access.LastUsed > timeValid) return Stop.LackOfAccess;
             return access;
