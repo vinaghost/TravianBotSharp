@@ -7,12 +7,14 @@ namespace MainCore.Notification.Handlers.Trigger
     {
         private static async ValueTask HandleAsync(
             ByAccountVillageIdBase notification,
+            GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
-            await taskManager.AddOrUpdate<UpgradeBuildingTask.Task>(accountId, villageId);
+            var villageName = await getVillageNameQuery.HandleAsync(new(villageId), cancellationToken);
+            await taskManager.AddOrUpdate<UpgradeBuildingTask.Task>(new(accountId, villageId, villageName));
         }
     }
 }

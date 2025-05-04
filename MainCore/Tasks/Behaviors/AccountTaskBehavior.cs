@@ -36,9 +36,9 @@ namespace MainCore.Tasks.Behaviors
                     return (TResponse)Stop.NotTravianPage;
                 }
 
-                if (request is not LoginTask)
+                if (request is not LoginTask.Task)
                 {
-                    await _taskManager.AddOrUpdate<LoginTask.Task>(accountId, first: true);
+                    await _taskManager.AddOrUpdate<LoginTask.Task>(new(accountId), first: true);
                     return (TResponse)Skip.AccountLogout;
                 }
             }

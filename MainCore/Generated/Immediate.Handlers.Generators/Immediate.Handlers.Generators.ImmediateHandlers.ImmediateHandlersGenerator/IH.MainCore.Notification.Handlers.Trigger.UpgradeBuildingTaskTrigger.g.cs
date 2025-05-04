@@ -34,12 +34,15 @@ partial class UpgradeBuildingTaskTrigger
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.ByAccountVillageIdBase, global::System.ValueTuple>
 	{
+		private readonly global::MainCore.Commands.Queries.GetVillageNameQuery.Handler _getVillageNameQuery;
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
 
 		public HandleBehavior(
+			global::MainCore.Commands.Queries.GetVillageNameQuery.Handler getVillageNameQuery,
 			global::MainCore.Services.ITaskManager taskManager
 		)
 		{
+			_getVillageNameQuery = getVillageNameQuery;
 			_taskManager = taskManager;
 		}
 
@@ -51,6 +54,7 @@ partial class UpgradeBuildingTaskTrigger
 			await global::MainCore.Notification.Handlers.Trigger.UpgradeBuildingTaskTrigger
 				.HandleAsync(
 					request
+					, _getVillageNameQuery
 					, _taskManager
 					, cancellationToken
 				)

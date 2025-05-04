@@ -34,16 +34,19 @@ partial class BuildingUpdateTaskTrigger
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple>
 	{
+		private readonly global::MainCore.Commands.Queries.GetVillageNameQuery.Handler _getVillageNameQuery;
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
 		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
 		private readonly global::MainCore.Commands.Queries.GetMissingBuildingVillagesQuery.Handler _getMissingBuildingVillageQuery;
 
 		public HandleBehavior(
+			global::MainCore.Commands.Queries.GetVillageNameQuery.Handler getVillageNameQuery,
 			global::MainCore.Services.ITaskManager taskManager,
 			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
 			global::MainCore.Commands.Queries.GetMissingBuildingVillagesQuery.Handler getMissingBuildingVillageQuery
 		)
 		{
+			_getVillageNameQuery = getVillageNameQuery;
 			_taskManager = taskManager;
 			_contextFactory = contextFactory;
 			_getMissingBuildingVillageQuery = getMissingBuildingVillageQuery;
@@ -57,6 +60,7 @@ partial class BuildingUpdateTaskTrigger
 			await global::MainCore.Notification.Handlers.Trigger.BuildingUpdateTaskTrigger
 				.HandleAsync(
 					request
+					, _getVillageNameQuery
 					, _taskManager
 					, _contextFactory
 					, _getMissingBuildingVillageQuery

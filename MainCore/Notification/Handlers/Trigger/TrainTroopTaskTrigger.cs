@@ -7,6 +7,7 @@ namespace MainCore.Notification.Handlers.Trigger
     {
         private static async ValueTask HandleAsync(
             ByAccountVillageIdBase notification,
+            GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
             IDbContextFactory<AppDbContext> contextFactory,
             CancellationToken cancellationToken)
@@ -18,7 +19,8 @@ namespace MainCore.Notification.Handlers.Trigger
             if (trainTroopEnable)
             {
                 if (taskManager.IsExist<TrainTroopTask.Task>(accountId, villageId)) return;
-                await taskManager.Add<TrainTroopTask.Task>(accountId, villageId);
+                var villageName = await getVillageNameQuery.HandleAsync(new(villageId), cancellationToken);
+                await taskManager.Add<TrainTroopTask.Task>(new(accountId, villageId, villageName));
             }
             else
             {

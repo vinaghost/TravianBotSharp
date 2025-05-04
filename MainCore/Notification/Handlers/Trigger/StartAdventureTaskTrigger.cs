@@ -17,7 +17,7 @@ namespace MainCore.Notification.Handlers.Trigger
             if (autoStartAdventure)
             {
                 if (taskManager.IsExist<StartAdventureTask.Task>(accountId)) return;
-                await taskManager.Add<StartAdventureTask.Task>(accountId);
+                await taskManager.Add<StartAdventureTask.Task>(new(accountId));
             }
             else
             {

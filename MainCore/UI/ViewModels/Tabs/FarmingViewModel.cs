@@ -77,7 +77,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private async Task UpdateFarmList()
         {
             var taskManager = Locator.Current.GetService<ITaskManager>();
-            await taskManager.AddOrUpdate<UpdateFarmListTask.Task>(AccountId);
+            await taskManager.AddOrUpdate<UpdateFarmListTask.Task>(new(AccountId));
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added update farm list task"));
         }
 
@@ -97,7 +97,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 }
             }
             var taskManager = Locator.Current.GetService<ITaskManager>();
-            await taskManager.AddOrUpdate<StartFarmListTask.Task>(AccountId);
+            await taskManager.AddOrUpdate<StartFarmListTask.Task>(new(AccountId));
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added start farm list task"));
         }
 

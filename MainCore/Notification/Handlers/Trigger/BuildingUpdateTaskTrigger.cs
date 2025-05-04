@@ -7,6 +7,7 @@ namespace MainCore.Notification.Handlers.Trigger
     {
         private static async ValueTask HandleAsync(
             ByAccountIdBase notification,
+            GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
             IDbContextFactory<AppDbContext> contextFactory,
             GetMissingBuildingVillagesQuery.Handler getMissingBuildingVillageQuery,
@@ -18,10 +19,10 @@ namespace MainCore.Notification.Handlers.Trigger
             if (!autoLoadVillageBuilding) return;
 
             var villages = await getMissingBuildingVillageQuery.HandleAsync(new(accountId));
-
             foreach (var village in villages)
             {
-                await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(accountId, village);
+                var villageName = await getVillageNameQuery.HandleAsync(new(village), cancellationToken);
+                await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(accountId, village, villageName));
             }
         }
     }

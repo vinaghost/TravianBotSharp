@@ -8,7 +8,7 @@ namespace MainCore.Tasks
     {
         public sealed class Task : AccountTask
         {
-            public Task(AccountId accountId, DateTime executeAt) : base(accountId, executeAt)
+            public Task(AccountId accountId) : base(accountId)
             {
             }
 

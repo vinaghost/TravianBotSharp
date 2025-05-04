@@ -34,14 +34,17 @@ partial class TrainTroopTaskTrigger
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.ByAccountVillageIdBase, global::System.ValueTuple>
 	{
+		private readonly global::MainCore.Commands.Queries.GetVillageNameQuery.Handler _getVillageNameQuery;
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
 		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
 
 		public HandleBehavior(
+			global::MainCore.Commands.Queries.GetVillageNameQuery.Handler getVillageNameQuery,
 			global::MainCore.Services.ITaskManager taskManager,
 			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory
 		)
 		{
+			_getVillageNameQuery = getVillageNameQuery;
 			_taskManager = taskManager;
 			_contextFactory = contextFactory;
 		}
@@ -54,6 +57,7 @@ partial class TrainTroopTaskTrigger
 			await global::MainCore.Notification.Handlers.Trigger.TrainTroopTaskTrigger
 				.HandleAsync(
 					request
+					, _getVillageNameQuery
 					, _taskManager
 					, _contextFactory
 					, cancellationToken

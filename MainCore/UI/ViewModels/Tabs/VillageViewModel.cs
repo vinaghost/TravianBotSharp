@@ -59,8 +59,10 @@ namespace MainCore.UI.ViewModels.Tabs
             }
 
             var villageId = new VillageId(Villages.SelectedItemId);
+            var getVillageNameQuery = Locator.Current.GetService<GetVillageNameQuery.Handler>();
+            var villageName = await getVillageNameQuery.HandleAsync(new(villageId));
             var taskManager = Locator.Current.GetService<ITaskManager>();
-            await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(AccountId, villageId);
+            await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, villageId, villageName));
 
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
@@ -71,9 +73,11 @@ namespace MainCore.UI.ViewModels.Tabs
             var getMissingBuildingVillageQuery = Locator.Current.GetService<GetMissingBuildingVillagesQuery.Handler>();
             var villages = await getMissingBuildingVillageQuery.HandleAsync(new(AccountId));
             var taskManager = Locator.Current.GetService<ITaskManager>();
+            var getVillageNameQuery = Locator.Current.GetService<GetVillageNameQuery.Handler>();
             foreach (var village in villages)
             {
-                await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(AccountId, village);
+                var villageName = await getVillageNameQuery.HandleAsync(new(village));
+                await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village, villageName));
             }
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
@@ -84,9 +88,11 @@ namespace MainCore.UI.ViewModels.Tabs
             var getVillagesQuery = Locator.Current.GetService<GetVillagesQuery.Handler>();
             var villages = await getVillagesQuery.HandleAsync(new(AccountId));
             var taskManager = Locator.Current.GetService<ITaskManager>();
+            var getVillageNameQuery = Locator.Current.GetService<GetVillageNameQuery.Handler>();
             foreach (var village in villages)
             {
-                await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(AccountId, village);
+                var villageName = await getVillageNameQuery.HandleAsync(new(village));
+                await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village, villageName));
             }
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }

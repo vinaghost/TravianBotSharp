@@ -10,7 +10,7 @@ namespace MainCore.Tasks
     {
         public sealed class Task : VillageTask
         {
-            public Task(AccountId accountId, VillageId villageId, string villageName, DateTime executeAt) : base(accountId, villageId, villageName, executeAt)
+            public Task(AccountId accountId, VillageId villageId, string villageName) : base(accountId, villageId, villageName)
             {
             }
 

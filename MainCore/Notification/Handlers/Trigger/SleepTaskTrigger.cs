@@ -15,7 +15,9 @@ namespace MainCore.Notification.Handlers.Trigger
             if (taskManager.IsExist<SleepTask.Task>(accountId)) return;
             using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
             var workTime = context.ByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
-            await taskManager.Add<SleepTask.Task>(accountId, executeTime: DateTime.Now.AddMinutes(workTime));
+            var sleepTask = new SleepTask.Task(accountId);
+            sleepTask.ExecuteAt = DateTime.Now.AddMinutes(workTime);
+            await taskManager.Add<SleepTask.Task>(sleepTask);
         }
     }
 }

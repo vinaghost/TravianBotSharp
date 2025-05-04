@@ -7,6 +7,7 @@ namespace MainCore.Notification.Handlers.Trigger
     {
         private static async ValueTask HandleAsync(
             ByAccountVillageIdBase notification,
+            GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
             IDbContextFactory<AppDbContext> contextFactory,
             CancellationToken cancellationToken)
@@ -22,8 +23,8 @@ namespace MainCore.Notification.Handlers.Trigger
 
                 if (granaryPercent < autoNPCGranaryPercent) return;
                 if (taskManager.IsExist<NpcTask.Task>(accountId, villageId)) return;
-
-                await taskManager.Add<NpcTask.Task>(accountId, villageId);
+                var villageName = await getVillageNameQuery.HandleAsync(new(villageId), cancellationToken);
+                await taskManager.Add<NpcTask.Task>(new(accountId, villageId, villageName));
             }
             else
             {

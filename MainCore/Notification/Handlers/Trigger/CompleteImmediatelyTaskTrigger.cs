@@ -7,6 +7,7 @@ namespace MainCore.Notification.Handlers.Trigger
     {
         private static async ValueTask HandleAsync(
             ByAccountVillageIdBase notification,
+            GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
             IDbContextFactory<AppDbContext> contextFactory,
             CancellationToken cancellationToken)
@@ -32,8 +33,8 @@ namespace MainCore.Notification.Handlers.Trigger
             var queueTime = context.GetQueueTime(villageId);
 
             if (requiredTime > queueTime) return;
-
-            await taskManager.Add<CompleteImmediatelyTask.Task>(accountId, villageId);
+            var villageName = await getVillageNameQuery.HandleAsync(new(villageId), cancellationToken);
+            await taskManager.Add<CompleteImmediatelyTask.Task>(new(accountId, villageId, villageName));
         }
 
         private static DateTime GetQueueTime(this AppDbContext context, VillageId villageId)
