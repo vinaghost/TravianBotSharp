@@ -9,21 +9,15 @@ partial class LoginCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.MainLayoutViewModel.LoginCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Commands.UI.MainLayoutViewModel.LoginCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.MainLayoutViewModel.LoginCommand.Command, global::System.ValueTuple> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.UI.MainLayoutViewModel.LoginCommand.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.MainLayoutViewModel.LoginCommand.Command, global::System.ValueTuple> loggingBehavior
+			global::MainCore.Commands.UI.MainLayoutViewModel.LoginCommand.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(LoginCommand);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -31,7 +25,7 @@ partial class LoginCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

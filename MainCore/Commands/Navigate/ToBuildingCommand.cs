@@ -1,11 +1,12 @@
-﻿using System.Web;
+﻿using MainCore.Commands.Base;
+using System.Web;
 
 namespace MainCore.Commands.Navigate
 {
     [Handler]
     public static partial class ToBuildingCommand
     {
-        public sealed record Command(AccountId AccountId, int Location) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, int Location) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
@@ -32,9 +33,9 @@ namespace MainCore.Commands.Navigate
                 {
                     var css = $"#villageContent > div.buildingSlot.a{location} > svg > path";
                     result = await browser.Click(By.CssSelector(css));
-                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                    if (result.IsFailed) return result;
                     result = await browser.WaitPageChanged("build.php", cancellationToken);
-                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                    if (result.IsFailed) return result;
                 }
             }
             else
@@ -50,15 +51,15 @@ namespace MainCore.Commands.Navigate
                     var decodedJs = HttpUtility.HtmlDecode(javascript);
 
                     result = await browser.ExecuteJsScript(decodedJs);
-                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                    if (result.IsFailed) return result;
                 }
                 else
                 {
                     result = await browser.Click(By.XPath(node.XPath));
-                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                    if (result.IsFailed) return result;
                 }
                 result = await browser.WaitPageChanged("build.php", cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (result.IsFailed) return result;
             }
             return Result.Ok();
         }

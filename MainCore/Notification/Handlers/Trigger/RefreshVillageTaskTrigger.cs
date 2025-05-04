@@ -17,12 +17,12 @@ namespace MainCore.Notification.Handlers.Trigger
             var autoRefreshEnable = context.BooleanByName(villageId, VillageSettingEnums.AutoRefreshEnable);
             if (autoRefreshEnable)
             {
-                if (taskManager.IsExist<UpdateVillageTask>(accountId, villageId)) return;
-                await taskManager.Add<UpdateVillageTask>(accountId, villageId);
+                if (taskManager.IsExist<UpdateVillageTask.Task>(accountId, villageId)) return;
+                await taskManager.Add<UpdateVillageTask.Task>(accountId, villageId);
             }
             else
             {
-                var task = taskManager.Get<UpdateVillageTask>(accountId, villageId);
+                var task = taskManager.Get<UpdateVillageTask.Task>(accountId, villageId);
                 await taskManager.Remove(accountId, task);
             }
         }

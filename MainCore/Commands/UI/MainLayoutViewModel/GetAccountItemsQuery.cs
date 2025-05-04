@@ -1,11 +1,12 @@
-﻿using MainCore.UI.Models.Output;
+﻿using MainCore.Commands.Base;
+using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.MainLayoutViewModel
 {
     [Handler]
     public static partial class GetAccountItemsQuery
     {
-        public sealed record Query() : ICustomQuery;
+        public sealed record Query() : IQuery;
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query query,

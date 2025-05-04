@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Features.NpcResource
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Features.NpcResource
 {
     [Handler]
     public static partial class NpcResourceCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICommand;
 
         private static readonly List<VillageSettingEnums> SettingNames = new()
         {
@@ -23,17 +25,17 @@
             var browser = chromeManager.Get(accountId);
 
             var result = await OpenNPCDialog(browser, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             using var context = await contextFactory.CreateDbContextAsync();
             var settings = context.ByName(villageId, SettingNames);
             var ratio = GetRatio(settings, villageId);
 
             result = await InputAmount(browser, ratio);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await Redeem(browser, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }
@@ -53,10 +55,10 @@
             }
 
             var result = await browser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await browser.Wait(DialogShown, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }
@@ -81,7 +83,7 @@
             for (var i = 0; i < 4; i++)
             {
                 var result = await browser.Input(By.XPath(inputs[i].XPath), $"{values[i]}");
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (result.IsFailed) return result;
             }
             return Result.Ok();
         }
@@ -112,7 +114,7 @@
             if (button is null) return Retry.ButtonNotFound("redeem");
 
             var result = await browser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

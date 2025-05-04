@@ -9,21 +9,15 @@ partial class StatusRefresh
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.Refresh.StatusRefresh.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Notification.Handlers.Refresh.StatusRefresh.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple> loggingBehavior
+			global::MainCore.Notification.Handlers.Refresh.StatusRefresh.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(StatusRefresh);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -31,7 +25,7 @@ partial class StatusRefresh
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

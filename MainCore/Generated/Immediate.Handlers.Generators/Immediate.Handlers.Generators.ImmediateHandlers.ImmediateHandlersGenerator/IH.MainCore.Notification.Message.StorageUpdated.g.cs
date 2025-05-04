@@ -9,21 +9,15 @@ partial class StorageUpdated
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Message.StorageUpdated.Notification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Message.StorageUpdated.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Notification.Message.StorageUpdated.Notification, global::System.ValueTuple> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Notification.Message.StorageUpdated.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Notification.Message.StorageUpdated.Notification, global::System.ValueTuple> loggingBehavior
+			global::MainCore.Notification.Message.StorageUpdated.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(StorageUpdated);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -31,7 +25,7 @@ partial class StorageUpdated
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

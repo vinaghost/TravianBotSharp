@@ -16,12 +16,12 @@ namespace MainCore.Notification.Handlers.Trigger
             var autoStartAdventure = context.BooleanByName(accountId, AccountSettingEnums.EnableAutoStartAdventure);
             if (autoStartAdventure)
             {
-                if (taskManager.IsExist<StartAdventureTask>(accountId)) return;
-                await taskManager.Add<StartAdventureTask>(accountId);
+                if (taskManager.IsExist<StartAdventureTask.Task>(accountId)) return;
+                await taskManager.Add<StartAdventureTask.Task>(accountId);
             }
             else
             {
-                var task = taskManager.Get<StartAdventureTask>(accountId);
+                var task = taskManager.Get<StartAdventureTask.Task>(accountId);
                 await taskManager.Remove(accountId, task);
             }
         }

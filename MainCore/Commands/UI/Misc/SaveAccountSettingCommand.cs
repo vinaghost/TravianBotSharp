@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.UI.Misc
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.UI.Misc
 {
     [Handler]
     public static partial class SaveAccountSettingCommand
     {
-        public sealed record Command(AccountId AccountId, Dictionary<AccountSettingEnums, int> Settings) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, Dictionary<AccountSettingEnums, int> Settings) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,

@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.UI.MainLayoutViewModel
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.UI.MainLayoutViewModel
 {
     [Handler]
     public static partial class LoginCommand
     {
-        public sealed record Command(AccountId AccountId, AccessDto Access) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, AccessDto Access) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,

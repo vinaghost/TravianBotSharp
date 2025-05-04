@@ -1,4 +1,5 @@
-﻿using MainCore.Common.Models;
+﻿using MainCore.Commands.Base;
+using MainCore.Common.Models;
 using System.Text.Json;
 
 namespace MainCore.Commands.Queries
@@ -6,7 +7,7 @@ namespace MainCore.Commands.Queries
     [Handler]
     public static partial class GetLayoutBuildingsQuery
     {
-        public sealed record Query(VillageId VillageId, bool IgnoreJobBuilding = false) : ICustomQuery;
+        public sealed record Query(VillageId VillageId, bool IgnoreJobBuilding = false) : IQuery;
 
         private static async ValueTask<List<BuildingItem>> HandleAsync(
             Query query,

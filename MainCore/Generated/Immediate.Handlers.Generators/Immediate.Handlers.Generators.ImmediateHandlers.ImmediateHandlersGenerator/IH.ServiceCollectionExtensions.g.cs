@@ -10,8 +10,9 @@ public static class HandlerServiceCollectionExtensions
 	public static IServiceCollection AddMainCoreBehaviors(
 		this IServiceCollection services)
 	{
-		services.TryAddTransient(typeof(global::MainCore.Tasks.Behaviors.LoggingBehavior<,>));
+		services.TryAddTransient(typeof(global::MainCore.Commands.Behaviors.CommandLoggingBehavior<,>));
 		services.TryAddTransient(typeof(global::MainCore.Tasks.Behaviors.AccountTaskBehavior<,>));
+		services.TryAddTransient(typeof(global::MainCore.Tasks.Behaviors.VillageTaskBehavior<,>));
 		
 		return services;
 	}
@@ -145,6 +146,18 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Notification.Message.TaskUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.VillageSettingUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.VillageUpdated.AddHandlers(services, lifetime);
+		global::MainCore.Tasks.ClaimQuestTask.AddHandlers(services, lifetime);
+		global::MainCore.Tasks.CompleteImmediatelyTask.AddHandlers(services, lifetime);
+		global::MainCore.Tasks.LoginTask.AddHandlers(services, lifetime);
+		global::MainCore.Tasks.NpcTask.AddHandlers(services, lifetime);
+		global::MainCore.Tasks.SleepTask.AddHandlers(services, lifetime);
+		global::MainCore.Tasks.StartAdventureTask.AddHandlers(services, lifetime);
+		global::MainCore.Tasks.StartFarmListTask.AddHandlers(services, lifetime);
+		global::MainCore.Tasks.TrainTroopTask.AddHandlers(services, lifetime);
+		global::MainCore.Tasks.UpdateBuildingTask.AddHandlers(services, lifetime);
+		global::MainCore.Tasks.UpdateFarmListTask.AddHandlers(services, lifetime);
+		global::MainCore.Tasks.UpdateVillageTask.AddHandlers(services, lifetime);
+		global::MainCore.Tasks.UpgradeBuildingTask.AddHandlers(services, lifetime);
 		
 		return services;
 	}

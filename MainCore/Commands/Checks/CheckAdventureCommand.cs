@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Checks
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Checks
 {
     [Handler]
     public static partial class CheckAdventureCommand
     {
-        public sealed record Command(AccountId AccountId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId) : ICommand;
 
         private static async ValueTask HandleAsync(
            Command command,

@@ -1,4 +1,5 @@
-﻿using Serilog.Templates;
+﻿using MainCore.Commands.Base;
+using Serilog.Templates;
 using System.Text;
 
 namespace MainCore.Commands.UI.DebugViewModel
@@ -6,7 +7,7 @@ namespace MainCore.Commands.UI.DebugViewModel
     [Handler]
     public static partial class GetLogQuery
     {
-        public sealed record Query(AccountId AccountId) : ICustomQuery;
+        public sealed record Query(AccountId AccountId) : IQuery;
         private static readonly ExpressionTemplate _template = new("{@t:HH:mm:ss} [{@l:u3}] {@m}\n{@x}");
 
         private static async ValueTask<string> HandleAsync(

@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.UI.AddAccountsViewModel
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.UI.AddAccountsViewModel
 {
     [Handler]
     public static partial class AddAccountsCommand
     {
-        public sealed record Command(List<AccountDto> Dtos) : ICustomCommand;
+        public sealed record Command(List<AccountDto> Dtos) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

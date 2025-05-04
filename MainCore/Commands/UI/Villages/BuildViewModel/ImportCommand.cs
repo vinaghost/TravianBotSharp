@@ -1,4 +1,5 @@
-﻿using MainCore.Common.Models;
+﻿using MainCore.Commands.Base;
+using MainCore.Common.Models;
 using System.Text.Json;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
@@ -6,7 +7,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class ImportCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, List<JobDto> Jobs) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, List<JobDto> Jobs) : ICommand;
         private static readonly List<int> _excludedLocations = new() { 26, 39, 40 }; //main building, rallypoint and wall
 
         private static readonly Dictionary<ResourcePlanEnums, List<BuildingEnums>> _fieldList = new()

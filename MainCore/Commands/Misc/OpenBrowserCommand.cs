@@ -1,11 +1,12 @@
-﻿using MainCore.Common.Models;
+﻿using MainCore.Commands.Base;
+using MainCore.Common.Models;
 
 namespace MainCore.Commands.Misc
 {
     [Handler]
     public static partial class OpenBrowserCommand
     {
-        public sealed record Command(AccountId accountId, AccessDto access) : ICustomCommand;
+        public sealed record Command(AccountId accountId, AccessDto access) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,

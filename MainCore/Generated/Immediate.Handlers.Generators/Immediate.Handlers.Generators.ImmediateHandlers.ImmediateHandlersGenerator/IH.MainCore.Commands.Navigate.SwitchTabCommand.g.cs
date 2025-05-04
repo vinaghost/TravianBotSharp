@@ -9,21 +9,15 @@ partial class SwitchTabCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Navigate.SwitchTabCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Navigate.SwitchTabCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Navigate.SwitchTabCommand.Command, global::FluentResults.Result> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Navigate.SwitchTabCommand.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Navigate.SwitchTabCommand.Command, global::FluentResults.Result> loggingBehavior
+			global::MainCore.Commands.Navigate.SwitchTabCommand.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(SwitchTabCommand);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -31,7 +25,7 @@ partial class SwitchTabCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

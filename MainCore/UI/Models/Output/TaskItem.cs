@@ -6,7 +6,7 @@ namespace MainCore.UI.Models.Output
     {
         public TaskItem(TaskBase task)
         {
-            Task = task.GetName();
+            Task = task.Description;
             ExecuteAt = task.ExecuteAt;
             Stage = task.Stage;
         }

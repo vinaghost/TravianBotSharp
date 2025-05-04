@@ -1,4 +1,5 @@
 ﻿using Humanizer;
+using MainCore.Commands.Base;
 using MainCore.Common.Models;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
@@ -8,7 +9,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class NormalBuildCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan plan) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan plan) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,

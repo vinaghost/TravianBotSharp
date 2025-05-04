@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Features.CompleteImmediately
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Features.CompleteImmediately
 {
     [Handler]
     public static partial class CompleteImmediatelyCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

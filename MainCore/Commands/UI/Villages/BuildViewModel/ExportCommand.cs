@@ -1,11 +1,12 @@
-﻿using System.Text.Json;
+﻿using MainCore.Commands.Base;
+using System.Text.Json;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
     [Handler]
     public static partial class ExportCommand
     {
-        public sealed record Command(VillageId VillageId, string Path) : ICustomCommand;
+        public sealed record Command(VillageId VillageId, string Path) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,

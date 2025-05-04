@@ -1,11 +1,12 @@
-﻿using MainCore.Common.Errors.TrainTroop;
+﻿using MainCore.Commands.Base;
+using MainCore.Common.Errors.TrainTroop;
 
 namespace MainCore.Commands.Features.NpcResource
 {
     [Handler]
     public static partial class ToNpcResourcePageCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -20,10 +21,10 @@ namespace MainCore.Commands.Features.NpcResource
             var (accountId, villageId) = command;
 
             var result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             var market = await getBuildingLocation.HandleAsync(new(villageId, BuildingEnums.Marketplace), cancellationToken);
             if (market == default)
@@ -32,10 +33,10 @@ namespace MainCore.Commands.Features.NpcResource
             }
 
             result = await toBuildingCommand.HandleAsync(new(accountId, market), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await switchTabCommand.HandleAsync(new(accountId, 0), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

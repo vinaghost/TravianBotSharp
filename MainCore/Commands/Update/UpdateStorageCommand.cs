@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Update
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Update
 {
     [Handler]
     public static partial class UpdateStorageCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICommand;
 
         private static async ValueTask<StorageDto> HandleAsync(
             Command command,

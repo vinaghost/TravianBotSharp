@@ -1,11 +1,12 @@
-﻿using MainCore.UI.Models.Output;
+﻿using MainCore.Commands.Base;
+using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.VillageViewModel
 {
     [Handler]
     public static partial class GetVillageItemsQuery
     {
-        public sealed record Query(AccountId AccountId) : ICustomQuery;
+        public sealed record Query(AccountId AccountId) : IQuery;
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query query,

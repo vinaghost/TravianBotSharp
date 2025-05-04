@@ -1,9 +1,13 @@
 ﻿namespace MainCore.Common.Errors.Storage
 {
-    public class FreeCrop(long storage, long required) : Error
+    public class FreeCrop : Error
     {
-        public static FreeCrop Error(long storage, long required) => new(storage, required);
+        protected FreeCrop(long storage, long required) : base("Don't have enough freecrop")
+        {
+            WithMetadata("storage", storage);
+            WithMetadata("required", required);
+        }
 
-        public void Log(ILogger logger) => logger.Warning("Don't have enough freecrop [{Storage} < {Required}]", storage, required);
+        public static FreeCrop Error(long storage, long required) => new(storage, required);
     }
 }

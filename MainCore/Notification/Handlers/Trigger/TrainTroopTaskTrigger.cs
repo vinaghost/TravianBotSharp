@@ -17,12 +17,12 @@ namespace MainCore.Notification.Handlers.Trigger
             var trainTroopEnable = context.BooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
             if (trainTroopEnable)
             {
-                if (taskManager.IsExist<TrainTroopTask>(accountId, villageId)) return;
-                await taskManager.Add<TrainTroopTask>(accountId, villageId);
+                if (taskManager.IsExist<TrainTroopTask.Task>(accountId, villageId)) return;
+                await taskManager.Add<TrainTroopTask.Task>(accountId, villageId);
             }
             else
             {
-                var task = taskManager.Get<TrainTroopTask>(accountId, villageId);
+                var task = taskManager.Get<TrainTroopTask.Task>(accountId, villageId);
                 await taskManager.Remove(accountId, task);
             }
         }

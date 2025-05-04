@@ -9,21 +9,15 @@ partial class HandleUpgradeCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.UpgradeBuilding.HandleUpgradeCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Features.UpgradeBuilding.HandleUpgradeCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Features.UpgradeBuilding.HandleUpgradeCommand.Command, global::FluentResults.Result> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Features.UpgradeBuilding.HandleUpgradeCommand.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Features.UpgradeBuilding.HandleUpgradeCommand.Command, global::FluentResults.Result> loggingBehavior
+			global::MainCore.Commands.Features.UpgradeBuilding.HandleUpgradeCommand.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(HandleUpgradeCommand);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -31,7 +25,7 @@ partial class HandleUpgradeCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

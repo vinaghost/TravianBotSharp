@@ -21,13 +21,13 @@ namespace MainCore.Notification.Handlers.Trigger
                 var autoNPCGranaryPercent = context.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
 
                 if (granaryPercent < autoNPCGranaryPercent) return;
-                if (taskManager.IsExist<NpcTask>(accountId, villageId)) return;
+                if (taskManager.IsExist<NpcTask.Task>(accountId, villageId)) return;
 
-                await taskManager.Add<NpcTask>(accountId, villageId);
+                await taskManager.Add<NpcTask.Task>(accountId, villageId);
             }
             else
             {
-                var task = taskManager.Get<NpcTask>(accountId, villageId);
+                var task = taskManager.Get<NpcTask.Task>(accountId, villageId);
                 await taskManager.Remove(accountId, task);
             }
         }

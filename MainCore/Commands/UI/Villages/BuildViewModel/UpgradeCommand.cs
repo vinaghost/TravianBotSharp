@@ -1,11 +1,12 @@
-﻿using MainCore.Common.Models;
+﻿using MainCore.Commands.Base;
+using MainCore.Common.Models;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
     [Handler]
     public static partial class UpgradeCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, int Location, bool IsMaxLevel) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, int Location, bool IsMaxLevel) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,

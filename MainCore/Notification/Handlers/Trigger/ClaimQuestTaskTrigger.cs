@@ -17,12 +17,12 @@ namespace MainCore.Notification.Handlers.Trigger
             var autoClaimQuest = context.BooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
             if (autoClaimQuest)
             {
-                if (taskManager.IsExist<ClaimQuestTask>(accountId, villageId)) return;
-                await taskManager.Add<ClaimQuestTask>(accountId, villageId);
+                if (taskManager.IsExist<ClaimQuestTask.Task>(accountId, villageId)) return;
+                await taskManager.Add<ClaimQuestTask.Task>(accountId, villageId);
             }
             else
             {
-                var task = taskManager.Get<ClaimQuestTask>(accountId, villageId);
+                var task = taskManager.Get<ClaimQuestTask.Task>(accountId, villageId);
                 await taskManager.Remove(accountId, task);
             }
         }

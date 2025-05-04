@@ -9,21 +9,15 @@ partial class HandleJobCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.Command, global::FluentResults.Result<global::MainCore.Common.Models.NormalBuildPlan>>
 	{
 		private readonly global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.Command, global::FluentResults.Result<global::MainCore.Common.Models.NormalBuildPlan>> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.Command, global::FluentResults.Result<global::MainCore.Common.Models.NormalBuildPlan>> loggingBehavior
+			global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(HandleJobCommand);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result<global::MainCore.Common.Models.NormalBuildPlan>> HandleAsync(
@@ -31,7 +25,7 @@ partial class HandleJobCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

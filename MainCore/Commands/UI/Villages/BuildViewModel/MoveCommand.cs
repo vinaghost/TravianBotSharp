@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.UI.Villages.BuildViewModel
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
     [Handler]
     public static partial class MoveCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, JobId jobId, MoveEnums Move) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, JobId jobId, MoveEnums Move) : ICommand;
 
         private static async ValueTask<int> HandleAsync(
             Command command,

@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.UI.AccountSettingViewModel
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.UI.AccountSettingViewModel
 {
     [Handler]
     public static partial class GetSettingQuery
     {
-        public sealed record Query(AccountId AccountId) : ICustomQuery;
+        public sealed record Query(AccountId AccountId) : IQuery;
 
         private static async ValueTask<Dictionary<AccountSettingEnums, int>> HandleAsync(
             Query query,

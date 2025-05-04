@@ -36,5 +36,4 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
     }
-}}
 }

@@ -9,21 +9,15 @@ partial class GetSettingQuery
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.Villages.VillageSettingViewModel.GetSettingQuery.Query, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.VillageSettingEnums, int>>
 	{
 		private readonly global::MainCore.Commands.UI.Villages.VillageSettingViewModel.GetSettingQuery.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.Villages.VillageSettingViewModel.GetSettingQuery.Query, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.VillageSettingEnums, int>> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.UI.Villages.VillageSettingViewModel.GetSettingQuery.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.Villages.VillageSettingViewModel.GetSettingQuery.Query, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.VillageSettingEnums, int>> loggingBehavior
+			global::MainCore.Commands.UI.Villages.VillageSettingViewModel.GetSettingQuery.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(GetSettingQuery);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.VillageSettingEnums, int>> HandleAsync(
@@ -31,7 +25,7 @@ partial class GetSettingQuery
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

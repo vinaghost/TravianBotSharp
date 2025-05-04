@@ -1,11 +1,12 @@
-﻿using MainCore.Common.Errors.Storage;
+﻿using MainCore.Commands.Base;
+using MainCore.Common.Errors.Storage;
 
 namespace MainCore.Commands.Features.UseHeroItem
 {
     [Handler]
     public static partial class UseHeroResourceCommand
     {
-        public sealed record Command(AccountId AccountId, long[] Resource) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, long[] Resource) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -41,17 +42,17 @@ namespace MainCore.Commands.Features.UseHeroItem
                 if (amount == 0) continue;
 
                 result = await ClickItem(item, browser, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (result.IsFailed) return result;
 
                 await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
 
                 result = await EnterAmount(amount, browser, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (result.IsFailed) return result;
 
                 await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
 
                 result = await Confirm(browser, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (result.IsFailed) return result;
 
                 await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
             }
@@ -77,10 +78,10 @@ namespace MainCore.Commands.Features.UseHeroItem
 
             Result result;
             result = await browser.Click(By.XPath(node.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }
@@ -96,7 +97,7 @@ namespace MainCore.Commands.Features.UseHeroItem
 
             Result result;
             result = await browser.Input(By.XPath(node.XPath), amount.ToString());
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
             return Result.Ok();
         }
 
@@ -117,10 +118,10 @@ namespace MainCore.Commands.Features.UseHeroItem
 
             Result result;
             result = await browser.Click(By.XPath(node.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

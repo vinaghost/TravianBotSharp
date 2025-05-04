@@ -2,10 +2,10 @@
 {
     public class JobNotAvailable : Error
     {
-        protected JobNotAvailable()
+        public JobNotAvailable(string type) : base($"{type} job is not available")
         {
         }
 
-        public static JobNotAvailable Error => new();
+        public static JobNotAvailable Error(string type) => new(type);
     }
 }

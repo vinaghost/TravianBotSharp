@@ -1,4 +1,5 @@
-﻿using MainCore.Common.Errors.AutoBuilder;
+﻿using MainCore.Commands.Base;
+using MainCore.Common.Errors.AutoBuilder;
 using MainCore.Common.Models;
 using System.Text.Json;
 
@@ -7,7 +8,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     [Handler]
     public static partial class HandleJobCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICommand;
 
         private static async ValueTask<Result<NormalBuildPlan>> HandleAsync(
             Command command,
@@ -47,10 +48,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             var dorf = plan.Location < 19 ? 1 : 2;
             result = await toDorfCommand.HandleAsync(new(accountId, dorf), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             if (context.IsJobComplete(villageId, job))
             {
@@ -112,7 +113,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     return result;
                 }
 
-                return BuildingQueueFull.Error;
+                return BuildingQueueFull.Error(plusActive, countQueueBuilding);
             }
 
             if (countQueueBuilding == 2)
@@ -122,16 +123,26 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     var result = context.GetBuildingJob(villageId, true);
                     return result;
                 }
-                return BuildingQueueFull.Error;
+                return BuildingQueueFull.Error(plusActive, countQueueBuilding);
             }
 
-            return BuildingQueueFull.Error;
+            return BuildingQueueFull.Error(plusActive, countQueueBuilding);
         }
 
         private static Result<JobDto> GetBuildingJob(this AppDbContext context, VillageId villageId, bool romanLogic)
         {
-            var job = romanLogic ? context.GetJobBasedOnRomanLogic(villageId) : context.GetBuildingJob(villageId);
-            if (job is null) return JobNotAvailable.Error;
+            JobDto job;
+            if (romanLogic)
+            {
+                var romanResult = context.GetJobBasedOnRomanLogic(villageId);
+                if (romanResult.IsFailed) return Result.Fail(romanResult.Errors);
+                job = romanResult.Value;
+            }
+            else
+            {
+                job = context.GetBuildingJob(villageId);
+            }
+
             if (job.Type == JobTypeEnums.ResourceBuild) return job;
 
             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
@@ -150,11 +161,11 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 .Where(x => BuildJobTypes.Contains(x.Type))
                 .OrderBy(x => x.Position)
                 .ToDto()
-                .FirstOrDefault();
+                .First();
             return job;
         }
 
-        private static JobDto GetJobBasedOnRomanLogic(
+        private static Result<JobDto> GetJobBasedOnRomanLogic(
             this AppDbContext context,
             VillageId villageId)
         {
@@ -163,11 +174,15 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var countInfrastructureQueueBuilding = countQueueBuilding - countResourceQueueBuilding;
             if (countResourceQueueBuilding > countInfrastructureQueueBuilding)
             {
-                return context.GetInfrastructureBuildingJob(villageId);
+                var job = context.GetInfrastructureBuildingJob(villageId);
+                if (job is null) return JobNotAvailable.Error("Infrastructure building");
+                return job;
             }
             else
             {
-                return context.GetResourceBuildingJob(villageId);
+                var job = context.GetResourceBuildingJob(villageId);
+                if (job is null) return JobNotAvailable.Error("Resource field");
+                return job;
             }
         }
 

@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.UI.MainLayoutViewModel
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.UI.MainLayoutViewModel
 {
     [Handler]
     public static partial class LogoutCommand
     {
-        public sealed record Command(AccountId AccountId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,

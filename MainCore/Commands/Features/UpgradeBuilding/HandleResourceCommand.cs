@@ -1,4 +1,5 @@
-﻿using MainCore.Commands.Features.UseHeroItem;
+﻿using MainCore.Commands.Base;
+using MainCore.Commands.Features.UseHeroItem;
 using MainCore.Common.Errors.AutoBuilder;
 using MainCore.Common.Errors.Storage;
 using MainCore.Common.Models;
@@ -8,7 +9,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     [Handler]
     public static partial class HandleResourceCommand
     {
-        public sealed record Command(AccountId accountId, VillageId villageId, NormalBuildPlan Plan) : ICustomCommand;
+        public sealed record Command(AccountId accountId, VillageId villageId, NormalBuildPlan Plan) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -39,7 +40,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (result.HasError<FreeCrop>(out var freeCropErrors))
             {
                 var error = freeCropErrors.First();
-                error.Log(logger);
+                logger.Warning("{Error}", error);
+
                 var cropland = context.GetLowestCropland(villageId);
 
                 var cropLandPlan = new NormalBuildPlan()
@@ -57,7 +59,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (result.HasError<StorageLimit>(out var storageLimitErrors))
             {
                 var error = storageLimitErrors.First();
-                error.Log(logger);
+                logger.Warning("{Error}", error);
                 return Stop.NotEnoughStorageCapacity;
             }
 
@@ -69,7 +71,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 {
                     foreach (var error in resourceErrors)
                     {
-                        error.Log(logger);
+                        logger.Warning("{Error}", error);
                     }
                 }
 
@@ -83,23 +85,23 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var url = browser.CurrentUrl;
 
             result = await toHeroInventoryCommand.HandleAsync(new(accountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await updateInventoryCommand.HandleAsync(new(accountId), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             var heroResourceResult = await useHeroResourceCommand.HandleAsync(new(accountId, missingResource), cancellationToken);
             await browser.Navigate(url, cancellationToken);
 
             if (heroResourceResult.IsFailed)
             {
-                if (heroResourceResult.HasError<Retry>()) return heroResourceResult.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (heroResourceResult.HasError<Retry>()) return heroResourceResult;
 
                 if (heroResourceResult.HasError<Resource>(out var resourceErrors))
                 {
-                    foreach (var item in resourceErrors)
+                    foreach (var error in resourceErrors)
                     {
-                        item.Log(logger);
+                        logger.Warning("{Error}", error);
                     }
                 }
 

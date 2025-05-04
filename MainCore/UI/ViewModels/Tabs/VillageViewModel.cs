@@ -60,7 +60,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             var villageId = new VillageId(Villages.SelectedItemId);
             var taskManager = Locator.Current.GetService<ITaskManager>();
-            await taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, villageId);
+            await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(AccountId, villageId);
 
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
@@ -73,7 +73,7 @@ namespace MainCore.UI.ViewModels.Tabs
             var taskManager = Locator.Current.GetService<ITaskManager>();
             foreach (var village in villages)
             {
-                await taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
+                await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(AccountId, village);
             }
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
@@ -86,7 +86,7 @@ namespace MainCore.UI.ViewModels.Tabs
             var taskManager = Locator.Current.GetService<ITaskManager>();
             foreach (var village in villages)
             {
-                await taskManager.AddOrUpdate<UpdateBuildingTask>(AccountId, village);
+                await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(AccountId, village);
             }
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }

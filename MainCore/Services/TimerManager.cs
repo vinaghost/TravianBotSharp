@@ -89,22 +89,22 @@ namespace MainCore.Services
             task.Stage = StageEnums.Executing;
             var cacheExecuteTime = task.ExecuteAt;
 
-            logger.Information("{TaskName} is started", task.GetName());
+            logger.Information("{TaskName} is started", task.Description);
             using var scoped = _serviceScopeFactory.CreateScope();
             ///===========================================================///
             var context = ResilienceContextPool.Shared.Get(cts.Token);
 
-            var contextData = new ContextData(logger, task.GetName(), accountId);
+            var contextData = new ContextData(logger, task.Description, accountId);
             context.Properties.Set(contextDataKey, contextData);
 
             var poliResult = await _pipeline.ExecuteOutcomeAsync(
-                async (ctx, state) => Outcome.FromResult(await task.Handle(state, ctx.CancellationToken)),
+                async static (ctx, state) => Outcome.FromResult(await GetHandler(state).HandleAsync(state, ctx.CancellationToken)),
                 context,
-                scoped);
+                task);
 
             ResilienceContextPool.Shared.Return(context);
             ///===========================================================///
-            logger.Information("{TaskName} is finished", task.GetName());
+            logger.Information("{TaskName} is finished", task.Description);
 
             task.Stage = StageEnums.Waiting;
             taskQueue.IsExecuting = false;
@@ -161,6 +161,12 @@ namespace MainCore.Services
             }
             var delayTaskCommand = scoped.ServiceProvider.GetService<DelayTaskCommand.Handler>();
             await delayTaskCommand.HandleAsync(new(accountId));
+        }
+
+        private static IHandler<T, Result> GetHandler<T>(T task)
+        {
+            var handler = Locator.Current.GetService<IHandler<T, Result>>();
+            return handler;
         }
 
         public void Shutdown()

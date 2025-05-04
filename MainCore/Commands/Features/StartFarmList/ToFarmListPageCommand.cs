@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Features.StartFarmList
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Features.StartFarmList
 {
     [Handler]
     public static partial class ToFarmListPageCommand
     {
-        public sealed record Command(AccountId AccountId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -21,19 +23,19 @@
             if (rallypointVillageId == VillageId.Empty) return Skip.NoRallypoint;
 
             var result = await switchVillageCommand.HandleAsync(new(command.AccountId, rallypointVillageId), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await toDorfCommand.HandleAsync(new(command.AccountId, 2), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await updateBuildingCommand.HandleAsync(new(command.AccountId, rallypointVillageId), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await toBuildingCommand.HandleAsync(new(command.AccountId, 39), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await switchTabCommand.HandleAsync(new(command.AccountId, 4), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             await delayClickCommand.HandleAsync(new(command.AccountId), cancellationToken);
             return Result.Ok();

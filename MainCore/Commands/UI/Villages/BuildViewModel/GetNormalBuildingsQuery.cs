@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.UI.Villages.BuildViewModel
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
     [Handler]
     public static partial class GetNormalBuildingsQuery
     {
-        public sealed record Query(VillageId VillageId, BuildingId BuildingId) : ICustomQuery;
+        public sealed record Query(VillageId VillageId, BuildingId BuildingId) : IQuery;
 
         private static async ValueTask<List<BuildingEnums>> HandleAsync(
             Query query,

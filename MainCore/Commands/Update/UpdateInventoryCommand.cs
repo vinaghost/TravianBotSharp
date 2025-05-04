@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Update
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Update
 {
     [Handler]
     public static partial class UpdateInventoryCommand
     {
-        public sealed record Command(AccountId AccountId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

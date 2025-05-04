@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.UI.Misc
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.UI.Misc
 {
     [Handler]
     public static partial class SaveVillageSettingCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, Dictionary<VillageSettingEnums, int> Settings) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, Dictionary<VillageSettingEnums, int> Settings) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,

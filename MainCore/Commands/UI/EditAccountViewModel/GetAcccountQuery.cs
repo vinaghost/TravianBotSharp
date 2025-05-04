@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.UI.EditAccountViewModel
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.UI.EditAccountViewModel
 {
     [Handler]
     public static partial class GetAcccountQuery
     {
-        public sealed record Query(AccountId AccountId) : ICustomQuery;
+        public sealed record Query(AccountId AccountId) : IQuery;
 
         private static async ValueTask<AccountDto> HandleAsync(
             Query query,

@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.UI.FarmingViewModel
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.UI.FarmingViewModel
 {
     [Handler]
     public static partial class ActivationCommand
     {
-        public sealed record Command(AccountId AccountId, FarmId FarmId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, FarmId FarmId) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,

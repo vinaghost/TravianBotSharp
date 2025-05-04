@@ -38,7 +38,7 @@ namespace MainCore.Tasks.Behaviors
 
                 if (request is not LoginTask)
                 {
-                    await _taskManager.AddOrUpdate<LoginTask>(accountId, first: true);
+                    await _taskManager.AddOrUpdate<LoginTask.Task>(accountId, first: true);
                     return (TResponse)Skip.AccountLogout;
                 }
             }

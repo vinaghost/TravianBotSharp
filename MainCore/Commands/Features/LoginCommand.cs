@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Features
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Features
 {
     [Handler]
     public static partial class LoginCommand
     {
-        public sealed record Command(AccountId AccountId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -27,11 +29,11 @@
 
             Result result;
             result = await chromeBrowser.Input(By.XPath(usernameNode.XPath), username);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
             result = await chromeBrowser.Input(By.XPath(passwordNode.XPath), password);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
             result = await chromeBrowser.Click(By.XPath(buttonNode.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
             result = await chromeBrowser.WaitPageChanged("dorf", cancellationToken);
 
             return Result.Ok();

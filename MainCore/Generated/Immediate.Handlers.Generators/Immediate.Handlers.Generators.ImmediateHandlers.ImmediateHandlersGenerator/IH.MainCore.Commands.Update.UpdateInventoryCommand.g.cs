@@ -9,21 +9,15 @@ partial class UpdateInventoryCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateInventoryCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Update.UpdateInventoryCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Update.UpdateInventoryCommand.Command, global::FluentResults.Result> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Update.UpdateInventoryCommand.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Update.UpdateInventoryCommand.Command, global::FluentResults.Result> loggingBehavior
+			global::MainCore.Commands.Update.UpdateInventoryCommand.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(UpdateInventoryCommand);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -31,7 +25,7 @@ partial class UpdateInventoryCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

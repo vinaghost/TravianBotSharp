@@ -21,7 +21,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
             foreach (var village in villages)
             {
-                await taskManager.AddOrUpdate<UpdateBuildingTask>(accountId, village);
+                await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(accountId, village);
             }
         }
     }

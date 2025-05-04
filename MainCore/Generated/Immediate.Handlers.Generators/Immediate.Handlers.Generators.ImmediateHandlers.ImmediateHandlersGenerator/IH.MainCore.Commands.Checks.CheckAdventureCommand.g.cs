@@ -9,21 +9,15 @@ partial class CheckAdventureCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Checks.CheckAdventureCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Commands.Checks.CheckAdventureCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Checks.CheckAdventureCommand.Command, global::System.ValueTuple> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Checks.CheckAdventureCommand.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Checks.CheckAdventureCommand.Command, global::System.ValueTuple> loggingBehavior
+			global::MainCore.Commands.Checks.CheckAdventureCommand.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(CheckAdventureCommand);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -31,7 +25,7 @@ partial class CheckAdventureCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

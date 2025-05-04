@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Navigate
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Navigate
 {
     [Handler]
     public static partial class ToDorfCommand
     {
-        public sealed record Command(AccountId AccountId, int Dorf) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, int Dorf) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
@@ -34,9 +36,9 @@
 
             Result result;
             result = await browser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
             result = await browser.WaitPageChanged($"dorf{dorf}", cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
             return Result.Ok();
         }
 

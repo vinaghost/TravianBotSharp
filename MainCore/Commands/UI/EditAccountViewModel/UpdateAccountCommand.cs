@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.UI.EditAccountViewModel
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.UI.EditAccountViewModel
 {
     [Handler]
     public static partial class UpdateAccountCommand
     {
-        public sealed record Command(AccountDto Dto) : ICustomCommand;
+        public sealed record Command(AccountDto Dto) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,

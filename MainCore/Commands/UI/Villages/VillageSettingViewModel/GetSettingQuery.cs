@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.UI.Villages.VillageSettingViewModel
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.UI.Villages.VillageSettingViewModel
 {
     [Handler]
     public static partial class GetSettingQuery
     {
-        public sealed record Query(VillageId VillageId) : ICustomQuery;
+        public sealed record Query(VillageId VillageId) : IQuery;
 
         private static async ValueTask<Dictionary<VillageSettingEnums, int>> HandleAsync(
             Query query,

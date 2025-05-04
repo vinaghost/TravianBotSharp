@@ -1,5 +1,4 @@
 ﻿using MainCore.Tasks.Base;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Services
 {
@@ -38,48 +37,6 @@ namespace MainCore.Services
             await SetStatus(accountId, StatusEnums.Paused);
         }
 
-        public async Task AddOrUpdate<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask
-        {
-            var task = Get<T>(accountId);
-            if (task is null)
-            {
-                await Add<T>(accountId, first, executeTime);
-            }
-            else
-            {
-                await Update(accountId, task, first);
-            }
-        }
-
-        public async Task AddOrUpdate<T>(AccountId accountId, VillageId villageId, bool first = false, DateTime executeTime = default) where T : VillageTask
-        {
-            var task = Get<T>(accountId, villageId);
-            if (task is null)
-            {
-                await Add<T>(accountId, villageId, first, executeTime);
-            }
-            else
-            {
-                await Update(accountId, task, first);
-            }
-        }
-
-        public async Task Add<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask
-        {
-            var task = Locator.Current.GetService<T>();
-            task.Setup(accountId);
-            task.ExecuteAt = executeTime;
-            await Add(accountId, task, first, executeTime);
-        }
-
-        public async Task Add<T>(AccountId accountId, VillageId villageId, bool first = false, DateTime executeTime = default) where T : VillageTask
-        {
-            var task = Locator.Current.GetService<T>();
-            await task.Setup(accountId, villageId);
-            task.ExecuteAt = executeTime;
-            await Add(accountId, task, first, executeTime);
-        }
-
         public AccountTask Get<T>(AccountId accountId) where T : AccountTask
         {
             var tasks = GetTaskList(accountId);
@@ -110,7 +67,7 @@ namespace MainCore.Services
             return filteredTasks.Any(x => x.AccountId == accountId && x.VillageId == villageId);
         }
 
-        private async Task Add(AccountId accountId, TaskBase task, bool first, DateTime executeTime)
+        public async Task Add(AccountId accountId, TaskBase task, bool first, DateTime executeTime)
         {
             var tasks = GetTaskList(accountId);
 
@@ -149,7 +106,7 @@ namespace MainCore.Services
             await ReOrder(accountId, tasks);
         }
 
-        private async Task Update(AccountId accountId, TaskBase task, bool first)
+        public async Task Update(AccountId accountId, TaskBase task, bool first)
         {
             var tasks = GetTaskList(accountId);
 

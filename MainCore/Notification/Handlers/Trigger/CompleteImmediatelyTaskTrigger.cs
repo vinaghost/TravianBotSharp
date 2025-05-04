@@ -13,7 +13,7 @@ namespace MainCore.Notification.Handlers.Trigger
         {
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
-            if (taskManager.IsExist<CompleteImmediatelyTask>(accountId, villageId)) return;
+            if (taskManager.IsExist<CompleteImmediatelyTask.Task>(accountId, villageId)) return;
             using var context = contextFactory.CreateDbContext();
 
             context.Clean(villageId);
@@ -33,7 +33,7 @@ namespace MainCore.Notification.Handlers.Trigger
 
             if (requiredTime > queueTime) return;
 
-            await taskManager.Add<CompleteImmediatelyTask>(accountId, villageId);
+            await taskManager.Add<CompleteImmediatelyTask.Task>(accountId, villageId);
         }
 
         private static DateTime GetQueueTime(this AppDbContext context, VillageId villageId)

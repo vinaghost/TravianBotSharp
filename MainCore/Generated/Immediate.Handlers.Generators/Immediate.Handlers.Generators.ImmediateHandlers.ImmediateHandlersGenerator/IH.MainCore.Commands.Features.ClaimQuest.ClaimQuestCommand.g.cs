@@ -6,39 +6,33 @@ namespace MainCore.Commands.Features.ClaimQuest;
 
 partial class ClaimQuestCommand
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command, global::System.ValueTuple> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command, global::System.ValueTuple> loggingBehavior
+			global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(ClaimQuestCommand);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
-		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
+		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
 			global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Services.IChromeManager _chromeManager;
 		private readonly global::MainCore.Notification.Message.StorageUpdated.Handler _storageUpdate;
@@ -58,12 +52,12 @@ partial class ClaimQuestCommand
 			_delayClickCommand = delayClickCommand;
 		}
 
-		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
+		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
 			global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
-			await global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand
+			return await global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand
 				.HandleAsync(
 					request
 					, _chromeManager
@@ -73,8 +67,6 @@ partial class ClaimQuestCommand
 					, cancellationToken
 				)
 				.ConfigureAwait(false);
-
-			return default;
 		}
 	}
 
@@ -85,7 +77,7 @@ partial class ClaimQuestCommand
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Handler), typeof(global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command, global::System.ValueTuple>), typeof(global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command, global::FluentResults.Result>), typeof(global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.HandleBehavior), typeof(global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.HandleBehavior), lifetime));
 		return services;
 	}

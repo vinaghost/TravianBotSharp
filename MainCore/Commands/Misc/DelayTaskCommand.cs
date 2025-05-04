@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Misc
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Misc
 {
     [Handler]
     public static partial class DelayTaskCommand
     {
-        public sealed record Command(AccountId AccountId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,

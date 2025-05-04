@@ -1,4 +1,5 @@
-﻿using MainCore.Common.Models;
+﻿using MainCore.Commands.Base;
+using MainCore.Common.Models;
 using MainCore.UI.Models.Input;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
@@ -6,7 +7,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class ResourceBuildCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, ResourceBuildPlan plan) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, ResourceBuildPlan plan) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,

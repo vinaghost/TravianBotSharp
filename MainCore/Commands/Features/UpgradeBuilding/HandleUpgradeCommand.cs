@@ -1,11 +1,12 @@
-﻿using MainCore.Common.Models;
+﻿using MainCore.Commands.Base;
+using MainCore.Common.Models;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
     public static partial class HandleUpgradeCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -29,18 +30,18 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 if (isSpecialUpgrade && isSpecialUpgradeable)
                 {
                     result = await browser.SpecialUpgrade(cancellationToken);
-                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                    if (result.IsFailed) return result;
                 }
                 else
                 {
                     result = await browser.Upgrade(cancellationToken);
-                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                    if (result.IsFailed) return result;
                 }
             }
             else
             {
                 result = await browser.Construct(plan.Type, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (result.IsFailed) return result;
             }
 
             return Result.Ok();
@@ -84,7 +85,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (button is null) return Retry.ButtonNotFound("Watch ads upgrade");
 
             var result = await browser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await browser.HandleAds(cancellationToken);
             if (result.IsFailed) return result;
@@ -124,12 +125,12 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 var checkbox = videoFeature.Descendants("div").FirstOrDefault(x => x.HasClass("checkbox"));
                 if (checkbox is null) return Retry.ButtonNotFound("Don't show watch ads confirm again");
                 result = await browser.Click(By.XPath(checkbox.XPath));
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (result.IsFailed) return result;
 
                 var watchButton = videoFeature.Descendants("button").FirstOrDefault(x => x.HasClass("green"));
                 if (watchButton is null) return Retry.ButtonNotFound("Watch ads");
                 result = await browser.Click(By.XPath(watchButton.XPath));
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (result.IsFailed) return result;
             }
 
             await Task.Delay(Random.Shared.Next(20_000, 25_000), CancellationToken.None);
@@ -139,7 +140,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (node is null) return Retry.ButtonNotFound($"play ads");
 
             result = await browser.Click(By.XPath(node.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             driver.SwitchTo().DefaultContent();
 
@@ -157,16 +158,16 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 driver.SwitchTo().Window(current);
 
                 result = await browser.Click(By.XPath(node.XPath));
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (result.IsFailed) return result;
 
                 driver.SwitchTo().DefaultContent();
             }
             while (true);
             result = await browser.WaitPageChanged("dorf", cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await browser.WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
             await Task.Delay(Random.Shared.Next(5_000, 10_000), CancellationToken.None);
 
             html = browser.Html;
@@ -174,12 +175,12 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (dontShowThisAgain is not null)
             {
                 result = await browser.Click(By.XPath(dontShowThisAgain.XPath));
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (result.IsFailed) return result;
 
                 var okButton = html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
                 if (okButton is null) return Retry.ButtonNotFound("ok");
                 result = await browser.Click(By.XPath(okButton.XPath));
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (result.IsFailed) return result;
             }
 
             return Result.Ok();
@@ -195,10 +196,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (button is null) return Retry.ButtonNotFound("upgrade");
 
             var result = await browser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await browser.WaitPageChanged("dorf", cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }
@@ -215,10 +216,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (button is null) return Retry.ButtonNotFound("construct");
 
             var result = await browser.Click(By.XPath(button.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await browser.WaitPageChanged("dorf", cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

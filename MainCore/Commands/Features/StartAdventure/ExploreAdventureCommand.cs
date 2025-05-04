@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Features.StartAdventure
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Features.StartAdventure
 {
     [Handler]
     public static partial class ExploreAdventureCommand
     {
-        public sealed record Command(AccountId AccountId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -30,10 +32,10 @@
             }
 
             var result = await chromeBrowser.Click(By.XPath(adventureButton.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await chromeBrowser.Wait(ContinueShow, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

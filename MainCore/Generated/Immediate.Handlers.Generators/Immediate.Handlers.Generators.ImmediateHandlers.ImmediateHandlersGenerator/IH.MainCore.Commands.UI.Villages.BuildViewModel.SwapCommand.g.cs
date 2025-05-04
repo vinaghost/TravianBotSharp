@@ -9,21 +9,15 @@ partial class SwapCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.Villages.BuildViewModel.SwapCommand.Command, int>
 	{
 		private readonly global::MainCore.Commands.UI.Villages.BuildViewModel.SwapCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.Villages.BuildViewModel.SwapCommand.Command, int> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.UI.Villages.BuildViewModel.SwapCommand.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.Villages.BuildViewModel.SwapCommand.Command, int> loggingBehavior
+			global::MainCore.Commands.UI.Villages.BuildViewModel.SwapCommand.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(SwapCommand);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<int> HandleAsync(
@@ -31,7 +25,7 @@ partial class SwapCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

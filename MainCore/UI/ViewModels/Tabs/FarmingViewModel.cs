@@ -77,7 +77,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private async Task UpdateFarmList()
         {
             var taskManager = Locator.Current.GetService<ITaskManager>();
-            await taskManager.AddOrUpdate<UpdateFarmListTask>(AccountId);
+            await taskManager.AddOrUpdate<UpdateFarmListTask.Task>(AccountId);
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added update farm list task"));
         }
 
@@ -97,7 +97,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 }
             }
             var taskManager = Locator.Current.GetService<ITaskManager>();
-            await taskManager.AddOrUpdate<StartFarmListTask>(AccountId);
+            await taskManager.AddOrUpdate<StartFarmListTask.Task>(AccountId);
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added start farm list task"));
         }
 
@@ -105,7 +105,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private async Task Stop()
         {
             var taskManager = Locator.Current.GetService<ITaskManager>();
-            var task = taskManager.Get<StartFarmListTask>(AccountId);
+            var task = taskManager.Get<StartFarmListTask.Task>(AccountId);
             if (task is not null) await taskManager.Remove(AccountId, task);
 
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Removed start farm list task"));

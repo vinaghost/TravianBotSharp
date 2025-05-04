@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Queries
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Queries
 {
     [Handler]
     public static partial class GetVillageNameQuery
     {
-        public sealed record Query(VillageId VillageId) : ICustomQuery;
+        public sealed record Query(VillageId VillageId) : IQuery;
 
         private static async ValueTask<string> HandleAsync(
             Query query,

@@ -184,9 +184,9 @@ namespace MainCore.Services
         public async Task<Result> Click(By by)
         {
             var elements = _driver.FindElements(by);
-            if (elements.Count == 0) return Retry.ElementNotFound();
+            if (elements.Count == 0) return Retry.ElementNotFound(by);
             var element = elements[0];
-            if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable();
+            if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable(by);
             await Task.Run(new Actions(_driver).Click(element).Perform);
             return Result.Ok();
         }
@@ -194,9 +194,9 @@ namespace MainCore.Services
         public async Task<Result> Input(By by, string content)
         {
             var elements = _driver.FindElements(by);
-            if (elements.Count == 0) return Retry.ElementNotFound();
+            if (elements.Count == 0) return Retry.ElementNotFound(by);
             var element = elements[0];
-            if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable();
+            if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable(by);
 
             void input()
             {

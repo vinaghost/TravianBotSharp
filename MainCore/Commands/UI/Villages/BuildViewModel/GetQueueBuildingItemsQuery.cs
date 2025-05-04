@@ -1,4 +1,5 @@
 ﻿using Humanizer;
+using MainCore.Commands.Base;
 using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
@@ -6,7 +7,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class GetQueueBuildingItemsQuery
     {
-        public sealed record Query(VillageId VillageId) : ICustomQuery;
+        public sealed record Query(VillageId VillageId) : IQuery;
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query query,

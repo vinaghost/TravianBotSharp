@@ -6,7 +6,6 @@
         {
         }
 
-        public static Skip Cancel => new("Cancel current task");
         public static Skip VillageNotFound => new("Village not found");
         public static Skip AutoBuilderJobQueueEmpty => new("Job queue is empty");
         public static Skip AutoBuilderNotEnoughResource => new("Reschedule becasue doesn't have enough resource");

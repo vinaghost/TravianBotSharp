@@ -1,4 +1,5 @@
-﻿using MainCore.Common.Models;
+﻿using MainCore.Commands.Base;
+using MainCore.Common.Models;
 using System.Text.Json;
 
 namespace MainCore.Commands.Misc
@@ -6,7 +7,7 @@ namespace MainCore.Commands.Misc
     [Handler]
     public static partial class AddJobCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, Job Job, bool Top = false) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, Job Job, bool Top = false) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,

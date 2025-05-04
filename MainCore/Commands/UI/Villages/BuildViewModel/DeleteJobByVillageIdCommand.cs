@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.UI.Villages.BuildViewModel
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
     [Handler]
     public static partial class DeleteJobByVillageIdCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,

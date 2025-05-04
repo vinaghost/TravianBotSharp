@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Navigate
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Navigate
 {
     [Handler]
     public static partial class SwitchTabCommand
     {
-        public sealed record Command(AccountId AccountId, int TabIndex) : ICustomCommand;
+        public sealed record Command(AccountId AccountId, int TabIndex) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
@@ -34,9 +36,9 @@
 
             Result result;
             result = await browser.Click(By.XPath(tab.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
             result = await browser.Wait(tabActived, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

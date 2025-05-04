@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Features.UseHeroItem
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Features.UseHeroItem
 {
     [Handler]
     public static partial class ToHeroInventoryCommand
     {
-        public sealed record Command(AccountId AccountId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -24,10 +26,10 @@
             }
 
             var result = await chromeBrowser.Click(By.XPath(avatar.XPath));
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             result = await chromeBrowser.WaitPageChanged("hero", TabActived, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

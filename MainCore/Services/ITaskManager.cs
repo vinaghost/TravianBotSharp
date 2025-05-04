@@ -4,13 +4,7 @@ namespace MainCore.Services
 {
     public interface ITaskManager
     {
-        Task Add<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask;
-
-        Task Add<T>(AccountId accountId, VillageId villageId, bool first = false, DateTime executeTime = default) where T : VillageTask;
-
-        Task AddOrUpdate<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask;
-
-        Task AddOrUpdate<T>(AccountId accountId, VillageId villageId, bool first = false, DateTime executeTime = default) where T : VillageTask;
+        Task Add(AccountId accountId, TaskBase task, bool first, DateTime executeTime);
 
         Task Clear(AccountId accountId);
 
@@ -37,6 +31,9 @@ namespace MainCore.Services
         Task ReOrder(AccountId accountId);
 
         Task SetStatus(AccountId accountId, StatusEnums status);
+
         Task StopCurrentTast(AccountId accountId);
+
+        Task Update(AccountId accountId, TaskBase task, bool first);
     }
 }

@@ -9,21 +9,15 @@ partial class GetVillageNameQuery
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Queries.GetVillageNameQuery.Query, string>
 	{
 		private readonly global::MainCore.Commands.Queries.GetVillageNameQuery.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Queries.GetVillageNameQuery.Query, string> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Queries.GetVillageNameQuery.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Queries.GetVillageNameQuery.Query, string> loggingBehavior
+			global::MainCore.Commands.Queries.GetVillageNameQuery.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(GetVillageNameQuery);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<string> HandleAsync(
@@ -31,7 +25,7 @@ partial class GetVillageNameQuery
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

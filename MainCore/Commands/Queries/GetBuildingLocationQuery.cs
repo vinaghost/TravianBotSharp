@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Queries
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Queries
 {
     [Handler]
     public static partial class GetBuildingLocationQuery
     {
-        public sealed record Query(VillageId VillageId, BuildingEnums Building) : ICustomQuery;
+        public sealed record Query(VillageId VillageId, BuildingEnums Building) : IQuery;
 
         private static async ValueTask<int> HandleAsync(
             Query query,

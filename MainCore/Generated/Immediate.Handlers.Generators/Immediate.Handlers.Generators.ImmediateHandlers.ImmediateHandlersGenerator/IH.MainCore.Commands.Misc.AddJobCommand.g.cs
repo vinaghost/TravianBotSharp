@@ -9,21 +9,15 @@ partial class AddJobCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Misc.AddJobCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Commands.Misc.AddJobCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Misc.AddJobCommand.Command, global::System.ValueTuple> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Misc.AddJobCommand.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Misc.AddJobCommand.Command, global::System.ValueTuple> loggingBehavior
+			global::MainCore.Commands.Misc.AddJobCommand.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(AddJobCommand);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -31,7 +25,7 @@ partial class AddJobCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

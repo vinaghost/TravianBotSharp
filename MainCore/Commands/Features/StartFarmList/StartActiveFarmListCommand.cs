@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.Features.StartFarmList
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.Features.StartFarmList
 {
     [Handler]
     public static partial class StartActiveFarmListCommand
     {
-        public sealed record Command(AccountId AccountId) : ICustomCommand;
+        public sealed record Command(AccountId AccountId) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -25,7 +27,7 @@
                 if (startButton is null) return Retry.ButtonNotFound($"Start farm {farmList}");
 
                 var result = await chromeBrowser.Click(By.XPath(startButton.XPath));
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (result.IsFailed) return result;
 
                 await delayClickCommand.HandleAsync(new(command.AccountId), cancellationToken);
             }

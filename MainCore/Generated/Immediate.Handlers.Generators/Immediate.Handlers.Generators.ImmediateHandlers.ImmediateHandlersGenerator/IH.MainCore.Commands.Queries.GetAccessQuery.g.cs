@@ -9,21 +9,15 @@ partial class GetAccessQuery
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Queries.GetAccessQuery.Query, global::FluentResults.Result<global::MainCore.DTO.AccessDto>>
 	{
 		private readonly global::MainCore.Commands.Queries.GetAccessQuery.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Queries.GetAccessQuery.Query, global::FluentResults.Result<global::MainCore.DTO.AccessDto>> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Queries.GetAccessQuery.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.Queries.GetAccessQuery.Query, global::FluentResults.Result<global::MainCore.DTO.AccessDto>> loggingBehavior
+			global::MainCore.Commands.Queries.GetAccessQuery.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(GetAccessQuery);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result<global::MainCore.DTO.AccessDto>> HandleAsync(
@@ -31,7 +25,7 @@ partial class GetAccessQuery
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

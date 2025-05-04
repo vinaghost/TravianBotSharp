@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using MainCore.Commands.Behaviors;
 using MainCore.Tasks.Behaviors;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Validators;
@@ -10,7 +11,7 @@ using Serilog.Templates;
 using Splat.Microsoft.Extensions.DependencyInjection;
 
 [assembly: Behaviors(
-    typeof(LoggingBehavior<,>),
+    typeof(CommandLoggingBehavior<,>),
     typeof(AccountTaskBehavior<,>),
     typeof(VillageTaskBehavior<,>)
 )]

@@ -12,7 +12,7 @@ namespace MainCore.Notification.Handlers.Trigger
         {
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
-            await taskManager.AddOrUpdate<UpgradeBuildingTask>(accountId, villageId);
+            await taskManager.AddOrUpdate<UpgradeBuildingTask.Task>(accountId, villageId);
         }
     }
 }

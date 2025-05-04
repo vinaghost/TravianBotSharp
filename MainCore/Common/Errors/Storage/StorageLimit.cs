@@ -1,9 +1,13 @@
 ﻿namespace MainCore.Common.Errors.Storage
 {
-    public class StorageLimit(string type, long storage, long required) : Error
+    public class StorageLimit : Error
     {
-        public static StorageLimit Error(string type, long storage, long required) => new(type, storage, required);
+        protected StorageLimit(string type, long storage, long required) : base($"{type} doesn't have enough capacity")
+        {
+            WithMetadata("storage", storage);
+            WithMetadata("required", required);
+        }
 
-        public void Log(ILogger logger) => logger.Warning("{Type} doesn't have enough capacity [{Storage} < {Required}]", type, storage, required);
+        public static StorageLimit Error(string type, long storage, long required) => new(type, storage, required);
     }
 }

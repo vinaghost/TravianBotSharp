@@ -11,7 +11,7 @@ namespace MainCore.Notification.Handlers.Trigger
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
-            await taskManager.AddOrUpdate<LoginTask>(accountId, first: true);
+            await taskManager.AddOrUpdate<LoginTask.Task>(accountId, first: true);
         }
     }
 }

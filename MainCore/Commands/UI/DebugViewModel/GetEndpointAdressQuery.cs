@@ -1,9 +1,11 @@
-﻿namespace MainCore.Commands.UI.DebugViewModel
+﻿using MainCore.Commands.Base;
+
+namespace MainCore.Commands.UI.DebugViewModel
 {
     [Handler]
     public static partial class GetEndpointAdressQuery
     {
-        public sealed record Query(AccountId AccountId) : ICustomQuery;
+        public sealed record Query(AccountId AccountId) : IQuery;
         private const string NotOpen = "Chrome didn't open yet";
 
         private static async ValueTask<string> HandleAsync(

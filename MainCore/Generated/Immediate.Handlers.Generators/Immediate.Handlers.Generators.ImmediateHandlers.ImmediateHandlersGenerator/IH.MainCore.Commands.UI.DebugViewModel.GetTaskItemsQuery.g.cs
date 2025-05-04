@@ -9,21 +9,15 @@ partial class GetTaskItemsQuery
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.DebugViewModel.GetTaskItemsQuery.Query, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.TaskItem>>
 	{
 		private readonly global::MainCore.Commands.UI.DebugViewModel.GetTaskItemsQuery.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.DebugViewModel.GetTaskItemsQuery.Query, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.TaskItem>> _loggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.UI.DebugViewModel.GetTaskItemsQuery.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.LoggingBehavior<global::MainCore.Commands.UI.DebugViewModel.GetTaskItemsQuery.Query, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.TaskItem>> loggingBehavior
+			global::MainCore.Commands.UI.DebugViewModel.GetTaskItemsQuery.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(GetTaskItemsQuery);
 
 			_handleBehavior = handleBehavior;
 
-			_loggingBehavior = loggingBehavior;
-			_loggingBehavior.HandlerType = handlerType;
-
-			_loggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.TaskItem>> HandleAsync(
@@ -31,7 +25,7 @@ partial class GetTaskItemsQuery
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _loggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
