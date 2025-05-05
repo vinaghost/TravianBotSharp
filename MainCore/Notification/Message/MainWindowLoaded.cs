@@ -1,4 +1,5 @@
-﻿using MainCore.Notification.Handlers.MainWindowLoad;
+﻿using MainCore.Notification.Base;
+using MainCore.Notification.Handlers.MainWindowLoad;
 
 namespace MainCore.Notification.Message
 {

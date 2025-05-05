@@ -1,7 +1,6 @@
 ﻿using MainCore.UI.Enums;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.Tabs.Villages;
-using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.Stores
 {

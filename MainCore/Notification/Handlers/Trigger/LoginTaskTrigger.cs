@@ -1,4 +1,4 @@
-﻿using MainCore.Tasks;
+﻿using MainCore.Notification.Base;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Trigger
     public static partial class LoginTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            ByAccountIdBase notification,
+            IAccountNotification notification,
             ITaskManager taskManager,
             CancellationToken cancellationToken)
         {

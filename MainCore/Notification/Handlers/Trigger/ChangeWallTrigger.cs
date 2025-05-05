@@ -1,10 +1,12 @@
-﻿namespace MainCore.Notification.Handlers.Trigger
+﻿using MainCore.Notification.Base;
+
+namespace MainCore.Notification.Handlers.Trigger
 {
     [Handler]
     public static partial class ChangeWallTrigger
     {
         private static async ValueTask HandleAsync(
-            ByAccountVillageIdBase notification,
+            IVillageNotification notification,
             IDbContextFactory<AppDbContext> contextFactory,
             CancellationToken cancellationToken)
         {

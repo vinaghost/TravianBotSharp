@@ -36,12 +36,12 @@ partial class ToBuildPageCommand
 	{
 		private readonly global::MainCore.Commands.Navigate.ToBuildingCommand.Handler _toBuildingCommand;
 		private readonly global::MainCore.Commands.Navigate.SwitchTabCommand.Handler _switchTabCommand;
-		private readonly global::MainCore.Commands.Queries.GetBuildingQuery.Handler _getBuilding;
+		private readonly global::MainCore.Queries.GetBuildingQuery.Handler _getBuilding;
 
 		public HandleBehavior(
 			global::MainCore.Commands.Navigate.ToBuildingCommand.Handler toBuildingCommand,
 			global::MainCore.Commands.Navigate.SwitchTabCommand.Handler switchTabCommand,
-			global::MainCore.Commands.Queries.GetBuildingQuery.Handler getBuilding
+			global::MainCore.Queries.GetBuildingQuery.Handler getBuilding
 		)
 		{
 			_toBuildingCommand = toBuildingCommand;

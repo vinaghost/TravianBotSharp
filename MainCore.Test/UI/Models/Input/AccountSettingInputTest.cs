@@ -1,4 +1,4 @@
-using MainCore.Common.Enums;
+using MainCore.Enums;
 using MainCore.UI.Models.Input;
 
 namespace MainCore.Test.UI.Models.Input

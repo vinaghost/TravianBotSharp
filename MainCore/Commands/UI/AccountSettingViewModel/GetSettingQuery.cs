@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Queries.Base;
 
 namespace MainCore.Commands.UI.AccountSettingViewModel
 {

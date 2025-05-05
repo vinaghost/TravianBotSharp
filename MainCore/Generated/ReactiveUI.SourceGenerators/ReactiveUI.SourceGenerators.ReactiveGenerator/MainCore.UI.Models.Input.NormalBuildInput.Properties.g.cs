@@ -15,7 +15,7 @@ namespace MainCore.UI.Models.Input
         
         /// <inheritdoc cref="_selectedBuilding"/>
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public global::MainCore.UI.Models.Output.ComboBoxItem<global::MainCore.Common.Enums.BuildingEnums> SelectedBuilding
+        public global::MainCore.UI.Models.Output.ComboBoxItem<global::MainCore.Enums.BuildingEnums> SelectedBuilding
         { 
             get => _selectedBuilding;
             [global::System.Diagnostics.CodeAnalysis.MemberNotNull("_selectedBuilding")]

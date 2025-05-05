@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.MainWindowLoad;
 
 partial class ChromeDriverInstall
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.INotification, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Base.INotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.MainWindowLoad.ChromeDriverInstall.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class ChromeDriverInstall
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.INotification request,
+			global::MainCore.Notification.Base.INotification request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,7 +32,7 @@ partial class ChromeDriverInstall
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.INotification, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.Base.INotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.IChromeDriverInstaller _chromeDriverInstaller;
 		private readonly global::MainCore.UI.ViewModels.UserControls.IWaitingOverlayViewModel _waitingOverlayViewModel;
@@ -47,7 +47,7 @@ partial class ChromeDriverInstall
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.INotification request,
+			global::MainCore.Notification.Base.INotification request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -71,7 +71,7 @@ partial class ChromeDriverInstall
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.MainWindowLoad.ChromeDriverInstall.Handler), typeof(global::MainCore.Notification.Handlers.MainWindowLoad.ChromeDriverInstall.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.INotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.MainWindowLoad.ChromeDriverInstall.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Base.INotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.MainWindowLoad.ChromeDriverInstall.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.MainWindowLoad.ChromeDriverInstall.HandleBehavior), typeof(global::MainCore.Notification.Handlers.MainWindowLoad.ChromeDriverInstall.HandleBehavior), lifetime));
 		return services;
 	}

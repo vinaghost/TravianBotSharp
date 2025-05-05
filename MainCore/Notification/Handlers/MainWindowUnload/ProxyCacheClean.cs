@@ -1,4 +1,6 @@
-﻿namespace MainCore.Notification.Handlers.MainWindowUnload
+﻿using MainCore.Notification.Base;
+
+namespace MainCore.Notification.Handlers.MainWindowUnload
 {
     [Handler]
     public static partial class ProxyCacheClean

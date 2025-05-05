@@ -1,4 +1,5 @@
-﻿using MainCore.Notification.Handlers.MainWindowUnload;
+﻿using MainCore.Notification.Base;
+using MainCore.Notification.Handlers.MainWindowUnload;
 
 namespace MainCore.Notification.Message
 {

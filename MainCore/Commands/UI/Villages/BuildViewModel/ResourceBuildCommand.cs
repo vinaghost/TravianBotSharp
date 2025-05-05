@@ -1,5 +1,4 @@
 ﻿using MainCore.Commands.Base;
-using MainCore.Common.Models;
 using MainCore.UI.Models.Input;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel

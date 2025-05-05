@@ -23,10 +23,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public ReactiveUI.ReactiveCommand<global::System.Reactive.Unit, global::System.Reactive.Unit> ExportCommand { get => _exportCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask(Export); }
-        private ReactiveUI.ReactiveCommand<global::MainCore.Entities.VillageId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.VillageSettingEnums, int>>? _loadSettingCommand;
+        private ReactiveUI.ReactiveCommand<global::MainCore.Entities.VillageId, global::System.Collections.Generic.Dictionary<global::MainCore.Enums.VillageSettingEnums, int>>? _loadSettingCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.VillageId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.VillageSettingEnums, int>> LoadSettingCommand { get => _loadSettingCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.VillageId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.VillageSettingEnums, int>>(LoadSetting); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.VillageId, global::System.Collections.Generic.Dictionary<global::MainCore.Enums.VillageSettingEnums, int>> LoadSettingCommand { get => _loadSettingCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.VillageId, global::System.Collections.Generic.Dictionary<global::MainCore.Enums.VillageSettingEnums, int>>(LoadSetting); }
     }
 }
 #nullable restore

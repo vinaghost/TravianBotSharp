@@ -23,10 +23,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public ReactiveUI.ReactiveCommand<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> LoadJobCommand { get => _loadJobCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.VillageId, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>(LoadJob); }
-        private ReactiveUI.ReactiveCommand<global::MainCore.UI.Models.Output.ListBoxItem, global::System.Collections.Generic.List<global::MainCore.Common.Enums.BuildingEnums>>? _loadBuildNormalCommand;
+        private ReactiveUI.ReactiveCommand<global::MainCore.UI.Models.Output.ListBoxItem, global::System.Collections.Generic.List<global::MainCore.Enums.BuildingEnums>>? _loadBuildNormalCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.UI.Models.Output.ListBoxItem, global::System.Collections.Generic.List<global::MainCore.Common.Enums.BuildingEnums>> LoadBuildNormalCommand { get => _loadBuildNormalCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.UI.Models.Output.ListBoxItem, global::System.Collections.Generic.List<global::MainCore.Common.Enums.BuildingEnums>>(LoadBuildNormal); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.UI.Models.Output.ListBoxItem, global::System.Collections.Generic.List<global::MainCore.Enums.BuildingEnums>> LoadBuildNormalCommand { get => _loadBuildNormalCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.UI.Models.Output.ListBoxItem, global::System.Collections.Generic.List<global::MainCore.Enums.BuildingEnums>>(LoadBuildNormal); }
         private ReactiveUI.ReactiveCommand<global::System.Reactive.Unit, global::System.Reactive.Unit>? _buildNormalCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]

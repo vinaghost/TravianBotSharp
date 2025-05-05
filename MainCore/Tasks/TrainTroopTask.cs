@@ -1,6 +1,6 @@
 ﻿using MainCore.Commands.Features.TrainTroop;
 using MainCore.Commands.UI.Misc;
-using MainCore.Common.Errors.TrainTroop;
+using MainCore.Errors.TrainTroop;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks

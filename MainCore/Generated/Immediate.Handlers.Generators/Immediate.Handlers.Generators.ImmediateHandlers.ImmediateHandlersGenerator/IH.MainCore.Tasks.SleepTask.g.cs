@@ -43,7 +43,7 @@ partial class SleepTask
 		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
 		private readonly global::MainCore.Commands.Features.SleepCommand.Handler _sleepCommand;
-		private readonly global::MainCore.Commands.Queries.GetAccessQuery.Handler _getAccessQuery;
+		private readonly global::MainCore.Queries.GetAccessQuery.Handler _getAccessQuery;
 		private readonly global::MainCore.Commands.Misc.OpenBrowserCommand.Handler _openBrowserCommand;
 		private readonly global::MainCore.Commands.Navigate.ToDorfCommand.Handler _toDorfCommand;
 
@@ -51,7 +51,7 @@ partial class SleepTask
 			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
 			global::MainCore.Services.ITaskManager taskManager,
 			global::MainCore.Commands.Features.SleepCommand.Handler sleepCommand,
-			global::MainCore.Commands.Queries.GetAccessQuery.Handler getAccessQuery,
+			global::MainCore.Queries.GetAccessQuery.Handler getAccessQuery,
 			global::MainCore.Commands.Misc.OpenBrowserCommand.Handler openBrowserCommand,
 			global::MainCore.Commands.Navigate.ToDorfCommand.Handler toDorfCommand
 		)

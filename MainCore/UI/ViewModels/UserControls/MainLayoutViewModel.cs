@@ -3,8 +3,6 @@ using MainCore.UI.Enums;
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 using Serilog;
 using System.Reflection;
 

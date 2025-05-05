@@ -1,5 +1,5 @@
 ﻿using MainCore.Commands.Features.UpgradeBuilding;
-using MainCore.Common.Errors.AutoBuilder;
+using MainCore.Errors.AutoBuilder;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks

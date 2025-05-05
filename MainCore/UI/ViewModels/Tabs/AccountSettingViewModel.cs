@@ -1,11 +1,8 @@
-﻿using FluentValidation;
-using MainCore.Commands.UI.AccountSettingViewModel;
+﻿using MainCore.Commands.UI.AccountSettingViewModel;
 using MainCore.Commands.UI.Misc;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs

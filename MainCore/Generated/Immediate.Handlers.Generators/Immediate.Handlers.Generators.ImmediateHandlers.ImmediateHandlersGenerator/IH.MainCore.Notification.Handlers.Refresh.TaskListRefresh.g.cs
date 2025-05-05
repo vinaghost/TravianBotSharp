@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Refresh;
 
 partial class TaskListRefresh
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Base.IAccountNotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.Refresh.TaskListRefresh.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class TaskListRefresh
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.ByAccountIdBase request,
+			global::MainCore.Notification.Base.IAccountNotification request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,7 +32,7 @@ partial class TaskListRefresh
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.Base.IAccountNotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.UI.ViewModels.Tabs.DebugViewModel _viewModel;
 
@@ -44,7 +44,7 @@ partial class TaskListRefresh
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.ByAccountIdBase request,
+			global::MainCore.Notification.Base.IAccountNotification request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -67,7 +67,7 @@ partial class TaskListRefresh
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Refresh.TaskListRefresh.Handler), typeof(global::MainCore.Notification.Handlers.Refresh.TaskListRefresh.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Refresh.TaskListRefresh.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Base.IAccountNotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Refresh.TaskListRefresh.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Refresh.TaskListRefresh.HandleBehavior), typeof(global::MainCore.Notification.Handlers.Refresh.TaskListRefresh.HandleBehavior), lifetime));
 		return services;
 	}

@@ -1,11 +1,12 @@
-﻿using MainCore.Notification.Handlers.Refresh;
+﻿using MainCore.Notification.Base;
+using MainCore.Notification.Handlers.Refresh;
 
 namespace MainCore.Notification.Message
 {
     [Handler]
     public static partial class StatusUpdated
     {
-        public sealed record Notification(AccountId AccountId) : ByAccountIdBase(AccountId), INotification;
+        public sealed record Notification(AccountId AccountId) : IAccountNotification;
 
         private static async ValueTask HandleAsync(
             Notification notification,

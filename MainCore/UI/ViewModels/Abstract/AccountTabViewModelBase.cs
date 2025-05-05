@@ -1,6 +1,4 @@
 ﻿using MainCore.UI.Stores;
-using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.ViewModels.Abstract
 {

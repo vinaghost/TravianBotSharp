@@ -14,7 +14,7 @@
     <CompilerGeneratedFilesOutputPath>$(GeneratedFolder)</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Misc\ExtensionFiles\**" />
+    <EmbeddedResource Include="Infrasturecture\ExtensionFiles\**" />
     <!-- Exclude the output of source generators from the compilation -->
     <Compile Remove="$(GeneratedFolder)/**/*.cs" />
     <None Include="$(GeneratedFolder)/**/*.cs" />
@@ -50,5 +50,40 @@
     <PackageReference Include="Splat.Drawing" Version="15.3.1" />
     <PackageReference Include="Splat.Microsoft.Extensions.DependencyInjection" Version="15.3.1" />
     <PackageReference Include="StronglyTypedId" Version="1.0.0-beta06" PrivateAssets="all" ExcludeAssets="runtime" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Using Include="FluentResults" />
+    <Using Include="FluentValidation" />
+    <Using Include="HtmlAgilityPack" />
+    <Using Include="Immediate.Handlers.Shared" />
+    <Using Include="Injectio.Attributes" />
+    <Using Include="Microsoft.EntityFrameworkCore" />
+    <Using Include="OpenQA.Selenium" />
+    <Using Include="ReactiveUI" />
+    <Using Include="ReactiveUI.SourceGenerators" />
+    <Using Include="Splat" />
+    <Using Include="System.Reactive" />
+    <Using Include="System.Reactive.Linq" />
+    <Using Include="Riok.Mapperly.Abstractions" />
+    <Using Include="MainCore.DTO" />
+    <Using Include="MainCore.Entities" />
+    <Using Include="MainCore.Services" />
+    <Using Include="MainCore.Infrasturecture.Persistence" />
+    <Using Include="MainCore.Parsers" />
+    <Using Include="MainCore.Commands.Navigate" />
+    <Using Include="MainCore.Commands.Update" />
+    <Using Include="MainCore.Commands.Misc" />
+    <Using Include="MainCore.Notification.Message" />
+    <Using Include="MainCore.Queries" />
+    <Using Include="MainCore.Tasks" />
+    <Using Include="MainCore.Models" />
+    <Using Include="MainCore.Errors" />
+    <Using Include="MainCore.Enums" />
+    <Using Include="MainCore.Common.Extensions" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Generated\Immediate.Handlers.Generators\" />
   </ItemGroup>
 </Project>

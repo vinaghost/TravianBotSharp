@@ -1,11 +1,8 @@
-﻿using FluentValidation;
-using MainCore.Commands.UI.Villages.BuildViewModel;
+﻿using MainCore.Commands.UI.Villages.BuildViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages

@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Queries.Base;
 using Serilog.Templates;
 using System.Text;
 

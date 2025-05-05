@@ -35,11 +35,11 @@ partial class UpgradeCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.Villages.BuildViewModel.UpgradeCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Commands.Misc.AddJobCommand.Handler _addJobCommand;
-		private readonly global::MainCore.Commands.Queries.GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
+		private readonly global::MainCore.Queries.GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
 
 		public HandleBehavior(
 			global::MainCore.Commands.Misc.AddJobCommand.Handler addJobCommand,
-			global::MainCore.Commands.Queries.GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery
+			global::MainCore.Queries.GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery
 		)
 		{
 			_addJobCommand = addJobCommand;

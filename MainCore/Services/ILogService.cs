@@ -6,7 +6,7 @@ namespace MainCore.Services
     {
         LinkedList<LogEvent> GetLog(AccountId accountId);
 
-        ILogger GetLogger(AccountId accountId);
+        Serilog.ILogger GetLogger(AccountId accountId);
 
         void Shutdown();
     }

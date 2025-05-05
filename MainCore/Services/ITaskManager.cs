@@ -10,25 +10,25 @@ namespace MainCore.Services
 
         Task Clear(AccountId accountId);
 
-        T Get<T>(AccountId accountId) where T : TaskBase;
+        T Get<T>(AccountId accountId) where T : BaseTask;
 
-        T Get<T>(AccountId accountId, VillageId villageId) where T : TaskBase;
+        T Get<T>(AccountId accountId, VillageId villageId) where T : BaseTask;
 
         CancellationTokenSource GetCancellationTokenSource(AccountId accountId);
 
-        TaskBase GetCurrentTask(AccountId accountId);
+        BaseTask GetCurrentTask(AccountId accountId);
 
         StatusEnums GetStatus(AccountId accountId);
 
-        List<TaskBase> GetTaskList(AccountId accountId);
+        List<BaseTask> GetTaskList(AccountId accountId);
 
         TaskQueue GetTaskQueue(AccountId accountId);
 
-        bool IsExist<T>(AccountId accountId) where T : TaskBase;
+        bool IsExist<T>(AccountId accountId) where T : BaseTask;
 
-        bool IsExist<T>(AccountId accountId, VillageId villageId) where T : TaskBase;
+        bool IsExist<T>(AccountId accountId, VillageId villageId) where T : BaseTask;
 
-        Task Remove(AccountId accountId, TaskBase task);
+        Task Remove(AccountId accountId, BaseTask task);
 
         Task ReOrder(AccountId accountId);
 

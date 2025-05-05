@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Refresh;
 
 partial class BuildingListRefresh
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Message.BuildingUpdated, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Base.IVillageNotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.Refresh.BuildingListRefresh.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class BuildingListRefresh
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.Message.BuildingUpdated request,
+			global::MainCore.Notification.Base.IVillageNotification request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,7 +32,7 @@ partial class BuildingListRefresh
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.Message.BuildingUpdated, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.Base.IVillageNotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.UI.ViewModels.Tabs.Villages.BuildViewModel _viewModel;
 
@@ -44,7 +44,7 @@ partial class BuildingListRefresh
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.Message.BuildingUpdated request,
+			global::MainCore.Notification.Base.IVillageNotification request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -67,7 +67,7 @@ partial class BuildingListRefresh
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Refresh.BuildingListRefresh.Handler), typeof(global::MainCore.Notification.Handlers.Refresh.BuildingListRefresh.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Message.BuildingUpdated, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Refresh.BuildingListRefresh.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Base.IVillageNotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Refresh.BuildingListRefresh.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Refresh.BuildingListRefresh.HandleBehavior), typeof(global::MainCore.Notification.Handlers.Refresh.BuildingListRefresh.HandleBehavior), lifetime));
 		return services;
 	}

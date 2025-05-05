@@ -1,5 +1,5 @@
 ﻿using MainCore.Commands.Base;
-using MainCore.Common.Errors.TrainTroop;
+using MainCore.Errors.TrainTroop;
 
 namespace MainCore.Commands.Features.TrainTroop
 {

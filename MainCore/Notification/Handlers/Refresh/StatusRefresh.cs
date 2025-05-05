@@ -1,4 +1,5 @@
-﻿using MainCore.UI.ViewModels.UserControls;
+﻿using MainCore.Notification.Base;
+using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Notification.Handlers.Refresh
 {
@@ -6,7 +7,7 @@ namespace MainCore.Notification.Handlers.Refresh
     public static partial class StatusRefresh
     {
         private static async ValueTask HandleAsync(
-            ByAccountIdBase notification,
+            IAccountNotification notification,
             MainLayoutViewModel mainLayoutViewModel,
             CancellationToken cancellationToken)
         {

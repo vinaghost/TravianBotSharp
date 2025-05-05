@@ -1,7 +1,5 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.ViewModels
 {

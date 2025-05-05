@@ -1,5 +1,5 @@
 ﻿using MainCore.Commands.Checks;
-using MainCore.Tasks.Constraints;
+using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks.Behaviors
 {

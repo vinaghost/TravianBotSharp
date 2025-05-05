@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Queries.Base;
 using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.DebugViewModel

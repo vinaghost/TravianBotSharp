@@ -195,6 +195,6 @@ namespace MainCore.Services
             }
         }
 
-        public record ContextData(ILogger Logger, string TaskName, AccountId AccountId);
+        public record ContextData(Serilog.ILogger Logger, string TaskName, AccountId AccountId);
     }
 }

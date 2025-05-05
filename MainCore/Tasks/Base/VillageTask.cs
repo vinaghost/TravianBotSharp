@@ -1,6 +1,4 @@
-﻿using MainCore.Tasks.Constraints;
-
-namespace MainCore.Tasks.Base
+﻿namespace MainCore.Tasks.Base
 {
     public abstract class VillageTask(AccountId accountId, VillageId villageId, string villageName) : AccountTask(accountId), IVillageTask
     {

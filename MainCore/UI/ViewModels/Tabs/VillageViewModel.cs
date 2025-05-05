@@ -1,12 +1,9 @@
 ﻿using MainCore.Commands.UI.VillageViewModel;
-using MainCore.Tasks;
 using MainCore.UI.Enums;
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.ViewModels.Tabs
 {

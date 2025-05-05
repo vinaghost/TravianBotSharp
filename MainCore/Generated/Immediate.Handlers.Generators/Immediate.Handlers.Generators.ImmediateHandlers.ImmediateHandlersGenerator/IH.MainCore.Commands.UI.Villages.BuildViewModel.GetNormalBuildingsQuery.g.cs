@@ -6,7 +6,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel;
 
 partial class GetNormalBuildingsQuery
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.Query, global::System.Collections.Generic.List<global::MainCore.Common.Enums.BuildingEnums>>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.Query, global::System.Collections.Generic.List<global::MainCore.Enums.BuildingEnums>>
 	{
 		private readonly global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.HandleBehavior _handleBehavior;
 
@@ -20,7 +20,7 @@ partial class GetNormalBuildingsQuery
 
 		}
 
-		public async global::System.Threading.Tasks.ValueTask<global::System.Collections.Generic.List<global::MainCore.Common.Enums.BuildingEnums>> HandleAsync(
+		public async global::System.Threading.Tasks.ValueTask<global::System.Collections.Generic.List<global::MainCore.Enums.BuildingEnums>> HandleAsync(
 			global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.Query request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
@@ -32,18 +32,18 @@ partial class GetNormalBuildingsQuery
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.Query, global::System.Collections.Generic.List<global::MainCore.Common.Enums.BuildingEnums>>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.Query, global::System.Collections.Generic.List<global::MainCore.Enums.BuildingEnums>>
 	{
-		private readonly global::MainCore.Commands.Queries.GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
+		private readonly global::MainCore.Queries.GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
 
 		public HandleBehavior(
-			global::MainCore.Commands.Queries.GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery
+			global::MainCore.Queries.GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery
 		)
 		{
 			_getLayoutBuildingsQuery = getLayoutBuildingsQuery;
 		}
 
-		public override async global::System.Threading.Tasks.ValueTask<global::System.Collections.Generic.List<global::MainCore.Common.Enums.BuildingEnums>> HandleAsync(
+		public override async global::System.Threading.Tasks.ValueTask<global::System.Collections.Generic.List<global::MainCore.Enums.BuildingEnums>> HandleAsync(
 			global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.Query request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
@@ -65,7 +65,7 @@ partial class GetNormalBuildingsQuery
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.Handler), typeof(global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.Query, global::System.Collections.Generic.List<global::MainCore.Common.Enums.BuildingEnums>>), typeof(global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.Query, global::System.Collections.Generic.List<global::MainCore.Enums.BuildingEnums>>), typeof(global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.HandleBehavior), typeof(global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.HandleBehavior), lifetime));
 		return services;
 	}

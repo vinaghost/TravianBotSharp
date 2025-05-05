@@ -35,12 +35,12 @@ partial class NormalBuildCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.IDialogService _dialogService;
-		private readonly global::MainCore.Commands.Queries.GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
+		private readonly global::MainCore.Queries.GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
 		private readonly global::MainCore.Commands.Misc.AddJobCommand.Handler _addJobCommand;
 
 		public HandleBehavior(
 			global::MainCore.Services.IDialogService dialogService,
-			global::MainCore.Commands.Queries.GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
+			global::MainCore.Queries.GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
 			global::MainCore.Commands.Misc.AddJobCommand.Handler addJobCommand
 		)
 		{

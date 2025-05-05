@@ -1,5 +1,4 @@
-﻿using MainCore.Common.Errors.Storage;
-using Riok.Mapperly.Abstractions;
+﻿using MainCore.Errors.Storage;
 
 namespace MainCore.DTO
 {

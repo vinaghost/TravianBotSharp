@@ -1,11 +1,12 @@
-﻿using MainCore.Notification.Handlers.Trigger;
+﻿using MainCore.Notification.Base;
+using MainCore.Notification.Handlers.Trigger;
 
 namespace MainCore.Notification.Message
 {
     [Handler]
     public static partial class AccountInit
     {
-        public sealed record Notification(AccountId AccountId) : ByAccountIdBase(AccountId), INotification;
+        public sealed record Notification(AccountId AccountId) : IAccountNotification;
 
         private static async ValueTask HandleAsync(
             Notification notification,
@@ -29,14 +30,14 @@ namespace MainCore.Notification.Message
 
             foreach (var village in villages)
             {
-                await refreshVillageTaskTrigger.HandleAsync(new(accountId, village), cancellationToken);
-                await trainTroopTaskTrigger.HandleAsync(new(accountId, village), cancellationToken);
+                await refreshVillageTaskTrigger.HandleAsync(new VillageNotification(accountId, village), cancellationToken);
+                await trainTroopTaskTrigger.HandleAsync(new VillageNotification(accountId, village), cancellationToken);
             }
 
             var hasBuildingJobVillages = await getHasBuildJobVillagesQuery.HandleAsync(new(accountId));
             foreach (var village in hasBuildingJobVillages)
             {
-                await upgradeBuildingTaskTrigger.HandleAsync(new(accountId, village), cancellationToken);
+                await upgradeBuildingTaskTrigger.HandleAsync(new VillageNotification(accountId, village), cancellationToken);
             }
         }
     }

@@ -11,7 +11,7 @@ namespace MainCore.Commands.Features
             Command command,
             IChromeManager chromeManager,
             IDbContextFactory<AppDbContext> contextFactory,
-            ILogger logger,
+            ILogService logService,
             CancellationToken cancellationToken)
         {
             var chromeBrowser = chromeManager.Get(command.AccountId);
@@ -21,7 +21,7 @@ namespace MainCore.Commands.Features
             var sleepTimeMinutes = context.ByName(command.AccountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
             var sleepEnd = DateTime.Now.AddMinutes(sleepTimeMinutes);
             int lastMinute = 0;
-
+            var logger = logService.GetLogger(command.AccountId);
             while (true)
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;

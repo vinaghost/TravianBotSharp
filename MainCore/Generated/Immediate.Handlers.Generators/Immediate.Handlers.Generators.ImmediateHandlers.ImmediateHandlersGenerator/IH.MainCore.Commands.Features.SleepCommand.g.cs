@@ -36,17 +36,17 @@ partial class SleepCommand
 	{
 		private readonly global::MainCore.Services.IChromeManager _chromeManager;
 		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
-		private readonly global::Serilog.ILogger _logger;
+		private readonly global::MainCore.Services.ILogService _logService;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeManager chromeManager,
 			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
-			global::Serilog.ILogger logger
+			global::MainCore.Services.ILogService logService
 		)
 		{
 			_chromeManager = chromeManager;
 			_contextFactory = contextFactory;
-			_logger = logger;
+			_logService = logService;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -59,7 +59,7 @@ partial class SleepCommand
 					request
 					, _chromeManager
 					, _contextFactory
-					, _logger
+					, _logService
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

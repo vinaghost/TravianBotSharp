@@ -1,4 +1,4 @@
-﻿using MainCore.Tasks;
+﻿using MainCore.Notification.Base;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Trigger
     public static partial class RefreshVillageTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            ByAccountVillageIdBase notification,
+            IVillageNotification notification,
             GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
             IDbContextFactory<AppDbContext> contextFactory,

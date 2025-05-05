@@ -15,7 +15,7 @@ namespace MainCore.Services
             _statusUpdated = statusUpdated;
         }
 
-        public TaskBase GetCurrentTask(AccountId accountId)
+        public BaseTask GetCurrentTask(AccountId accountId)
         {
             var tasks = GetTaskList(accountId);
             return tasks.Find(x => x.Stage == StageEnums.Executing);
@@ -26,7 +26,7 @@ namespace MainCore.Services
             var cts = GetCancellationTokenSource(accountId);
             if (cts is null) return;
             await cts.CancelAsync();
-            TaskBase currentTask;
+            BaseTask currentTask;
             do
             {
                 currentTask = GetCurrentTask(accountId);
@@ -55,7 +55,7 @@ namespace MainCore.Services
             await Add(task, first);
         }
 
-        public T Get<T>(AccountId accountId) where T : TaskBase
+        public T Get<T>(AccountId accountId) where T : BaseTask
         {
             var task = GetTaskList(accountId)
                 .OfType<T>()
@@ -63,7 +63,7 @@ namespace MainCore.Services
             return task;
         }
 
-        public T Get<T>(AccountId accountId, VillageId villageId) where T : TaskBase
+        public T Get<T>(AccountId accountId, VillageId villageId) where T : BaseTask
         {
             var task = GetTaskList(accountId)
                 .OfType<T>()
@@ -71,7 +71,7 @@ namespace MainCore.Services
             return task;
         }
 
-        private T Get<T>(AccountId accountId, string key) where T : TaskBase
+        private T Get<T>(AccountId accountId, string key) where T : BaseTask
         {
             var task = GetTaskList(accountId)
                 .OfType<T>()
@@ -79,14 +79,14 @@ namespace MainCore.Services
             return task;
         }
 
-        public bool IsExist<T>(AccountId accountId) where T : TaskBase
+        public bool IsExist<T>(AccountId accountId) where T : BaseTask
         {
             var tasks = GetTaskList(accountId)
                 .OfType<T>();
             return tasks.Any(x => x.Key == $"{accountId}");
         }
 
-        public bool IsExist<T>(AccountId accountId, VillageId villageId) where T : TaskBase
+        public bool IsExist<T>(AccountId accountId, VillageId villageId) where T : BaseTask
         {
             var tasks = GetTaskList(accountId)
                 .OfType<T>();
@@ -134,7 +134,7 @@ namespace MainCore.Services
             await ReOrder(task.AccountId, tasks);
         }
 
-        public async Task Remove(AccountId accountId, TaskBase task)
+        public async Task Remove(AccountId accountId, BaseTask task)
         {
             var tasks = GetTaskList(accountId);
             if (tasks.Remove(task))
@@ -157,14 +157,14 @@ namespace MainCore.Services
             await _taskUpdated.HandleAsync(new(accountId));
         }
 
-        private async Task ReOrder(AccountId accountId, List<TaskBase> tasks)
+        private async Task ReOrder(AccountId accountId, List<BaseTask> tasks)
         {
             if (tasks.Count <= 1) return;
             tasks.Sort((x, y) => DateTime.Compare(x.ExecuteAt, y.ExecuteAt));
             await _taskUpdated.HandleAsync(new(accountId));
         }
 
-        public List<TaskBase> GetTaskList(AccountId accountId)
+        public List<BaseTask> GetTaskList(AccountId accountId)
         {
             var queue = GetTaskQueue(accountId);
             return queue.Tasks;
@@ -215,6 +215,6 @@ namespace MainCore.Services
         public bool IsExecuting { get; set; } = false;
         public StatusEnums Status { get; set; } = StatusEnums.Offline;
         public CancellationTokenSource CancellationTokenSource { get; set; } = null;
-        public List<TaskBase> Tasks = [];
+        public List<BaseTask> Tasks = [];
     }
 }

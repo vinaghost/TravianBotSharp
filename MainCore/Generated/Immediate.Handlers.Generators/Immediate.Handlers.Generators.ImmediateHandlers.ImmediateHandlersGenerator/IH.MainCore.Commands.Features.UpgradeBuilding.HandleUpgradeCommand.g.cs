@@ -36,12 +36,12 @@ partial class HandleUpgradeCommand
 	{
 		private readonly global::MainCore.Services.IChromeManager _chromeManager;
 		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
-		private readonly global::MainCore.Commands.Queries.GetBuildingQuery.Handler _getBuilding;
+		private readonly global::MainCore.Queries.GetBuildingQuery.Handler _getBuilding;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeManager chromeManager,
 			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
-			global::MainCore.Commands.Queries.GetBuildingQuery.Handler getBuilding
+			global::MainCore.Queries.GetBuildingQuery.Handler getBuilding
 		)
 		{
 			_chromeManager = chromeManager;

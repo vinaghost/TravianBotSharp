@@ -1,7 +1,5 @@
 ﻿using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.Stores
 {

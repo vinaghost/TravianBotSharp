@@ -1,11 +1,9 @@
-﻿using FluentValidation;
-using MainCore.Commands.Behaviors;
+﻿using MainCore.Commands.Behaviors;
 using MainCore.Tasks.Behaviors;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Validators;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ReactiveUI;
 using Serilog;
 using Serilog.Templates;
 using Splat.Microsoft.Extensions.DependencyInjection;

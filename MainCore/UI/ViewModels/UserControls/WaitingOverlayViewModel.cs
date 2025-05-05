@@ -1,7 +1,5 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
 using Microsoft.Extensions.DependencyInjection;
-using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 
 namespace MainCore.UI.ViewModels.UserControls
 {

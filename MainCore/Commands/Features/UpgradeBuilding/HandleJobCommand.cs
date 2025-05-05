@@ -1,6 +1,5 @@
 ﻿using MainCore.Commands.Base;
-using MainCore.Common.Errors.AutoBuilder;
-using MainCore.Common.Models;
+using MainCore.Errors.AutoBuilder;
 using System.Text.Json;
 
 namespace MainCore.Commands.Features.UpgradeBuilding

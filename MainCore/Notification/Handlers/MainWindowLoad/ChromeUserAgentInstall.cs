@@ -1,4 +1,5 @@
-﻿using MainCore.UI.ViewModels.UserControls;
+﻿using MainCore.Notification.Base;
+using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Notification.Handlers.MainWindowLoad
 {

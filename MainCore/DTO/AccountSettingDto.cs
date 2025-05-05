@@ -1,6 +1,4 @@
-﻿using Riok.Mapperly.Abstractions;
-
-namespace MainCore.DTO
+﻿namespace MainCore.DTO
 {
     public class AccountSettingDto
     {

@@ -6,7 +6,7 @@ namespace MainCore.Commands.UI.AccountSettingViewModel;
 
 partial class GetSettingQuery
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.Query, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.Query, global::System.Collections.Generic.Dictionary<global::MainCore.Enums.AccountSettingEnums, int>>
 	{
 		private readonly global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.HandleBehavior _handleBehavior;
 
@@ -20,7 +20,7 @@ partial class GetSettingQuery
 
 		}
 
-		public async global::System.Threading.Tasks.ValueTask<global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>> HandleAsync(
+		public async global::System.Threading.Tasks.ValueTask<global::System.Collections.Generic.Dictionary<global::MainCore.Enums.AccountSettingEnums, int>> HandleAsync(
 			global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.Query request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
@@ -32,7 +32,7 @@ partial class GetSettingQuery
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.Query, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.Query, global::System.Collections.Generic.Dictionary<global::MainCore.Enums.AccountSettingEnums, int>>
 	{
 		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
 
@@ -43,7 +43,7 @@ partial class GetSettingQuery
 			_contextFactory = contextFactory;
 		}
 
-		public override async global::System.Threading.Tasks.ValueTask<global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>> HandleAsync(
+		public override async global::System.Threading.Tasks.ValueTask<global::System.Collections.Generic.Dictionary<global::MainCore.Enums.AccountSettingEnums, int>> HandleAsync(
 			global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.Query request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
@@ -65,7 +65,7 @@ partial class GetSettingQuery
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.Handler), typeof(global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.Query, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>>), typeof(global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.Query, global::System.Collections.Generic.Dictionary<global::MainCore.Enums.AccountSettingEnums, int>>), typeof(global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.HandleBehavior), typeof(global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.HandleBehavior), lifetime));
 		return services;
 	}

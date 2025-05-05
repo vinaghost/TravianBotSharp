@@ -23,10 +23,10 @@ namespace MainCore.UI.ViewModels.Tabs
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public ReactiveUI.ReactiveCommand<global::System.Reactive.Unit, global::System.Reactive.Unit> ExportCommand { get => _exportCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask(Export); }
-        private ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>>? _loadSettingsCommand;
+        private ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Enums.AccountSettingEnums, int>>? _loadSettingsCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>> LoadSettingsCommand { get => _loadSettingsCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Common.Enums.AccountSettingEnums, int>>(LoadSettings); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Enums.AccountSettingEnums, int>> LoadSettingsCommand { get => _loadSettingsCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask<global::MainCore.Entities.AccountId, global::System.Collections.Generic.Dictionary<global::MainCore.Enums.AccountSettingEnums, int>>(LoadSettings); }
     }
 }
 #nullable restore

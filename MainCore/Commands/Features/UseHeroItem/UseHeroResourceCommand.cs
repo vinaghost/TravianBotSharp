@@ -1,5 +1,5 @@
 ﻿using MainCore.Commands.Base;
-using MainCore.Common.Errors.Storage;
+using MainCore.Errors.Storage;
 
 namespace MainCore.Commands.Features.UseHeroItem
 {

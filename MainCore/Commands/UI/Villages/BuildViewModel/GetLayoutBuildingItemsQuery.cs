@@ -1,6 +1,5 @@
 ﻿using Humanizer;
-using MainCore.Commands.Base;
-using MainCore.Common.Models;
+using MainCore.Queries.Base;
 using MainCore.UI.Models.Output;
 using System.Text;
 

@@ -34,8 +34,8 @@ partial class AccountInit
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.Message.AccountInit.Notification, global::System.ValueTuple>
 	{
-		private readonly global::MainCore.Commands.Queries.GetVillagesQuery.Handler _getVillagesQuery;
-		private readonly global::MainCore.Commands.Queries.GetHasBuildJobVillagesQuery.Handler _getHasBuildJobVillagesQuery;
+		private readonly global::MainCore.Queries.GetVillagesQuery.Handler _getVillagesQuery;
+		private readonly global::MainCore.Queries.GetHasBuildJobVillagesQuery.Handler _getHasBuildJobVillagesQuery;
 		private readonly global::MainCore.Notification.Handlers.Trigger.LoginTaskTrigger.Handler _loginTaskTrigger;
 		private readonly global::MainCore.Notification.Handlers.Trigger.RefreshVillageTaskTrigger.Handler _refreshVillageTaskTrigger;
 		private readonly global::MainCore.Notification.Handlers.Trigger.SleepTaskTrigger.Handler _sleepTaskTrigger;
@@ -44,8 +44,8 @@ partial class AccountInit
 		private readonly global::MainCore.Notification.Handlers.Trigger.UpgradeBuildingTaskTrigger.Handler _upgradeBuildingTaskTrigger;
 
 		public HandleBehavior(
-			global::MainCore.Commands.Queries.GetVillagesQuery.Handler getVillagesQuery,
-			global::MainCore.Commands.Queries.GetHasBuildJobVillagesQuery.Handler getHasBuildJobVillagesQuery,
+			global::MainCore.Queries.GetVillagesQuery.Handler getVillagesQuery,
+			global::MainCore.Queries.GetHasBuildJobVillagesQuery.Handler getHasBuildJobVillagesQuery,
 			global::MainCore.Notification.Handlers.Trigger.LoginTaskTrigger.Handler loginTaskTrigger,
 			global::MainCore.Notification.Handlers.Trigger.RefreshVillageTaskTrigger.Handler refreshVillageTaskTrigger,
 			global::MainCore.Notification.Handlers.Trigger.SleepTaskTrigger.Handler sleepTaskTrigger,

@@ -1,4 +1,5 @@
-﻿using MainCore.Notification.Handlers.Refresh;
+﻿using MainCore.Notification.Base;
+using MainCore.Notification.Handlers.Refresh;
 using MainCore.Notification.Handlers.Trigger;
 
 namespace MainCore.Notification.Message
@@ -6,7 +7,7 @@ namespace MainCore.Notification.Message
     [Handler]
     public static partial class VillageUpdated
     {
-        public sealed record Notification(AccountId AccountId) : ByAccountIdBase(AccountId), INotification;
+        public sealed record Notification(AccountId AccountId) : IAccountNotification;
 
         private static async ValueTask HandleAsync(
             Notification notification,

@@ -1,4 +1,4 @@
-﻿using Riok.Mapperly.Abstractions;
+﻿
 
 namespace MainCore.DTO
 {

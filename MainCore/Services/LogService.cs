@@ -7,7 +7,7 @@ namespace MainCore.Services
     [RegisterSingleton<ILogService, LogService>]
     public sealed class LogService : ILogService
     {
-        private readonly Dictionary<AccountId, ILogger> _loggers = [];
+        private readonly Dictionary<AccountId, Serilog.ILogger> _loggers = [];
 
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly LogSink _logSink;
@@ -29,7 +29,7 @@ namespace MainCore.Services
             return logs;
         }
 
-        public ILogger GetLogger(AccountId accountId)
+        public Serilog.ILogger GetLogger(AccountId accountId)
         {
             if (_loggers.ContainsKey(accountId)) return _loggers[accountId];
 

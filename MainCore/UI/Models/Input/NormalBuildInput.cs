@@ -2,8 +2,6 @@
 using Humanizer;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 using System.Collections.ObjectModel;
 
 namespace MainCore.UI.Models.Input

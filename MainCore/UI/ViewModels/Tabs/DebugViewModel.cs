@@ -1,8 +1,6 @@
 ﻿using MainCore.Commands.UI.DebugViewModel;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 using Serilog.Events;
 using System.Collections.ObjectModel;
 using System.Diagnostics;

@@ -1,7 +1,4 @@
-﻿using ReactiveUI;
-using ReactiveUI.SourceGenerators;
-
-namespace MainCore.UI.ViewModels.Abstract
+﻿namespace MainCore.UI.ViewModels.Abstract
 {
     public abstract partial class TabViewModelBase : ViewModelBase
     {

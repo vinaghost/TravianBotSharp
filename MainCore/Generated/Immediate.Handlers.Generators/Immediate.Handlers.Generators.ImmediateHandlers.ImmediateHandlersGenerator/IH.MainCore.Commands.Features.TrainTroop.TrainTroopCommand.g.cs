@@ -39,7 +39,7 @@ partial class TrainTroopCommand
 		private readonly global::MainCore.Commands.Navigate.ToDorfCommand.Handler _toDorfCommand;
 		private readonly global::MainCore.Commands.Update.UpdateBuildingCommand.Handler _updateBuildingCommand;
 		private readonly global::MainCore.Commands.Navigate.ToBuildingCommand.Handler _toBuildingCommand;
-		private readonly global::MainCore.Commands.Queries.GetBuildingLocationQuery.Handler _getBuildingLocation;
+		private readonly global::MainCore.Queries.GetBuildingLocationQuery.Handler _getBuildingLocation;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeManager chromeManager,
@@ -47,7 +47,7 @@ partial class TrainTroopCommand
 			global::MainCore.Commands.Navigate.ToDorfCommand.Handler toDorfCommand,
 			global::MainCore.Commands.Update.UpdateBuildingCommand.Handler updateBuildingCommand,
 			global::MainCore.Commands.Navigate.ToBuildingCommand.Handler toBuildingCommand,
-			global::MainCore.Commands.Queries.GetBuildingLocationQuery.Handler getBuildingLocation
+			global::MainCore.Queries.GetBuildingLocationQuery.Handler getBuildingLocation
 		)
 		{
 			_chromeManager = chromeManager;

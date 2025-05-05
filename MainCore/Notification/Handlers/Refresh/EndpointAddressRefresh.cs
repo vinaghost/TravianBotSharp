@@ -1,4 +1,5 @@
-﻿using MainCore.UI.ViewModels.Tabs;
+﻿using MainCore.Notification.Base;
+using MainCore.UI.ViewModels.Tabs;
 
 namespace MainCore.Notification.Handlers.Refresh
 {
@@ -6,7 +7,7 @@ namespace MainCore.Notification.Handlers.Refresh
     public static partial class EndpointAddressRefresh
     {
         private static async ValueTask HandleAsync(
-            ByAccountIdBase notification,
+            IAccountNotification notification,
             DebugViewModel debugViewModel,
             CancellationToken cancellationToken)
         {

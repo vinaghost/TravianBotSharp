@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Trigger;
 
 partial class BuildingUpdateTaskTrigger
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Base.IAccountNotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.Trigger.BuildingUpdateTaskTrigger.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class BuildingUpdateTaskTrigger
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.ByAccountIdBase request,
+			global::MainCore.Notification.Base.IAccountNotification request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,18 +32,18 @@ partial class BuildingUpdateTaskTrigger
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.Base.IAccountNotification, global::System.ValueTuple>
 	{
-		private readonly global::MainCore.Commands.Queries.GetVillageNameQuery.Handler _getVillageNameQuery;
+		private readonly global::MainCore.Queries.GetVillageNameQuery.Handler _getVillageNameQuery;
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
 		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
-		private readonly global::MainCore.Commands.Queries.GetMissingBuildingVillagesQuery.Handler _getMissingBuildingVillageQuery;
+		private readonly global::MainCore.Queries.GetMissingBuildingVillagesQuery.Handler _getMissingBuildingVillageQuery;
 
 		public HandleBehavior(
-			global::MainCore.Commands.Queries.GetVillageNameQuery.Handler getVillageNameQuery,
+			global::MainCore.Queries.GetVillageNameQuery.Handler getVillageNameQuery,
 			global::MainCore.Services.ITaskManager taskManager,
 			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
-			global::MainCore.Commands.Queries.GetMissingBuildingVillagesQuery.Handler getMissingBuildingVillageQuery
+			global::MainCore.Queries.GetMissingBuildingVillagesQuery.Handler getMissingBuildingVillageQuery
 		)
 		{
 			_getVillageNameQuery = getVillageNameQuery;
@@ -53,7 +53,7 @@ partial class BuildingUpdateTaskTrigger
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.ByAccountIdBase request,
+			global::MainCore.Notification.Base.IAccountNotification request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -79,7 +79,7 @@ partial class BuildingUpdateTaskTrigger
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Trigger.BuildingUpdateTaskTrigger.Handler), typeof(global::MainCore.Notification.Handlers.Trigger.BuildingUpdateTaskTrigger.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.ByAccountIdBase, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Trigger.BuildingUpdateTaskTrigger.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Base.IAccountNotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Trigger.BuildingUpdateTaskTrigger.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Trigger.BuildingUpdateTaskTrigger.HandleBehavior), typeof(global::MainCore.Notification.Handlers.Trigger.BuildingUpdateTaskTrigger.HandleBehavior), lifetime));
 		return services;
 	}

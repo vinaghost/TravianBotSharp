@@ -1,11 +1,12 @@
-﻿using MainCore.Notification.Handlers.Trigger;
+﻿using MainCore.Notification.Base;
+using MainCore.Notification.Handlers.Trigger;
 
 namespace MainCore.Notification.Message
 {
     [Handler]
     public static partial class QuestUpdated
     {
-        public record Notification(AccountId AccountId, VillageId VillageId) : ByAccountVillageIdBase(AccountId, VillageId), INotification;
+        public record Notification(AccountId AccountId, VillageId VillageId) : IVillageNotification;
 
         private static async ValueTask HandleAsync(
             Notification notification,

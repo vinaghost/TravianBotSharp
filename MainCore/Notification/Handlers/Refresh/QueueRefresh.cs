@@ -1,4 +1,5 @@
-﻿using MainCore.UI.ViewModels.Tabs.Villages;
+﻿using MainCore.Notification.Base;
+using MainCore.UI.ViewModels.Tabs.Villages;
 
 namespace MainCore.Notification.Handlers.Refresh
 {
@@ -6,7 +7,7 @@ namespace MainCore.Notification.Handlers.Refresh
     public static partial class QueueRefresh
     {
         private static async ValueTask HandleAsync(
-            ByAccountVillageIdBase notification,
+            IVillageNotification notification,
             BuildViewModel viewModel,
             CancellationToken cancellationToken)
         {

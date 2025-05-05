@@ -15,7 +15,7 @@ namespace MainCore.UI.Models.Input
         
         /// <inheritdoc cref="_selectedPlan"/>
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public global::MainCore.UI.Models.Output.ComboBoxItem<global::MainCore.Common.Enums.ResourcePlanEnums> SelectedPlan
+        public global::MainCore.UI.Models.Output.ComboBoxItem<global::MainCore.Enums.ResourcePlanEnums> SelectedPlan
         { 
             get => _selectedPlan;
             [global::System.Diagnostics.CodeAnalysis.MemberNotNull("_selectedPlan")]

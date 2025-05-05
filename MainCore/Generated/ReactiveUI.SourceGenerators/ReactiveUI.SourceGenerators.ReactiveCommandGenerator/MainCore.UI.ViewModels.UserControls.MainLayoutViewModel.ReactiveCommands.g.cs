@@ -39,10 +39,10 @@ namespace MainCore.UI.ViewModels.UserControls
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
         public ReactiveUI.ReactiveCommand<global::System.Reactive.Unit, global::System.Reactive.Unit> RestartCommand { get => _restartCommand ??= ReactiveUI.ReactiveCommand.CreateFromTask(Restart, _canExecute); }
-        private ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::MainCore.Common.Enums.StatusEnums>? _getStatusCommand;
+        private ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::MainCore.Enums.StatusEnums>? _getStatusCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::MainCore.Common.Enums.StatusEnums> GetStatusCommand { get => _getStatusCommand ??= ReactiveUI.ReactiveCommand.Create<global::MainCore.Entities.AccountId, global::MainCore.Common.Enums.StatusEnums>(GetStatus); }
+        public ReactiveUI.ReactiveCommand<global::MainCore.Entities.AccountId, global::MainCore.Enums.StatusEnums> GetStatusCommand { get => _getStatusCommand ??= ReactiveUI.ReactiveCommand.Create<global::MainCore.Entities.AccountId, global::MainCore.Enums.StatusEnums>(GetStatus); }
         private ReactiveUI.ReactiveCommand<global::System.Reactive.Unit, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>? _loadAccountCommand;
 
         [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]

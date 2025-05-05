@@ -1,6 +1,4 @@
 ﻿using DynamicData;
-using ReactiveUI;
-using ReactiveUI.SourceGenerators;
 using System.Collections.ObjectModel;
 
 namespace MainCore.UI.Models.Input

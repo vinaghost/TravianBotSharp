@@ -1,5 +1,4 @@
-﻿using MainCore.Common.Models;
-using OpenQA.Selenium.Chrome;
+﻿using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Polly;
@@ -12,12 +11,12 @@ namespace MainCore.Services
         private ChromeDriver _driver;
         private readonly ChromeDriverService _chromeService;
         private WebDriverWait _wait;
-        private ILogger _logger;
+        private Serilog.ILogger _logger;
 
         private readonly string[] _extensionsPath;
         private readonly HtmlDocument _htmlDoc = new();
 
-        public record ContextData(ILogger Logger, string TaskName);
+        public record ContextData(Serilog.ILogger Logger, string TaskName);
         private static readonly ResiliencePropertyKey<ContextData> _contextDataKey = new(nameof(ContextData));
 
         private static readonly Func<OnRetryArguments<Result>, ValueTask> _onRetry = async args =>
@@ -66,7 +65,7 @@ namespace MainCore.Services
             _chromeService.HideCommandPromptWindow = true;
         }
 
-        public async Task Setup(ChromeSetting setting, ILogger logger)
+        public async Task Setup(ChromeSetting setting, Serilog.ILogger logger)
         {
             var options = new ChromeOptions();
 

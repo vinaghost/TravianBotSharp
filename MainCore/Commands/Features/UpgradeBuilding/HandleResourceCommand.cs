@@ -1,8 +1,7 @@
 ﻿using MainCore.Commands.Base;
 using MainCore.Commands.Features.UseHeroItem;
-using MainCore.Common.Errors.AutoBuilder;
-using MainCore.Common.Errors.Storage;
-using MainCore.Common.Models;
+using MainCore.Errors.AutoBuilder;
+using MainCore.Errors.Storage;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {

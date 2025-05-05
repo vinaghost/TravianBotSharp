@@ -34,10 +34,10 @@ partial class GetLayoutBuildingItemsQuery
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.Villages.BuildViewModel.GetLayoutBuildingItemsQuery.Query, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>
 	{
-		private readonly global::MainCore.Commands.Queries.GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
+		private readonly global::MainCore.Queries.GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
 
 		public HandleBehavior(
-			global::MainCore.Commands.Queries.GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery
+			global::MainCore.Queries.GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery
 		)
 		{
 			_getLayoutBuildingsQuery = getLayoutBuildingsQuery;
