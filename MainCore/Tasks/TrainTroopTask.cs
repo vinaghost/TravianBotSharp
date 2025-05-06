@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.Features.TrainTroop;
+using MainCore.Commands.NextExecute;
 using MainCore.Commands.UI.Misc;
 using MainCore.Errors.TrainTroop;
 using MainCore.Tasks.Base;
@@ -19,22 +20,14 @@ namespace MainCore.Tasks
 
         private static async ValueTask<Result> HandleAsync(
             Task task,
-            AppDbContext context,
-            ITaskManager taskManager,
             TrainTroopCommand.Handler trainTroopCommand,
+            GetTrainTroopBuildingQuery.Handler getTrainTroopBuildingQuery,
             SaveVillageSettingCommand.Handler saveVillageSettingCommand,
+            NextExecuteTrainTroopTaskCommand.Handler nextExecuteTrainTroopTaskCommand,
             CancellationToken cancellationToken)
         {
             Result result;
-
-            var filterdSettings = context.VillagesSetting
-                .Where(x => x.VillageId == task.VillageId.Value)
-                .Where(x => TrainTroopCommand.BuildingSettings.Values.Contains(x.Setting))
-                .Where(x => x.Value != 0)
-                .Select(x => x.Setting)
-                .ToList();
-
-            var buildings = GetTrainTroopBuilding(filterdSettings);
+            var buildings = await getTrainTroopBuildingQuery.HandleAsync(new(task.VillageId), cancellationToken);
 
             var settings = new Dictionary<VillageSettingEnums, int>();
 
@@ -56,37 +49,8 @@ namespace MainCore.Tasks
             }
 
             await saveVillageSettingCommand.HandleAsync(new(task.AccountId, task.VillageId, settings), cancellationToken);
-            var seconds = context.ByName(task.VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
-            task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
-            await taskManager.ReOrder(task.AccountId);
+            await nextExecuteTrainTroopTaskCommand.HandleAsync(task, cancellationToken);
             return Result.Ok();
-        }
-
-        private static List<BuildingEnums> GetTrainTroopBuilding(List<VillageSettingEnums> settings)
-        {
-            var buildings = new List<BuildingEnums>();
-
-            if (settings.Contains(VillageSettingEnums.BarrackTroop))
-            {
-                buildings.Add(BuildingEnums.Barracks);
-            }
-            if (settings.Contains(VillageSettingEnums.StableTroop))
-            {
-                buildings.Add(BuildingEnums.Stable);
-            }
-            if (settings.Contains(VillageSettingEnums.GreatBarrackTroop))
-            {
-                buildings.Add(BuildingEnums.GreatBarracks);
-            }
-            if (settings.Contains(VillageSettingEnums.GreatStableTroop))
-            {
-                buildings.Add(BuildingEnums.GreatStable);
-            }
-            if (settings.Contains(VillageSettingEnums.WorkshopTroop))
-            {
-                buildings.Add(BuildingEnums.Workshop);
-            }
-            return buildings;
         }
     }
 }

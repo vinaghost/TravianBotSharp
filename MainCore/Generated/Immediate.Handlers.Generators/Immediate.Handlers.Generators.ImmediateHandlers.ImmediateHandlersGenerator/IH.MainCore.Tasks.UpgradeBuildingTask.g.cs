@@ -52,34 +52,28 @@ partial class UpgradeBuildingTask
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Tasks.UpgradeBuildingTask.Task, global::FluentResults.Result>
 	{
-		private readonly global::MainCore.Services.ITaskManager _taskManager;
-		private readonly global::MainCore.Services.IChromeBrowser _browser;
 		private readonly global::Serilog.ILogger _logger;
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.Handler _handleJobCommand;
 		private readonly global::MainCore.Commands.Features.UpgradeBuilding.ToBuildPageCommand.Handler _toBuildPageCommand;
 		private readonly global::MainCore.Commands.Features.UpgradeBuilding.HandleResourceCommand.Handler _handleResourceCommand;
 		private readonly global::MainCore.Commands.Features.UpgradeBuilding.HandleUpgradeCommand.Handler _handleUpgradeCommand;
+		private readonly global::MainCore.Queries.GetFirstQueueBuildingQuery.Handler _getFirstQueueBuildingQuery;
 
 		public HandleBehavior(
-			global::MainCore.Services.ITaskManager taskManager,
-			global::MainCore.Services.IChromeBrowser browser,
 			global::Serilog.ILogger logger,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
 			global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.Handler handleJobCommand,
 			global::MainCore.Commands.Features.UpgradeBuilding.ToBuildPageCommand.Handler toBuildPageCommand,
 			global::MainCore.Commands.Features.UpgradeBuilding.HandleResourceCommand.Handler handleResourceCommand,
-			global::MainCore.Commands.Features.UpgradeBuilding.HandleUpgradeCommand.Handler handleUpgradeCommand
+			global::MainCore.Commands.Features.UpgradeBuilding.HandleUpgradeCommand.Handler handleUpgradeCommand,
+			global::MainCore.Queries.GetFirstQueueBuildingQuery.Handler getFirstQueueBuildingQuery
 		)
 		{
-			_taskManager = taskManager;
-			_browser = browser;
 			_logger = logger;
-			_context = context;
 			_handleJobCommand = handleJobCommand;
 			_toBuildPageCommand = toBuildPageCommand;
 			_handleResourceCommand = handleResourceCommand;
 			_handleUpgradeCommand = handleUpgradeCommand;
+			_getFirstQueueBuildingQuery = getFirstQueueBuildingQuery;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -90,14 +84,12 @@ partial class UpgradeBuildingTask
 			return await global::MainCore.Tasks.UpgradeBuildingTask
 				.HandleAsync(
 					request
-					, _taskManager
-					, _browser
 					, _logger
-					, _context
 					, _handleJobCommand
 					, _toBuildPageCommand
 					, _handleResourceCommand
 					, _handleUpgradeCommand
+					, _getFirstQueueBuildingQuery
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

@@ -47,14 +47,14 @@ partial class SleepTask
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Tasks.SleepTask.Task, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Features.SleepCommand.Handler _sleepCommand;
-		private readonly global::MainCore.Queries.GetAccessQuery.Handler _getAccessQuery;
+		private readonly global::MainCore.Queries.GetValidAccessQuery.Handler _getAccessQuery;
 		private readonly global::MainCore.Commands.Misc.OpenBrowserCommand.Handler _openBrowserCommand;
 		private readonly global::MainCore.Commands.Navigate.ToDorfCommand.Handler _toDorfCommand;
 		private readonly global::MainCore.Commands.NextExecute.NextExecuteSleepTaskCommand.Handler _nextExecuteSleepTaskCommand;
 
 		public HandleBehavior(
 			global::MainCore.Commands.Features.SleepCommand.Handler sleepCommand,
-			global::MainCore.Queries.GetAccessQuery.Handler getAccessQuery,
+			global::MainCore.Queries.GetValidAccessQuery.Handler getAccessQuery,
 			global::MainCore.Commands.Misc.OpenBrowserCommand.Handler openBrowserCommand,
 			global::MainCore.Commands.Navigate.ToDorfCommand.Handler toDorfCommand,
 			global::MainCore.Commands.NextExecute.NextExecuteSleepTaskCommand.Handler nextExecuteSleepTaskCommand

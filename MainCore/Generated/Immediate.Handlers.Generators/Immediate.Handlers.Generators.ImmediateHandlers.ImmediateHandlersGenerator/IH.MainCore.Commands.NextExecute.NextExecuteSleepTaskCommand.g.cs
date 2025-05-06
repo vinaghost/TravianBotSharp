@@ -35,15 +35,12 @@ partial class NextExecuteSleepTaskCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Tasks.SleepTask.Task, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.ISettingService _settingService;
-		private readonly global::MainCore.Services.ITaskManager _taskManager;
 
 		public HandleBehavior(
-			global::MainCore.Services.ISettingService settingService,
-			global::MainCore.Services.ITaskManager taskManager
+			global::MainCore.Services.ISettingService settingService
 		)
 		{
 			_settingService = settingService;
-			_taskManager = taskManager;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -55,7 +52,6 @@ partial class NextExecuteSleepTaskCommand
 				.HandleAsync(
 					request
 					, _settingService
-					, _taskManager
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

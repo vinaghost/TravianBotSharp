@@ -52,22 +52,22 @@ partial class TrainTroopTask
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Tasks.TrainTroopTask.Task, global::FluentResults.Result>
 	{
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
-		private readonly global::MainCore.Services.ITaskManager _taskManager;
 		private readonly global::MainCore.Commands.Features.TrainTroop.TrainTroopCommand.Handler _trainTroopCommand;
+		private readonly global::MainCore.Queries.GetTrainTroopBuildingQuery.Handler _getTrainTroopBuildingQuery;
 		private readonly global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.Handler _saveVillageSettingCommand;
+		private readonly global::MainCore.Commands.NextExecute.NextExecuteTrainTroopTaskCommand.Handler _nextExecuteTrainTroopTaskCommand;
 
 		public HandleBehavior(
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
-			global::MainCore.Services.ITaskManager taskManager,
 			global::MainCore.Commands.Features.TrainTroop.TrainTroopCommand.Handler trainTroopCommand,
-			global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.Handler saveVillageSettingCommand
+			global::MainCore.Queries.GetTrainTroopBuildingQuery.Handler getTrainTroopBuildingQuery,
+			global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.Handler saveVillageSettingCommand,
+			global::MainCore.Commands.NextExecute.NextExecuteTrainTroopTaskCommand.Handler nextExecuteTrainTroopTaskCommand
 		)
 		{
-			_context = context;
-			_taskManager = taskManager;
 			_trainTroopCommand = trainTroopCommand;
+			_getTrainTroopBuildingQuery = getTrainTroopBuildingQuery;
 			_saveVillageSettingCommand = saveVillageSettingCommand;
+			_nextExecuteTrainTroopTaskCommand = nextExecuteTrainTroopTaskCommand;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -78,10 +78,10 @@ partial class TrainTroopTask
 			return await global::MainCore.Tasks.TrainTroopTask
 				.HandleAsync(
 					request
-					, _context
-					, _taskManager
 					, _trainTroopCommand
+					, _getTrainTroopBuildingQuery
 					, _saveVillageSettingCommand
+					, _nextExecuteTrainTroopTaskCommand
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

@@ -18,14 +18,12 @@ namespace MainCore.Tasks
 
         private static async ValueTask<Result> HandleAsync(
             Task task,
-            ITaskManager taskManager,
-            IChromeBrowser browser,
             ILogger logger,
-            AppDbContext context,
             HandleJobCommand.Handler handleJobCommand,
             ToBuildPageCommand.Handler toBuildPageCommand,
             HandleResourceCommand.Handler handleResourceCommand,
             HandleUpgradeCommand.Handler handleUpgradeCommand,
+            GetFirstQueueBuildingQuery.Handler getFirstQueueBuildingQuery,
             CancellationToken cancellationToken)
         {
             Result result;
@@ -39,7 +37,7 @@ namespace MainCore.Tasks
                 {
                     if (errors.OfType<Continue>().Any()) continue;
 
-                    var buildingQueue = context.GetFirstQueueBuilding(task.VillageId);
+                    var buildingQueue = await getFirstQueueBuildingQuery.HandleAsync(new(task.VillageId), cancellationToken);
                     task.ExecuteAt = buildingQueue.CompleteTime.AddSeconds(3);
                     return Skip.AutoBuilderBuildingQueueFull;
                 }
@@ -65,16 +63,6 @@ namespace MainCore.Tasks
                 result = await handleUpgradeCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
                 if (result.IsFailed) return result;
             }
-        }
-
-        private static QueueBuilding GetFirstQueueBuilding(this AppDbContext context, VillageId villageId)
-        {
-            var queueBuilding = context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type != BuildingEnums.Site)
-                .OrderBy(x => x.Position)
-                .FirstOrDefault();
-            return queueBuilding;
         }
     }
 }

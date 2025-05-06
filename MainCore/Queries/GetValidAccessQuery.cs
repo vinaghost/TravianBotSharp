@@ -3,24 +3,21 @@
 namespace MainCore.Queries
 {
     [Handler]
-    public static partial class GetAccessQuery
+    public static partial class GetValidAccessQuery
     {
         public sealed record Query(AccountId AccountId, bool IgnoreSleepTime = false) : IAccountQuery;
 
         private static async ValueTask<Result<AccessDto>> HandleAsync(
             Query query,
-            AppDbContext context,
+            GetAccessesQuery.Handler getAccessesQuery,
             VerifyAccessQuery.Handler verifyAccessQuery,
+            ISettingService settingService,
             CancellationToken cancellationToken
             )
         {
             var (accountId, ignoreSleepTime) = query;
 
-            var accesses = context.Accesses
-               .Where(x => x.AccountId == accountId.Value)
-               .OrderBy(x => x.LastUsed) // get oldest one
-               .ToDto()
-               .ToList();
+            var accesses = await getAccessesQuery.HandleAsync(new(accountId), cancellationToken);
 
             async Task<AccessDto> GetValidAccess(List<AccessDto> accesses)
             {
@@ -35,13 +32,10 @@ namespace MainCore.Queries
             var access = await GetValidAccess(accesses);
             if (access is null) return Stop.AllAccessNotWorking;
 
-            var count = context.Accesses
-               .Where(x => x.AccountId == accountId.Value)
-               .Count();
-            if (count == 1) return access;
+            if (accesses.Count == 1) return access;
             if (ignoreSleepTime) return access;
 
-            var minSleep = context.ByName(accountId, AccountSettingEnums.SleepTimeMin);
+            var minSleep = settingService.ByName(accountId, AccountSettingEnums.SleepTimeMin);
             var timeValid = DateTime.Now.AddMinutes(-minSleep);
             if (access.LastUsed > timeValid) return Stop.LackOfAccess;
             return access;
