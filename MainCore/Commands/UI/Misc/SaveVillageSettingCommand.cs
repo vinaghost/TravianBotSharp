@@ -16,7 +16,7 @@ namespace MainCore.Commands.UI.Misc
         {
             var (accountId, villageId, settings) = command;
             if (settings.Count == 0) return;
-            
+
 
             foreach (var setting in settings)
             {

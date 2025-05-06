@@ -34,15 +34,15 @@ partial class NextExecuteSleepTaskCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Tasks.SleepTask.Task, global::System.ValueTuple>
 	{
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
+		private readonly global::MainCore.Services.ISettingService _settingService;
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
 
 		public HandleBehavior(
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
+			global::MainCore.Services.ISettingService settingService,
 			global::MainCore.Services.ITaskManager taskManager
 		)
 		{
-			_context = context;
+			_settingService = settingService;
 			_taskManager = taskManager;
 		}
 
@@ -54,7 +54,7 @@ partial class NextExecuteSleepTaskCommand
 			await global::MainCore.Commands.NextExecute.NextExecuteSleepTaskCommand
 				.HandleAsync(
 					request
-					, _context
+					, _settingService
 					, _taskManager
 					, cancellationToken
 				)

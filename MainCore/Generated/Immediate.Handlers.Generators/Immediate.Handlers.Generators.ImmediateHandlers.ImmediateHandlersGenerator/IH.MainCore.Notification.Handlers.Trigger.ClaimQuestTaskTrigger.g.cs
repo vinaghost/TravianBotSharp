@@ -36,17 +36,17 @@ partial class ClaimQuestTaskTrigger
 	{
 		private readonly global::MainCore.Queries.GetVillageNameQuery.Handler _getVillageNameQuery;
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
+		private readonly global::MainCore.Services.ISettingService _settingService;
 
 		public HandleBehavior(
 			global::MainCore.Queries.GetVillageNameQuery.Handler getVillageNameQuery,
 			global::MainCore.Services.ITaskManager taskManager,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context
+			global::MainCore.Services.ISettingService settingService
 		)
 		{
 			_getVillageNameQuery = getVillageNameQuery;
 			_taskManager = taskManager;
-			_context = context;
+			_settingService = settingService;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -59,7 +59,7 @@ partial class ClaimQuestTaskTrigger
 					request
 					, _getVillageNameQuery
 					, _taskManager
-					, _context
+					, _settingService
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

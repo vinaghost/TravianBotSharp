@@ -8,14 +8,13 @@ namespace MainCore.Notification.Handlers.Trigger
         private static async ValueTask HandleAsync(
             IVillageNotification notification,
             GetVillageNameQuery.Handler getVillageNameQuery,
-            ITaskManager taskManager,
             AppDbContext context,
+            ITaskManager taskManager,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
             if (taskManager.IsExist<CompleteImmediatelyTask.Task>(accountId, villageId)) return;
-            
 
             context.Clean(villageId);
 

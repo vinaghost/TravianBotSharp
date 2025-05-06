@@ -12,7 +12,7 @@ namespace MainCore.Commands.Features.UseHeroItem
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            
+
             var html = browser.Html;
 
             var avatar = InventoryParser.GetHeroAvatar(html);

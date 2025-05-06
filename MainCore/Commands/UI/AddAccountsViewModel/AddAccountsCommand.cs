@@ -14,7 +14,7 @@ namespace MainCore.Commands.UI.AddAccountsViewModel
             CancellationToken cancellationToken
             )
         {
-            
+
             var existAccounts = context.Accounts
                 .ToDto()
                 .ToList();

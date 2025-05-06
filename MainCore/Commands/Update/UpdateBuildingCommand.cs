@@ -15,7 +15,7 @@ namespace MainCore.Commands.Update
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
-            
+
             var html = browser.Html;
 
             var dtoBuilding = GetBuildings(browser.CurrentUrl, html);
@@ -26,7 +26,6 @@ namespace MainCore.Commands.Update
             var result = IsVaildQueueBuilding(queueBuildings);
             if (result.IsFailed) return result;
 
-            
             context.UpdateQueueToDatabase(villageId, queueBuildings);
             context.UpdateBuildToDatabase(villageId, dtoBuilding.ToList());
 

@@ -17,7 +17,7 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
             await taskManager.SetStatus(accountId, StatusEnums.Stopping);
             await taskManager.StopCurrentTast(accountId);
 
-            
+
             await browser.Close();
 
             await taskManager.SetStatus(accountId, StatusEnums.Offline);

@@ -18,8 +18,7 @@ namespace MainCore.Tasks
 
         private static async ValueTask<Result> HandleAsync(
             Task task,
-            AppDbContext context,
-            ITaskManager taskManager,
+            ISettingService settingService,
             ToFarmListPageCommand.Handler toFarmListPageCommand,
             StartAllFarmListCommand.Handler startAllFarmListCommand,
             StartActiveFarmListCommand.Handler startActiveFarmListCommand,
@@ -29,8 +28,8 @@ namespace MainCore.Tasks
             Result result;
             result = await toFarmListPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
-            
-            var useStartAllButton = context.BooleanByName(task.AccountId, AccountSettingEnums.UseStartAllButton);
+
+            var useStartAllButton = settingService.BooleanByName(task.AccountId, AccountSettingEnums.UseStartAllButton);
             if (useStartAllButton)
             {
                 result = await startAllFarmListCommand.HandleAsync(new(task.AccountId), cancellationToken);

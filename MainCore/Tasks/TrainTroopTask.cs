@@ -26,7 +26,6 @@ namespace MainCore.Tasks
             CancellationToken cancellationToken)
         {
             Result result;
-            
 
             var filterdSettings = context.VillagesSetting
                 .Where(x => x.VillageId == task.VillageId.Value)

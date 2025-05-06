@@ -15,11 +15,11 @@ namespace MainCore.Commands.Update
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
-            
+
             var html = browser.Html;
 
             var dto = Get(html);
-            
+
             context.UpdateStorage(villageId, dto);
             await storageUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
             return dto;

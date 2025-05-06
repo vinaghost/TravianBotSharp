@@ -9,13 +9,13 @@ namespace MainCore.Notification.Handlers.Trigger
             IVillageNotification notification,
             GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
-            AppDbContext context,
+            ISettingService settingService,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
-            
-            var autoClaimQuest = context.BooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
+
+            var autoClaimQuest = settingService.BooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
             if (autoClaimQuest)
             {
                 if (taskManager.IsExist<ClaimQuestTask.Task>(accountId, villageId)) return;

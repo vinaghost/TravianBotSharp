@@ -15,7 +15,7 @@ namespace MainCore.Commands.Navigate
            )
         {
             var (accountId, location) = command;
-            
+
             var html = browser.Html;
             var node = GetBuilding(html, location);
             if (node is null) return Retry.NotFound($"{location}", "nodeBuilding");

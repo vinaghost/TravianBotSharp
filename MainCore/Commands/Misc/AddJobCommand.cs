@@ -15,7 +15,7 @@ namespace MainCore.Commands.Misc
             )
         {
             var (accountId, villageId, job, top) = command;
-            
+
 
             if (top)
             {

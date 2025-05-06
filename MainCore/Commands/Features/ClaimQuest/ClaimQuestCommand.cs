@@ -14,7 +14,7 @@ namespace MainCore.Commands.Features.ClaimQuest
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
-            
+
             HtmlDocument html;
             Result result;
 

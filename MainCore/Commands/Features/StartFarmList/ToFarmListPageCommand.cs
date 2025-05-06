@@ -43,7 +43,7 @@ namespace MainCore.Commands.Features.StartFarmList
 
         private static VillageId GetVillageHasRallypoint(AccountId accountId, AppDbContext context)
         {
-            
+
             return context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .Where(x => x.Buildings.Any(x => x.Type == BuildingEnums.RallyPoint && x.Level > 0))

@@ -15,7 +15,7 @@ namespace MainCore.Commands.UI.EditAccountViewModel
             )
         {
             var dto = command.Dto;
-            
+
 
             var account = dto.ToEntity();
             foreach (var access in account.Accesses.Where(access => string.IsNullOrWhiteSpace(access.Useragent)))

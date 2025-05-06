@@ -41,17 +41,17 @@ partial class SleepCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.SleepCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
+		private readonly global::MainCore.Services.ISettingService _settingService;
 		private readonly global::Serilog.ILogger _logger;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
+			global::MainCore.Services.ISettingService settingService,
 			global::Serilog.ILogger logger
 		)
 		{
 			_browser = browser;
-			_context = context;
+			_settingService = settingService;
 			_logger = logger;
 		}
 
@@ -64,7 +64,7 @@ partial class SleepCommand
 				.HandleAsync(
 					request
 					, _browser
-					, _context
+					, _settingService
 					, _logger
 					, cancellationToken
 				)

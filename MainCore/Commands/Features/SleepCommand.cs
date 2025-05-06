@@ -10,13 +10,13 @@ namespace MainCore.Commands.Features
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            AppDbContext context,
+            ISettingService settingService,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             await browser.Close();
 
-            var sleepTimeMinutes = context.ByName(command.AccountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
+            var sleepTimeMinutes = settingService.ByName(command.AccountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
             var sleepEnd = DateTime.Now.AddMinutes(sleepTimeMinutes);
             int lastMinute = 0;
             while (true)

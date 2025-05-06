@@ -123,9 +123,8 @@ namespace MainCore.UI.ViewModels.UserControls
 
             var accountId = new AccountId(Accounts.SelectedItemId);
 
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            var tribe = (TribeEnums)context.ByName(accountId, AccountSettingEnums.Tribe);
+            var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+            var tribe = (TribeEnums)settingService.ByName(accountId, AccountSettingEnums.Tribe);
             if (tribe == TribeEnums.Any)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Choose tribe first"));

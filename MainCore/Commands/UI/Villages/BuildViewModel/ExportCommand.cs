@@ -15,7 +15,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             )
         {
             var (villageId, path) = command;
-            
+
 
             var jobs = context.Jobs
                 .Where(x => x.VillageId == villageId.Value)

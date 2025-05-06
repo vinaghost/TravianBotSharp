@@ -14,7 +14,7 @@ namespace MainCore.Commands.Update
             FarmListUpdated.Handler farmListUpdated,
             CancellationToken cancellationToken)
         {
-            
+
             var html = browser.Html;
 
             var dtos = Get(html);
@@ -26,7 +26,7 @@ namespace MainCore.Commands.Update
 
         private static void UpdateToDatabase(AccountId accountId, IEnumerable<FarmDto> dtos, AppDbContext context)
         {
-            
+
             var farms = context.FarmLists
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();

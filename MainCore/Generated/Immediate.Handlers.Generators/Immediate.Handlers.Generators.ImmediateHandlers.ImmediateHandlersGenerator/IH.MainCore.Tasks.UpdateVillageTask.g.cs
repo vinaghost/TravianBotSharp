@@ -54,21 +54,21 @@ partial class UpdateVillageTask
 	{
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
+		private readonly global::MainCore.Services.ISettingService _settingService;
 		private readonly global::MainCore.Commands.Update.UpdateBuildingCommand.Handler _updateBuildingCommand;
 		private readonly global::MainCore.Commands.Navigate.ToDorfCommand.Handler _toDorfCommand;
 
 		public HandleBehavior(
 			global::MainCore.Services.ITaskManager taskManager,
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
+			global::MainCore.Services.ISettingService settingService,
 			global::MainCore.Commands.Update.UpdateBuildingCommand.Handler updateBuildingCommand,
 			global::MainCore.Commands.Navigate.ToDorfCommand.Handler toDorfCommand
 		)
 		{
 			_taskManager = taskManager;
 			_browser = browser;
-			_context = context;
+			_settingService = settingService;
 			_updateBuildingCommand = updateBuildingCommand;
 			_toDorfCommand = toDorfCommand;
 		}
@@ -83,7 +83,7 @@ partial class UpdateVillageTask
 					request
 					, _taskManager
 					, _browser
-					, _context
+					, _settingService
 					, _updateBuildingCommand
 					, _toDorfCommand
 					, cancellationToken

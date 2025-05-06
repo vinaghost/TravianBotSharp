@@ -14,7 +14,7 @@ namespace MainCore.Commands.Navigate
            )
         {
             var (accountId, dorf) = command;
-            
+
 
             var currentUrl = browser.CurrentUrl;
             var currentDorf = GetCurrentDorf(currentUrl);

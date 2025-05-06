@@ -15,7 +15,7 @@ namespace MainCore.Commands.Navigate
            )
         {
             var (accountId, villageId) = command;
-            
+
             var html = browser.Html;
             var node = VillagePanelParser.GetVillageNode(html, villageId);
             if (node is null) return Skip.VillageNotFound;

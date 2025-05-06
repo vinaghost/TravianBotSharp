@@ -35,15 +35,15 @@ partial class StartAdventureTaskTrigger
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IAccountNotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
+		private readonly global::MainCore.Services.ISettingService _settingService;
 
 		public HandleBehavior(
 			global::MainCore.Services.ITaskManager taskManager,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context
+			global::MainCore.Services.ISettingService settingService
 		)
 		{
 			_taskManager = taskManager;
-			_context = context;
+			_settingService = settingService;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -55,7 +55,7 @@ partial class StartAdventureTaskTrigger
 				.HandleAsync(
 					request
 					, _taskManager
-					, _context
+					, _settingService
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

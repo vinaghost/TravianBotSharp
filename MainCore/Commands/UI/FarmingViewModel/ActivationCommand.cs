@@ -15,7 +15,7 @@ namespace MainCore.Commands.UI.FarmingViewModel
             )
         {
             var (accountId, farmId) = command;
-            
+
             context.FarmLists
                .Where(x => x.Id == farmId.Value)
                .ExecuteUpdate(x => x.SetProperty(x => x.IsActive, x => !x.IsActive));

@@ -15,7 +15,7 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
             )
         {
             var accountId = command.AccountId;
-            
+
             context.Accounts
                 .Where(x => x.Id == accountId.Value)
                 .ExecuteDelete();

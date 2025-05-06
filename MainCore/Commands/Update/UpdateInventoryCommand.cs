@@ -14,7 +14,7 @@ namespace MainCore.Commands.Update
             HeroItemUpdated.Handler heroItemUpdated,
             CancellationToken cancellationToken)
         {
-            
+
             var html = browser.Html;
 
             var dtos = GetItems(html);
@@ -86,7 +86,7 @@ namespace MainCore.Commands.Update
 
         private static void Update(AccountId accountId, List<HeroItemDto> dtos, AppDbContext context)
         {
-            
+
             var items = context.HeroItems
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();

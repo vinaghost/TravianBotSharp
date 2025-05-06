@@ -17,7 +17,7 @@ namespace MainCore.Commands.Features.UseHeroItem
         {
             var (accountId, resource) = command;
 
-            
+
 
             var resourceItems = context.HeroItems
                 .Where(x => x.AccountId == accountId.Value)
@@ -35,7 +35,7 @@ namespace MainCore.Commands.Features.UseHeroItem
                 { HeroItemEnums.Iron, resource[2] },
                 { HeroItemEnums.Crop, resource[3] },
             };
-            
+
 
             foreach (var (item, amount) in items)
             {

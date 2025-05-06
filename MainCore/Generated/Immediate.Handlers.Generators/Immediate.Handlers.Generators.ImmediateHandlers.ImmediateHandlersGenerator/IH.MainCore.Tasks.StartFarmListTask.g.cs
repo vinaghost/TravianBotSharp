@@ -46,24 +46,21 @@ partial class StartFarmListTask
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Tasks.StartFarmListTask.Task, global::FluentResults.Result>
 	{
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
-		private readonly global::MainCore.Services.ITaskManager _taskManager;
+		private readonly global::MainCore.Services.ISettingService _settingService;
 		private readonly global::MainCore.Commands.Features.StartFarmList.ToFarmListPageCommand.Handler _toFarmListPageCommand;
 		private readonly global::MainCore.Commands.Features.StartFarmList.StartAllFarmListCommand.Handler _startAllFarmListCommand;
 		private readonly global::MainCore.Commands.Features.StartFarmList.StartActiveFarmListCommand.Handler _startActiveFarmListCommand;
 		private readonly global::MainCore.Commands.NextExecute.NextExecuteStartFarmListTaskCommand.Handler _nextExecuteStartFarmListTaskCommand;
 
 		public HandleBehavior(
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
-			global::MainCore.Services.ITaskManager taskManager,
+			global::MainCore.Services.ISettingService settingService,
 			global::MainCore.Commands.Features.StartFarmList.ToFarmListPageCommand.Handler toFarmListPageCommand,
 			global::MainCore.Commands.Features.StartFarmList.StartAllFarmListCommand.Handler startAllFarmListCommand,
 			global::MainCore.Commands.Features.StartFarmList.StartActiveFarmListCommand.Handler startActiveFarmListCommand,
 			global::MainCore.Commands.NextExecute.NextExecuteStartFarmListTaskCommand.Handler nextExecuteStartFarmListTaskCommand
 		)
 		{
-			_context = context;
-			_taskManager = taskManager;
+			_settingService = settingService;
 			_toFarmListPageCommand = toFarmListPageCommand;
 			_startAllFarmListCommand = startAllFarmListCommand;
 			_startActiveFarmListCommand = startActiveFarmListCommand;
@@ -78,8 +75,7 @@ partial class StartFarmListTask
 			return await global::MainCore.Tasks.StartFarmListTask
 				.HandleAsync(
 					request
-					, _context
-					, _taskManager
+					, _settingService
 					, _toFarmListPageCommand
 					, _startAllFarmListCommand
 					, _startActiveFarmListCommand

@@ -12,7 +12,7 @@ namespace MainCore.Commands.Features.DisableContextualHelp
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            
+
             var html = browser.Html;
 
             var option = OptionParser.GetHideContextualHelpOption(html);

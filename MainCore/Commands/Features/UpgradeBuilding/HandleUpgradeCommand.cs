@@ -17,10 +17,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         {
             var (accountId, villageId, plan) = command;
 
-            
             Result result;
-
-            
 
             if (context.IsUpgradeable(plan))
             {

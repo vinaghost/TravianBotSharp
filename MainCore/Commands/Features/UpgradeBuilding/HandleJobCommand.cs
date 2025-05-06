@@ -21,7 +21,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         )
         {
             var (accountId, villageId) = command;
-            
 
             var (_, isFailed, job, errors) = context.GetJob(accountId, villageId);
             if (isFailed) return Result.Fail(errors);

@@ -15,7 +15,7 @@ namespace MainCore.Commands.Checks
            )
         {
             var (accountId, villageId) = command;
-            
+
             if (!QuestParser.IsQuestClaimable(browser.Html)) return;
 
             await questUpdated.HandleAsync(new(accountId, villageId), cancellationToken);

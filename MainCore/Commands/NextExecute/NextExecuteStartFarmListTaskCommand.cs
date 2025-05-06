@@ -5,12 +5,11 @@
     {
         private static async ValueTask HandleAsync(
             StartFarmListTask.Task task,
-            AppDbContext context,
+            ISettingService settingService,
             ITaskManager taskManager,
             CancellationToken cancellationToken)
         {
-            
-            var seconds = context.ByName(task.AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
+            var seconds = settingService.ByName(task.AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
             task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await taskManager.ReOrder(task.AccountId);
         }

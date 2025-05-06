@@ -12,7 +12,7 @@ namespace MainCore.Commands.Features.StartFarmList
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            
+
             var html = browser.Html;
 
             var startAllButton = FarmListParser.GetStartAllButton(html);

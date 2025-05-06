@@ -14,8 +14,6 @@ namespace MainCore.Commands.Features.StartFarmList
             GetActiveFarmsQuery.Handler getActiveFarmsQuery,
             CancellationToken cancellationToken)
         {
-            
-
             var farmLists = await getActiveFarmsQuery.HandleAsync(new(command.AccountId), cancellationToken);
             if (farmLists.Count == 0) return Skip.NoActiveFarmlist;
 

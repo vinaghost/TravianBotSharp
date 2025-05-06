@@ -15,7 +15,7 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
             )
         {
             var (accountId, access) = command;
-            
+
             logger.Information("Using connection {Proxy} to start chrome", access.Proxy);
 
             try

@@ -12,7 +12,7 @@ namespace MainCore.Commands.Features.StartAdventure
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            
+
             var html = browser.Html;
 
             var adventure = AdventureParser.GetHeroAdventureButton(html);

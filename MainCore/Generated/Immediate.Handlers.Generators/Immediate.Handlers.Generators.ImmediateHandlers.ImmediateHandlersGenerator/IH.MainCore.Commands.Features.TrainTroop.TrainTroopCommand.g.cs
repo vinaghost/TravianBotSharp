@@ -41,7 +41,7 @@ partial class TrainTroopCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.TrainTroop.TrainTroopCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
+		private readonly global::MainCore.Services.ISettingService _settingService;
 		private readonly global::MainCore.Commands.Navigate.ToDorfCommand.Handler _toDorfCommand;
 		private readonly global::MainCore.Commands.Update.UpdateBuildingCommand.Handler _updateBuildingCommand;
 		private readonly global::MainCore.Commands.Navigate.ToBuildingCommand.Handler _toBuildingCommand;
@@ -49,7 +49,7 @@ partial class TrainTroopCommand
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
+			global::MainCore.Services.ISettingService settingService,
 			global::MainCore.Commands.Navigate.ToDorfCommand.Handler toDorfCommand,
 			global::MainCore.Commands.Update.UpdateBuildingCommand.Handler updateBuildingCommand,
 			global::MainCore.Commands.Navigate.ToBuildingCommand.Handler toBuildingCommand,
@@ -57,7 +57,7 @@ partial class TrainTroopCommand
 		)
 		{
 			_browser = browser;
-			_context = context;
+			_settingService = settingService;
 			_toDorfCommand = toDorfCommand;
 			_updateBuildingCommand = updateBuildingCommand;
 			_toBuildingCommand = toBuildingCommand;
@@ -73,7 +73,7 @@ partial class TrainTroopCommand
 				.HandleAsync(
 					request
 					, _browser
-					, _context
+					, _settingService
 					, _toDorfCommand
 					, _updateBuildingCommand
 					, _toBuildingCommand

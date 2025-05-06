@@ -35,18 +35,18 @@ partial class CompleteImmediatelyTaskTrigger
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IVillageNotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Queries.GetVillageNameQuery.Handler _getVillageNameQuery;
-		private readonly global::MainCore.Services.ITaskManager _taskManager;
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
+		private readonly global::MainCore.Services.ITaskManager _taskManager;
 
 		public HandleBehavior(
 			global::MainCore.Queries.GetVillageNameQuery.Handler getVillageNameQuery,
-			global::MainCore.Services.ITaskManager taskManager,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
+			global::MainCore.Services.ITaskManager taskManager
 		)
 		{
 			_getVillageNameQuery = getVillageNameQuery;
-			_taskManager = taskManager;
 			_context = context;
+			_taskManager = taskManager;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -58,8 +58,8 @@ partial class CompleteImmediatelyTaskTrigger
 				.HandleAsync(
 					request
 					, _getVillageNameQuery
-					, _taskManager
 					, _context
+					, _taskManager
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

@@ -9,13 +9,13 @@ namespace MainCore.Notification.Handlers.Trigger
             IVillageNotification notification,
             GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
-            AppDbContext context,
+            ISettingService settingService,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
-            
-            var autoRefreshEnable = context.BooleanByName(villageId, VillageSettingEnums.AutoRefreshEnable);
+
+            var autoRefreshEnable = settingService.BooleanByName(villageId, VillageSettingEnums.AutoRefreshEnable);
             if (autoRefreshEnable)
             {
                 if (taskManager.IsExist<UpdateVillageTask.Task>(accountId, villageId)) return;

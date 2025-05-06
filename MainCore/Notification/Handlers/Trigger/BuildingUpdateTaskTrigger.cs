@@ -9,13 +9,13 @@ namespace MainCore.Notification.Handlers.Trigger
             IAccountNotification notification,
             GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
-            AppDbContext context,
+            ISettingService settingService,
             GetMissingBuildingVillagesQuery.Handler getMissingBuildingVillageQuery,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
 
-            var autoLoadVillageBuilding = context.BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
+            var autoLoadVillageBuilding = settingService.BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             if (!autoLoadVillageBuilding) return;
 
             var villages = await getMissingBuildingVillageQuery.HandleAsync(new(accountId));

@@ -9,13 +9,13 @@ namespace MainCore.Notification.Handlers.Trigger
             IVillageNotification notification,
             GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
-            AppDbContext context,
+            ISettingService settingService,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
-            
-            var trainTroopEnable = context.BooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
+
+            var trainTroopEnable = settingService.BooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
             if (trainTroopEnable)
             {
                 if (taskManager.IsExist<TrainTroopTask.Task>(accountId, villageId)) return;

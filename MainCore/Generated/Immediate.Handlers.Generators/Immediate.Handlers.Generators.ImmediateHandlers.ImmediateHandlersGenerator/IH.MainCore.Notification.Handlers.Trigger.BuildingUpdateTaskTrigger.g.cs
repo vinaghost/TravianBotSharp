@@ -36,19 +36,19 @@ partial class BuildingUpdateTaskTrigger
 	{
 		private readonly global::MainCore.Queries.GetVillageNameQuery.Handler _getVillageNameQuery;
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
+		private readonly global::MainCore.Services.ISettingService _settingService;
 		private readonly global::MainCore.Queries.GetMissingBuildingVillagesQuery.Handler _getMissingBuildingVillageQuery;
 
 		public HandleBehavior(
 			global::MainCore.Queries.GetVillageNameQuery.Handler getVillageNameQuery,
 			global::MainCore.Services.ITaskManager taskManager,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
+			global::MainCore.Services.ISettingService settingService,
 			global::MainCore.Queries.GetMissingBuildingVillagesQuery.Handler getMissingBuildingVillageQuery
 		)
 		{
 			_getVillageNameQuery = getVillageNameQuery;
 			_taskManager = taskManager;
-			_context = context;
+			_settingService = settingService;
 			_getMissingBuildingVillageQuery = getMissingBuildingVillageQuery;
 		}
 
@@ -62,7 +62,7 @@ partial class BuildingUpdateTaskTrigger
 					request
 					, _getVillageNameQuery
 					, _taskManager
-					, _context
+					, _settingService
 					, _getMissingBuildingVillageQuery
 					, cancellationToken
 				)

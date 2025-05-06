@@ -14,7 +14,7 @@ namespace MainCore.Commands.Navigate
            )
         {
             var (accountId, tabIndex) = command;
-            
+
             var html = browser.Html;
             var count = BuildingTabParser.CountTab(html);
             if (tabIndex > count) return Retry.OutOfIndexTab(tabIndex, count);

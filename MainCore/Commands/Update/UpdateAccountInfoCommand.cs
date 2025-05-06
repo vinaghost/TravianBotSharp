@@ -14,7 +14,7 @@ namespace MainCore.Commands.Update
             AccountInfoUpdated.Handler accountInfoUpdated,
             CancellationToken cancellationToken)
         {
-            
+
             var html = browser.Html;
 
             var dto = Get(html);
@@ -41,7 +41,7 @@ namespace MainCore.Commands.Update
 
         private static void UpdateToDatabase(AccountId accountId, AccountInfoDto dto, AppDbContext context)
         {
-            
+
 
             var dbAccountInfo = context.AccountsInfo
                 .FirstOrDefault(x => x.AccountId == accountId.Value);

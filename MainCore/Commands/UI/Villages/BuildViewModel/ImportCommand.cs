@@ -36,7 +36,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId));
             var modifiedJobs = GetModifiedJobs(buildings, inputJobs);
 
-            
+
             var count = context.Jobs
                .Where(x => x.VillageId == villageId.Value)
                .Count();

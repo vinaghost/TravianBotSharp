@@ -14,7 +14,7 @@ namespace MainCore.Commands.Update
             VillageUpdated.Handler villageUpdated,
             CancellationToken cancellationToken)
         {
-            
+
             var html = browser.Html;
 
             var dtos = VillagePanelParser.Get(html);

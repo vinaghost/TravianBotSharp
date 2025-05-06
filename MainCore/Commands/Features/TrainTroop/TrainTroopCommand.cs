@@ -11,7 +11,7 @@ namespace MainCore.Commands.Features.TrainTroop
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            AppDbContext context,
+            ISettingService settingService,
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToBuildingCommand.Handler toBuildingCommand,
@@ -36,13 +36,10 @@ namespace MainCore.Commands.Features.TrainTroop
             result = await toBuildingCommand.HandleAsync(new(accountId, buildingLocation), cancellationToken);
             if (result.IsFailed) return result;
 
-            
             var troopSetting = BuildingSettings[building];
-            var troop = (TroopEnums)context.ByName(villageId, troopSetting);
+            var troop = (TroopEnums)settingService.ByName(villageId, troopSetting);
 
-            
-
-            var (_, isFailed, amount, errors) = GetAmount(context, browser, villageId, building, troop);
+            var (_, isFailed, amount, errors) = GetAmount(settingService, browser, villageId, building, troop);
             if (isFailed) return Result.Fail(errors);
 
             result = await TrainTroop(browser, troop, amount, cancellationToken);
@@ -70,7 +67,7 @@ namespace MainCore.Commands.Features.TrainTroop
         };
 
         private static Result<long> GetAmount(
-            AppDbContext context,
+            ISettingService settingService,
             IChromeBrowser browser,
             VillageId villageId,
             BuildingEnums building,
@@ -86,13 +83,13 @@ namespace MainCore.Commands.Features.TrainTroop
             }
 
             var (minSetting, maxSetting) = AmountSettings[building];
-            var amount = context.ByName(villageId, minSetting, maxSetting);
+            var amount = settingService.ByName(villageId, minSetting, maxSetting);
             if (amount < maxAmount)
             {
                 return amount;
             }
 
-            var trainWhenLowResource = context.BooleanByName(villageId, VillageSettingEnums.TrainWhenLowResource);
+            var trainWhenLowResource = settingService.BooleanByName(villageId, VillageSettingEnums.TrainWhenLowResource);
             if (!trainWhenLowResource)
             {
                 return MissingResource.Error(building);

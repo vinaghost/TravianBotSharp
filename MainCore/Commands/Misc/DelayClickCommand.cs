@@ -9,12 +9,12 @@ namespace MainCore.Commands.Misc
 
         private static async ValueTask HandleAsync(
             Command command,
-            AppDbContext context,
+            ISettingService settingService,
             CancellationToken cancellationToken)
         {
             var accountId = command.AccountId;
-            
-            var delay = context.ByName(accountId, AccountSettingEnums.ClickDelayMin, AccountSettingEnums.ClickDelayMax);
+
+            var delay = settingService.ByName(accountId, AccountSettingEnums.ClickDelayMin, AccountSettingEnums.ClickDelayMax);
             await Task.Delay(delay, cancellationToken);
         }
     }

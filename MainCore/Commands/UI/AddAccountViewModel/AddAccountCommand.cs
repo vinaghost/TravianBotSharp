@@ -15,7 +15,7 @@ namespace MainCore.Commands.UI.AddAccountViewModel
             )
         {
             var dto = command.Dto;
-            
+
             if (context.Accounts
                 .Where(x => x.Username == dto.Username)
                 .Where(x => x.Server == dto.Server)

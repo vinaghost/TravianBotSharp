@@ -14,7 +14,7 @@ namespace MainCore.Notification.Handlers.Trigger
         {
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
-            
+
             var autoNPCEnable = context.BooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
             if (autoNPCEnable)
             {

@@ -18,17 +18,15 @@ namespace MainCore.Commands.Features.NpcResource
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            AppDbContext context,
+            ISettingService settingService,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
-            
 
             var result = await OpenNPCDialog(browser, cancellationToken);
             if (result.IsFailed) return result;
 
-            
-            var settings = context.ByName(villageId, SettingNames);
+            var settings = settingService.ByName(villageId, SettingNames);
             var ratio = GetRatio(settings, villageId);
 
             result = await InputAmount(browser, ratio);

@@ -41,15 +41,15 @@ partial class NpcResourceCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.NpcResource.NpcResourceCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
+		private readonly global::MainCore.Services.ISettingService _settingService;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context
+			global::MainCore.Services.ISettingService settingService
 		)
 		{
 			_browser = browser;
-			_context = context;
+			_settingService = settingService;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -61,7 +61,7 @@ partial class NpcResourceCommand
 				.HandleAsync(
 					request
 					, _browser
-					, _context
+					, _settingService
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

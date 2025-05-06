@@ -58,6 +58,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Scoped<global::MainCore.Services.ISettingService, global::MainCore.Services.SettingService>()
+            );
+
+            global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
+                serviceCollection,
                 global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.Services.ITaskManager, global::MainCore.Services.TaskManager>()
             );
 

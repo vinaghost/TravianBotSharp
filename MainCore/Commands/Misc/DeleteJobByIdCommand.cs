@@ -14,7 +14,7 @@ namespace MainCore.Commands.Misc
             )
         {
             var (accountId, villageId, jobId) = command;
-            
+
 
             var job = context.Jobs
                 .Where(x => x.Id == jobId.Value)

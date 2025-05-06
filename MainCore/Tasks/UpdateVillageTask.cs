@@ -18,12 +18,11 @@ namespace MainCore.Tasks
             Task task,
             ITaskManager taskManager,
             IChromeBrowser browser,
-            AppDbContext context,
+            ISettingService settingService,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToDorfCommand.Handler toDorfCommand,
             CancellationToken cancellationToken)
         {
-            
             var url = browser.CurrentUrl;
             Result result;
 
@@ -51,8 +50,8 @@ namespace MainCore.Tasks
                 result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (result.IsFailed) return result;
             }
-            
-            var seconds = context.ByName(task.VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
+
+            var seconds = settingService.ByName(task.VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
             task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await taskManager.ReOrder(task.AccountId);
             return Result.Ok();

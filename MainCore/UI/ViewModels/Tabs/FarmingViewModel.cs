@@ -81,9 +81,9 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
             using var scope = serviceScopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
 
-            var useStartAllButton = context.BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
+            var useStartAllButton = settingService.BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
             if (!useStartAllButton)
             {
                 var count = CountActive(AccountId);

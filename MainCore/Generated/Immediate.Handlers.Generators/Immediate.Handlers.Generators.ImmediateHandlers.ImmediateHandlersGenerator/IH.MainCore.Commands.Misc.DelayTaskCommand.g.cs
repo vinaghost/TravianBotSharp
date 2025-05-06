@@ -34,13 +34,13 @@ partial class DelayTaskCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Misc.DelayTaskCommand.Command, global::System.ValueTuple>
 	{
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
+		private readonly global::MainCore.Services.ISettingService _settingService;
 
 		public HandleBehavior(
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context
+			global::MainCore.Services.ISettingService settingService
 		)
 		{
-			_context = context;
+			_settingService = settingService;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -51,7 +51,7 @@ partial class DelayTaskCommand
 			await global::MainCore.Commands.Misc.DelayTaskCommand
 				.HandleAsync(
 					request
-					, _context
+					, _settingService
 					, cancellationToken
 				)
 				.ConfigureAwait(false);
