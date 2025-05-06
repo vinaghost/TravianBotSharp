@@ -34,18 +34,18 @@ partial class UpdateStorageCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Update.UpdateStorageCommand.Command, global::MainCore.DTO.StorageDto>
 	{
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Notification.Message.StorageUpdated.Handler _storageUpdated;
 
 		public HandleBehavior(
-			global::MainCore.Services.IChromeManager chromeManager,
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
+			global::MainCore.Services.IChromeBrowser browser,
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
 			global::MainCore.Notification.Message.StorageUpdated.Handler storageUpdated
 		)
 		{
-			_chromeManager = chromeManager;
-			_contextFactory = contextFactory;
+			_browser = browser;
+			_context = context;
 			_storageUpdated = storageUpdated;
 		}
 
@@ -57,8 +57,8 @@ partial class UpdateStorageCommand
 			return await global::MainCore.Commands.Update.UpdateStorageCommand
 				.HandleAsync(
 					request
-					, _chromeManager
-					, _contextFactory
+					, _browser
+					, _context
 					, _storageUpdated
 					, cancellationToken
 				)

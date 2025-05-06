@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.ClaimQuest
 {
@@ -9,12 +9,12 @@ namespace MainCore.Commands.Features.ClaimQuest
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
+            IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var chromeBrowser = chromeManager.Get(command.AccountId);
+            
 
-            var adventure = QuestParser.GetQuestMaster(chromeBrowser.Html);
+            var adventure = QuestParser.GetQuestMaster(browser.Html);
             if (adventure is null) return Retry.ButtonNotFound("quest master");
 
             static bool TableShow(IWebDriver driver)
@@ -24,10 +24,10 @@ namespace MainCore.Commands.Features.ClaimQuest
                 return QuestParser.IsQuestPage(doc);
             }
 
-            var result = await chromeBrowser.Click(By.XPath(adventure.XPath));
+            var result = await browser.Click(By.XPath(adventure.XPath));
             if (result.IsFailed) return result;
 
-            result = await chromeBrowser.WaitPageChanged("tasks", TableShow, cancellationToken);
+            result = await browser.WaitPageChanged("tasks", TableShow, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

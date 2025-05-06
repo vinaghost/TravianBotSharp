@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
@@ -9,12 +9,12 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask<int> HandleAsync(
             Command command,
-            IDbContextFactory<AppDbContext> contextFactory, JobUpdated.Handler jobUpdated,
+            AppDbContext context, JobUpdated.Handler jobUpdated,
             CancellationToken cancellationToken
             )
         {
             var (accountId, villageId, jobId, move) = command;
-            using var context = await contextFactory.CreateDbContextAsync();
+            
 
             var job = context.Jobs
                 .Where(x => x.Id == jobId.Value)

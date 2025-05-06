@@ -9,15 +9,21 @@ partial class ToNpcResourcePageCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.NpcResource.ToNpcResourcePageCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Features.NpcResource.ToNpcResourcePageCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Features.NpcResource.ToNpcResourcePageCommand.Command, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Features.NpcResource.ToNpcResourcePageCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.Features.NpcResource.ToNpcResourcePageCommand.HandleBehavior handleBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Features.NpcResource.ToNpcResourcePageCommand.Command, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(ToNpcResourcePageCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
+
+			_commandLoggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -25,7 +31,7 @@ partial class ToNpcResourcePageCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -34,7 +40,7 @@ partial class ToNpcResourcePageCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.NpcResource.ToNpcResourcePageCommand.Command, global::FluentResults.Result>
 	{
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
 		private readonly global::MainCore.Commands.Navigate.ToDorfCommand.Handler _toDorfCommand;
 		private readonly global::MainCore.Commands.Update.UpdateBuildingCommand.Handler _updateBuildingCommand;
 		private readonly global::MainCore.Commands.Navigate.ToBuildingCommand.Handler _toBuildingCommand;
@@ -42,7 +48,7 @@ partial class ToNpcResourcePageCommand
 		private readonly global::MainCore.Queries.GetBuildingLocationQuery.Handler _getBuildingLocation;
 
 		public HandleBehavior(
-			global::MainCore.Services.IChromeManager chromeManager,
+			global::MainCore.Services.IChromeBrowser browser,
 			global::MainCore.Commands.Navigate.ToDorfCommand.Handler toDorfCommand,
 			global::MainCore.Commands.Update.UpdateBuildingCommand.Handler updateBuildingCommand,
 			global::MainCore.Commands.Navigate.ToBuildingCommand.Handler toBuildingCommand,
@@ -50,7 +56,7 @@ partial class ToNpcResourcePageCommand
 			global::MainCore.Queries.GetBuildingLocationQuery.Handler getBuildingLocation
 		)
 		{
-			_chromeManager = chromeManager;
+			_browser = browser;
 			_toDorfCommand = toDorfCommand;
 			_updateBuildingCommand = updateBuildingCommand;
 			_toBuildingCommand = toBuildingCommand;
@@ -66,7 +72,7 @@ partial class ToNpcResourcePageCommand
 			return await global::MainCore.Commands.Features.NpcResource.ToNpcResourcePageCommand
 				.HandleAsync(
 					request
-					, _chromeManager
+					, _browser
 					, _toDorfCommand
 					, _updateBuildingCommand
 					, _toBuildingCommand

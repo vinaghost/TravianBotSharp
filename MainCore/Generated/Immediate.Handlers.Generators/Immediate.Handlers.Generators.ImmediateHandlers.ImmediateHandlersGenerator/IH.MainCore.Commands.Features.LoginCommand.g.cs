@@ -9,15 +9,21 @@ partial class LoginCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.LoginCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Features.LoginCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Features.LoginCommand.Command, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Features.LoginCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.Features.LoginCommand.HandleBehavior handleBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Features.LoginCommand.Command, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(LoginCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
+
+			_commandLoggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -25,7 +31,7 @@ partial class LoginCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -34,16 +40,16 @@ partial class LoginCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.LoginCommand.Command, global::FluentResults.Result>
 	{
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 
 		public HandleBehavior(
-			global::MainCore.Services.IChromeManager chromeManager,
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory
+			global::MainCore.Services.IChromeBrowser browser,
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context
 		)
 		{
-			_chromeManager = chromeManager;
-			_contextFactory = contextFactory;
+			_browser = browser;
+			_context = context;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -54,8 +60,8 @@ partial class LoginCommand
 			return await global::MainCore.Commands.Features.LoginCommand
 				.HandleAsync(
 					request
-					, _chromeManager
-					, _contextFactory
+					, _browser
+					, _context
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

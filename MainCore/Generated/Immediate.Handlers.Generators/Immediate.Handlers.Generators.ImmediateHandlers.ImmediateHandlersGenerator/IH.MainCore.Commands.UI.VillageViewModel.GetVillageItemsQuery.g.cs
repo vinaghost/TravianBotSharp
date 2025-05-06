@@ -34,13 +34,13 @@ partial class GetVillageItemsQuery
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.VillageViewModel.GetVillageItemsQuery.Query, global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>>
 	{
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 
 		public HandleBehavior(
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context
 		)
 		{
-			_contextFactory = contextFactory;
+			_context = context;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.Collections.Generic.List<global::MainCore.UI.Models.Output.ListBoxItem>> HandleAsync(
@@ -51,7 +51,7 @@ partial class GetVillageItemsQuery
 			return await global::MainCore.Commands.UI.VillageViewModel.GetVillageItemsQuery
 				.HandleAsync(
 					request
-					, _contextFactory
+					, _context
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

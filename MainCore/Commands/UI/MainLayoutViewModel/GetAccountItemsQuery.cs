@@ -1,4 +1,4 @@
-﻿using MainCore.Queries.Base;
+﻿using MainCore.Constraints;
 using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.MainLayoutViewModel
@@ -10,11 +10,11 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query query,
-            IDbContextFactory<AppDbContext> contextFactory, ITaskManager taskManager,
+            AppDbContext context, ITaskManager taskManager,
             CancellationToken cancellationToken
             )
         {
-            using var context = await contextFactory.CreateDbContextAsync();
+            await Task.CompletedTask;
 
             var items = context.Accounts
                 .AsEnumerable()

@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Checks
 {
@@ -9,13 +9,13 @@ namespace MainCore.Commands.Checks
 
         private static async ValueTask HandleAsync(
            Command command,
-           IChromeManager chromeManager,
+           IChromeBrowser browser,
            AdventureUpdated.Handler adventureUpdated,
            CancellationToken cancellationToken
            )
         {
             var accountId = command.AccountId;
-            var browser = chromeManager.Get(accountId);
+
             if (!AdventureParser.CanStartAdventure(browser.Html)) return;
 
             await adventureUpdated.HandleAsync(new(accountId), cancellationToken);

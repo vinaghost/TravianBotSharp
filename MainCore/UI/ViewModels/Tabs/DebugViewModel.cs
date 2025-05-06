@@ -1,6 +1,7 @@
 ﻿using MainCore.Commands.UI.DebugViewModel;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog.Events;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -18,9 +19,8 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private string _endpointAddress;
 
-        public DebugViewModel()
+        public DebugViewModel(LogSink logSink)
         {
-            var logSink = Locator.Current.GetService<LogSink>();
             logSink.LogEmitted += LogEmitted;
 
             LoadTaskCommand.Subscribe(items =>
@@ -64,7 +64,9 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<List<TaskItem>> LoadTask(AccountId accountId)
         {
-            var getTaskItemsQuery = Locator.Current.GetService<GetTaskItemsQuery.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getTaskItemsQuery = scope.ServiceProvider.GetRequiredService<GetTaskItemsQuery.Handler>();
             var tasks = await getTaskItemsQuery.HandleAsync(new(accountId), CancellationToken.None);
             return tasks;
         }
@@ -72,7 +74,9 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<string> LoadLog(AccountId accountId)
         {
-            var getLogQuery = Locator.Current.GetService<GetLogQuery.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getLogQuery = scope.ServiceProvider.GetRequiredService<GetLogQuery.Handler>();
             var log = await getLogQuery.HandleAsync(new(accountId), CancellationToken.None);
             return log;
         }
@@ -80,7 +84,9 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<string> LoadEndpointAddress(AccountId accountId)
         {
-            var getEndpointAdressQuery = Locator.Current.GetService<GetEndpointAdressQuery.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getEndpointAdressQuery = scope.ServiceProvider.GetRequiredService<GetEndpointAdressQuery.Handler>();
             var address = await getEndpointAdressQuery.HandleAsync(new(accountId), CancellationToken.None);
             return address;
         }

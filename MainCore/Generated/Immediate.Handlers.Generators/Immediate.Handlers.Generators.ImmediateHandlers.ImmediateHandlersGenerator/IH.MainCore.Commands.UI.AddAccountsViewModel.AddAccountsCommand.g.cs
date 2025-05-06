@@ -9,15 +9,21 @@ partial class AddAccountsCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.AddAccountsViewModel.AddAccountsCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.UI.AddAccountsViewModel.AddAccountsCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.UI.AddAccountsViewModel.AddAccountsCommand.Command, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.UI.AddAccountsViewModel.AddAccountsCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.UI.AddAccountsViewModel.AddAccountsCommand.HandleBehavior handleBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.UI.AddAccountsViewModel.AddAccountsCommand.Command, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(AddAccountsCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
+
+			_commandLoggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -25,7 +31,7 @@ partial class AddAccountsCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -34,17 +40,17 @@ partial class AddAccountsCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.AddAccountsViewModel.AddAccountsCommand.Command, global::FluentResults.Result>
 	{
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Services.IUseragentManager _useragentManager;
 		private readonly global::MainCore.Notification.Message.AccountUpdated.Handler _accountUpdated;
 
 		public HandleBehavior(
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
 			global::MainCore.Services.IUseragentManager useragentManager,
 			global::MainCore.Notification.Message.AccountUpdated.Handler accountUpdated
 		)
 		{
-			_contextFactory = contextFactory;
+			_context = context;
 			_useragentManager = useragentManager;
 			_accountUpdated = accountUpdated;
 		}
@@ -57,7 +63,7 @@ partial class AddAccountsCommand
 			return await global::MainCore.Commands.UI.AddAccountsViewModel.AddAccountsCommand
 				.HandleAsync(
 					request
-					, _contextFactory
+					, _context
 					, _useragentManager
 					, _accountUpdated
 					, cancellationToken

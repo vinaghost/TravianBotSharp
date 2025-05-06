@@ -13,25 +13,21 @@ namespace MainCore.Services
         private bool _isShutdown = false;
 
         private readonly ITaskManager _taskManager;
-        private readonly IChromeManager _chromeManager;
-        private readonly ILogService _logService;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        private readonly ResiliencePropertyKey<ContextData> contextDataKey = new(nameof(ContextData));
+        private static ResiliencePropertyKey<ContextData> contextDataKey = new(nameof(ContextData));
         private readonly ResiliencePipeline<Result> _pipeline;
 
-        public TimerManager(ITaskManager taskManager, ILogService logService, IChromeManager chromeManager, IServiceScopeFactory serviceScopeFactory)
+        public TimerManager(ITaskManager taskManager, IServiceScopeFactory serviceScopeFactory)
         {
             _taskManager = taskManager;
-            _chromeManager = chromeManager;
-            _logService = logService;
             _serviceScopeFactory = serviceScopeFactory;
 
-            Func<OnRetryArguments<Result>, ValueTask> OnRetry = async args =>
+            Func<OnRetryArguments<Result>, ValueTask> OnRetry = async static args =>
             {
                 args.Context.Properties.TryGetValue(contextDataKey, out var contextData);
 
-                var (logger, taskName, accountId) = contextData;
+                var (accountId, taskName, logger, browser) = contextData;
                 logger.Warning("There is something wrong.");
                 var error = args.Outcome;
                 if (error.Exception is null)
@@ -46,9 +42,7 @@ namespace MainCore.Services
                 }
 
                 logger.Warning("Retry {AttemptNumber} for {TaskName}", args.AttemptNumber + 1, taskName);
-
-                var chromeBrowser = _chromeManager.Get(accountId);
-                await chromeBrowser.Refresh(args.Context.CancellationToken);
+                await browser.Refresh(args.Context.CancellationToken);
             };
 
             var retryOptions = new RetryStrategyOptions<Result>()
@@ -80,8 +74,6 @@ namespace MainCore.Services
 
             if (task.ExecuteAt > DateTime.Now) return;
 
-            var logger = _logService.GetLogger(accountId);
-
             taskQueue.IsExecuting = true;
             var cts = new CancellationTokenSource();
             taskQueue.CancellationTokenSource = cts;
@@ -89,16 +81,21 @@ namespace MainCore.Services
             task.Stage = StageEnums.Executing;
             var cacheExecuteTime = task.ExecuteAt;
 
+            using var scope = _serviceScopeFactory.CreateScope();
+            var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
+            dataService.AccountId = accountId;
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger>();
             logger.Information("{TaskName} is started", task.Description);
-            using var scoped = _serviceScopeFactory.CreateScope();
+
             ///===========================================================///
             var context = ResilienceContextPool.Shared.Get(cts.Token);
 
-            var contextData = new ContextData(logger, task.Description, accountId);
+            var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
+            var contextData = new ContextData(accountId, task.Description, logger, browser);
             context.Properties.Set(contextDataKey, contextData);
-
+            var handler = GetHandler(scope, task);
             var poliResult = await _pipeline.ExecuteOutcomeAsync(
-                async static (ctx, state) => Outcome.FromResult(await GetHandler(state).HandleAsync(state, ctx.CancellationToken)),
+                async (ctx, state) => Outcome.FromResult(await handler.HandleAsync(state, ctx.CancellationToken)),
                 context,
                 task);
 
@@ -159,13 +156,13 @@ namespace MainCore.Services
                     }
                 }
             }
-            var delayTaskCommand = scoped.ServiceProvider.GetService<DelayTaskCommand.Handler>();
+            var delayTaskCommand = scope.ServiceProvider.GetService<DelayTaskCommand.Handler>();
             await delayTaskCommand.HandleAsync(new(accountId));
         }
 
-        private static IHandler<T, Result> GetHandler<T>(T task)
+        private IHandler<T, Result> GetHandler<T>(IServiceScope scope, T task)
         {
-            var handler = Locator.Current.GetService<IHandler<T, Result>>();
+            var handler = scope.ServiceProvider.GetRequiredService<IHandler<T, Result>>();
             return handler;
         }
 
@@ -195,6 +192,6 @@ namespace MainCore.Services
             }
         }
 
-        public record ContextData(Serilog.ILogger Logger, string TaskName, AccountId AccountId);
+        public record ContextData(AccountId AccountId, string TaskName, ILogger Logger, IChromeBrowser Browser);
     }
 }

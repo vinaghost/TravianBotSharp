@@ -4,6 +4,7 @@ using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
@@ -56,9 +57,11 @@ namespace MainCore.UI.ViewModels.Tabs
             }
 
             var villageId = new VillageId(Villages.SelectedItemId);
-            var getVillageNameQuery = Locator.Current.GetService<GetVillageNameQuery.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getVillageNameQuery = scope.ServiceProvider.GetRequiredService<GetVillageNameQuery.Handler>();
             var villageName = await getVillageNameQuery.HandleAsync(new(villageId));
-            var taskManager = Locator.Current.GetService<ITaskManager>();
+            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
             await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, villageId, villageName));
 
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
@@ -67,10 +70,12 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task LoadUnload()
         {
-            var getMissingBuildingVillageQuery = Locator.Current.GetService<GetMissingBuildingVillagesQuery.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getMissingBuildingVillageQuery = scope.ServiceProvider.GetRequiredService<GetMissingBuildingVillagesQuery.Handler>();
             var villages = await getMissingBuildingVillageQuery.HandleAsync(new(AccountId));
-            var taskManager = Locator.Current.GetService<ITaskManager>();
-            var getVillageNameQuery = Locator.Current.GetService<GetVillageNameQuery.Handler>();
+            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
+            var getVillageNameQuery = scope.ServiceProvider.GetRequiredService<GetVillageNameQuery.Handler>();
             foreach (var village in villages)
             {
                 var villageName = await getVillageNameQuery.HandleAsync(new(village));
@@ -82,10 +87,12 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task LoadAll()
         {
-            var getVillagesQuery = Locator.Current.GetService<GetVillagesQuery.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getVillagesQuery = scope.ServiceProvider.GetRequiredService<GetVillagesQuery.Handler>();
             var villages = await getVillagesQuery.HandleAsync(new(AccountId));
-            var taskManager = Locator.Current.GetService<ITaskManager>();
-            var getVillageNameQuery = Locator.Current.GetService<GetVillageNameQuery.Handler>();
+            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
+            var getVillageNameQuery = scope.ServiceProvider.GetRequiredService<GetVillageNameQuery.Handler>();
             foreach (var village in villages)
             {
                 var villageName = await getVillageNameQuery.HandleAsync(new(village));
@@ -97,7 +104,9 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private static async Task<List<ListBoxItem>> LoadVillage(AccountId accountId)
         {
-            var getVillageItemsQuery = Locator.Current.GetService<GetVillageItemsQuery.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getVillageItemsQuery = scope.ServiceProvider.GetRequiredService<GetVillageItemsQuery.Handler>();
             return await getVillageItemsQuery.HandleAsync(new(accountId));
         }
     }

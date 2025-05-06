@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.UI.MainLayoutViewModel
 {
@@ -9,13 +9,13 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             AccountUpdated.Handler accountUpdated,
             CancellationToken cancellationToken
             )
         {
             var accountId = command.AccountId;
-            using var context = await contextFactory.CreateDbContextAsync();
+            
             context.Accounts
                 .Where(x => x.Id == accountId.Value)
                 .ExecuteDelete();

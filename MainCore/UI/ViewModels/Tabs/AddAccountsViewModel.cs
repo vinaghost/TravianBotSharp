@@ -2,6 +2,7 @@
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 
 namespace MainCore.UI.ViewModels.Tabs
@@ -46,8 +47,9 @@ namespace MainCore.UI.ViewModels.Tabs
         private async Task AddAccount()
         {
             await _waitingOverlayViewModel.Show("adding accounts");
-
-            var addAccountsCommand = Locator.Current.GetService<AddAccountsCommand.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var addAccountsCommand = scope.ServiceProvider.GetRequiredService<AddAccountsCommand.Handler>();
             var resultInput = await addAccountsCommand.HandleAsync(new([.. Accounts.Select(x => x.ToDto())]));
             await _waitingOverlayViewModel.Hide();
 

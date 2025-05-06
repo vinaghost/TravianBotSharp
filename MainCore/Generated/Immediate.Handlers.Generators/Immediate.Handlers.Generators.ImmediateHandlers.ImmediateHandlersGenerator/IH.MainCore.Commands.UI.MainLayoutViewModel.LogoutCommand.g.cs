@@ -34,15 +34,15 @@ partial class LogoutCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.MainLayoutViewModel.LogoutCommand.Command, global::System.ValueTuple>
 	{
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
 
 		public HandleBehavior(
-			global::MainCore.Services.IChromeManager chromeManager,
+			global::MainCore.Services.IChromeBrowser browser,
 			global::MainCore.Services.ITaskManager taskManager
 		)
 		{
-			_chromeManager = chromeManager;
+			_browser = browser;
 			_taskManager = taskManager;
 		}
 
@@ -54,7 +54,7 @@ partial class LogoutCommand
 			await global::MainCore.Commands.UI.MainLayoutViewModel.LogoutCommand
 				.HandleAsync(
 					request
-					, _chromeManager
+					, _browser
 					, _taskManager
 					, cancellationToken
 				)

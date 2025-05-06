@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 using MainCore.Errors.AutoBuilder;
 using System.Text.Json;
 
@@ -11,7 +11,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private static async ValueTask<Result<NormalBuildPlan>> HandleAsync(
             Command command,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
@@ -21,7 +21,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         )
         {
             var (accountId, villageId) = command;
-            using var context = await contextFactory.CreateDbContextAsync();
+            
 
             var (_, isFailed, job, errors) = context.GetJob(accountId, villageId);
             if (isFailed) return Result.Fail(errors);

@@ -1,4 +1,4 @@
-﻿using MainCore.Notification.Base;
+﻿using MainCore.Constraints;
 using MainCore.UI.ViewModels.Tabs.Villages;
 
 namespace MainCore.Notification.Handlers.Refresh

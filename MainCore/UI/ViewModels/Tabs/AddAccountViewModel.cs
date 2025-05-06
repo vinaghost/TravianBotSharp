@@ -3,6 +3,7 @@ using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
@@ -86,8 +87,9 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
             await _waitingOverlayViewModel.Show("adding account");
-
-            var addAccountCommand = Locator.Current.GetService<AddAccountCommand.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var addAccountCommand = scope.ServiceProvider.GetRequiredService<AddAccountCommand.Handler>();
             var resultInput = await addAccountCommand.HandleAsync(new(AccountInput.ToDto()));
             await _waitingOverlayViewModel.Hide();
 

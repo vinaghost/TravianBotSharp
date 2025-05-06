@@ -34,17 +34,17 @@ partial class UpdateAccountCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.EditAccountViewModel.UpdateAccountCommand.Command, global::System.ValueTuple>
 	{
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Services.IUseragentManager _useragentManager;
 		private readonly global::MainCore.Notification.Message.AccountUpdated.Handler _accountUpdated;
 
 		public HandleBehavior(
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
 			global::MainCore.Services.IUseragentManager useragentManager,
 			global::MainCore.Notification.Message.AccountUpdated.Handler accountUpdated
 		)
 		{
-			_contextFactory = contextFactory;
+			_context = context;
 			_useragentManager = useragentManager;
 			_accountUpdated = accountUpdated;
 		}
@@ -57,7 +57,7 @@ partial class UpdateAccountCommand
 			await global::MainCore.Commands.UI.EditAccountViewModel.UpdateAccountCommand
 				.HandleAsync(
 					request
-					, _contextFactory
+					, _context
 					, _useragentManager
 					, _accountUpdated
 					, cancellationToken

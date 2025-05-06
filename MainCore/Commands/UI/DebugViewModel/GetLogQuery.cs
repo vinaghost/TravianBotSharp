@@ -1,4 +1,4 @@
-﻿using MainCore.Queries.Base;
+﻿using MainCore.Constraints;
 using Serilog.Templates;
 using System.Text;
 

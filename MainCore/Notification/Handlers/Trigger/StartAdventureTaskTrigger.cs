@@ -1,4 +1,4 @@
-﻿using MainCore.Notification.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
@@ -8,11 +8,11 @@ namespace MainCore.Notification.Handlers.Trigger
         private static async ValueTask HandleAsync(
             IAccountNotification notification,
             ITaskManager taskManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
-            using var context = await contextFactory.CreateDbContextAsync();
+            
             var autoStartAdventure = context.BooleanByName(accountId, AccountSettingEnums.EnableAutoStartAdventure);
             if (autoStartAdventure)
             {

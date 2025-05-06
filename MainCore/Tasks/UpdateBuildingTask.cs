@@ -16,12 +16,11 @@ namespace MainCore.Tasks
 
         private static async ValueTask<Result> HandleAsync(
             Task task,
-            IChromeManager chromeManager,
+            IChromeBrowser browser,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToDorfCommand.Handler toDorfCommand,
             CancellationToken cancellationToken)
         {
-            var browser = chromeManager.Get(task.AccountId);
             var url = browser.CurrentUrl;
             Result result;
             if (url.Contains("dorf1"))

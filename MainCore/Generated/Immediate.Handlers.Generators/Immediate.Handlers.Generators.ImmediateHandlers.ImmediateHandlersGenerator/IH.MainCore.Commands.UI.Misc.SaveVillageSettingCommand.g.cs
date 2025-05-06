@@ -34,15 +34,15 @@ partial class SaveVillageSettingCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.Command, global::System.ValueTuple>
 	{
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Notification.Message.VillageSettingUpdated.Handler _villageSettingUpdated;
 
 		public HandleBehavior(
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
 			global::MainCore.Notification.Message.VillageSettingUpdated.Handler villageSettingUpdated
 		)
 		{
-			_contextFactory = contextFactory;
+			_context = context;
 			_villageSettingUpdated = villageSettingUpdated;
 		}
 
@@ -54,7 +54,7 @@ partial class SaveVillageSettingCommand
 			await global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand
 				.HandleAsync(
 					request
-					, _contextFactory
+					, _context
 					, _villageSettingUpdated
 					, cancellationToken
 				)

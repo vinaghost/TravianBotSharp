@@ -1,4 +1,4 @@
-﻿using MainCore.Queries.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.UI.DebugViewModel
 {

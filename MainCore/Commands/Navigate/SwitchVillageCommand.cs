@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Navigate
 {
@@ -9,13 +9,13 @@ namespace MainCore.Commands.Navigate
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
-           IChromeManager chromeManager,
+           IChromeBrowser browser,
            QuestUpdated.Handler questUpdated,
            CancellationToken cancellationToken
            )
         {
             var (accountId, villageId) = command;
-            var browser = chromeManager.Get(accountId);
+            
             var html = browser.Html;
             var node = VillagePanelParser.GetVillageNode(html, villageId);
             if (node is null) return Skip.VillageNotFound;

@@ -1,4 +1,4 @@
-﻿using MainCore.Queries.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.UI.EditAccountViewModel
 {
@@ -9,12 +9,12 @@ namespace MainCore.Commands.UI.EditAccountViewModel
 
         private static async ValueTask<AccountDto> HandleAsync(
             Query query,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             CancellationToken cancellationToken
             )
         {
+            await Task.CompletedTask;
             var accountId = query.AccountId;
-            using var context = await contextFactory.CreateDbContextAsync();
 
             var account = context.Accounts
                 .Where(x => x.Id == accountId.Value)

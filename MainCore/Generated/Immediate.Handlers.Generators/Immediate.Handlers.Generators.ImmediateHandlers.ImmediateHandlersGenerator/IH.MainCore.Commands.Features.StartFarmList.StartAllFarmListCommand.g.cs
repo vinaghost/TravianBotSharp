@@ -9,15 +9,21 @@ partial class StartAllFarmListCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.StartFarmList.StartAllFarmListCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Features.StartFarmList.StartAllFarmListCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Features.StartFarmList.StartAllFarmListCommand.Command, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Features.StartFarmList.StartAllFarmListCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.Features.StartFarmList.StartAllFarmListCommand.HandleBehavior handleBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Features.StartFarmList.StartAllFarmListCommand.Command, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(StartAllFarmListCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
+
+			_commandLoggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -25,7 +31,7 @@ partial class StartAllFarmListCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -34,13 +40,13 @@ partial class StartAllFarmListCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.StartFarmList.StartAllFarmListCommand.Command, global::FluentResults.Result>
 	{
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
 
 		public HandleBehavior(
-			global::MainCore.Services.IChromeManager chromeManager
+			global::MainCore.Services.IChromeBrowser browser
 		)
 		{
-			_chromeManager = chromeManager;
+			_browser = browser;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -51,7 +57,7 @@ partial class StartAllFarmListCommand
 			return await global::MainCore.Commands.Features.StartFarmList.StartAllFarmListCommand
 				.HandleAsync(
 					request
-					, _chromeManager
+					, _browser
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

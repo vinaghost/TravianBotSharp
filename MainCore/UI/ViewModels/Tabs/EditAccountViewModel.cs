@@ -3,6 +3,7 @@ using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
@@ -82,7 +83,9 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
             await _waitingOverlayViewModel.Show("editing account");
-            var updateAccountCommand = Locator.Current.GetService<UpdateAccountCommand.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var updateAccountCommand = scope.ServiceProvider.GetRequiredService<UpdateAccountCommand.Handler>();
             await updateAccountCommand.HandleAsync(new(AccountInput.ToDto()));
             await _waitingOverlayViewModel.Hide();
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Edited account"));
@@ -93,7 +96,9 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<AccountDto> LoadAccount(AccountId accountId)
         {
-            var getAcccountQuery = Locator.Current.GetService<GetAcccountQuery.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getAcccountQuery = scope.ServiceProvider.GetRequiredService<GetAcccountQuery.Handler>();
             var account = await getAcccountQuery.HandleAsync(new(AccountId));
             return account;
         }

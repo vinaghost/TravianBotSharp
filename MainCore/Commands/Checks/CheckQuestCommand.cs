@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Checks
 {
@@ -9,13 +9,13 @@ namespace MainCore.Commands.Checks
 
         private static async ValueTask HandleAsync(
            Command command,
-           IChromeManager chromeManager,
+           IChromeBrowser browser,
            QuestUpdated.Handler questUpdated,
            CancellationToken cancellationToken
            )
         {
             var (accountId, villageId) = command;
-            var browser = chromeManager.Get(accountId);
+            
             if (!QuestParser.IsQuestClaimable(browser.Html)) return;
 
             await questUpdated.HandleAsync(new(accountId, villageId), cancellationToken);

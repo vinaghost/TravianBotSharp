@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Update
 {
@@ -9,16 +9,16 @@ namespace MainCore.Commands.Update
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            IChromeBrowser browser,
+            AppDbContext context,
             AccountInfoUpdated.Handler accountInfoUpdated,
             CancellationToken cancellationToken)
         {
-            var chromeBrowser = chromeManager.Get(command.AccountId);
-            var html = chromeBrowser.Html;
+            
+            var html = browser.Html;
 
             var dto = Get(html);
-            UpdateToDatabase(command.AccountId, dto, contextFactory);
+            UpdateToDatabase(command.AccountId, dto, context);
 
             await accountInfoUpdated.HandleAsync(new(command.AccountId), cancellationToken);
             return Result.Ok();
@@ -39,9 +39,9 @@ namespace MainCore.Commands.Update
             };
         }
 
-        private static void UpdateToDatabase(AccountId accountId, AccountInfoDto dto, IDbContextFactory<AppDbContext> contextFactory)
+        private static void UpdateToDatabase(AccountId accountId, AccountInfoDto dto, AppDbContext context)
         {
-            using var context = contextFactory.CreateDbContext();
+            
 
             var dbAccountInfo = context.AccountsInfo
                 .FirstOrDefault(x => x.AccountId == accountId.Value);

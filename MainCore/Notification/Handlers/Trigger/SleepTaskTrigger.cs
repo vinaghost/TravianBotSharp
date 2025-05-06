@@ -1,4 +1,4 @@
-﻿using MainCore.Notification.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
@@ -8,12 +8,12 @@ namespace MainCore.Notification.Handlers.Trigger
         private static async ValueTask HandleAsync(
             IAccountNotification notification,
             ITaskManager taskManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
             if (taskManager.IsExist<SleepTask.Task>(accountId)) return;
-            using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+            
             var workTime = context.ByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
             var sleepTask = new SleepTask.Task(accountId);
             sleepTask.ExecuteAt = DateTime.Now.AddMinutes(workTime);

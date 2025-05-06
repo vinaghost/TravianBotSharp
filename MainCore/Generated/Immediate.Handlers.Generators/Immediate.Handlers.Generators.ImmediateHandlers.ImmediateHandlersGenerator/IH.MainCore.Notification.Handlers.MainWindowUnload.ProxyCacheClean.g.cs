@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.MainWindowUnload;
 
 partial class ProxyCacheClean
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Base.INotification, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.INotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.MainWindowUnload.ProxyCacheClean.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class ProxyCacheClean
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.Base.INotification request,
+			global::MainCore.Constraints.INotification request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,7 +32,7 @@ partial class ProxyCacheClean
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.Base.INotification, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.INotification, global::System.ValueTuple>
 	{
 
 		public HandleBehavior(
@@ -41,7 +41,7 @@ partial class ProxyCacheClean
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.Base.INotification request,
+			global::MainCore.Constraints.INotification request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -63,7 +63,7 @@ partial class ProxyCacheClean
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.MainWindowUnload.ProxyCacheClean.Handler), typeof(global::MainCore.Notification.Handlers.MainWindowUnload.ProxyCacheClean.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Base.INotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.MainWindowUnload.ProxyCacheClean.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.INotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.MainWindowUnload.ProxyCacheClean.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.MainWindowUnload.ProxyCacheClean.HandleBehavior), typeof(global::MainCore.Notification.Handlers.MainWindowUnload.ProxyCacheClean.HandleBehavior), lifetime));
 		return services;
 	}

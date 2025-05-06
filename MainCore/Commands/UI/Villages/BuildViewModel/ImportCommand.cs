@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 using System.Text.Json;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
@@ -26,7 +26,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            IDbContextFactory<AppDbContext> contextFactory, GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
+            AppDbContext context, GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
             JobUpdated.Handler jobUpdated,
             CancellationToken cancellationToken
             )
@@ -36,7 +36,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId));
             var modifiedJobs = GetModifiedJobs(buildings, inputJobs);
 
-            using var context = await contextFactory.CreateDbContextAsync();
+            
             var count = context.Jobs
                .Where(x => x.VillageId == villageId.Value)
                .Count();

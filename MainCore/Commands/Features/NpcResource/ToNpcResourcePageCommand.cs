@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 using MainCore.Errors.TrainTroop;
 
 namespace MainCore.Commands.Features.NpcResource
@@ -10,7 +10,7 @@ namespace MainCore.Commands.Features.NpcResource
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
+            IChromeBrowser browser,
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToBuildingCommand.Handler toBuildingCommand,

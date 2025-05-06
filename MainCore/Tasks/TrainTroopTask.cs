@@ -19,14 +19,14 @@ namespace MainCore.Tasks
 
         private static async ValueTask<Result> HandleAsync(
             Task task,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             ITaskManager taskManager,
             TrainTroopCommand.Handler trainTroopCommand,
             SaveVillageSettingCommand.Handler saveVillageSettingCommand,
             CancellationToken cancellationToken)
         {
             Result result;
-            using var context = contextFactory.CreateDbContext();
+            
 
             var filterdSettings = context.VillagesSetting
                 .Where(x => x.VillageId == task.VillageId.Value)

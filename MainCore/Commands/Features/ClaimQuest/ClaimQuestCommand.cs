@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.ClaimQuest
 {
@@ -9,12 +9,12 @@ namespace MainCore.Commands.Features.ClaimQuest
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
+            IChromeBrowser browser,
             StorageUpdated.Handler storageUpdate, SwitchTabCommand.Handler switchTabCommand, DelayClickCommand.Handler delayClickCommand,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
-            var browser = chromeManager.Get(accountId);
+            
             HtmlDocument html;
             Result result;
 

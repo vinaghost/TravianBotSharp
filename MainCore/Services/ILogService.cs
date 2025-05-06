@@ -4,9 +4,9 @@ namespace MainCore.Services
 {
     public interface ILogService
     {
-        LinkedList<LogEvent> GetLog(AccountId accountId);
+        Dictionary<AccountId, ILogger> Loggers { get; }
 
-        Serilog.ILogger GetLogger(AccountId accountId);
+        LinkedList<LogEvent> GetLog(AccountId accountId);
 
         void Shutdown();
     }

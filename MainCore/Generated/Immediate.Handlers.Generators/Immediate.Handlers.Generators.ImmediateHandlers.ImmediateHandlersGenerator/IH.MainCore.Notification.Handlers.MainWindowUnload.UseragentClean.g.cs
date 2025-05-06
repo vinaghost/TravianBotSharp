@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.MainWindowUnload;
 
 partial class UseragentClean
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Base.INotification, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.INotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.MainWindowUnload.UseragentClean.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class UseragentClean
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.Base.INotification request,
+			global::MainCore.Constraints.INotification request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,7 +32,7 @@ partial class UseragentClean
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.Base.INotification, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.INotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.IUseragentManager _useragentManager;
 
@@ -44,7 +44,7 @@ partial class UseragentClean
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.Base.INotification request,
+			global::MainCore.Constraints.INotification request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -67,7 +67,7 @@ partial class UseragentClean
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.MainWindowUnload.UseragentClean.Handler), typeof(global::MainCore.Notification.Handlers.MainWindowUnload.UseragentClean.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Base.INotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.MainWindowUnload.UseragentClean.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.INotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.MainWindowUnload.UseragentClean.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.MainWindowUnload.UseragentClean.HandleBehavior), typeof(global::MainCore.Notification.Handlers.MainWindowUnload.UseragentClean.HandleBehavior), lifetime));
 		return services;
 	}

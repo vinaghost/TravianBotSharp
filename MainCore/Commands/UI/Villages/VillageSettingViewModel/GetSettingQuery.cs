@@ -1,4 +1,4 @@
-﻿using MainCore.Queries.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.UI.Villages.VillageSettingViewModel
 {
@@ -9,12 +9,12 @@ namespace MainCore.Commands.UI.Villages.VillageSettingViewModel
 
         private static async ValueTask<Dictionary<VillageSettingEnums, int>> HandleAsync(
             Query query,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             CancellationToken cancellationToken
             )
         {
+            await Task.CompletedTask;
             var villageId = query.VillageId;
-            using var context = await contextFactory.CreateDbContextAsync();
 
             var settings = context.VillagesSetting
                .Where(x => x.VillageId == villageId.Value)

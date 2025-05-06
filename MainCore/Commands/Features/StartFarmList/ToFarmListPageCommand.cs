@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.StartFarmList
 {
@@ -9,17 +9,17 @@ namespace MainCore.Commands.Features.StartFarmList
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
+            IChromeBrowser browser,
             SwitchVillageCommand.Handler switchVillageCommand,
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToBuildingCommand.Handler toBuildingCommand,
             SwitchTabCommand.Handler switchTabCommand,
             DelayClickCommand.Handler delayClickCommand,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
-            var rallypointVillageId = GetVillageHasRallypoint(command.AccountId, contextFactory);
+            var rallypointVillageId = GetVillageHasRallypoint(command.AccountId, context);
             if (rallypointVillageId == VillageId.Empty) return Skip.NoRallypoint;
 
             var result = await switchVillageCommand.HandleAsync(new(command.AccountId, rallypointVillageId), cancellationToken);
@@ -41,9 +41,9 @@ namespace MainCore.Commands.Features.StartFarmList
             return Result.Ok();
         }
 
-        private static VillageId GetVillageHasRallypoint(AccountId accountId, IDbContextFactory<AppDbContext> contextFactory)
+        private static VillageId GetVillageHasRallypoint(AccountId accountId, AppDbContext context)
         {
-            using var context = contextFactory.CreateDbContext();
+            
             return context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .Where(x => x.Buildings.Any(x => x.Type == BuildingEnums.RallyPoint && x.Level > 0))

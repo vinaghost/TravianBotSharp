@@ -34,17 +34,17 @@ partial class ImportCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.Villages.BuildViewModel.ImportCommand.Command, global::System.ValueTuple>
 	{
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Queries.GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
 		private readonly global::MainCore.Notification.Message.JobUpdated.Handler _jobUpdated;
 
 		public HandleBehavior(
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
 			global::MainCore.Queries.GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
 			global::MainCore.Notification.Message.JobUpdated.Handler jobUpdated
 		)
 		{
-			_contextFactory = contextFactory;
+			_context = context;
 			_getLayoutBuildingsQuery = getLayoutBuildingsQuery;
 			_jobUpdated = jobUpdated;
 		}
@@ -57,7 +57,7 @@ partial class ImportCommand
 			await global::MainCore.Commands.UI.Villages.BuildViewModel.ImportCommand
 				.HandleAsync(
 					request
-					, _contextFactory
+					, _context
 					, _getLayoutBuildingsQuery
 					, _jobUpdated
 					, cancellationToken

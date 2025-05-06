@@ -1,6 +1,8 @@
-﻿namespace MainCore.Tasks.Base
+﻿using MainCore.Constraints;
+
+namespace MainCore.Tasks.Base
 {
-    public abstract class VillageTask(AccountId accountId, VillageId villageId, string villageName) : AccountTask(accountId), IVillageTask
+    public abstract class VillageTask(AccountId accountId, VillageId villageId, string villageName) : AccountTask(accountId), IVillageConstraint
     {
         public VillageId VillageId { get; } = villageId;
 

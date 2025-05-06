@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="serviceCollection">The service collection.</param>
         /// <param name="tags">The service registration tags to include.</param>
         /// <returns>The service collection</returns>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Injectio.Generators", "4.1.0+09258f57953719e9d2b588dde5a0058940102cae")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Injectio.Generators", "5.0.0+6022b4d6e5ca0ba3f9de7f6ed4c57bf2b6cf6082")]
         public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddMainCore(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection, params string[]? tags)
         {
             var tagSet = new global::System.Collections.Generic.HashSet<string>(tags ?? global::System.Linq.Enumerable.Empty<string>());
@@ -23,263 +23,147 @@ namespace Microsoft.Extensions.DependencyInjection
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Services.IChromeDriverInstaller),
-                    typeof(global::MainCore.Services.ChromeDriverInstaller),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.Services.IChromeDriverInstaller, global::MainCore.Services.ChromeDriverInstaller>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Services.IChromeManager),
-                    typeof(global::MainCore.Services.ChromeManager),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.Services.IChromeManager, global::MainCore.Services.ChromeManager>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Services.IDataService),
-                    typeof(global::MainCore.Services.DataService),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Scoped
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Scoped<global::MainCore.Services.IDataService, global::MainCore.Services.DataService>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Services.IDialogService),
-                    typeof(global::MainCore.Services.DialogService),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.Services.IDialogService, global::MainCore.Services.DialogService>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Services.ILogService),
-                    typeof(global::MainCore.Services.LogService),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.Services.ILogService, global::MainCore.Services.LogService>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::Serilog.Core.ILogEventSink),
-                    typeof(global::MainCore.Services.LogSink),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::Serilog.Core.ILogEventSink, global::MainCore.Services.LogSink>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Services.LogSink),
-                    typeof(global::MainCore.Services.LogSink),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.Services.LogSink, global::MainCore.Services.LogSink>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Services.ITaskManager),
-                    typeof(global::MainCore.Services.TaskManager),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.Services.ITaskManager, global::MainCore.Services.TaskManager>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Services.ITimerManager),
-                    typeof(global::MainCore.Services.TimerManager),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.Services.ITimerManager, global::MainCore.Services.TimerManager>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.Services.IUseragentManager),
-                    typeof(global::MainCore.Services.UseragentManager),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.Services.IUseragentManager, global::MainCore.Services.UseragentManager>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ObservableExceptionHandler),
-                    typeof(global::MainCore.UI.ObservableExceptionHandler),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ObservableExceptionHandler, global::MainCore.UI.ObservableExceptionHandler>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.Stores.AccountTabStore),
-                    typeof(global::MainCore.UI.Stores.AccountTabStore),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.Stores.AccountTabStore, global::MainCore.UI.Stores.AccountTabStore>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.Stores.SelectedItemStore),
-                    typeof(global::MainCore.UI.Stores.SelectedItemStore),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.Stores.SelectedItemStore, global::MainCore.UI.Stores.SelectedItemStore>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.Stores.VillageTabStore),
-                    typeof(global::MainCore.UI.Stores.VillageTabStore),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.Stores.VillageTabStore, global::MainCore.UI.Stores.VillageTabStore>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.MainViewModel),
-                    typeof(global::MainCore.UI.ViewModels.MainViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.MainViewModel, global::MainCore.UI.ViewModels.MainViewModel>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.Tabs.AccountSettingViewModel),
-                    typeof(global::MainCore.UI.ViewModels.Tabs.AccountSettingViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.Tabs.AccountSettingViewModel, global::MainCore.UI.ViewModels.Tabs.AccountSettingViewModel>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.Tabs.AddAccountsViewModel),
-                    typeof(global::MainCore.UI.ViewModels.Tabs.AddAccountsViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.Tabs.AddAccountsViewModel, global::MainCore.UI.ViewModels.Tabs.AddAccountsViewModel>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.Tabs.AddAccountViewModel),
-                    typeof(global::MainCore.UI.ViewModels.Tabs.AddAccountViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.Tabs.AddAccountViewModel, global::MainCore.UI.ViewModels.Tabs.AddAccountViewModel>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.Tabs.DebugViewModel),
-                    typeof(global::MainCore.UI.ViewModels.Tabs.DebugViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.Tabs.DebugViewModel, global::MainCore.UI.ViewModels.Tabs.DebugViewModel>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.Tabs.EditAccountViewModel),
-                    typeof(global::MainCore.UI.ViewModels.Tabs.EditAccountViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.Tabs.EditAccountViewModel, global::MainCore.UI.ViewModels.Tabs.EditAccountViewModel>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.Tabs.FarmingViewModel),
-                    typeof(global::MainCore.UI.ViewModels.Tabs.FarmingViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.Tabs.FarmingViewModel, global::MainCore.UI.ViewModels.Tabs.FarmingViewModel>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.Tabs.NoAccountViewModel),
-                    typeof(global::MainCore.UI.ViewModels.Tabs.NoAccountViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.Tabs.NoAccountViewModel, global::MainCore.UI.ViewModels.Tabs.NoAccountViewModel>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.Tabs.Villages.BuildViewModel),
-                    typeof(global::MainCore.UI.ViewModels.Tabs.Villages.BuildViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.Tabs.Villages.BuildViewModel, global::MainCore.UI.ViewModels.Tabs.Villages.BuildViewModel>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.Tabs.Villages.InfoViewModel),
-                    typeof(global::MainCore.UI.ViewModels.Tabs.Villages.InfoViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.Tabs.Villages.InfoViewModel, global::MainCore.UI.ViewModels.Tabs.Villages.InfoViewModel>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.Tabs.Villages.NoVillageViewModel),
-                    typeof(global::MainCore.UI.ViewModels.Tabs.Villages.NoVillageViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.Tabs.Villages.NoVillageViewModel, global::MainCore.UI.ViewModels.Tabs.Villages.NoVillageViewModel>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.Tabs.Villages.VillageSettingViewModel),
-                    typeof(global::MainCore.UI.ViewModels.Tabs.Villages.VillageSettingViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.Tabs.Villages.VillageSettingViewModel, global::MainCore.UI.ViewModels.Tabs.Villages.VillageSettingViewModel>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.Tabs.VillageViewModel),
-                    typeof(global::MainCore.UI.ViewModels.Tabs.VillageViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.Tabs.VillageViewModel, global::MainCore.UI.ViewModels.Tabs.VillageViewModel>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.UserControls.MainLayoutViewModel),
-                    typeof(global::MainCore.UI.ViewModels.UserControls.MainLayoutViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.UserControls.MainLayoutViewModel, global::MainCore.UI.ViewModels.UserControls.MainLayoutViewModel>()
             );
 
             global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.TryAdd(
                 serviceCollection,
-                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Describe(
-                    typeof(global::MainCore.UI.ViewModels.UserControls.IWaitingOverlayViewModel),
-                    typeof(global::MainCore.UI.ViewModels.UserControls.WaitingOverlayViewModel),
-                    global::Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton
-                )
+                global::Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<global::MainCore.UI.ViewModels.UserControls.IWaitingOverlayViewModel, global::MainCore.UI.ViewModels.UserControls.WaitingOverlayViewModel>()
             );
 
             return serviceCollection;

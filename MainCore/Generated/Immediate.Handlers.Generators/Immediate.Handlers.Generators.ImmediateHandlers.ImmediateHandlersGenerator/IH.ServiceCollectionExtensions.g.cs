@@ -54,6 +54,8 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Commands.Navigate.SwitchVillageCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Navigate.ToBuildingCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.Navigate.ToDorfCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.NextExecute.NextExecuteSleepTaskCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.NextExecute.NextExecuteStartFarmListTaskCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.AccountSettingViewModel.GetSettingQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.AddAccountsViewModel.AddAccountsCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.AddHandlers(services, lifetime);
@@ -139,6 +141,7 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Notification.Message.VillageSettingUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.VillageUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetAccessQuery.AddHandlers(services, lifetime);
+		global::MainCore.Queries.GetActiveFarmsQuery.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetBuildingLocationQuery.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetBuildingQuery.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetHasBuildJobVillagesQuery.AddHandlers(services, lifetime);

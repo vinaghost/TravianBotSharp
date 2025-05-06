@@ -1,4 +1,4 @@
-﻿using MainCore.Notification.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
@@ -7,11 +7,12 @@ namespace MainCore.Notification.Handlers.Trigger
     {
         private static async ValueTask HandleAsync(
             IVillageNotification notification,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
             var villageId = notification.VillageId;
-            using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+
             var wallBuilding = context.Buildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Location == 40)

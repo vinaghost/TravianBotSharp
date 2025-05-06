@@ -9,15 +9,21 @@ partial class HandleResourceCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.UpgradeBuilding.HandleResourceCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Features.UpgradeBuilding.HandleResourceCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Features.UpgradeBuilding.HandleResourceCommand.Command, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Features.UpgradeBuilding.HandleResourceCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.Features.UpgradeBuilding.HandleResourceCommand.HandleBehavior handleBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Features.UpgradeBuilding.HandleResourceCommand.Command, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(HandleResourceCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
+
+			_commandLoggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -25,7 +31,7 @@ partial class HandleResourceCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -40,9 +46,9 @@ partial class HandleResourceCommand
 		private readonly global::MainCore.Commands.Features.UseHeroItem.ToHeroInventoryCommand.Handler _toHeroInventoryCommand;
 		private readonly global::MainCore.Commands.Update.UpdateInventoryCommand.Handler _updateInventoryCommand;
 		private readonly global::MainCore.Commands.Misc.AddJobCommand.Handler _addJobCommand;
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
-		private readonly global::MainCore.Services.ILogService _logService;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
+		private readonly global::Serilog.ILogger _logger;
 
 		public HandleBehavior(
 			global::MainCore.Notification.Message.JobUpdated.Handler jobUpdated,
@@ -51,9 +57,9 @@ partial class HandleResourceCommand
 			global::MainCore.Commands.Features.UseHeroItem.ToHeroInventoryCommand.Handler toHeroInventoryCommand,
 			global::MainCore.Commands.Update.UpdateInventoryCommand.Handler updateInventoryCommand,
 			global::MainCore.Commands.Misc.AddJobCommand.Handler addJobCommand,
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
-			global::MainCore.Services.IChromeManager chromeManager,
-			global::MainCore.Services.ILogService logService
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
+			global::MainCore.Services.IChromeBrowser browser,
+			global::Serilog.ILogger logger
 		)
 		{
 			_jobUpdated = jobUpdated;
@@ -62,9 +68,9 @@ partial class HandleResourceCommand
 			_toHeroInventoryCommand = toHeroInventoryCommand;
 			_updateInventoryCommand = updateInventoryCommand;
 			_addJobCommand = addJobCommand;
-			_contextFactory = contextFactory;
-			_chromeManager = chromeManager;
-			_logService = logService;
+			_context = context;
+			_browser = browser;
+			_logger = logger;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -81,9 +87,9 @@ partial class HandleResourceCommand
 					, _toHeroInventoryCommand
 					, _updateInventoryCommand
 					, _addJobCommand
-					, _contextFactory
-					, _chromeManager
-					, _logService
+					, _context
+					, _browser
+					, _logger
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

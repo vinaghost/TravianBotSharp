@@ -3,6 +3,7 @@ using MainCore.Commands.UI.Misc;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs
@@ -43,7 +44,9 @@ namespace MainCore.UI.ViewModels.Tabs
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
                 return;
             }
-            var saveAccountSettingCommand = Locator.Current.GetService<SaveAccountSettingCommand.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
             await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
         }
 
@@ -70,7 +73,9 @@ namespace MainCore.UI.ViewModels.Tabs
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
                 return;
             }
-            var saveAccountSettingCommand = Locator.Current.GetService<SaveAccountSettingCommand.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
             await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
         }
 
@@ -79,8 +84,9 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
             if (string.IsNullOrEmpty(path)) return;
-
-            var getSettingQuery = Locator.Current.GetService<GetSettingQuery.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
             var settings = getSettingQuery.HandleAsync(new(AccountId));
 
             var jsonString = JsonSerializer.Serialize(settings);
@@ -91,7 +97,9 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private static async Task<Dictionary<AccountSettingEnums, int>> LoadSettings(AccountId accountId)
         {
-            var getSettingQuery = Locator.Current.GetService<GetSettingQuery.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
             var settings = await getSettingQuery.HandleAsync(new(accountId));
             return settings;
         }

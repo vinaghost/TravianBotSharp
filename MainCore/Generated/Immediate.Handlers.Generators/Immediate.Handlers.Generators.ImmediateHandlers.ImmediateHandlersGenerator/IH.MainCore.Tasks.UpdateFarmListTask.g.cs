@@ -10,20 +10,26 @@ partial class UpdateFarmListTask
 	{
 		private readonly global::MainCore.Tasks.UpdateFarmListTask.HandleBehavior _handleBehavior;
 		private readonly global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.UpdateFarmListTask.Task, global::FluentResults.Result> _accountTaskBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Tasks.UpdateFarmListTask.Task, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
 			global::MainCore.Tasks.UpdateFarmListTask.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.UpdateFarmListTask.Task, global::FluentResults.Result> accountTaskBehavior
+			global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.UpdateFarmListTask.Task, global::FluentResults.Result> accountTaskBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Tasks.UpdateFarmListTask.Task, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(UpdateFarmListTask);
 
 			_handleBehavior = handleBehavior;
 
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
+
 			_accountTaskBehavior = accountTaskBehavior;
 			_accountTaskBehavior.HandlerType = handlerType;
 
 			_accountTaskBehavior.SetInnerHandler(_handleBehavior);
+			_commandLoggingBehavior.SetInnerHandler(_accountTaskBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -31,7 +37,7 @@ partial class UpdateFarmListTask
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _accountTaskBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

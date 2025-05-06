@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Refresh;
 
 partial class VillageSettingRefresh
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Base.IVillageNotification, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IVillageNotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.Refresh.VillageSettingRefresh.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class VillageSettingRefresh
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.Base.IVillageNotification request,
+			global::MainCore.Constraints.IVillageNotification request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,7 +32,7 @@ partial class VillageSettingRefresh
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Notification.Base.IVillageNotification, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IVillageNotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.UI.ViewModels.Tabs.Villages.VillageSettingViewModel _viewModel;
 
@@ -44,7 +44,7 @@ partial class VillageSettingRefresh
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Notification.Base.IVillageNotification request,
+			global::MainCore.Constraints.IVillageNotification request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -67,7 +67,7 @@ partial class VillageSettingRefresh
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Refresh.VillageSettingRefresh.Handler), typeof(global::MainCore.Notification.Handlers.Refresh.VillageSettingRefresh.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Notification.Base.IVillageNotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Refresh.VillageSettingRefresh.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IVillageNotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Refresh.VillageSettingRefresh.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Refresh.VillageSettingRefresh.HandleBehavior), typeof(global::MainCore.Notification.Handlers.Refresh.VillageSettingRefresh.HandleBehavior), lifetime));
 		return services;
 	}

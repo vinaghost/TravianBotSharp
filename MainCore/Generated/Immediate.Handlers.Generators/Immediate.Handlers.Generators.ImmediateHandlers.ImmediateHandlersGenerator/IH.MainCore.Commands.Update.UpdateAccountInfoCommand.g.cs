@@ -9,15 +9,21 @@ partial class UpdateAccountInfoCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateAccountInfoCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Update.UpdateAccountInfoCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Update.UpdateAccountInfoCommand.Command, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Update.UpdateAccountInfoCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.Update.UpdateAccountInfoCommand.HandleBehavior handleBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Update.UpdateAccountInfoCommand.Command, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(UpdateAccountInfoCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
+
+			_commandLoggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -25,7 +31,7 @@ partial class UpdateAccountInfoCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -34,18 +40,18 @@ partial class UpdateAccountInfoCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Update.UpdateAccountInfoCommand.Command, global::FluentResults.Result>
 	{
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Notification.Message.AccountInfoUpdated.Handler _accountInfoUpdated;
 
 		public HandleBehavior(
-			global::MainCore.Services.IChromeManager chromeManager,
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
+			global::MainCore.Services.IChromeBrowser browser,
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
 			global::MainCore.Notification.Message.AccountInfoUpdated.Handler accountInfoUpdated
 		)
 		{
-			_chromeManager = chromeManager;
-			_contextFactory = contextFactory;
+			_browser = browser;
+			_context = context;
 			_accountInfoUpdated = accountInfoUpdated;
 		}
 
@@ -57,8 +63,8 @@ partial class UpdateAccountInfoCommand
 			return await global::MainCore.Commands.Update.UpdateAccountInfoCommand
 				.HandleAsync(
 					request
-					, _chromeManager
-					, _contextFactory
+					, _browser
+					, _context
 					, _accountInfoUpdated
 					, cancellationToken
 				)

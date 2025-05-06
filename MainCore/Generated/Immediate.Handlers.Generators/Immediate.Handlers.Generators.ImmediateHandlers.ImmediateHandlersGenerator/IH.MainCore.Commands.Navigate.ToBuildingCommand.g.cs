@@ -9,15 +9,21 @@ partial class ToBuildingCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Navigate.ToBuildingCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Navigate.ToBuildingCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Navigate.ToBuildingCommand.Command, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Navigate.ToBuildingCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.Navigate.ToBuildingCommand.HandleBehavior handleBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Navigate.ToBuildingCommand.Command, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(ToBuildingCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
+
+			_commandLoggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -25,7 +31,7 @@ partial class ToBuildingCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -34,13 +40,13 @@ partial class ToBuildingCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Navigate.ToBuildingCommand.Command, global::FluentResults.Result>
 	{
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
 
 		public HandleBehavior(
-			global::MainCore.Services.IChromeManager chromeManager
+			global::MainCore.Services.IChromeBrowser browser
 		)
 		{
-			_chromeManager = chromeManager;
+			_browser = browser;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -51,7 +57,7 @@ partial class ToBuildingCommand
 			return await global::MainCore.Commands.Navigate.ToBuildingCommand
 				.HandleAsync(
 					request
-					, _chromeManager
+					, _browser
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

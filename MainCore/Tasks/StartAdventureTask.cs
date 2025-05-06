@@ -18,7 +18,7 @@ namespace MainCore.Tasks
         private static async ValueTask<Result> HandleAsync(
             Task task,
             ITaskManager taskManager,
-            IChromeManager chromeManager,
+            IChromeBrowser browser,
             ToAdventurePageCommand.Handler toAdventurePageCommand,
             ExploreAdventureCommand.Handler exploreAdventureCommand,
             CancellationToken cancellationToken)
@@ -29,7 +29,6 @@ namespace MainCore.Tasks
             result = await exploreAdventureCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
 
-            var browser = chromeManager.Get(task.AccountId);
             var adventureDuration = AdventureParser.GetAdventureDuration(browser.Html);
             task.ExecuteAt = DateTime.Now.Add(adventureDuration * 2);
             await taskManager.ReOrder(task.AccountId);

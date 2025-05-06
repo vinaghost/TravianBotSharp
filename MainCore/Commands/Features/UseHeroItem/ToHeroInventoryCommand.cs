@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.UseHeroItem
 {
@@ -9,11 +9,11 @@ namespace MainCore.Commands.Features.UseHeroItem
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
+            IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var chromeBrowser = chromeManager.Get(command.AccountId);
-            var html = chromeBrowser.Html;
+            
+            var html = browser.Html;
 
             var avatar = InventoryParser.GetHeroAvatar(html);
             if (avatar is null) return Retry.ButtonNotFound("avatar hero");
@@ -25,10 +25,10 @@ namespace MainCore.Commands.Features.UseHeroItem
                 return InventoryParser.IsInventoryPage(doc);
             }
 
-            var result = await chromeBrowser.Click(By.XPath(avatar.XPath));
+            var result = await browser.Click(By.XPath(avatar.XPath));
             if (result.IsFailed) return result;
 
-            result = await chromeBrowser.WaitPageChanged("hero", TabActived, cancellationToken);
+            result = await browser.WaitPageChanged("hero", TabActived, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

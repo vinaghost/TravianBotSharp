@@ -1,4 +1,4 @@
-﻿using MainCore.Queries.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Queries
 {
@@ -9,12 +9,12 @@ namespace MainCore.Queries
 
         private static async ValueTask<int> HandleAsync(
             Query query,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             CancellationToken cancellationToken
             )
         {
+            await Task.CompletedTask;
             var (villageId, building) = query;
-            using var context = await contextFactory.CreateDbContextAsync();
 
             var location = context.Buildings
                  .Where(x => x.VillageId == villageId.Value)

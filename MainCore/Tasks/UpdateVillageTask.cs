@@ -17,13 +17,13 @@ namespace MainCore.Tasks
         private static async ValueTask<Result> HandleAsync(
             Task task,
             ITaskManager taskManager,
-            IChromeManager chromeManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            IChromeBrowser browser,
+            AppDbContext context,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToDorfCommand.Handler toDorfCommand,
             CancellationToken cancellationToken)
         {
-            var browser = chromeManager.Get(task.AccountId);
+            
             var url = browser.CurrentUrl;
             Result result;
 
@@ -51,7 +51,7 @@ namespace MainCore.Tasks
                 result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (result.IsFailed) return result;
             }
-            using var context = contextFactory.CreateDbContext();
+            
             var seconds = context.ByName(task.VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
             task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
             await taskManager.ReOrder(task.AccountId);

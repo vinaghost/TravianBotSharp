@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
@@ -9,18 +9,18 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            IChromeBrowser browser,
+            AppDbContext context,
             GetBuildingQuery.Handler getBuilding,
             CancellationToken cancellationToken
         )
         {
             var (accountId, villageId, plan) = command;
 
-            using var context = await contextFactory.CreateDbContextAsync();
+            
             Result result;
 
-            var browser = chromeManager.Get(accountId);
+            
 
             if (context.IsUpgradeable(plan))
             {

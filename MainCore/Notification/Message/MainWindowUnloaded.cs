@@ -1,4 +1,4 @@
-﻿using MainCore.Notification.Base;
+﻿using MainCore.Constraints;
 using MainCore.Notification.Handlers.MainWindowUnload;
 
 namespace MainCore.Notification.Message

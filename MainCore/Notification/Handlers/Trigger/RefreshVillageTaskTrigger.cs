@@ -1,4 +1,4 @@
-﻿using MainCore.Notification.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
@@ -9,12 +9,12 @@ namespace MainCore.Notification.Handlers.Trigger
             IVillageNotification notification,
             GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
-            using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+            
             var autoRefreshEnable = context.BooleanByName(villageId, VillageSettingEnums.AutoRefreshEnable);
             if (autoRefreshEnable)
             {

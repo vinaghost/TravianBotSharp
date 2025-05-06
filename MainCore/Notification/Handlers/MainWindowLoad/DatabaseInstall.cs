@@ -1,4 +1,4 @@
-﻿using MainCore.Notification.Base;
+﻿using MainCore.Constraints;
 using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Notification.Handlers.MainWindowLoad
@@ -8,12 +8,11 @@ namespace MainCore.Notification.Handlers.MainWindowLoad
     {
         private static async ValueTask HandleAsync(
             INotification notification,
-            IDbContextFactory<AppDbContext> contextFactory, IWaitingOverlayViewModel waitingOverlayViewModel,
+            AppDbContext context, IWaitingOverlayViewModel waitingOverlayViewModel,
             CancellationToken cancellationToken)
         {
             await waitingOverlayViewModel.ChangeMessage("loading database");
 
-            using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
             var notExist = await context.Database.EnsureCreatedAsync(cancellationToken);
 
             if (!notExist)

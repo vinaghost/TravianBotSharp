@@ -34,7 +34,7 @@ partial class HandleJobCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.Command, global::FluentResults.Result<global::MainCore.Models.NormalBuildPlan>>
 	{
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Commands.Navigate.ToDorfCommand.Handler _toDorfCommand;
 		private readonly global::MainCore.Commands.Update.UpdateBuildingCommand.Handler _updateBuildingCommand;
 		private readonly global::MainCore.Queries.GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
@@ -42,7 +42,7 @@ partial class HandleJobCommand
 		private readonly global::MainCore.Commands.Misc.AddJobCommand.Handler _addJobCommand;
 
 		public HandleBehavior(
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
 			global::MainCore.Commands.Navigate.ToDorfCommand.Handler toDorfCommand,
 			global::MainCore.Commands.Update.UpdateBuildingCommand.Handler updateBuildingCommand,
 			global::MainCore.Queries.GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
@@ -50,7 +50,7 @@ partial class HandleJobCommand
 			global::MainCore.Commands.Misc.AddJobCommand.Handler addJobCommand
 		)
 		{
-			_contextFactory = contextFactory;
+			_context = context;
 			_toDorfCommand = toDorfCommand;
 			_updateBuildingCommand = updateBuildingCommand;
 			_getLayoutBuildingsQuery = getLayoutBuildingsQuery;
@@ -66,7 +66,7 @@ partial class HandleJobCommand
 			return await global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand
 				.HandleAsync(
 					request
-					, _contextFactory
+					, _context
 					, _toDorfCommand
 					, _updateBuildingCommand
 					, _getLayoutBuildingsQuery

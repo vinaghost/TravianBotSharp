@@ -34,13 +34,13 @@ partial class GetBuildingQuery
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Queries.GetBuildingQuery.Query, global::MainCore.DTO.BuildingDto>
 	{
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 
 		public HandleBehavior(
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context
 		)
 		{
-			_contextFactory = contextFactory;
+			_context = context;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::MainCore.DTO.BuildingDto> HandleAsync(
@@ -51,7 +51,7 @@ partial class GetBuildingQuery
 			return await global::MainCore.Queries.GetBuildingQuery
 				.HandleAsync(
 					request
-					, _contextFactory
+					, _context
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

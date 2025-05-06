@@ -1,4 +1,4 @@
-﻿using MainCore.Queries.Base;
+﻿using MainCore.Constraints;
 using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.VillageViewModel
@@ -10,12 +10,12 @@ namespace MainCore.Commands.UI.VillageViewModel
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query query,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             CancellationToken cancellationToken
             )
         {
+            await Task.CompletedTask;
             var accountId = query.AccountId;
-            using var context = await contextFactory.CreateDbContextAsync();
 
             var items = context.Villages
                 .Where(x => x.AccountId == accountId.Value)

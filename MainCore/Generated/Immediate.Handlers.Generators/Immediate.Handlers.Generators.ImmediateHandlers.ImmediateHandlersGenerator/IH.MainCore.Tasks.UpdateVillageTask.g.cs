@@ -11,16 +11,21 @@ partial class UpdateVillageTask
 		private readonly global::MainCore.Tasks.UpdateVillageTask.HandleBehavior _handleBehavior;
 		private readonly global::MainCore.Tasks.Behaviors.VillageTaskBehavior<global::MainCore.Tasks.UpdateVillageTask.Task, global::FluentResults.Result> _villageTaskBehavior;
 		private readonly global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.UpdateVillageTask.Task, global::FluentResults.Result> _accountTaskBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Tasks.UpdateVillageTask.Task, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
 			global::MainCore.Tasks.UpdateVillageTask.HandleBehavior handleBehavior,
 			global::MainCore.Tasks.Behaviors.VillageTaskBehavior<global::MainCore.Tasks.UpdateVillageTask.Task, global::FluentResults.Result> villageTaskBehavior,
-			global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.UpdateVillageTask.Task, global::FluentResults.Result> accountTaskBehavior
+			global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.UpdateVillageTask.Task, global::FluentResults.Result> accountTaskBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Tasks.UpdateVillageTask.Task, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(UpdateVillageTask);
 
 			_handleBehavior = handleBehavior;
+
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
 
 			_accountTaskBehavior = accountTaskBehavior;
 			_accountTaskBehavior.HandlerType = handlerType;
@@ -30,6 +35,7 @@ partial class UpdateVillageTask
 
 			_villageTaskBehavior.SetInnerHandler(_handleBehavior);
 			_accountTaskBehavior.SetInnerHandler(_villageTaskBehavior);
+			_commandLoggingBehavior.SetInnerHandler(_accountTaskBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -37,7 +43,7 @@ partial class UpdateVillageTask
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _accountTaskBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -47,22 +53,22 @@ partial class UpdateVillageTask
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Tasks.UpdateVillageTask.Task, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Commands.Update.UpdateBuildingCommand.Handler _updateBuildingCommand;
 		private readonly global::MainCore.Commands.Navigate.ToDorfCommand.Handler _toDorfCommand;
 
 		public HandleBehavior(
 			global::MainCore.Services.ITaskManager taskManager,
-			global::MainCore.Services.IChromeManager chromeManager,
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
+			global::MainCore.Services.IChromeBrowser browser,
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
 			global::MainCore.Commands.Update.UpdateBuildingCommand.Handler updateBuildingCommand,
 			global::MainCore.Commands.Navigate.ToDorfCommand.Handler toDorfCommand
 		)
 		{
 			_taskManager = taskManager;
-			_chromeManager = chromeManager;
-			_contextFactory = contextFactory;
+			_browser = browser;
+			_context = context;
 			_updateBuildingCommand = updateBuildingCommand;
 			_toDorfCommand = toDorfCommand;
 		}
@@ -76,8 +82,8 @@ partial class UpdateVillageTask
 				.HandleAsync(
 					request
 					, _taskManager
-					, _chromeManager
-					, _contextFactory
+					, _browser
+					, _context
 					, _updateBuildingCommand
 					, _toDorfCommand
 					, cancellationToken

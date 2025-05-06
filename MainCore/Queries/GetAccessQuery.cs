@@ -1,4 +1,4 @@
-﻿using MainCore.Queries.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Queries
 {
@@ -9,13 +9,13 @@ namespace MainCore.Queries
 
         private static async ValueTask<Result<AccessDto>> HandleAsync(
             Query query,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             VerifyAccessQuery.Handler verifyAccessQuery,
             CancellationToken cancellationToken
             )
         {
             var (accountId, ignoreSleepTime) = query;
-            using var context = await contextFactory.CreateDbContextAsync();
+
             var accesses = context.Accesses
                .Where(x => x.AccountId == accountId.Value)
                .OrderBy(x => x.LastUsed) // get oldest one

@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.UI.EditAccountViewModel
 {
@@ -9,13 +9,13 @@ namespace MainCore.Commands.UI.EditAccountViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            IDbContextFactory<AppDbContext> contextFactory, IUseragentManager useragentManager,
+            AppDbContext context, IUseragentManager useragentManager,
             AccountUpdated.Handler accountUpdated,
             CancellationToken cancellationToken
             )
         {
             var dto = command.Dto;
-            using var context = await contextFactory.CreateDbContextAsync();
+            
 
             var account = dto.ToEntity();
             foreach (var access in account.Accesses.Where(access => string.IsNullOrWhiteSpace(access.Useragent)))

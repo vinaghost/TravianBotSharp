@@ -1,6 +1,8 @@
-﻿namespace MainCore.Tasks.Base
+﻿using MainCore.Constraints;
+
+namespace MainCore.Tasks.Base
 {
-    public abstract class AccountTask(AccountId accountId) : BaseTask, IAccountTask
+    public abstract class AccountTask(AccountId accountId) : BaseTask, IAccountConstraint
     {
         public AccountId AccountId { get; } = accountId;
 

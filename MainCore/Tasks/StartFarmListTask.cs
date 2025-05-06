@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.Features.StartFarmList;
+using MainCore.Commands.NextExecute;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -17,17 +18,18 @@ namespace MainCore.Tasks
 
         private static async ValueTask<Result> HandleAsync(
             Task task,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             ITaskManager taskManager,
             ToFarmListPageCommand.Handler toFarmListPageCommand,
             StartAllFarmListCommand.Handler startAllFarmListCommand,
             StartActiveFarmListCommand.Handler startActiveFarmListCommand,
+            NextExecuteStartFarmListTaskCommand.Handler nextExecuteStartFarmListTaskCommand,
             CancellationToken cancellationToken)
         {
             Result result;
             result = await toFarmListPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
-            using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+            
             var useStartAllButton = context.BooleanByName(task.AccountId, AccountSettingEnums.UseStartAllButton);
             if (useStartAllButton)
             {
@@ -39,9 +41,9 @@ namespace MainCore.Tasks
                 result = await startActiveFarmListCommand.HandleAsync(new(task.AccountId), cancellationToken);
                 if (result.IsFailed) return result;
             }
-            var seconds = context.ByName(task.AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
-            task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
-            await taskManager.ReOrder(task.AccountId);
+
+            await nextExecuteStartFarmListTaskCommand.HandleAsync(task, cancellationToken);
+
             return Result.Ok();
         }
     }

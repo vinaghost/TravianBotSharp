@@ -1,4 +1,4 @@
-﻿using MainCore.Queries.Base;
+﻿using MainCore.Constraints;
 using System.Net;
 
 namespace MainCore.Queries
@@ -38,12 +38,11 @@ namespace MainCore.Queries
 
         private static async ValueTask<bool> HandleAsync(
             Query query,
-            ILogService logService,
+            ILogger logger,
             CancellationToken cancellationToken
             )
         {
             var (accountId, access) = query;
-            var logger = logService.GetLogger(accountId);
 
             var client = GetHttpClient(access);
             logger.Information("Checking access {Proxy}, last used {LastUsed}", access.Proxy, access.LastUsed);

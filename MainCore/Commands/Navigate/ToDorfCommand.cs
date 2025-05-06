@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Navigate
 {
@@ -9,12 +9,12 @@ namespace MainCore.Commands.Navigate
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
-           IChromeManager chromeManager,
+           IChromeBrowser browser,
            CancellationToken cancellationToken
            )
         {
             var (accountId, dorf) = command;
-            var browser = chromeManager.Get(accountId);
+            
 
             var currentUrl = browser.CurrentUrl;
             var currentDorf = GetCurrentDorf(currentUrl);

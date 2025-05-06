@@ -1,4 +1,5 @@
-﻿using MainCore.Notification.Base;
+﻿using MainCore.Constraints;
+
 using MainCore.Notification.Handlers.Trigger;
 
 namespace MainCore.Notification.Message

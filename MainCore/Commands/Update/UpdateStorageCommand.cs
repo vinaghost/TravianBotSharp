@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Update
 {
@@ -9,17 +9,17 @@ namespace MainCore.Commands.Update
 
         private static async ValueTask<StorageDto> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            IChromeBrowser browser,
+            AppDbContext context,
             StorageUpdated.Handler storageUpdated,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
-            var chromeBrowser = chromeManager.Get(accountId);
-            var html = chromeBrowser.Html;
+            
+            var html = browser.Html;
 
             var dto = Get(html);
-            using var context = await contextFactory.CreateDbContextAsync();
+            
             context.UpdateStorage(villageId, dto);
             await storageUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
             return dto;

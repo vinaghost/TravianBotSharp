@@ -1,12 +1,11 @@
 ﻿using MainCore.Commands.Behaviors;
 using MainCore.Tasks.Behaviors;
-using MainCore.UI.Models.Input;
-using MainCore.UI.Models.Validators;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Templates;
 using Splat.Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 [assembly: Behaviors(
     typeof(CommandLoggingBehavior<,>),
@@ -22,7 +21,7 @@ namespace MainCore
 
         public static IServiceCollection AddCoreServices(this IServiceCollection services)
         {
-            services.AddPooledDbContextFactory<AppDbContext>(
+            services.AddDbContext<AppDbContext>(
                 options => options
 #if DEBUG
                     .EnableSensitiveDataLogging()
@@ -31,26 +30,49 @@ namespace MainCore
             );
 
             services
+                .AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, ServiceLifetime.Singleton)
                 .AddMainCore()
-                .AddValidator();
-            services
                 .AddMainCoreBehaviors()
-                .AddMainCoreHandlers(ServiceLifetime.Transient);
+                .AddMainCoreHandlers();
+
+            services
+                .AddScoped<IChromeBrowser>(sp =>
+                {
+                    var dataService = sp.GetRequiredService<IDataService>();
+                    if (dataService.AccountId == AccountId.Empty) throw new InvalidOperationException("AccountId is empty");
+                    var chromeManager = sp.GetRequiredService<IChromeManager>();
+                    return chromeManager.Get(dataService.AccountId);
+                })
+                .AddScoped<ILogger>(sp =>
+                {
+                    var dataService = sp.GetRequiredService<IDataService>();
+                    var accountId = dataService.AccountId;
+                    if (accountId == AccountId.Empty) return Log.Logger;
+
+                    var logService = sp.GetRequiredService<ILogService>();
+                    if (logService.Loggers.ContainsKey(accountId)) return logService.Loggers[accountId];
+                    var context = sp.GetRequiredService<AppDbContext>();
+                    var account = context.Accounts
+                        .Where(x => x.Id == accountId.Value)
+                        .First();
+
+                    var uri = new Uri(account.Server);
+                    var logger = Log.ForContext("Account", $"{account.Username}_{uri.Host}")
+                                    .ForContext("AccountId", accountId);
+                    logService.Loggers.Add(accountId, logger);
+                    logger.Information("===============> Current version: {Version} <===============", GetVersion());
+
+                    return logger;
+                });
 
             return services;
         }
 
-        public static IServiceCollection AddValidator(this IServiceCollection services)
+        private static string GetVersion()
         {
-            // Validators
-            services
-                .AddTransient<IValidator<AccountInput>, AccountInputValidator>()
-                .AddTransient<IValidator<AccessInput>, AccessInputValidator>()
-                .AddTransient<IValidator<AccountSettingInput>, AccountSettingInputValidator>()
-                .AddTransient<IValidator<VillageSettingInput>, VillageSettingInputValidator>()
-                .AddTransient<IValidator<NormalBuildInput>, NormalBuildInputValidator>()
-                .AddTransient<IValidator<ResourceBuildInput>, ResourceBuildInputValidator>();
-            return services;
+            var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
+            var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
+            return $"{version}";
         }
 
         public static IServiceProvider Setup()

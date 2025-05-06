@@ -5,7 +5,7 @@ namespace MainCore.Tasks.Behaviors
 {
     public class VillageTaskBehavior<TRequest, TResponse>
             : Behavior<TRequest, TResponse>
-                where TRequest : IVillageTask
+                where TRequest : VillageTask
                 where TResponse : Result
     {
         private readonly SwitchVillageCommand.Handler _switchVillageCommand;

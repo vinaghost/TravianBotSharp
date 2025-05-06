@@ -34,15 +34,15 @@ partial class CheckQuestCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Checks.CheckQuestCommand.Command, global::System.ValueTuple>
 	{
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
 		private readonly global::MainCore.Notification.Message.QuestUpdated.Handler _questUpdated;
 
 		public HandleBehavior(
-			global::MainCore.Services.IChromeManager chromeManager,
+			global::MainCore.Services.IChromeBrowser browser,
 			global::MainCore.Notification.Message.QuestUpdated.Handler questUpdated
 		)
 		{
-			_chromeManager = chromeManager;
+			_browser = browser;
 			_questUpdated = questUpdated;
 		}
 
@@ -54,7 +54,7 @@ partial class CheckQuestCommand
 			await global::MainCore.Commands.Checks.CheckQuestCommand
 				.HandleAsync(
 					request
-					, _chromeManager
+					, _browser
 					, _questUpdated
 					, cancellationToken
 				)

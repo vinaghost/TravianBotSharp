@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.Features;
+using MainCore.Commands.NextExecute;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -17,12 +18,11 @@ namespace MainCore.Tasks
 
         private static async ValueTask<Result> HandleAsync(
             Task task,
-            IDbContextFactory<AppDbContext> contextFactory,
-            ITaskManager taskManager,
             SleepCommand.Handler sleepCommand,
             GetAccessQuery.Handler getAccessQuery,
             OpenBrowserCommand.Handler openBrowserCommand,
             ToDorfCommand.Handler toDorfCommand,
+            NextExecuteSleepTaskCommand.Handler nextExecuteSleepTaskCommand,
             CancellationToken cancellationToken)
         {
             Result result;
@@ -33,11 +33,7 @@ namespace MainCore.Tasks
 
             await openBrowserCommand.HandleAsync(new(task.AccountId, access), cancellationToken);
 
-            using var context = await contextFactory.CreateDbContextAsync();
-            var workTime = context.ByName(task.AccountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
-            task.ExecuteAt = DateTime.Now.AddMinutes(workTime);
-            await taskManager.ReOrder(task.AccountId);
-
+            await nextExecuteSleepTaskCommand.HandleAsync(task, cancellationToken);
             return Result.Ok();
         }
     }

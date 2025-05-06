@@ -1,4 +1,6 @@
-﻿namespace MainCore.Tasks.Base
+﻿using MainCore.Constraints;
+
+namespace MainCore.Tasks.Base
 {
     public abstract class BaseTask : ITask
     {

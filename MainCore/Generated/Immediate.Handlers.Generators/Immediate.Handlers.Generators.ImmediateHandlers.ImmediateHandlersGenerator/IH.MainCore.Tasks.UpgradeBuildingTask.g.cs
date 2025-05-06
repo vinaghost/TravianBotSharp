@@ -11,16 +11,21 @@ partial class UpgradeBuildingTask
 		private readonly global::MainCore.Tasks.UpgradeBuildingTask.HandleBehavior _handleBehavior;
 		private readonly global::MainCore.Tasks.Behaviors.VillageTaskBehavior<global::MainCore.Tasks.UpgradeBuildingTask.Task, global::FluentResults.Result> _villageTaskBehavior;
 		private readonly global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.UpgradeBuildingTask.Task, global::FluentResults.Result> _accountTaskBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Tasks.UpgradeBuildingTask.Task, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
 			global::MainCore.Tasks.UpgradeBuildingTask.HandleBehavior handleBehavior,
 			global::MainCore.Tasks.Behaviors.VillageTaskBehavior<global::MainCore.Tasks.UpgradeBuildingTask.Task, global::FluentResults.Result> villageTaskBehavior,
-			global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.UpgradeBuildingTask.Task, global::FluentResults.Result> accountTaskBehavior
+			global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.UpgradeBuildingTask.Task, global::FluentResults.Result> accountTaskBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Tasks.UpgradeBuildingTask.Task, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(UpgradeBuildingTask);
 
 			_handleBehavior = handleBehavior;
+
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
 
 			_accountTaskBehavior = accountTaskBehavior;
 			_accountTaskBehavior.HandlerType = handlerType;
@@ -30,6 +35,7 @@ partial class UpgradeBuildingTask
 
 			_villageTaskBehavior.SetInnerHandler(_handleBehavior);
 			_accountTaskBehavior.SetInnerHandler(_villageTaskBehavior);
+			_commandLoggingBehavior.SetInnerHandler(_accountTaskBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -37,7 +43,7 @@ partial class UpgradeBuildingTask
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _accountTaskBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -47,9 +53,9 @@ partial class UpgradeBuildingTask
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Tasks.UpgradeBuildingTask.Task, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
-		private readonly global::MainCore.Services.ILogService _logService;
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
+		private readonly global::Serilog.ILogger _logger;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.Handler _handleJobCommand;
 		private readonly global::MainCore.Commands.Features.UpgradeBuilding.ToBuildPageCommand.Handler _toBuildPageCommand;
 		private readonly global::MainCore.Commands.Features.UpgradeBuilding.HandleResourceCommand.Handler _handleResourceCommand;
@@ -57,9 +63,9 @@ partial class UpgradeBuildingTask
 
 		public HandleBehavior(
 			global::MainCore.Services.ITaskManager taskManager,
-			global::MainCore.Services.IChromeManager chromeManager,
-			global::MainCore.Services.ILogService logService,
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
+			global::MainCore.Services.IChromeBrowser browser,
+			global::Serilog.ILogger logger,
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
 			global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.Handler handleJobCommand,
 			global::MainCore.Commands.Features.UpgradeBuilding.ToBuildPageCommand.Handler toBuildPageCommand,
 			global::MainCore.Commands.Features.UpgradeBuilding.HandleResourceCommand.Handler handleResourceCommand,
@@ -67,9 +73,9 @@ partial class UpgradeBuildingTask
 		)
 		{
 			_taskManager = taskManager;
-			_chromeManager = chromeManager;
-			_logService = logService;
-			_contextFactory = contextFactory;
+			_browser = browser;
+			_logger = logger;
+			_context = context;
 			_handleJobCommand = handleJobCommand;
 			_toBuildPageCommand = toBuildPageCommand;
 			_handleResourceCommand = handleResourceCommand;
@@ -85,9 +91,9 @@ partial class UpgradeBuildingTask
 				.HandleAsync(
 					request
 					, _taskManager
-					, _chromeManager
-					, _logService
-					, _contextFactory
+					, _browser
+					, _logger
+					, _context
 					, _handleJobCommand
 					, _toBuildPageCommand
 					, _handleResourceCommand

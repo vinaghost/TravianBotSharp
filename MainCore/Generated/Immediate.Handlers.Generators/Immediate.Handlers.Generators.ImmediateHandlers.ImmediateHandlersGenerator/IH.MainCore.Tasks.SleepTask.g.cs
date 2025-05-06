@@ -10,20 +10,26 @@ partial class SleepTask
 	{
 		private readonly global::MainCore.Tasks.SleepTask.HandleBehavior _handleBehavior;
 		private readonly global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.SleepTask.Task, global::FluentResults.Result> _accountTaskBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Tasks.SleepTask.Task, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
 			global::MainCore.Tasks.SleepTask.HandleBehavior handleBehavior,
-			global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.SleepTask.Task, global::FluentResults.Result> accountTaskBehavior
+			global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.SleepTask.Task, global::FluentResults.Result> accountTaskBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Tasks.SleepTask.Task, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(SleepTask);
 
 			_handleBehavior = handleBehavior;
 
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
+
 			_accountTaskBehavior = accountTaskBehavior;
 			_accountTaskBehavior.HandlerType = handlerType;
 
 			_accountTaskBehavior.SetInnerHandler(_handleBehavior);
+			_commandLoggingBehavior.SetInnerHandler(_accountTaskBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -31,7 +37,7 @@ partial class SleepTask
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _accountTaskBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -40,28 +46,25 @@ partial class SleepTask
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Tasks.SleepTask.Task, global::FluentResults.Result>
 	{
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
-		private readonly global::MainCore.Services.ITaskManager _taskManager;
 		private readonly global::MainCore.Commands.Features.SleepCommand.Handler _sleepCommand;
 		private readonly global::MainCore.Queries.GetAccessQuery.Handler _getAccessQuery;
 		private readonly global::MainCore.Commands.Misc.OpenBrowserCommand.Handler _openBrowserCommand;
 		private readonly global::MainCore.Commands.Navigate.ToDorfCommand.Handler _toDorfCommand;
+		private readonly global::MainCore.Commands.NextExecute.NextExecuteSleepTaskCommand.Handler _nextExecuteSleepTaskCommand;
 
 		public HandleBehavior(
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
-			global::MainCore.Services.ITaskManager taskManager,
 			global::MainCore.Commands.Features.SleepCommand.Handler sleepCommand,
 			global::MainCore.Queries.GetAccessQuery.Handler getAccessQuery,
 			global::MainCore.Commands.Misc.OpenBrowserCommand.Handler openBrowserCommand,
-			global::MainCore.Commands.Navigate.ToDorfCommand.Handler toDorfCommand
+			global::MainCore.Commands.Navigate.ToDorfCommand.Handler toDorfCommand,
+			global::MainCore.Commands.NextExecute.NextExecuteSleepTaskCommand.Handler nextExecuteSleepTaskCommand
 		)
 		{
-			_contextFactory = contextFactory;
-			_taskManager = taskManager;
 			_sleepCommand = sleepCommand;
 			_getAccessQuery = getAccessQuery;
 			_openBrowserCommand = openBrowserCommand;
 			_toDorfCommand = toDorfCommand;
+			_nextExecuteSleepTaskCommand = nextExecuteSleepTaskCommand;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -72,12 +75,11 @@ partial class SleepTask
 			return await global::MainCore.Tasks.SleepTask
 				.HandleAsync(
 					request
-					, _contextFactory
-					, _taskManager
 					, _sleepCommand
 					, _getAccessQuery
 					, _openBrowserCommand
 					, _toDorfCommand
+					, _nextExecuteSleepTaskCommand
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

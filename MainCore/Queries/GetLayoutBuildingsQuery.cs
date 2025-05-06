@@ -1,4 +1,4 @@
-﻿using MainCore.Queries.Base;
+﻿using MainCore.Constraints;
 using System.Text.Json;
 
 namespace MainCore.Queries
@@ -10,12 +10,13 @@ namespace MainCore.Queries
 
         private static async ValueTask<List<BuildingItem>> HandleAsync(
             Query query,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             CancellationToken cancellationToken
             )
         {
+            await Task.CompletedTask;
             var (villageId, ignoreJobBuilding) = query;
-            using var context = await contextFactory.CreateDbContextAsync();
+
             var villageBuildings = context.Buildings
                .Where(x => x.VillageId == villageId.Value)
                .OrderBy(x => x.Location)

@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features
 {
@@ -9,13 +9,11 @@ namespace MainCore.Commands.Features
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            IChromeBrowser browser,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
-            var chromeBrowser = chromeManager.Get(command.AccountId);
-
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
             if (LoginParser.IsIngamePage(html)) return Result.Ok();
 
             var buttonNode = LoginParser.GetLoginButton(html);
@@ -25,23 +23,22 @@ namespace MainCore.Commands.Features
             var passwordNode = LoginParser.GetPasswordInput(html);
             if (passwordNode is null) return Retry.TextboxNotFound("password");
 
-            var (username, password) = GetLoginInfo(command.AccountId, contextFactory);
+            var (username, password) = GetLoginInfo(command.AccountId, context);
 
             Result result;
-            result = await chromeBrowser.Input(By.XPath(usernameNode.XPath), username);
+            result = await browser.Input(By.XPath(usernameNode.XPath), username);
             if (result.IsFailed) return result;
-            result = await chromeBrowser.Input(By.XPath(passwordNode.XPath), password);
+            result = await browser.Input(By.XPath(passwordNode.XPath), password);
             if (result.IsFailed) return result;
-            result = await chromeBrowser.Click(By.XPath(buttonNode.XPath));
+            result = await browser.Click(By.XPath(buttonNode.XPath));
             if (result.IsFailed) return result;
-            result = await chromeBrowser.WaitPageChanged("dorf", cancellationToken);
+            result = await browser.WaitPageChanged("dorf", cancellationToken);
 
             return Result.Ok();
         }
 
-        private static (string username, string password) GetLoginInfo(AccountId accountId, IDbContextFactory<AppDbContext> contextFactory)
+        private static (string username, string password) GetLoginInfo(AccountId accountId, AppDbContext context)
         {
-            using var context = contextFactory.CreateDbContext();
             var data = context.Accesses
                 .Where(x => x.AccountId == accountId.Value)
                 .OrderByDescending(x => x.LastUsed)

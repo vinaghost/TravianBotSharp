@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Update
 {
@@ -9,26 +9,25 @@ namespace MainCore.Commands.Update
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            IChromeBrowser browser,
+            AppDbContext context,
             VillageUpdated.Handler villageUpdated,
             CancellationToken cancellationToken)
         {
-            var chromeBrowser = chromeManager.Get(command.AccountId);
-            var html = chromeBrowser.Html;
+            
+            var html = browser.Html;
 
             var dtos = VillagePanelParser.Get(html);
             if (!dtos.Any()) return Result.Ok();
 
-            UpdateToDatabase(command.AccountId, dtos.ToList(), contextFactory);
+            UpdateToDatabase(command.AccountId, dtos.ToList(), context);
 
             await villageUpdated.HandleAsync(new(command.AccountId), cancellationToken);
             return Result.Ok();
         }
 
-        private static void UpdateToDatabase(AccountId accountId, List<VillageDto> dtos, IDbContextFactory<AppDbContext> contextFactory)
+        private static void UpdateToDatabase(AccountId accountId, List<VillageDto> dtos, AppDbContext context)
         {
-            using var context = contextFactory.CreateDbContext();
             var villages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();

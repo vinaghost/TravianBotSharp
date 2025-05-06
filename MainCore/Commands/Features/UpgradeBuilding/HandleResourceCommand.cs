@@ -1,5 +1,5 @@
-﻿using MainCore.Commands.Base;
-using MainCore.Commands.Features.UseHeroItem;
+﻿using MainCore.Commands.Features.UseHeroItem;
+using MainCore.Constraints;
 using MainCore.Errors.AutoBuilder;
 using MainCore.Errors.Storage;
 
@@ -18,24 +18,20 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             ToHeroInventoryCommand.Handler toHeroInventoryCommand,
             UpdateInventoryCommand.Handler updateInventoryCommand,
             AddJobCommand.Handler addJobCommand,
-            IDbContextFactory<AppDbContext> contextFactory,
-            IChromeManager chromeManager,
-            ILogService logService,
+            AppDbContext context,
+            IChromeBrowser browser,
+            ILogger logger,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId, plan) = command;
 
             var storage = await updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
 
-            var browser = chromeManager.Get(accountId);
             var requiredResource = GetRequiredResource(browser, plan.Type);
-
-            using var context = await contextFactory.CreateDbContextAsync();
 
             Result result = storage.IsResourceEnough(requiredResource);
             if (!result.IsFailed) return Result.Ok();
 
-            var logger = logService.GetLogger(accountId);
             if (result.HasError<FreeCrop>(out var freeCropErrors))
             {
                 var error = freeCropErrors.First();

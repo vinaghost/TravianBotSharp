@@ -34,15 +34,15 @@ partial class ActivationCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.FarmingViewModel.ActivationCommand.Command, global::System.ValueTuple>
 	{
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Notification.Message.FarmListUpdated.Handler _farmListUpdated;
 
 		public HandleBehavior(
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
 			global::MainCore.Notification.Message.FarmListUpdated.Handler farmListUpdated
 		)
 		{
-			_contextFactory = contextFactory;
+			_context = context;
 			_farmListUpdated = farmListUpdated;
 		}
 
@@ -54,7 +54,7 @@ partial class ActivationCommand
 			await global::MainCore.Commands.UI.FarmingViewModel.ActivationCommand
 				.HandleAsync(
 					request
-					, _contextFactory
+					, _context
 					, _farmListUpdated
 					, cancellationToken
 				)

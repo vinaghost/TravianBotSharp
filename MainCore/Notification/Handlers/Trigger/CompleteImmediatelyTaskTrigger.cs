@@ -1,4 +1,4 @@
-﻿using MainCore.Notification.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
@@ -9,13 +9,13 @@ namespace MainCore.Notification.Handlers.Trigger
             IVillageNotification notification,
             GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
             if (taskManager.IsExist<CompleteImmediatelyTask.Task>(accountId, villageId)) return;
-            using var context = contextFactory.CreateDbContext();
+            
 
             context.Clean(villageId);
 

@@ -1,4 +1,4 @@
-﻿using MainCore.Notification.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Notification.Handlers.Trigger
 {
@@ -9,12 +9,12 @@ namespace MainCore.Notification.Handlers.Trigger
             IAccountNotification notification,
             GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             GetMissingBuildingVillagesQuery.Handler getMissingBuildingVillageQuery,
             CancellationToken cancellationToken)
         {
             var accountId = notification.AccountId;
-            using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+
             var autoLoadVillageBuilding = context.BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             if (!autoLoadVillageBuilding) return;
 

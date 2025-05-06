@@ -19,9 +19,9 @@ namespace MainCore.Tasks
         private static async ValueTask<Result> HandleAsync(
             Task task,
             ITaskManager taskManager,
-            IChromeManager chromeManager,
-            ILogService logService,
-            IDbContextFactory<AppDbContext> contextFactory,
+            IChromeBrowser browser,
+            ILogger logger,
+            AppDbContext context,
             HandleJobCommand.Handler handleJobCommand,
             ToBuildPageCommand.Handler toBuildPageCommand,
             HandleResourceCommand.Handler handleResourceCommand,
@@ -29,12 +29,10 @@ namespace MainCore.Tasks
             CancellationToken cancellationToken)
         {
             Result result;
-            var logger = logService.GetLogger(task.AccountId);
+
             while (true)
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
-
-                using var context = await contextFactory.CreateDbContextAsync();
 
                 var (_, isFalied, plan, errors) = await handleJobCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (isFalied)

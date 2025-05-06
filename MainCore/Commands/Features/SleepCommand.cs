@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features
 {
@@ -9,19 +9,16 @@ namespace MainCore.Commands.Features
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
-            IDbContextFactory<AppDbContext> contextFactory,
-            ILogService logService,
+            IChromeBrowser browser,
+            AppDbContext context,
+            ILogger logger,
             CancellationToken cancellationToken)
         {
-            var chromeBrowser = chromeManager.Get(command.AccountId);
-            await chromeBrowser.Close();
+            await browser.Close();
 
-            using var context = await contextFactory.CreateDbContextAsync();
             var sleepTimeMinutes = context.ByName(command.AccountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
             var sleepEnd = DateTime.Now.AddMinutes(sleepTimeMinutes);
             int lastMinute = 0;
-            var logger = logService.GetLogger(command.AccountId);
             while (true)
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;

@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.UI.MainLayoutViewModel
 {
@@ -9,13 +9,13 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            IChromeManager chromeManager, ITaskManager taskManager, ITimerManager timerManager, ILogService logService,
+            IChromeBrowser browser, ITaskManager taskManager, ITimerManager timerManager, ILogger logger,
             AccountInit.Handler accountInit, OpenBrowserCommand.Handler openBrowserCommand,
             CancellationToken cancellationToken
             )
         {
             var (accountId, access) = command;
-            var logger = logService.GetLogger(accountId);
+            
             logger.Information("Using connection {Proxy} to start chrome", access.Proxy);
 
             try

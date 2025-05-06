@@ -9,15 +9,21 @@ partial class ClaimQuestCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.HandleBehavior handleBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(ClaimQuestCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
+
+			_commandLoggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -25,7 +31,7 @@ partial class ClaimQuestCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -34,19 +40,19 @@ partial class ClaimQuestCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command, global::FluentResults.Result>
 	{
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
 		private readonly global::MainCore.Notification.Message.StorageUpdated.Handler _storageUpdate;
 		private readonly global::MainCore.Commands.Navigate.SwitchTabCommand.Handler _switchTabCommand;
 		private readonly global::MainCore.Commands.Misc.DelayClickCommand.Handler _delayClickCommand;
 
 		public HandleBehavior(
-			global::MainCore.Services.IChromeManager chromeManager,
+			global::MainCore.Services.IChromeBrowser browser,
 			global::MainCore.Notification.Message.StorageUpdated.Handler storageUpdate,
 			global::MainCore.Commands.Navigate.SwitchTabCommand.Handler switchTabCommand,
 			global::MainCore.Commands.Misc.DelayClickCommand.Handler delayClickCommand
 		)
 		{
-			_chromeManager = chromeManager;
+			_browser = browser;
 			_storageUpdate = storageUpdate;
 			_switchTabCommand = switchTabCommand;
 			_delayClickCommand = delayClickCommand;
@@ -60,7 +66,7 @@ partial class ClaimQuestCommand
 			return await global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand
 				.HandleAsync(
 					request
-					, _chromeManager
+					, _browser
 					, _storageUpdate
 					, _switchTabCommand
 					, _delayClickCommand

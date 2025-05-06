@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.StartAdventure
 {
@@ -9,11 +9,11 @@ namespace MainCore.Commands.Features.StartAdventure
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
+            IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var chromeBrowser = chromeManager.Get(command.AccountId);
-            var html = chromeBrowser.Html;
+            
+            var html = browser.Html;
 
             var adventure = AdventureParser.GetHeroAdventureButton(html);
             if (adventure is null) return Retry.ButtonNotFound("hero adventure");
@@ -25,10 +25,10 @@ namespace MainCore.Commands.Features.StartAdventure
                 return AdventureParser.IsAdventurePage(doc);
             }
 
-            var result = await chromeBrowser.Click(By.XPath(adventure.XPath));
+            var result = await browser.Click(By.XPath(adventure.XPath));
             if (result.IsFailed) return result;
 
-            result = await chromeBrowser.WaitPageChanged("adventures", TableShow, cancellationToken);
+            result = await browser.WaitPageChanged("adventures", TableShow, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

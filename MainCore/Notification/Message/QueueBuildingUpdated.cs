@@ -1,4 +1,4 @@
-﻿using MainCore.Notification.Base;
+﻿using MainCore.Constraints;
 using MainCore.Notification.Handlers.Refresh;
 using MainCore.Notification.Handlers.Trigger;
 

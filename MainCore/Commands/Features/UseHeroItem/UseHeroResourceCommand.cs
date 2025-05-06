@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 using MainCore.Errors.Storage;
 
 namespace MainCore.Commands.Features.UseHeroItem
@@ -10,14 +10,14 @@ namespace MainCore.Commands.Features.UseHeroItem
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            IChromeBrowser browser,
+            AppDbContext context,
             DelayClickCommand.Handler delayClickCommand,
             CancellationToken cancellationToken)
         {
             var (accountId, resource) = command;
 
-            using var context = await contextFactory.CreateDbContextAsync();
+            
 
             var resourceItems = context.HeroItems
                 .Where(x => x.AccountId == accountId.Value)
@@ -35,7 +35,7 @@ namespace MainCore.Commands.Features.UseHeroItem
                 { HeroItemEnums.Iron, resource[2] },
                 { HeroItemEnums.Crop, resource[3] },
             };
-            var browser = chromeManager.Get(accountId);
+            
 
             foreach (var (item, amount) in items)
             {

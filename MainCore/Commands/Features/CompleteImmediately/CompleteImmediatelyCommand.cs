@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.CompleteImmediately
 {
@@ -9,13 +9,13 @@ namespace MainCore.Commands.Features.CompleteImmediately
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
+            IChromeBrowser browser,
             CompleteImmediatelyMessage.Handler completeImmediatelyMessage,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
-            var chromeBrowser = chromeManager.Get(accountId);
-            var html = chromeBrowser.Html;
+
+            var html = browser.Html;
 
             var completeNowButton = CompleteImmediatelyParser.GetCompleteButton(html);
             if (completeNowButton is null) return Retry.ButtonNotFound("complete now");
@@ -28,13 +28,13 @@ namespace MainCore.Commands.Features.CompleteImmediately
                 return confirmButton is not null;
             }
 
-            var result = await chromeBrowser.Click(By.XPath(completeNowButton.XPath));
+            var result = await browser.Click(By.XPath(completeNowButton.XPath));
             if (result.IsFailed) return result;
 
-            result = await chromeBrowser.Wait(ConfirmShown, cancellationToken);
+            result = await browser.Wait(ConfirmShown, cancellationToken);
             if (result.IsFailed) return result;
 
-            html = chromeBrowser.Html;
+            html = browser.Html;
             var confirmButton = CompleteImmediatelyParser.GetConfirmButton(html);
             if (confirmButton is null) return Retry.ButtonNotFound("confirm complete now");
 
@@ -48,10 +48,10 @@ namespace MainCore.Commands.Features.CompleteImmediately
                 return oldQueueCount != newQueueCount;
             }
 
-            result = await chromeBrowser.Click(By.XPath(confirmButton.XPath));
+            result = await browser.Click(By.XPath(confirmButton.XPath));
             if (result.IsFailed) return result;
 
-            result = await chromeBrowser.Wait(driver => QueueDifferent(driver, oldQueueCount), cancellationToken);
+            result = await browser.Wait(driver => QueueDifferent(driver, oldQueueCount), cancellationToken);
             if (result.IsFailed) return result;
 
             await completeImmediatelyMessage.HandleAsync(new(accountId, villageId), cancellationToken);

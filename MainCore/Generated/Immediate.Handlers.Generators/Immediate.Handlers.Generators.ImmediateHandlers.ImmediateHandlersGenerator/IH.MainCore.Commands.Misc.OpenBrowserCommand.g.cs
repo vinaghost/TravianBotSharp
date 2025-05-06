@@ -34,19 +34,19 @@ partial class OpenBrowserCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Misc.OpenBrowserCommand.Command, global::System.ValueTuple>
 	{
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
-		private readonly global::MainCore.Services.ILogService _logService;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
+		private readonly global::Serilog.ILogger _logger;
 
 		public HandleBehavior(
-			global::MainCore.Services.IChromeManager chromeManager,
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
-			global::MainCore.Services.ILogService logService
+			global::MainCore.Services.IChromeBrowser browser,
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
+			global::Serilog.ILogger logger
 		)
 		{
-			_chromeManager = chromeManager;
-			_contextFactory = contextFactory;
-			_logService = logService;
+			_browser = browser;
+			_context = context;
+			_logger = logger;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -57,9 +57,9 @@ partial class OpenBrowserCommand
 			await global::MainCore.Commands.Misc.OpenBrowserCommand
 				.HandleAsync(
 					request
-					, _chromeManager
-					, _contextFactory
-					, _logService
+					, _browser
+					, _context
+					, _logger
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

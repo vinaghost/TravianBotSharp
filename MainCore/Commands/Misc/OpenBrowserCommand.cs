@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Misc
 {
@@ -9,13 +9,11 @@ namespace MainCore.Commands.Misc
 
         private static async ValueTask HandleAsync(
             Command command,
-            IChromeManager chromeManager, IDbContextFactory<AppDbContext> contextFactory, ILogService logService,
+            IChromeBrowser browser, AppDbContext context, ILogger logger,
             CancellationToken cancellationToken
             )
         {
             var (accountId, access) = command;
-            using var context = await contextFactory.CreateDbContextAsync();
-            var chromeBrowser = chromeManager.Get(accountId);
 
             var account = context.Accounts
                 .Where(x => x.Id == accountId.Value)
@@ -41,8 +39,8 @@ namespace MainCore.Commands.Misc
                 IsHeadless = headlessChrome,
             };
 
-            await chromeBrowser.Setup(chromeSetting, logService.GetLogger(accountId));
-            await chromeBrowser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
+            await browser.Setup(chromeSetting, logger);
+            await browser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
 
             context.Accesses
                .Where(x => x.Id == access.Id.Value)

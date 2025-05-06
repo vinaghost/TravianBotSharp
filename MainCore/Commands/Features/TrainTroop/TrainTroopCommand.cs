@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 using MainCore.Errors.TrainTroop;
 
 namespace MainCore.Commands.Features.TrainTroop
@@ -10,8 +10,8 @@ namespace MainCore.Commands.Features.TrainTroop
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            IChromeBrowser browser,
+            AppDbContext context,
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToBuildingCommand.Handler toBuildingCommand,
@@ -36,11 +36,11 @@ namespace MainCore.Commands.Features.TrainTroop
             result = await toBuildingCommand.HandleAsync(new(accountId, buildingLocation), cancellationToken);
             if (result.IsFailed) return result;
 
-            using var context = await contextFactory.CreateDbContextAsync();
+            
             var troopSetting = BuildingSettings[building];
             var troop = (TroopEnums)context.ByName(villageId, troopSetting);
 
-            var browser = chromeManager.Get(accountId);
+            
 
             var (_, isFailed, amount, errors) = GetAmount(context, browser, villageId, building, troop);
             if (isFailed) return Result.Fail(errors);

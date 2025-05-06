@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 using System.Web;
 
 namespace MainCore.Commands.Navigate
@@ -10,12 +10,12 @@ namespace MainCore.Commands.Navigate
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
-           IChromeManager chromeManager,
+           IChromeBrowser browser,
            CancellationToken cancellationToken
            )
         {
             var (accountId, location) = command;
-            var browser = chromeManager.Get(accountId);
+            
             var html = browser.Html;
             var node = GetBuilding(html, location);
             if (node is null) return Retry.NotFound($"{location}", "nodeBuilding");

@@ -34,26 +34,26 @@ partial class LoginCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.MainLayoutViewModel.LoginCommand.Command, global::System.ValueTuple>
 	{
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
 		private readonly global::MainCore.Services.ITimerManager _timerManager;
-		private readonly global::MainCore.Services.ILogService _logService;
+		private readonly global::Serilog.ILogger _logger;
 		private readonly global::MainCore.Notification.Message.AccountInit.Handler _accountInit;
 		private readonly global::MainCore.Commands.Misc.OpenBrowserCommand.Handler _openBrowserCommand;
 
 		public HandleBehavior(
-			global::MainCore.Services.IChromeManager chromeManager,
+			global::MainCore.Services.IChromeBrowser browser,
 			global::MainCore.Services.ITaskManager taskManager,
 			global::MainCore.Services.ITimerManager timerManager,
-			global::MainCore.Services.ILogService logService,
+			global::Serilog.ILogger logger,
 			global::MainCore.Notification.Message.AccountInit.Handler accountInit,
 			global::MainCore.Commands.Misc.OpenBrowserCommand.Handler openBrowserCommand
 		)
 		{
-			_chromeManager = chromeManager;
+			_browser = browser;
 			_taskManager = taskManager;
 			_timerManager = timerManager;
-			_logService = logService;
+			_logger = logger;
 			_accountInit = accountInit;
 			_openBrowserCommand = openBrowserCommand;
 		}
@@ -66,10 +66,10 @@ partial class LoginCommand
 			await global::MainCore.Commands.UI.MainLayoutViewModel.LoginCommand
 				.HandleAsync(
 					request
-					, _chromeManager
+					, _browser
 					, _taskManager
 					, _timerManager
-					, _logService
+					, _logger
 					, _accountInit
 					, _openBrowserCommand
 					, cancellationToken

@@ -20,7 +20,7 @@ namespace MainCore.Services
 
         Task Refresh(CancellationToken cancellationToken);
 
-        Task Setup(ChromeSetting setting, Serilog.ILogger logger);
+        Task Setup(ChromeSetting setting, ILogger logger);
 
         Task Shutdown();
 

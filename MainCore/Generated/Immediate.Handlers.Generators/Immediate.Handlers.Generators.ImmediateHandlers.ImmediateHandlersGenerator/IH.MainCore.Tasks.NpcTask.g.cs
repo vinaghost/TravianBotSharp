@@ -11,16 +11,21 @@ partial class NpcTask
 		private readonly global::MainCore.Tasks.NpcTask.HandleBehavior _handleBehavior;
 		private readonly global::MainCore.Tasks.Behaviors.VillageTaskBehavior<global::MainCore.Tasks.NpcTask.Task, global::FluentResults.Result> _villageTaskBehavior;
 		private readonly global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.NpcTask.Task, global::FluentResults.Result> _accountTaskBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Tasks.NpcTask.Task, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
 			global::MainCore.Tasks.NpcTask.HandleBehavior handleBehavior,
 			global::MainCore.Tasks.Behaviors.VillageTaskBehavior<global::MainCore.Tasks.NpcTask.Task, global::FluentResults.Result> villageTaskBehavior,
-			global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.NpcTask.Task, global::FluentResults.Result> accountTaskBehavior
+			global::MainCore.Tasks.Behaviors.AccountTaskBehavior<global::MainCore.Tasks.NpcTask.Task, global::FluentResults.Result> accountTaskBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Tasks.NpcTask.Task, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(NpcTask);
 
 			_handleBehavior = handleBehavior;
+
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
 
 			_accountTaskBehavior = accountTaskBehavior;
 			_accountTaskBehavior.HandlerType = handlerType;
@@ -30,6 +35,7 @@ partial class NpcTask
 
 			_villageTaskBehavior.SetInnerHandler(_handleBehavior);
 			_accountTaskBehavior.SetInnerHandler(_villageTaskBehavior);
+			_commandLoggingBehavior.SetInnerHandler(_accountTaskBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -37,7 +43,7 @@ partial class NpcTask
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _accountTaskBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.UI.AddAccountsViewModel
 {
@@ -9,12 +9,12 @@ namespace MainCore.Commands.UI.AddAccountsViewModel
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IDbContextFactory<AppDbContext> contextFactory, IUseragentManager useragentManager,
+            AppDbContext context, IUseragentManager useragentManager,
             AccountUpdated.Handler accountUpdated,
             CancellationToken cancellationToken
             )
         {
-            using var context = await contextFactory.CreateDbContextAsync();
+            
             var existAccounts = context.Accounts
                 .ToDto()
                 .ToList();

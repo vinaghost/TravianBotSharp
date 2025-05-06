@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.UI.FarmingViewModel
 {
@@ -9,13 +9,13 @@ namespace MainCore.Commands.UI.FarmingViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             FarmListUpdated.Handler farmListUpdated,
             CancellationToken cancellationToken
             )
         {
             var (accountId, farmId) = command;
-            using var context = await contextFactory.CreateDbContextAsync();
+            
             context.FarmLists
                .Where(x => x.Id == farmId.Value)
                .ExecuteUpdate(x => x.SetProperty(x => x.IsActive, x => !x.IsActive));

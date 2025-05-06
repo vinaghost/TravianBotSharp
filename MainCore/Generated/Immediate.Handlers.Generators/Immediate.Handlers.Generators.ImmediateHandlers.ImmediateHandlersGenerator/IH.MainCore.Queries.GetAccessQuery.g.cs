@@ -34,15 +34,15 @@ partial class GetAccessQuery
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Queries.GetAccessQuery.Query, global::FluentResults.Result<global::MainCore.DTO.AccessDto>>
 	{
-		private readonly global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> _contextFactory;
+		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Queries.VerifyAccessQuery.Handler _verifyAccessQuery;
 
 		public HandleBehavior(
-			global::Microsoft.EntityFrameworkCore.IDbContextFactory<global::MainCore.Infrasturecture.Persistence.AppDbContext> contextFactory,
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
 			global::MainCore.Queries.VerifyAccessQuery.Handler verifyAccessQuery
 		)
 		{
-			_contextFactory = contextFactory;
+			_context = context;
 			_verifyAccessQuery = verifyAccessQuery;
 		}
 
@@ -54,7 +54,7 @@ partial class GetAccessQuery
 			return await global::MainCore.Queries.GetAccessQuery
 				.HandleAsync(
 					request
-					, _contextFactory
+					, _context
 					, _verifyAccessQuery
 					, cancellationToken
 				)

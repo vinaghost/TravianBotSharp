@@ -1,27 +1,25 @@
-﻿using MainCore.Commands.Base;
-
-namespace MainCore.Commands.Behaviors
+﻿namespace MainCore.Commands.Behaviors
 {
     public sealed class CommandLoggingBehavior<TRequest, TResponse>
         : Behavior<TRequest, TResponse>
-            where TRequest : IAccountCommand
             where TResponse : Result
     {
-        private readonly ILogService _logService;
+        private readonly AppDbContext _context;
+        private readonly ILogger _logger;
 
-        public CommandLoggingBehavior(ILogService logService)
+        public CommandLoggingBehavior(ILogger logger, AppDbContext context)
         {
-            _logService = logService;
+            _logger = logger;
+            _context = context;
         }
 
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
-            var logger = _logService.GetLogger(request.AccountId);
-            logger.Information("Execute {Command}", request.GetType().Name);
+            _logger.Information("Execute {Command}", request.GetType().Name);
             var response = await Next(request, cancellationToken);
             if (response.IsFailed)
             {
-                logger.Warning("{error}", response.ToString());
+                _logger.Warning("{error}", response.ToString());
             }
             return response;
         }

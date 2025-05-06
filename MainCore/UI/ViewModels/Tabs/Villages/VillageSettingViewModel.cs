@@ -3,6 +3,7 @@ using MainCore.Commands.UI.Villages.VillageSettingViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
@@ -44,7 +45,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
                 return;
             }
-            var saveVillageSettingCommand = Locator.Current.GetService<SaveVillageSettingCommand.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var saveVillageSettingCommand = scope.ServiceProvider.GetRequiredService<SaveVillageSettingCommand.Handler>();
             await saveVillageSettingCommand.HandleAsync(new(AccountId, VillageId, VillageSettingInput.Get()));
         }
 
@@ -71,7 +74,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
                 return;
             }
-            var saveVillageSettingCommand = Locator.Current.GetService<SaveVillageSettingCommand.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var saveVillageSettingCommand = scope.ServiceProvider.GetRequiredService<SaveVillageSettingCommand.Handler>();
             await saveVillageSettingCommand.HandleAsync(new(AccountId, VillageId, VillageSettingInput.Get()));
         }
 
@@ -80,7 +85,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
             if (string.IsNullOrEmpty(path)) return;
-            var getSettingQuery = Locator.Current.GetService<GetSettingQuery.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
             var settings = getSettingQuery.HandleAsync(new(VillageId));
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString);
@@ -90,7 +97,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         [ReactiveCommand]
         private static async Task<Dictionary<VillageSettingEnums, int>> LoadSetting(VillageId villageId)
         {
-            var getSettingQuery = Locator.Current.GetService<GetSettingQuery.Handler>();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
             var settings = await getSettingQuery.HandleAsync(new(villageId));
             return settings;
         }

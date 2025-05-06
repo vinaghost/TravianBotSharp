@@ -1,5 +1,5 @@
 ﻿using Humanizer;
-using MainCore.Queries.Base;
+using MainCore.Constraints;
 using MainCore.UI.Models.Output;
 using System.Text.Json;
 
@@ -12,12 +12,12 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query query,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             CancellationToken cancellationToken
             )
         {
+            await Task.CompletedTask;
             var villageId = query.VillageId;
-            using var context = await contextFactory.CreateDbContextAsync();
 
             var items = context.Jobs
                 .Where(x => x.VillageId == villageId.Value)

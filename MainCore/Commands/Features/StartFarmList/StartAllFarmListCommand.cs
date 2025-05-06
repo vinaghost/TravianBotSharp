@@ -1,4 +1,4 @@
-using MainCore.Commands.Base;
+using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.StartFarmList
 {
@@ -9,16 +9,16 @@ namespace MainCore.Commands.Features.StartFarmList
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
+            IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var chromeBrowser = chromeManager.Get(command.AccountId);
-            var html = chromeBrowser.Html;
+            
+            var html = browser.Html;
 
             var startAllButton = FarmListParser.GetStartAllButton(html);
             if (startAllButton is null) return Retry.ButtonNotFound("Start all farms");
 
-            var result = await chromeBrowser.Click(By.XPath(startAllButton.XPath));
+            var result = await browser.Click(By.XPath(startAllButton.XPath));
             if (result.IsFailed) return result;
 
             return Result.Ok();

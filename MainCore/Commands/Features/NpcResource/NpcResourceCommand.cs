@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.NpcResource
 {
@@ -17,17 +17,17 @@ namespace MainCore.Commands.Features.NpcResource
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            IChromeBrowser browser,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
-            var browser = chromeManager.Get(accountId);
+            
 
             var result = await OpenNPCDialog(browser, cancellationToken);
             if (result.IsFailed) return result;
 
-            using var context = await contextFactory.CreateDbContextAsync();
+            
             var settings = context.ByName(villageId, SettingNames);
             var ratio = GetRatio(settings, villageId);
 

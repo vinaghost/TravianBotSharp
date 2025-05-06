@@ -1,6 +1,9 @@
 ﻿using ArchUnitNET.Domain;
 using ArchUnitNET.Loader;
 using ArchUnitNET.xUnit;
+using MainCore.Constraints;
+using MainCore.Infrasturecture.Persistence;
+using Microsoft.EntityFrameworkCore;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
 namespace MainCore.Test
@@ -8,25 +11,14 @@ namespace MainCore.Test
     public class ArchitectureTest
     {
         private static readonly Architecture Architecture = new ArchLoader().LoadAssemblies(
-            System.Reflection.Assembly.Load("MainCore")
+            System.Reflection.Assembly.Load("MainCore"),
+            typeof(IDbContextFactory<>).Assembly
         ).Build();
-
-        private readonly IObjectProvider<Interface> CommandInterfaces =
-            Interfaces().That().HaveNameEndingWith("Command").As("Command Interfaces");
-
-        private readonly IObjectProvider<Interface> QueryInterfaces =
-            Interfaces().That().HaveNameEndingWith("Query").As("Query Interfaces");
-
-        private readonly IObjectProvider<Interface> NotificationInterfaces =
-            Interfaces().That().HaveNameEndingWith("Notification").As("Notification Interfaces");
-
-        private readonly IObjectProvider<Interface> TaskInterfaces =
-            Interfaces().That().HaveNameEndingWith("Task").As("Task Interfaces");
 
         [Fact]
         public void CommandShouldHaveCorrectName()
         {
-            var rule = Classes().That().AreAssignableTo(CommandInterfaces)
+            var rule = Classes().That().AreAssignableTo(typeof(ICommand))
                 .Should()
                 .HaveNameEndingWith("Command");
 
@@ -36,7 +28,7 @@ namespace MainCore.Test
         [Fact]
         public void QueryShouldHaveCorrectName()
         {
-            var rule = Classes().That().AreAssignableTo(QueryInterfaces)
+            var rule = Classes().That().AreAssignableTo(typeof(IQuery))
                 .Should()
                 .HaveNameEndingWith("Query");
             rule.Check(Architecture);
@@ -45,7 +37,7 @@ namespace MainCore.Test
         [Fact]
         public void NotificationShouldHaveCorrectName()
         {
-            var rule = Classes().That().AreAssignableTo(NotificationInterfaces)
+            var rule = Classes().That().AreAssignableTo(typeof(INotification))
                 .Should()
                 .HaveNameEndingWith("Notification");
             rule.Check(Architecture);
@@ -54,9 +46,28 @@ namespace MainCore.Test
         [Fact]
         public void TaskShouldHaveCorrectName()
         {
-            var rule = Classes().That().AreAssignableTo(TaskInterfaces)
+            var rule = Classes().That().AreAssignableTo(typeof(ITask))
                 .Should()
                 .HaveNameEndingWith("Task");
+
+            rule.Check(Architecture);
+        }
+
+        [Fact]
+        public void HandlerAccessDatabaseShouldNotContainOtherHandler()
+        {
+            var handler = Classes().That()
+                .AreAssignableTo(typeof(Immediate.Handlers.Shared.IHandler<,>))
+                .As("Handler");
+
+            var rule = MethodMembers().That()
+                .HaveNameContaining("HandleAsync")
+                .And()
+                .AreStatic()
+                .And()
+                .DependOnAny(typeof(AppDbContext))
+                .Should()
+                .NotDependOnAny(handler);
             rule.Check(Architecture);
         }
     }

@@ -34,13 +34,13 @@ partial class VerifyAccessQuery
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Queries.VerifyAccessQuery.Query, bool>
 	{
-		private readonly global::MainCore.Services.ILogService _logService;
+		private readonly global::Serilog.ILogger _logger;
 
 		public HandleBehavior(
-			global::MainCore.Services.ILogService logService
+			global::Serilog.ILogger logger
 		)
 		{
-			_logService = logService;
+			_logger = logger;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<bool> HandleAsync(
@@ -51,7 +51,7 @@ partial class VerifyAccessQuery
 			return await global::MainCore.Queries.VerifyAccessQuery
 				.HandleAsync(
 					request
-					, _logService
+					, _logger
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

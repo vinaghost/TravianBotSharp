@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Update
 {
@@ -9,16 +9,16 @@ namespace MainCore.Commands.Update
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
-            IDbContextFactory<AppDbContext> contextFactory,
+            IChromeBrowser browser,
+            AppDbContext context,
             QueueBuildingUpdated.Handler queueBuildingUpdated,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
-            var chromeBrowser = chromeManager.Get(accountId);
-            var html = chromeBrowser.Html;
+            
+            var html = browser.Html;
 
-            var dtoBuilding = GetBuildings(chromeBrowser.CurrentUrl, html);
+            var dtoBuilding = GetBuildings(browser.CurrentUrl, html);
             if (!dtoBuilding.Any()) return Result.Ok();
 
             var dtoQueueBuilding = BuildingLayoutParser.GetQueueBuilding(html);
@@ -26,7 +26,7 @@ namespace MainCore.Commands.Update
             var result = IsVaildQueueBuilding(queueBuildings);
             if (result.IsFailed) return result;
 
-            using var context = contextFactory.CreateDbContext();
+            
             context.UpdateQueueToDatabase(villageId, queueBuildings);
             context.UpdateBuildToDatabase(villageId, dtoBuilding.ToList());
 

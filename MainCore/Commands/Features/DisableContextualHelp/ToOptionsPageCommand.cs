@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.DisableContextualHelp
 {
@@ -9,16 +9,16 @@ namespace MainCore.Commands.Features.DisableContextualHelp
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
+            IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var chromeBrowser = chromeManager.Get(command.AccountId);
-            var html = chromeBrowser.Html;
+            
+            var html = browser.Html;
 
             var button = OptionParser.GetOptionButton(html);
             if (button is null) return Retry.ButtonNotFound("options");
 
-            var result = await chromeBrowser.Click(By.XPath(button.XPath));
+            var result = await browser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result;
 
             return Result.Ok();

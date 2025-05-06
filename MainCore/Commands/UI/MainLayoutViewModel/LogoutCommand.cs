@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.UI.MainLayoutViewModel
 {
@@ -9,7 +9,7 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            IChromeManager chromeManager, ITaskManager taskManager,
+            IChromeBrowser browser, ITaskManager taskManager,
             CancellationToken cancellationToken
             )
         {
@@ -17,8 +17,8 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
             await taskManager.SetStatus(accountId, StatusEnums.Stopping);
             await taskManager.StopCurrentTast(accountId);
 
-            var chromeBrowser = chromeManager.Get(accountId);
-            await chromeBrowser.Close();
+            
+            await browser.Close();
 
             await taskManager.SetStatus(accountId, StatusEnums.Offline);
         }

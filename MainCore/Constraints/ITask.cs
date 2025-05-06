@@ -1,4 +1,4 @@
-﻿namespace MainCore.Tasks.Base
+﻿namespace MainCore.Constraints
 {
     public interface ITask
     {

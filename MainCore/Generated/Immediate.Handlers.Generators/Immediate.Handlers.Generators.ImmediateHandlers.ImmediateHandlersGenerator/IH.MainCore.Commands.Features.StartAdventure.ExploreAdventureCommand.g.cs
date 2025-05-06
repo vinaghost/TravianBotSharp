@@ -9,15 +9,21 @@ partial class ExploreAdventureCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Features.StartAdventure.ExploreAdventureCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Features.StartAdventure.ExploreAdventureCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Features.StartAdventure.ExploreAdventureCommand.Command, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Features.StartAdventure.ExploreAdventureCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.Features.StartAdventure.ExploreAdventureCommand.HandleBehavior handleBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Features.StartAdventure.ExploreAdventureCommand.Command, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(ExploreAdventureCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
+
+			_commandLoggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -25,7 +31,7 @@ partial class ExploreAdventureCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -34,16 +40,16 @@ partial class ExploreAdventureCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.StartAdventure.ExploreAdventureCommand.Command, global::FluentResults.Result>
 	{
-		private readonly global::MainCore.Services.IChromeManager _chromeManager;
-		private readonly global::MainCore.Services.ILogService _logService;
+		private readonly global::MainCore.Services.IChromeBrowser _browser;
+		private readonly global::Serilog.ILogger _logger;
 
 		public HandleBehavior(
-			global::MainCore.Services.IChromeManager chromeManager,
-			global::MainCore.Services.ILogService logService
+			global::MainCore.Services.IChromeBrowser browser,
+			global::Serilog.ILogger logger
 		)
 		{
-			_chromeManager = chromeManager;
-			_logService = logService;
+			_browser = browser;
+			_logger = logger;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -54,8 +60,8 @@ partial class ExploreAdventureCommand
 			return await global::MainCore.Commands.Features.StartAdventure.ExploreAdventureCommand
 				.HandleAsync(
 					request
-					, _chromeManager
-					, _logService
+					, _browser
+					, _logger
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

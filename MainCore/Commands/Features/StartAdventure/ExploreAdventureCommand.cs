@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.StartAdventure
 {
@@ -9,18 +9,16 @@ namespace MainCore.Commands.Features.StartAdventure
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeManager chromeManager,
-            ILogService logService,
+            IChromeBrowser browser,
+            ILogger logger,
             CancellationToken cancellationToken)
         {
-            var chromeBrowser = chromeManager.Get(command.AccountId);
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
 
             if (!AdventureParser.CanStartAdventure(html)) return Skip.NoAdventure;
 
             var adventureButton = AdventureParser.GetAdventureButton(html);
             if (adventureButton is null) return Retry.ButtonNotFound("adventure");
-            var logger = logService.GetLogger(command.AccountId);
             logger.Information("Start adventure {Adventure}", AdventureParser.GetAdventureInfo(adventureButton));
 
             static bool ContinueShow(IWebDriver driver)
@@ -31,10 +29,10 @@ namespace MainCore.Commands.Features.StartAdventure
                 return continueButton is not null;
             }
 
-            var result = await chromeBrowser.Click(By.XPath(adventureButton.XPath));
+            var result = await browser.Click(By.XPath(adventureButton.XPath));
             if (result.IsFailed) return result;
 
-            result = await chromeBrowser.Wait(ContinueShow, cancellationToken);
+            result = await browser.Wait(ContinueShow, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

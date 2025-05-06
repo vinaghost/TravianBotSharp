@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Base;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.UI.Misc
 {
@@ -9,14 +9,14 @@ namespace MainCore.Commands.UI.Misc
 
         private static async ValueTask HandleAsync(
             Command command,
-            IDbContextFactory<AppDbContext> contextFactory,
+            AppDbContext context,
             AccountSettingUpdated.Handler accountSettingUpdated,
             CancellationToken cancellationToken
             )
         {
             var (accountId, settings) = command;
             if (settings.Count == 0) return;
-            using var context = await contextFactory.CreateDbContextAsync();
+            
 
             foreach (var setting in settings)
             {
