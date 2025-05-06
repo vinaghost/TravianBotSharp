@@ -42,17 +42,14 @@ partial class UpdateFarmlistCommand
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
-		private readonly global::MainCore.Notification.Message.FarmListUpdated.Handler _farmListUpdated;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
-			global::MainCore.Notification.Message.FarmListUpdated.Handler farmListUpdated
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context
 		)
 		{
 			_browser = browser;
 			_context = context;
-			_farmListUpdated = farmListUpdated;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -65,7 +62,6 @@ partial class UpdateFarmlistCommand
 					request
 					, _browser
 					, _context
-					, _farmListUpdated
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

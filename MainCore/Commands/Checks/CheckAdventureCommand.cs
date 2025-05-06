@@ -15,9 +15,7 @@ namespace MainCore.Commands.Checks
            )
         {
             var accountId = command.AccountId;
-
             if (!AdventureParser.CanStartAdventure(browser.Html)) return;
-
             await adventureUpdated.HandleAsync(new(accountId), cancellationToken);
         }
     }

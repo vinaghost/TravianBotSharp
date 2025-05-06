@@ -6,69 +6,61 @@ namespace MainCore.Commands.Update;
 
 partial class UpdateVillageListCommand
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::FluentResults.Result>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Commands.Update.UpdateVillageListCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Update.UpdateVillageListCommand.HandleBehavior handleBehavior,
-			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::FluentResults.Result> commandLoggingBehavior
+			global::MainCore.Commands.Update.UpdateVillageListCommand.HandleBehavior handleBehavior
 		)
 		{
 			var handlerType = typeof(UpdateVillageListCommand);
 
 			_handleBehavior = handleBehavior;
 
-			_commandLoggingBehavior = commandLoggingBehavior;
-			_commandLoggingBehavior.HandlerType = handlerType;
-
-			_commandLoggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
-		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
+		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
 			global::MainCore.Commands.Update.UpdateVillageListCommand.Command request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _commandLoggingBehavior
+			return await _handleBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::FluentResults.Result>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
-		private readonly global::MainCore.Notification.Message.VillageUpdated.Handler _villageUpdated;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
-			global::MainCore.Notification.Message.VillageUpdated.Handler villageUpdated
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context
 		)
 		{
 			_browser = browser;
 			_context = context;
-			_villageUpdated = villageUpdated;
 		}
 
-		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
+		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
 			global::MainCore.Commands.Update.UpdateVillageListCommand.Command request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
-			return await global::MainCore.Commands.Update.UpdateVillageListCommand
+			await global::MainCore.Commands.Update.UpdateVillageListCommand
 				.HandleAsync(
 					request
 					, _browser
 					, _context
-					, _villageUpdated
 					, cancellationToken
 				)
 				.ConfigureAwait(false);
+
+			return default;
 		}
 	}
 
@@ -79,7 +71,7 @@ partial class UpdateVillageListCommand
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Commands.Update.UpdateVillageListCommand.Handler), typeof(global::MainCore.Commands.Update.UpdateVillageListCommand.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::FluentResults.Result>), typeof(global::MainCore.Commands.Update.UpdateVillageListCommand.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::System.ValueTuple>), typeof(global::MainCore.Commands.Update.UpdateVillageListCommand.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Commands.Update.UpdateVillageListCommand.HandleBehavior), typeof(global::MainCore.Commands.Update.UpdateVillageListCommand.HandleBehavior), lifetime));
 		return services;
 	}

@@ -11,9 +11,9 @@ namespace MainCore.Commands.Update
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
-            QueueBuildingUpdated.Handler queueBuildingUpdated,
             CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
             var (accountId, villageId) = command;
 
             var html = browser.Html;
@@ -31,7 +31,6 @@ namespace MainCore.Commands.Update
 
             var dtoUnderConstructionBuildings = dtoBuilding.Where(x => x.IsUnderConstruction).ToList();
             context.UpdateQueueToDatabase(villageId, dtoUnderConstructionBuildings);
-            await queueBuildingUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
 
             return Result.Ok();
         }

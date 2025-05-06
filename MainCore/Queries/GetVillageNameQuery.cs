@@ -16,6 +16,12 @@ namespace MainCore.Queries
             await Task.CompletedTask;
             var villageId = query.VillageId;
 
+            var villageName = context.GetVillageName(villageId);
+            return villageName;
+        }
+
+        public static string GetVillageName(this AppDbContext context, VillageId villageId)
+        {
             var villageName = context.Villages
                 .Where(x => x.Id == villageId.Value)
                 .Select(x => x.Name)

@@ -34,17 +34,14 @@ partial class NpcTaskTrigger
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IVillageNotification, global::System.ValueTuple>
 	{
-		private readonly global::MainCore.Queries.GetVillageNameQuery.Handler _getVillageNameQuery;
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 
 		public HandleBehavior(
-			global::MainCore.Queries.GetVillageNameQuery.Handler getVillageNameQuery,
 			global::MainCore.Services.ITaskManager taskManager,
 			global::MainCore.Infrasturecture.Persistence.AppDbContext context
 		)
 		{
-			_getVillageNameQuery = getVillageNameQuery;
 			_taskManager = taskManager;
 			_context = context;
 		}
@@ -57,7 +54,6 @@ partial class NpcTaskTrigger
 			await global::MainCore.Notification.Handlers.Trigger.NpcTaskTrigger
 				.HandleAsync(
 					request
-					, _getVillageNameQuery
 					, _taskManager
 					, _context
 					, cancellationToken

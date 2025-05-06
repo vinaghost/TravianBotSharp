@@ -7,26 +7,22 @@ namespace MainCore.Commands.Update
     {
         public sealed record Command(AccountId AccountId) : ICommand;
 
-        private static async ValueTask<Result> HandleAsync(
+        private static async ValueTask HandleAsync(
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
-            VillageUpdated.Handler villageUpdated,
             CancellationToken cancellationToken)
         {
-
+            await Task.CompletedTask;
             var html = browser.Html;
 
             var dtos = VillagePanelParser.Get(html);
-            if (!dtos.Any()) return Result.Ok();
+            if (!dtos.Any()) return;
 
-            UpdateToDatabase(command.AccountId, dtos.ToList(), context);
-
-            await villageUpdated.HandleAsync(new(command.AccountId), cancellationToken);
-            return Result.Ok();
+            context.UpdateToDatabase(command.AccountId, dtos.ToList());
         }
 
-        private static void UpdateToDatabase(AccountId accountId, List<VillageDto> dtos, AppDbContext context)
+        private static void UpdateToDatabase(this AppDbContext context, AccountId accountId, List<VillageDto> dtos)
         {
             var villages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)

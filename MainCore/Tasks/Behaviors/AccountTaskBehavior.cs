@@ -15,13 +15,18 @@ namespace MainCore.Tasks.Behaviors
         private readonly UpdateVillageListCommand.Handler _updateVillageListCommand;
         private readonly CheckAdventureCommand.Handler _checkAdventureCommand;
 
-        public AccountTaskBehavior(IChromeBrowser browser, ITaskManager taskManager, UpdateAccountInfoCommand.Handler updateAccountInfoCommand, UpdateVillageListCommand.Handler updateVillageListCommand, CheckAdventureCommand.Handler checkAdventureCommand)
+        private readonly AccountInfoUpdated.Handler _accountInfoUpdated;
+        private readonly VillageUpdated.Handler _villageUpdated;
+
+        public AccountTaskBehavior(IChromeBrowser browser, ITaskManager taskManager, UpdateAccountInfoCommand.Handler updateAccountInfoCommand, UpdateVillageListCommand.Handler updateVillageListCommand, CheckAdventureCommand.Handler checkAdventureCommand, AccountInfoUpdated.Handler accountInfoUpdated, VillageUpdated.Handler villageUpdated)
         {
             _browser = browser;
             _taskManager = taskManager;
             _updateAccountInfoCommand = updateAccountInfoCommand;
             _updateVillageListCommand = updateVillageListCommand;
             _checkAdventureCommand = checkAdventureCommand;
+            _accountInfoUpdated = accountInfoUpdated;
+            _villageUpdated = villageUpdated;
         }
 
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
@@ -43,12 +48,19 @@ namespace MainCore.Tasks.Behaviors
             }
 
             await _updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
+            await _accountInfoUpdated.HandleAsync(new(accountId), cancellationToken);
+
             await _updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
+            await _villageUpdated.HandleAsync(new(accountId), cancellationToken);
 
             var response = await Next(request, cancellationToken);
 
             await _updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
+            await _accountInfoUpdated.HandleAsync(new(accountId), cancellationToken);
+
             await _updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
+            await _villageUpdated.HandleAsync(new(accountId), cancellationToken);
+
             await _checkAdventureCommand.HandleAsync(new(accountId), cancellationToken);
             return response;
         }

@@ -11,22 +11,18 @@ namespace MainCore.Commands.Update
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
-            FarmListUpdated.Handler farmListUpdated,
             CancellationToken cancellationToken)
         {
-
+            await Task.CompletedTask;
             var html = browser.Html;
 
             var dtos = Get(html);
-            UpdateToDatabase(command.AccountId, dtos, context);
-
-            await farmListUpdated.HandleAsync(new(command.AccountId), cancellationToken);
+            context.UpdateToDatabase(command.AccountId, dtos);
             return Result.Ok();
         }
 
-        private static void UpdateToDatabase(AccountId accountId, IEnumerable<FarmDto> dtos, AppDbContext context)
+        private static void UpdateToDatabase(this AppDbContext context, AccountId accountId, IEnumerable<FarmDto> dtos)
         {
-
             var farms = context.FarmLists
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();

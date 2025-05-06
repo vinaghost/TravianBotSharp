@@ -34,17 +34,14 @@ partial class CompleteImmediatelyTaskTrigger
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IVillageNotification, global::System.ValueTuple>
 	{
-		private readonly global::MainCore.Queries.GetVillageNameQuery.Handler _getVillageNameQuery;
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
 
 		public HandleBehavior(
-			global::MainCore.Queries.GetVillageNameQuery.Handler getVillageNameQuery,
 			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
 			global::MainCore.Services.ITaskManager taskManager
 		)
 		{
-			_getVillageNameQuery = getVillageNameQuery;
 			_context = context;
 			_taskManager = taskManager;
 		}
@@ -57,7 +54,6 @@ partial class CompleteImmediatelyTaskTrigger
 			await global::MainCore.Notification.Handlers.Trigger.CompleteImmediatelyTaskTrigger
 				.HandleAsync(
 					request
-					, _getVillageNameQuery
 					, _context
 					, _taskManager
 					, cancellationToken

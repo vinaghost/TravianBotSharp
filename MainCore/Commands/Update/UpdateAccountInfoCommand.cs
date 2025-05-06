@@ -11,16 +11,14 @@ namespace MainCore.Commands.Update
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
-            AccountInfoUpdated.Handler accountInfoUpdated,
             CancellationToken cancellationToken)
         {
-
+            await Task.CompletedTask;
             var html = browser.Html;
 
             var dto = Get(html);
-            UpdateToDatabase(command.AccountId, dto, context);
+            context.UpdateToDatabase(command.AccountId, dto);
 
-            await accountInfoUpdated.HandleAsync(new(command.AccountId), cancellationToken);
             return Result.Ok();
         }
 
@@ -39,10 +37,8 @@ namespace MainCore.Commands.Update
             };
         }
 
-        private static void UpdateToDatabase(AccountId accountId, AccountInfoDto dto, AppDbContext context)
+        private static void UpdateToDatabase(this AppDbContext context, AccountId accountId, AccountInfoDto dto)
         {
-
-
             var dbAccountInfo = context.AccountsInfo
                 .FirstOrDefault(x => x.AccountId == accountId.Value);
 

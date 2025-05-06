@@ -11,16 +11,13 @@ namespace MainCore.Commands.Update
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
-            HeroItemUpdated.Handler heroItemUpdated,
             CancellationToken cancellationToken)
         {
-
+            await Task.CompletedTask;
             var html = browser.Html;
 
             var dtos = GetItems(html);
-            Update(command.AccountId, dtos.ToList(), context);
-
-            await heroItemUpdated.HandleAsync(new(command.AccountId), cancellationToken);
+            context.Update(command.AccountId, dtos.ToList());
             return Result.Ok();
         }
 
@@ -84,9 +81,8 @@ namespace MainCore.Commands.Update
             }
         }
 
-        private static void Update(AccountId accountId, List<HeroItemDto> dtos, AppDbContext context)
+        private static void Update(this AppDbContext context, AccountId accountId, List<HeroItemDto> dtos)
         {
-
             var items = context.HeroItems
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();

@@ -36,17 +36,14 @@ partial class UpdateStorageCommand
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
-		private readonly global::MainCore.Notification.Message.StorageUpdated.Handler _storageUpdated;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
-			global::MainCore.Notification.Message.StorageUpdated.Handler storageUpdated
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context
 		)
 		{
 			_browser = browser;
 			_context = context;
-			_storageUpdated = storageUpdated;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::MainCore.DTO.StorageDto> HandleAsync(
@@ -59,7 +56,6 @@ partial class UpdateStorageCommand
 					request
 					, _browser
 					, _context
-					, _storageUpdated
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

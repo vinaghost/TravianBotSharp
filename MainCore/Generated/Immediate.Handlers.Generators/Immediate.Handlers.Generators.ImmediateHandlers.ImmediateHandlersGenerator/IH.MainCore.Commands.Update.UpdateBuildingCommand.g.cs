@@ -42,17 +42,14 @@ partial class UpdateBuildingCommand
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
-		private readonly global::MainCore.Notification.Message.QueueBuildingUpdated.Handler _queueBuildingUpdated;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
-			global::MainCore.Notification.Message.QueueBuildingUpdated.Handler queueBuildingUpdated
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context
 		)
 		{
 			_browser = browser;
 			_context = context;
-			_queueBuildingUpdated = queueBuildingUpdated;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -65,7 +62,6 @@ partial class UpdateBuildingCommand
 					request
 					, _browser
 					, _context
-					, _queueBuildingUpdated
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

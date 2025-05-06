@@ -11,9 +11,9 @@ namespace MainCore.Commands.Update
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
-            StorageUpdated.Handler storageUpdated,
             CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
             var (accountId, villageId) = command;
 
             var html = browser.Html;
@@ -21,7 +21,6 @@ namespace MainCore.Commands.Update
             var dto = Get(html);
 
             context.UpdateStorage(villageId, dto);
-            await storageUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
             return dto;
         }
 
