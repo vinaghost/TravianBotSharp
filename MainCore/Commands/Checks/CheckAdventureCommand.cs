@@ -1,22 +1,23 @@
 ﻿using MainCore.Constraints;
+using MainCore.Notification.Handlers.Trigger;
 
 namespace MainCore.Commands.Checks
 {
     [Handler]
     public static partial class CheckAdventureCommand
     {
-        public sealed record Command(AccountId AccountId) : ICommand;
+        public sealed record Command(AccountId AccountId) : IAccountConstraint;
 
         private static async ValueTask HandleAsync(
            Command command,
            IChromeBrowser browser,
-           AdventureUpdated.Handler adventureUpdated,
+           StartAdventureTaskTrigger.Handler startAdventureTaskTrigger,
+
            CancellationToken cancellationToken
            )
         {
-            var accountId = command.AccountId;
             if (!AdventureParser.CanStartAdventure(browser.Html)) return;
-            await adventureUpdated.HandleAsync(new(accountId), cancellationToken);
+            await startAdventureTaskTrigger.HandleAsync(command, cancellationToken);
         }
     }
 }

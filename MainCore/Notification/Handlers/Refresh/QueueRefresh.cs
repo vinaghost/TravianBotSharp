@@ -7,7 +7,7 @@ namespace MainCore.Notification.Handlers.Refresh
     public static partial class QueueRefresh
     {
         private static async ValueTask HandleAsync(
-            IVillageNotification notification,
+            IVillageConstraint notification,
             BuildViewModel viewModel,
             CancellationToken cancellationToken)
         {

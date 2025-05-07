@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Trigger;
 
 partial class CompleteImmediatelyTaskTrigger
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IVillageNotification, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IVillageConstraint, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.Trigger.CompleteImmediatelyTaskTrigger.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class CompleteImmediatelyTaskTrigger
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Constraints.IVillageNotification request,
+			global::MainCore.Constraints.IVillageConstraint request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,7 +32,7 @@ partial class CompleteImmediatelyTaskTrigger
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IVillageNotification, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IVillageConstraint, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
@@ -47,7 +47,7 @@ partial class CompleteImmediatelyTaskTrigger
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Constraints.IVillageNotification request,
+			global::MainCore.Constraints.IVillageConstraint request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -71,7 +71,7 @@ partial class CompleteImmediatelyTaskTrigger
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Trigger.CompleteImmediatelyTaskTrigger.Handler), typeof(global::MainCore.Notification.Handlers.Trigger.CompleteImmediatelyTaskTrigger.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IVillageNotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Trigger.CompleteImmediatelyTaskTrigger.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IVillageConstraint, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Trigger.CompleteImmediatelyTaskTrigger.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Trigger.CompleteImmediatelyTaskTrigger.HandleBehavior), typeof(global::MainCore.Notification.Handlers.Trigger.CompleteImmediatelyTaskTrigger.HandleBehavior), lifetime));
 		return services;
 	}

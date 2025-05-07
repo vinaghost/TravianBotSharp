@@ -10,7 +10,6 @@ namespace MainCore.Commands.Navigate
         private static async ValueTask<Result> HandleAsync(
            Command command,
            IChromeBrowser browser,
-           QuestUpdated.Handler questUpdated,
            CancellationToken cancellationToken
            )
         {

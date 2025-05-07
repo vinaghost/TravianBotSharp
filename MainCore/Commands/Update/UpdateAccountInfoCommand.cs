@@ -1,11 +1,13 @@
 ﻿using MainCore.Constraints;
+using MainCore.Notification.Behaviors;
 
 namespace MainCore.Commands.Update
 {
     [Handler]
+    [Behaviors(typeof(AccountInfoUpdatedBehavior<,>))]
     public static partial class UpdateAccountInfoCommand
     {
-        public sealed record Command(AccountId AccountId) : ICommand;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

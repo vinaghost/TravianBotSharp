@@ -13,6 +13,14 @@ public static class HandlerServiceCollectionExtensions
 		services.TryAddTransient(typeof(global::MainCore.Commands.Behaviors.CommandLoggingBehavior<,>));
 		services.TryAddTransient(typeof(global::MainCore.Tasks.Behaviors.AccountTaskBehavior<,>));
 		services.TryAddTransient(typeof(global::MainCore.Tasks.Behaviors.VillageTaskBehavior<,>));
+		services.TryAddTransient(typeof(global::MainCore.Notification.Behaviors.CompleteImmediatelyBehavior<,>));
+		services.TryAddTransient(typeof(global::MainCore.Notification.Behaviors.FarmListUpdatedBehavior<,>));
+		services.TryAddTransient(typeof(global::MainCore.Notification.Behaviors.AccountSettingUpdatedBehavior<,>));
+		services.TryAddTransient(typeof(global::MainCore.Notification.Behaviors.VillageSettingUpdatedBehavior<,>));
+		services.TryAddTransient(typeof(global::MainCore.Notification.Behaviors.AccountInfoUpdatedBehavior<,>));
+		services.TryAddTransient(typeof(global::MainCore.Notification.Behaviors.BuildingUpdatedBehavior<,>));
+		services.TryAddTransient(typeof(global::MainCore.Notification.Behaviors.StorageUpdatedBehavior<,>));
+		services.TryAddTransient(typeof(global::MainCore.Notification.Behaviors.VillageListUpdatedBehavior<,>));
 		
 		return services;
 	}
@@ -122,25 +130,13 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Handlers.Trigger.TrainTroopTaskTrigger.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Handlers.Trigger.UpgradeBuildingTaskTrigger.AddHandlers(services, lifetime);
-		global::MainCore.Notification.Message.AccountInfoUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.AccountInit.AddHandlers(services, lifetime);
-		global::MainCore.Notification.Message.AccountSettingUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.AccountUpdated.AddHandlers(services, lifetime);
-		global::MainCore.Notification.Message.AdventureUpdated.AddHandlers(services, lifetime);
-		global::MainCore.Notification.Message.BuildingUpdated.AddHandlers(services, lifetime);
-		global::MainCore.Notification.Message.CompleteImmediatelyMessage.AddHandlers(services, lifetime);
-		global::MainCore.Notification.Message.FarmListUpdated.AddHandlers(services, lifetime);
-		global::MainCore.Notification.Message.HeroItemUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.JobUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.MainWindowLoaded.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.MainWindowUnloaded.AddHandlers(services, lifetime);
-		global::MainCore.Notification.Message.QuestUpdated.AddHandlers(services, lifetime);
-		global::MainCore.Notification.Message.QueueBuildingUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.StatusUpdated.AddHandlers(services, lifetime);
-		global::MainCore.Notification.Message.StorageUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Notification.Message.TaskUpdated.AddHandlers(services, lifetime);
-		global::MainCore.Notification.Message.VillageSettingUpdated.AddHandlers(services, lifetime);
-		global::MainCore.Notification.Message.VillageUpdated.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetAccessesQuery.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetActiveFarmsQuery.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetBuildingLocationQuery.AddHandlers(services, lifetime);

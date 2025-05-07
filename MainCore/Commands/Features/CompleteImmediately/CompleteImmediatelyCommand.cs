@@ -1,16 +1,18 @@
-﻿using MainCore.Constraints;
+﻿using MainCore.Commands.Behaviors;
+using MainCore.Constraints;
+using MainCore.Notification.Behaviors;
 
 namespace MainCore.Commands.Features.CompleteImmediately
 {
     [Handler]
+    [Behaviors(typeof(CommandLoggingBehavior<,>), typeof(CompleteImmediatelyBehavior<,>))]
     public static partial class CompleteImmediatelyCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IVillageConstraint;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            CompleteImmediatelyMessage.Handler completeImmediatelyMessage,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
@@ -54,7 +56,6 @@ namespace MainCore.Commands.Features.CompleteImmediately
             result = await browser.Wait(driver => QueueDifferent(driver, oldQueueCount), cancellationToken);
             if (result.IsFailed) return result;
 
-            await completeImmediatelyMessage.HandleAsync(new(accountId, villageId), cancellationToken);
             return Result.Ok();
         }
     }

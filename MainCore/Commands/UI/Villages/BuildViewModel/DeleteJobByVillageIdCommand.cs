@@ -5,22 +5,18 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class DeleteJobByVillageIdCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICommand;
+        public sealed record Command(VillageId VillageId) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,
-            AppDbContext context, JobUpdated.Handler jobUpdated,
+            AppDbContext context,
             CancellationToken cancellationToken
             )
         {
-            var (accountId, villageId) = command;
-
-
+            await Task.CompletedTask;
             context.Jobs
-                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.VillageId == command.VillageId.Value)
                 .ExecuteDelete();
-
-            await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
         }
     }
 }

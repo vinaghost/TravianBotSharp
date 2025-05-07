@@ -1,11 +1,13 @@
 ﻿using MainCore.Constraints;
+using MainCore.Notification.Behaviors;
 
 namespace MainCore.Commands.Update
 {
     [Handler]
+    [Behaviors(typeof(StorageUpdatedBehavior<,>))]
     public static partial class UpdateStorageCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IVillageCommand;
 
         private static async ValueTask<StorageDto> HandleAsync(
             Command command,

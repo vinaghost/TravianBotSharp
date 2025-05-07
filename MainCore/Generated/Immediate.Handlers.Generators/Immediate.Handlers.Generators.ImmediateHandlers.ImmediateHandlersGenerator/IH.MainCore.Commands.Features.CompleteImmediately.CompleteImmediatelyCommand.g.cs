@@ -41,15 +41,12 @@ partial class CompleteImmediatelyCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.CompleteImmediately.CompleteImmediatelyCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
-		private readonly global::MainCore.Notification.Message.CompleteImmediatelyMessage.Handler _completeImmediatelyMessage;
 
 		public HandleBehavior(
-			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Notification.Message.CompleteImmediatelyMessage.Handler completeImmediatelyMessage
+			global::MainCore.Services.IChromeBrowser browser
 		)
 		{
 			_browser = browser;
-			_completeImmediatelyMessage = completeImmediatelyMessage;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -61,7 +58,6 @@ partial class CompleteImmediatelyCommand
 				.HandleAsync(
 					request
 					, _browser
-					, _completeImmediatelyMessage
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

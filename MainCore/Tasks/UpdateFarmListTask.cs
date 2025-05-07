@@ -19,7 +19,6 @@ namespace MainCore.Tasks
             Task task,
             ToFarmListPageCommand.Handler toFarmListPageCommand,
             UpdateFarmlistCommand.Handler updateFarmlistCommand,
-            FarmListUpdated.Handler farmListUpdated,
             CancellationToken cancellationToken)
         {
             Result result;
@@ -27,7 +26,6 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result;
             result = await updateFarmlistCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
-            await farmListUpdated.HandleAsync(new(task.AccountId), cancellationToken);
 
             return Result.Ok();
         }

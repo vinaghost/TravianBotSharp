@@ -7,7 +7,7 @@ namespace MainCore.Notification.Handlers.Refresh
     public static partial class AccountSettingRefresh
     {
         private static async ValueTask HandleAsync(
-            IAccountNotification notification,
+            IAccountConstraint notification,
             AccountSettingViewModel viewModel,
             CancellationToken cancellationToken
         )

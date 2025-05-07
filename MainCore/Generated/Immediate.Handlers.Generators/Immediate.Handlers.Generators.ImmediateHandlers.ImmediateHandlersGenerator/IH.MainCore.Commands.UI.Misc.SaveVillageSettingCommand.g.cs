@@ -35,15 +35,12 @@ partial class SaveVillageSettingCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
-		private readonly global::MainCore.Notification.Message.VillageSettingUpdated.Handler _villageSettingUpdated;
 
 		public HandleBehavior(
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
-			global::MainCore.Notification.Message.VillageSettingUpdated.Handler villageSettingUpdated
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context
 		)
 		{
 			_context = context;
-			_villageSettingUpdated = villageSettingUpdated;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -55,7 +52,6 @@ partial class SaveVillageSettingCommand
 				.HandleAsync(
 					request
 					, _context
-					, _villageSettingUpdated
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

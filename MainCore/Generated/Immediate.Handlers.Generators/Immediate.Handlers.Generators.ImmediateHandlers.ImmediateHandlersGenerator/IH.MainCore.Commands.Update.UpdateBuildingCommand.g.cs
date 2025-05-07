@@ -9,21 +9,21 @@ partial class UpdateBuildingCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateBuildingCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Update.UpdateBuildingCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Update.UpdateBuildingCommand.Command, global::FluentResults.Result> _commandLoggingBehavior;
+		private readonly global::MainCore.Notification.Behaviors.BuildingUpdatedBehavior<global::MainCore.Commands.Update.UpdateBuildingCommand.Command, global::FluentResults.Result> _buildingUpdatedBehavior;
 
 		public Handler(
 			global::MainCore.Commands.Update.UpdateBuildingCommand.HandleBehavior handleBehavior,
-			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.Update.UpdateBuildingCommand.Command, global::FluentResults.Result> commandLoggingBehavior
+			global::MainCore.Notification.Behaviors.BuildingUpdatedBehavior<global::MainCore.Commands.Update.UpdateBuildingCommand.Command, global::FluentResults.Result> buildingUpdatedBehavior
 		)
 		{
 			var handlerType = typeof(UpdateBuildingCommand);
 
 			_handleBehavior = handleBehavior;
 
-			_commandLoggingBehavior = commandLoggingBehavior;
-			_commandLoggingBehavior.HandlerType = handlerType;
+			_buildingUpdatedBehavior = buildingUpdatedBehavior;
+			_buildingUpdatedBehavior.HandlerType = handlerType;
 
-			_commandLoggingBehavior.SetInnerHandler(_handleBehavior);
+			_buildingUpdatedBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -31,7 +31,7 @@ partial class UpdateBuildingCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _commandLoggingBehavior
+			return await _buildingUpdatedBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

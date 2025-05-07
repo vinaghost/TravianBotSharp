@@ -1,8 +1,10 @@
 ﻿using MainCore.Constraints;
+using MainCore.Notification.Behaviors;
 
 namespace MainCore.Commands.UI.Misc
 {
     [Handler]
+    [Behaviors(typeof(VillageSettingUpdatedBehavior<,>))]
     public static partial class SaveVillageSettingCommand
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId, Dictionary<VillageSettingEnums, int> Settings) : ICommand;
@@ -10,13 +12,12 @@ namespace MainCore.Commands.UI.Misc
         private static async ValueTask HandleAsync(
             Command command,
             AppDbContext context,
-            VillageSettingUpdated.Handler villageSettingUpdated,
             CancellationToken cancellationToken
             )
         {
+            await Task.CompletedTask;
             var (accountId, villageId, settings) = command;
             if (settings.Count == 0) return;
-
 
             foreach (var setting in settings)
             {
@@ -25,8 +26,6 @@ namespace MainCore.Commands.UI.Misc
                     .Where(x => x.Setting == setting.Key)
                     .ExecuteUpdate(x => x.SetProperty(x => x.Value, setting.Value));
             }
-
-            await villageSettingUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
         }
     }
 }

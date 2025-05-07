@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Trigger
     public static partial class StartAdventureTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            IAccountNotification notification,
+            IAccountConstraint notification,
             ITaskManager taskManager,
             ISettingService settingService,
             CancellationToken cancellationToken)

@@ -41,15 +41,12 @@ partial class SwitchVillageCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Navigate.SwitchVillageCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
-		private readonly global::MainCore.Notification.Message.QuestUpdated.Handler _questUpdated;
 
 		public HandleBehavior(
-			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Notification.Message.QuestUpdated.Handler questUpdated
+			global::MainCore.Services.IChromeBrowser browser
 		)
 		{
 			_browser = browser;
-			_questUpdated = questUpdated;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -61,7 +58,6 @@ partial class SwitchVillageCommand
 				.HandleAsync(
 					request
 					, _browser
-					, _questUpdated
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

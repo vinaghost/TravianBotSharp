@@ -4,5 +4,5 @@
 
     public interface IAccountCommand : ICommand, IAccountConstraint;
 
-    public interface IVillagetCommand : ICommand, IVillageConstraint;
+    public interface IVillageCommand : ICommand, IVillageConstraint;
 }

@@ -35,15 +35,15 @@ partial class CheckQuestCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Checks.CheckQuestCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
-		private readonly global::MainCore.Notification.Message.QuestUpdated.Handler _questUpdated;
+		private readonly global::MainCore.Notification.Handlers.Trigger.ClaimQuestTaskTrigger.Handler _claimQuestTaskTrigger;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Notification.Message.QuestUpdated.Handler questUpdated
+			global::MainCore.Notification.Handlers.Trigger.ClaimQuestTaskTrigger.Handler claimQuestTaskTrigger
 		)
 		{
 			_browser = browser;
-			_questUpdated = questUpdated;
+			_claimQuestTaskTrigger = claimQuestTaskTrigger;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -55,7 +55,7 @@ partial class CheckQuestCommand
 				.HandleAsync(
 					request
 					, _browser
-					, _questUpdated
+					, _claimQuestTaskTrigger
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

@@ -35,15 +35,15 @@ partial class CheckAdventureCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Checks.CheckAdventureCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
-		private readonly global::MainCore.Notification.Message.AdventureUpdated.Handler _adventureUpdated;
+		private readonly global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.Handler _startAdventureTaskTrigger;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Notification.Message.AdventureUpdated.Handler adventureUpdated
+			global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.Handler startAdventureTaskTrigger
 		)
 		{
 			_browser = browser;
-			_adventureUpdated = adventureUpdated;
+			_startAdventureTaskTrigger = startAdventureTaskTrigger;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -55,7 +55,7 @@ partial class CheckAdventureCommand
 				.HandleAsync(
 					request
 					, _browser
-					, _adventureUpdated
+					, _startAdventureTaskTrigger
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

@@ -1,24 +1,22 @@
 ﻿using MainCore.Constraints;
+using MainCore.Notification.Handlers.Trigger;
 
 namespace MainCore.Commands.Checks
 {
     [Handler]
     public static partial class CheckQuestCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IVillageCommand;
 
         private static async ValueTask HandleAsync(
-           Command command,
-           IChromeBrowser browser,
-           QuestUpdated.Handler questUpdated,
-           CancellationToken cancellationToken
+            Command command,
+            IChromeBrowser browser,
+            ClaimQuestTaskTrigger.Handler claimQuestTaskTrigger,
+            CancellationToken cancellationToken
            )
         {
-            var (accountId, villageId) = command;
-
             if (!QuestParser.IsQuestClaimable(browser.Html)) return;
-
-            await questUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
+            await claimQuestTaskTrigger.HandleAsync(command, cancellationToken);
         }
     }
 }

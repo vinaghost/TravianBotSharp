@@ -18,7 +18,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             ToHeroInventoryCommand.Handler toHeroInventoryCommand,
             UpdateInventoryCommand.Handler updateInventoryCommand,
             AddJobCommand.Handler addJobCommand,
-            HeroItemUpdated.Handler heroItemUpdated,
             AppDbContext context,
             IChromeBrowser browser,
             ILogger logger,
@@ -85,8 +84,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             result = await updateInventoryCommand.HandleAsync(new(accountId), cancellationToken);
             if (result.IsFailed) return result;
-
-            await heroItemUpdated.HandleAsync(new(accountId), cancellationToken);
 
             var heroResourceResult = await useHeroResourceCommand.HandleAsync(new(accountId, missingResource), cancellationToken);
             await browser.Navigate(url, cancellationToken);

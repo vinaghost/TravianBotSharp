@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Trigger
     public static partial class RefreshVillageTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            IVillageNotification notification,
+            IVillageConstraint notification,
             GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
             ISettingService settingService,

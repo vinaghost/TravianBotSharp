@@ -9,15 +9,21 @@ partial class SaveAccountSettingCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Notification.Behaviors.AccountSettingUpdatedBehavior<global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.Command, global::System.ValueTuple> _accountSettingUpdatedBehavior;
 
 		public Handler(
-			global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.HandleBehavior handleBehavior,
+			global::MainCore.Notification.Behaviors.AccountSettingUpdatedBehavior<global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.Command, global::System.ValueTuple> accountSettingUpdatedBehavior
 		)
 		{
 			var handlerType = typeof(SaveAccountSettingCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_accountSettingUpdatedBehavior = accountSettingUpdatedBehavior;
+			_accountSettingUpdatedBehavior.HandlerType = handlerType;
+
+			_accountSettingUpdatedBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -25,7 +31,7 @@ partial class SaveAccountSettingCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _accountSettingUpdatedBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -35,15 +41,12 @@ partial class SaveAccountSettingCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
-		private readonly global::MainCore.Notification.Message.AccountSettingUpdated.Handler _accountSettingUpdated;
 
 		public HandleBehavior(
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
-			global::MainCore.Notification.Message.AccountSettingUpdated.Handler accountSettingUpdated
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context
 		)
 		{
 			_context = context;
-			_accountSettingUpdated = accountSettingUpdated;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -55,7 +58,6 @@ partial class SaveAccountSettingCommand
 				.HandleAsync(
 					request
 					, _context
-					, _accountSettingUpdated
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

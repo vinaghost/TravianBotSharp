@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Refresh;
 
 partial class AccountSettingRefresh
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IAccountNotification, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IAccountConstraint, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.Refresh.AccountSettingRefresh.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class AccountSettingRefresh
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Constraints.IAccountNotification request,
+			global::MainCore.Constraints.IAccountConstraint request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,7 +32,7 @@ partial class AccountSettingRefresh
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IAccountNotification, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IAccountConstraint, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.UI.ViewModels.Tabs.AccountSettingViewModel _viewModel;
 
@@ -44,7 +44,7 @@ partial class AccountSettingRefresh
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Constraints.IAccountNotification request,
+			global::MainCore.Constraints.IAccountConstraint request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -67,7 +67,7 @@ partial class AccountSettingRefresh
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Refresh.AccountSettingRefresh.Handler), typeof(global::MainCore.Notification.Handlers.Refresh.AccountSettingRefresh.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IAccountNotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Refresh.AccountSettingRefresh.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IAccountConstraint, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Refresh.AccountSettingRefresh.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Refresh.AccountSettingRefresh.HandleBehavior), typeof(global::MainCore.Notification.Handlers.Refresh.AccountSettingRefresh.HandleBehavior), lifetime));
 		return services;
 	}

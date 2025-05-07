@@ -46,7 +46,6 @@ partial class HandleResourceCommand
 		private readonly global::MainCore.Commands.Features.UseHeroItem.ToHeroInventoryCommand.Handler _toHeroInventoryCommand;
 		private readonly global::MainCore.Commands.Update.UpdateInventoryCommand.Handler _updateInventoryCommand;
 		private readonly global::MainCore.Commands.Misc.AddJobCommand.Handler _addJobCommand;
-		private readonly global::MainCore.Notification.Message.HeroItemUpdated.Handler _heroItemUpdated;
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
 		private readonly global::Serilog.ILogger _logger;
@@ -58,7 +57,6 @@ partial class HandleResourceCommand
 			global::MainCore.Commands.Features.UseHeroItem.ToHeroInventoryCommand.Handler toHeroInventoryCommand,
 			global::MainCore.Commands.Update.UpdateInventoryCommand.Handler updateInventoryCommand,
 			global::MainCore.Commands.Misc.AddJobCommand.Handler addJobCommand,
-			global::MainCore.Notification.Message.HeroItemUpdated.Handler heroItemUpdated,
 			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
 			global::MainCore.Services.IChromeBrowser browser,
 			global::Serilog.ILogger logger
@@ -70,7 +68,6 @@ partial class HandleResourceCommand
 			_toHeroInventoryCommand = toHeroInventoryCommand;
 			_updateInventoryCommand = updateInventoryCommand;
 			_addJobCommand = addJobCommand;
-			_heroItemUpdated = heroItemUpdated;
 			_context = context;
 			_browser = browser;
 			_logger = logger;
@@ -90,7 +87,6 @@ partial class HandleResourceCommand
 					, _toHeroInventoryCommand
 					, _updateInventoryCommand
 					, _addJobCommand
-					, _heroItemUpdated
 					, _context
 					, _browser
 					, _logger

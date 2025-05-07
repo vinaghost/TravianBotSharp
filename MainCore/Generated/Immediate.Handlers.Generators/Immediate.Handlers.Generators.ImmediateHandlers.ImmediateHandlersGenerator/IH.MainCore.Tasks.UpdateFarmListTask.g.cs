@@ -48,17 +48,14 @@ partial class UpdateFarmListTask
 	{
 		private readonly global::MainCore.Commands.Features.StartFarmList.ToFarmListPageCommand.Handler _toFarmListPageCommand;
 		private readonly global::MainCore.Commands.Update.UpdateFarmlistCommand.Handler _updateFarmlistCommand;
-		private readonly global::MainCore.Notification.Message.FarmListUpdated.Handler _farmListUpdated;
 
 		public HandleBehavior(
 			global::MainCore.Commands.Features.StartFarmList.ToFarmListPageCommand.Handler toFarmListPageCommand,
-			global::MainCore.Commands.Update.UpdateFarmlistCommand.Handler updateFarmlistCommand,
-			global::MainCore.Notification.Message.FarmListUpdated.Handler farmListUpdated
+			global::MainCore.Commands.Update.UpdateFarmlistCommand.Handler updateFarmlistCommand
 		)
 		{
 			_toFarmListPageCommand = toFarmListPageCommand;
 			_updateFarmlistCommand = updateFarmlistCommand;
-			_farmListUpdated = farmListUpdated;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -71,7 +68,6 @@ partial class UpdateFarmListTask
 					request
 					, _toFarmListPageCommand
 					, _updateFarmlistCommand
-					, _farmListUpdated
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

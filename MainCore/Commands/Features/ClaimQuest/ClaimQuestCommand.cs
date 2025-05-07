@@ -10,7 +10,7 @@ namespace MainCore.Commands.Features.ClaimQuest
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            StorageUpdated.Handler storageUpdate, SwitchTabCommand.Handler switchTabCommand, DelayClickCommand.Handler delayClickCommand,
+            SwitchTabCommand.Handler switchTabCommand, DelayClickCommand.Handler delayClickCommand,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
@@ -35,7 +35,6 @@ namespace MainCore.Commands.Features.ClaimQuest
                     if (quest is null) return Result.Ok();
 
                     result = await browser.Click(By.XPath(quest.XPath));
-                    await storageUpdate.HandleAsync(new(accountId, villageId), cancellationToken);
                     continue;
                 }
 
@@ -45,7 +44,6 @@ namespace MainCore.Commands.Features.ClaimQuest
             }
             while (QuestParser.IsQuestClaimable(html));
 
-            await storageUpdate.HandleAsync(new(accountId, villageId), cancellationToken);
             return Result.Ok();
         }
     }

@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Trigger;
 
 partial class StartAdventureTaskTrigger
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IAccountNotification, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IAccountConstraint, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class StartAdventureTaskTrigger
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Constraints.IAccountNotification request,
+			global::MainCore.Constraints.IAccountConstraint request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,7 +32,7 @@ partial class StartAdventureTaskTrigger
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IAccountNotification, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IAccountConstraint, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
 		private readonly global::MainCore.Services.ISettingService _settingService;
@@ -47,7 +47,7 @@ partial class StartAdventureTaskTrigger
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Constraints.IAccountNotification request,
+			global::MainCore.Constraints.IAccountConstraint request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -71,7 +71,7 @@ partial class StartAdventureTaskTrigger
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.Handler), typeof(global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IAccountNotification, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IAccountConstraint, global::System.ValueTuple>), typeof(global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.HandleBehavior), typeof(global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.HandleBehavior), lifetime));
 		return services;
 	}

@@ -6,7 +6,7 @@ namespace MainCore.Notification.Handlers.Trigger
     public static partial class BuildingUpdateTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            IAccountNotification notification,
+            IAccountConstraint notification,
             GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
             ISettingService settingService,

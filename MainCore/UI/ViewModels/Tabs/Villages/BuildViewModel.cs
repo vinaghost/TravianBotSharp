@@ -303,7 +303,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
             using var scope = serviceScopeFactory.CreateScope();
             var deleteJobByVillageIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByVillageIdCommand.Handler>();
-            await deleteJobByVillageIdCommand.HandleAsync(new(AccountId, VillageId));
+            await deleteJobByVillageIdCommand.HandleAsync(new(VillageId));
+
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
         [ReactiveCommand]

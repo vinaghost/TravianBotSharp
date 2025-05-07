@@ -41,19 +41,16 @@ partial class ClaimQuestCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.ClaimQuest.ClaimQuestCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
-		private readonly global::MainCore.Notification.Message.StorageUpdated.Handler _storageUpdate;
 		private readonly global::MainCore.Commands.Navigate.SwitchTabCommand.Handler _switchTabCommand;
 		private readonly global::MainCore.Commands.Misc.DelayClickCommand.Handler _delayClickCommand;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Notification.Message.StorageUpdated.Handler storageUpdate,
 			global::MainCore.Commands.Navigate.SwitchTabCommand.Handler switchTabCommand,
 			global::MainCore.Commands.Misc.DelayClickCommand.Handler delayClickCommand
 		)
 		{
 			_browser = browser;
-			_storageUpdate = storageUpdate;
 			_switchTabCommand = switchTabCommand;
 			_delayClickCommand = delayClickCommand;
 		}
@@ -67,7 +64,6 @@ partial class ClaimQuestCommand
 				.HandleAsync(
 					request
 					, _browser
-					, _storageUpdate
 					, _switchTabCommand
 					, _delayClickCommand
 					, cancellationToken

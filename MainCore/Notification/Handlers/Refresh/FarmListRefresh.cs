@@ -7,7 +7,7 @@ namespace MainCore.Notification.Handlers.Refresh
     public static partial class FarmListRefresh
     {
         private static async ValueTask HandleAsync(
-            IAccountNotification notification,
+            IAccountConstraint notification,
             FarmingViewModel farmingViewModel,
             CancellationToken cancellationToken)
         {

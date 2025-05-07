@@ -1,11 +1,13 @@
 ﻿using MainCore.Constraints;
+using MainCore.Notification.Behaviors;
 
 namespace MainCore.Commands.Update
 {
     [Handler]
+    [Behaviors(typeof(BuildingUpdatedBehavior<,>))]
     public static partial class UpdateBuildingCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

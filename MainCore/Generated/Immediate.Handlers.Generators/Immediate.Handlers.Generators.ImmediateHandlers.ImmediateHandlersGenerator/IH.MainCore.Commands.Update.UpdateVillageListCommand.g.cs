@@ -9,15 +9,21 @@ partial class UpdateVillageListCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Commands.Update.UpdateVillageListCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Notification.Behaviors.VillageListUpdatedBehavior<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::System.ValueTuple> _villageListUpdatedBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Update.UpdateVillageListCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.Update.UpdateVillageListCommand.HandleBehavior handleBehavior,
+			global::MainCore.Notification.Behaviors.VillageListUpdatedBehavior<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::System.ValueTuple> villageListUpdatedBehavior
 		)
 		{
 			var handlerType = typeof(UpdateVillageListCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_villageListUpdatedBehavior = villageListUpdatedBehavior;
+			_villageListUpdatedBehavior.HandlerType = handlerType;
+
+			_villageListUpdatedBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -25,7 +31,7 @@ partial class UpdateVillageListCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _villageListUpdatedBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

@@ -9,15 +9,21 @@ partial class UpdateStorageCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateStorageCommand.Command, global::MainCore.DTO.StorageDto>
 	{
 		private readonly global::MainCore.Commands.Update.UpdateStorageCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Notification.Behaviors.StorageUpdatedBehavior<global::MainCore.Commands.Update.UpdateStorageCommand.Command, global::MainCore.DTO.StorageDto> _storageUpdatedBehavior;
 
 		public Handler(
-			global::MainCore.Commands.Update.UpdateStorageCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.Update.UpdateStorageCommand.HandleBehavior handleBehavior,
+			global::MainCore.Notification.Behaviors.StorageUpdatedBehavior<global::MainCore.Commands.Update.UpdateStorageCommand.Command, global::MainCore.DTO.StorageDto> storageUpdatedBehavior
 		)
 		{
 			var handlerType = typeof(UpdateStorageCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_storageUpdatedBehavior = storageUpdatedBehavior;
+			_storageUpdatedBehavior.HandlerType = handlerType;
+
+			_storageUpdatedBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::MainCore.DTO.StorageDto> HandleAsync(
@@ -25,7 +31,7 @@ partial class UpdateStorageCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _storageUpdatedBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

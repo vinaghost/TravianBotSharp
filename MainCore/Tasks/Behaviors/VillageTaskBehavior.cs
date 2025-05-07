@@ -14,18 +14,13 @@ namespace MainCore.Tasks.Behaviors
         private readonly UpdateBuildingCommand.Handler _updateBuildingCommand;
         private readonly CheckQuestCommand.Handler _checkQuestCommand;
 
-        private readonly QueueBuildingUpdated.Handler _queueBuildingUpdated;
-        private readonly StorageUpdated.Handler _storageUpdated;
-
-        public VillageTaskBehavior(SwitchVillageCommand.Handler switchVillageCommand, UpdateStorageCommand.Handler updateStorageCommand, ToDorfCommand.Handler toDorfCommand, UpdateBuildingCommand.Handler updateBuildingCommand, CheckQuestCommand.Handler checkQuestCommand, QueueBuildingUpdated.Handler queueBuildingUpdated, StorageUpdated.Handler storageUpdated)
+        public VillageTaskBehavior(SwitchVillageCommand.Handler switchVillageCommand, UpdateStorageCommand.Handler updateStorageCommand, ToDorfCommand.Handler toDorfCommand, UpdateBuildingCommand.Handler updateBuildingCommand, CheckQuestCommand.Handler checkQuestCommand)
         {
             _switchVillageCommand = switchVillageCommand;
             _updateStorageCommand = updateStorageCommand;
             _toDorfCommand = toDorfCommand;
             _updateBuildingCommand = updateBuildingCommand;
             _checkQuestCommand = checkQuestCommand;
-            _queueBuildingUpdated = queueBuildingUpdated;
-            _storageUpdated = storageUpdated;
         }
 
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
@@ -47,10 +42,8 @@ namespace MainCore.Tasks.Behaviors
 
             result = await _updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
             if (result.IsFailed) return (TResponse)result;
-            await _queueBuildingUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
 
             await _updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
-            await _storageUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
 
             await _checkQuestCommand.HandleAsync(new(accountId, villageId), cancellationToken);
 
