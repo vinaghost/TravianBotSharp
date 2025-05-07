@@ -141,7 +141,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
             using var scope = serviceScopeFactory.CreateScope();
             var normalBuildCommand = scope.ServiceProvider.GetRequiredService<NormalBuildCommand.Handler>();
-            await normalBuildCommand.HandleAsync(new(VillageId, NormalBuildInput.ToPlan(location)));
+            var buildResult = await normalBuildCommand.HandleAsync(new(VillageId, NormalBuildInput.ToPlan(location)));
+            if (buildResult.IsFailed)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", buildResult.ToString()));
+                return;
+            }
             var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
             await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }

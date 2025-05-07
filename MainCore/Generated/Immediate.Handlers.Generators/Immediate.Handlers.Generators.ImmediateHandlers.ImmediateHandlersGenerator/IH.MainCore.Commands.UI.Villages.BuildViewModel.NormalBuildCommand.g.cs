@@ -6,65 +6,65 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel;
 
 partial class NormalBuildCommand
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Command, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Command, global::FluentResults.Result> _commandLoggingBehavior;
 
 		public Handler(
-			global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.HandleBehavior handleBehavior,
+			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Command, global::FluentResults.Result> commandLoggingBehavior
 		)
 		{
 			var handlerType = typeof(NormalBuildCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_commandLoggingBehavior = commandLoggingBehavior;
+			_commandLoggingBehavior.HandlerType = handlerType;
+
+			_commandLoggingBehavior.SetInnerHandler(_handleBehavior);
 		}
 
-		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
+		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
 			global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Command request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _commandLoggingBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Command, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Command, global::FluentResults.Result>
 	{
-		private readonly global::MainCore.Services.IDialogService _dialogService;
 		private readonly global::MainCore.Queries.GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
 		private readonly global::MainCore.Commands.Misc.AddJobCommand.Handler _addJobCommand;
 
 		public HandleBehavior(
-			global::MainCore.Services.IDialogService dialogService,
 			global::MainCore.Queries.GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
 			global::MainCore.Commands.Misc.AddJobCommand.Handler addJobCommand
 		)
 		{
-			_dialogService = dialogService;
 			_getLayoutBuildingsQuery = getLayoutBuildingsQuery;
 			_addJobCommand = addJobCommand;
 		}
 
-		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
+		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
 			global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Command request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
-			await global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand
+			return await global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand
 				.HandleAsync(
 					request
-					, _dialogService
 					, _getLayoutBuildingsQuery
 					, _addJobCommand
 					, cancellationToken
 				)
 				.ConfigureAwait(false);
-
-			return default;
 		}
 	}
 
@@ -75,7 +75,7 @@ partial class NormalBuildCommand
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Handler), typeof(global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Command, global::System.ValueTuple>), typeof(global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Command, global::FluentResults.Result>), typeof(global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.HandleBehavior), typeof(global::MainCore.Commands.UI.Villages.BuildViewModel.NormalBuildCommand.HandleBehavior), lifetime));
 		return services;
 	}

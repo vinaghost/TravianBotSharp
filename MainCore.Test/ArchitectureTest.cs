@@ -3,6 +3,7 @@ using ArchUnitNET.Loader;
 using ArchUnitNET.xUnit;
 using MainCore.Constraints;
 using MainCore.Infrasturecture.Persistence;
+using MainCore.Services;
 using Microsoft.EntityFrameworkCore;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
@@ -68,6 +69,18 @@ namespace MainCore.Test
                 .DependOnAny(typeof(AppDbContext))
                 .Should()
                 .NotDependOnAny(handler);
+            rule.Check(Architecture);
+        }
+
+        [Fact]
+        public void HandlerShouldNotDependOnDialogService()
+        {
+            var rule = MethodMembers().That()
+                .HaveNameContaining("HandleAsync")
+                .And()
+                .AreStatic()
+                .Should()
+                .NotDependOnAny(typeof(IDialogService));
             rule.Check(Architecture);
         }
     }

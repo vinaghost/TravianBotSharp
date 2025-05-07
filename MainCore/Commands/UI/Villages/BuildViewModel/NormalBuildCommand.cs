@@ -1,7 +1,6 @@
 ﻿using Humanizer;
 using MainCore.Constraints;
 using MainCore.UI.Models.Input;
-using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
@@ -10,10 +9,10 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     {
         public sealed record Command(VillageId VillageId, NormalBuildPlan plan) : ICommand;
 
-        private static async ValueTask HandleAsync(
+        private static async ValueTask<Result> HandleAsync(
             Command command,
-            IDialogService dialogService,
-            GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery, AddJobCommand.Handler addJobCommand,
+            GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
+            AddJobCommand.Handler addJobCommand,
             CancellationToken cancellationToken
             )
         {
@@ -25,15 +24,12 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             if (building is null)
             {
                 var result = plan.CheckRequirements(buildings);
-                if (result.IsFailed)
-                {
-                    await dialogService.MessageBox.Handle(new MessageBoxData("Error", result.Errors[0].Message));
-                    return;
-                }
+                if (result.IsFailed) return result;
                 plan.ValidateLocation(buildings);
             }
 
             await addJobCommand.HandleAsync(new(villageId, plan.ToJob(villageId)));
+            return Result.Ok();
         }
 
         private static Result CheckRequirements(this NormalBuildPlan plan, List<BuildingItem> buildings)
