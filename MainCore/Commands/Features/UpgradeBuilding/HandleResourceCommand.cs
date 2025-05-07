@@ -17,8 +17,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             UseHeroResourceCommand.Handler useHeroResourceCommand,
             ToHeroInventoryCommand.Handler toHeroInventoryCommand,
             UpdateInventoryCommand.Handler updateInventoryCommand,
+            GetLowestBuildingQuery.Handler getLowestBuildingQuery,
             AddJobCommand.Handler addJobCommand,
-            AppDbContext context,
+            ISettingService settingService,
             IChromeBrowser browser,
             ILogger logger,
             CancellationToken cancellationToken)
@@ -37,7 +38,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 var error = freeCropErrors.First();
                 logger.Warning("{Error}", error);
 
-                var cropland = context.GetLowestCropland(villageId);
+                var cropland = await getLowestBuildingQuery.HandleAsync(new(villageId, BuildingEnums.Cropland), cancellationToken);
 
                 var cropLandPlan = new NormalBuildPlan()
                 {
@@ -46,8 +47,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     Level = cropland.Level + 1,
                 };
 
-                await addJobCommand.HandleAsync(new(accountId, villageId, cropLandPlan.ToJob(villageId), true), cancellationToken);
+                await addJobCommand.HandleAsync(new(villageId, cropLandPlan.ToJob(villageId), true), cancellationToken);
                 logger.Information($"Add cropland to top of the job queue");
+                await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
                 return Continue.Error;
             }
 
@@ -58,7 +60,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 return Stop.NotEnoughStorageCapacity;
             }
 
-            var useHeroResource = context.BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
+            var useHeroResource = settingService.BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
 
             if (!useHeroResource)
             {
@@ -121,16 +123,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             }
 
             return resourceBuilding;
-        }
-
-        private static Building GetLowestCropland(this AppDbContext context, VillageId villageId)
-        {
-            var building = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type == BuildingEnums.Cropland)
-                .OrderBy(x => x.Level)
-                .FirstOrDefault();
-            return building;
         }
     }
 }

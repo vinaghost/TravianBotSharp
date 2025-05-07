@@ -35,18 +35,12 @@ partial class ImportCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.Villages.BuildViewModel.ImportCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
-		private readonly global::MainCore.Queries.GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
-		private readonly global::MainCore.Notification.Message.JobUpdated.Handler _jobUpdated;
 
 		public HandleBehavior(
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
-			global::MainCore.Queries.GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
-			global::MainCore.Notification.Message.JobUpdated.Handler jobUpdated
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context
 		)
 		{
 			_context = context;
-			_getLayoutBuildingsQuery = getLayoutBuildingsQuery;
-			_jobUpdated = jobUpdated;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -58,8 +52,6 @@ partial class ImportCommand
 				.HandleAsync(
 					request
 					, _context
-					, _getLayoutBuildingsQuery
-					, _jobUpdated
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

@@ -6,24 +6,26 @@ namespace MainCore.Commands.Features.UseHeroItem
     [Handler]
     public static partial class UseHeroResourceCommand
     {
-        public sealed record Command(AccountId AccountId, long[] Resource) : ICommand;
+        public sealed record Command(AccountId AccountId, long[] Resource) : IAccountCommand;
+
+        private static readonly List<HeroItemEnums> ResourceItemTypes = new()
+        {
+            HeroItemEnums.Wood,
+            HeroItemEnums.Clay,
+            HeroItemEnums.Iron,
+            HeroItemEnums.Crop,
+        };
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            AppDbContext context,
             DelayClickCommand.Handler delayClickCommand,
+            GetHeroItemsQuery.Handler getHeroItemsQuery,
             CancellationToken cancellationToken)
         {
             var (accountId, resource) = command;
 
-
-
-            var resourceItems = context.HeroItems
-                .Where(x => x.AccountId == accountId.Value)
-                .Where(x => ResourceItemTypes.Contains(x.Type))
-                .OrderBy(x => x.Type)
-                .ToList();
+            var resourceItems = await getHeroItemsQuery.HandleAsync(new(accountId, ResourceItemTypes), cancellationToken);
 
             var result = IsEnoughResource(resourceItems, resource);
             if (result.IsFailed) return result;
@@ -35,7 +37,6 @@ namespace MainCore.Commands.Features.UseHeroItem
                 { HeroItemEnums.Iron, resource[2] },
                 { HeroItemEnums.Crop, resource[3] },
             };
-
 
             foreach (var (item, amount) in items)
             {
@@ -132,14 +133,6 @@ namespace MainCore.Commands.Features.UseHeroItem
             var remainder = res % 100;
             return res + (100 - remainder);
         }
-
-        private static readonly List<HeroItemEnums> ResourceItemTypes = new()
-        {
-            HeroItemEnums.Wood,
-            HeroItemEnums.Clay,
-            HeroItemEnums.Iron,
-            HeroItemEnums.Crop,
-        };
 
         private static Result IsEnoughResource(
             List<HeroItem> items,

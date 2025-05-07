@@ -34,28 +34,31 @@ partial class HandleJobCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand.Command, global::FluentResults.Result<global::MainCore.Models.NormalBuildPlan>>
 	{
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
+		private readonly global::MainCore.Queries.GetJobQuery.Handler _getJobQuery;
 		private readonly global::MainCore.Commands.Navigate.ToDorfCommand.Handler _toDorfCommand;
 		private readonly global::MainCore.Commands.Update.UpdateBuildingCommand.Handler _updateBuildingCommand;
 		private readonly global::MainCore.Queries.GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
 		private readonly global::MainCore.Commands.Misc.DeleteJobByIdCommand.Handler _deleteJobByIdCommand;
 		private readonly global::MainCore.Commands.Misc.AddJobCommand.Handler _addJobCommand;
+		private readonly global::MainCore.Notification.Message.JobUpdated.Handler _jobUpdated;
 
 		public HandleBehavior(
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
+			global::MainCore.Queries.GetJobQuery.Handler getJobQuery,
 			global::MainCore.Commands.Navigate.ToDorfCommand.Handler toDorfCommand,
 			global::MainCore.Commands.Update.UpdateBuildingCommand.Handler updateBuildingCommand,
 			global::MainCore.Queries.GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
 			global::MainCore.Commands.Misc.DeleteJobByIdCommand.Handler deleteJobByIdCommand,
-			global::MainCore.Commands.Misc.AddJobCommand.Handler addJobCommand
+			global::MainCore.Commands.Misc.AddJobCommand.Handler addJobCommand,
+			global::MainCore.Notification.Message.JobUpdated.Handler jobUpdated
 		)
 		{
-			_context = context;
+			_getJobQuery = getJobQuery;
 			_toDorfCommand = toDorfCommand;
 			_updateBuildingCommand = updateBuildingCommand;
 			_getLayoutBuildingsQuery = getLayoutBuildingsQuery;
 			_deleteJobByIdCommand = deleteJobByIdCommand;
 			_addJobCommand = addJobCommand;
+			_jobUpdated = jobUpdated;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result<global::MainCore.Models.NormalBuildPlan>> HandleAsync(
@@ -66,12 +69,13 @@ partial class HandleJobCommand
 			return await global::MainCore.Commands.Features.UpgradeBuilding.HandleJobCommand
 				.HandleAsync(
 					request
-					, _context
+					, _getJobQuery
 					, _toDorfCommand
 					, _updateBuildingCommand
 					, _getLayoutBuildingsQuery
 					, _deleteJobByIdCommand
 					, _addJobCommand
+					, _jobUpdated
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

@@ -41,18 +41,18 @@ partial class UseHeroResourceCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.UseHeroItem.UseHeroResourceCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Commands.Misc.DelayClickCommand.Handler _delayClickCommand;
+		private readonly global::MainCore.Queries.GetHeroItemsQuery.Handler _getHeroItemsQuery;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
-			global::MainCore.Commands.Misc.DelayClickCommand.Handler delayClickCommand
+			global::MainCore.Commands.Misc.DelayClickCommand.Handler delayClickCommand,
+			global::MainCore.Queries.GetHeroItemsQuery.Handler getHeroItemsQuery
 		)
 		{
 			_browser = browser;
-			_context = context;
 			_delayClickCommand = delayClickCommand;
+			_getHeroItemsQuery = getHeroItemsQuery;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -64,8 +64,8 @@ partial class UseHeroResourceCommand
 				.HandleAsync(
 					request
 					, _browser
-					, _context
 					, _delayClickCommand
+					, _getHeroItemsQuery
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

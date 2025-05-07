@@ -8,7 +8,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class NormalBuildCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan plan) : ICommand;
+        public sealed record Command(VillageId VillageId, NormalBuildPlan plan) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,
@@ -17,7 +17,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             CancellationToken cancellationToken
             )
         {
-            var (accountId, villageId, plan) = command;
+            var (villageId, plan) = command;
 
             var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId));
             var building = buildings.Find(x => x.Location == plan.Location);
@@ -33,7 +33,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
                 plan.ValidateLocation(buildings);
             }
 
-            await addJobCommand.HandleAsync(new(accountId, villageId, plan.ToJob(villageId)));
+            await addJobCommand.HandleAsync(new(villageId, plan.ToJob(villageId)));
         }
 
         private static Result CheckRequirements(this NormalBuildPlan plan, List<BuildingItem> buildings)

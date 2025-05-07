@@ -141,7 +141,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
             using var scope = serviceScopeFactory.CreateScope();
             var normalBuildCommand = scope.ServiceProvider.GetRequiredService<NormalBuildCommand.Handler>();
-            await normalBuildCommand.HandleAsync(new(AccountId, VillageId, NormalBuildInput.ToPlan(location)));
+            await normalBuildCommand.HandleAsync(new(VillageId, NormalBuildInput.ToPlan(location)));
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
         [ReactiveCommand]
@@ -156,7 +158,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
             using var scope = serviceScopeFactory.CreateScope();
             var upgradeCommand = scope.ServiceProvider.GetRequiredService<UpgradeCommand.Handler>();
-            await upgradeCommand.HandleAsync(new(AccountId, VillageId, location, false));
+            await upgradeCommand.HandleAsync(new(VillageId, location, false));
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
         [ReactiveCommand]
@@ -171,7 +175,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
             using var scope = serviceScopeFactory.CreateScope();
             var upgradeCommand = scope.ServiceProvider.GetRequiredService<UpgradeCommand.Handler>();
-            await upgradeCommand.HandleAsync(new(AccountId, VillageId, location, true));
+            await upgradeCommand.HandleAsync(new(VillageId, location, true));
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
         [ReactiveCommand]
@@ -192,7 +198,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
             using var scope = serviceScopeFactory.CreateScope();
             var resourceBuildCommand = scope.ServiceProvider.GetRequiredService<ResourceBuildCommand.Handler>();
-            await resourceBuildCommand.HandleAsync(new(AccountId, VillageId, ResourceBuildInput.ToPlan()));
+            await resourceBuildCommand.HandleAsync(new(VillageId, ResourceBuildInput.ToPlan()));
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
         [ReactiveCommand]
@@ -212,8 +220,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
             using var scope = serviceScopeFactory.CreateScope();
             var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
-            var newIndex = await swapCommand.HandleAsync(new(AccountId, VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Up));
+            var newIndex = await swapCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Up));
             Jobs.SelectedIndex = newIndex;
+
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
         [ReactiveCommand]
@@ -232,8 +243,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
             using var scope = serviceScopeFactory.CreateScope();
             var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
-            var newIndex = await swapCommand.HandleAsync(new(AccountId, VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Down));
+            var newIndex = await swapCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Down));
             Jobs.SelectedIndex = newIndex;
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
         [ReactiveCommand]
@@ -252,8 +265,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
             using var scope = serviceScopeFactory.CreateScope();
             var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
-            var newIndex = await moveCommand.HandleAsync(new(AccountId, VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Top));
+            var newIndex = await moveCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Top));
             Jobs.SelectedIndex = newIndex;
+
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
         [ReactiveCommand]
@@ -272,8 +288,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
             using var scope = serviceScopeFactory.CreateScope();
             var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
-            var newIndex = await moveCommand.HandleAsync(new(AccountId, VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Bottom));
+            var newIndex = await moveCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Bottom));
             Jobs.SelectedIndex = newIndex;
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
         [ReactiveCommand]
@@ -289,7 +307,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
             using var scope = serviceScopeFactory.CreateScope();
             var deleteJobByIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByIdCommand.Handler>();
-            await deleteJobByIdCommand.HandleAsync(new(AccountId, VillageId, new JobId(jobId)));
+            await deleteJobByIdCommand.HandleAsync(new(VillageId, new JobId(jobId)));
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
         [ReactiveCommand]
@@ -335,8 +355,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             if (!confirm) return;
             var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
             using var scope = serviceScopeFactory.CreateScope();
+            var fixJobsCommand = scope.ServiceProvider.GetRequiredService<FixJobsCommand.Handler>();
+            var fixedJobs = await fixJobsCommand.HandleAsync(new(VillageId, jobs));
             var importCommand = scope.ServiceProvider.GetRequiredService<ImportCommand.Handler>();
-            await importCommand.HandleAsync(new(AccountId, VillageId, jobs));
+            await importCommand.HandleAsync(new(VillageId, fixedJobs));
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
         [ReactiveCommand]

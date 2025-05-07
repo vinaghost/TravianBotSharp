@@ -27,8 +27,8 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result;
             result = await completeImmediatelyCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
             if (result.IsFailed) return result;
-            result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
-            if (result.IsFailed) return result;
+            var (_, isFailed, _, errors) = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
             return Result.Ok();
         }
     }

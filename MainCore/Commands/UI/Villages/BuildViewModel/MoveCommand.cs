@@ -5,16 +5,16 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class MoveCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, JobId jobId, MoveEnums Move) : ICommand;
+        public sealed record Command(VillageId VillageId, JobId jobId, MoveEnums Move) : ICommand;
 
         private static async ValueTask<int> HandleAsync(
             Command command,
-            AppDbContext context, JobUpdated.Handler jobUpdated,
+            AppDbContext context,
             CancellationToken cancellationToken
             )
         {
-            var (accountId, villageId, jobId, move) = command;
-
+            await Task.CompletedTask;
+            var (villageId, jobId, move) = command;
 
             var job = context.Jobs
                 .Where(x => x.Id == jobId.Value)
@@ -56,7 +56,6 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             context.Update(job);
             context.SaveChanges();
 
-            await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
             return job.Position;
         }
     }

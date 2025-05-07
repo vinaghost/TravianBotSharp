@@ -45,8 +45,9 @@ partial class HandleResourceCommand
 		private readonly global::MainCore.Commands.Features.UseHeroItem.UseHeroResourceCommand.Handler _useHeroResourceCommand;
 		private readonly global::MainCore.Commands.Features.UseHeroItem.ToHeroInventoryCommand.Handler _toHeroInventoryCommand;
 		private readonly global::MainCore.Commands.Update.UpdateInventoryCommand.Handler _updateInventoryCommand;
+		private readonly global::MainCore.Queries.GetLowestBuildingQuery.Handler _getLowestBuildingQuery;
 		private readonly global::MainCore.Commands.Misc.AddJobCommand.Handler _addJobCommand;
-		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
+		private readonly global::MainCore.Services.ISettingService _settingService;
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
 		private readonly global::Serilog.ILogger _logger;
 
@@ -56,8 +57,9 @@ partial class HandleResourceCommand
 			global::MainCore.Commands.Features.UseHeroItem.UseHeroResourceCommand.Handler useHeroResourceCommand,
 			global::MainCore.Commands.Features.UseHeroItem.ToHeroInventoryCommand.Handler toHeroInventoryCommand,
 			global::MainCore.Commands.Update.UpdateInventoryCommand.Handler updateInventoryCommand,
+			global::MainCore.Queries.GetLowestBuildingQuery.Handler getLowestBuildingQuery,
 			global::MainCore.Commands.Misc.AddJobCommand.Handler addJobCommand,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
+			global::MainCore.Services.ISettingService settingService,
 			global::MainCore.Services.IChromeBrowser browser,
 			global::Serilog.ILogger logger
 		)
@@ -67,8 +69,9 @@ partial class HandleResourceCommand
 			_useHeroResourceCommand = useHeroResourceCommand;
 			_toHeroInventoryCommand = toHeroInventoryCommand;
 			_updateInventoryCommand = updateInventoryCommand;
+			_getLowestBuildingQuery = getLowestBuildingQuery;
 			_addJobCommand = addJobCommand;
-			_context = context;
+			_settingService = settingService;
 			_browser = browser;
 			_logger = logger;
 		}
@@ -86,8 +89,9 @@ partial class HandleResourceCommand
 					, _useHeroResourceCommand
 					, _toHeroInventoryCommand
 					, _updateInventoryCommand
+					, _getLowestBuildingQuery
 					, _addJobCommand
-					, _context
+					, _settingService
 					, _browser
 					, _logger
 					, cancellationToken

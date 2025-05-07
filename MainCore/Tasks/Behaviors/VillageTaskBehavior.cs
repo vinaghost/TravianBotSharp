@@ -40,8 +40,8 @@ namespace MainCore.Tasks.Behaviors
             result = await _toDorfCommand.HandleAsync(new(accountId, 0), cancellationToken);
             if (result.IsFailed) return (TResponse)result;
 
-            result = await _updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
-            if (result.IsFailed) return (TResponse)result;
+            var (_, isFailed, _, errors) = await _updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            if (isFailed) return (TResponse)Result.Fail(errors);
 
             await _updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
 

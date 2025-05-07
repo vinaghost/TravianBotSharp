@@ -11,7 +11,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
-            GetBuildingQuery.Handler getBuilding,
             CancellationToken cancellationToken
         )
         {
@@ -22,7 +21,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (context.IsUpgradeable(plan))
             {
                 var isSpecialUpgrade = context.BooleanByName(villageId, VillageSettingEnums.UseSpecialUpgrade);
-                var isSpecialUpgradeable = await IsSpecialUpgradeable(villageId, plan, getBuilding, cancellationToken);
+                var isSpecialUpgradeable = IsSpecialUpgradeable(context, villageId, plan, cancellationToken);
                 if (isSpecialUpgrade && isSpecialUpgradeable)
                 {
                     result = await browser.SpecialUpgrade(cancellationToken);
@@ -48,16 +47,16 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return !context.IsEmptySite(plan.Location);
         }
 
-        private static async Task<bool> IsSpecialUpgradeable(
+        private static bool IsSpecialUpgradeable(
+            AppDbContext context,
             VillageId villageId,
             NormalBuildPlan plan,
-            GetBuildingQuery.Handler getBuilding,
             CancellationToken cancellationToken
         )
         {
             if (plan.Type.IsResourceField())
             {
-                var dto = await getBuilding.HandleAsync(new(villageId, plan.Location), cancellationToken);
+                var dto = context.GetBuilding(villageId, plan.Location);
                 if (dto.Level == 0) return false;
             }
             return true;

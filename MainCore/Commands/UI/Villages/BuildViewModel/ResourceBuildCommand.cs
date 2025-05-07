@@ -6,7 +6,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class ResourceBuildCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, ResourceBuildPlan plan) : ICommand;
+        public sealed record Command(VillageId VillageId, ResourceBuildPlan plan) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,
@@ -14,8 +14,8 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             CancellationToken cancellationToken
             )
         {
-            var (accountId, villageId, plan) = command;
-            await addJobCommand.HandleAsync(new(accountId, villageId, plan.ToJob(villageId)));
+            var (villageId, plan) = command;
+            await addJobCommand.HandleAsync(new(villageId, plan.ToJob(villageId)));
         }
 
         public static ResourceBuildPlan ToPlan(this ResourceBuildInput input)

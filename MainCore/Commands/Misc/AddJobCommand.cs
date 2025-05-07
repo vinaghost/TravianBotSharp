@@ -6,16 +6,16 @@ namespace MainCore.Commands.Misc
     [Handler]
     public static partial class AddJobCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, Job Job, bool Top = false) : ICommand;
+        public sealed record Command(VillageId VillageId, Job Job, bool Top = false) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,
-            AppDbContext context, JobUpdated.Handler jobUpdated,
+            AppDbContext context,
             CancellationToken cancellationToken
             )
         {
-            var (accountId, villageId, job, top) = command;
-
+            await Task.CompletedTask;
+            var (villageId, job, top) = command;
 
             if (top)
             {
@@ -36,8 +36,6 @@ namespace MainCore.Commands.Misc
 
             context.Add(job);
             context.SaveChanges();
-
-            await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
         }
 
         public static Job ToJob(this NormalBuildPlan plan, VillageId villageId)

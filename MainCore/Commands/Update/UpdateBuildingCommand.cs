@@ -9,7 +9,9 @@ namespace MainCore.Commands.Update
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IVillageCommand;
 
-        private static async ValueTask<Result> HandleAsync(
+        public sealed record Response(List<BuildingDto> Buildings, List<QueueBuilding> QueueBuildings);
+
+        private static async ValueTask<Result<Response>> HandleAsync(
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
@@ -34,7 +36,20 @@ namespace MainCore.Commands.Update
             var dtoUnderConstructionBuildings = dtoBuilding.Where(x => x.IsUnderConstruction).ToList();
             context.UpdateQueueToDatabase(villageId, dtoUnderConstructionBuildings);
 
-            return Result.Ok();
+            return context.GetResponse(villageId);
+        }
+
+        private static Response GetResponse(this AppDbContext context, VillageId villageId)
+        {
+            var buildings = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .ToDto()
+                .ToList();
+            var queueBuildings = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Location != -1)
+                .ToList();
+            return new Response(buildings, queueBuildings);
         }
 
         private static IEnumerable<BuildingDto> GetBuildings(string url, HtmlDocument html)

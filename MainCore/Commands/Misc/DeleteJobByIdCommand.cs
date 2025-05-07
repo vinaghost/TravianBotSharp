@@ -5,16 +5,16 @@ namespace MainCore.Commands.Misc
     [Handler]
     public static partial class DeleteJobByIdCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, JobId JobId) : ICommand;
+        public sealed record Command(VillageId VillageId, JobId JobId) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,
-            AppDbContext context, JobUpdated.Handler jobUpdated,
+            AppDbContext context,
             CancellationToken cancellationToken
             )
         {
-            var (accountId, villageId, jobId) = command;
-
+            await Task.CompletedTask;
+            var (villageId, jobId) = command;
 
             var job = context.Jobs
                 .Where(x => x.Id == jobId.Value)
@@ -35,8 +35,6 @@ namespace MainCore.Commands.Misc
                 .Where(x => x.VillageId == job.VillageId)
                 .Where(x => x.Position > job.Position)
                 .ExecuteUpdate(x => x.SetProperty(x => x.Position, x => x.Position - 1));
-
-            await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
         }
     }
 }

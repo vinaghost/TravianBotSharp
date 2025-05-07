@@ -83,6 +83,7 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Villages.BuildViewModel.DeleteJobByVillageIdCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Villages.BuildViewModel.ExportCommand.AddHandlers(services, lifetime);
+		global::MainCore.Commands.UI.Villages.BuildViewModel.FixJobsCommand.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Villages.BuildViewModel.GetJobItemsQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Villages.BuildViewModel.GetLayoutBuildingItemsQuery.AddHandlers(services, lifetime);
 		global::MainCore.Commands.UI.Villages.BuildViewModel.GetNormalBuildingsQuery.AddHandlers(services, lifetime);
@@ -143,10 +144,14 @@ public static class HandlerServiceCollectionExtensions
 		global::MainCore.Queries.GetBuildingQuery.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetFirstQueueBuildingQuery.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetHasBuildJobVillagesQuery.AddHandlers(services, lifetime);
+		global::MainCore.Queries.GetHeroItemsQuery.AddHandlers(services, lifetime);
+		global::MainCore.Queries.GetJobQuery.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetLayoutBuildingsQuery.AddHandlers(services, lifetime);
+		global::MainCore.Queries.GetLowestBuildingQuery.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetMissingBuildingVillagesQuery.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetTrainTroopBuildingQuery.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetValidAccessQuery.AddHandlers(services, lifetime);
+		global::MainCore.Queries.GetVillageHasRallypointQuery.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetVillageNameQuery.AddHandlers(services, lifetime);
 		global::MainCore.Queries.GetVillagesQuery.AddHandlers(services, lifetime);
 		global::MainCore.Queries.VerifyAccessQuery.AddHandlers(services, lifetime);

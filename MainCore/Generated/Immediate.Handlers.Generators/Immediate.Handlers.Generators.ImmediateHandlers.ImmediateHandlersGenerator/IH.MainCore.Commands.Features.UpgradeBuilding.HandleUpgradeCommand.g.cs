@@ -42,17 +42,14 @@ partial class HandleUpgradeCommand
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
-		private readonly global::MainCore.Queries.GetBuildingQuery.Handler _getBuilding;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
-			global::MainCore.Queries.GetBuildingQuery.Handler getBuilding
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context
 		)
 		{
 			_browser = browser;
 			_context = context;
-			_getBuilding = getBuilding;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -65,7 +62,6 @@ partial class HandleUpgradeCommand
 					request
 					, _browser
 					, _context
-					, _getBuilding
 					, cancellationToken
 				)
 				.ConfigureAwait(false);
