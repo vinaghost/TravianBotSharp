@@ -9,11 +9,11 @@ partial class UpdateFarmlistCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateFarmlistCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Update.UpdateFarmlistCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Notification.Behaviors.FarmListUpdatedBehavior<global::MainCore.Commands.Update.UpdateFarmlistCommand.Command, global::FluentResults.Result> _farmListUpdatedBehavior;
+		private readonly global::MainCore.Notifications.Behaviors.FarmListUpdatedBehavior<global::MainCore.Commands.Update.UpdateFarmlistCommand.Command, global::FluentResults.Result> _farmListUpdatedBehavior;
 
 		public Handler(
 			global::MainCore.Commands.Update.UpdateFarmlistCommand.HandleBehavior handleBehavior,
-			global::MainCore.Notification.Behaviors.FarmListUpdatedBehavior<global::MainCore.Commands.Update.UpdateFarmlistCommand.Command, global::FluentResults.Result> farmListUpdatedBehavior
+			global::MainCore.Notifications.Behaviors.FarmListUpdatedBehavior<global::MainCore.Commands.Update.UpdateFarmlistCommand.Command, global::FluentResults.Result> farmListUpdatedBehavior
 		)
 		{
 			var handlerType = typeof(UpdateFarmlistCommand);

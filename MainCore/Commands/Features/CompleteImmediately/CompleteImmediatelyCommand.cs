@@ -1,6 +1,6 @@
 ﻿using MainCore.Commands.Behaviors;
 using MainCore.Constraints;
-using MainCore.Notification.Behaviors;
+using MainCore.Notifications.Behaviors;
 
 namespace MainCore.Commands.Features.CompleteImmediately
 {

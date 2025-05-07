@@ -35,11 +35,11 @@ partial class CheckAdventureCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Checks.CheckAdventureCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
-		private readonly global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.Handler _startAdventureTaskTrigger;
+		private readonly global::MainCore.Notifications.Handlers.Trigger.StartAdventureTaskTrigger.Handler _startAdventureTaskTrigger;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Notification.Handlers.Trigger.StartAdventureTaskTrigger.Handler startAdventureTaskTrigger
+			global::MainCore.Notifications.Handlers.Trigger.StartAdventureTaskTrigger.Handler startAdventureTaskTrigger
 		)
 		{
 			_browser = browser;

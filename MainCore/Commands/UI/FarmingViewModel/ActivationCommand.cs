@@ -1,5 +1,5 @@
 ﻿using MainCore.Constraints;
-using MainCore.Notification.Behaviors;
+using MainCore.Notifications.Behaviors;
 
 namespace MainCore.Commands.UI.FarmingViewModel
 {

@@ -9,11 +9,11 @@ partial class UpdateAccountInfoCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateAccountInfoCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.Update.UpdateAccountInfoCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Notification.Behaviors.AccountInfoUpdatedBehavior<global::MainCore.Commands.Update.UpdateAccountInfoCommand.Command, global::FluentResults.Result> _accountInfoUpdatedBehavior;
+		private readonly global::MainCore.Notifications.Behaviors.AccountInfoUpdatedBehavior<global::MainCore.Commands.Update.UpdateAccountInfoCommand.Command, global::FluentResults.Result> _accountInfoUpdatedBehavior;
 
 		public Handler(
 			global::MainCore.Commands.Update.UpdateAccountInfoCommand.HandleBehavior handleBehavior,
-			global::MainCore.Notification.Behaviors.AccountInfoUpdatedBehavior<global::MainCore.Commands.Update.UpdateAccountInfoCommand.Command, global::FluentResults.Result> accountInfoUpdatedBehavior
+			global::MainCore.Notifications.Behaviors.AccountInfoUpdatedBehavior<global::MainCore.Commands.Update.UpdateAccountInfoCommand.Command, global::FluentResults.Result> accountInfoUpdatedBehavior
 		)
 		{
 			var handlerType = typeof(UpdateAccountInfoCommand);

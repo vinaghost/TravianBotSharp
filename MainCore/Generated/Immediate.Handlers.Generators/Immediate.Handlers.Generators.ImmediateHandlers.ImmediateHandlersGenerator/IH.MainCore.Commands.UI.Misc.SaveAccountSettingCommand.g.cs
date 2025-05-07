@@ -9,11 +9,11 @@ partial class SaveAccountSettingCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Notification.Behaviors.AccountSettingUpdatedBehavior<global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.Command, global::System.ValueTuple> _accountSettingUpdatedBehavior;
+		private readonly global::MainCore.Notifications.Behaviors.AccountSettingUpdatedBehavior<global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.Command, global::System.ValueTuple> _accountSettingUpdatedBehavior;
 
 		public Handler(
 			global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.HandleBehavior handleBehavior,
-			global::MainCore.Notification.Behaviors.AccountSettingUpdatedBehavior<global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.Command, global::System.ValueTuple> accountSettingUpdatedBehavior
+			global::MainCore.Notifications.Behaviors.AccountSettingUpdatedBehavior<global::MainCore.Commands.UI.Misc.SaveAccountSettingCommand.Command, global::System.ValueTuple> accountSettingUpdatedBehavior
 		)
 		{
 			var handlerType = typeof(SaveAccountSettingCommand);

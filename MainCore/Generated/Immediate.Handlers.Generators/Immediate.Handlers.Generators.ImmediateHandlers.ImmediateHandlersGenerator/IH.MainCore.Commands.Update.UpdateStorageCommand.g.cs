@@ -9,11 +9,11 @@ partial class UpdateStorageCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateStorageCommand.Command, global::MainCore.DTO.StorageDto>
 	{
 		private readonly global::MainCore.Commands.Update.UpdateStorageCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Notification.Behaviors.StorageUpdatedBehavior<global::MainCore.Commands.Update.UpdateStorageCommand.Command, global::MainCore.DTO.StorageDto> _storageUpdatedBehavior;
+		private readonly global::MainCore.Notifications.Behaviors.StorageUpdatedBehavior<global::MainCore.Commands.Update.UpdateStorageCommand.Command, global::MainCore.DTO.StorageDto> _storageUpdatedBehavior;
 
 		public Handler(
 			global::MainCore.Commands.Update.UpdateStorageCommand.HandleBehavior handleBehavior,
-			global::MainCore.Notification.Behaviors.StorageUpdatedBehavior<global::MainCore.Commands.Update.UpdateStorageCommand.Command, global::MainCore.DTO.StorageDto> storageUpdatedBehavior
+			global::MainCore.Notifications.Behaviors.StorageUpdatedBehavior<global::MainCore.Commands.Update.UpdateStorageCommand.Command, global::MainCore.DTO.StorageDto> storageUpdatedBehavior
 		)
 		{
 			var handlerType = typeof(UpdateStorageCommand);

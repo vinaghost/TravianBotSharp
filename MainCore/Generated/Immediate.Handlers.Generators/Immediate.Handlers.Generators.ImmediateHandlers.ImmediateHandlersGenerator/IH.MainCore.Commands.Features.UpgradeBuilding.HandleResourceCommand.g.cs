@@ -40,7 +40,7 @@ partial class HandleResourceCommand
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Features.UpgradeBuilding.HandleResourceCommand.Command, global::FluentResults.Result>
 	{
-		private readonly global::MainCore.Notification.Message.JobUpdated.Handler _jobUpdated;
+		private readonly global::MainCore.Notifications.Message.JobUpdated.Handler _jobUpdated;
 		private readonly global::MainCore.Commands.Update.UpdateStorageCommand.Handler _updateStorageCommand;
 		private readonly global::MainCore.Commands.Features.UseHeroItem.UseHeroResourceCommand.Handler _useHeroResourceCommand;
 		private readonly global::MainCore.Commands.Features.UseHeroItem.ToHeroInventoryCommand.Handler _toHeroInventoryCommand;
@@ -52,7 +52,7 @@ partial class HandleResourceCommand
 		private readonly global::Serilog.ILogger _logger;
 
 		public HandleBehavior(
-			global::MainCore.Notification.Message.JobUpdated.Handler jobUpdated,
+			global::MainCore.Notifications.Message.JobUpdated.Handler jobUpdated,
 			global::MainCore.Commands.Update.UpdateStorageCommand.Handler updateStorageCommand,
 			global::MainCore.Commands.Features.UseHeroItem.UseHeroResourceCommand.Handler useHeroResourceCommand,
 			global::MainCore.Commands.Features.UseHeroItem.ToHeroInventoryCommand.Handler toHeroInventoryCommand,

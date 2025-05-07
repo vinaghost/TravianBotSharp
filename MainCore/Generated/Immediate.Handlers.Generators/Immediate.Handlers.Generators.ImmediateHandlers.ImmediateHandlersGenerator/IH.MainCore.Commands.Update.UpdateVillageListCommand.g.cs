@@ -9,11 +9,11 @@ partial class UpdateVillageListCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Commands.Update.UpdateVillageListCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Notification.Behaviors.VillageListUpdatedBehavior<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::System.ValueTuple> _villageListUpdatedBehavior;
+		private readonly global::MainCore.Notifications.Behaviors.VillageListUpdatedBehavior<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::System.ValueTuple> _villageListUpdatedBehavior;
 
 		public Handler(
 			global::MainCore.Commands.Update.UpdateVillageListCommand.HandleBehavior handleBehavior,
-			global::MainCore.Notification.Behaviors.VillageListUpdatedBehavior<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::System.ValueTuple> villageListUpdatedBehavior
+			global::MainCore.Notifications.Behaviors.VillageListUpdatedBehavior<global::MainCore.Commands.Update.UpdateVillageListCommand.Command, global::System.ValueTuple> villageListUpdatedBehavior
 		)
 		{
 			var handlerType = typeof(UpdateVillageListCommand);

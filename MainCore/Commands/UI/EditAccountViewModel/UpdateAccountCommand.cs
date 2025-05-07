@@ -1,8 +1,10 @@
 ﻿using MainCore.Constraints;
+using MainCore.Notifications.Behaviors;
 
 namespace MainCore.Commands.UI.EditAccountViewModel
 {
     [Handler]
+    [Behaviors(typeof(AccountListUpdatedBehavior<,>))]
     public static partial class UpdateAccountCommand
     {
         public sealed record Command(AccountDto Dto) : ICommand;
@@ -10,12 +12,11 @@ namespace MainCore.Commands.UI.EditAccountViewModel
         private static async ValueTask HandleAsync(
             Command command,
             AppDbContext context, IUseragentManager useragentManager,
-            AccountUpdated.Handler accountUpdated,
             CancellationToken cancellationToken
             )
         {
+            await Task.CompletedTask;
             var dto = command.Dto;
-
 
             var account = dto.ToEntity();
             foreach (var access in account.Accesses.Where(access => string.IsNullOrWhiteSpace(access.Useragent)))
@@ -31,8 +32,6 @@ namespace MainCore.Commands.UI.EditAccountViewModel
 
             context.Update(account);
             context.SaveChanges();
-
-            await accountUpdated.HandleAsync(new(), cancellationToken);
         }
     }
 }

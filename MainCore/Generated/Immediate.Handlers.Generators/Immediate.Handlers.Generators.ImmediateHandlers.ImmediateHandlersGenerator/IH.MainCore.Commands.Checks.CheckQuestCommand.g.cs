@@ -35,11 +35,11 @@ partial class CheckQuestCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.Checks.CheckQuestCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Services.IChromeBrowser _browser;
-		private readonly global::MainCore.Notification.Handlers.Trigger.ClaimQuestTaskTrigger.Handler _claimQuestTaskTrigger;
+		private readonly global::MainCore.Notifications.Handlers.Trigger.ClaimQuestTaskTrigger.Handler _claimQuestTaskTrigger;
 
 		public HandleBehavior(
 			global::MainCore.Services.IChromeBrowser browser,
-			global::MainCore.Notification.Handlers.Trigger.ClaimQuestTaskTrigger.Handler claimQuestTaskTrigger
+			global::MainCore.Notifications.Handlers.Trigger.ClaimQuestTaskTrigger.Handler claimQuestTaskTrigger
 		)
 		{
 			_browser = browser;

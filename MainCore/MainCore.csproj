@@ -74,7 +74,7 @@
     <Using Include="MainCore.Commands.Navigate" />
     <Using Include="MainCore.Commands.Update" />
     <Using Include="MainCore.Commands.Misc" />
-    <Using Include="MainCore.Notification.Message" />
+    <Using Include="MainCore.Notifications.Message" />
     <Using Include="MainCore.Queries" />
     <Using Include="MainCore.Tasks" />
     <Using Include="MainCore.Models" />

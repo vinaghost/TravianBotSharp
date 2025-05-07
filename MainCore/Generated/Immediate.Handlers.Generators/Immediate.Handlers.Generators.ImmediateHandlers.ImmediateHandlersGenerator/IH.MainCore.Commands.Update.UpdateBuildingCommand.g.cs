@@ -9,11 +9,11 @@ partial class UpdateBuildingCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.Update.UpdateBuildingCommand.Command, global::FluentResults.Result<global::MainCore.Commands.Update.UpdateBuildingCommand.Response>>
 	{
 		private readonly global::MainCore.Commands.Update.UpdateBuildingCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Notification.Behaviors.BuildingUpdatedBehavior<global::MainCore.Commands.Update.UpdateBuildingCommand.Command, global::FluentResults.Result<global::MainCore.Commands.Update.UpdateBuildingCommand.Response>> _buildingUpdatedBehavior;
+		private readonly global::MainCore.Notifications.Behaviors.BuildingUpdatedBehavior<global::MainCore.Commands.Update.UpdateBuildingCommand.Command, global::FluentResults.Result<global::MainCore.Commands.Update.UpdateBuildingCommand.Response>> _buildingUpdatedBehavior;
 
 		public Handler(
 			global::MainCore.Commands.Update.UpdateBuildingCommand.HandleBehavior handleBehavior,
-			global::MainCore.Notification.Behaviors.BuildingUpdatedBehavior<global::MainCore.Commands.Update.UpdateBuildingCommand.Command, global::FluentResults.Result<global::MainCore.Commands.Update.UpdateBuildingCommand.Response>> buildingUpdatedBehavior
+			global::MainCore.Notifications.Behaviors.BuildingUpdatedBehavior<global::MainCore.Commands.Update.UpdateBuildingCommand.Command, global::FluentResults.Result<global::MainCore.Commands.Update.UpdateBuildingCommand.Response>> buildingUpdatedBehavior
 		)
 		{
 			var handlerType = typeof(UpdateBuildingCommand);

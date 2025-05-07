@@ -1,8 +1,10 @@
 ﻿using MainCore.Constraints;
+using MainCore.Notifications.Behaviors;
 
 namespace MainCore.Commands.UI.AddAccountViewModel
 {
     [Handler]
+    [Behaviors(typeof(AccountListUpdatedBehavior<,>))]
     public static partial class AddAccountCommand
     {
         public sealed record Command(AccountDto Dto) : ICommand;
@@ -10,10 +12,10 @@ namespace MainCore.Commands.UI.AddAccountViewModel
         private static async ValueTask<Result> HandleAsync(
             Command command,
             AppDbContext context, IUseragentManager useragentManager,
-            AccountUpdated.Handler accountUpdated,
             CancellationToken cancellationToken
             )
         {
+            await Task.CompletedTask;
             var dto = command.Dto;
 
             if (context.Accounts
@@ -45,7 +47,6 @@ namespace MainCore.Commands.UI.AddAccountViewModel
             context.Add(account);
             context.SaveChanges();
 
-            await accountUpdated.HandleAsync(new(), cancellationToken);
             return Result.Ok();
         }
     }

@@ -40,7 +40,7 @@ partial class HandleJobCommand
 		private readonly global::MainCore.Queries.GetLayoutBuildingsQuery.Handler _getLayoutBuildingsQuery;
 		private readonly global::MainCore.Commands.Misc.DeleteJobByIdCommand.Handler _deleteJobByIdCommand;
 		private readonly global::MainCore.Commands.Misc.AddJobCommand.Handler _addJobCommand;
-		private readonly global::MainCore.Notification.Message.JobUpdated.Handler _jobUpdated;
+		private readonly global::MainCore.Notifications.Message.JobUpdated.Handler _jobUpdated;
 
 		public HandleBehavior(
 			global::MainCore.Queries.GetJobQuery.Handler getJobQuery,
@@ -49,7 +49,7 @@ partial class HandleJobCommand
 			global::MainCore.Queries.GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
 			global::MainCore.Commands.Misc.DeleteJobByIdCommand.Handler deleteJobByIdCommand,
 			global::MainCore.Commands.Misc.AddJobCommand.Handler addJobCommand,
-			global::MainCore.Notification.Message.JobUpdated.Handler jobUpdated
+			global::MainCore.Notifications.Message.JobUpdated.Handler jobUpdated
 		)
 		{
 			_getJobQuery = getJobQuery;

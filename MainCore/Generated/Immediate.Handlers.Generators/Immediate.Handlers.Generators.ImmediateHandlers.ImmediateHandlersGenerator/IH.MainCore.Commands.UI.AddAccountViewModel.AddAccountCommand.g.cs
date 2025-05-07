@@ -9,21 +9,21 @@ partial class AddAccountCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.Command, global::FluentResults.Result>
 	{
 		private readonly global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.HandleBehavior _handleBehavior;
-		private readonly global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.Command, global::FluentResults.Result> _commandLoggingBehavior;
+		private readonly global::MainCore.Notifications.Behaviors.AccountListUpdatedBehavior<global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.Command, global::FluentResults.Result> _accountListUpdatedBehavior;
 
 		public Handler(
 			global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.HandleBehavior handleBehavior,
-			global::MainCore.Commands.Behaviors.CommandLoggingBehavior<global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.Command, global::FluentResults.Result> commandLoggingBehavior
+			global::MainCore.Notifications.Behaviors.AccountListUpdatedBehavior<global::MainCore.Commands.UI.AddAccountViewModel.AddAccountCommand.Command, global::FluentResults.Result> accountListUpdatedBehavior
 		)
 		{
 			var handlerType = typeof(AddAccountCommand);
 
 			_handleBehavior = handleBehavior;
 
-			_commandLoggingBehavior = commandLoggingBehavior;
-			_commandLoggingBehavior.HandlerType = handlerType;
+			_accountListUpdatedBehavior = accountListUpdatedBehavior;
+			_accountListUpdatedBehavior.HandlerType = handlerType;
 
-			_commandLoggingBehavior.SetInnerHandler(_handleBehavior);
+			_accountListUpdatedBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -31,7 +31,7 @@ partial class AddAccountCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _commandLoggingBehavior
+			return await _accountListUpdatedBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -42,17 +42,14 @@ partial class AddAccountCommand
 	{
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 		private readonly global::MainCore.Services.IUseragentManager _useragentManager;
-		private readonly global::MainCore.Notification.Message.AccountUpdated.Handler _accountUpdated;
 
 		public HandleBehavior(
 			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
-			global::MainCore.Services.IUseragentManager useragentManager,
-			global::MainCore.Notification.Message.AccountUpdated.Handler accountUpdated
+			global::MainCore.Services.IUseragentManager useragentManager
 		)
 		{
 			_context = context;
 			_useragentManager = useragentManager;
-			_accountUpdated = accountUpdated;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::FluentResults.Result> HandleAsync(
@@ -65,7 +62,6 @@ partial class AddAccountCommand
 					request
 					, _context
 					, _useragentManager
-					, _accountUpdated
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

@@ -9,15 +9,21 @@ partial class DeleteCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.MainLayoutViewModel.DeleteCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Commands.UI.MainLayoutViewModel.DeleteCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Notifications.Behaviors.AccountListUpdatedBehavior<global::MainCore.Commands.UI.MainLayoutViewModel.DeleteCommand.Command, global::System.ValueTuple> _accountListUpdatedBehavior;
 
 		public Handler(
-			global::MainCore.Commands.UI.MainLayoutViewModel.DeleteCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.UI.MainLayoutViewModel.DeleteCommand.HandleBehavior handleBehavior,
+			global::MainCore.Notifications.Behaviors.AccountListUpdatedBehavior<global::MainCore.Commands.UI.MainLayoutViewModel.DeleteCommand.Command, global::System.ValueTuple> accountListUpdatedBehavior
 		)
 		{
 			var handlerType = typeof(DeleteCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_accountListUpdatedBehavior = accountListUpdatedBehavior;
+			_accountListUpdatedBehavior.HandlerType = handlerType;
+
+			_accountListUpdatedBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -25,7 +31,7 @@ partial class DeleteCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _accountListUpdatedBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}
@@ -35,15 +41,12 @@ partial class DeleteCommand
 	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Commands.UI.MainLayoutViewModel.DeleteCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
-		private readonly global::MainCore.Notification.Message.AccountUpdated.Handler _accountUpdated;
 
 		public HandleBehavior(
-			global::MainCore.Infrasturecture.Persistence.AppDbContext context,
-			global::MainCore.Notification.Message.AccountUpdated.Handler accountUpdated
+			global::MainCore.Infrasturecture.Persistence.AppDbContext context
 		)
 		{
 			_context = context;
-			_accountUpdated = accountUpdated;
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -55,7 +58,6 @@ partial class DeleteCommand
 				.HandleAsync(
 					request
 					, _context
-					, _accountUpdated
 					, cancellationToken
 				)
 				.ConfigureAwait(false);

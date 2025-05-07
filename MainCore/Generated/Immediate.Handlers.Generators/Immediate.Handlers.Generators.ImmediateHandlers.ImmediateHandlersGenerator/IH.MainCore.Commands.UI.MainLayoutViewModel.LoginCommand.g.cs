@@ -38,7 +38,7 @@ partial class LoginCommand
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
 		private readonly global::MainCore.Services.ITimerManager _timerManager;
 		private readonly global::Serilog.ILogger _logger;
-		private readonly global::MainCore.Notification.Message.AccountInit.Handler _accountInit;
+		private readonly global::MainCore.Notifications.Message.AccountInit.Handler _accountInit;
 		private readonly global::MainCore.Commands.Misc.OpenBrowserCommand.Handler _openBrowserCommand;
 
 		public HandleBehavior(
@@ -46,7 +46,7 @@ partial class LoginCommand
 			global::MainCore.Services.ITaskManager taskManager,
 			global::MainCore.Services.ITimerManager timerManager,
 			global::Serilog.ILogger logger,
-			global::MainCore.Notification.Message.AccountInit.Handler accountInit,
+			global::MainCore.Notifications.Message.AccountInit.Handler accountInit,
 			global::MainCore.Commands.Misc.OpenBrowserCommand.Handler openBrowserCommand
 		)
 		{
