@@ -4,7 +4,6 @@ using ArchUnitNET.xUnit;
 using MainCore.Constraints;
 using MainCore.Infrasturecture.Persistence;
 using MainCore.Services;
-using Microsoft.EntityFrameworkCore;
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
 namespace MainCore.Test
@@ -12,9 +11,11 @@ namespace MainCore.Test
     public class ArchitectureTest
     {
         private static readonly Architecture Architecture = new ArchLoader().LoadAssemblies(
-            System.Reflection.Assembly.Load("MainCore"),
-            typeof(IDbContextFactory<>).Assembly
+            System.Reflection.Assembly.Load("MainCore")
         ).Build();
+
+        private readonly IObjectProvider<MethodMember> Handler =
+            MethodMembers().That().HaveNameContaining("HandleAsync").And().AreStatic().As("Handler");
 
         [Fact]
         public void CommandShouldHaveCorrectName()
@@ -57,18 +58,16 @@ namespace MainCore.Test
         [Fact]
         public void HandlerAccessDatabaseShouldNotContainOtherHandler()
         {
-            var handler = Classes().That()
+            var otherhandler = Classes().That()
                 .AreAssignableTo(typeof(Immediate.Handlers.Shared.IHandler<,>))
-                .As("Handler");
+                .As("other handler");
 
             var rule = MethodMembers().That()
-                .HaveNameContaining("HandleAsync")
-                .And()
-                .AreStatic()
+                .Are(Handler)
                 .And()
                 .DependOnAny(typeof(AppDbContext))
                 .Should()
-                .NotDependOnAny(handler);
+                .NotDependOnAny(otherhandler);
             rule.Check(Architecture);
         }
 
@@ -76,9 +75,7 @@ namespace MainCore.Test
         public void HandlerShouldNotDependOnDialogService()
         {
             var rule = MethodMembers().That()
-                .HaveNameContaining("HandleAsync")
-                .And()
-                .AreStatic()
+                .Are(Handler)
                 .Should()
                 .NotDependOnAny(typeof(IDialogService));
             rule.Check(Architecture);
