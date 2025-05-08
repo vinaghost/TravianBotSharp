@@ -1,73 +1,48 @@
-﻿using FluentValidation;
-using MainCore.Commands.UI;
-using MainCore.Tasks;
+﻿using MainCore.Commands.UI.AccountSettingViewModel;
+using MainCore.Commands.UI.FarmingViewModel;
+using MainCore.Commands.UI.Misc;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using ReactiveUI;
-using System.Drawing;
-using System.Reactive.Linq;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
     [RegisterSingleton<FarmingViewModel>]
-    public class FarmingViewModel : AccountTabViewModelBase
+    public partial class FarmingViewModel : AccountTabViewModelBase
     {
-        public FarmListSettingInput FarmListSettingInput { get; } = new();
+        public AccountSettingInput AccountSettingInput { get; } = new();
         public ListBoxItemViewModel FarmLists { get; } = new();
 
-        private readonly IMediator _mediator;
         private readonly IDialogService _dialogService;
-        private readonly ITaskManager _taskManager;
+        private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
 
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
-        public ReactiveCommand<Unit, Unit> UpdateFarmList { get; }
-        public ReactiveCommand<Unit, Unit> Save { get; }
-        public ReactiveCommand<Unit, Unit> ActiveFarmList { get; }
-        public ReactiveCommand<Unit, Unit> Start { get; }
-        public ReactiveCommand<Unit, Unit> Stop { get; }
-        public ReactiveCommand<AccountId, List<ListBoxItem>> LoadFarmList { get; }
-        public ReactiveCommand<AccountId, Dictionary<AccountSettingEnums, int>> LoadSetting { get; }
-
-        private static readonly Dictionary<Color, string> _activeTexts = new()
+        private static readonly Dictionary<SplatColor, string> _activeTexts = new()
         {
-            { Color.Green , "Deactive" },
-            { Color.Red , "Active" },
-            { Color.Black , "No farmlist selected" },
+            { SplatColor.Green , "Deactive" },
+            { SplatColor.Red , "Active" },
+            { SplatColor.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(IMediator mediator, IDialogService dialogService, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
+        public FarmingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator)
         {
-            _mediator = mediator;
+            _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;
-            _taskManager = taskManager;
-            _contextFactory = contextFactory;
 
-            UpdateFarmList = ReactiveCommand.CreateFromTask(UpdateFarmListHandler);
-            Start = ReactiveCommand.CreateFromTask(StartHandler);
-            Stop = ReactiveCommand.CreateFromTask(StopHandler);
-
-            Save = ReactiveCommand.CreateFromTask(SaveHandler);
-            ActiveFarmList = ReactiveCommand.CreateFromTask(ActiveFarmListHandler);
-
-            LoadFarmList = ReactiveCommand.Create<AccountId, List<ListBoxItem>>(LoadFarmListHandler);
-            LoadSetting = ReactiveCommand.Create<AccountId, Dictionary<AccountSettingEnums, int>>(LoadSettingHandler);
-
-            LoadFarmList.Subscribe(items =>
+            LoadFarmListCommand.Subscribe(items =>
             {
                 FarmLists.Load(items);
                 if (items.Count > 0)
                 {
-                    var color = FarmLists.SelectedItem?.Color ?? Color.Black;
+                    var color = FarmLists.SelectedItem?.Color ?? SplatColor.Black;
                     ActiveText = _activeTexts[color];
                 }
             });
-            LoadSetting.Subscribe(FarmListSettingInput.Set);
-            ActiveFarmList.Subscribe(x =>
+            LoadSettingCommand.Subscribe(AccountSettingInput.Set);
+            ActiveFarmListCommand.Subscribe(x =>
             {
-                var color = FarmLists.SelectedItem?.Color ?? Color.Black;
+                var color = FarmLists.SelectedItem?.Color ?? SplatColor.Black;
                 ActiveText = _activeTexts[color];
             });
 
@@ -84,25 +59,31 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadFarmList.Execute(accountId);
+            await LoadFarmListCommand.Execute(accountId);
         }
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadFarmList.Execute(accountId);
-            await LoadSetting.Execute(accountId);
+            await LoadFarmListCommand.Execute(accountId);
+            await LoadSettingCommand.Execute(accountId);
         }
 
-        private async Task UpdateFarmListHandler()
+        [ReactiveCommand]
+        private async Task UpdateFarmList()
         {
-            await _taskManager.AddOrUpdate<UpdateFarmListTask>(AccountId);
+            var taskManager = Locator.Current.GetService<ITaskManager>();
+            await taskManager.AddOrUpdate<UpdateFarmListTask.Task>(new(AccountId));
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added update farm list task"));
         }
 
-        private async Task StartHandler()
+        [ReactiveCommand]
+        private async Task Start()
         {
-            var getSetting = Locator.Current.GetService<IGetSetting>();
-            var useStartAllButton = getSetting.BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+
+            var useStartAllButton = settingService.BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
             if (!useStartAllButton)
             {
                 var count = CountActive(AccountId);
@@ -112,88 +93,86 @@ namespace MainCore.UI.ViewModels.Tabs
                     return;
                 }
             }
-            await _taskManager.AddOrUpdate<StartFarmListTask>(AccountId);
+            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
+            await taskManager.AddOrUpdate<StartFarmListTask.Task>(new(AccountId));
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added start farm list task"));
         }
 
-        private async Task StopHandler()
+        [ReactiveCommand]
+        private async Task Stop()
         {
-            var task = _taskManager.Get<StartFarmListTask>(AccountId);
-
-            if (task is not null) await _taskManager.Remove(AccountId, task);
+            var taskManager = Locator.Current.GetService<ITaskManager>();
+            var task = taskManager.Get<StartFarmListTask.Task>(AccountId);
+            if (task is not null) await taskManager.Remove(AccountId, task);
 
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Removed start farm list task"));
         }
 
-        private async Task SaveHandler()
+        [ReactiveCommand]
+        private async Task Save()
         {
-            var saveSettingCommand = Locator.Current.GetService<SaveSettingCommand>();
-            await saveSettingCommand.Execute(AccountId, FarmListSettingInput, CancellationToken.None);
+            var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
+            if (!result.IsValid)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                return;
+            }
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
+            await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
         }
 
-        private async Task ActiveFarmListHandler()
+        [ReactiveCommand]
+        private async Task ActiveFarmList()
         {
-            var selectedFarmList = FarmLists.SelectedItem;
-            if (selectedFarmList is null)
+            if (!FarmLists.IsSelected)
             {
                 await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "No farm list selected"));
                 return;
             }
 
-            UpdateFarm(new FarmId(selectedFarmList.Id));
-
-            await _mediator.Publish(new FarmListUpdated(AccountId));
+            var selectedFarmList = FarmLists.SelectedItem;
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var activationCommand = scope.ServiceProvider.GetRequiredService<ActivationCommand.Handler>();
+            await activationCommand.HandleAsync(new(AccountId, new FarmId(selectedFarmList.Id)));
         }
 
-        private static Dictionary<AccountSettingEnums, int> LoadSettingHandler(AccountId accountId)
+        [ReactiveCommand]
+        private static async Task<Dictionary<AccountSettingEnums, int>> LoadSetting(AccountId accountId)
         {
-            var getSetting = Locator.Current.GetService<IGetSetting>();
-            var items = getSetting.Get(accountId);
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
+            var items = await getSettingQuery.HandleAsync(new(accountId));
             return items;
         }
 
-        private List<ListBoxItem> LoadFarmListHandler(AccountId accountId)
+        [ReactiveCommand]
+        private async Task<List<ListBoxItem>> LoadFarmList(AccountId accountId)
         {
-            using var context = _contextFactory.CreateDbContext();
-
-            var items = context.FarmLists
-                .Where(x => x.AccountId == accountId.Value)
-                .Select(x => new ListBoxItem()
-                {
-                    Id = x.Id,
-                    Color = x.IsActive ? Color.Green : Color.Red,
-                    Content = x.Name,
-                })
-                .ToList();
-
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getFarmListItemsQuery = scope.ServiceProvider.GetRequiredService<GetFarmListItemsQuery.Handler>();
+            var items = await getFarmListItemsQuery.HandleAsync(new(accountId));
             return items;
         }
 
+        [Reactive]
         private string _activeText = "No farmlist selected";
-
-        public string ActiveText
-        {
-            get => _activeText;
-            set => this.RaiseAndSetIfChanged(ref _activeText, value);
-        }
 
         private int CountActive(AccountId accountId)
         {
-            using var context = _contextFactory.CreateDbContext();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             var count = context.FarmLists
                 .Where(x => x.AccountId == accountId.Value)
                 .Where(x => x.IsActive)
                 .Count();
             return count;
-        }
-
-        private void UpdateFarm(FarmId farmId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            context.FarmLists
-               .Where(x => x.Id == farmId.Value)
-               .ExecuteUpdate(x => x.SetProperty(x => x.IsActive, x => !x.IsActive));
         }
     }
 }

@@ -1,54 +1,45 @@
-﻿using FluentValidation;
-using MainCore.Commands.UI;
+﻿using MainCore.Commands.UI.EditAccountViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
-using System.Reactive.Linq;
+using MainCore.UI.ViewModels.UserControls;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
     [RegisterSingleton<EditAccountViewModel>]
-    public class EditAccountViewModel : AccountTabViewModelBase
+    public partial class EditAccountViewModel : AccountTabViewModelBase
     {
         public AccountInput AccountInput { get; } = new();
         public AccessInput AccessInput { get; } = new();
 
         private readonly IValidator<AccessInput> _accessInputValidator;
+        private readonly IValidator<AccountInput> _accountInputValidator;
         private readonly IDialogService _dialogService;
-        public ReactiveCommand<Unit, Unit> AddAccess { get; }
-        public ReactiveCommand<Unit, Unit> EditAccess { get; }
-        public ReactiveCommand<Unit, Unit> DeleteAccess { get; }
-        public ReactiveCommand<Unit, Unit> EditAccount { get; }
+        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
 
-        public ReactiveCommand<AccountId, AccountDto> LoadAccount { get; }
-
-        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService)
+        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel)
         {
             _accessInputValidator = accessInputValidator;
+            _accountInputValidator = accountInputValidator;
             _dialogService = dialogService;
-
-            AddAccess = ReactiveCommand.CreateFromTask(AddAccessHandler);
-            EditAccess = ReactiveCommand.CreateFromTask(EditAccessHandler);
-            DeleteAccess = ReactiveCommand.Create(DeleteAccessHandler);
-
-            EditAccount = ReactiveCommand.CreateFromTask(EditAccountHandler);
-            LoadAccount = ReactiveCommand.Create<AccountId, AccountDto>(LoadAccountHandler);
 
             this.WhenAnyValue(vm => vm.SelectedAccess)
                 .WhereNotNull()
                 .Subscribe(x => x.CopyTo(AccessInput));
 
-            DeleteAccess.Subscribe(x => SelectedAccess = null);
-            LoadAccount.Subscribe(SetAccount);
+            DeleteAccessCommand.Subscribe(x => SelectedAccess = null);
+            LoadAccountCommand.Subscribe(SetAccount);
+            _waitingOverlayViewModel = waitingOverlayViewModel;
         }
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadAccount.Execute();
+            await LoadAccountCommand.Execute();
         }
 
-        private async Task AddAccessHandler()
+        [ReactiveCommand]
+        private async Task AddAccess()
         {
             var result = _accessInputValidator.Validate(AccessInput);
 
@@ -61,7 +52,8 @@ namespace MainCore.UI.ViewModels.Tabs
             AccountInput.Accesses.Add(AccessInput.Clone());
         }
 
-        private async Task EditAccessHandler()
+        [ReactiveCommand]
+        private async Task EditAccess()
         {
             var result = _accessInputValidator.Validate(AccessInput);
 
@@ -74,22 +66,40 @@ namespace MainCore.UI.ViewModels.Tabs
             AccessInput.CopyTo(SelectedAccess);
         }
 
-        private void DeleteAccessHandler()
+        [ReactiveCommand]
+        private void DeleteAccess()
         {
             AccountInput.Accesses.Remove(SelectedAccess);
         }
 
-        private async Task EditAccountHandler()
+        [ReactiveCommand]
+        private async Task EditAccount()
         {
-            var updateAccountCommand = Locator.Current.GetService<UpdateAccountCommand>();
-            await updateAccountCommand.Execute(AccountInput, default);
-            await LoadAccount.Execute();
+            var results = await _accountInputValidator.ValidateAsync(AccountInput);
+
+            if (!results.IsValid)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", results.ToString()));
+                return;
+            }
+            await _waitingOverlayViewModel.Show("editing account");
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var updateAccountCommand = scope.ServiceProvider.GetRequiredService<UpdateAccountCommand.Handler>();
+            await updateAccountCommand.HandleAsync(new(AccountInput.ToDto()));
+            await _waitingOverlayViewModel.Hide();
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Edited account"));
+
+            await LoadAccountCommand.Execute();
         }
 
-        private AccountDto LoadAccountHandler(AccountId accountId)
+        [ReactiveCommand]
+        private async Task<AccountDto> LoadAccount(AccountId accountId)
         {
-            var getAccount = Locator.Current.GetService<GetAccount>();
-            var account = getAccount.Execute(AccountId, true);
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getAcccountQuery = scope.ServiceProvider.GetRequiredService<GetAcccountQuery.Handler>();
+            var account = await getAcccountQuery.HandleAsync(new(AccountId));
             return account;
         }
 
@@ -103,12 +113,7 @@ namespace MainCore.UI.ViewModels.Tabs
             AccessInput.Clear();
         }
 
+        [Reactive]
         private AccessInput _selectedAccess;
-
-        public AccessInput SelectedAccess
-        {
-            get => _selectedAccess;
-            set => this.RaiseAndSetIfChanged(ref _selectedAccess, value);
-        }
     }
 }

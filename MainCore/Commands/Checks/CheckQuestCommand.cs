@@ -1,22 +1,22 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
+using MainCore.Notifications.Handlers.Trigger;
 
 namespace MainCore.Commands.Checks
 {
-    [RegisterScoped<CheckQuestCommand>]
-    public class CheckQuestCommand(IDataService dataService, IMediator mediator) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class CheckQuestCommand
     {
-        private readonly IMediator _mediator = mediator;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            ClaimQuestTaskTrigger.Handler claimQuestTaskTrigger,
+            CancellationToken cancellationToken
+           )
         {
-            var html = _dataService.ChromeBrowser.Html;
-            if (!QuestParser.IsQuestClaimable(html)) return Result.Ok();
-
-            var accountId = _dataService.AccountId;
-            var villageId = _dataService.VillageId;
-
-            await _mediator.Publish(new QuestUpdated(accountId, villageId), cancellationToken);
-            return Result.Ok();
+            if (!QuestParser.IsQuestClaimable(browser.Html)) return;
+            await claimQuestTaskTrigger.HandleAsync(command, cancellationToken);
         }
     }
 }

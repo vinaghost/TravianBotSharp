@@ -1,6 +1,4 @@
-﻿using Riok.Mapperly.Abstractions;
-
-namespace MainCore.DTO
+﻿namespace MainCore.DTO
 {
     public class AccountSettingDto
     {
@@ -9,7 +7,7 @@ namespace MainCore.DTO
         public int Value { get; set; }
     }
 
-    [Mapper]
+    [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
     public static partial class AccountSettingMapper
     {
         public static AccountSetting ToEntity(this AccountSettingDto dto, AccountId accountId)
@@ -21,6 +19,7 @@ namespace MainCore.DTO
 
         public static partial AccountSettingDto ToDto(this AccountSetting dto);
 
+        [MapperIgnoreTarget(nameof(AccountSetting.AccountId))]
         private static partial AccountSetting ToEntity(this AccountSettingDto dto);
     }
 }

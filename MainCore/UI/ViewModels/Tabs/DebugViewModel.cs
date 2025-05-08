@@ -1,122 +1,98 @@
-﻿using MainCore.UI.Models.Output;
+﻿using MainCore.Commands.UI.DebugViewModel;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
-using Serilog.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog.Events;
-using Serilog.Formatting.Display;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Text;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
     [RegisterSingleton<DebugViewModel>]
-    public class DebugViewModel : AccountTabViewModelBase
+    public partial class DebugViewModel : AccountTabViewModelBase
     {
-        private readonly LogSink _logSink;
-        private readonly ITaskManager _taskManager;
-        private static readonly MessageTemplateTextFormatter _formatter = new("{Timestamp:HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
-        private const string NotOpen = "Chrome didn't open yet";
-
         public ObservableCollection<TaskItem> Tasks { get; } = [];
 
+        [Reactive]
         private string _logs;
 
-        public string Logs
-        {
-            get => _logs;
-            set => this.RaiseAndSetIfChanged(ref _logs, value);
-        }
-
+        [Reactive]
         private string _endpointAddress;
 
-        public string EndpointAddress
+        public DebugViewModel(LogSink logSink)
         {
-            get => _endpointAddress;
-            set => this.RaiseAndSetIfChanged(ref _endpointAddress, value);
-        }
+            logSink.LogEmitted += LogEmitted;
 
-        public DebugViewModel(ILogEventSink logSink, ITaskManager taskManager)
-        {
-            _taskManager = taskManager;
-            _logSink = logSink as LogSink;
-            _logSink.LogEmitted += LogEmitted;
-
-            LoadTask = ReactiveCommand.Create<AccountId, List<TaskItem>>(LoadTaskHandler);
-            LoadLog = ReactiveCommand.Create<AccountId, string>(LoadLogHandler);
-            LoadEndpointAddress = ReactiveCommand.Create<AccountId, string>(LoadEndpointAddressHandler);
-            LeftCommand = ReactiveCommand.Create(LeftTask);
-            RightCommand = ReactiveCommand.Create(RightTask);
-
-            LoadTask.Subscribe(items =>
+            LoadTaskCommand.Subscribe(items =>
             {
                 Tasks.Clear();
                 items.ForEach(Tasks.Add);
             });
 
-            LoadLog.BindTo(this, vm => vm.Logs);
-            LoadEndpointAddress.BindTo(this, vm => vm.EndpointAddress);
+            LoadLogCommand.BindTo(this, vm => vm.Logs);
+            LoadEndpointAddressCommand.BindTo(this, vm => vm.EndpointAddress);
         }
 
         private void LogEmitted(AccountId accountId, LogEvent logEvent)
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            LoadLog.Execute(accountId).Subscribe();
+            LoadLogCommand.Execute(accountId).Subscribe();
         }
 
         public async Task EndpointAddressRefresh(AccountId accountId)
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadEndpointAddress.Execute(accountId);
+            await LoadEndpointAddressCommand.Execute(accountId);
         }
 
         public async Task TaskListRefresh(AccountId accountId)
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadTask.Execute(accountId);
+            await LoadTaskCommand.Execute(accountId);
         }
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadTask.Execute(accountId);
-            await LoadLog.Execute(accountId);
-            await LoadEndpointAddress.Execute(accountId);
+            await LoadTaskCommand.Execute(accountId);
+            await LoadLogCommand.Execute(accountId);
+            await LoadEndpointAddressCommand.Execute(accountId);
         }
 
-        private List<TaskItem> LoadTaskHandler(AccountId accountId)
+        [ReactiveCommand]
+        private async Task<List<TaskItem>> LoadTask(AccountId accountId)
         {
-            var tasks = _taskManager.GetTaskList(accountId);
-
-            return tasks
-                .Select(x => new TaskItem(x))
-                .ToList();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getTaskItemsQuery = scope.ServiceProvider.GetRequiredService<GetTaskItemsQuery.Handler>();
+            var tasks = await getTaskItemsQuery.HandleAsync(new(accountId), CancellationToken.None);
+            return tasks;
         }
 
-        private string LoadLogHandler(AccountId accountId)
+        [ReactiveCommand]
+        private async Task<string> LoadLog(AccountId accountId)
         {
-            var logs = _logSink.GetLogs(accountId);
-            var buffer = new StringWriter(new StringBuilder());
-
-            foreach (var log in logs)
-            {
-                _formatter.Format(log, buffer);
-            }
-            return buffer.ToString();
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getLogQuery = scope.ServiceProvider.GetRequiredService<GetLogQuery.Handler>();
+            var log = await getLogQuery.HandleAsync(new(accountId), CancellationToken.None);
+            return log;
         }
 
-        private string LoadEndpointAddressHandler(AccountId accountId)
+        [ReactiveCommand]
+        private async Task<string> LoadEndpointAddress(AccountId accountId)
         {
-            var status = _taskManager.GetStatus(accountId);
-            if (status == StatusEnums.Offline) return NotOpen;
-            var address = "address enpoint is disabled";
-            if (string.IsNullOrEmpty(address)) return NotOpen;
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var getEndpointAdressQuery = scope.ServiceProvider.GetRequiredService<GetEndpointAdressQuery.Handler>();
+            var address = await getEndpointAdressQuery.HandleAsync(new(accountId), CancellationToken.None);
             return address;
         }
 
-        private void LeftTask()
+        [ReactiveCommand]
+        private void Left()
         {
             Process.Start(new ProcessStartInfo
             {
@@ -125,7 +101,8 @@ namespace MainCore.UI.ViewModels.Tabs
             });
         }
 
-        private void RightTask()
+        [ReactiveCommand]
+        private void Right()
         {
             Process.Start(new ProcessStartInfo
             {
@@ -133,11 +110,5 @@ namespace MainCore.UI.ViewModels.Tabs
                 UseShellExecute = true
             });
         }
-
-        public ReactiveCommand<AccountId, List<TaskItem>> LoadTask { get; }
-        public ReactiveCommand<AccountId, string> LoadLog { get; }
-        public ReactiveCommand<AccountId, string> LoadEndpointAddress { get; }
-        public ReactiveCommand<Unit, Unit> LeftCommand { get; }
-        public ReactiveCommand<Unit, Unit> RightCommand { get; }
     }
 }

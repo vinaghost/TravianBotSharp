@@ -1,20 +1,23 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
+using MainCore.Notifications.Handlers.Trigger;
 
 namespace MainCore.Commands.Checks
 {
-    [RegisterScoped<CheckAdventureCommand>]
-    public class CheckAdventureCommand(IDataService dataService, IMediator mediator) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class CheckAdventureCommand
     {
-        private readonly IMediator _mediator = mediator;
+        public sealed record Command(AccountId AccountId) : IAccountConstraint;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask HandleAsync(
+           Command command,
+           IChromeBrowser browser,
+           StartAdventureTaskTrigger.Handler startAdventureTaskTrigger,
+
+           CancellationToken cancellationToken
+           )
         {
-            var html = _dataService.ChromeBrowser.Html;
-            if (!AdventureParser.CanStartAdventure(html)) return Result.Ok();
-
-            var accountId = _dataService.AccountId;
-            await _mediator.Publish(new AdventureUpdated(accountId), cancellationToken);
-            return Result.Ok();
+            if (!AdventureParser.CanStartAdventure(browser.Html)) return;
+            await startAdventureTaskTrigger.HandleAsync(command, cancellationToken);
         }
     }
 }
