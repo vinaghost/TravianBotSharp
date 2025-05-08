@@ -23,7 +23,7 @@ namespace MainCore.Test
             Classes().That().AreAssignableTo(typeof(IConstraint)).As("Request");
 
         [Fact]
-        public void CommandShouldBeRecordAndSealedAndHaveCorrectName()
+        public void CommandShouldBeRecordAndBeSealedAndHaveCorrectName()
         {
             var rule = Classes().That().AreAssignableTo(typeof(ICommand))
                 .Should()
@@ -37,7 +37,7 @@ namespace MainCore.Test
         }
 
         [Fact]
-        public void QueryShouldBeRecordAndSealedAndHaveCorrectName()
+        public void QueryShouldBeRecordAndBeSealedAndHaveCorrectName()
         {
             var rule = Classes().That().AreAssignableTo(typeof(IQuery))
                 .Should()
@@ -50,7 +50,7 @@ namespace MainCore.Test
         }
 
         [Fact]
-        public void NotificationShouldBeRecordAndSealedAndHaveCorrectName()
+        public void NotificationShouldBeRecordAndBeSealedAndHaveCorrectName()
         {
             var rule = Classes().That().AreAssignableTo(typeof(INotification))
                 .Should()
@@ -63,10 +63,14 @@ namespace MainCore.Test
         }
 
         [Fact]
-        public void TaskShouldHaveCorrectName()
+        public void TaskNotAbstractShouldBeSealedAndHaveCorrectName()
         {
             var rule = Classes().That().AreAssignableTo(typeof(ITask))
+                .And()
+                .AreNotAbstract()
                 .Should()
+                .BeSealed()
+                .AndShould()
                 .HaveNameEndingWith("Task");
 
             rule.Check(Architecture);
