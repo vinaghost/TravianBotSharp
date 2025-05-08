@@ -1,68 +1,72 @@
-﻿using MainCore.Commands.Abstract;
-using MainCore.Common.Errors.Storage;
+﻿using MainCore.Constraints;
+using MainCore.Errors.Storage;
 
 namespace MainCore.Commands.Features.UseHeroItem
 {
-    [RegisterScoped<UseHeroResourceCommand>]
-    public class UseHeroResourceCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand<long[]>
+    [Handler]
+    public static partial class UseHeroResourceCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly DelayClickCommand _delayClickCommand = delayClickCommand;
+        public sealed record Command(AccountId AccountId, long[] Resource) : IAccountCommand;
 
-        public async Task<Result> Execute(long[] resource, CancellationToken cancellationToken)
+        private static readonly List<HeroItemEnums> ResourceItemTypes = new()
         {
-            for (var i = 0; i < 4; i++)
-            {
-                resource[i] = RoundUpTo100(resource[i]);
-            }
+            HeroItemEnums.Wood,
+            HeroItemEnums.Clay,
+            HeroItemEnums.Iron,
+            HeroItemEnums.Crop,
+        };
 
-            Result result;
-            result = IsEnoughResource(resource);
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            DelayClickCommand.Handler delayClickCommand,
+            GetHeroItemsQuery.Handler getHeroItemsQuery,
+            CancellationToken cancellationToken)
+        {
+            var (accountId, resource) = command;
+
+            var resourceItems = await getHeroItemsQuery.HandleAsync(new(accountId, ResourceItemTypes), cancellationToken);
+
+            var result = IsEnoughResource(resourceItems, resource);
             if (result.IsFailed) return result;
 
-            var items = new Dictionary<HeroItemEnums, long>()
+            var items = new Dictionary<HeroItemEnums, long>
             {
-                { HeroItemEnums.Wood, resource[0]},
-                { HeroItemEnums.Clay, resource[1]},
-                { HeroItemEnums.Iron, resource[2]},
-                { HeroItemEnums.Crop, resource[3]},
+                { HeroItemEnums.Wood, resource[0] },
+                { HeroItemEnums.Clay, resource[1] },
+                { HeroItemEnums.Iron, resource[2] },
+                { HeroItemEnums.Crop, resource[3] },
             };
 
-            foreach (var item in items)
+            foreach (var (item, amount) in items)
             {
-                result = await UseResource(item.Key, item.Value, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (amount == 0) continue;
+
+                result = await ClickItem(item, browser, cancellationToken);
+                if (result.IsFailed) return result;
+
+                await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+
+                result = await EnterAmount(amount, browser, cancellationToken);
+                if (result.IsFailed) return result;
+
+                await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+
+                result = await Confirm(browser, cancellationToken);
+                if (result.IsFailed) return result;
+
+                await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
             }
 
             return Result.Ok();
         }
 
-        private async Task<Result> UseResource(HeroItemEnums item, long amount, CancellationToken cancellationToken)
+        private static async Task<Result> ClickItem(
+            HeroItemEnums item,
+            IChromeBrowser browser,
+            CancellationToken cancellationToken)
         {
-            if (amount == 0) return Result.Ok();
-            Result result;
-            result = await ClickItem(item, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            await _delayClickCommand.Execute(cancellationToken);
-
-            result = await EnterAmount(amount);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            await _delayClickCommand.Execute(cancellationToken);
-
-            result = await Confirm(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            await _delayClickCommand.Execute(cancellationToken);
-
-            return Result.Ok();
-        }
-
-        private async Task<Result> ClickItem(HeroItemEnums item, CancellationToken cancellationToken)
-        {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
             var node = InventoryParser.GetItemSlot(html, item);
             if (node is null) return Retry.NotFound($"{item}", "item");
 
@@ -74,29 +78,35 @@ namespace MainCore.Commands.Features.UseHeroItem
             }
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(node.XPath), loadingCompleted, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await browser.Click(By.XPath(node.XPath));
+            if (result.IsFailed) return result;
+
+            result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }
 
-        private async Task<Result> EnterAmount(long amount)
+        private static async Task<Result> EnterAmount(
+            long amount,
+            IChromeBrowser browser,
+            CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
             var node = InventoryParser.GetAmountBox(html);
             if (node is null) return Retry.TextboxNotFound("amount");
 
             Result result;
-            result = await chromeBrowser.InputTextbox(By.XPath(node.XPath), amount.ToString());
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await browser.Input(By.XPath(node.XPath), amount.ToString());
+            if (result.IsFailed) return result;
             return Result.Ok();
         }
 
-        private async Task<Result> Confirm(CancellationToken cancellationToken)
+        private static async Task<Result> Confirm(
+            IChromeBrowser browser,
+            CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
             var node = InventoryParser.GetConfirmButton(html);
             if (node is null) return Retry.ButtonNotFound("confirm");
 
@@ -108,8 +118,12 @@ namespace MainCore.Commands.Features.UseHeroItem
             }
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(node.XPath), loadingCompleted, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await browser.Click(By.XPath(node.XPath));
+            if (result.IsFailed) return result;
+
+            result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);
+            if (result.IsFailed) return result;
+
             return Result.Ok();
         }
 
@@ -120,27 +134,16 @@ namespace MainCore.Commands.Features.UseHeroItem
             return res + (100 - remainder);
         }
 
-        private Result IsEnoughResource(long[] requiredResource)
+        private static Result IsEnoughResource(
+            List<HeroItem> items,
+            long[] requiredResource)
         {
-            var accountId = _dataService.AccountId;
-            using var context = _contextFactory.CreateDbContext();
-            var types = new List<HeroItemEnums>() {
-                HeroItemEnums.Wood,
-                HeroItemEnums.Clay,
-                HeroItemEnums.Iron,
-                HeroItemEnums.Crop,
-            };
-
-            var items = context.HeroItems
-                .Where(x => x.AccountId == accountId.Value)
-                .Where(x => types.Contains(x.Type))
-                .OrderBy(x => x.Type)
-                .ToList();
+            requiredResource = requiredResource.Select(RoundUpTo100).ToArray();
 
             var errors = new List<Error>();
             for (var i = 0; i < 4; i++)
             {
-                var type = types[i];
+                var type = ResourceItemTypes[i];
                 var item = items.Find(x => x.Type == type);
                 var amount = item?.Amount ?? 0;
                 if (amount < requiredResource[i])

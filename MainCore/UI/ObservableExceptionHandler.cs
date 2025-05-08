@@ -1,5 +1,4 @@
 ﻿using MainCore.UI.Models.Output;
-using ReactiveUI;
 using Serilog;
 using System.Diagnostics;
 using System.Reactive.Concurrency;

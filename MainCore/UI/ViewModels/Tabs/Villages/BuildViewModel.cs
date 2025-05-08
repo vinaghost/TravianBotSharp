@@ -1,82 +1,44 @@
-﻿using MainCore.Commands.UI.Villages;
+﻿using MainCore.Commands.UI.Villages.BuildViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using ReactiveUI;
-using System.Reactive.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     [RegisterSingleton<BuildViewModel>]
-    public class BuildViewModel : VillageTabViewModelBase
+    public partial class BuildViewModel : VillageTabViewModelBase
     {
-        private readonly IMediator _mediator;
         private readonly IDialogService _dialogService;
-        private readonly ITaskManager _taskManager;
-
-        private ReactiveCommand<ListBoxItem, List<BuildingEnums>> LoadBuildNormal { get; }
-
-        public ReactiveCommand<Unit, Unit> BuildNormal { get; }
-        public ReactiveCommand<Unit, Unit> BuildResource { get; }
-        public ReactiveCommand<Unit, Unit> UpgradeOneLevel { get; }
-        public ReactiveCommand<Unit, Unit> UpgradeMaxLevel { get; }
-
-        public ReactiveCommand<Unit, Unit> Up { get; }
-        public ReactiveCommand<Unit, Unit> Down { get; }
-        public ReactiveCommand<Unit, Unit> Top { get; }
-        public ReactiveCommand<Unit, Unit> Bottom { get; }
-        public ReactiveCommand<Unit, Unit> Delete { get; }
-        public ReactiveCommand<Unit, Unit> DeleteAll { get; }
-        public ReactiveCommand<Unit, Unit> Import { get; }
-        public ReactiveCommand<Unit, Unit> Export { get; }
-        public ReactiveCommand<VillageId, List<ListBoxItem>> LoadBuilding { get; }
-        public ReactiveCommand<VillageId, List<ListBoxItem>> LoadJob { get; }
-        public ReactiveCommand<VillageId, List<ListBoxItem>> LoadQueue { get; }
+        private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
+        private readonly IValidator<ResourceBuildInput> _resourceBuildInputValidator;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public NormalBuildInput NormalBuildInput { get; } = new();
-
         public ResourceBuildInput ResourceBuildInput { get; } = new();
 
         public ListBoxItemViewModel Buildings { get; } = new();
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(IMediator mediator, IDialogService dialogService, ITaskManager taskManager)
+        public BuildViewModel(IDialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, IServiceScopeFactory serviceScopeFactory)
         {
-            _mediator = mediator;
             _dialogService = dialogService;
-            _taskManager = taskManager;
-
-            BuildNormal = ReactiveCommand.CreateFromTask(BuildNormalHandler);
-            BuildResource = ReactiveCommand.CreateFromTask(ResourceNormalHandler);
-            UpgradeOneLevel = ReactiveCommand.CreateFromTask(UpgradeOneLevelHandler);
-            UpgradeMaxLevel = ReactiveCommand.CreateFromTask(UpgradeMaxLevelHandler);
-
-            Up = ReactiveCommand.CreateFromTask(UpHandler);
-            Down = ReactiveCommand.CreateFromTask(DownHandler);
-            Top = ReactiveCommand.CreateFromTask(TopHandler);
-            Bottom = ReactiveCommand.CreateFromTask(BottomHandler);
-            Delete = ReactiveCommand.CreateFromTask(DeleteHandler);
-            DeleteAll = ReactiveCommand.CreateFromTask(DeleteAllHandler);
-            Import = ReactiveCommand.CreateFromTask(ImportHandler);
-            Export = ReactiveCommand.CreateFromTask(ExportHandler);
-
-            LoadBuilding = ReactiveCommand.Create<VillageId, List<ListBoxItem>>(LoadBuildingHandler);
-            LoadJob = ReactiveCommand.Create<VillageId, List<ListBoxItem>>(LoadJobHandler);
-            LoadQueue = ReactiveCommand.Create<VillageId, List<ListBoxItem>>(LoadQueueHandler);
-            LoadBuildNormal = ReactiveCommand.Create<ListBoxItem, List<BuildingEnums>>(LoadBuildNormalHanlder);
+            _normalBuildInputValidator = normalBuildInputValidator;
+            _resourceBuildInputValidator = resourceBuildInputValidator;
+            _serviceScopeFactory = serviceScopeFactory;
 
             this.WhenAnyValue(vm => vm.Buildings.SelectedItem)
                 .ObserveOn(RxApp.TaskpoolScheduler)
-                .InvokeCommand(LoadBuildNormal);
+                .InvokeCommand(LoadBuildNormalCommand);
 
-            LoadBuilding.Subscribe(Buildings.Load);
-            LoadJob.Subscribe(Jobs.Load);
-            LoadQueue.Subscribe(Queue.Load);
+            LoadBuildingCommand.Subscribe(Buildings.Load);
+            LoadJobCommand.Subscribe(Jobs.Load);
+            LoadQueueCommand.Subscribe(Queue.Load);
 
-            LoadBuildNormal.Subscribe(buildings =>
+            LoadBuildNormalCommand.Subscribe(buildings =>
             {
                 switch (buildings.Count)
                 {
@@ -95,88 +57,135 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
-            await LoadQueue.Execute(villageId);
+            await LoadQueueCommand.Execute(villageId);
         }
 
         public async Task BuildingListRefresh(VillageId villageId)
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
-            await LoadBuilding.Execute(villageId);
+            await LoadBuildingCommand.Execute(villageId);
         }
 
         public async Task JobListRefresh(VillageId villageId)
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
-            await LoadJob.Execute(villageId);
-            await LoadBuilding.Execute(villageId);
+            await LoadJobCommand.Execute(villageId);
+            await LoadBuildingCommand.Execute(villageId);
         }
 
         protected override async Task Load(VillageId villageId)
         {
-            await LoadJob.Execute(villageId);
-            await LoadBuilding.Execute(villageId);
-            await LoadQueue.Execute(villageId);
+            await LoadJobCommand.Execute(villageId);
+            await LoadBuildingCommand.Execute(villageId);
+            await LoadQueueCommand.Execute(villageId);
         }
 
-        private static List<ListBoxItem> LoadBuildingHandler(VillageId villageId)
+        [ReactiveCommand]
+        private async Task<List<ListBoxItem>> LoadBuilding(VillageId villageId)
         {
-            var getBuildings = Locator.Current.GetService<GetBuildings>();
-            var items = getBuildings.LayoutItems(villageId);
+            using var scope = _serviceScopeFactory.CreateScope();
+            var getLayoutBuildingItemsQuery = scope.ServiceProvider.GetRequiredService<GetLayoutBuildingItemsQuery.Handler>();
+            var items = await getLayoutBuildingItemsQuery.HandleAsync(new(villageId));
             return items;
         }
 
-        private static List<ListBoxItem> LoadQueueHandler(VillageId villageId)
+        [ReactiveCommand]
+        private async Task<List<ListBoxItem>> LoadQueue(VillageId villageId)
         {
-            var getBuildings = Locator.Current.GetService<GetBuildings>();
-            var items = getBuildings.QueueItems(villageId);
+            using var scope = _serviceScopeFactory.CreateScope();
+            var getQueueBuildingItemsQuery = scope.ServiceProvider.GetRequiredService<GetQueueBuildingItemsQuery.Handler>();
+            var items = await getQueueBuildingItemsQuery.HandleAsync(new(villageId));
             return items;
         }
 
-        private static List<ListBoxItem> LoadJobHandler(VillageId villageId)
+        [ReactiveCommand]
+        private async Task<List<ListBoxItem>> LoadJob(VillageId villageId)
         {
-            var getJobs = Locator.Current.GetService<GetJobs>();
-            var jobs = getJobs.Items(villageId);
+            using var scope = _serviceScopeFactory.CreateScope();
+            var getJobItemsQuery = scope.ServiceProvider.GetRequiredService<GetJobItemsQuery.Handler>();
+            var jobs = await getJobItemsQuery.HandleAsync(new(villageId));
             return jobs;
         }
 
-        private List<BuildingEnums> LoadBuildNormalHanlder(ListBoxItem item)
+        [ReactiveCommand]
+        private async Task<List<BuildingEnums>> LoadBuildNormal(ListBoxItem item)
         {
             if (item is null) return [];
-            var getBuildings = Locator.Current.GetService<GetBuildings>();
-            var buildings = getBuildings.NormalBuilds(VillageId, new BuildingId(item.Id));
-            return buildings;
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var getNormalBuildingsQuery = scope.ServiceProvider.GetRequiredService<GetNormalBuildingsQuery.Handler>();
+            var items = await getNormalBuildingsQuery.HandleAsync(new(VillageId, new BuildingId(item.Id)));
+            return items;
         }
 
-        private async Task BuildNormalHandler()
+        [ReactiveCommand]
+        private async Task BuildNormal()
         {
-            if (!IsAccountPaused(AccountId)) return;
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
 
-            var buildNormalCommand = Locator.Current.GetService<BuildNormalCommand>();
+            var result = await _normalBuildInputValidator.ValidateAsync(NormalBuildInput);
+            if (!result.IsValid)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                return;
+            }
+
             var location = Buildings.SelectedIndex + 1;
-            await buildNormalCommand.Execute(AccountId, VillageId, NormalBuildInput, location);
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var normalBuildCommand = scope.ServiceProvider.GetRequiredService<NormalBuildCommand.Handler>();
+            var buildResult = await normalBuildCommand.HandleAsync(new(VillageId, NormalBuildInput.ToPlan(location)));
+            if (buildResult.IsFailed)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", buildResult.ToString()));
+                return;
+            }
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
-        private async Task UpgradeOneLevelHandler()
+        [ReactiveCommand]
+        private async Task UpgradeOneLevel()
         {
-            if (!IsAccountPaused(AccountId)) return;
-
-            var upgradeLevel = Locator.Current.GetService<UpgradeLevel>();
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
             var location = Buildings.SelectedIndex + 1;
-            await upgradeLevel.Execute(AccountId, VillageId, location, false);
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var upgradeCommand = scope.ServiceProvider.GetRequiredService<UpgradeCommand.Handler>();
+            await upgradeCommand.HandleAsync(new(VillageId, location, false));
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
-        private async Task UpgradeMaxLevelHandler()
+        [ReactiveCommand]
+        private async Task UpgradeMaxLevel()
         {
-            if (!IsAccountPaused(AccountId)) return;
-
-            var upgradeLevel = Locator.Current.GetService<UpgradeLevel>();
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
             var location = Buildings.SelectedIndex + 1;
-            await upgradeLevel.Execute(AccountId, VillageId, location, true);
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var upgradeCommand = scope.ServiceProvider.GetRequiredService<UpgradeCommand.Handler>();
+            await upgradeCommand.HandleAsync(new(VillageId, location, true));
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
-        private async Task ResourceNormalHandler()
+        [ReactiveCommand]
+        private async Task BuildResource()
         {
             if (!IsAccountPaused(AccountId))
             {
@@ -184,55 +193,113 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return;
             }
 
-            var buildResourceCommand = Locator.Current.GetService<BuildResourceCommand>();
-            await buildResourceCommand.Execute(AccountId, VillageId, ResourceBuildInput);
+            var result = await _resourceBuildInputValidator.ValidateAsync(ResourceBuildInput);
+            if (!result.IsValid)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                return;
+            }
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var resourceBuildCommand = scope.ServiceProvider.GetRequiredService<ResourceBuildCommand.Handler>();
+            await resourceBuildCommand.HandleAsync(new(VillageId, ResourceBuildInput.ToPlan()));
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
-        private async Task UpHandler()
+        [ReactiveCommand]
+        private async Task Up()
         {
             if (!IsAccountPaused(AccountId))
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
-            await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Up);
+
+            if (!Jobs.IsSelected)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
+                return;
+            }
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
+            var newIndex = await swapCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Up));
+            Jobs.SelectedIndex = newIndex;
+
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
-        private async Task DownHandler()
+        [ReactiveCommand]
+        private async Task Down()
         {
             if (!IsAccountPaused(AccountId))
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
-            await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Down);
+            if (!Jobs.IsSelected)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
+                return;
+            }
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
+            var newIndex = await swapCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Down));
+            Jobs.SelectedIndex = newIndex;
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
-        private async Task TopHandler()
+        [ReactiveCommand]
+        private async Task Top()
         {
             if (!IsAccountPaused(AccountId))
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
-            await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Top);
+            if (!Jobs.IsSelected)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
+                return;
+            }
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
+            var newIndex = await moveCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Top));
+            Jobs.SelectedIndex = newIndex;
+
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
-        private async Task BottomHandler()
+        [ReactiveCommand]
+        private async Task Bottom()
         {
             if (!IsAccountPaused(AccountId))
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            var moveJobCommand = Locator.Current.GetService<MoveJobCommand>();
-            await moveJobCommand.Execute(AccountId, VillageId, Jobs, MoveEnums.Bottom);
+            if (!Jobs.IsSelected)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
+                return;
+            }
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
+            var newIndex = await moveCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Bottom));
+            Jobs.SelectedIndex = newIndex;
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
-        private async Task DeleteHandler()
+        [ReactiveCommand]
+        private async Task Delete()
         {
             if (!IsAccountPaused(AccountId))
             {
@@ -242,49 +309,86 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             if (!Jobs.IsSelected) return;
             var jobId = Jobs.SelectedItemId;
 
-            var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
-            deleteJobCommand.ByJobId(new JobId(jobId));
-            await _mediator.Publish(new JobUpdated(AccountId, VillageId));
+            using var scope = _serviceScopeFactory.CreateScope();
+            var deleteJobByIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByIdCommand.Handler>();
+            await deleteJobByIdCommand.HandleAsync(new(VillageId, new JobId(jobId)));
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
-        private async Task DeleteAllHandler()
+        [ReactiveCommand]
+        private async Task DeleteAll()
         {
             if (!IsAccountPaused(AccountId))
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            var deleteJobCommand = Locator.Current.GetService<DeleteJobCommand>();
-            deleteJobCommand.ByVillageId(VillageId);
-            await _mediator.Publish(new JobUpdated(AccountId, VillageId));
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var deleteJobByVillageIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByVillageIdCommand.Handler>();
+            await deleteJobByVillageIdCommand.HandleAsync(new(VillageId));
+
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
-        private async Task ImportHandler()
+        [ReactiveCommand]
+        private async Task Import()
         {
             if (!IsAccountPaused(AccountId))
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            var importCommand = Locator.Current.GetService<ImportCommand>();
-            await importCommand.Execute(AccountId, VillageId);
+            var path = await _dialogService.OpenFileDialog.Handle(Unit.Default);
+            if (string.IsNullOrEmpty(path)) return;
+            List<JobDto> jobs;
+            try
+            {
+                var jsonString = await File.ReadAllTextAsync(path);
+                jobs = JsonSerializer.Deserialize<List<JobDto>>(jsonString);
+            }
+            catch
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Invalid file."));
+                return;
+            }
+
+            var confirm = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "TBS will remove resource field build job if its position doesn't match with current village."));
+            if (!confirm) return;
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var fixJobsCommand = scope.ServiceProvider.GetRequiredService<FixJobsCommand.Handler>();
+            var fixedJobs = await fixJobsCommand.HandleAsync(new(VillageId, jobs));
+            var importCommand = scope.ServiceProvider.GetRequiredService<ImportCommand.Handler>();
+            await importCommand.HandleAsync(new(VillageId, fixedJobs));
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
 
-        private async Task ExportHandler()
+        [ReactiveCommand]
+        private async Task Export()
         {
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                return;
+            }
+
             var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
             if (string.IsNullOrEmpty(path)) return;
-            var getJobs = Locator.Current.GetService<GetJobs>();
-            var jobs = getJobs.Dtos(VillageId);
-            jobs.ForEach(job => job.Id = JobId.Empty);
-            var jsonString = JsonSerializer.Serialize(jobs);
-            await File.WriteAllTextAsync(path, jsonString);
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var exportCommand = scope.ServiceProvider.GetRequiredService<ExportCommand.Handler>();
+            await exportCommand.HandleAsync(new(VillageId, path));
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Job list exported"));
         }
 
         private bool IsAccountPaused(AccountId accountId)
         {
-            var status = _taskManager.GetStatus(accountId);
+            var taskManager = Locator.Current.GetService<ITaskManager>();
+            var status = taskManager.GetStatus(accountId);
             if (status == StatusEnums.Online)
             {
                 return false;

@@ -1,21 +1,23 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Update
 {
-    [RegisterScoped<UpdateInventoryCommand>]
-    public class UpdateInventoryCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class UpdateInventoryCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly IMediator _mediator = mediator;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            AppDbContext context,
+            CancellationToken cancellationToken)
         {
-            var accountId = _dataService.AccountId;
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+            await Task.CompletedTask;
+            var html = browser.Html;
+
             var dtos = GetItems(html);
-            Update(accountId, dtos.ToList());
-            await _mediator.Publish(new HeroItemUpdated(accountId), cancellationToken);
+            context.Update(command.AccountId, dtos.ToList());
             return Result.Ok();
         }
 
@@ -79,9 +81,8 @@ namespace MainCore.Commands.Update
             }
         }
 
-        private void Update(AccountId accountId, List<HeroItemDto> dtos)
+        private static void Update(this AppDbContext context, AccountId accountId, List<HeroItemDto> dtos)
         {
-            using var context = _contextFactory.CreateDbContext();
             var items = context.HeroItems
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();

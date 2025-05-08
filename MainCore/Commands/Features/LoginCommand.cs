@@ -1,18 +1,19 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features
 {
-    [RegisterScoped<LoginCommand>]
-    public class LoginCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class LoginCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            AppDbContext context,
+            CancellationToken cancellationToken)
         {
-            var accountId = _dataService.AccountId;
-            var chromeBrowser = _dataService.ChromeBrowser;
-
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
             if (LoginParser.IsIngamePage(html)) return Result.Ok();
 
             var buttonNode = LoginParser.GetLoginButton(html);
@@ -22,22 +23,22 @@ namespace MainCore.Commands.Features
             var passwordNode = LoginParser.GetPasswordInput(html);
             if (passwordNode is null) return Retry.TextboxNotFound("password");
 
-            var (username, password) = GetLoginInfo(accountId);
+            var (username, password) = GetLoginInfo(command.AccountId, context);
 
             Result result;
-            result = await chromeBrowser.InputTextbox(By.XPath(usernameNode.XPath), username);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            result = await chromeBrowser.InputTextbox(By.XPath(passwordNode.XPath), password);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            result = await chromeBrowser.Click(By.XPath(buttonNode.XPath), "dorf", cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await browser.Input(By.XPath(usernameNode.XPath), username);
+            if (result.IsFailed) return result;
+            result = await browser.Input(By.XPath(passwordNode.XPath), password);
+            if (result.IsFailed) return result;
+            result = await browser.Click(By.XPath(buttonNode.XPath));
+            if (result.IsFailed) return result;
+            result = await browser.WaitPageChanged("dorf", cancellationToken);
 
             return Result.Ok();
         }
 
-        private (string username, string password) GetLoginInfo(AccountId accountId)
+        private static (string username, string password) GetLoginInfo(AccountId accountId, AppDbContext context)
         {
-            using var context = _contextFactory.CreateDbContext();
             var data = context.Accesses
                 .Where(x => x.AccountId == accountId.Value)
                 .OrderByDescending(x => x.LastUsed)
