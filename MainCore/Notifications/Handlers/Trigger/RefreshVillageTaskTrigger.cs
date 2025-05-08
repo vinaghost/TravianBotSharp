@@ -20,12 +20,12 @@ namespace MainCore.Notifications.Handlers.Trigger
             {
                 if (taskManager.IsExist<UpdateVillageTask.Task>(accountId, villageId)) return;
                 var villageName = await getVillageNameQuery.HandleAsync(new(villageId), cancellationToken);
-                await taskManager.Add<UpdateVillageTask.Task>(new(accountId, villageId, villageName));
+                taskManager.Add<UpdateVillageTask.Task>(new(accountId, villageId, villageName));
             }
             else
             {
                 var task = taskManager.Get<UpdateVillageTask.Task>(accountId, villageId);
-                await taskManager.Remove(accountId, task);
+                taskManager.Remove(accountId, task);
             }
         }
     }

@@ -22,7 +22,7 @@ namespace MainCore.Notifications.Handlers.Trigger
             foreach (var village in villages)
             {
                 var villageName = await getVillageNameQuery.HandleAsync(new(village), cancellationToken);
-                await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(accountId, village, villageName));
+                taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(accountId, village, villageName));
             }
         }
     }

@@ -4,11 +4,15 @@ namespace MainCore.Services
 {
     public interface ITaskManager
     {
-        Task Add<T>(T task, bool first = false) where T : AccountTask;
+        event Action<AccountId> StatusUpdated;
 
-        Task AddOrUpdate<T>(T task, bool first = false) where T : AccountTask;
+        event Action<AccountId> TaskUpdated;
 
-        Task Clear(AccountId accountId);
+        void Add<T>(T task, bool first = false) where T : AccountTask;
+
+        void AddOrUpdate<T>(T task, bool first = false) where T : AccountTask;
+
+        void Clear(AccountId accountId);
 
         T Get<T>(AccountId accountId) where T : BaseTask;
 
@@ -24,16 +28,18 @@ namespace MainCore.Services
 
         TaskQueue GetTaskQueue(AccountId accountId);
 
+        bool IsExecuting(AccountId accountId);
+
         bool IsExist<T>(AccountId accountId) where T : BaseTask;
 
         bool IsExist<T>(AccountId accountId, VillageId villageId) where T : BaseTask;
 
-        Task Remove(AccountId accountId, BaseTask task);
+        void Remove(AccountId accountId, BaseTask task);
 
-        Task ReOrder(AccountId accountId);
+        void ReOrder(AccountId accountId);
 
-        Task SetStatus(AccountId accountId, StatusEnums status);
+        void SetStatus(AccountId accountId, StatusEnums status);
 
-        Task StopCurrentTast(AccountId accountId);
+        Task StopCurrentTask(AccountId accountId);
     }
 }

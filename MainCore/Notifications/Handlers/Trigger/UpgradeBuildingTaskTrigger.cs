@@ -14,7 +14,7 @@ namespace MainCore.Notifications.Handlers.Trigger
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
             var villageName = await getVillageNameQuery.HandleAsync(new(villageId), cancellationToken);
-            await taskManager.AddOrUpdate<UpgradeBuildingTask.Task>(new(accountId, villageId, villageName));
+            taskManager.AddOrUpdate<UpgradeBuildingTask.Task>(new(accountId, villageId, villageName));
         }
     }
 }

@@ -56,7 +56,7 @@ namespace MainCore.Tasks
 
             var seconds = settingService.ByName(task.VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
             task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
-            await taskManager.ReOrder(task.AccountId);
+            taskManager.ReOrder(task.AccountId);
             return Result.Ok();
         }
     }

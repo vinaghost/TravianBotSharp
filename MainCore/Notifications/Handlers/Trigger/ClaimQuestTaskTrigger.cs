@@ -20,12 +20,12 @@ namespace MainCore.Notifications.Handlers.Trigger
             {
                 if (taskManager.IsExist<ClaimQuestTask.Task>(accountId, villageId)) return;
                 var villageName = await getVillageNameQuery.HandleAsync(new(villageId), cancellationToken);
-                await taskManager.Add<ClaimQuestTask.Task>(new(accountId, villageId, villageName));
+                taskManager.Add<ClaimQuestTask.Task>(new(accountId, villageId, villageName));
             }
             else
             {
                 var task = taskManager.Get<ClaimQuestTask.Task>(accountId, villageId);
-                await taskManager.Remove(accountId, task);
+                taskManager.Remove(accountId, task);
             }
         }
     }

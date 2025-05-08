@@ -19,9 +19,10 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private string _endpointAddress;
 
-        public DebugViewModel(LogSink logSink)
+        public DebugViewModel(LogSink logSink, ITaskManager taskManager)
         {
             logSink.LogEmitted += LogEmitted;
+            taskManager.TaskUpdated += TaskListRefresh;
 
             LoadTaskCommand.Subscribe(items =>
             {
@@ -40,18 +41,11 @@ namespace MainCore.UI.ViewModels.Tabs
             LoadLogCommand.Execute(accountId).Subscribe();
         }
 
-        public async Task EndpointAddressRefresh(AccountId accountId)
+        public void TaskListRefresh(AccountId accountId)
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;
-            await LoadEndpointAddressCommand.Execute(accountId);
-        }
-
-        public async Task TaskListRefresh(AccountId accountId)
-        {
-            if (!IsActive) return;
-            if (accountId != AccountId) return;
-            await LoadTaskCommand.Execute(accountId);
+            LoadTaskCommand.Execute(accountId).Subscribe();
         }
 
         protected override async Task Load(AccountId accountId)

@@ -114,7 +114,7 @@ namespace MainCore.Services
                 logger.Warning("There is something wrong. Bot is pausing. Last exception is");
                 var ex = poliResult.Exception;
                 logger.Error(ex, "{Message}", ex.Message);
-                await _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                _taskManager.SetStatus(accountId, StatusEnums.Paused);
             }
             else
             {
@@ -126,33 +126,33 @@ namespace MainCore.Services
 
                     if (result.HasError<Stop>() || result.HasError<Retry>())
                     {
-                        await _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                        _taskManager.SetStatus(accountId, StatusEnums.Paused);
                     }
                     else if (result.HasError<Skip>())
                     {
                         if (task.ExecuteAt == cacheExecuteTime)
                         {
-                            await _taskManager.Remove(accountId, task);
+                            _taskManager.Remove(accountId, task);
                         }
                         else
                         {
-                            await _taskManager.ReOrder(accountId);
+                            _taskManager.ReOrder(accountId);
                         }
                     }
                     else if (result.HasError<Cancel>())
                     {
-                        await _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                        _taskManager.SetStatus(accountId, StatusEnums.Paused);
                     }
                 }
                 else
                 {
                     if (task.ExecuteAt == cacheExecuteTime)
                     {
-                        await _taskManager.Remove(accountId, task);
+                        _taskManager.Remove(accountId, task);
                     }
                     else
                     {
-                        await _taskManager.ReOrder(accountId);
+                        _taskManager.ReOrder(accountId);
                     }
                 }
             }

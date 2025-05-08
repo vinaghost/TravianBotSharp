@@ -11,13 +11,14 @@ namespace MainCore.Notifications.Handlers.Trigger
             ISettingService settingService,
             CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
             var accountId = notification.AccountId;
             if (taskManager.IsExist<SleepTask.Task>(accountId)) return;
 
             var workTime = settingService.ByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
             var sleepTask = new SleepTask.Task(accountId);
             sleepTask.ExecuteAt = DateTime.Now.AddMinutes(workTime);
-            await taskManager.Add<SleepTask.Task>(sleepTask);
+            taskManager.Add<SleepTask.Task>(sleepTask);
         }
     }
 }

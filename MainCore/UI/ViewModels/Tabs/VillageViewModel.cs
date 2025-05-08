@@ -62,7 +62,7 @@ namespace MainCore.UI.ViewModels.Tabs
             var getVillageNameQuery = scope.ServiceProvider.GetRequiredService<GetVillageNameQuery.Handler>();
             var villageName = await getVillageNameQuery.HandleAsync(new(villageId));
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
-            await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, villageId, villageName));
+            taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, villageId, villageName));
 
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
@@ -79,7 +79,7 @@ namespace MainCore.UI.ViewModels.Tabs
             foreach (var village in villages)
             {
                 var villageName = await getVillageNameQuery.HandleAsync(new(village));
-                await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village, villageName));
+                taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village, villageName));
             }
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
@@ -96,7 +96,7 @@ namespace MainCore.UI.ViewModels.Tabs
             foreach (var village in villages)
             {
                 var villageName = await getVillageNameQuery.HandleAsync(new(village));
-                await taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village, villageName));
+                taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village, villageName));
             }
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }

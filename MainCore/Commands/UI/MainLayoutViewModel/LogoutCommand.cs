@@ -14,13 +14,13 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
             )
         {
             var accountId = command.AccountId;
-            await taskManager.SetStatus(accountId, StatusEnums.Stopping);
-            await taskManager.StopCurrentTast(accountId);
+            taskManager.SetStatus(accountId, StatusEnums.Stopping);
+            await taskManager.StopCurrentTask(accountId);
 
 
             await browser.Close();
 
-            await taskManager.SetStatus(accountId, StatusEnums.Offline);
+            taskManager.SetStatus(accountId, StatusEnums.Offline);
         }
     }
 }

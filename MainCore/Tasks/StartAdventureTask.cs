@@ -31,7 +31,7 @@ namespace MainCore.Tasks
 
             var adventureDuration = AdventureParser.GetAdventureDuration(browser.Html);
             task.ExecuteAt = DateTime.Now.Add(adventureDuration * 2);
-            await taskManager.ReOrder(task.AccountId);
+            taskManager.ReOrder(task.AccountId);
             return Result.Ok();
         }
     }

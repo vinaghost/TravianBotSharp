@@ -20,19 +20,19 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
 
             try
             {
-                await taskManager.SetStatus(accountId, StatusEnums.Starting);
+                taskManager.SetStatus(accountId, StatusEnums.Starting);
                 await openBrowserCommand.HandleAsync(new(accountId, access), cancellationToken);
             }
             catch
             {
-                await taskManager.SetStatus(accountId, StatusEnums.Offline);
+                taskManager.SetStatus(accountId, StatusEnums.Offline);
                 return;
             }
 
             await accountInit.HandleAsync(new(accountId), cancellationToken);
 
             timerManager.Start(accountId);
-            await taskManager.SetStatus(accountId, StatusEnums.Online);
+            taskManager.SetStatus(accountId, StatusEnums.Online);
         }
     }
 }

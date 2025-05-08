@@ -22,58 +22,28 @@ namespace MainCore.Test
         private readonly IObjectProvider<Class> Request =
             Classes().That().AreAssignableTo(typeof(IConstraint)).As("Request");
 
-        [Fact]
-        public void CommandShouldBeRecordAndBeSealedAndHaveCorrectName()
+        [Theory]
+        [InlineData(typeof(ICommand), "Command", true)]
+        [InlineData(typeof(IQuery), "Query", true)]
+        [InlineData(typeof(INotification), "Notification", true)]
+        [InlineData(typeof(ITask), "Task", false)]
+        public void RequestShouldHaveCorrectName(System.Type interfaceType, string nameSuffix, bool shouldBeRecord)
         {
-            var rule = Classes().That().AreAssignableTo(typeof(ICommand))
-                .Should()
-                .BeRecord()
-                .AndShould()
-                .BeSealed()
-                .AndShould()
-                .HaveNameEndingWith("Command");
-
-            rule.Check(Architecture);
-        }
-
-        [Fact]
-        public void QueryShouldBeRecordAndBeSealedAndHaveCorrectName()
-        {
-            var rule = Classes().That().AreAssignableTo(typeof(IQuery))
-                .Should()
-                .BeRecord()
-                .AndShould()
-                .BeSealed()
-                .AndShould()
-                .HaveNameEndingWith("Query");
-            rule.Check(Architecture);
-        }
-
-        [Fact]
-        public void NotificationShouldBeRecordAndBeSealedAndHaveCorrectName()
-        {
-            var rule = Classes().That().AreAssignableTo(typeof(INotification))
-                .Should()
-                .BeRecord()
-                .AndShould()
-                .BeSealed()
-                .AndShould()
-                .HaveNameEndingWith("Notification");
-            rule.Check(Architecture);
-        }
-
-        [Fact]
-        public void TaskNotAbstractShouldBeSealedAndHaveCorrectName()
-        {
-            var rule = Classes().That().AreAssignableTo(typeof(ITask))
+            var rule = Classes().That()
+                .AreAssignableTo(interfaceType)
                 .And()
-                .AreNotAbstract()
-                .Should()
-                .BeSealed()
-                .AndShould()
-                .HaveNameEndingWith("Task");
+                .AreNotAbstract();
 
-            rule.Check(Architecture);
+            var shouldRule = rule
+                .Should().BeSealed()
+                .AndShould().HaveNameEndingWith(nameSuffix);
+
+            if (shouldBeRecord)
+            {
+                shouldRule = shouldRule.AndShould().BeRecord();
+            }
+
+            shouldRule.Check(Architecture);
         }
 
         [Fact]

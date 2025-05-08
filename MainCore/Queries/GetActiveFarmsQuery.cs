@@ -10,7 +10,7 @@ namespace MainCore.Queries
         private static async ValueTask<List<FarmId>> HandleAsync(
             Query query,
             AppDbContext context,
-            CancellationToken token
+            CancellationToken cancellationToken
         )
         {
             await Task.CompletedTask;

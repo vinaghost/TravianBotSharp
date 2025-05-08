@@ -20,12 +20,14 @@ namespace MainCore.UI.ViewModels.UserControls
 
         private IObservable<bool> _canExecute;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager)
         {
             _accountTabStore = accountTabStore;
             _dialogService = dialogService;
 
             _canExecute = this.WhenAnyValue(x => x.Accounts.IsEnable);
+
+            taskManager.StatusUpdated += LoadStatus;
 
             var accountObservable = this.WhenAnyValue(x => x.Accounts.SelectedItem);
             accountObservable.BindTo(selectedItemStore, vm => vm.Account);
@@ -207,11 +209,11 @@ namespace MainCore.UI.ViewModels.UserControls
             switch (status)
             {
                 case StatusEnums.Paused:
-                    await taskManager.SetStatus(accountId, StatusEnums.Online);
+                    taskManager.SetStatus(accountId, StatusEnums.Online);
                     break;
 
                 case StatusEnums.Online:
-                    await taskManager.StopCurrentTast(accountId);
+                    await taskManager.StopCurrentTask(accountId);
                     break;
 
                 case StatusEnums.Offline:
@@ -255,20 +257,20 @@ namespace MainCore.UI.ViewModels.UserControls
                     return;
 
                 case StatusEnums.Paused:
-                    await taskManager.SetStatus(accountId, StatusEnums.Starting);
-                    await taskManager.Clear(accountId);
+                    taskManager.SetStatus(accountId, StatusEnums.Starting);
+                    taskManager.Clear(accountId);
                     await scope.ServiceProvider.GetRequiredService<AccountInit.Handler>().HandleAsync(new(accountId));
-                    await taskManager.SetStatus(accountId, StatusEnums.Online);
+                    taskManager.SetStatus(accountId, StatusEnums.Online);
                     return;
             }
         }
 
-        public async Task LoadStatus(AccountId accountId)
+        public void LoadStatus(AccountId accountId)
         {
             var status = GetStatus(accountId);
             GetAccountCommand.Execute(accountId).Subscribe(account => account.Color = status.GetColor());
             if (accountId.Value != Accounts.SelectedItemId) return;
-            await GetStatusCommand.Execute(accountId);
+            GetStatusCommand.Execute(accountId).Subscribe();
         }
 
         [ReactiveCommand]

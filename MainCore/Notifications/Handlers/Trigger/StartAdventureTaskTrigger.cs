@@ -11,18 +11,19 @@ namespace MainCore.Notifications.Handlers.Trigger
             ISettingService settingService,
             CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
             var accountId = notification.AccountId;
 
             var autoStartAdventure = settingService.BooleanByName(accountId, AccountSettingEnums.EnableAutoStartAdventure);
             if (autoStartAdventure)
             {
                 if (taskManager.IsExist<StartAdventureTask.Task>(accountId)) return;
-                await taskManager.Add<StartAdventureTask.Task>(new(accountId));
+                taskManager.Add<StartAdventureTask.Task>(new(accountId));
             }
             else
             {
                 var task = taskManager.Get<StartAdventureTask.Task>(accountId);
-                await taskManager.Remove(accountId, task);
+                taskManager.Remove(accountId, task);
             }
         }
     }

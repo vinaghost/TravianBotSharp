@@ -13,7 +13,7 @@ namespace MainCore.Commands.UI.DebugViewModel
         private static async ValueTask<string> HandleAsync(
             Query query,
             LogSink logSink,
-            CancellationToken token
+            CancellationToken cancellationToken
         )
         {
             await Task.CompletedTask;

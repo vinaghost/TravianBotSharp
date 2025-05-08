@@ -11,6 +11,7 @@ namespace MainCore.Notifications.Handlers.Trigger
             AppDbContext context,
             CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
 
@@ -23,12 +24,12 @@ namespace MainCore.Notifications.Handlers.Trigger
                 if (granaryPercent < autoNPCGranaryPercent) return;
                 if (taskManager.IsExist<NpcTask.Task>(accountId, villageId)) return;
                 var villageName = context.GetVillageName(villageId);
-                await taskManager.Add<NpcTask.Task>(new(accountId, villageId, villageName));
+                taskManager.Add<NpcTask.Task>(new(accountId, villageId, villageName));
             }
             else
             {
                 var task = taskManager.Get<NpcTask.Task>(accountId, villageId);
-                await taskManager.Remove(accountId, task);
+                taskManager.Remove(accountId, task);
             }
         }
 

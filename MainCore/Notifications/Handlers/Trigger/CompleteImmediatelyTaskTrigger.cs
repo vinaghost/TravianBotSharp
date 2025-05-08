@@ -11,6 +11,7 @@ namespace MainCore.Notifications.Handlers.Trigger
             ITaskManager taskManager,
             CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
             if (taskManager.IsExist<CompleteImmediatelyTask.Task>(accountId, villageId)) return;
@@ -32,7 +33,7 @@ namespace MainCore.Notifications.Handlers.Trigger
 
             if (requiredTime > queueTime) return;
             var villageName = context.GetVillageName(villageId);
-            await taskManager.Add<CompleteImmediatelyTask.Task>(new(accountId, villageId, villageName));
+            taskManager.Add<CompleteImmediatelyTask.Task>(new(accountId, villageId, villageName));
         }
 
         private static DateTime GetQueueTime(this AppDbContext context, VillageId villageId)

@@ -6,14 +6,10 @@ namespace MainCore.Services
     public sealed class TaskManager : ITaskManager
     {
         private readonly Dictionary<AccountId, TaskQueue> _queues = new();
-        private readonly TaskUpdated.Handler _taskUpdated;
-        private readonly StatusUpdated.Handler _statusUpdated;
 
-        public TaskManager(TaskUpdated.Handler taskUpdated, StatusUpdated.Handler statusUpdated)
-        {
-            _taskUpdated = taskUpdated;
-            _statusUpdated = statusUpdated;
-        }
+        public event Action<AccountId> StatusUpdated;
+
+        public event Action<AccountId> TaskUpdated;
 
         public BaseTask GetCurrentTask(AccountId accountId)
         {
@@ -21,7 +17,7 @@ namespace MainCore.Services
             return tasks.Find(x => x.Stage == StageEnums.Executing);
         }
 
-        public async Task StopCurrentTast(AccountId accountId)
+        public async Task StopCurrentTask(AccountId accountId)
         {
             var cts = GetCancellationTokenSource(accountId);
             if (cts is null) return;
@@ -34,25 +30,25 @@ namespace MainCore.Services
                 await Task.Delay(500);
             }
             while (currentTask.Stage != StageEnums.Waiting);
-            await SetStatus(accountId, StatusEnums.Paused);
+            SetStatus(accountId, StatusEnums.Paused);
         }
 
-        public async Task AddOrUpdate<T>(T task, bool first = false) where T : AccountTask
+        public void AddOrUpdate<T>(T task, bool first = false) where T : AccountTask
         {
             var oldTask = Get<T>(task.AccountId, task.Key);
             if (oldTask is null)
             {
-                await Add<T>(task, first);
+                Add<T>(task, first);
             }
             else
             {
-                await Update(oldTask, first);
+                Update(oldTask, first);
             }
         }
 
-        public async Task Add<T>(T task, bool first = false) where T : AccountTask
+        public void Add<T>(T task, bool first = false) where T : AccountTask
         {
-            await Add(task, first);
+            AddTask(task, first);
         }
 
         public T Get<T>(AccountId accountId) where T : BaseTask
@@ -93,7 +89,7 @@ namespace MainCore.Services
             return tasks.Any(x => x.Key == $"{accountId}-{villageId}");
         }
 
-        private async Task Add(AccountTask task, bool first)
+        private void AddTask(AccountTask task, bool first)
         {
             var tasks = GetTaskList(task.AccountId);
 
@@ -107,10 +103,10 @@ namespace MainCore.Services
             }
 
             tasks.Add(task);
-            await ReOrder(task.AccountId, tasks);
+            ReOrder(task.AccountId, tasks);
         }
 
-        private async Task Update(AccountTask task, bool first)
+        private void Update(AccountTask task, bool first)
         {
             var tasks = GetTaskList(task.AccountId);
 
@@ -131,37 +127,37 @@ namespace MainCore.Services
                 task.ExecuteAt = DateTime.Now;
             }
 
-            await ReOrder(task.AccountId, tasks);
+            ReOrder(task.AccountId, tasks);
         }
 
-        public async Task Remove(AccountId accountId, BaseTask task)
+        public void Remove(AccountId accountId, BaseTask task)
         {
             var tasks = GetTaskList(accountId);
             if (tasks.Remove(task))
             {
-                await ReOrder(accountId, tasks);
+                ReOrder(accountId, tasks);
             }
         }
 
-        public async Task ReOrder(AccountId accountId)
+        public void ReOrder(AccountId accountId)
         {
             var tasks = GetTaskList(accountId);
-            await ReOrder(accountId, tasks);
+            ReOrder(accountId, tasks);
         }
 
-        public async Task Clear(AccountId accountId)
+        public void Clear(AccountId accountId)
         {
             var tasks = GetTaskList(accountId);
             if (tasks.Count == 0) return;
             tasks.Clear();
-            await _taskUpdated.HandleAsync(new(accountId));
+            TaskUpdated?.Invoke(accountId);
         }
 
-        private async Task ReOrder(AccountId accountId, List<BaseTask> tasks)
+        private void ReOrder(AccountId accountId, List<BaseTask> tasks)
         {
             if (tasks.Count <= 1) return;
             tasks.Sort((x, y) => DateTime.Compare(x.ExecuteAt, y.ExecuteAt));
-            await _taskUpdated.HandleAsync(new(accountId));
+            TaskUpdated?.Invoke(accountId);
         }
 
         public List<BaseTask> GetTaskList(AccountId accountId)
@@ -176,11 +172,11 @@ namespace MainCore.Services
             return queue.Status;
         }
 
-        public async Task SetStatus(AccountId accountId, StatusEnums status)
+        public void SetStatus(AccountId accountId, StatusEnums status)
         {
             var queue = GetTaskQueue(accountId);
             queue.Status = status;
-            await _statusUpdated.HandleAsync(new(accountId));
+            StatusUpdated?.Invoke(accountId);
         }
 
         public CancellationTokenSource GetCancellationTokenSource(AccountId accountId)
