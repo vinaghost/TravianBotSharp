@@ -12,15 +12,17 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         private readonly IDialogService _dialogService;
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         public ObservableCollection<AccountDetailDto> Accounts { get; } = [];
 
         [Reactive]
         private string _input;
 
-        public AddAccountsViewModel(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel)
+        public AddAccountsViewModel(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IServiceScopeFactory serviceScopeFactory)
         {
             _dialogService = dialogService;
             _waitingOverlayViewModel = waitingOverlayViewModel;
+            _serviceScopeFactory = serviceScopeFactory;
 
             this.WhenAnyValue(x => x.Input)
                 .ObserveOn(RxApp.TaskpoolScheduler)
@@ -47,8 +49,8 @@ namespace MainCore.UI.ViewModels.Tabs
         private async Task AddAccount()
         {
             await _waitingOverlayViewModel.Show("adding accounts");
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var addAccountsCommand = scope.ServiceProvider.GetRequiredService<AddAccountsCommand.Handler>();
             var resultInput = await addAccountsCommand.HandleAsync(new([.. Accounts.Select(x => x.ToDto())]));
             await _waitingOverlayViewModel.Hide();

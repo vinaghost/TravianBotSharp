@@ -14,14 +14,16 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly VillageTabStore _villageTabStore;
 
         private readonly IDialogService _dialogService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         public ListBoxItemViewModel Villages { get; } = new();
 
         public VillageTabStore VillageTabStore => _villageTabStore;
 
-        public VillageViewModel(VillageTabStore villageTabStore, IDialogService dialogService)
+        public VillageViewModel(VillageTabStore villageTabStore, IDialogService dialogService, IServiceScopeFactory serviceScopeFactory)
         {
             _villageTabStore = villageTabStore;
             _dialogService = dialogService;
+            _serviceScopeFactory = serviceScopeFactory;
 
             var villageObservable = this.WhenAnyValue(x => x.Villages.SelectedItem);
             villageObservable.BindTo(_selectedItemStore, vm => vm.Village);
@@ -57,8 +59,8 @@ namespace MainCore.UI.ViewModels.Tabs
             }
 
             var villageId = new VillageId(Villages.SelectedItemId);
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var getVillageNameQuery = scope.ServiceProvider.GetRequiredService<GetVillageNameQuery.Handler>();
             var villageName = await getVillageNameQuery.HandleAsync(new(villageId));
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
@@ -70,8 +72,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task LoadUnload()
         {
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
             var getMissingBuildingVillageQuery = scope.ServiceProvider.GetRequiredService<GetMissingBuildingVillagesQuery.Handler>();
             var villages = await getMissingBuildingVillageQuery.HandleAsync(new(AccountId));
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
@@ -87,8 +88,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task LoadAll()
         {
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
             var getVillagesQuery = scope.ServiceProvider.GetRequiredService<GetVillagesQuery.Handler>();
             var villages = await getVillagesQuery.HandleAsync(new(AccountId));
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
@@ -102,10 +102,9 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private static async Task<List<ListBoxItem>> LoadVillage(AccountId accountId)
+        private async Task<List<ListBoxItem>> LoadVillage(AccountId accountId)
         {
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
             var getVillageItemsQuery = scope.ServiceProvider.GetRequiredService<GetVillageItemsQuery.Handler>();
             return await getVillageItemsQuery.HandleAsync(new(accountId));
         }

@@ -14,6 +14,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private readonly IDialogService _dialogService;
         private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
         private readonly IValidator<ResourceBuildInput> _resourceBuildInputValidator;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public NormalBuildInput NormalBuildInput { get; } = new();
         public ResourceBuildInput ResourceBuildInput { get; } = new();
@@ -22,11 +23,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(IDialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator)
+        public BuildViewModel(IDialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, IServiceScopeFactory serviceScopeFactory)
         {
             _dialogService = dialogService;
             _normalBuildInputValidator = normalBuildInputValidator;
             _resourceBuildInputValidator = resourceBuildInputValidator;
+            _serviceScopeFactory = serviceScopeFactory;
 
             this.WhenAnyValue(vm => vm.Buildings.SelectedItem)
                 .ObserveOn(RxApp.TaskpoolScheduler)
@@ -81,30 +83,27 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         }
 
         [ReactiveCommand]
-        private static async Task<List<ListBoxItem>> LoadBuilding(VillageId villageId)
+        private async Task<List<ListBoxItem>> LoadBuilding(VillageId villageId)
         {
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
             var getLayoutBuildingItemsQuery = scope.ServiceProvider.GetRequiredService<GetLayoutBuildingItemsQuery.Handler>();
             var items = await getLayoutBuildingItemsQuery.HandleAsync(new(villageId));
             return items;
         }
 
         [ReactiveCommand]
-        private static async Task<List<ListBoxItem>> LoadQueue(VillageId villageId)
+        private async Task<List<ListBoxItem>> LoadQueue(VillageId villageId)
         {
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
             var getQueueBuildingItemsQuery = scope.ServiceProvider.GetRequiredService<GetQueueBuildingItemsQuery.Handler>();
             var items = await getQueueBuildingItemsQuery.HandleAsync(new(villageId));
             return items;
         }
 
         [ReactiveCommand]
-        private static async Task<List<ListBoxItem>> LoadJob(VillageId villageId)
+        private async Task<List<ListBoxItem>> LoadJob(VillageId villageId)
         {
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
             var getJobItemsQuery = scope.ServiceProvider.GetRequiredService<GetJobItemsQuery.Handler>();
             var jobs = await getJobItemsQuery.HandleAsync(new(villageId));
             return jobs;
@@ -114,8 +113,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private async Task<List<BuildingEnums>> LoadBuildNormal(ListBoxItem item)
         {
             if (item is null) return [];
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var getNormalBuildingsQuery = scope.ServiceProvider.GetRequiredService<GetNormalBuildingsQuery.Handler>();
             var items = await getNormalBuildingsQuery.HandleAsync(new(VillageId, new BuildingId(item.Id)));
             return items;
@@ -138,8 +137,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
 
             var location = Buildings.SelectedIndex + 1;
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var normalBuildCommand = scope.ServiceProvider.GetRequiredService<NormalBuildCommand.Handler>();
             var buildResult = await normalBuildCommand.HandleAsync(new(VillageId, NormalBuildInput.ToPlan(location)));
             if (buildResult.IsFailed)
@@ -160,8 +159,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return;
             }
             var location = Buildings.SelectedIndex + 1;
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var upgradeCommand = scope.ServiceProvider.GetRequiredService<UpgradeCommand.Handler>();
             await upgradeCommand.HandleAsync(new(VillageId, location, false));
             var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
@@ -177,8 +176,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return;
             }
             var location = Buildings.SelectedIndex + 1;
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var upgradeCommand = scope.ServiceProvider.GetRequiredService<UpgradeCommand.Handler>();
             await upgradeCommand.HandleAsync(new(VillageId, location, true));
             var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
@@ -200,8 +199,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
                 return;
             }
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var resourceBuildCommand = scope.ServiceProvider.GetRequiredService<ResourceBuildCommand.Handler>();
             await resourceBuildCommand.HandleAsync(new(VillageId, ResourceBuildInput.ToPlan()));
             var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
@@ -222,8 +221,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
                 return;
             }
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
             var newIndex = await swapCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Up));
             Jobs.SelectedIndex = newIndex;
@@ -245,8 +244,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
                 return;
             }
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
             var newIndex = await swapCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Down));
             Jobs.SelectedIndex = newIndex;
@@ -267,8 +266,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
                 return;
             }
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
             var newIndex = await moveCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Top));
             Jobs.SelectedIndex = newIndex;
@@ -290,8 +289,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
                 return;
             }
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
             var newIndex = await moveCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Bottom));
             Jobs.SelectedIndex = newIndex;
@@ -309,8 +308,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
             if (!Jobs.IsSelected) return;
             var jobId = Jobs.SelectedItemId;
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var deleteJobByIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByIdCommand.Handler>();
             await deleteJobByIdCommand.HandleAsync(new(VillageId, new JobId(jobId)));
             var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
@@ -325,8 +324,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var deleteJobByVillageIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByVillageIdCommand.Handler>();
             await deleteJobByVillageIdCommand.HandleAsync(new(VillageId));
 
@@ -358,8 +357,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             var confirm = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "TBS will remove resource field build job if its position doesn't match with current village."));
             if (!confirm) return;
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var fixJobsCommand = scope.ServiceProvider.GetRequiredService<FixJobsCommand.Handler>();
             var fixedJobs = await fixJobsCommand.HandleAsync(new(VillageId, jobs));
             var importCommand = scope.ServiceProvider.GetRequiredService<ImportCommand.Handler>();
@@ -379,8 +378,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
             if (string.IsNullOrEmpty(path)) return;
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var exportCommand = scope.ServiceProvider.GetRequiredService<ExportCommand.Handler>();
             await exportCommand.HandleAsync(new(VillageId, path));
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Job list exported"));

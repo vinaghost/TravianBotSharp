@@ -11,6 +11,8 @@ namespace MainCore.UI.ViewModels.Tabs
     [RegisterSingleton<DebugViewModel>]
     public partial class DebugViewModel : AccountTabViewModelBase
     {
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+
         public ObservableCollection<TaskItem> Tasks { get; } = [];
 
         [Reactive]
@@ -19,8 +21,9 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private string _endpointAddress;
 
-        public DebugViewModel(LogSink logSink, ITaskManager taskManager)
+        public DebugViewModel(LogSink logSink, ITaskManager taskManager, IServiceScopeFactory serviceScopeFactory)
         {
+            _serviceScopeFactory = serviceScopeFactory;
             logSink.LogEmitted += LogEmitted;
             taskManager.TaskUpdated += TaskListRefresh;
 
@@ -58,8 +61,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<List<TaskItem>> LoadTask(AccountId accountId)
         {
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
             var getTaskItemsQuery = scope.ServiceProvider.GetRequiredService<GetTaskItemsQuery.Handler>();
             var tasks = await getTaskItemsQuery.HandleAsync(new(accountId), CancellationToken.None);
             return tasks;
@@ -68,8 +70,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<string> LoadLog(AccountId accountId)
         {
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
             var getLogQuery = scope.ServiceProvider.GetRequiredService<GetLogQuery.Handler>();
             var log = await getLogQuery.HandleAsync(new(accountId), CancellationToken.None);
             return log;
@@ -78,8 +79,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<string> LoadEndpointAddress(AccountId accountId)
         {
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
             var getEndpointAdressQuery = scope.ServiceProvider.GetRequiredService<GetEndpointAdressQuery.Handler>();
             var address = await getEndpointAdressQuery.HandleAsync(new(accountId), CancellationToken.None);
             return address;

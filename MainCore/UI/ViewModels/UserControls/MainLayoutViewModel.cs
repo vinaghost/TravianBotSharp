@@ -13,6 +13,7 @@ namespace MainCore.UI.ViewModels.UserControls
     public partial class MainLayoutViewModel : ViewModelBase
     {
         private readonly IDialogService _dialogService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
         private readonly AccountTabStore _accountTabStore;
         public ListBoxItemViewModel Accounts { get; } = new();
@@ -20,10 +21,11 @@ namespace MainCore.UI.ViewModels.UserControls
 
         private IObservable<bool> _canExecute;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, IServiceScopeFactory serviceScopeFactory)
         {
             _accountTabStore = accountTabStore;
             _dialogService = dialogService;
+            _serviceScopeFactory = serviceScopeFactory;
 
             _canExecute = this.WhenAnyValue(x => x.Accounts.IsEnable);
 
@@ -92,8 +94,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
 
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
             var accountId = new AccountId(Accounts.SelectedItemId);
@@ -120,8 +121,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
 
             var accountId = new AccountId(Accounts.SelectedItemId);
 
@@ -161,8 +161,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
 
             var accountId = new AccountId(Accounts.SelectedItemId);
 
@@ -199,8 +198,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
 
             var accountId = new AccountId(Accounts.SelectedItemId);
 
@@ -237,8 +235,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
             var accountId = new AccountId(Accounts.SelectedItemId);
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
             var status = taskManager.GetStatus(accountId);
@@ -282,10 +279,9 @@ namespace MainCore.UI.ViewModels.UserControls
         }
 
         [ReactiveCommand]
-        private static async Task<List<ListBoxItem>> LoadAccount()
+        private async Task<List<ListBoxItem>> LoadAccount()
         {
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
             var getAccountItemsQuery = scope.ServiceProvider.GetRequiredService<GetAccountItemsQuery.Handler>();
             var items = await getAccountItemsQuery.HandleAsync(new());
             return items;

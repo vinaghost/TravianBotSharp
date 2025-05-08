@@ -17,12 +17,15 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly IValidator<AccountInput> _accountInputValidator;
         private readonly IDialogService _dialogService;
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel)
+        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, IServiceScopeFactory serviceScopeFactory)
         {
             _accessInputValidator = accessInputValidator;
             _accountInputValidator = accountInputValidator;
             _dialogService = dialogService;
+            _waitingOverlayViewModel = waitingOverlayViewModel;
+            _serviceScopeFactory = serviceScopeFactory;
 
             this.WhenAnyValue(vm => vm.SelectedAccess)
                 .WhereNotNull()
@@ -30,7 +33,6 @@ namespace MainCore.UI.ViewModels.Tabs
 
             DeleteAccessCommand.Subscribe(x => SelectedAccess = null);
             LoadAccountCommand.Subscribe(SetAccount);
-            _waitingOverlayViewModel = waitingOverlayViewModel;
         }
 
         protected override async Task Load(AccountId accountId)
@@ -83,8 +85,8 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
             await _waitingOverlayViewModel.Show("editing account");
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var updateAccountCommand = scope.ServiceProvider.GetRequiredService<UpdateAccountCommand.Handler>();
             await updateAccountCommand.HandleAsync(new(AccountInput.ToDto()));
             await _waitingOverlayViewModel.Hide();
@@ -96,8 +98,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<AccountDto> LoadAccount(AccountId accountId)
         {
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope();
             var getAcccountQuery = scope.ServiceProvider.GetRequiredService<GetAcccountQuery.Handler>();
             var account = await getAcccountQuery.HandleAsync(new(AccountId));
             return account;

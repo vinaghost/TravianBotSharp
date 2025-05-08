@@ -17,13 +17,15 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly IValidator<AccountInput> _accountInputValidator;
         private readonly IDialogService _dialogService;
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public AddAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel)
+        public AddAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, IServiceScopeFactory serviceScopeFactory)
         {
             _accessInputValidator = accessInputValidator;
             _dialogService = dialogService;
             _accountInputValidator = accountInputValidator;
             _waitingOverlayViewModel = waitingOverlayViewModel;
+            _serviceScopeFactory = serviceScopeFactory;
 
             this.WhenAnyValue(vm => vm.SelectedAccess)
                 .WhereNotNull()
@@ -87,8 +89,8 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
             await _waitingOverlayViewModel.Show("adding account");
-            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
-            using var scope = serviceScopeFactory.CreateScope();
+
+            using var scope = _serviceScopeFactory.CreateScope();
             var addAccountCommand = scope.ServiceProvider.GetRequiredService<AddAccountCommand.Handler>();
             var resultInput = await addAccountCommand.HandleAsync(new(AccountInput.ToDto()));
             await _waitingOverlayViewModel.Hide();
