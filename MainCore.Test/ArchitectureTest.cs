@@ -27,9 +27,9 @@ namespace MainCore.Test
         {
             var rule = Classes().That().AreAssignableTo(typeof(ICommand))
                 .Should()
-                .BeSealed()
-                .AndShould()
                 .BeRecord()
+                .AndShould()
+                .BeSealed()
                 .AndShould()
                 .HaveNameEndingWith("Command");
 
@@ -41,9 +41,9 @@ namespace MainCore.Test
         {
             var rule = Classes().That().AreAssignableTo(typeof(IQuery))
                 .Should()
-                .BeSealed()
-                .AndShould()
                 .BeRecord()
+                .AndShould()
+                .BeSealed()
                 .AndShould()
                 .HaveNameEndingWith("Query");
             rule.Check(Architecture);
@@ -54,9 +54,9 @@ namespace MainCore.Test
         {
             var rule = Classes().That().AreAssignableTo(typeof(INotification))
                 .Should()
-                .BeSealed()
-                .AndShould()
                 .BeRecord()
+                .AndShould()
+                .BeSealed()
                 .AndShould()
                 .HaveNameEndingWith("Notification");
             rule.Check(Architecture);

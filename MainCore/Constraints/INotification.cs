@@ -8,6 +8,6 @@
 
     public interface IAccountVillageNotification : INotification, IAccountVillageConstraint;
 
-    public record Notification() : INotification;
-    public record VillageNotification(AccountId AccountId, VillageId VillageId) : IAccountVillageNotification;
+    public sealed record Notification() : INotification;
+    public sealed record VillageNotification(AccountId AccountId, VillageId VillageId) : IAccountVillageNotification;
 }
