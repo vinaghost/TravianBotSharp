@@ -9,15 +9,21 @@ partial class SaveVillageSettingCommand
 	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.Command, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.HandleBehavior _handleBehavior;
+		private readonly global::MainCore.Notifications.Behaviors.VillageSettingUpdatedBehavior<global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.Command, global::System.ValueTuple> _villageSettingUpdatedBehavior;
 
 		public Handler(
-			global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.HandleBehavior handleBehavior
+			global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.HandleBehavior handleBehavior,
+			global::MainCore.Notifications.Behaviors.VillageSettingUpdatedBehavior<global::MainCore.Commands.UI.Misc.SaveVillageSettingCommand.Command, global::System.ValueTuple> villageSettingUpdatedBehavior
 		)
 		{
 			var handlerType = typeof(SaveVillageSettingCommand);
 
 			_handleBehavior = handleBehavior;
 
+			_villageSettingUpdatedBehavior = villageSettingUpdatedBehavior;
+			_villageSettingUpdatedBehavior.HandlerType = handlerType;
+
+			_villageSettingUpdatedBehavior.SetInnerHandler(_handleBehavior);
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
@@ -25,7 +31,7 @@ partial class SaveVillageSettingCommand
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
-			return await _handleBehavior
+			return await _villageSettingUpdatedBehavior
 				.HandleAsync(request, cancellationToken)
 				.ConfigureAwait(false);
 		}

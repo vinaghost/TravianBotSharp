@@ -6,7 +6,7 @@ namespace MainCore.Notifications.Handlers.Trigger
     public static partial class ChangeWallTrigger
     {
         private static async ValueTask HandleAsync(
-            IVillageConstraint notification,
+            IAccountVillageConstraint notification,
             AppDbContext context,
             CancellationToken cancellationToken)
         {

@@ -5,7 +5,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class UpgradeCommand
     {
-        public sealed record Command(VillageId VillageId, int Location, bool IsMaxLevel) : ICommand;
+        public sealed record Command(VillageId VillageId, int Location, bool IsMaxLevel) : IVillageCommand;
 
         private static async ValueTask HandleAsync(
             Command command,

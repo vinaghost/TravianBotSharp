@@ -7,7 +7,7 @@ namespace MainCore.Notifications.Handlers.Refresh
     public static partial class JobListRefresh
     {
         private static async ValueTask HandleAsync(
-            IVillageNotification notification,
+            IAccountVillageNotification notification,
             BuildViewModel viewModel,
             CancellationToken cancellationToken)
         {

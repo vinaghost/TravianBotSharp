@@ -5,7 +5,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class ImportCommand
     {
-        public sealed record Command(VillageId VillageId, List<JobDto> Jobs) : ICommand;
+        public sealed record Command(VillageId VillageId, List<JobDto> Jobs) : IVillageCommand;
 
         private static async ValueTask HandleAsync(
             Command command,

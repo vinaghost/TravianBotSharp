@@ -5,7 +5,7 @@ namespace MainCore.Commands.Misc
     [Handler]
     public static partial class DelayTaskCommand
     {
-        public sealed record Command(AccountId AccountId) : ICommand;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
         private static async ValueTask HandleAsync(
             Command command,

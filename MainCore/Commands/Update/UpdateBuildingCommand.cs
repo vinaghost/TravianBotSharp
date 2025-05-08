@@ -7,7 +7,7 @@ namespace MainCore.Commands.Update
     [Behaviors(typeof(BuildingUpdatedBehavior<,>))]
     public static partial class UpdateBuildingCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IVillageCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
         public sealed record Response(List<BuildingDto> Buildings, List<QueueBuilding> QueueBuildings);
 

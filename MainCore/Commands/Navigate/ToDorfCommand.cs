@@ -5,7 +5,7 @@ namespace MainCore.Commands.Navigate
     [Handler]
     public static partial class ToDorfCommand
     {
-        public sealed record Command(AccountId AccountId, int Dorf) : ICommand;
+        public sealed record Command(AccountId AccountId, int Dorf) : IAccountCommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
@@ -14,7 +14,6 @@ namespace MainCore.Commands.Navigate
            )
         {
             var (accountId, dorf) = command;
-
 
             var currentUrl = browser.CurrentUrl;
             var currentDorf = GetCurrentDorf(currentUrl);

@@ -6,7 +6,7 @@ namespace MainCore.Queries
     [Handler]
     public static partial class GetLayoutBuildingsQuery
     {
-        public sealed record Query(VillageId VillageId, bool IgnoreJobBuilding = false) : IQuery;
+        public sealed record Query(VillageId VillageId, bool IgnoreJobBuilding = false) : IVillageQuery;
 
         private static async ValueTask<List<BuildingItem>> HandleAsync(
             Query query,

@@ -6,7 +6,7 @@ namespace MainCore.Commands.Features.NpcResource
     [Handler]
     public static partial class ToNpcResourcePageCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

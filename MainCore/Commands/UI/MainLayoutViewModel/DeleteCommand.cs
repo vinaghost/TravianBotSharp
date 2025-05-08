@@ -7,7 +7,7 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
     [Behaviors(typeof(AccountListUpdatedBehavior<,>))]
     public static partial class DeleteCommand
     {
-        public sealed record Command(AccountId AccountId) : ICommand;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
         private static async ValueTask HandleAsync(
             Command command,

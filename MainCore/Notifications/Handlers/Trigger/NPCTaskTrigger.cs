@@ -6,7 +6,7 @@ namespace MainCore.Notifications.Handlers.Trigger
     public static partial class NpcTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            IVillageConstraint notification,
+            IAccountVillageConstraint notification,
             ITaskManager taskManager,
             AppDbContext context,
             CancellationToken cancellationToken)

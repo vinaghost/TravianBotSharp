@@ -5,7 +5,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class DeleteJobByVillageIdCommand
     {
-        public sealed record Command(VillageId VillageId) : ICommand;
+        public sealed record Command(VillageId VillageId) : IVillageCommand;
 
         private static async ValueTask HandleAsync(
             Command command,

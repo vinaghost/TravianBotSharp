@@ -5,7 +5,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class SwapCommand
     {
-        public sealed record Command(VillageId VillageId, JobId jobId, MoveEnums Move) : ICommand;
+        public sealed record Command(VillageId VillageId, JobId jobId, MoveEnums Move) : IVillageCommand;
 
         private static async ValueTask<int> HandleAsync(
             Command command,

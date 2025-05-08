@@ -7,7 +7,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     [Handler]
     public static partial class HandleJobCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IVillageQuery;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageQuery;
 
         private static async ValueTask<Result<NormalBuildPlan>> HandleAsync(
             Command command,

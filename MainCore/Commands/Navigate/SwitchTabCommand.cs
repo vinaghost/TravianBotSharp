@@ -5,7 +5,7 @@ namespace MainCore.Commands.Navigate
     [Handler]
     public static partial class SwitchTabCommand
     {
-        public sealed record Command(AccountId AccountId, int TabIndex) : ICommand;
+        public sealed record Command(AccountId AccountId, int TabIndex) : IAccountCommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,

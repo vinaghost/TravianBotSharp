@@ -5,7 +5,7 @@ namespace MainCore.Queries
     [Handler]
     public static partial class GetVillagesQuery
     {
-        public sealed record Query(AccountId AccountId) : IQuery;
+        public sealed record Query(AccountId AccountId) : IAccountQuery;
 
         private static async ValueTask<List<VillageId>> HandleAsync(
             Query query,

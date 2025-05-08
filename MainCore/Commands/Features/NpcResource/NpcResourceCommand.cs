@@ -5,7 +5,7 @@ namespace MainCore.Commands.Features.NpcResource
     [Handler]
     public static partial class NpcResourceCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
         private static readonly List<VillageSettingEnums> SettingNames = new()
         {

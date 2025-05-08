@@ -5,7 +5,7 @@ namespace MainCore.Commands.UI.AccountSettingViewModel
     [Handler]
     public static partial class GetSettingQuery
     {
-        public sealed record Query(AccountId AccountId) : IQuery;
+        public sealed record Query(AccountId AccountId) : IAccountQuery;
 
         private static async ValueTask<Dictionary<AccountSettingEnums, int>> HandleAsync(
             Query query,

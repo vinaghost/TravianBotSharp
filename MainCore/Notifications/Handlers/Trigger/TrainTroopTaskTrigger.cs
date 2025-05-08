@@ -6,7 +6,7 @@ namespace MainCore.Notifications.Handlers.Trigger
     public static partial class TrainTroopTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            IVillageConstraint notification,
+            IAccountVillageConstraint notification,
             GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
             ISettingService settingService,

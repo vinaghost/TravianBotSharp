@@ -8,7 +8,7 @@ namespace MainCore.Commands.Features.CompleteImmediately
     [Behaviors(typeof(CommandLoggingBehavior<,>), typeof(CompleteImmediatelyBehavior<,>))]
     public static partial class CompleteImmediatelyCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IVillageConstraint;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageConstraint;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

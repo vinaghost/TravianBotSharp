@@ -5,7 +5,7 @@ namespace MainCore.Notifications.Behaviors
 {
     public sealed class CompleteImmediatelyBehavior<TRequest, TResponse>
         : Behavior<TRequest, TResponse>
-            where TRequest : IVillageNotification
+            where TRequest : IAccountVillageNotification
     {
         private readonly UpgradeBuildingTaskTrigger.Handler _upgradeBuildingTaskTrigger;
 

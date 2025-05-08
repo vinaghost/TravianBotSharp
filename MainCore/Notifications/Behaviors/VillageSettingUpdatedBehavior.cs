@@ -6,7 +6,7 @@ namespace MainCore.Notifications.Behaviors
 {
     public sealed class VillageSettingUpdatedBehavior<TRequest, TResponse>
         : Behavior<TRequest, TResponse>
-            where TRequest : IVillageConstraint
+            where TRequest : IAccountVillageConstraint
     {
         private readonly ChangeWallTrigger.Handler _changeWallTrigger;
         private readonly ClaimQuestTaskTrigger.Handler _claimQuestTaskTrigger;

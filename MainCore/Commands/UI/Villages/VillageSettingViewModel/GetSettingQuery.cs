@@ -5,7 +5,7 @@ namespace MainCore.Commands.UI.Villages.VillageSettingViewModel
     [Handler]
     public static partial class GetSettingQuery
     {
-        public sealed record Query(VillageId VillageId) : IQuery;
+        public sealed record Query(VillageId VillageId) : IVillageQuery;
 
         private static async ValueTask<Dictionary<VillageSettingEnums, int>> HandleAsync(
             Query query,

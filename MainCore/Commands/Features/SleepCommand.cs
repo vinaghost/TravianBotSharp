@@ -5,7 +5,7 @@ namespace MainCore.Commands.Features
     [Handler]
     public static partial class SleepCommand
     {
-        public sealed record Command(AccountId AccountId) : ICommand;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

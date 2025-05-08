@@ -5,7 +5,7 @@ namespace MainCore.Commands.Features.UseHeroItem
     [Handler]
     public static partial class ToHeroInventoryCommand
     {
-        public sealed record Command(AccountId AccountId) : ICommand;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

@@ -6,7 +6,7 @@ namespace MainCore.Commands.UI.DebugViewModel
     [Handler]
     public static partial class GetTaskItemsQuery
     {
-        public sealed record Query(AccountId AccountId) : IQuery;
+        public sealed record Query(AccountId AccountId) : IAccountQuery;
 
         private static async ValueTask<List<TaskItem>> HandleAsync(
             Query query,

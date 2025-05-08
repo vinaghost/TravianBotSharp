@@ -6,7 +6,7 @@ namespace MainCore.Commands.Misc
     [Handler]
     public static partial class AddJobCommand
     {
-        public sealed record Command(VillageId VillageId, Job Job, bool Top = false) : ICommand;
+        public sealed record Command(VillageId VillageId, Job Job, bool Top = false) : IVillageCommand;
 
         private static async ValueTask HandleAsync(
             Command command,

@@ -6,7 +6,7 @@ namespace MainCore.Commands.Features.TrainTroop
     [Handler]
     public static partial class TrainTroopCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, BuildingEnums Building) : ICommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, BuildingEnums Building) : IAccountVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

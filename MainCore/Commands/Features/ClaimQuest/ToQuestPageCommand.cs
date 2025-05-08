@@ -5,7 +5,7 @@ namespace MainCore.Commands.Features.ClaimQuest
     [Handler]
     public static partial class ToQuestPageCommand
     {
-        public sealed record Command(AccountId AccountId) : ICommand;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

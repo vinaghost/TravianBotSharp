@@ -6,7 +6,7 @@ namespace MainCore.Queries
     [Handler]
     public static partial class GetTrainTroopBuildingQuery
     {
-        public sealed record Query(VillageId VillageId) : IQuery;
+        public sealed record Query(VillageId VillageId) : IVillageQuery;
 
         private static async ValueTask<List<BuildingEnums>> HandleAsync(
             Query query,

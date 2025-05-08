@@ -5,7 +5,7 @@ namespace MainCore.Notifications.Behaviors
 {
     public sealed class StorageUpdatedBehavior<TRequest, TResponse>
         : Behavior<TRequest, TResponse>
-        where TRequest : IVillageConstraint
+        where TRequest : IAccountVillageConstraint
     {
         private readonly NpcTaskTrigger.Handler _npcTaskTrigger;
 

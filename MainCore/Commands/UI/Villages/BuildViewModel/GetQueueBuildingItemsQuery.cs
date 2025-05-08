@@ -7,7 +7,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class GetQueueBuildingItemsQuery
     {
-        public sealed record Query(VillageId VillageId) : IQuery;
+        public sealed record Query(VillageId VillageId) : IVillageQuery;
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query query,

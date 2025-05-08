@@ -6,7 +6,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class ExportCommand
     {
-        public sealed record Command(VillageId VillageId, string Path) : ICommand;
+        public sealed record Command(VillageId VillageId, string Path) : IVillageCommand;
 
         private static async ValueTask HandleAsync(
             Command command,
@@ -15,7 +15,6 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             )
         {
             var (villageId, path) = command;
-
 
             var jobs = context.Jobs
                 .Where(x => x.VillageId == villageId.Value)

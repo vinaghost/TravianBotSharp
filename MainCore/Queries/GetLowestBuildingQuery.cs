@@ -5,7 +5,7 @@ namespace MainCore.Queries
     [Handler]
     public static partial class GetLowestBuildingQuery
     {
-        public sealed record Query(VillageId VillageId, BuildingEnums BuildingType) : IQuery;
+        public sealed record Query(VillageId VillageId, BuildingEnums BuildingType) : IVillageQuery;
 
         private static async ValueTask<Building> HandleAsync(
             Query query,

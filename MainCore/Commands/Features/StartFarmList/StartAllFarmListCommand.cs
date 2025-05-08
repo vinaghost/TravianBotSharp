@@ -5,7 +5,7 @@ namespace MainCore.Commands.Features.StartFarmList
     [Handler]
     public static partial class StartAllFarmListCommand
     {
-        public sealed record Command(AccountId AccountId) : ICommand;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

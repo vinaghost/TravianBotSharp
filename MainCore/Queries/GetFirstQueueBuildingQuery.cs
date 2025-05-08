@@ -5,7 +5,7 @@ namespace MainCore.Queries
     [Handler]
     public static partial class GetFirstQueueBuildingQuery
     {
-        public sealed record Query(VillageId VillageId) : IQuery;
+        public sealed record Query(VillageId VillageId) : IVillageQuery;
 
         private static async ValueTask<QueueBuilding> HandleAsync(
             Query query,

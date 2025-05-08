@@ -6,7 +6,7 @@ namespace MainCore.Notifications.Handlers.Trigger;
 
 partial class UpgradeBuildingTaskTrigger
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IVillageNotification, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IAccountVillageNotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notifications.Handlers.Trigger.UpgradeBuildingTaskTrigger.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class UpgradeBuildingTaskTrigger
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Constraints.IVillageNotification request,
+			global::MainCore.Constraints.IAccountVillageNotification request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,7 +32,7 @@ partial class UpgradeBuildingTaskTrigger
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IVillageNotification, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IAccountVillageNotification, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Queries.GetVillageNameQuery.Handler _getVillageNameQuery;
 		private readonly global::MainCore.Services.ITaskManager _taskManager;
@@ -47,7 +47,7 @@ partial class UpgradeBuildingTaskTrigger
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Constraints.IVillageNotification request,
+			global::MainCore.Constraints.IAccountVillageNotification request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -71,7 +71,7 @@ partial class UpgradeBuildingTaskTrigger
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notifications.Handlers.Trigger.UpgradeBuildingTaskTrigger.Handler), typeof(global::MainCore.Notifications.Handlers.Trigger.UpgradeBuildingTaskTrigger.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IVillageNotification, global::System.ValueTuple>), typeof(global::MainCore.Notifications.Handlers.Trigger.UpgradeBuildingTaskTrigger.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IAccountVillageNotification, global::System.ValueTuple>), typeof(global::MainCore.Notifications.Handlers.Trigger.UpgradeBuildingTaskTrigger.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notifications.Handlers.Trigger.UpgradeBuildingTaskTrigger.HandleBehavior), typeof(global::MainCore.Notifications.Handlers.Trigger.UpgradeBuildingTaskTrigger.HandleBehavior), lifetime));
 		return services;
 	}

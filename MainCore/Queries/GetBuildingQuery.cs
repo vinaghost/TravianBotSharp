@@ -5,7 +5,7 @@ namespace MainCore.Queries
     [Handler]
     public static partial class GetBuildingQuery
     {
-        public sealed record Query(VillageId VillageId, int Location) : IQuery;
+        public sealed record Query(VillageId VillageId, int Location) : IVillageQuery;
 
         private static async ValueTask<BuildingDto> HandleAsync(
             Query query,

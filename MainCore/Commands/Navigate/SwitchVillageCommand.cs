@@ -5,7 +5,7 @@ namespace MainCore.Commands.Navigate
     [Handler]
     public static partial class SwitchVillageCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : ICommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,

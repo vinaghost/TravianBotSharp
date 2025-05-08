@@ -6,7 +6,7 @@ namespace MainCore.Notifications.Handlers.Refresh;
 
 partial class QueueRefresh
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IVillageConstraint, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IAccountVillageConstraint, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notifications.Handlers.Refresh.QueueRefresh.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class QueueRefresh
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Constraints.IVillageConstraint request,
+			global::MainCore.Constraints.IAccountVillageConstraint request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,7 +32,7 @@ partial class QueueRefresh
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IVillageConstraint, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IAccountVillageConstraint, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.UI.ViewModels.Tabs.Villages.BuildViewModel _viewModel;
 
@@ -44,7 +44,7 @@ partial class QueueRefresh
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Constraints.IVillageConstraint request,
+			global::MainCore.Constraints.IAccountVillageConstraint request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -67,7 +67,7 @@ partial class QueueRefresh
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notifications.Handlers.Refresh.QueueRefresh.Handler), typeof(global::MainCore.Notifications.Handlers.Refresh.QueueRefresh.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IVillageConstraint, global::System.ValueTuple>), typeof(global::MainCore.Notifications.Handlers.Refresh.QueueRefresh.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IAccountVillageConstraint, global::System.ValueTuple>), typeof(global::MainCore.Notifications.Handlers.Refresh.QueueRefresh.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notifications.Handlers.Refresh.QueueRefresh.HandleBehavior), typeof(global::MainCore.Notifications.Handlers.Refresh.QueueRefresh.HandleBehavior), lifetime));
 		return services;
 	}

@@ -7,7 +7,7 @@ namespace MainCore.Queries
     [Handler]
     public static partial class GetJobQuery
     {
-        public sealed record Query(AccountId AccountId, VillageId VillageId) : IQuery;
+        public sealed record Query(AccountId AccountId, VillageId VillageId) : IAccountVillageQuery;
 
         private static async ValueTask<Result<JobDto>> HandleAsync(
             Query query,

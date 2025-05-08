@@ -7,7 +7,7 @@ namespace MainCore.Commands.Update
     [Behaviors(typeof(StorageUpdatedBehavior<,>))]
     public static partial class UpdateStorageCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IVillageCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
         private static async ValueTask<StorageDto> HandleAsync(
             Command command,

@@ -6,7 +6,7 @@ namespace MainCore.Notifications.Behaviors
 {
     public sealed class BuildingUpdatedBehavior<TRequest, TResponse>
        : Behavior<TRequest, TResponse>
-           where TRequest : IVillageConstraint
+           where TRequest : IAccountVillageConstraint
     {
         private readonly BuildingListRefresh.Handler _buildingListRefresh;
         private readonly CompleteImmediatelyTaskTrigger.Handler _completeImmediatelyTaskTrigger;

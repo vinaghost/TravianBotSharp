@@ -1,6 +1,6 @@
 ﻿namespace MainCore.Constraints
 {
-    public interface ITask
+    public interface ITask : IConstraint
     {
         DateTime ExecuteAt { get; set; }
         StageEnums Stage { get; set; }

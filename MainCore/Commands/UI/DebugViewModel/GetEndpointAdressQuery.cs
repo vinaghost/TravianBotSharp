@@ -5,7 +5,7 @@ namespace MainCore.Commands.UI.DebugViewModel
     [Handler]
     public static partial class GetEndpointAdressQuery
     {
-        public sealed record Query(AccountId AccountId) : IQuery;
+        public sealed record Query(AccountId AccountId) : IAccountQuery;
         private const string NotOpen = "Chrome didn't open yet";
 
         private static async ValueTask<string> HandleAsync(

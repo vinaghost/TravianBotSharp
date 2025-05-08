@@ -5,7 +5,7 @@ namespace MainCore.Commands.Misc
     [Handler]
     public static partial class DeleteJobByIdCommand
     {
-        public sealed record Command(VillageId VillageId, JobId JobId) : ICommand;
+        public sealed record Command(VillageId VillageId, JobId JobId) : IVillageCommand;
 
         private static async ValueTask HandleAsync(
             Command command,

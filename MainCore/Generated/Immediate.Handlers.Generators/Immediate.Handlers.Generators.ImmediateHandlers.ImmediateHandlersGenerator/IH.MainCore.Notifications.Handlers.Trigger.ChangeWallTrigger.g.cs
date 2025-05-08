@@ -6,7 +6,7 @@ namespace MainCore.Notifications.Handlers.Trigger;
 
 partial class ChangeWallTrigger
 {
-	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IVillageConstraint, global::System.ValueTuple>
+	public sealed partial class Handler : global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IAccountVillageConstraint, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Notifications.Handlers.Trigger.ChangeWallTrigger.HandleBehavior _handleBehavior;
 
@@ -21,7 +21,7 @@ partial class ChangeWallTrigger
 		}
 
 		public async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Constraints.IVillageConstraint request,
+			global::MainCore.Constraints.IAccountVillageConstraint request,
 			global::System.Threading.CancellationToken cancellationToken = default
 		)
 		{
@@ -32,7 +32,7 @@ partial class ChangeWallTrigger
 	}
 
 	[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IVillageConstraint, global::System.ValueTuple>
+	public sealed class HandleBehavior : global::Immediate.Handlers.Shared.Behavior<global::MainCore.Constraints.IAccountVillageConstraint, global::System.ValueTuple>
 	{
 		private readonly global::MainCore.Infrasturecture.Persistence.AppDbContext _context;
 
@@ -44,7 +44,7 @@ partial class ChangeWallTrigger
 		}
 
 		public override async global::System.Threading.Tasks.ValueTask<global::System.ValueTuple> HandleAsync(
-			global::MainCore.Constraints.IVillageConstraint request,
+			global::MainCore.Constraints.IAccountVillageConstraint request,
 			global::System.Threading.CancellationToken cancellationToken
 		)
 		{
@@ -67,7 +67,7 @@ partial class ChangeWallTrigger
 	)
 	{
 		services.Add(new(typeof(global::MainCore.Notifications.Handlers.Trigger.ChangeWallTrigger.Handler), typeof(global::MainCore.Notifications.Handlers.Trigger.ChangeWallTrigger.Handler), lifetime));
-		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IVillageConstraint, global::System.ValueTuple>), typeof(global::MainCore.Notifications.Handlers.Trigger.ChangeWallTrigger.Handler), lifetime));
+		services.Add(new(typeof(global::Immediate.Handlers.Shared.IHandler<global::MainCore.Constraints.IAccountVillageConstraint, global::System.ValueTuple>), typeof(global::MainCore.Notifications.Handlers.Trigger.ChangeWallTrigger.Handler), lifetime));
 		services.Add(new(typeof(global::MainCore.Notifications.Handlers.Trigger.ChangeWallTrigger.HandleBehavior), typeof(global::MainCore.Notifications.Handlers.Trigger.ChangeWallTrigger.HandleBehavior), lifetime));
 		return services;
 	}

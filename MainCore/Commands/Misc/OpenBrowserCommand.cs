@@ -5,7 +5,7 @@ namespace MainCore.Commands.Misc
     [Handler]
     public static partial class OpenBrowserCommand
     {
-        public sealed record Command(AccountId accountId, AccessDto access) : ICommand;
+        public sealed record Command(AccountId AccountId, AccessDto Access) : IAccountCommand;
 
         private static async ValueTask HandleAsync(
             Command command,

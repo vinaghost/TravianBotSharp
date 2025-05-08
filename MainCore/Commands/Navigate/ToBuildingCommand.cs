@@ -6,7 +6,7 @@ namespace MainCore.Commands.Navigate
     [Handler]
     public static partial class ToBuildingCommand
     {
-        public sealed record Command(AccountId AccountId, int Location) : ICommand;
+        public sealed record Command(AccountId AccountId, int Location) : IAccountCommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,

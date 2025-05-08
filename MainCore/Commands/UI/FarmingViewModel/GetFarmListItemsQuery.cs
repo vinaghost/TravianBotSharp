@@ -6,7 +6,7 @@ namespace MainCore.Commands.UI.FarmingViewModel
     [Handler]
     public static partial class GetFarmListItemsQuery
     {
-        public sealed record Query(AccountId AccountId) : IQuery;
+        public sealed record Query(AccountId AccountId) : IAccountQuery;
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query query,

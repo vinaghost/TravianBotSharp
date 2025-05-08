@@ -6,7 +6,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class ResourceBuildCommand
     {
-        public sealed record Command(VillageId VillageId, ResourceBuildPlan plan) : ICommand;
+        public sealed record Command(VillageId VillageId, ResourceBuildPlan plan) : IVillageCommand;
 
         private static async ValueTask HandleAsync(
             Command command,

@@ -7,7 +7,7 @@ namespace MainCore.Notifications.Handlers.Refresh
     public static partial class BuildingListRefresh
     {
         private static async ValueTask HandleAsync(
-            IVillageConstraint notification,
+            IAccountVillageConstraint notification,
             BuildViewModel viewModel,
             CancellationToken cancellationToken)
         {

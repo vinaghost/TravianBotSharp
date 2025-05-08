@@ -5,7 +5,7 @@ namespace MainCore.Commands.UI.EditAccountViewModel
     [Handler]
     public static partial class GetAcccountQuery
     {
-        public sealed record Query(AccountId AccountId) : IQuery;
+        public sealed record Query(AccountId AccountId) : IAccountQuery;
 
         private static async ValueTask<AccountDto> HandleAsync(
             Query query,

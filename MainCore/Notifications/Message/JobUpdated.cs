@@ -7,7 +7,7 @@ namespace MainCore.Notifications.Message
     [Handler]
     public static partial class JobUpdated
     {
-        public sealed record Notification(AccountId AccountId, VillageId VillageId) : IVillageNotification;
+        public sealed record Notification(AccountId AccountId, VillageId VillageId) : IAccountVillageNotification;
 
         private static async ValueTask HandleAsync(
             Notification notification,

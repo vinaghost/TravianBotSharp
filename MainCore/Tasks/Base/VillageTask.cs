@@ -2,7 +2,7 @@
 
 namespace MainCore.Tasks.Base
 {
-    public abstract class VillageTask(AccountId accountId, VillageId villageId, string villageName) : AccountTask(accountId), IVillageConstraint
+    public abstract class VillageTask(AccountId accountId, VillageId villageId, string villageName) : AccountTask(accountId), IAccountVillageConstraint
     {
         public VillageId VillageId { get; } = villageId;
 

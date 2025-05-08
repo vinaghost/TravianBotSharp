@@ -6,7 +6,7 @@ namespace MainCore.Commands.Checks
     [Handler]
     public static partial class CheckQuestCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IVillageCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
         private static async ValueTask HandleAsync(
             Command command,
