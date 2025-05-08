@@ -10,11 +10,11 @@
         public string ProxyUsername { get; set; }
         public string ProxyPassword { get; set; }
 
-        public Account GetAccount()
+        public Account ToEntity()
         {
             return new Account()
             {
-                Username = Username,
+                Username = Username.Sanitize(),
                 Server = Server,
                 Accesses = new List<Access>()
                 {

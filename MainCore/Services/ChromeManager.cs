@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using Serilog;
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace MainCore.Services
@@ -34,6 +35,7 @@ namespace MainCore.Services
             if (!Directory.Exists(extenstionDir))
             {
                 Directory.CreateDirectory(extenstionDir);
+                Log.Information("Create directory {extenstionDir} for extension files.", extenstionDir);
             }
 
             var asmb = Assembly.GetExecutingAssembly();
@@ -51,10 +53,12 @@ namespace MainCore.Services
                     using Stream input = asmb.GetManifestResourceStream(extensionName);
                     using Stream output = File.Create(path);
                     input.CopyTo(output);
+                    Log.Information("Copy default extension file {extensionName} to {path}.", extensionName, path);
                 }
             }
 
             _extensionsPath = list.ToArray();
+            Log.Information("Loaded {count} extension files.", _extensionsPath.Length);
         }
     }
 }

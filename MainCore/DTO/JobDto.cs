@@ -1,6 +1,4 @@
-﻿using Riok.Mapperly.Abstractions;
-
-namespace MainCore.DTO
+﻿namespace MainCore.DTO
 {
     public class JobDto
     {
@@ -10,7 +8,7 @@ namespace MainCore.DTO
         public string Content { get; set; }
     }
 
-    [Mapper]
+    [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
     public static partial class JobMapper
     {
         public static Job ToEntity(this JobDto dto, VillageId villageId)
@@ -20,6 +18,7 @@ namespace MainCore.DTO
             return entity;
         }
 
+        [MapperIgnoreTarget(nameof(Job.VillageId))]
         private static partial Job ToEntity(this JobDto dto);
 
         public static partial JobDto ToDto(this Job dto);

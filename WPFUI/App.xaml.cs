@@ -5,6 +5,7 @@ using MainCore.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using Splat;
+using Splat.ModeDetection;
 using System;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -18,16 +19,17 @@ namespace WPFUI
     /// </summary>
     public partial class App : Application
     {
-        private readonly MainWindow mainWindow;
+        private readonly MainWindow _mainWindow;
 
         public IServiceProvider Container { get; private set; }
 
         public App()
         {
+            Splat.ModeDetector.OverrideModeDetector(Mode.Run);
             Container = DependencyInjection.Setup();
             RxApp.DefaultExceptionHandler = Locator.Current.GetService<ObservableExceptionHandler>();
 
-            mainWindow = new MainWindow()
+            _mainWindow = new MainWindow()
             {
                 ViewModel = Locator.Current.GetService<MainViewModel>(),
             };
@@ -97,7 +99,7 @@ namespace WPFUI
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            mainWindow.Show();
+            _mainWindow.Show();
             base.OnStartup(e);
         }
     }

@@ -13,7 +13,7 @@
         {
             _html.Load(file);
             var actual = MainCore.Parsers.OptionParser.IsContextualHelpEnable(_html);
-            actual.Should().Be(expected);
+            actual.ShouldBe(expected);
         }
 
         [Fact]
@@ -21,7 +21,7 @@
         {
             _html.Load(OptionsPage);
             var result = MainCore.Parsers.OptionParser.GetOptionButton(_html);
-            result.Should().NotBeNull();
+            result.ShouldNotBeNull();
         }
 
         [Fact]
@@ -29,7 +29,7 @@
         {
             _html.Load(OptionsPage);
             var result = MainCore.Parsers.OptionParser.GetHideContextualHelpOption(_html);
-            result.Should().NotBeNull();
+            result.ShouldNotBeNull();
         }
 
         [Fact]
@@ -37,7 +37,7 @@
         {
             _html.Load(OptionsPage);
             var result = MainCore.Parsers.OptionParser.GetSubmitButton(_html);
-            result.Should().NotBeNull();
+            result.ShouldNotBeNull();
         }
     }
 }

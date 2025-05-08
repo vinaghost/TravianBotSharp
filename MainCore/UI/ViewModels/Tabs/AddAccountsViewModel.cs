@@ -1,38 +1,34 @@
-﻿using MainCore.Commands.UI;
+﻿using MainCore.Commands.UI.AddAccountsViewModel;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
+using MainCore.UI.ViewModels.UserControls;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
-using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
     [RegisterSingleton<AddAccountsViewModel>]
-    public class AddAccountsViewModel : TabViewModelBase
+    public partial class AddAccountsViewModel : TabViewModelBase
     {
-        public ReactiveCommand<Unit, Unit> AddAccount { get; }
-        private ReactiveCommand<string, List<AccountDetailDto>> Parse { get; }
-
+        private readonly IDialogService _dialogService;
+        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
         public ObservableCollection<AccountDetailDto> Accounts { get; } = [];
+
+        [Reactive]
         private string _input;
 
-        public string Input
+        public AddAccountsViewModel(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel)
         {
-            get => _input;
-            set => this.RaiseAndSetIfChanged(ref _input, value);
-        }
-
-        public AddAccountsViewModel()
-        {
-            AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler);
-            Parse = ReactiveCommand.Create<string, List<AccountDetailDto>>(ParseHandler);
+            _dialogService = dialogService;
+            _waitingOverlayViewModel = waitingOverlayViewModel;
 
             this.WhenAnyValue(x => x.Input)
                 .ObserveOn(RxApp.TaskpoolScheduler)
-                .InvokeCommand(Parse);
+                .InvokeCommand(ParseCommand);
 
-            Parse.Subscribe(UpdateTable);
+            ParseCommand.Subscribe(UpdateTable);
 
-            AddAccount.Subscribe(_ => Clear());
+            AddAccountCommand.Subscribe(_ => Clear());
         }
 
         private void UpdateTable(List<AccountDetailDto> data)
@@ -47,13 +43,27 @@ namespace MainCore.UI.ViewModels.Tabs
             Input = "";
         }
 
-        private async Task AddAccountHandler()
+        [ReactiveCommand]
+        private async Task AddAccount()
         {
-            var addAccountCommand = Locator.Current.GetService<AddAccountCommand>();
-            await addAccountCommand.Execute([.. Accounts], default);
+            await _waitingOverlayViewModel.Show("adding accounts");
+            var serviceScopeFactory = Locator.Current.GetService<IServiceScopeFactory>();
+            using var scope = serviceScopeFactory.CreateScope();
+            var addAccountsCommand = scope.ServiceProvider.GetRequiredService<AddAccountsCommand.Handler>();
+            var resultInput = await addAccountsCommand.HandleAsync(new([.. Accounts.Select(x => x.ToDto())]));
+            await _waitingOverlayViewModel.Hide();
+
+            if (resultInput.IsFailed)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", resultInput.Errors[0].Message));
+                return;
+            }
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added accounts"));
+            await _waitingOverlayViewModel.Hide();
         }
 
-        private static List<AccountDetailDto> ParseHandler(string input)
+        [ReactiveCommand]
+        private static List<AccountDetailDto> Parse(string input)
         {
             if (string.IsNullOrEmpty(input)) return [];
 

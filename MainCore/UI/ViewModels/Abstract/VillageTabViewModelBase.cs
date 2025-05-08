@@ -1,46 +1,40 @@
 ﻿using MainCore.UI.Stores;
-using ReactiveUI;
-using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Abstract
 {
-    public abstract class VillageTabViewModelBase : TabViewModelBase
+    public abstract partial class VillageTabViewModelBase : TabViewModelBase
     {
         protected readonly SelectedItemStore _selectedItemStore;
 
-        private readonly ObservableAsPropertyHelper<AccountId> _accountId;
-        public AccountId AccountId => _accountId.Value;
+        [ObservableAsProperty]
+        private AccountId _accountId;
 
-        private readonly ObservableAsPropertyHelper<VillageId> _villageId;
-        public VillageId VillageId => _villageId.Value;
-
-        public ReactiveCommand<VillageId, Unit> VillageChanged { get; }
+        [ObservableAsProperty]
+        private VillageId _villageId;
 
         protected VillageTabViewModelBase()
         {
             _selectedItemStore = Locator.Current.GetService<SelectedItemStore>();
 
-            VillageChanged = ReactiveCommand.CreateFromTask<VillageId>(VillageChangedHandler);
-
             var accountIdObservable = this.WhenAnyValue(vm => vm._selectedItemStore.Account)
                                             .WhereNotNull()
                                             .Select(x => new AccountId(x.Id));
 
-            accountIdObservable.ToProperty(this, vm => vm.AccountId, out _accountId);
+            _accountIdHelper = accountIdObservable.ToProperty(this, vm => vm.AccountId);
 
             var villageIdObservable = this.WhenAnyValue(vm => vm._selectedItemStore.Village)
                                             .WhereNotNull()
                                             .Select(x => new VillageId(x.Id));
 
-            villageIdObservable
-                .ToProperty(this, vm => vm.VillageId, out _villageId);
+            _villageIdHelper = villageIdObservable.ToProperty(this, vm => vm.VillageId);
 
             villageIdObservable
                 .ObserveOn(RxApp.TaskpoolScheduler)
-                .InvokeCommand(VillageChanged);
+                .InvokeCommand(VillageChangedCommand);
         }
 
-        private async Task VillageChangedHandler(VillageId villageId)
+        [ReactiveCommand]
+        private async Task VillageChanged(VillageId villageId)
         {
             if (!IsActive) return;
             if (villageId == VillageId.Empty) return;

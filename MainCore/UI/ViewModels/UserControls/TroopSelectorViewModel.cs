@@ -1,21 +1,16 @@
 ﻿using DynamicData;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
 using System.Collections.ObjectModel;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
-    public class TroopSelectorViewModel : ViewModelBase
+    public partial class TroopSelectorViewModel : ViewModelBase
     {
         public ObservableCollection<TroopItem> Items { get; } = new();
-        private TroopItem _selectedItem;
 
-        public TroopItem SelectedItem
-        {
-            get => _selectedItem;
-            set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
-        }
+        [Reactive]
+        private TroopItem _selectedItem;
 
         public TroopEnums Get()
         {

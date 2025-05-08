@@ -1,4 +1,4 @@
-﻿using MainCore.Common.Enums;
+﻿using MainCore.Enums;
 
 namespace MainCore.Test.Parsers
 {
@@ -15,7 +15,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(file);
             var actual = MainCore.Parsers.InventoryParser.IsInventoryPage(_html);
-            actual.Should().Be(expected);
+            actual.ShouldBe(expected);
         }
 
         [Fact]
@@ -23,7 +23,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(HeroInventory);
             var actual = MainCore.Parsers.InventoryParser.GetHeroAvatar(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
 
         [Theory]
@@ -33,7 +33,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(file);
             var actual = MainCore.Parsers.InventoryParser.IsInventoryLoaded(_html);
-            actual.Should().Be(expected);
+            actual.ShouldBe(expected);
         }
 
         [Theory]
@@ -45,7 +45,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(file);
             var actual = MainCore.Parsers.InventoryParser.GetItemSlot(_html, type);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
 
         [Fact]
@@ -53,7 +53,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(AmountDialog);
             var actual = MainCore.Parsers.InventoryParser.GetAmountBox(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(AmountDialog);
             var actual = MainCore.Parsers.InventoryParser.GetConfirmButton(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using Riok.Mapperly.Abstractions;
-
-namespace MainCore.DTO
+﻿namespace MainCore.DTO
 {
     public class AccountDto
     {
@@ -10,9 +8,14 @@ namespace MainCore.DTO
         public List<AccessDto> Accesses { get; set; }
     }
 
-    [Mapper]
+    [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
     public static partial class AccountMapper
     {
+        [MapperIgnoreTarget(nameof(Account.Info))]
+        [MapperIgnoreTarget(nameof(Account.Settings))]
+        [MapperIgnoreTarget(nameof(Account.Villages))]
+        [MapperIgnoreTarget(nameof(Account.HeroItems))]
+        [MapperIgnoreTarget(nameof(Account.FarmLists))]
         public static partial Account ToEntity(this AccountDto dto);
 
         public static partial AccountDto ToDto(this Account entity);
@@ -26,5 +29,9 @@ namespace MainCore.DTO
         private static AccountId ToAccountId(this int id) => new AccountId(id);
 
         private static AccessId ToAccessId(this int value) => new(value);
+
+        private static Access ToAccessEntity(this AccessDto dto) => dto.ToEntity();
+
+        private static AccessDto ToAccessDto(this Access entity) => entity.ToDto();
     }
 }

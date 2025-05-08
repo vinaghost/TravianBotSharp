@@ -1,6 +1,4 @@
-﻿using Riok.Mapperly.Abstractions;
-
-namespace MainCore.DTO
+﻿namespace MainCore.DTO
 {
     public class QueueBuildingDto
     {
@@ -11,7 +9,7 @@ namespace MainCore.DTO
         public DateTime CompleteTime { get; set; }
     }
 
-    [Mapper]
+    [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
     public static partial class QueueBuildingMapper
     {
         public static QueueBuilding ToEntity(this QueueBuildingDto dto, VillageId villageId)
@@ -21,8 +19,12 @@ namespace MainCore.DTO
             return entity;
         }
 
+        [MapperIgnoreTarget(nameof(QueueBuilding.Id))]
+        [MapperIgnoreTarget(nameof(QueueBuilding.VillageId))]
         public static partial void To(this QueueBuildingDto dto, QueueBuilding entity);
 
+        [MapperIgnoreTarget(nameof(QueueBuilding.Id))]
+        [MapperIgnoreTarget(nameof(QueueBuilding.VillageId))]
         private static partial QueueBuilding ToEntity(this QueueBuildingDto dto);
 
         private static BuildingEnums ToBuildingEnums(string str) => Enum.Parse<BuildingEnums>(str);

@@ -1,6 +1,4 @@
-﻿using Riok.Mapperly.Abstractions;
-
-namespace MainCore.DTO
+﻿namespace MainCore.DTO
 {
     public class VillageDto
     {
@@ -13,7 +11,7 @@ namespace MainCore.DTO
         public bool IsUnderAttack { get; set; }
     }
 
-    [Mapper]
+    [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
     public static partial class VillageMapper
     {
         public static Village ToEntity(this VillageDto dto, AccountId accountId)
@@ -23,8 +21,20 @@ namespace MainCore.DTO
             return entity;
         }
 
+        [MapperIgnoreTarget(nameof(Village.AccountId))]
+        [MapperIgnoreTarget(nameof(Village.Buildings))]
+        [MapperIgnoreTarget(nameof(Village.QueueBuildings))]
+        [MapperIgnoreTarget(nameof(Village.Jobs))]
+        [MapperIgnoreTarget(nameof(Village.Storage))]
+        [MapperIgnoreTarget(nameof(Village.VillageSetting))]
         private static partial Village ToEntity(this VillageDto dto);
 
+        [MapperIgnoreTarget(nameof(Village.AccountId))]
+        [MapperIgnoreTarget(nameof(Village.Buildings))]
+        [MapperIgnoreTarget(nameof(Village.QueueBuildings))]
+        [MapperIgnoreTarget(nameof(Village.Jobs))]
+        [MapperIgnoreTarget(nameof(Village.Storage))]
+        [MapperIgnoreTarget(nameof(Village.VillageSetting))]
         public static partial void To(this VillageDto dto, Village entity);
 
         public static partial VillageDto ToDto(this Village dto);
