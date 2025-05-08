@@ -8,16 +8,16 @@
 	
     <AssemblyVersion>1975.4.30</AssemblyVersion>
   </PropertyGroup>
-  <PropertyGroup>
+  <!--<PropertyGroup>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <GeneratedFolder>Generated</GeneratedFolder>
     <CompilerGeneratedFilesOutputPath>$(GeneratedFolder)</CompilerGeneratedFilesOutputPath>
-  </PropertyGroup>
+  </PropertyGroup>-->
   <ItemGroup>
     <EmbeddedResource Include="Infrasturecture\ExtensionFiles\**" />
-    <!-- Exclude the output of source generators from the compilation -->
-    <Compile Remove="$(GeneratedFolder)/**/*.cs" />
-    <None Include="$(GeneratedFolder)/**/*.cs" />
+    
+    <!--<Compile Remove="$(GeneratedFolder)/**/*.cs" />
+    <None Include="$(GeneratedFolder)/**/*.cs" />-->
 
   </ItemGroup>
 
@@ -82,9 +82,5 @@
     <Using Include="MainCore.Enums" />
     <Using Include="MainCore.Common.Extensions" />
     <Using Alias="ILogger" Include="Serilog.ILogger" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Generated\Immediate.Handlers.Generators\" />
   </ItemGroup>
 </Project>
