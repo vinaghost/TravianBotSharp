@@ -23,29 +23,41 @@ namespace MainCore.Test
             Classes().That().AreAssignableTo(typeof(IConstraint)).As("Request");
 
         [Fact]
-        public void CommandShouldHaveCorrectName()
+        public void CommandShouldBeRecordAndSealedAndHaveCorrectName()
         {
             var rule = Classes().That().AreAssignableTo(typeof(ICommand))
                 .Should()
+                .BeSealed()
+                .AndShould()
+                .BeRecord()
+                .AndShould()
                 .HaveNameEndingWith("Command");
 
             rule.Check(Architecture);
         }
 
         [Fact]
-        public void QueryShouldHaveCorrectName()
+        public void QueryShouldBeRecordAndSealedAndHaveCorrectName()
         {
             var rule = Classes().That().AreAssignableTo(typeof(IQuery))
                 .Should()
+                .BeSealed()
+                .AndShould()
+                .BeRecord()
+                .AndShould()
                 .HaveNameEndingWith("Query");
             rule.Check(Architecture);
         }
 
         [Fact]
-        public void NotificationShouldHaveCorrectName()
+        public void NotificationShouldBeRecordAndSealedAndHaveCorrectName()
         {
             var rule = Classes().That().AreAssignableTo(typeof(INotification))
                 .Should()
+                .BeSealed()
+                .AndShould()
+                .BeRecord()
+                .AndShould()
                 .HaveNameEndingWith("Notification");
             rule.Check(Architecture);
         }
