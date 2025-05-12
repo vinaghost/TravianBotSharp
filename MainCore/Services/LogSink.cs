@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
@@ -6,9 +7,15 @@ using Serilog.Events;
 namespace MainCore.Services
 {
     [RegisterSingleton<ILogEventSink, LogSink>]
-    [RegisterSingleton<LogSink>]
     public sealed class LogSink : ILogEventSink
     {
+        [RegisterServices]
+        public static void Register(IServiceCollection services)
+        {
+            services
+                .AddSingleton(x => x.GetService<ILogEventSink>() as LogSink);
+        }
+
         private Dictionary<AccountId, LinkedList<LogEvent>> Logs { get; } = [];
 
         public event Action<AccountId, LogEvent> LogEmitted;
