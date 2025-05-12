@@ -127,18 +127,18 @@
       },
       "Selenium.Support": {
         "type": "Direct",
-        "requested": "[4.24.0, )",
-        "resolved": "4.24.0",
-        "contentHash": "VA9r7KZH6Gnw1jthN18c2dat8ixQw7vd5KTT7D8106b5M+vI6ALvBLaX0rtU1846D63Ac/+gG0mi6xn6E1jRxQ==",
+        "requested": "[4.32.0, )",
+        "resolved": "4.32.0",
+        "contentHash": "rWIsE2xBZ4i0x7u22dUHC5mUiaNCdZSfPo8+C4xq680ANR7ZIA5eF0a1lJYD+UNntm9LAK/BvZPjMaTOk2fQEg==",
         "dependencies": {
-          "Selenium.WebDriver": "4.24.0"
+          "Selenium.WebDriver": "4.32.0"
         }
       },
       "Selenium.WebDriver": {
         "type": "Direct",
-        "requested": "[4.24.0, )",
-        "resolved": "4.24.0",
-        "contentHash": "pwpNZQPCtDFH07nCliNMT/YRR5NhlPmxsrh/9e7PQsI/TfSUBy/VEdA6QwDY2WybzVZ6SlYSu1bv3cWKkiN8/w=="
+        "requested": "[4.32.0, )",
+        "resolved": "4.32.0",
+        "contentHash": "7mocv9JMt3jth7nkfrKISv23dwRR8+1/QE0REyNco+L6A9tSFdR+makPZpGKSE8ppTt8JMyvFPQLgRnPzRL5+w=="
       },
       "Serilog": {
         "type": "Direct",
