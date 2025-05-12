@@ -32,7 +32,6 @@ namespace MainCore.Tasks
             if (isFailed) return Result.Fail(errors);
 
             await openBrowserCommand.HandleAsync(new(task.AccountId, access), cancellationToken);
-
             await nextExecuteSleepTaskCommand.HandleAsync(task, cancellationToken);
             return Result.Ok();
         }

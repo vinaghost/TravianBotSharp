@@ -143,7 +143,7 @@ namespace MainCore.UI.ViewModels.UserControls
             var result = await getAccessQuery.HandleAsync(new(accountId));
             if (result.IsFailed)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", result.Errors.First().Message));
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", result.ToString()));
                 return;
             }
 

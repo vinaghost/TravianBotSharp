@@ -84,13 +84,11 @@ namespace MainCore.UI.ViewModels.Tabs
         private static AccountDetailDto ParseLine(string input)
         {
             var strAccount = input.Trim().Split(' ');
-            Uri url = null;
-            if (strAccount.Length > 0 && !Uri.TryCreate(strAccount[0], UriKind.Absolute, out url))
-            {
-                return null;
-            }
 
-            if (url is null) return null;
+            if (strAccount.Length > 0 && !Uri.TryCreate(strAccount[0], UriKind.Absolute, out var uri))
+                return null;
+
+            if (uri is null) return null;
 
             if (strAccount.Length > 4)
             {
@@ -104,13 +102,13 @@ namespace MainCore.UI.ViewModels.Tabs
                 }
             }
 
-            var host = url.GetLeftPart(UriPartial.Authority);
+            var serverUrl = $"{uri.Scheme}://{uri.Host}";
 
             return strAccount.Length switch
             {
-                3 => AccountDetailDto.Create(strAccount[1], host, strAccount[2]),
-                5 => AccountDetailDto.Create(strAccount[1], host, strAccount[2], strAccount[3], int.Parse(strAccount[4])),
-                7 => AccountDetailDto.Create(strAccount[1], host, strAccount[2], strAccount[3], int.Parse(strAccount[4]), strAccount[5], strAccount[6]),
+                3 => AccountDetailDto.Create(strAccount[1], serverUrl, strAccount[2]),
+                5 => AccountDetailDto.Create(strAccount[1], serverUrl, strAccount[2], strAccount[3], int.Parse(strAccount[4])),
+                7 => AccountDetailDto.Create(strAccount[1], serverUrl, strAccount[2], strAccount[3], int.Parse(strAccount[4]), strAccount[5], strAccount[6]),
                 _ => null,
             };
         }

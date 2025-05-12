@@ -49,7 +49,7 @@ namespace MainCore.UI.Models.Input
             {
                 Id = input.Id,
                 Username = input.Username.Sanitize(),
-                Server = input.Server,
+                Server = input.Server.GetServerUrl(),
                 Accesses = input.Accesses.Select(a => a.ToDto()).ToList(),
             };
         }

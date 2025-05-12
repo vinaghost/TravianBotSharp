@@ -40,6 +40,7 @@ namespace MainCore.Commands.Misc
             };
 
             await browser.Setup(chromeSetting, logger);
+
             await browser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
 
             context.Accesses

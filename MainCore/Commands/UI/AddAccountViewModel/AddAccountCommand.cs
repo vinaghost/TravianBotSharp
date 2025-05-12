@@ -23,7 +23,7 @@ namespace MainCore.Commands.UI.AddAccountViewModel
                 .Where(x => x.Server == dto.Server)
                 .Any())
             {
-                return Result.Fail("Account is duplicated");
+                return AccountDuplicate.Error;
             }
 
             var account = dto.ToEntity();

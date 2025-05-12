@@ -14,5 +14,16 @@ namespace MainCore.Common.Extensions
 
             return NonAlphanumericRegex().Replace(input, "").Replace(' ', '_');
         }
+
+        public static string GetServerUrl(this string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return "";
+
+            if (!Uri.TryCreate(input, UriKind.Absolute, out var uri))
+                return "";
+
+            return $"{uri.Scheme}://{uri.Host}";
+        }
     }
 }

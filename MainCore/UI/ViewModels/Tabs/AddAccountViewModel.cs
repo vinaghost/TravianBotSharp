@@ -33,7 +33,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 .Subscribe(x => x.CopyTo(AccessInput));
 
             DeleteAccessCommand.Subscribe(x => SelectedAccess = null);
-            AddAccountCommand.Subscribe(x =>
+            AddAccountCommand.Where(x => x).Subscribe(x =>
             {
                 AccountInput.Clear();
                 AccessInput.Clear();
@@ -80,29 +80,31 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private async Task AddAccount()
+        private async Task<bool> AddAccount()
         {
             var validateResult = await _accountInputValidator.ValidateAsync(AccountInput);
 
             if (!validateResult.IsValid)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Error", validateResult.ToString()));
-                return;
+                return false;
             }
+
             await _waitingOverlayViewModel.Show("adding account");
 
             using var scope = _serviceScopeFactory.CreateScope();
             var addAccountCommand = scope.ServiceProvider.GetRequiredService<AddAccountCommand.Handler>();
-            var resultInput = await addAccountCommand.HandleAsync(new(AccountInput.ToDto()));
+            var (_, isFailed, errors) = await addAccountCommand.HandleAsync(new(AccountInput.ToDto()));
             await _waitingOverlayViewModel.Hide();
 
-            if (resultInput.IsFailed)
+            if (isFailed)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", resultInput.Errors[0].Message));
-                return;
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", string.Join(Environment.NewLine, errors.Select(failure => failure.Message.ToString()))));
+                return false;
             }
 
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added account"));
+            return true;
         }
 
         [Reactive]
