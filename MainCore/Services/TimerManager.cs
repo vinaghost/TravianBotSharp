@@ -13,12 +13,12 @@ namespace MainCore.Services
         private bool _isShutdown = false;
 
         private readonly ITaskManager _taskManager;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
 
         private static ResiliencePropertyKey<ContextData> contextDataKey = new(nameof(ContextData));
         private readonly ResiliencePipeline<Result> _pipeline;
 
-        public TimerManager(ITaskManager taskManager, IServiceScopeFactory serviceScopeFactory)
+        public TimerManager(ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory)
         {
             _taskManager = taskManager;
             _serviceScopeFactory = serviceScopeFactory;
@@ -81,9 +81,7 @@ namespace MainCore.Services
             task.Stage = StageEnums.Executing;
             var cacheExecuteTime = task.ExecuteAt;
 
-            using var scope = _serviceScopeFactory.CreateScope();
-            var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
-            dataService.AccountId = accountId;
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
             var logger = scope.ServiceProvider.GetRequiredService<ILogger>();
             logger.Information("{TaskName} is started", task.Description);
 

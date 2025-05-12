@@ -17,9 +17,9 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly IValidator<AccountInput> _accountInputValidator;
         private readonly IDialogService _dialogService;
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
 
-        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, IServiceScopeFactory serviceScopeFactory)
+        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, ICustomServiceScopeFactory serviceScopeFactory)
         {
             _accessInputValidator = accessInputValidator;
             _accountInputValidator = accountInputValidator;
@@ -86,7 +86,7 @@ namespace MainCore.UI.ViewModels.Tabs
             }
             await _waitingOverlayViewModel.Show("editing account");
 
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var updateAccountCommand = scope.ServiceProvider.GetRequiredService<UpdateAccountCommand.Handler>();
             await updateAccountCommand.HandleAsync(new(AccountInput.ToDto()));
             await _waitingOverlayViewModel.Hide();
@@ -98,7 +98,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<AccountDto> LoadAccount(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var getAcccountQuery = scope.ServiceProvider.GetRequiredService<GetAcccountQuery.Handler>();
             var account = await getAcccountQuery.HandleAsync(new(AccountId));
             return account;

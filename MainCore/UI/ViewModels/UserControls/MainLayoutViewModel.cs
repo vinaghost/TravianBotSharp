@@ -13,7 +13,7 @@ namespace MainCore.UI.ViewModels.UserControls
     public partial class MainLayoutViewModel : ViewModelBase
     {
         private readonly IDialogService _dialogService;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
 
         private readonly AccountTabStore _accountTabStore;
         public ListBoxItemViewModel Accounts { get; } = new();
@@ -21,7 +21,7 @@ namespace MainCore.UI.ViewModels.UserControls
 
         private IObservable<bool> _canExecute;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, IServiceScopeFactory serviceScopeFactory)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory)
         {
             _accountTabStore = accountTabStore;
             _dialogService = dialogService;
@@ -94,10 +94,10 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope();
+            var accountId = new AccountId(Accounts.SelectedItemId);
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
 
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
-            var accountId = new AccountId(Accounts.SelectedItemId);
             var status = taskManager.GetStatus(accountId);
             if (status != StatusEnums.Offline)
             {
@@ -121,9 +121,8 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope();
-
             var accountId = new AccountId(Accounts.SelectedItemId);
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
 
             var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
             var tribe = (TribeEnums)settingService.ByName(accountId, AccountSettingEnums.Tribe);
@@ -161,9 +160,8 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope();
-
             var accountId = new AccountId(Accounts.SelectedItemId);
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
 
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
             var status = taskManager.GetStatus(accountId);
@@ -198,9 +196,8 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope();
-
             var accountId = new AccountId(Accounts.SelectedItemId);
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
 
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
             var status = taskManager.GetStatus(accountId);
@@ -235,8 +232,8 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope();
             var accountId = new AccountId(Accounts.SelectedItemId);
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
             var status = taskManager.GetStatus(accountId);
 
@@ -281,7 +278,8 @@ namespace MainCore.UI.ViewModels.UserControls
         [ReactiveCommand]
         private async Task<List<ListBoxItem>> LoadAccount()
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            var accountId = new AccountId(Accounts.SelectedItemId);
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
             var getAccountItemsQuery = scope.ServiceProvider.GetRequiredService<GetAccountItemsQuery.Handler>();
             var items = await getAccountItemsQuery.HandleAsync(new());
             return items;

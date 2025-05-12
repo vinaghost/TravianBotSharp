@@ -11,7 +11,7 @@ namespace MainCore.UI.ViewModels.Tabs
     [RegisterSingleton<DebugViewModel>]
     public partial class DebugViewModel : AccountTabViewModelBase
     {
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
 
         public ObservableCollection<TaskItem> Tasks { get; } = [];
 
@@ -21,7 +21,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private string _endpointAddress;
 
-        public DebugViewModel(LogSink logSink, ITaskManager taskManager, IServiceScopeFactory serviceScopeFactory)
+        public DebugViewModel(LogSink logSink, ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory)
         {
             _serviceScopeFactory = serviceScopeFactory;
             logSink.LogEmitted += LogEmitted;
@@ -61,7 +61,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<List<TaskItem>> LoadTask(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var getTaskItemsQuery = scope.ServiceProvider.GetRequiredService<GetTaskItemsQuery.Handler>();
             var tasks = await getTaskItemsQuery.HandleAsync(new(accountId), CancellationToken.None);
             return tasks;
@@ -70,7 +70,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<string> LoadLog(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var getLogQuery = scope.ServiceProvider.GetRequiredService<GetLogQuery.Handler>();
             var log = await getLogQuery.HandleAsync(new(accountId), CancellationToken.None);
             return log;
@@ -79,7 +79,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<string> LoadEndpointAddress(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var getEndpointAdressQuery = scope.ServiceProvider.GetRequiredService<GetEndpointAdressQuery.Handler>();
             var address = await getEndpointAdressQuery.HandleAsync(new(accountId), CancellationToken.None);
             return address;

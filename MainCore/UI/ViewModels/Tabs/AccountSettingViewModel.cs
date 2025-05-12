@@ -14,9 +14,9 @@ namespace MainCore.UI.ViewModels.Tabs
         public AccountSettingInput AccountSettingInput { get; } = new();
         private readonly IDialogService _dialogService;
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
 
-        public AccountSettingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, IServiceScopeFactory serviceScopeFactory)
+        public AccountSettingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, ICustomServiceScopeFactory serviceScopeFactory)
         {
             _dialogService = dialogService;
             _accountsettingInputValidator = accountsettingInputValidator;
@@ -47,7 +47,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
             await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
         }
@@ -76,7 +76,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
             await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
         }
@@ -87,7 +87,7 @@ namespace MainCore.UI.ViewModels.Tabs
             var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
             if (string.IsNullOrEmpty(path)) return;
 
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
             var settings = getSettingQuery.HandleAsync(new(AccountId));
 
@@ -99,7 +99,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<Dictionary<AccountSettingEnums, int>> LoadSettings(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
             var settings = await getSettingQuery.HandleAsync(new(accountId));
             return settings;

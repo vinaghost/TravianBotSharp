@@ -17,7 +17,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private readonly IDialogService _dialogService;
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
 
         private static readonly Dictionary<SplatColor, string> _activeTexts = new()
         {
@@ -26,7 +26,7 @@ namespace MainCore.UI.ViewModels.Tabs
             { SplatColor.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, IServiceScopeFactory serviceScopeFactory)
+        public FarmingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, ICustomServiceScopeFactory serviceScopeFactory)
         {
             _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;
@@ -81,7 +81,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task Start()
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
 
             var useStartAllButton = settingService.BooleanByName(AccountId, AccountSettingEnums.UseStartAllButton);
@@ -119,7 +119,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
             await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
         }
@@ -135,7 +135,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             var selectedFarmList = FarmLists.SelectedItem;
 
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var activationCommand = scope.ServiceProvider.GetRequiredService<ActivationCommand.Handler>();
             await activationCommand.HandleAsync(new(AccountId, new FarmId(selectedFarmList.Id)));
         }
@@ -143,7 +143,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<Dictionary<AccountSettingEnums, int>> LoadSetting(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
             var items = await getSettingQuery.HandleAsync(new(accountId));
             return items;
@@ -152,7 +152,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<List<ListBoxItem>> LoadFarmList(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var getFarmListItemsQuery = scope.ServiceProvider.GetRequiredService<GetFarmListItemsQuery.Handler>();
             var items = await getFarmListItemsQuery.HandleAsync(new(accountId));
             return items;
@@ -163,7 +163,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private int CountActive(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             var count = context.FarmLists
