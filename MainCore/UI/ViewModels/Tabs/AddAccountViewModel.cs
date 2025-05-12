@@ -15,6 +15,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private readonly IValidator<AccessInput> _accessInputValidator;
         private readonly IValidator<AccountInput> _accountInputValidator;
+
         private readonly IDialogService _dialogService;
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
         private readonly IServiceScopeFactory _serviceScopeFactory;

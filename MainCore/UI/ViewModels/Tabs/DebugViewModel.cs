@@ -44,7 +44,7 @@ namespace MainCore.UI.ViewModels.Tabs
             LoadLogCommand.Execute(accountId).Subscribe();
         }
 
-        public void TaskListRefresh(AccountId accountId)
+        private void TaskListRefresh(AccountId accountId)
         {
             if (!IsActive) return;
             if (accountId != AccountId) return;

@@ -53,6 +53,7 @@ namespace MainCore.UI.ViewModels.Tabs
             using var scope = _serviceScopeFactory.CreateScope();
             var addAccountsCommand = scope.ServiceProvider.GetRequiredService<AddAccountsCommand.Handler>();
             var resultInput = await addAccountsCommand.HandleAsync(new([.. Accounts.Select(x => x.ToDto())]));
+
             await _waitingOverlayViewModel.Hide();
 
             if (resultInput.IsFailed)
