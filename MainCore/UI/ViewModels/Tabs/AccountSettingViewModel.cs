@@ -12,6 +12,7 @@ namespace MainCore.UI.ViewModels.Tabs
     public partial class AccountSettingViewModel : AccountTabViewModelBase
     {
         public AccountSettingInput AccountSettingInput { get; } = new();
+
         private readonly IDialogService _dialogService;
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
@@ -50,6 +51,8 @@ namespace MainCore.UI.ViewModels.Tabs
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
             await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
+
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings saved."));
         }
 
         [ReactiveCommand]
@@ -79,6 +82,8 @@ namespace MainCore.UI.ViewModels.Tabs
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
             await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
+
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings imported."));
         }
 
         [ReactiveCommand]
