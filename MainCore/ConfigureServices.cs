@@ -1,5 +1,4 @@
 ﻿using MainCore.Behaviors;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -10,7 +9,8 @@ using System.Reflection;
 
 [assembly: Behaviors(
     typeof(AccountDataLoggingBehavior<,>),
-    typeof(TypeLoggingBehavior<,>),
+    typeof(TaskNameLoggingBehavior<,>),
+    typeof(CommandNameLoggingBehavior<,>),
     typeof(ErrorLoggingBehavior<,>),
     typeof(AccountTaskBehavior<,>),
     typeof(VillageTaskBehavior<,>)
@@ -29,8 +29,7 @@ namespace MainCore
 #if DEBUG
                     .EnableSensitiveDataLogging()
 #endif
-                    .UseSqlite(_connectionString)
-                    .ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.MultipleCollectionIncludeWarning))
+                    .UseSqlite(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
 
             );
 

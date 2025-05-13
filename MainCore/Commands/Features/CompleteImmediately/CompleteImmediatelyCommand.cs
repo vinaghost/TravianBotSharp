@@ -6,7 +6,7 @@ namespace MainCore.Commands.Features.CompleteImmediately
 {
     [Handler]
     [Behaviors(
-        typeof(TypeLoggingBehavior<,>),
+        typeof(CommandNameLoggingBehavior<,>),
         typeof(ErrorLoggingBehavior<,>),
         typeof(CompleteImmediatelyBehavior<,>))]
     public static partial class CompleteImmediatelyCommand

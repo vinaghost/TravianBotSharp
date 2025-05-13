@@ -82,13 +82,12 @@ namespace MainCore.Services
             var cacheExecuteTime = task.ExecuteAt;
 
             using var scope = _serviceScopeFactory.CreateScope(accountId);
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger>();
-            logger.Information("{TaskName} is started", task.Description);
 
             ///===========================================================///
             var context = ResilienceContextPool.Shared.Get(cts.Token);
 
             var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger>();
             var contextData = new ContextData(accountId, task.Description, logger, browser);
             context.Properties.Set(contextDataKey, contextData);
 
@@ -99,7 +98,6 @@ namespace MainCore.Services
 
             ResilienceContextPool.Shared.Return(context);
             ///===========================================================///
-            logger.Information("{TaskName} is finished", task.Description);
 
             task.Stage = StageEnums.Waiting;
             taskQueue.IsExecuting = false;

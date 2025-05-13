@@ -39,7 +39,9 @@ namespace MainCore.Behaviors
             using (LogContext.PushProperty("AccountId", accountId))
             {
                 _dataService.IsLoggerConfigured = true;
-                return await Next(request, cancellationToken);
+                var response = await Next(request, cancellationToken);
+                _dataService.IsLoggerConfigured = false;
+                return response;
             }
         }
     }
