@@ -4,5 +4,6 @@
     public sealed class DataService : IDataService
     {
         public AccountId AccountId { get; set; }
+        public bool IsLoggerConfigured { get; set; } = false;
     }
 }

@@ -15,10 +15,10 @@ namespace MainCore.Services
 
         public IServiceScope CreateScope(AccountId accountId)
         {
-            var scrope = _serviceScopeFactory.CreateScope();
-            var dataService = scrope.ServiceProvider.GetRequiredService<IDataService>();
+            var scope = _serviceScopeFactory.CreateScope();
+            var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
             dataService.AccountId = accountId;
-            return scrope;
+            return scope;
         }
     }
 

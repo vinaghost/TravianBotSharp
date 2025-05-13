@@ -17,7 +17,11 @@ namespace MainCore.Commands.Misc
 
             var account = context.Accounts
                 .Where(x => x.Id == accountId.Value)
-                .ToDto()
+                .Select(x => new
+                {
+                    x.Username,
+                    x.Server,
+                })
                 .First();
 
             var uri = new Uri(account.Server);

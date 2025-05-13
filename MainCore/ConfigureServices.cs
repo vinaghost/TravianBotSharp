@@ -1,13 +1,16 @@
 ﻿using MainCore.Commands.Behaviors;
 using MainCore.Tasks.Behaviors;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using Serilog.Events;
 using Serilog.Templates;
 using Splat.Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 [assembly: Behaviors(
+    typeof(AccountDataLoggingBehavior<,>),
     typeof(CommandLoggingBehavior<,>),
     typeof(AccountTaskBehavior<,>),
     typeof(VillageTaskBehavior<,>)
@@ -27,6 +30,8 @@ namespace MainCore
                     .EnableSensitiveDataLogging()
 #endif
                     .UseSqlite(_connectionString)
+                    .ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.MultipleCollectionIncludeWarning))
+
             );
 
             services
@@ -42,27 +47,6 @@ namespace MainCore
                     if (dataService.AccountId == AccountId.Empty) throw new InvalidOperationException("AccountId is empty");
                     var chromeManager = sp.GetRequiredService<IChromeManager>();
                     return chromeManager.Get(dataService.AccountId);
-                })
-                .AddScoped<ILogger>(sp =>
-                {
-                    var dataService = sp.GetRequiredService<IDataService>();
-                    var accountId = dataService.AccountId;
-                    if (accountId == AccountId.Empty) return Log.Logger;
-
-                    var logService = sp.GetRequiredService<ILogService>();
-                    if (logService.Loggers.ContainsKey(accountId)) return logService.Loggers[accountId];
-                    var context = sp.GetRequiredService<AppDbContext>();
-                    var account = context.Accounts
-                        .Where(x => x.Id == accountId.Value)
-                        .First();
-
-                    var uri = new Uri(account.Server);
-                    var logger = Log.ForContext("Account", $"{account.Username}_{uri.Host}")
-                                    .ForContext("AccountId", accountId);
-                    logService.Loggers.Add(accountId, logger);
-                    logger.Information("===============> Current version: {Version} <===============", GetVersion());
-
-                    return logger;
                 });
 
             return services;
@@ -87,6 +71,8 @@ namespace MainCore
                    services.AddCoreServices();
                    services.AddSerilog(c =>
                    {
+                       c.MinimumLevel.Override("Microsoft", LogEventLevel.Warning);
+
                        c.Filter.ByExcluding("SourceContext like 'ReactiveUI.POCOObservableForProperty' and Contains(@m, 'WhenAny will only return a single value')");
                        c.WriteTo.Map("Account", "Other", (acc, wt) =>
                        {
@@ -95,6 +81,7 @@ namespace MainCore
                                rollingInterval: RollingInterval.Day);
                            wt.LogSink();
                        });
+                       c.Enrich.FromLogContext();
                    });
                })
                .UseDefaultServiceProvider(config =>

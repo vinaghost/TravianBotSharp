@@ -4,18 +4,16 @@
         : Behavior<TRequest, TResponse>
             where TResponse : Result
     {
-        private readonly AppDbContext _context;
         private readonly ILogger _logger;
 
-        public CommandLoggingBehavior(ILogger logger, AppDbContext context)
+        public CommandLoggingBehavior(ILogger logger)
         {
             _logger = logger;
-            _context = context;
         }
 
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
-            _logger.Information("Execute {Command}", request.GetType().Name);
+            _logger.Information("Execute {Command}", request.GetType().FullName);
             var response = await Next(request, cancellationToken);
             if (response.IsFailed)
             {
