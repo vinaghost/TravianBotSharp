@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.Behaviors;
-using MainCore.Tasks.Behaviors;
+﻿using MainCore.Behaviors;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,7 +10,8 @@ using System.Reflection;
 
 [assembly: Behaviors(
     typeof(AccountDataLoggingBehavior<,>),
-    typeof(CommandLoggingBehavior<,>),
+    typeof(TypeLoggingBehavior<,>),
+    typeof(ErrorLoggingBehavior<,>),
     typeof(AccountTaskBehavior<,>),
     typeof(VillageTaskBehavior<,>)
 )]

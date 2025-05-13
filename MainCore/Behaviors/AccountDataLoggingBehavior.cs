@@ -1,7 +1,7 @@
 ﻿using MainCore.Constraints;
 using Serilog.Context;
 
-namespace MainCore.Commands.Behaviors
+namespace MainCore.Behaviors
 {
     public sealed class AccountDataLoggingBehavior<TRequest, TResponse>
        : Behavior<TRequest, TResponse>

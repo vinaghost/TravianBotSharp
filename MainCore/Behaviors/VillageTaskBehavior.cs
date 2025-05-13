@@ -1,7 +1,7 @@
 ﻿using MainCore.Commands.Checks;
 using MainCore.Tasks.Base;
 
-namespace MainCore.Tasks.Behaviors
+namespace MainCore.Behaviors
 {
     public class VillageTaskBehavior<TRequest, TResponse>
             : Behavior<TRequest, TResponse>

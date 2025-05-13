@@ -9,7 +9,7 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        private static async ValueTask HandleAsync(
+        private static async ValueTask<Result> HandleAsync(
             Command command,
             AppDbContext context,
             CancellationToken cancellationToken
@@ -21,6 +21,7 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
             context.Accounts
                 .Where(x => x.Id == accountId.Value)
                 .ExecuteDelete();
+            return Result.Ok();
         }
     }
 }

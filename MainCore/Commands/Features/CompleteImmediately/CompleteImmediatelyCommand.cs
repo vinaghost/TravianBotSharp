@@ -1,14 +1,17 @@
-﻿using MainCore.Commands.Behaviors;
+﻿using MainCore.Behaviors;
 using MainCore.Constraints;
 using MainCore.Notifications.Behaviors;
 
 namespace MainCore.Commands.Features.CompleteImmediately
 {
     [Handler]
-    [Behaviors(typeof(CommandLoggingBehavior<,>), typeof(CompleteImmediatelyBehavior<,>))]
+    [Behaviors(
+        typeof(TypeLoggingBehavior<,>),
+        typeof(ErrorLoggingBehavior<,>),
+        typeof(CompleteImmediatelyBehavior<,>))]
     public static partial class CompleteImmediatelyCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageConstraint;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

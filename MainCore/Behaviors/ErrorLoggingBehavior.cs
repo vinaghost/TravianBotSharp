@@ -1,19 +1,18 @@
-﻿namespace MainCore.Commands.Behaviors
+﻿namespace MainCore.Behaviors
 {
-    public sealed class CommandLoggingBehavior<TRequest, TResponse>
+    public sealed class ErrorLoggingBehavior<TRequest, TResponse>
         : Behavior<TRequest, TResponse>
             where TResponse : Result
     {
         private readonly ILogger _logger;
 
-        public CommandLoggingBehavior(ILogger logger)
+        public ErrorLoggingBehavior(ILogger logger)
         {
             _logger = logger;
         }
 
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
-            _logger.Information("Execute {Command}", request.GetType().FullName);
             var response = await Next(request, cancellationToken);
             if (response.IsFailed)
             {

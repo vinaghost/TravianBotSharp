@@ -9,7 +9,7 @@ namespace MainCore.Commands.UI.EditAccountViewModel
     {
         public sealed record Command(AccountDto Dto) : ICommand;
 
-        private static async ValueTask HandleAsync(
+        private static async ValueTask<Result> HandleAsync(
             Command command,
             AppDbContext context, IUseragentManager useragentManager,
             CancellationToken cancellationToken
@@ -32,6 +32,8 @@ namespace MainCore.Commands.UI.EditAccountViewModel
 
             context.Update(account);
             context.SaveChanges();
+
+            return Result.Ok();
         }
     }
 }

@@ -6,7 +6,7 @@ namespace MainCore.Notifications.Handlers.Trigger
     public static partial class UpgradeBuildingTaskTrigger
     {
         private static async ValueTask HandleAsync(
-            IAccountVillageNotification notification,
+            IAccountVillageConstraint notification,
             GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
             CancellationToken cancellationToken)
