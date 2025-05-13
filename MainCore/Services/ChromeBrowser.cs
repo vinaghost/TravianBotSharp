@@ -223,10 +223,10 @@ namespace MainCore.Services
             {
                 _wait.Until(driver => condition(driver), cancellationToken);
             }
-            await Task.Run(wait, cancellationToken);
 
             try
             {
+                await Task.Run(wait, cancellationToken);
             }
             catch (OperationCanceledException)
             {

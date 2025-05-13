@@ -91,9 +91,9 @@ namespace MainCore.Services
             var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
             var contextData = new ContextData(accountId, task.Description, logger, browser);
             context.Properties.Set(contextDataKey, contextData);
-            var handler = GetHandler(scope, task);
+
             var poliResult = await _pipeline.ExecuteOutcomeAsync(
-                async (ctx, state) => Outcome.FromResult(await handler.HandleAsync(state, ctx.CancellationToken)),
+                async (ctx, state) => Outcome.FromResult(await scope.Execute(state, ctx.CancellationToken)),
                 context,
                 task);
 
@@ -156,12 +156,6 @@ namespace MainCore.Services
             }
             var delayTaskCommand = scope.ServiceProvider.GetService<DelayTaskCommand.Handler>();
             await delayTaskCommand.HandleAsync(new(accountId));
-        }
-
-        private IHandler<T, Result> GetHandler<T>(IServiceScope scope, T task)
-        {
-            var handler = scope.ServiceProvider.GetRequiredService<IHandler<T, Result>>();
-            return handler;
         }
 
         public void Shutdown()

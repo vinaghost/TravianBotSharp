@@ -84,22 +84,24 @@ namespace MainCore.UI.ViewModels.Tabs
         private static AccountDetailDto ParseLine(string input)
         {
             var strAccount = input.Trim().Split(' ');
-
-            if (strAccount.Length > 0 && !Uri.TryCreate(strAccount[0], UriKind.Absolute, out var uri))
+            if (strAccount.Length < 3 || strAccount.Length > 7)
                 return null;
 
-            if (uri is null) return null;
+            if (string.IsNullOrWhiteSpace(strAccount[0]))
+                return null;
+
+            if (!Uri.TryCreate(strAccount[0], UriKind.Absolute, out var uri))
+                return null;
+
+            if (uri is null)
+                return null;
 
             if (strAccount.Length > 4)
             {
-                if (int.TryParse(strAccount[4], out var port))
-                {
-                    strAccount[4] = port.ToString();
-                }
-                else
-                {
+                if (!int.TryParse(strAccount[4], out var port))
                     return null;
-                }
+
+                strAccount[4] = port.ToString();
             }
 
             var serverUrl = $"{uri.Scheme}://{uri.Host}";
