@@ -1,10 +1,8 @@
 ﻿using MainCore.Constraints;
-using MainCore.Notifications.Behaviors;
 
 namespace MainCore.Commands.Update
 {
     [Handler]
-    [Behaviors(typeof(AccountInfoUpdatedBehavior<,>))]
     public static partial class UpdateAccountInfoCommand
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
