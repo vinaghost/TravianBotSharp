@@ -165,8 +165,10 @@ namespace MainCore.Commands.Update
                     var wall = tribe.GetWall();
                     dto.Type = wall;
                 }
+
                 var dbBuilding = dbBuildings
                     .Find(x => x.Location == dto.Location);
+
                 if (dbBuilding is null)
                 {
                     var building = dto.ToEntity(villageId);

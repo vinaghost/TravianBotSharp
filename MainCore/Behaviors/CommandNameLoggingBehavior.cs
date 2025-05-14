@@ -15,11 +15,15 @@ namespace MainCore.Behaviors
 
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
-            var name = request.GetType().FullName
-                .Replace("MainCore.", "")
-                .Replace("+Command", "");
+            var name = request.GetType().FullName;
+            if (!name.Contains("Update"))
+            {
+                name = name
+                    .Replace("MainCore.", "")
+                    .Replace("+Command", "");
 
-            _logger.Information("Execute {Command}", name);
+                _logger.Information("Execute {Command}", name);
+            }
 
             var response = await Next(request, cancellationToken);
             return response;

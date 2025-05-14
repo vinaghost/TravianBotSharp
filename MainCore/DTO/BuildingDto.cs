@@ -20,9 +20,11 @@
         }
 
         [MapperIgnoreTarget(nameof(Building.VillageId))]
+        [MapperIgnoreTarget(nameof(Building.Id))]
         private static partial Building ToEntity(this BuildingDto dto);
 
         [MapperIgnoreTarget(nameof(Building.VillageId))]
+        [MapperIgnoreTarget(nameof(Building.Id))]
         public static partial void To(this BuildingDto dto, Building entity);
 
         public static partial BuildingDto ToDto(this Building entity);
