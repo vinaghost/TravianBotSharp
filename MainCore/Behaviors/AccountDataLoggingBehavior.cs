@@ -7,36 +7,22 @@ namespace MainCore.Behaviors
        : Behavior<TRequest, TResponse>
            where TRequest : IAccountConstraint
     {
-        private readonly AppDbContext _context;
         private readonly ILogger _logger;
         private readonly IDataService _dataService;
 
-        public AccountDataLoggingBehavior(ILogger logger, AppDbContext context, IDataService dataService)
+        public AccountDataLoggingBehavior(ILogger logger, IDataService dataService)
         {
             _logger = logger;
-            _context = context;
             _dataService = dataService;
         }
 
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
-            if (_dataService.IsLoggerConfigured) return await Next(request, cancellationToken);
+            //if (_dataService.IsLoggerConfigured) return await Next(request, cancellationToken);
+            if (request.AccountId != _dataService.AccountId) return await Next(request, cancellationToken);
 
-            var accountId = request.AccountId;
-
-            var account = _context.Accounts
-                .Where(x => x.Id == accountId.Value)
-                .Select(x => new
-                {
-                    x.Username,
-                    x.Server,
-                })
-                .First();
-
-            var uri = new Uri(account.Server);
-
-            using (LogContext.PushProperty("Account", $"{account.Username}_{uri.Host}"))
-            using (LogContext.PushProperty("AccountId", accountId))
+            using (LogContext.PushProperty("Account", _dataService.AccountData))
+            using (LogContext.PushProperty("AccountId", _dataService.AccountId))
             {
                 _dataService.IsLoggerConfigured = true;
                 var response = await Next(request, cancellationToken);

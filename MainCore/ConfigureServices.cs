@@ -68,7 +68,7 @@ namespace MainCore
                    resolver.InitializeSplat();
                    resolver.InitializeReactiveUI();
                    services.AddCoreServices();
-                   services.AddSerilog(c =>
+                   services.AddSerilog((services, c) =>
                    {
                        c.MinimumLevel.Override("Microsoft", LogEventLevel.Warning);
 
@@ -80,6 +80,7 @@ namespace MainCore
                                rollingInterval: RollingInterval.Day);
                            wt.LogSink();
                        });
+
                        c.Enrich.FromLogContext();
                    });
                })

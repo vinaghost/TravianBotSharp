@@ -84,11 +84,18 @@ namespace MainCore.Services
             using var scope = _serviceScopeFactory.CreateScope(accountId);
 
             ///===========================================================///
-            var context = ResilienceContextPool.Shared.Get(cts.Token);
-
+            var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
             var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
             var logger = scope.ServiceProvider.GetRequiredService<ILogger>();
+            logger = logger
+                .ForContext("Account", dataService.AccountData)
+                .ForContext("AccountId", dataService.AccountId);
+
             var contextData = new ContextData(accountId, task.Description, logger, browser);
+
+            ///===========================================================///
+            var context = ResilienceContextPool.Shared.Get(cts.Token);
+
             context.Properties.Set(contextDataKey, contextData);
 
             var poliResult = await _pipeline.ExecuteOutcomeAsync(

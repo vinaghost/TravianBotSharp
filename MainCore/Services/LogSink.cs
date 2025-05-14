@@ -6,16 +6,9 @@ using Serilog.Events;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton<ILogEventSink, LogSink>]
+    [RegisterSingleton<LogSink>]
     public sealed class LogSink : ILogEventSink
     {
-        [RegisterServices]
-        public static void Register(IServiceCollection services)
-        {
-            services
-                .AddSingleton(x => x.GetService<ILogEventSink>() as LogSink);
-        }
-
         private Dictionary<AccountId, LinkedList<LogEvent>> Logs { get; } = [];
 
         public event Action<AccountId, LogEvent> LogEmitted;
@@ -57,7 +50,7 @@ namespace MainCore.Services
                   this LoggerSinkConfiguration loggerConfiguration,
                   IFormatProvider formatProvider = null)
         {
-            return loggerConfiguration.Sink(Locator.Current.GetService<ILogEventSink>());
+            return loggerConfiguration.Sink(Locator.Current.GetService<LogSink>());
         }
     }
 }

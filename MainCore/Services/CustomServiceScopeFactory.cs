@@ -13,11 +13,30 @@ namespace MainCore.Services
             _serviceScopeFactory = serviceScopeFactory;
         }
 
+        public IServiceScope CreateScope()
+        {
+            return _serviceScopeFactory.CreateScope();
+        }
+
         public IServiceScope CreateScope(AccountId accountId)
         {
             var scope = _serviceScopeFactory.CreateScope();
             var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
+
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var account = context.Accounts
+               .Where(x => x.Id == accountId.Value)
+               .Select(x => new
+               {
+                   x.Username,
+                   x.Server,
+               })
+               .First();
+
+            var uri = new Uri(account.Server);
+
             dataService.AccountId = accountId;
+            dataService.AccountData = $"{account.Username}_{uri.Host}";
             return scope;
         }
     }

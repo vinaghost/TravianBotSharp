@@ -14,6 +14,7 @@ namespace MainCore.UI.ViewModels.UserControls
     {
         private readonly IDialogService _dialogService;
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
+        private readonly ITaskManager _taskManager;
 
         private readonly AccountTabStore _accountTabStore;
         public ListBoxItemViewModel Accounts { get; } = new();
@@ -27,9 +28,10 @@ namespace MainCore.UI.ViewModels.UserControls
             _dialogService = dialogService;
             _serviceScopeFactory = serviceScopeFactory;
 
-            _canExecute = this.WhenAnyValue(x => x.Accounts.IsEnable);
-
             taskManager.StatusUpdated += LoadStatus;
+            _taskManager = taskManager;
+
+            _canExecute = this.WhenAnyValue(x => x.Accounts.IsEnable);
 
             var accountObservable = this.WhenAnyValue(x => x.Accounts.SelectedItem);
             accountObservable.BindTo(selectedItemStore, vm => vm.Account);
@@ -161,10 +163,7 @@ namespace MainCore.UI.ViewModels.UserControls
             }
 
             var accountId = new AccountId(Accounts.SelectedItemId);
-            using var scope = _serviceScopeFactory.CreateScope(accountId);
-
-            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
-            var status = taskManager.GetStatus(accountId);
+            var status = _taskManager.GetStatus(accountId);
             switch (status)
             {
                 case StatusEnums.Offline:
@@ -183,6 +182,7 @@ namespace MainCore.UI.ViewModels.UserControls
                     break;
             }
 
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
             var logoutCommand = scope.ServiceProvider.GetRequiredService<LogoutCommand.Handler>();
             await logoutCommand.HandleAsync(new(accountId));
         }
@@ -197,18 +197,16 @@ namespace MainCore.UI.ViewModels.UserControls
             }
 
             var accountId = new AccountId(Accounts.SelectedItemId);
-            using var scope = _serviceScopeFactory.CreateScope(accountId);
 
-            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
-            var status = taskManager.GetStatus(accountId);
+            var status = _taskManager.GetStatus(accountId);
             switch (status)
             {
                 case StatusEnums.Paused:
-                    taskManager.SetStatus(accountId, StatusEnums.Online);
+                    _taskManager.SetStatus(accountId, StatusEnums.Online);
                     break;
 
                 case StatusEnums.Online:
-                    await taskManager.StopCurrentTask(accountId);
+                    await _taskManager.StopCurrentTask(accountId);
                     break;
 
                 case StatusEnums.Offline:
@@ -233,9 +231,7 @@ namespace MainCore.UI.ViewModels.UserControls
             }
 
             var accountId = new AccountId(Accounts.SelectedItemId);
-            using var scope = _serviceScopeFactory.CreateScope(accountId);
-            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
-            var status = taskManager.GetStatus(accountId);
+            var status = _taskManager.GetStatus(accountId);
 
             switch (status)
             {
@@ -251,10 +247,13 @@ namespace MainCore.UI.ViewModels.UserControls
                     return;
 
                 case StatusEnums.Paused:
-                    taskManager.SetStatus(accountId, StatusEnums.Starting);
-                    taskManager.Clear(accountId);
-                    await scope.ServiceProvider.GetRequiredService<AccountInit.Handler>().HandleAsync(new(accountId));
-                    taskManager.SetStatus(accountId, StatusEnums.Online);
+                    _taskManager.SetStatus(accountId, StatusEnums.Starting);
+                    _taskManager.Clear(accountId);
+                    using (var scope = _serviceScopeFactory.CreateScope(accountId))
+                    {
+                        await scope.ServiceProvider.GetRequiredService<AccountInit.Handler>().HandleAsync(new(accountId));
+                    }
+                    _taskManager.SetStatus(accountId, StatusEnums.Online);
                     return;
             }
         }
@@ -278,8 +277,7 @@ namespace MainCore.UI.ViewModels.UserControls
         [ReactiveCommand]
         private async Task<List<ListBoxItem>> LoadAccount()
         {
-            var accountId = new AccountId(Accounts.SelectedItemId);
-            using var scope = _serviceScopeFactory.CreateScope(accountId);
+            using var scope = _serviceScopeFactory.CreateScope();
             var getAccountItemsQuery = scope.ServiceProvider.GetRequiredService<GetAccountItemsQuery.Handler>();
             var items = await getAccountItemsQuery.HandleAsync(new());
             return items;
