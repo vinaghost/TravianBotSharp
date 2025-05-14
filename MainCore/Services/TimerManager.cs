@@ -124,8 +124,8 @@ namespace MainCore.Services
                 var result = poliResult.Result;
                 if (result.IsFailed)
                 {
-                    var errors = result.Reasons.Select(x => x.Message).ToList();
-                    logger.Warning(string.Join(Environment.NewLine, errors));
+                    var message = string.Join(Environment.NewLine, result.Reasons.Select(e => e.Message));
+                    logger.Warning("{error}", message);
 
                     if (result.HasError<Stop>() || result.HasError<Retry>())
                     {

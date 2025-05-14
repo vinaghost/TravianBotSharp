@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.Checks;
-using MainCore.Tasks.Base;
+﻿using MainCore.Tasks.Base;
 
 namespace MainCore.Behaviors
 {
@@ -12,15 +11,15 @@ namespace MainCore.Behaviors
         private readonly UpdateStorageCommand.Handler _updateStorageCommand;
         private readonly ToDorfCommand.Handler _toDorfCommand;
         private readonly UpdateBuildingCommand.Handler _updateBuildingCommand;
-        private readonly CheckQuestCommand.Handler _checkQuestCommand;
+        private readonly UpdateQuestCommand.Handler _updateQuestCommand;
 
-        public VillageTaskBehavior(SwitchVillageCommand.Handler switchVillageCommand, UpdateStorageCommand.Handler updateStorageCommand, ToDorfCommand.Handler toDorfCommand, UpdateBuildingCommand.Handler updateBuildingCommand, CheckQuestCommand.Handler checkQuestCommand)
+        public VillageTaskBehavior(SwitchVillageCommand.Handler switchVillageCommand, UpdateStorageCommand.Handler updateStorageCommand, ToDorfCommand.Handler toDorfCommand, UpdateBuildingCommand.Handler updateBuildingCommand, UpdateQuestCommand.Handler updateQuestCommand)
         {
             _switchVillageCommand = switchVillageCommand;
             _updateStorageCommand = updateStorageCommand;
             _toDorfCommand = toDorfCommand;
             _updateBuildingCommand = updateBuildingCommand;
-            _checkQuestCommand = checkQuestCommand;
+            _updateQuestCommand = updateQuestCommand;
         }
 
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
@@ -45,7 +44,7 @@ namespace MainCore.Behaviors
 
             await _updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
 
-            await _checkQuestCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            await _updateQuestCommand.HandleAsync(new(accountId, villageId), cancellationToken);
 
             return response;
         }

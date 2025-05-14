@@ -1,10 +1,10 @@
 ﻿using MainCore.Constraints;
 using MainCore.Notifications.Handlers.Trigger;
 
-namespace MainCore.Commands.Checks
+namespace MainCore.Commands.Update
 {
     [Handler]
-    public static partial class CheckQuestCommand
+    public static partial class UpdateQuestCommand
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 

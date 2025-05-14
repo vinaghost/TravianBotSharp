@@ -16,7 +16,8 @@
             var response = await Next(request, cancellationToken);
             if (response.IsFailed)
             {
-                _logger.Warning("{error}", response.ToString());
+                var message = string.Join(Environment.NewLine, response.Reasons.Select(e => e.Message));
+                _logger.Warning("{error}", message);
             }
             return response;
         }

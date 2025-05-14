@@ -1,10 +1,10 @@
 ﻿using MainCore.Constraints;
 using MainCore.Notifications.Handlers.Trigger;
 
-namespace MainCore.Commands.Checks
+namespace MainCore.Commands.Update
 {
     [Handler]
-    public static partial class CheckAdventureCommand
+    public static partial class UpdateAdventureCommand
     {
         public sealed record Command(AccountId AccountId) : IAccountConstraint;
 
@@ -12,7 +12,6 @@ namespace MainCore.Commands.Checks
            Command command,
            IChromeBrowser browser,
            StartAdventureTaskTrigger.Handler startAdventureTaskTrigger,
-
            CancellationToken cancellationToken
            )
         {
