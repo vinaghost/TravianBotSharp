@@ -130,6 +130,7 @@ namespace MainCore.Commands.Update
                     }
                 }
             }
+            context.UpdateRange(queueBuildings);
             context.SaveChanges();
         }
 

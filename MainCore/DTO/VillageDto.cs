@@ -29,6 +29,7 @@
         [MapperIgnoreTarget(nameof(Village.VillageSetting))]
         private static partial Village ToEntity(this VillageDto dto);
 
+        [MapperIgnoreTarget(nameof(Village.Id))]
         [MapperIgnoreTarget(nameof(Village.AccountId))]
         [MapperIgnoreTarget(nameof(Village.Buildings))]
         [MapperIgnoreTarget(nameof(Village.QueueBuildings))]

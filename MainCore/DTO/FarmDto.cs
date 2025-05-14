@@ -18,6 +18,7 @@
         }
 
         [MapperIgnoreTarget(nameof(Farm.AccountId))]
+        [MapperIgnoreTarget(nameof(Farm.Id))]
         public static partial void To(this FarmDto dto, Farm entity);
 
         [MapperIgnoreTarget(nameof(Farm.AccountId))]
