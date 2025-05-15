@@ -2,15 +2,15 @@
 {
     public static class LoginParser
     {
-        public static HtmlNode GetLoginButton(HtmlDocument doc)
+        public static HtmlNode? GetLoginButton(HtmlDocument doc)
         {
             var loginScene = doc.GetElementbyId("loginScene");
-            BrokenParserException.ThrowIfNull(loginScene);
+            if (loginScene is null) return null;
 
             var loginButton = loginScene
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("green"));
-            BrokenParserException.ThrowIfNull(loginButton);
+
             return loginButton;
         }
 

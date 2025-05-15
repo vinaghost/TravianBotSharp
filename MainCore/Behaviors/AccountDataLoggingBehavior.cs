@@ -18,7 +18,7 @@ namespace MainCore.Behaviors
 
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
-            //if (_dataService.IsLoggerConfigured) return await Next(request, cancellationToken);
+            if (_dataService.IsLoggerConfigured) return await Next(request, cancellationToken);
             if (request.AccountId != _dataService.AccountId) return await Next(request, cancellationToken);
 
             using (LogContext.PushProperty("Account", _dataService.AccountData))
