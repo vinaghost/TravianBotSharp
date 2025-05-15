@@ -26,10 +26,9 @@ namespace MainCore.Behaviors
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
-            var html = _browser.Html;
-            if (!LoginParser.IsIngamePage(html))
+            if (!LoginParser.IsIngamePage(_browser.Html))
             {
-                if (!LoginParser.IsLoginPage(html))
+                if (!LoginParser.IsLoginPage(_browser.Html))
                 {
                     return (TResponse)Stop.NotTravianPage;
                 }
@@ -41,17 +40,21 @@ namespace MainCore.Behaviors
                 }
             }
 
-            await _updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
-
-            await _updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
+            if (LoginParser.IsIngamePage(_browser.Html))
+            {
+                await _updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
+                await _updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
+            }
 
             var response = await Next(request, cancellationToken);
 
-            await _updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
+            if (LoginParser.IsIngamePage(_browser.Html))
+            {
+                await _updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
+                await _updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
+                await _updateAdventureCommand.HandleAsync(new(accountId), cancellationToken);
+            }
 
-            await _updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
-
-            await _updateAdventureCommand.HandleAsync(new(accountId), cancellationToken);
             return response;
         }
     }
