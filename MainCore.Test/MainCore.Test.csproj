@@ -27,7 +27,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Serilog.Sinks.TestCorrelator" Version="4.0.0" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
+    <PackageReference Include="System.Private.Uri" Version="4.3.2" />
     <PackageReference Include="TngTech.ArchUnitNET" Version="0.11.4" />
     <PackageReference Include="TngTech.ArchUnitNET.xUnit" Version="0.11.4" />
     <PackageReference Include="xunit" Version="2.9.3" />

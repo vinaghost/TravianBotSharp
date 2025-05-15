@@ -68,7 +68,7 @@ namespace MainCore
                    resolver.InitializeSplat();
                    resolver.InitializeReactiveUI();
                    services.AddCoreServices();
-                   services.AddSerilog((services, c) =>
+                   services.AddSerilog(c =>
                    {
                        c.MinimumLevel.Override("Microsoft", LogEventLevel.Warning);
 
