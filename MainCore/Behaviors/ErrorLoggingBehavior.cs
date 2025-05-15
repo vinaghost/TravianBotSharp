@@ -17,7 +17,7 @@
             if (response.IsFailed)
             {
                 var message = string.Join(Environment.NewLine, response.Reasons.Select(e => e.Message));
-                _logger.Warning("{error}", message);
+                _logger.Warning("{message}", message);
             }
             return response;
         }

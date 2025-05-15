@@ -2,6 +2,8 @@
 {
     public interface IConstraint;
 
+    public record Constraint : IConstraint;
+
     public interface IAccountConstraint
     {
         AccountId AccountId { get; }
