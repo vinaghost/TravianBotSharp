@@ -5,28 +5,31 @@
         public static HtmlNode GetLoginButton(HtmlDocument doc)
         {
             var loginScene = doc.GetElementbyId("loginScene");
-            if (loginScene is null) return null;
+            BrokenParserException.ThrowIfNull(loginScene);
 
-            var node = loginScene
+            var loginButton = loginScene
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("green"));
-            return node;
+            BrokenParserException.ThrowIfNull(loginButton);
+            return loginButton;
         }
 
         public static HtmlNode GetUsernameInput(HtmlDocument doc)
         {
-            var node = doc.DocumentNode
+            var usernameInput = doc.DocumentNode
                 .Descendants("input")
                 .FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("name"));
-            return node;
+            BrokenParserException.ThrowIfNull(usernameInput);
+            return usernameInput;
         }
 
         public static HtmlNode GetPasswordInput(HtmlDocument doc)
         {
-            var node = doc.DocumentNode
+            var passwordInput = doc.DocumentNode
                 .Descendants("input")
                 .FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("password"));
-            return node;
+            BrokenParserException.ThrowIfNull(passwordInput);
+            return passwordInput;
         }
 
         public static bool IsIngamePage(HtmlDocument doc)

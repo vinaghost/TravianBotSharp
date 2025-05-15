@@ -11,9 +11,12 @@
         public static HtmlNode GetOptionButton(HtmlDocument doc)
         {
             var outOfGame = doc.GetElementbyId("outOfGame");
-            if (outOfGame is null) return null;
-            var a = outOfGame.Descendants("a").FirstOrDefault(x => x.HasClass("options"));
-            return a;
+            BrokenParserException.ThrowIfNull(outOfGame);
+            var optionButton = outOfGame
+                .Descendants("a")
+                .FirstOrDefault(x => x.HasClass("options"));
+            BrokenParserException.ThrowIfNull(optionButton);
+            return optionButton;
         }
 
         public static HtmlNode GetHideContextualHelpOption(HtmlDocument doc)
@@ -24,10 +27,15 @@
 
         public static HtmlNode GetSubmitButton(HtmlDocument doc)
         {
-            var div = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("submitButtonContainer"));
-            if (div is null) return null;
-            var button = div.Descendants("button").FirstOrDefault();
-            return button;
+            var submitButtonContainer = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("submitButtonContainer"));
+            BrokenParserException.ThrowIfNull(submitButtonContainer);
+            var submitButton = submitButtonContainer
+                .Descendants("button")
+                .FirstOrDefault();
+            BrokenParserException.ThrowIfNull(submitButton);
+            return submitButton;
         }
     }
 }
