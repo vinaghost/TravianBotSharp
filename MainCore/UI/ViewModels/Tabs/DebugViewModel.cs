@@ -16,10 +16,10 @@ namespace MainCore.UI.ViewModels.Tabs
         public ObservableCollection<TaskItem> Tasks { get; } = [];
 
         [Reactive]
-        private string _logs;
+        private string _logs = "";
 
         [Reactive]
-        private string _endpointAddress;
+        private string _endpointAddress = "";
 
         public DebugViewModel(LogSink logSink, ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory)
         {

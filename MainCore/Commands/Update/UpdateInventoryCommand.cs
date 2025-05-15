@@ -98,7 +98,7 @@ namespace MainCore.Commands.Update
 
             foreach (var item in itemUpdated)
             {
-                var dto = dtos.Find(x => x.Type == item.Type);
+                var dto = dtos.First(x => x.Type == item.Type);
                 dto.To(item);
                 context.Update(item);
             }

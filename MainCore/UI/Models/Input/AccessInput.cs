@@ -47,25 +47,25 @@
         public AccessId Id { get; set; }
 
         [Reactive]
-        private string _username;
+        private string _username = "";
 
         [Reactive]
-        private string _password;
+        private string _password = "";
 
         [Reactive]
-        private string _proxyHost;
+        private string _proxyHost = "";
 
         [Reactive]
         private int _proxyPort;
 
         [Reactive]
-        private string _proxyUsername;
+        private string _proxyUsername = "";
 
         [Reactive]
-        private string _proxyPassword;
+        private string _proxyPassword = "";
 
         [Reactive]
-        private string _useragent;
+        private string _useragent = "";
 
         [Reactive]
         private DateTime _lastUsed;

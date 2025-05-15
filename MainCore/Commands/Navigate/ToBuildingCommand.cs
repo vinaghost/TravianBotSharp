@@ -74,7 +74,7 @@ namespace MainCore.Commands.Navigate
         {
             var node = doc.DocumentNode
                    .Descendants("a")
-                   .FirstOrDefault(x => x.HasClass($"buildingSlot{location}"));
+                   .First(x => x.HasClass($"buildingSlot{location}"));
             return node;
         }
 
@@ -83,7 +83,7 @@ namespace MainCore.Commands.Navigate
             var tmpLocation = location - 18;
             var div = doc.DocumentNode
                 .SelectSingleNode($"//*[@id='villageContent']/div[{tmpLocation}]");
-
+            if (div is null) throw new NullReferenceException($"Cannot find //*[@id='villageContent']/div[{tmpLocation}]");
             return div;
         }
     }

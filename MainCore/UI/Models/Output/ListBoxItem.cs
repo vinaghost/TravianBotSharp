@@ -5,7 +5,7 @@
         public int Id { get; set; }
 
         [Reactive]
-        private string _content;
+        private string _content = "";
 
         [Reactive]
         private SplatColor _color = SplatColor.Black;

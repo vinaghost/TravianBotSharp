@@ -59,7 +59,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
                 var sameTypeBuildings = buildings.Where(x => x.Type == plan.Type);
                 if (!sameTypeBuildings.Any()) return;
                 if (sameTypeBuildings.Any(x => x.Location == plan.Location)) return;
-                var largestLevelBuilding = sameTypeBuildings.MaxBy(x => x.Level);
+                var largestLevelBuilding = sameTypeBuildings.MaxBy(x => x.Level)!;
                 if (largestLevelBuilding.Level == plan.Type.GetMaxLevel()) return;
                 plan.Location = largestLevelBuilding.Location;
                 return;
@@ -67,7 +67,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
             if (plan.Type.IsResourceField())
             {
-                var field = buildings.Find(x => x.Location == plan.Location);
+                var field = buildings.First(x => x.Location == plan.Location);
                 if (plan.Type == field.Type) return;
                 plan.Type = field.Type;
                 return;

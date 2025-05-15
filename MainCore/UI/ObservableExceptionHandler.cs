@@ -27,7 +27,6 @@ namespace MainCore.UI
 
         public void OnCompleted()
         {
-            Handle(null);
         }
 
         private void Handle(Exception exception)

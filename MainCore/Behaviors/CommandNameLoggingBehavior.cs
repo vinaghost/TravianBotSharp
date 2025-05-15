@@ -16,7 +16,7 @@ namespace MainCore.Behaviors
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
             var name = request.GetType().FullName;
-            if (!name.Contains("Update"))
+            if (!string.IsNullOrEmpty(name) && !name.Contains("Update"))
             {
                 name = name
                     .Replace("MainCore.", "")

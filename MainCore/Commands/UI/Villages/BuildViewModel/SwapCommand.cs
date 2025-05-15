@@ -23,7 +23,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             if (job is null) return -1;
 
             var currentPosition = job.Position;
-            Job targetJob;
+            Job? targetJob;
 
             switch (move)
             {

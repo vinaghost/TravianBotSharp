@@ -55,7 +55,7 @@ namespace MainCore.UI.Models.Input
         public ObservableCollection<ComboBoxItem<BuildingEnums>> Buildings { get; set; } = new();
 
         [Reactive]
-        private ComboBoxItem<BuildingEnums> _selectedBuilding;
+        private ComboBoxItem<BuildingEnums>? _selectedBuilding;
 
         [Reactive]
         private int _level;

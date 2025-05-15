@@ -40,7 +40,7 @@ namespace MainCore.Commands.Update
 
             foreach (var farm in farmUpdated)
             {
-                var dto = dtos.FirstOrDefault(x => x.Id.Value == farm.Id);
+                var dto = dtos.First(x => x.Id.Value == farm.Id);
                 dto.To(farm);
                 context.Update(farm);
             }

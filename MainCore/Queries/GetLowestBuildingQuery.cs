@@ -20,7 +20,7 @@ namespace MainCore.Queries
                  .Where(x => x.VillageId == villageId.Value)
                  .Where(x => x.Type == buildingType)
                  .OrderBy(x => x.Level)
-                 .FirstOrDefault();
+                 .First();
             return building;
         }
     }

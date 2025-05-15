@@ -22,8 +22,7 @@ namespace MainCore.Notifications.Handlers.Trigger
             }
             else
             {
-                var task = taskManager.Get<StartAdventureTask.Task>(accountId);
-                taskManager.Remove(accountId, task);
+                taskManager.Remove<StartAdventureTask.Task>(accountId);
             }
         }
     }

@@ -1,4 +1,6 @@
-﻿namespace MainCore.DTO
+﻿#nullable disable
+
+namespace MainCore.DTO
 {
     public class FarmDto
     {

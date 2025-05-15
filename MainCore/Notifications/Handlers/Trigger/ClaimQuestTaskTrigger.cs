@@ -24,8 +24,7 @@ namespace MainCore.Notifications.Handlers.Trigger
             }
             else
             {
-                var task = taskManager.Get<ClaimQuestTask.Task>(accountId, villageId);
-                taskManager.Remove(accountId, task);
+                taskManager.Remove<ClaimQuestTask.Task>(accountId);
             }
         }
     }

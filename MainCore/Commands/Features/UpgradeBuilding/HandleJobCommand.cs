@@ -30,7 +30,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (job.Type == JobTypeEnums.ResourceBuild)
             {
                 var layoutBuildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId, true));
-                var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content);
+                var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content)!;
                 var normalBuildPlan = GetNormalBuildPlan(villageId, resourceBuildPlan, layoutBuildings);
                 if (normalBuildPlan is null)
                 {
@@ -44,7 +44,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 return Continue.Error;
             }
 
-            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
+            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
 
             var dorf = plan.Location < 19 ? 1 : 2;
             result = await toDorfCommand.HandleAsync(new(accountId, dorf), cancellationToken);
@@ -64,7 +64,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return plan;
         }
 
-        private static NormalBuildPlan GetNormalBuildPlan(
+        private static NormalBuildPlan? GetNormalBuildPlan(
             VillageId villageId,
             ResourceBuildPlan plan,
             List<BuildingItem> layoutBuildings
@@ -101,7 +101,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         {
             if (job.Type == JobTypeEnums.ResourceBuild) return false;
 
-            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
+            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
 
             var queueBuilding = queueBuildings
                 .Where(x => x.Location == plan.Location)

@@ -62,6 +62,8 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task EditAccess()
         {
+            if (SelectedAccess is null) return;
+
             var result = _accessInputValidator.Validate(AccessInput);
 
             if (!result.IsValid)
@@ -76,6 +78,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private void DeleteAccess()
         {
+            if (SelectedAccess is null) return;
             AccountInput.Accesses.Remove(SelectedAccess);
         }
 
@@ -108,6 +111,6 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [Reactive]
-        private AccessInput _selectedAccess;
+        private AccessInput? _selectedAccess;
     }
 }

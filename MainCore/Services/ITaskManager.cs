@@ -14,13 +14,7 @@ namespace MainCore.Services
 
         void Clear(AccountId accountId);
 
-        T Get<T>(AccountId accountId) where T : BaseTask;
-
-        T Get<T>(AccountId accountId, VillageId villageId) where T : BaseTask;
-
-        CancellationTokenSource GetCancellationTokenSource(AccountId accountId);
-
-        BaseTask GetCurrentTask(AccountId accountId);
+        BaseTask? GetCurrentTask(AccountId accountId);
 
         StatusEnums GetStatus(AccountId accountId);
 
@@ -33,6 +27,10 @@ namespace MainCore.Services
         bool IsExist<T>(AccountId accountId) where T : BaseTask;
 
         bool IsExist<T>(AccountId accountId, VillageId villageId) where T : BaseTask;
+
+        void Remove<T>(AccountId accountId, VillageId villageId) where T : VillageTask;
+
+        void Remove<T>(AccountId accountId) where T : AccountTask;
 
         void Remove(AccountId accountId, BaseTask task);
 

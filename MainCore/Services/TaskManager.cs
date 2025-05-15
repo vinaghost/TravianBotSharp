@@ -7,11 +7,11 @@ namespace MainCore.Services
     {
         private readonly Dictionary<AccountId, TaskQueue> _queues = new();
 
-        public event Action<AccountId> StatusUpdated;
+        public event Action<AccountId> StatusUpdated = delegate { };
 
-        public event Action<AccountId> TaskUpdated;
+        public event Action<AccountId> TaskUpdated = delegate { };
 
-        public BaseTask GetCurrentTask(AccountId accountId)
+        public BaseTask? GetCurrentTask(AccountId accountId)
         {
             var tasks = GetTaskList(accountId);
             return tasks.Find(x => x.Stage == StageEnums.Executing);
@@ -22,7 +22,7 @@ namespace MainCore.Services
             var cts = GetCancellationTokenSource(accountId);
             if (cts is null) return;
             await cts.CancelAsync();
-            BaseTask currentTask;
+            BaseTask? currentTask;
             do
             {
                 currentTask = GetCurrentTask(accountId);
@@ -51,23 +51,7 @@ namespace MainCore.Services
             AddTask(task, first);
         }
 
-        public T Get<T>(AccountId accountId) where T : BaseTask
-        {
-            var task = GetTaskList(accountId)
-                .OfType<T>()
-                .FirstOrDefault(x => x.Key == $"{accountId}");
-            return task;
-        }
-
-        public T Get<T>(AccountId accountId, VillageId villageId) where T : BaseTask
-        {
-            var task = GetTaskList(accountId)
-                .OfType<T>()
-                .FirstOrDefault(x => x.Key == $"{accountId}-{villageId}");
-            return task;
-        }
-
-        private T Get<T>(AccountId accountId, string key) where T : BaseTask
+        private T? Get<T>(AccountId accountId, string key) where T : BaseTask
         {
             var task = GetTaskList(accountId)
                 .OfType<T>()
@@ -139,6 +123,24 @@ namespace MainCore.Services
             }
         }
 
+        public void Remove<T>(AccountId accountId) where T : AccountTask
+        {
+            var tasks = GetTaskList(accountId);
+            var task = tasks.OfType<T>().FirstOrDefault(x => x.AccountId == accountId);
+            if (task is null) return;
+            tasks.Remove(task);
+            ReOrder(accountId, tasks);
+        }
+
+        public void Remove<T>(AccountId accountId, VillageId villageId) where T : VillageTask
+        {
+            var tasks = GetTaskList(accountId);
+            var task = tasks.OfType<T>().FirstOrDefault(x => x.AccountId == accountId && x.VillageId == villageId);
+            if (task is null) return;
+            tasks.Remove(task);
+            ReOrder(accountId, tasks);
+        }
+
         public void ReOrder(AccountId accountId)
         {
             var tasks = GetTaskList(accountId);
@@ -150,14 +152,14 @@ namespace MainCore.Services
             var tasks = GetTaskList(accountId);
             if (tasks.Count == 0) return;
             tasks.Clear();
-            TaskUpdated?.Invoke(accountId);
+            TaskUpdated.Invoke(accountId);
         }
 
         private void ReOrder(AccountId accountId, List<BaseTask> tasks)
         {
             if (tasks.Count <= 1) return;
             tasks.Sort((x, y) => DateTime.Compare(x.ExecuteAt, y.ExecuteAt));
-            TaskUpdated?.Invoke(accountId);
+            TaskUpdated.Invoke(accountId);
         }
 
         public List<BaseTask> GetTaskList(AccountId accountId)
@@ -176,10 +178,10 @@ namespace MainCore.Services
         {
             var queue = GetTaskQueue(accountId);
             queue.Status = status;
-            StatusUpdated?.Invoke(accountId);
+            StatusUpdated.Invoke(accountId);
         }
 
-        public CancellationTokenSource GetCancellationTokenSource(AccountId accountId)
+        private CancellationTokenSource? GetCancellationTokenSource(AccountId accountId)
         {
             var queue = GetTaskQueue(accountId);
             return queue.CancellationTokenSource;
@@ -210,7 +212,7 @@ namespace MainCore.Services
     {
         public bool IsExecuting { get; set; } = false;
         public StatusEnums Status { get; set; } = StatusEnums.Offline;
-        public CancellationTokenSource CancellationTokenSource { get; set; } = null;
+        public CancellationTokenSource? CancellationTokenSource { get; set; }
         public List<BaseTask> Tasks = [];
     }
 }

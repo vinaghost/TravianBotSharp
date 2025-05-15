@@ -25,23 +25,23 @@ namespace MainCore.Services
 
             Func<OnRetryArguments<Result>, ValueTask> OnRetry = async static args =>
             {
-                args.Context.Properties.TryGetValue(contextDataKey, out var contextData);
+                if (!args.Context.Properties.TryGetValue(contextDataKey, out var contextData)) return;
 
                 var (accountId, taskName, logger, browser) = contextData;
                 logger.Warning("There is something wrong.");
                 var error = args.Outcome;
-                if (error.Exception is null)
-                {
-                    var errors = error.Result.Reasons.Select(x => x.Message).ToList();
-                    logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
-                }
-                else
+                if (error.Exception is not null)
                 {
                     var exception = error.Exception;
                     logger.Error(exception, "{Message}", exception.Message);
                 }
+                if (error.Result is not null)
+                {
+                    var errors = error.Result.Reasons.Select(x => x.Message).ToList();
+                    logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
+                }
 
-                logger.Warning("Retry {AttemptNumber} for {TaskName}", args.AttemptNumber + 1, taskName);
+                logger.Warning("{TaskName} retry #{AttemptNumber} times", taskName, args.AttemptNumber + 1);
                 await browser.Refresh(args.Context.CancellationToken);
             };
 
@@ -121,7 +121,7 @@ namespace MainCore.Services
             }
             else
             {
-                var result = poliResult.Result;
+                var result = poliResult.Result!;
                 if (result.IsFailed)
                 {
                     var message = string.Join(Environment.NewLine, result.Reasons.Select(e => e.Message));
@@ -159,7 +159,7 @@ namespace MainCore.Services
                     }
                 }
             }
-            var delayTaskCommand = scope.ServiceProvider.GetService<DelayTaskCommand.Handler>();
+            var delayTaskCommand = scope.ServiceProvider.GetRequiredService<DelayTaskCommand.Handler>();
             await delayTaskCommand.HandleAsync(new(accountId));
         }
 

@@ -8,7 +8,7 @@ namespace MainCore.UI.ViewModels
     public partial class MainViewModel : ViewModelBase
     {
         [Reactive]
-        private MainLayoutViewModel _mainLayoutViewModel;
+        private MainLayoutViewModel _mainLayoutViewModel = null!;
 
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
 
@@ -55,7 +55,7 @@ namespace MainCore.UI.ViewModels
             }
 
             await _waitingOverlayViewModel.ChangeMessage("loading program layout");
-            MainLayoutViewModel = Locator.Current.GetService<MainLayoutViewModel>();
+            MainLayoutViewModel = Locator.Current.GetService<MainLayoutViewModel>()!;
 
             await MainLayoutViewModel.Load();
             await _waitingOverlayViewModel.Hide();

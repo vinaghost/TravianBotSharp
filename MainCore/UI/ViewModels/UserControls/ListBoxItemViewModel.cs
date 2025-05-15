@@ -10,7 +10,7 @@ namespace MainCore.UI.ViewModels.UserControls
         private int _selectedIndex;
 
         [Reactive]
-        private ListBoxItem _selectedItem;
+        private ListBoxItem? _selectedItem;
 
         [Reactive]
         private bool _isEnable = true;

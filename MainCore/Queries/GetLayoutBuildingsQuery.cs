@@ -52,7 +52,7 @@ namespace MainCore.Queries
                     .Where(x => x.Type == JobTypeEnums.NormalBuild)
                     .Select(x => x.Content)
                     .AsEnumerable()
-                    .Select(x => JsonSerializer.Deserialize<NormalBuildPlan>(x))
+                    .Select(x => JsonSerializer.Deserialize<NormalBuildPlan>(x)!)
                     .GroupBy(x => x.Location);
 
                 foreach (var jobBuilding in jobBuildings)
@@ -70,7 +70,7 @@ namespace MainCore.Queries
                    .Where(x => x.Type == JobTypeEnums.ResourceBuild)
                    .Select(x => x.Content)
                    .AsEnumerable()
-                   .Select(x => JsonSerializer.Deserialize<ResourceBuildPlan>(x))
+                   .Select(x => JsonSerializer.Deserialize<ResourceBuildPlan>(x)!)
                    .GroupBy(x => x.Plan);
 
                 var fields = villageBuildings.Where(x => x.Type.IsResourceField()).ToList();

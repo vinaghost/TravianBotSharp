@@ -18,6 +18,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly IDialogService _dialogService;
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
+        private readonly ITaskManager _taskManager;
 
         private static readonly Dictionary<SplatColor, string> _activeTexts = new()
         {
@@ -26,11 +27,12 @@ namespace MainCore.UI.ViewModels.Tabs
             { SplatColor.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, ICustomServiceScopeFactory serviceScopeFactory)
+        public FarmingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager)
         {
             _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;
             _serviceScopeFactory = serviceScopeFactory;
+            _taskManager = taskManager;
 
             LoadFarmListCommand.Subscribe(items =>
             {
@@ -73,8 +75,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task UpdateFarmList()
         {
-            var taskManager = Locator.Current.GetService<ITaskManager>();
-            taskManager.AddOrUpdate<UpdateFarmListTask.Task>(new(AccountId));
+            _taskManager.AddOrUpdate<UpdateFarmListTask.Task>(new(AccountId));
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added update farm list task"));
         }
 
@@ -94,18 +95,14 @@ namespace MainCore.UI.ViewModels.Tabs
                     return;
                 }
             }
-            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
-            taskManager.AddOrUpdate<StartFarmListTask.Task>(new(AccountId));
+            _taskManager.AddOrUpdate<StartFarmListTask.Task>(new(AccountId));
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added start farm list task"));
         }
 
         [ReactiveCommand]
         private async Task Stop()
         {
-            var taskManager = Locator.Current.GetService<ITaskManager>();
-            var task = taskManager.Get<StartFarmListTask.Task>(AccountId);
-            if (task is not null) taskManager.Remove(AccountId, task);
-
+            _taskManager.Remove<StartFarmListTask.Task>(AccountId);
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Removed start farm list task"));
         }
 
@@ -134,6 +131,7 @@ namespace MainCore.UI.ViewModels.Tabs
             }
 
             var selectedFarmList = FarmLists.SelectedItem;
+            if (selectedFarmList is null) return;
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var activationCommand = scope.ServiceProvider.GetRequiredService<ActivationCommand.Handler>();

@@ -11,7 +11,7 @@ namespace MainCore.UI.ViewModels.Abstract
 
         protected AccountTabViewModelBase()
         {
-            _selectedItemStore = Locator.Current.GetService<SelectedItemStore>();
+            _selectedItemStore = Locator.Current.GetService<SelectedItemStore>()!;
 
             var accountIdObservable = this.WhenAnyValue(vm => vm._selectedItemStore.Account)
                                         .WhereNotNull()

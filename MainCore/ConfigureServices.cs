@@ -53,7 +53,7 @@ namespace MainCore
 
         private static string GetVersion()
         {
-            var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
+            var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version!;
             var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
             return $"{version}";
         }

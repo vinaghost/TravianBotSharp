@@ -63,7 +63,7 @@ namespace MainCore.UI.ViewModels.Tabs
             try
             {
                 var jsonString = await File.ReadAllTextAsync(path);
-                settings = JsonSerializer.Deserialize<Dictionary<AccountSettingEnums, int>>(jsonString);
+                settings = JsonSerializer.Deserialize<Dictionary<AccountSettingEnums, int>>(jsonString)!;
             }
             catch
             {

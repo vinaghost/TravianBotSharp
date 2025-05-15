@@ -10,12 +10,7 @@ namespace MainCore.UI.ViewModels.UserControls
         public static void Register(IServiceCollection services)
         {
             services
-                .AddSingleton(x => x.GetService<IWaitingOverlayViewModel>() as WaitingOverlayViewModel);
-        }
-
-        public WaitingOverlayViewModel()
-        {
-            Message = "is initializing";
+                .AddSingleton(x => (x.GetRequiredService<IWaitingOverlayViewModel>() as WaitingOverlayViewModel)!);
         }
 
         public async Task Show(string message)
@@ -55,7 +50,7 @@ namespace MainCore.UI.ViewModels.UserControls
         [Reactive]
         private bool _shown;
 
-        private string _message;
+        private string _message = "TBS is initializing";
 
         public string Message
         {

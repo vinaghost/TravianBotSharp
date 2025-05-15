@@ -18,7 +18,7 @@ namespace MainCore.Queries
                .Where(x => x.VillageId == villageId.Value)
                .Where(x => x.Type != BuildingEnums.Site)
                .OrderBy(x => x.Position)
-               .FirstOrDefault();
+               .First();
             return queueBuilding;
         }
     }

@@ -45,7 +45,7 @@ namespace MainCore.Commands.Update
 
             foreach (var village in villageUpdated)
             {
-                var dto = dtos.Find(x => x.Id.Value == village.Id);
+                var dto = dtos.First(x => x.Id.Value == village.Id);
                 dto.To(village);
                 context.Update(village);
             }

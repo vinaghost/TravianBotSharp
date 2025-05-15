@@ -26,7 +26,8 @@ namespace MainCore.Queries
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Location == location)
                 .ToDto()
-                .FirstOrDefault();
+                .First();
+
             return building;
         }
     }

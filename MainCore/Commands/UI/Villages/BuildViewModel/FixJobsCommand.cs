@@ -45,7 +45,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
                 {
                     case JobTypeEnums.NormalBuild:
                         {
-                            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
+                            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
 
                             Modify(buildings, plan, changedLocations);
                             job.Content = GetContent(plan);
@@ -55,7 +55,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
                         }
                     case JobTypeEnums.ResourceBuild:
                         {
-                            var plan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content);
+                            var plan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content)!;
                             if (IsValidPlan(buildings, plan)) yield return job;
                             continue;
                         }
@@ -118,7 +118,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             {
                 if (plan.Type.IsWall())
                 {
-                    var wall = buildings.Find(x => x.Location == 40);
+                    var wall = buildings.First(x => x.Location == 40);
                     if (plan.Type != wall.Type)
                     {
                         plan.Type = wall.Type;

@@ -95,6 +95,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No account selected"));
                 return;
             }
+            if (Accounts.SelectedItem is null) return;
 
             var accountId = new AccountId(Accounts.SelectedItemId);
             using var scope = _serviceScopeFactory.CreateScope(accountId);
@@ -261,7 +262,7 @@ namespace MainCore.UI.ViewModels.UserControls
         public void LoadStatus(AccountId accountId)
         {
             var status = GetStatus(accountId);
-            GetAccountCommand.Execute(accountId).Subscribe(account => account.Color = status.GetColor());
+            GetAccountCommand.Execute(accountId).WhereNotNull().Subscribe(account => account.Color = status.GetColor());
             if (accountId.Value != Accounts.SelectedItemId) return;
             GetStatusCommand.Execute(accountId).Subscribe();
         }
@@ -270,8 +271,7 @@ namespace MainCore.UI.ViewModels.UserControls
         private StatusEnums GetStatus(AccountId accountId)
         {
             if (accountId == AccountId.Empty) return StatusEnums.Starting;
-            var taskManager = Locator.Current.GetService<ITaskManager>();
-            return taskManager.GetStatus(accountId);
+            return _taskManager.GetStatus(accountId);
         }
 
         [ReactiveCommand]
@@ -284,7 +284,7 @@ namespace MainCore.UI.ViewModels.UserControls
         }
 
         [ReactiveCommand]
-        private ListBoxItem GetAccount(AccountId accountId)
+        private ListBoxItem? GetAccount(AccountId accountId)
         {
             var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
             return account;
@@ -293,7 +293,7 @@ namespace MainCore.UI.ViewModels.UserControls
         [ReactiveCommand]
         private static string LoadVersion()
         {
-            var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version;
+            var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version!;
             var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
             return $"{version}";
         }
@@ -323,7 +323,7 @@ namespace MainCore.UI.ViewModels.UserControls
         }
 
         [ObservableAsProperty]
-        private string _version;
+        private string _version = "";
 
         [Reactive]
         private string _pauseText = "[~~!~~]";

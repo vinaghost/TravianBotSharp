@@ -97,7 +97,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var current = driver.CurrentWindowHandle;
             while (driver.WindowHandles.Count > 1)
             {
-                var others = driver.WindowHandles.FirstOrDefault(x => !x.Equals(current));
+                var others = driver.WindowHandles.First(x => !x.Equals(current));
                 driver.SwitchTo().Window(others);
                 driver.Close();
                 driver.SwitchTo().Window(current);
@@ -144,10 +144,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             do
             {
                 var handles = driver.WindowHandles;
-                if (handles.Count == 1) break;
+                if (handles.Count <= 1) break;
 
                 current = driver.CurrentWindowHandle;
-                var other = driver.WindowHandles.FirstOrDefault(x => !x.Equals(current));
+                var other = driver.WindowHandles.First(x => !x.Equals(current));
                 driver.SwitchTo().Window(other);
                 driver.Close();
                 driver.SwitchTo().Window(current);

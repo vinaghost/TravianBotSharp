@@ -12,6 +12,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
     public partial class BuildViewModel : VillageTabViewModelBase
     {
         private readonly IDialogService _dialogService;
+        private readonly ITaskManager _taskManager;
         private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
         private readonly IValidator<ResourceBuildInput> _resourceBuildInputValidator;
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
@@ -23,15 +24,17 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(IDialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, ICustomServiceScopeFactory serviceScopeFactory)
+        public BuildViewModel(IDialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager)
         {
             _dialogService = dialogService;
             _normalBuildInputValidator = normalBuildInputValidator;
             _resourceBuildInputValidator = resourceBuildInputValidator;
             _serviceScopeFactory = serviceScopeFactory;
+            _taskManager = taskManager;
 
             this.WhenAnyValue(vm => vm.Buildings.SelectedItem)
                 .ObserveOn(RxApp.TaskpoolScheduler)
+                .WhereNotNull()
                 .InvokeCommand(LoadBuildNormalCommand);
 
             LoadBuildingCommand.Subscribe(Buildings.Load);
@@ -347,7 +350,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             try
             {
                 var jsonString = await File.ReadAllTextAsync(path);
-                jobs = JsonSerializer.Deserialize<List<JobDto>>(jsonString);
+                jobs = JsonSerializer.Deserialize<List<JobDto>>(jsonString)!;
             }
             catch
             {
@@ -387,8 +390,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         private bool IsAccountPaused(AccountId accountId)
         {
-            var taskManager = Locator.Current.GetService<ITaskManager>();
-            var status = taskManager.GetStatus(accountId);
+            var status = _taskManager.GetStatus(accountId);
             if (status == StatusEnums.Online)
             {
                 return false;

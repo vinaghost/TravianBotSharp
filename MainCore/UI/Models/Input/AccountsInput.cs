@@ -1,4 +1,6 @@
-﻿namespace MainCore.UI.Models.Input
+﻿#nullable disable
+
+namespace MainCore.UI.Models.Input
 {
     public class AccountsInput
     {

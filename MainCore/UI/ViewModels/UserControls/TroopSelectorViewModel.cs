@@ -10,11 +10,11 @@ namespace MainCore.UI.ViewModels.UserControls
         public ObservableCollection<TroopItem> Items { get; } = new();
 
         [Reactive]
-        private TroopItem _selectedItem;
+        private TroopItem? _selectedItem;
 
         public TroopEnums Get()
         {
-            return SelectedItem.Troop;
+            return SelectedItem?.Troop ?? TroopEnums.None;
         }
 
         public void ChangeTribe(BuildingEnums building, TribeEnums tribe)

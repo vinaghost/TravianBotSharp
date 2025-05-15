@@ -8,10 +8,10 @@ namespace MainCore.UI.Models.Input
         public AccountId Id { get; set; }
 
         [Reactive]
-        private string _username;
+        private string _username = "";
 
         [Reactive]
-        private string _server;
+        private string _server = "";
 
         public ObservableCollection<AccessInput> Accesses { get; } = new();
 

@@ -20,7 +20,7 @@ namespace MainCore.Commands.UI.EditAccountViewModel
                 .Where(x => x.Id == accountId.Value)
                 .Include(x => x.Accesses)
                 .ToDto()
-                .FirstOrDefault();
+                .First();
             return account;
         }
     }

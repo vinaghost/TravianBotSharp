@@ -9,10 +9,10 @@ namespace MainCore.Services
 {
     public sealed class ChromeBrowser : IChromeBrowser
     {
-        private ChromeDriver _driver;
+        private ChromeDriver _driver = null!;
         private readonly ChromeDriverService _chromeService;
-        private WebDriverWait _wait;
-        private ILogger _logger;
+        private WebDriverWait _wait = null!;
+        private ILogger _logger = null!;
 
         private readonly string[] _extensionsPath;
         private readonly HtmlDocument _htmlDoc = new();
@@ -23,23 +23,23 @@ namespace MainCore.Services
         private static readonly Func<OnRetryArguments<Result>, ValueTask> _onRetry = async args =>
         {
             await Task.CompletedTask;
-            args.Context.Properties.TryGetValue(_contextDataKey, out var contextData);
+            if (!args.Context.Properties.TryGetValue(_contextDataKey, out var contextData)) return;
 
             var (logger, taskName) = contextData;
             logger.Warning("There is something wrong.");
             var error = args.Outcome;
-            if (error.Exception is null)
-            {
-                var errors = error.Result.Reasons.Select(x => x.Message).ToList();
-                logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
-            }
-            else
+            if (error.Exception is not null)
             {
                 var exception = error.Exception;
                 logger.Error(exception, "{Message}", exception.Message);
             }
+            if (error.Result is not null)
+            {
+                var errors = error.Result.Reasons.Select(x => x.Message).ToList();
+                logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
+            }
 
-            logger.Warning("Retry {AttemptNumber} for {TaskName}", args.AttemptNumber + 1, taskName);
+            logger.Warning("{TaskName} retry #{AttemptNumber} times", taskName, args.AttemptNumber + 1);
         };
 
         private static readonly RetryStrategyOptions<Result> _retryOptions = new()
@@ -74,7 +74,7 @@ namespace MainCore.Services
 
             if (!string.IsNullOrEmpty(setting.ProxyHost))
             {
-                if (!string.IsNullOrEmpty(setting.ProxyUsername))
+                if (!string.IsNullOrEmpty(setting.ProxyUsername) && !string.IsNullOrEmpty(setting.ProxyPassword))
                 {
                     options.AddHttpProxy(setting.ProxyHost, setting.ProxyPort, setting.ProxyUsername, setting.ProxyPassword);
                 }
@@ -159,7 +159,7 @@ namespace MainCore.Services
             ResilienceContextPool.Shared.Return(context);
         }
 
-        private static bool PageLoaded(IWebDriver driver) => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState").Equals("complete");
+        private static bool PageLoaded(IWebDriver driver) => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState")?.Equals("complete") ?? false;
 
         private static bool PageChanged(IWebDriver driver, string url_nested) => driver.Url.Contains(url_nested) && PageLoaded(driver);
 
@@ -212,7 +212,7 @@ namespace MainCore.Services
         public async Task<Result> ExecuteJsScript(string javascript)
         {
             await Task.CompletedTask;
-            var js = Driver as IJavaScriptExecutor;
+            var js = _driver as IJavaScriptExecutor;
             js.ExecuteScript(javascript);
             return Result.Ok();
         }
@@ -252,15 +252,14 @@ namespace MainCore.Services
 
         public async Task Close()
         {
-            if (_driver is null) return;
-            await Task.Run(_driver.Quit);
-            _driver = null;
+            await Task.Run(() => _driver?.Quit());
         }
     }
+}
 
-    public static class ChromeOptionsExtensions
-    {
-        private const string background_js = @"
+public static class ChromeOptionsExtensions
+{
+    private const string background_js = @"
 var config = {
 	mode: ""fixed_servers"",
     rules: {
@@ -292,7 +291,7 @@ chrome.webRequest.onAuthRequired.addListener(
     ['blocking']
 );";
 
-        private const string manifest_json = @"
+    private const string manifest_json = @"
 {
     ""version"": ""1.0.0"",
     ""manifest_version"": 3,
@@ -314,49 +313,48 @@ chrome.webRequest.onAuthRequired.addListener(
     ""minimum_chrome_version"": ""108""
 }";
 
-        /// <summary>
-        /// Add HTTP-proxy by <paramref name="userName"/> and <paramref name="password"/>
-        /// </summary>
-        /// <param name="options">Chrome options</param>
-        /// <param name="host">Proxy host</param>
-        /// <param name="port">Proxy port</param>
-        /// <param name="userName">Proxy username</param>
-        /// <param name="password">Proxy password</param>
-        public static void AddHttpProxy(this ChromeOptions options, string host, int port, string userName, string password)
+    /// <summary>
+    /// Add HTTP-proxy by <paramref name="userName"/> and <paramref name="password"/>
+    /// </summary>
+    /// <param name="options">Chrome options</param>
+    /// <param name="host">Proxy host</param>
+    /// <param name="port">Proxy port</param>
+    /// <param name="userName">Proxy username</param>
+    /// <param name="password">Proxy password</param>
+    public static void AddHttpProxy(this ChromeOptions options, string host, int port, string userName, string password)
+    {
+        var background_proxy_js = ReplaceTemplates(background_js, host, port, userName, password);
+
+        if (!Directory.Exists("Plugins"))
+            Directory.CreateDirectory("Plugins");
+
+        var guid = Guid.NewGuid().ToString();
+
+        var manifestPath = $"Plugins/manifest_{guid}.json";
+        var backgroundPath = $"Plugins/background_{guid}.js";
+        var archiveFilePath = $"Plugins/proxy_auth_plugin_{guid}.zip";
+
+        File.WriteAllText(manifestPath, manifest_json);
+        File.WriteAllText(backgroundPath, background_proxy_js);
+
+        using (var zip = ZipFile.Open(archiveFilePath, ZipArchiveMode.Create))
         {
-            var background_proxy_js = ReplaceTemplates(background_js, host, port, userName, password);
-
-            if (!Directory.Exists("Plugins"))
-                Directory.CreateDirectory("Plugins");
-
-            var guid = Guid.NewGuid().ToString();
-
-            var manifestPath = $"Plugins/manifest_{guid}.json";
-            var backgroundPath = $"Plugins/background_{guid}.js";
-            var archiveFilePath = $"Plugins/proxy_auth_plugin_{guid}.zip";
-
-            File.WriteAllText(manifestPath, manifest_json);
-            File.WriteAllText(backgroundPath, background_proxy_js);
-
-            using (var zip = ZipFile.Open(archiveFilePath, ZipArchiveMode.Create))
-            {
-                zip.CreateEntryFromFile(manifestPath, "manifest.json");
-                zip.CreateEntryFromFile(backgroundPath, "background.js");
-            }
-
-            File.Delete(manifestPath);
-            File.Delete(backgroundPath);
-
-            options.AddExtension(archiveFilePath);
+            zip.CreateEntryFromFile(manifestPath, "manifest.json");
+            zip.CreateEntryFromFile(backgroundPath, "background.js");
         }
 
-        private static string ReplaceTemplates(string str, string host, int port, string userName, string password)
-        {
-            return str
-                .Replace("{HOST}", host)
-                .Replace("{PORT}", port.ToString())
-                .Replace("{USERNAME}", userName)
-                .Replace("{PASSWORD}", password);
-        }
+        File.Delete(manifestPath);
+        File.Delete(backgroundPath);
+
+        options.AddExtension(archiveFilePath);
+    }
+
+    private static string ReplaceTemplates(string str, string host, int port, string userName, string password)
+    {
+        return str
+            .Replace("{HOST}", host)
+            .Replace("{PORT}", port.ToString())
+            .Replace("{USERNAME}", userName)
+            .Replace("{PASSWORD}", password);
     }
 }

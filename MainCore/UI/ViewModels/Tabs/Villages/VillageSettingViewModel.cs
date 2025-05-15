@@ -61,7 +61,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             try
             {
                 var jsonString = await File.ReadAllTextAsync(path);
-                settings = JsonSerializer.Deserialize<Dictionary<VillageSettingEnums, int>>(jsonString);
+                settings = JsonSerializer.Deserialize<Dictionary<VillageSettingEnums, int>>(jsonString)!;
             }
             catch
             {

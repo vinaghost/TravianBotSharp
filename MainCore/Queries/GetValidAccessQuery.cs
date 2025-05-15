@@ -19,7 +19,7 @@ namespace MainCore.Queries
 
             var accesses = await getAccessesQuery.HandleAsync(new(accountId), cancellationToken);
 
-            async Task<AccessDto> GetValidAccess(List<AccessDto> accesses)
+            async Task<AccessDto?> GetValidAccess(List<AccessDto> accesses)
             {
                 foreach (var access in accesses)
                 {

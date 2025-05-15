@@ -27,10 +27,10 @@ namespace MainCore.UI.Stores
         }
 
         [Reactive]
-        private ListBoxItem _account;
+        private ListBoxItem? _account;
 
         [Reactive]
-        private ListBoxItem _village;
+        private ListBoxItem? _village;
 
         [ObservableAsProperty]
         private bool _isAccountSelected;

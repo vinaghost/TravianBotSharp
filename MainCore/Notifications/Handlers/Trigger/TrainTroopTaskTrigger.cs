@@ -24,8 +24,7 @@ namespace MainCore.Notifications.Handlers.Trigger
             }
             else
             {
-                var task = taskManager.Get<TrainTroopTask.Task>(accountId, villageId);
-                taskManager.Remove(accountId, task);
+                taskManager.Remove<TrainTroopTask.Task>(accountId);
             }
         }
     }

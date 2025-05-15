@@ -98,7 +98,7 @@ namespace MainCore.Queries
 
             if (job.Type == JobTypeEnums.ResourceBuild) return job;
 
-            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
+            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
             if (plan.Type.IsResourceField()) return job;
             var (isSuccess, _, erros) = context.IsJobValid(villageId, plan);
             if (isSuccess) return job;
@@ -173,16 +173,16 @@ namespace MainCore.Queries
                 .Select(x => new
                 {
                     Job = x,
-                    Content = JsonSerializer.Deserialize<NormalBuildPlan>(x.Content)
+                    Content = JsonSerializer.Deserialize<NormalBuildPlan>(x.Content)!
                 })
                 .Where(x => !ResourceTypes.Contains(x.Content.Type))
                 .Select(x => x.Job)
                 .OrderBy(x => x.Position)
-                .FirstOrDefault();
+                .First();
             return job;
         }
 
-        private static JobDto GetResourceBuildingJob(
+        private static JobDto? GetResourceBuildingJob(
             this AppDbContext context,
             VillageId villageId)
         {
@@ -194,7 +194,7 @@ namespace MainCore.Queries
                 .Select(x => new
                 {
                     Job = x,
-                    Content = JsonSerializer.Deserialize<NormalBuildPlan>(x.Content)
+                    Content = JsonSerializer.Deserialize<NormalBuildPlan>(x.Content)!
                 })
                 .Where(x => ResourceTypes.Contains(x.Content.Type))
                 .Select(x => x.Job)

@@ -16,7 +16,7 @@ namespace MainCore.UI.ViewModels.Tabs
         public ObservableCollection<AccountDetailDto> Accounts { get; } = [];
 
         [Reactive]
-        private string _input;
+        private string _input = "";
 
         public AddAccountsViewModel(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IServiceScopeFactory serviceScopeFactory)
         {
@@ -76,12 +76,13 @@ namespace MainCore.UI.ViewModels.Tabs
                 .AsParallel()
                 .Select(ParseLine)
                 .Where(x => x is not null)
+                .Select(x => x!)
                 .ToList();
 
             return accounts;
         }
 
-        private static AccountDetailDto ParseLine(string input)
+        private static AccountDetailDto? ParseLine(string input)
         {
             var strAccount = input.Trim().Split(' ');
             if (strAccount.Length < 3 || strAccount.Length > 7)
