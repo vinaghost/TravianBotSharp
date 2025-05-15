@@ -24,7 +24,7 @@ namespace MainCore.Test.Behaviors
     {
         [Theory]
         [MemberData(nameof(Data))]
-        public async Task CommandNameLoggingBehaviorShouldLogCorrectName(Result result, string expected)
+        public async Task ErrorLoggingBehaviorShouldLogCorrectErrorMessage(Result result, string expected)
         {
             // Arrange
             var testCorrelatorSinkId = new TestCorrelatorSinkId();
@@ -34,14 +34,14 @@ namespace MainCore.Test.Behaviors
                 .Enrich.FromLogContext()
                 .CreateLogger();
 
-            var commandNameLoggingBehavior = new ErrorLoggingBehavior<IConstraint, Result>(logger);
+            var behavior = new ErrorLoggingBehavior<IConstraint, Result>(logger);
             var handleBehavior = new ErrorLoggingBehaviorTestHandleBehavior(result);
-            commandNameLoggingBehavior.SetInnerHandler(handleBehavior);
+            behavior.SetInnerHandler(handleBehavior);
 
             // Act
             using var testCorrelatorContext = TestCorrelator.CreateContext();
 
-            await commandNameLoggingBehavior.HandleAsync(new Constraint(), CancellationToken.None);
+            await behavior.HandleAsync(new Constraint(), CancellationToken.None);
 
             var logEvent = TestCorrelator.GetLogEventsForSinksFromCurrentContext(testCorrelatorSinkId)[0];
 

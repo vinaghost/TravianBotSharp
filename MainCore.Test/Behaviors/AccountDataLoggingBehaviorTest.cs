@@ -40,14 +40,14 @@ namespace MainCore.Test.Behaviors
             dataService.AccountId.Returns(accountId);
             dataService.AccountData.Returns(accountData);
 
-            var accountDataLoggingBehavior = new AccountDataLoggingBehavior<IAccountConstraint, ValueTuple>(logger, dataService);
+            var behavior = new AccountDataLoggingBehavior<IAccountConstraint, ValueTuple>(logger, dataService);
             var handleBehavior = new AccountDataLoggingBehaviorTestHandleBehavior(logger);
-            accountDataLoggingBehavior.SetInnerHandler(handleBehavior);
+            behavior.SetInnerHandler(handleBehavior);
 
             // Act
             using var testCorrelatorContext = TestCorrelator.CreateContext();
 
-            await accountDataLoggingBehavior.HandleAsync(new AccountConstraint(accountId), CancellationToken.None);
+            await behavior.HandleAsync(new AccountConstraint(accountId), CancellationToken.None);
 
             var logEvent = TestCorrelator.GetLogEventsForSinksFromCurrentContext(testCorrelatorSinkId)[0];
 
