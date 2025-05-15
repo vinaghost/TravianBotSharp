@@ -22,7 +22,7 @@ namespace MainCore.Behaviors
                     .Replace("MainCore.", "")
                     .Replace("+Command", "");
 
-                _logger.Information("Execute {Command}", name);
+                _logger.Information("Execute {name}", name);
             }
 
             var response = await Next(request, cancellationToken);
