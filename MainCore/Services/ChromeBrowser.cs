@@ -9,10 +9,9 @@ namespace MainCore.Services
 {
     public sealed class ChromeBrowser : IChromeBrowser
     {
-        private ChromeDriver _driver = null!;
+        private ChromeDriver? _driver;
         private readonly ChromeDriverService _chromeService;
         private WebDriverWait _wait = null!;
-        private ILogger _logger = null!;
 
         private readonly string[] _extensionsPath;
         private readonly HtmlDocument _htmlDoc = new();
@@ -26,17 +25,12 @@ namespace MainCore.Services
             if (!args.Context.Properties.TryGetValue(_contextDataKey, out var contextData)) return;
 
             var (logger, taskName) = contextData;
-            logger.Warning("There is something wrong.");
+
             var error = args.Outcome;
             if (error.Exception is not null)
             {
                 var exception = error.Exception;
                 logger.Error(exception, "{Message}", exception.Message);
-            }
-            if (error.Result is not null)
-            {
-                var errors = error.Result.Reasons.Select(x => x.Message).ToList();
-                logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
             }
 
             logger.Warning("{TaskName} retry #{AttemptNumber} times", taskName, args.AttemptNumber + 1);
@@ -66,7 +60,7 @@ namespace MainCore.Services
             _chromeService.HideCommandPromptWindow = true;
         }
 
-        public async Task Setup(ChromeSetting setting, ILogger logger)
+        public async Task Setup(ChromeSetting setting)
         {
             var options = new ChromeOptions();
 
@@ -118,10 +112,9 @@ namespace MainCore.Services
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(3);
             _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3)); // watch ads
-            _logger = logger;
         }
 
-        public ChromeDriver Driver => _driver;
+        public ChromeDriver Driver => _driver!;
 
         public HtmlDocument Html
         {
@@ -139,19 +132,21 @@ namespace MainCore.Services
             _chromeService.Dispose();
         }
 
-        public string CurrentUrl => _driver.Url;
+        public string CurrentUrl => Driver.Url;
+
+        public ILogger Logger { get; set; } = null!;
 
         public async Task Refresh(CancellationToken cancellationToken)
         {
             async Task<Result> refresh(CancellationToken cancellationToken)
             {
-                await _driver.Navigate().RefreshAsync();
+                await Driver.Navigate().RefreshAsync();
                 var result = await WaitPageLoaded(cancellationToken);
                 return result;
             }
 
             var context = ResilienceContextPool.Shared.Get(cancellationToken);
-            var contextData = new ContextData(_logger, "refresh page");
+            var contextData = new ContextData(Logger, "refresh page");
             context.Properties.Set(_contextDataKey, contextData);
             var result = await _pipeline.ExecuteAsync(
                 async (ctx, state) => await refresh(context.CancellationToken),
@@ -167,13 +162,13 @@ namespace MainCore.Services
         {
             async Task<Result> navigate(string url_nested, CancellationToken cancellationToken)
             {
-                await _driver.Navigate().GoToUrlAsync(url_nested);
+                await Driver.Navigate().GoToUrlAsync(url_nested);
                 var result = await Wait(driver => PageChanged(driver, url_nested), cancellationToken);
                 return result;
             }
 
             var context = ResilienceContextPool.Shared.Get(cancellationToken);
-            var contextData = new ContextData(_logger, $"navigate to {url}");
+            var contextData = new ContextData(Logger, $"navigate to {url}");
             context.Properties.Set(_contextDataKey, contextData);
             var result = await _pipeline.ExecuteAsync(
                 async (ctx, state) => await navigate(url, context.CancellationToken),
@@ -183,17 +178,17 @@ namespace MainCore.Services
 
         public async Task<Result> Click(By by)
         {
-            var elements = _driver.FindElements(by);
+            var elements = Driver.FindElements(by);
             if (elements.Count == 0) return Retry.ElementNotFound(by);
             var element = elements[0];
             if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable(by);
-            await Task.Run(new Actions(_driver).Click(element).Perform);
+            await Task.Run(new Actions(Driver).Click(element).Perform);
             return Result.Ok();
         }
 
         public async Task<Result> Input(By by, string content)
         {
-            var elements = _driver.FindElements(by);
+            var elements = Driver.FindElements(by);
             if (elements.Count == 0) return Retry.ElementNotFound(by);
             var element = elements[0];
             if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable(by);
@@ -212,7 +207,7 @@ namespace MainCore.Services
         public async Task<Result> ExecuteJsScript(string javascript)
         {
             await Task.CompletedTask;
-            var js = _driver as IJavaScriptExecutor;
+            var js = Driver as IJavaScriptExecutor;
             js.ExecuteScript(javascript);
             return Result.Ok();
         }

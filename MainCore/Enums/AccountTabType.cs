@@ -1,4 +1,4 @@
-﻿namespace MainCore.UI.Enums
+﻿namespace MainCore.Enums
 {
     public enum AccountTabType
     {

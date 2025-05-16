@@ -7,6 +7,7 @@ namespace MainCore.Services
         string CurrentUrl { get; }
         ChromeDriver Driver { get; }
         HtmlDocument Html { get; }
+        ILogger Logger { get; set; }
 
         Task<Result> Click(By by);
 
@@ -20,7 +21,7 @@ namespace MainCore.Services
 
         Task Refresh(CancellationToken cancellationToken);
 
-        Task Setup(ChromeSetting setting, ILogger logger);
+        Task Setup(ChromeSetting setting);
 
         Task Shutdown();
 

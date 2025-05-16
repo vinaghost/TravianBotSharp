@@ -45,7 +45,14 @@ namespace MainCore
                     var dataService = sp.GetRequiredService<IDataService>();
                     if (dataService.AccountId == AccountId.Empty) throw new InvalidOperationException("AccountId is empty");
                     var chromeManager = sp.GetRequiredService<IChromeManager>();
-                    return chromeManager.Get(dataService.AccountId);
+                    var logger = sp.GetRequiredService<ILogger>();
+                    logger = logger
+                        .ForContext("Account", dataService.AccountData)
+                        .ForContext("AccountId", dataService.AccountId);
+
+                    var browser = chromeManager.Get(dataService.AccountId);
+                    browser.Logger = logger;
+                    return browser;
                 });
 
             return services;

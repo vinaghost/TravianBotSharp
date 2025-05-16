@@ -27,21 +27,15 @@ namespace MainCore.Services
             {
                 if (!args.Context.Properties.TryGetValue(contextDataKey, out var contextData)) return;
 
-                var (accountId, taskName, logger, browser) = contextData;
-                logger.Warning("There is something wrong.");
+                var (accountId, taskName, browser) = contextData;
                 var error = args.Outcome;
                 if (error.Exception is not null)
                 {
                     var exception = error.Exception;
-                    logger.Error(exception, "{Message}", exception.Message);
-                }
-                if (error.Result is not null)
-                {
-                    var errors = error.Result.Reasons.Select(x => x.Message).ToList();
-                    logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
+                    browser.Logger.Error(exception, "{Message}", exception.Message);
                 }
 
-                logger.Warning("{TaskName} retry #{AttemptNumber} times", taskName, args.AttemptNumber + 1);
+                browser.Logger.Warning("{TaskName} retry #{AttemptNumber} times", taskName, args.AttemptNumber + 1);
                 await browser.Refresh(args.Context.CancellationToken);
             };
 
@@ -86,12 +80,9 @@ namespace MainCore.Services
             ///===========================================================///
             var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
             var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger>();
-            logger = logger
-                .ForContext("Account", dataService.AccountData)
-                .ForContext("AccountId", dataService.AccountId);
+            var logger = browser.Logger;
 
-            var contextData = new ContextData(accountId, task.Description, logger, browser);
+            var contextData = new ContextData(accountId, task.Description, browser);
 
             ///===========================================================///
             var context = ResilienceContextPool.Shared.Get(cts.Token);
@@ -119,14 +110,12 @@ namespace MainCore.Services
                 logger.Error(ex, "{Message}", ex.Message);
                 _taskManager.SetStatus(accountId, StatusEnums.Paused);
             }
-            else
+
+            if (poliResult.Result is not null)
             {
-                var result = poliResult.Result!;
+                var result = poliResult.Result;
                 if (result.IsFailed)
                 {
-                    var message = string.Join(Environment.NewLine, result.Reasons.Select(e => e.Message));
-                    logger.Warning("{error}", message);
-
                     if (result.HasError<Stop>() || result.HasError<Retry>())
                     {
                         _taskManager.SetStatus(accountId, StatusEnums.Paused);
@@ -159,6 +148,7 @@ namespace MainCore.Services
                     }
                 }
             }
+
             var delayTaskCommand = scope.ServiceProvider.GetRequiredService<DelayTaskCommand.Handler>();
             await delayTaskCommand.HandleAsync(new(accountId));
         }
@@ -189,6 +179,6 @@ namespace MainCore.Services
             }
         }
 
-        public record ContextData(AccountId AccountId, string TaskName, ILogger Logger, IChromeBrowser Browser);
+        public record ContextData(AccountId AccountId, string TaskName, IChromeBrowser Browser);
     }
 }

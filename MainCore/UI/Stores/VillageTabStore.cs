@@ -1,5 +1,4 @@
-﻿using MainCore.UI.Enums;
-using MainCore.UI.ViewModels.Abstract;
+﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.Tabs.Villages;
 
 namespace MainCore.UI.Stores
