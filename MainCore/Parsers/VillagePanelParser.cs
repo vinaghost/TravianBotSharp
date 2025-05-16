@@ -4,26 +4,28 @@
     {
         public static HtmlNode GetVillageNode(HtmlDocument doc, VillageId villageId)
         {
-            var villageBox = doc.GetElementbyId("sidebarBoxVillagelist");
-            if (villageBox is null) return null;
-            var villages = villageBox
+            var sidebarBoxVillagelist = doc.GetElementbyId("sidebarBoxVillagelist");
+            BrokenParserException.ThrowIfNull(sidebarBoxVillagelist);
+            var villages = sidebarBoxVillagelist
                 .Descendants("div")
                 .Where(x => x.HasClass("listEntry"))
                 .ToList();
-            var village = villages.Find(x => GetId(x) == villageId);
+            BrokenParserException.ThrowIfEmpty(villages);
+
+            var village = villages.First(x => GetId(x) == villageId);
             return village;
         }
 
         public static VillageId GetCurrentVillageId(HtmlDocument doc)
         {
-            var villageBox = doc.GetElementbyId("sidebarBoxVillagelist");
-            if (villageBox is null) return VillageId.Empty;
-            var village = villageBox
+            var sidebarBoxVillagelist = doc.GetElementbyId("sidebarBoxVillagelist");
+            BrokenParserException.ThrowIfNull(sidebarBoxVillagelist);
+            var village = sidebarBoxVillagelist
                 .Descendants("div")
                 .Where(x => x.HasClass("listEntry"))
                 .Where(x => IsActive(x))
                 .Select(x => GetId(x))
-                .FirstOrDefault();
+                .First();
             return village;
         }
 
@@ -63,9 +65,14 @@
 
         private static List<HtmlNode> GetVillages(HtmlDocument doc)
         {
-            var villsNode = doc.GetElementbyId("sidebarBoxVillagelist");
-            if (villsNode is null) return new();
-            return villsNode.Descendants("div").Where(x => x.HasClass("listEntry") && x.HasClass("village")).ToList();
+            var sidebarBoxVillagelist = doc.GetElementbyId("sidebarBoxVillagelist");
+            BrokenParserException.ThrowIfNull(sidebarBoxVillagelist);
+            var villages = sidebarBoxVillagelist
+                .Descendants("div")
+                .Where(x => x.HasClass("listEntry") && x.HasClass("village"))
+                .ToList();
+            BrokenParserException.ThrowIfEmpty(villages);
+            return villages;
         }
 
         private static bool IsUnderAttack(HtmlNode node)
@@ -75,24 +82,32 @@
 
         private static string GetName(HtmlNode node)
         {
-            var textNode = node.Descendants("a").FirstOrDefault();
-            if (textNode is null) return "";
-            var nameNode = textNode.Descendants("span").FirstOrDefault(x => x.HasClass("name"));
-            if (nameNode is null) return "";
+            var textNode = node
+                .Descendants("a")
+                .FirstOrDefault();
+            BrokenParserException.ThrowIfNull(textNode);
+            var nameNode = textNode
+                .Descendants("span")
+                .FirstOrDefault(x => x.HasClass("name"));
+            BrokenParserException.ThrowIfNull(nameNode);
             return nameNode.InnerText;
         }
 
         private static int GetX(HtmlNode node)
         {
-            var xNode = node.Descendants("span").FirstOrDefault(x => x.HasClass("coordinateX"));
-            if (xNode is null) return 0;
+            var xNode = node
+                .Descendants("span")
+                .FirstOrDefault(x => x.HasClass("coordinateX"));
+            BrokenParserException.ThrowIfNull(xNode);
             return xNode.InnerText.ParseInt();
         }
 
         private static int GetY(HtmlNode node)
         {
-            var yNode = node.Descendants("span").FirstOrDefault(x => x.HasClass("coordinateY"));
-            if (yNode is null) return 0;
+            var yNode = node
+                .Descendants("span")
+                .FirstOrDefault(x => x.HasClass("coordinateY"));
+            BrokenParserException.ThrowIfNull(yNode);
             return yNode.InnerText.ParseInt();
         }
     }

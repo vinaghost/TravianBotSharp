@@ -1,19 +1,24 @@
-﻿using MainCore.UI.Enums;
-using MainCore.UI.ViewModels.Abstract;
+﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.Tabs;
-using ReactiveUI;
 
 namespace MainCore.UI.Stores
 {
     [RegisterSingleton<AccountTabStore>]
-    public class AccountTabStore : ViewModelBase
+    public partial class AccountTabStore : ViewModelBase
     {
         private readonly bool[] _tabVisibility = new bool[4];
         private AccountTabType _currentTabType;
 
+        [Reactive]
         private bool _isNoAccountTabVisible = true;
+
+        [Reactive]
         private bool _isAddAccountTabVisible;
+
+        [Reactive]
         private bool _isAddAccountsTabVisible;
+
+        [Reactive]
         private bool _isNormalTabVisible;
 
         private readonly NoAccountViewModel _noAccountViewModel;
@@ -81,30 +86,6 @@ namespace MainCore.UI.Stores
                 default:
                     break;
             }
-        }
-
-        public bool IsNoAccountTabVisible
-        {
-            get => _isNoAccountTabVisible;
-            set => this.RaiseAndSetIfChanged(ref _isNoAccountTabVisible, value);
-        }
-
-        public bool IsAddAccountTabVisible
-        {
-            get => _isAddAccountTabVisible;
-            set => this.RaiseAndSetIfChanged(ref _isAddAccountTabVisible, value);
-        }
-
-        public bool IsAddAccountsTabVisible
-        {
-            get => _isAddAccountsTabVisible;
-            set => this.RaiseAndSetIfChanged(ref _isAddAccountsTabVisible, value);
-        }
-
-        public bool IsNormalTabVisible
-        {
-            get => _isNormalTabVisible;
-            set => this.RaiseAndSetIfChanged(ref _isNormalTabVisible, value);
         }
 
         public NoAccountViewModel NoAccountViewModel => _noAccountViewModel;

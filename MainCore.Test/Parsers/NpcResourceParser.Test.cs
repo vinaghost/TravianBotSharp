@@ -14,7 +14,7 @@
         {
             _html.Load(file);
             var actual = MainCore.Parsers.NpcResourceParser.IsNpcDialog(_html);
-            actual.Should().Be(expected);
+            actual.ShouldBe(expected);
         }
 
         [Fact]
@@ -22,7 +22,7 @@
         {
             _html.Load(Marketplace);
             var result = MainCore.Parsers.NpcResourceParser.GetExchangeResourcesButton(_html);
-            result.Should().NotBeNull();
+            result.ShouldNotBeNull();
         }
 
         [Fact]
@@ -30,7 +30,7 @@
         {
             _html.Load(RedeemDialog);
             var result = MainCore.Parsers.NpcResourceParser.GetRedeemButton(_html);
-            result.Should().NotBeNull();
+            result.ShouldNotBeNull();
         }
 
         [Fact]
@@ -38,7 +38,7 @@
         {
             _html.Load(DistributeDialog);
             var result = MainCore.Parsers.NpcResourceParser.GetSum(_html);
-            result.Should().BeGreaterThan(0);
+            result.ShouldBeGreaterThan(0);
         }
 
         [Fact]
@@ -46,7 +46,7 @@
         {
             _html.Load(DistributeDialog);
             var result = MainCore.Parsers.NpcResourceParser.GetInputs(_html);
-            result.Should().HaveCount(4);
+            result.Count().ShouldBe(4);
         }
     }
 }

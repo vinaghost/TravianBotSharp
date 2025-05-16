@@ -1,71 +1,17 @@
 ﻿using MainCore.Tasks.Base;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Services
 {
     [RegisterSingleton<ITaskManager, TaskManager>]
     public sealed class TaskManager : ITaskManager
     {
-        public class TaskInfo
-        {
-            public bool IsExecuting { get; set; } = false;
-            public StatusEnums Status { get; set; } = StatusEnums.Offline;
-            public CancellationTokenSource CancellationTokenSource { get; set; } = null;
+        private readonly Dictionary<AccountId, TaskQueue> _queues = new();
 
-            public List<TaskBase> TaskList { get; set; } = new();
-        }
+        public event Action<AccountId> StatusUpdated = delegate { };
 
-        private readonly Dictionary<AccountId, TaskInfo> _tasks = new();
-        private readonly IMediator _mediator;
+        public event Action<AccountId> TaskUpdated = delegate { };
 
-        public TaskManager(IMediator mediator)
-        {
-            _mediator = mediator;
-        }
-
-        public TaskInfo GetTaskInfo(AccountId accountId)
-        {
-            var task = _tasks.GetValueOrDefault(accountId);
-            if (task is null)
-            {
-                task = new();
-                _tasks.Add(accountId, task);
-            }
-            return task;
-        }
-
-        public List<TaskBase> GetTaskList(AccountId accountId)
-        {
-            var taskInfo = GetTaskInfo(accountId);
-            return taskInfo.TaskList;
-        }
-
-        public StatusEnums GetStatus(AccountId accountId)
-        {
-            var taskInfo = GetTaskInfo(accountId);
-            return taskInfo.Status;
-        }
-
-        public async Task SetStatus(AccountId accountId, StatusEnums status)
-        {
-            var taskInfo = GetTaskInfo(accountId);
-            taskInfo.Status = status;
-            await _mediator.Publish(new StatusUpdated(accountId, status));
-        }
-
-        public bool IsExecuting(AccountId accountId)
-        {
-            var taskInfo = GetTaskInfo(accountId);
-            return taskInfo.IsExecuting;
-        }
-
-        public CancellationTokenSource GetCancellationTokenSource(AccountId accountId)
-        {
-            var taskInfo = GetTaskInfo(accountId);
-            return taskInfo.CancellationTokenSource;
-        }
-
-        public TaskBase GetCurrentTask(AccountId accountId)
+        public BaseTask? GetCurrentTask(AccountId accountId)
         {
             var tasks = GetTaskList(accountId);
             return tasks.Find(x => x.Stage == StageEnums.Executing);
@@ -76,7 +22,7 @@ namespace MainCore.Services
             var cts = GetCancellationTokenSource(accountId);
             if (cts is null) return;
             await cts.CancelAsync();
-            TaskBase currentTask;
+            BaseTask? currentTask;
             do
             {
                 currentTask = GetCurrentTask(accountId);
@@ -84,137 +30,80 @@ namespace MainCore.Services
                 await Task.Delay(500);
             }
             while (currentTask.Stage != StageEnums.Waiting);
-            await SetStatus(accountId, StatusEnums.Offline);
+            SetStatus(accountId, StatusEnums.Paused);
         }
 
-        public async Task AddOrUpdate<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask
+        public void AddOrUpdate<T>(T task, bool first = false) where T : AccountTask
         {
-            var task = Get<T>(accountId);
-            if (task is null)
+            var oldTask = Get<T>(task.AccountId, task.Key);
+            if (oldTask is null)
             {
-                await Add<T>(accountId, first, executeTime);
+                Add<T>(task, first);
             }
             else
             {
-                await Update(accountId, task, first);
+                Update(oldTask, first);
             }
         }
 
-        public async Task AddOrUpdate<T>(AccountId accountId, VillageId villageId, bool first = false, DateTime executeTime = default) where T : VillageTask
+        public void Add<T>(T task, bool first = false) where T : AccountTask
         {
-            var task = Get<T>(accountId, villageId);
-            if (task is null)
-            {
-                await Add<T>(accountId, villageId, first, executeTime);
-            }
-            else
-            {
-                await Update(accountId, task, first);
-            }
+            AddTask(task, first);
         }
 
-        public async Task Add<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask
+        private T? Get<T>(AccountId accountId, string key) where T : BaseTask
         {
-            var task = Locator.Current.GetService<T>();
-            task.Setup(accountId);
-            task.ExecuteAt = executeTime;
-            await Add(accountId, task, first, executeTime);
-        }
-
-        public async Task Add<T>(AccountId accountId, VillageId villageId, bool first = false, DateTime executeTime = default) where T : VillageTask
-        {
-            var task = Locator.Current.GetService<T>();
-            task.Setup(accountId, villageId);
-            task.ExecuteAt = executeTime;
-            await Add(accountId, task, first, executeTime);
-        }
-
-        public AccountTask Get<T>(AccountId accountId) where T : AccountTask
-        {
-            var tasks = GetTaskList(accountId);
-            var filteredTasks = tasks.OfType<T>();
-            var task = filteredTasks.FirstOrDefault(x => x.AccountId == accountId);
+            var task = GetTaskList(accountId)
+                .OfType<T>()
+                .FirstOrDefault(x => x.Key == key);
             return task;
         }
 
-        public VillageTask Get<T>(AccountId accountId, VillageId villageId) where T : VillageTask
+        public bool IsExist<T>(AccountId accountId) where T : BaseTask
         {
-            var tasks = GetTaskList(accountId);
-            var filteredTasks = tasks.OfType<T>();
-            var task = filteredTasks.FirstOrDefault(x => x.AccountId == accountId && x.VillageId == villageId);
-            return task;
+            var tasks = GetTaskList(accountId)
+                .OfType<T>();
+            return tasks.Any(x => x.Key == $"{accountId}");
         }
 
-        public bool IsExist<T>(AccountId accountId) where T : AccountTask
+        public bool IsExist<T>(AccountId accountId, VillageId villageId) where T : BaseTask
         {
-            var tasks = GetTaskList(accountId);
-            var filteredTasks = tasks.OfType<T>();
-            return filteredTasks.Any(x => x.AccountId == accountId);
+            var tasks = GetTaskList(accountId)
+                .OfType<T>();
+            return tasks.Any(x => x.Key == $"{accountId}-{villageId}");
         }
 
-        public bool IsExist<T>(AccountId accountId, VillageId villageId) where T : VillageTask
+        private void AddTask(AccountTask task, bool first)
         {
-            var tasks = GetTaskList(accountId);
-            var filteredTasks = tasks.OfType<T>();
-            return filteredTasks.Any(x => x.AccountId == accountId && x.VillageId == villageId);
-        }
-
-        private async Task Add(AccountId accountId, TaskBase task, bool first, DateTime executeTime)
-        {
-            var tasks = GetTaskList(accountId);
+            var tasks = GetTaskList(task.AccountId);
 
             if (first)
             {
                 var firstTask = tasks.FirstOrDefault();
-                if (firstTask is not null)
+                if (firstTask is not null && firstTask.ExecuteAt < task.ExecuteAt)
                 {
-                    if (firstTask.ExecuteAt > DateTime.Now)
-                    {
-                        task.ExecuteAt = DateTime.Now;
-                    }
-                    else
-                    {
-                        task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
-                    }
-                }
-                else
-                {
-                    task.ExecuteAt = DateTime.Now;
-                }
-            }
-            else
-            {
-                if (executeTime == default)
-                {
-                    task.ExecuteAt = DateTime.Now;
-                }
-                else
-                {
-                    task.ExecuteAt = executeTime;
+                    task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
                 }
             }
 
             tasks.Add(task);
-            await ReOrder(accountId, tasks);
+            ReOrder(task.AccountId, tasks);
         }
 
-        private async Task Update(AccountId accountId, TaskBase task, bool first)
+        private void Update(AccountTask task, bool first)
         {
-            var tasks = GetTaskList(accountId);
+            var tasks = GetTaskList(task.AccountId);
 
             if (first)
             {
                 var firstTask = tasks.FirstOrDefault();
-                if (firstTask is not null)
+                if (firstTask is not null && firstTask.ExecuteAt < task.ExecuteAt)
                 {
-                    if (firstTask.ExecuteAt > DateTime.Now)
-                    {
-                        task.ExecuteAt = DateTime.Now;
-                    }
-                    else
-                    {
-                        task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
-                    }
+                    task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
+                }
+                else
+                {
+                    task.ExecuteAt = DateTime.Now;
                 }
             }
             else
@@ -222,33 +111,108 @@ namespace MainCore.Services
                 task.ExecuteAt = DateTime.Now;
             }
 
-            await ReOrder(accountId, tasks);
+            ReOrder(task.AccountId, tasks);
         }
 
-        public async Task ReOrder(AccountId accountId)
+        public void Remove(AccountId accountId, BaseTask task)
         {
             var tasks = GetTaskList(accountId);
-            await ReOrder(accountId, tasks);
+            if (tasks.Remove(task))
+            {
+                ReOrder(accountId, tasks);
+            }
         }
 
-        public async Task Remove(AccountId accountId, TaskBase task)
+        public void Remove<T>(AccountId accountId) where T : AccountTask
         {
             var tasks = GetTaskList(accountId);
+            var task = tasks.OfType<T>().FirstOrDefault(x => x.AccountId == accountId);
+            if (task is null) return;
             tasks.Remove(task);
-            await ReOrder(accountId, tasks);
+            ReOrder(accountId, tasks);
         }
 
-        public async Task Clear(AccountId accountId)
+        public void Remove<T>(AccountId accountId, VillageId villageId) where T : VillageTask
         {
             var tasks = GetTaskList(accountId);
-            tasks.Clear();
-            await _mediator.Publish(new TaskUpdated(accountId));
+            var task = tasks.OfType<T>().FirstOrDefault(x => x.AccountId == accountId && x.VillageId == villageId);
+            if (task is null) return;
+            tasks.Remove(task);
+            ReOrder(accountId, tasks);
         }
 
-        private async Task ReOrder(AccountId accountId, List<TaskBase> tasks)
+        public void ReOrder(AccountId accountId)
         {
-            tasks.Sort((x, y) => DateTime.Compare(x.ExecuteAt, y.ExecuteAt));
-            await _mediator.Publish(new TaskUpdated(accountId));
+            var tasks = GetTaskList(accountId);
+            ReOrder(accountId, tasks);
         }
+
+        public void Clear(AccountId accountId)
+        {
+            var tasks = GetTaskList(accountId);
+            if (tasks.Count == 0) return;
+            tasks.Clear();
+            TaskUpdated.Invoke(accountId);
+        }
+
+        private void ReOrder(AccountId accountId, List<BaseTask> tasks)
+        {
+            if (tasks.Count <= 1) return;
+            tasks.Sort((x, y) => DateTime.Compare(x.ExecuteAt, y.ExecuteAt));
+            TaskUpdated.Invoke(accountId);
+        }
+
+        public List<BaseTask> GetTaskList(AccountId accountId)
+        {
+            var queue = GetTaskQueue(accountId);
+            return queue.Tasks;
+        }
+
+        public StatusEnums GetStatus(AccountId accountId)
+        {
+            var queue = GetTaskQueue(accountId);
+            return queue.Status;
+        }
+
+        public void SetStatus(AccountId accountId, StatusEnums status)
+        {
+            var queue = GetTaskQueue(accountId);
+            queue.Status = status;
+            StatusUpdated.Invoke(accountId);
+        }
+
+        private CancellationTokenSource? GetCancellationTokenSource(AccountId accountId)
+        {
+            var queue = GetTaskQueue(accountId);
+            return queue.CancellationTokenSource;
+        }
+
+        public bool IsExecuting(AccountId accountId)
+        {
+            var queue = GetTaskQueue(accountId);
+            return queue.IsExecuting;
+        }
+
+        public TaskQueue GetTaskQueue(AccountId accountId)
+        {
+            if (_queues.ContainsKey(accountId))
+            {
+                return _queues[accountId];
+            }
+            else
+            {
+                var queue = new TaskQueue();
+                _queues.Add(accountId, queue);
+                return queue;
+            }
+        }
+    }
+
+    public class TaskQueue
+    {
+        public bool IsExecuting { get; set; } = false;
+        public StatusEnums Status { get; set; } = StatusEnums.Offline;
+        public CancellationTokenSource? CancellationTokenSource { get; set; }
+        public List<BaseTask> Tasks = [];
     }
 }

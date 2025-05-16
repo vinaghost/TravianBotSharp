@@ -7,13 +7,13 @@
             var navigationBar = doc.DocumentNode
              .Descendants("div")
              .FirstOrDefault(x => x.HasClass("contentNavi") && x.HasClass("subNavi"));
+            BrokenParserException.ThrowIfNull(navigationBar);
             return navigationBar;
         }
 
         private static IEnumerable<HtmlNode> GetTabs(HtmlDocument doc)
         {
             var navigationBar = GetNavigationBar(doc);
-            if (navigationBar is null) return Enumerable.Empty<HtmlNode>();
             var tabs = navigationBar
                 .Descendants("a")
                 .Where(x => x.HasClass("tabItem"));

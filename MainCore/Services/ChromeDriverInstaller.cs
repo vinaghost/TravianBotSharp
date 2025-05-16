@@ -7,6 +7,8 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
+#nullable disable
+
 namespace MainCore.Services
 {
     [RegisterSingleton<IChromeDriverInstaller, ChromeDriverInstaller>]

@@ -1,34 +1,33 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features
 {
-    [RegisterScoped<SleepCommand>]
-    public class SleepCommand : CommandBase, ICommand
+    [Handler]
+    public static partial class SleepCommand
     {
-        private readonly IGetSetting _getSetting;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        public SleepCommand(IDataService dataService, IGetSetting getSetting) : base(dataService)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            ISettingService settingService,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            _getSetting = getSetting;
-        }
+            await browser.Close();
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
-        {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            await chromeBrowser.Close();
-
-            var logger = _dataService.Logger;
-            var accountId = _dataService.AccountId;
-
-            var sleepTimeMinutes = _getSetting.ByName(accountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
+            var sleepTimeMinutes = settingService.ByName(command.AccountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
             var sleepEnd = DateTime.Now.AddMinutes(sleepTimeMinutes);
             int lastMinute = 0;
             while (true)
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
+
                 var timeRemaining = sleepEnd - DateTime.Now;
                 if (timeRemaining < TimeSpan.Zero) return Result.Ok();
+
                 await Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None);
+
                 var currentMinute = (int)timeRemaining.TotalMinutes;
                 if (lastMinute != currentMinute)
                 {

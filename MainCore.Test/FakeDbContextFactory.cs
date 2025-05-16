@@ -5,7 +5,7 @@ namespace MainCore.Test
 {
     public class FakeDbContextFactory : IDbContextFactory<AppDbContext>
     {
-        private const string _connectionString = "DataSource=TBS.Test.db;Cache=Shared";
+        private const string _connectionString = "DataSource=:memory:";
 
         public AppDbContext CreateDbContext()
         {
