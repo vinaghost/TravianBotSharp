@@ -1,14 +1,21 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Navigate
 {
-    [RegisterScoped<SwitchTabCommand>]
-    public class SwitchTabCommand(IDataService dataService) : CommandBase(dataService), ICommand<int>
+    [Handler]
+    public static partial class SwitchTabCommand
     {
-        public async Task<Result> Execute(int tabIndex, CancellationToken cancellationToken)
+        public sealed record Command(AccountId AccountId, int TabIndex) : IAccountCommand;
+
+        private static async ValueTask<Result> HandleAsync(
+           Command command,
+           IChromeBrowser browser,
+           CancellationToken cancellationToken
+           )
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+            var (accountId, tabIndex) = command;
+
+            var html = browser.Html;
             var count = BuildingTabParser.CountTab(html);
             if (tabIndex > count) return Retry.OutOfIndexTab(tabIndex, count);
             var tab = BuildingTabParser.GetTab(html, tabIndex);
@@ -28,8 +35,10 @@ namespace MainCore.Commands.Navigate
             }
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(tab.XPath), tabActived, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await browser.Click(By.XPath(tab.XPath));
+            if (result.IsFailed) return result;
+            result = await browser.Wait(tabActived, cancellationToken);
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

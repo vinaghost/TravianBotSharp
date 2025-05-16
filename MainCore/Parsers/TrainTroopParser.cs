@@ -1,4 +1,6 @@
-﻿namespace MainCore.Parsers
+﻿using Humanizer;
+
+namespace MainCore.Parsers
 {
     public static class TrainTroopParser
     {
@@ -7,9 +9,10 @@
             var node = GetNode(doc, troop);
             var cta = node.Descendants("div")
                 .FirstOrDefault(x => x.HasClass("cta"));
-            if (cta is null) return null;
+            BrokenParserException.ThrowIfNull(cta);
             var input = cta.Descendants("input")
                 .FirstOrDefault(x => x.HasClass("text"));
+            BrokenParserException.ThrowIfNull(input);
             return input;
         }
 
@@ -18,10 +21,10 @@
             var node = GetNode(doc, troop);
             var cta = node.Descendants("div")
                 .FirstOrDefault(x => x.HasClass("cta"));
-            if (cta is null) return 0;
+            BrokenParserException.ThrowIfNull(cta);
             var a = cta.Descendants("a")
                 .FirstOrDefault();
-            if (a is null) return 0;
+            BrokenParserException.ThrowIfNull(a);
             return a.InnerText.ParseInt();
         }
 
@@ -46,9 +49,11 @@
                 var type = classes
                     .Where(x => x.StartsWith('u'))
                     .FirstOrDefault(x => !x.Equals("unit"));
+                if (type is null) continue;
                 if (type.ParseInt() == (int)troop) return node;
             }
-            return null;
+
+            throw BrokenParserException.NotFound($"{troop.Humanize()} node");
         }
     }
 }

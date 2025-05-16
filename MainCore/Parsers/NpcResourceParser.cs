@@ -10,12 +10,16 @@
 
         public static HtmlNode GetExchangeResourcesButton(HtmlDocument doc)
         {
-            var npcMerchant = doc.DocumentNode.Descendants("div")
+            var npcMerchantDialog = doc.DocumentNode
+                .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("npcMerchant"));
-            if (npcMerchant is null) return null;
-            var button = npcMerchant.Descendants("button")
+
+            BrokenParserException.ThrowIfNull(npcMerchantDialog);
+
+            var exchangeResourceButton = npcMerchantDialog.Descendants("button")
                 .FirstOrDefault(x => x.HasClass("gold"));
-            return button;
+            BrokenParserException.ThrowIfNull(exchangeResourceButton);
+            return exchangeResourceButton;
         }
 
         public static HtmlNode GetRedeemButton(HtmlDocument doc)
@@ -33,12 +37,25 @@
 
         public static IEnumerable<HtmlNode> GetInputs(HtmlDocument doc)
         {
-            for (int i = 0; i < 4; i++)
-            {
-                var node = doc.DocumentNode.Descendants("input")
-                    .FirstOrDefault(x => x.GetAttributeValue("name", "") == $"desired{i}");
-                yield return node;
-            }
+            var wood = doc.DocumentNode.Descendants("input")
+                .FirstOrDefault(x => x.GetAttributeValue("name", "") == "desired0");
+            BrokenParserException.ThrowIfNull(wood);
+            yield return wood;
+
+            var clay = doc.DocumentNode.Descendants("input")
+                .FirstOrDefault(x => x.GetAttributeValue("name", "") == "desired1");
+            BrokenParserException.ThrowIfNull(clay);
+            yield return clay;
+
+            var iron = doc.DocumentNode.Descendants("input")
+                .FirstOrDefault(x => x.GetAttributeValue("name", "") == "desired2");
+            BrokenParserException.ThrowIfNull(iron);
+            yield return iron;
+
+            var crop = doc.DocumentNode.Descendants("input")
+                .FirstOrDefault(x => x.GetAttributeValue("name", "") == "desired3");
+            BrokenParserException.ThrowIfNull(crop);
+            yield return crop;
         }
     }
 }

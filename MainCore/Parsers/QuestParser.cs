@@ -20,15 +20,18 @@
 
         public static HtmlNode GetQuestCollectButton(HtmlDocument doc)
         {
-            var taskTable = doc.DocumentNode
+            var taskOverviewTable = doc.DocumentNode
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("taskOverview"));
-            if (taskTable is null) return null;
 
-            var button = taskTable
+            BrokenParserException.ThrowIfNull(taskOverviewTable);
+
+            var collectButton = taskOverviewTable
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("collect") && !x.HasClass("disabled"));
-            return button;
+
+            BrokenParserException.ThrowIfNull(collectButton);
+            return collectButton;
         }
 
         public static bool IsQuestPage(HtmlDocument doc)
