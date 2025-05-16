@@ -4,6 +4,7 @@ using MainCore.Constraints;
 using MainCore.Entities;
 using MainCore.Tasks;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.TestCorrelator;
 
@@ -18,21 +19,31 @@ namespace MainCore.Test.Behaviors
         }
     }
 
-    public class TaskNameLoggingBehaviorTest
+    public class TaskNameLoggingBehaviorTest : IDisposable
     {
+        private readonly TestCorrelatorSinkId _testCorrelatorSinkId = new();
+        private readonly Logger _logger;
+
+        public TaskNameLoggingBehaviorTest()
+        {
+            _logger = new LoggerConfiguration()
+                .WriteTo.TestCorrelator(_testCorrelatorSinkId)
+                .Enrich.FromLogContext()
+                .CreateLogger();
+        }
+
+        public void Dispose()
+        {
+            _logger.Dispose();
+        }
+
         [Theory]
         [MemberData(nameof(Data))]
         public async Task CommandNameLoggingBehaviorShouldLogCorrectName(ITask task, string expected)
         {
             // Arrange
-            var testCorrelatorSinkId = new TestCorrelatorSinkId();
 
-            using var logger = new LoggerConfiguration()
-                .WriteTo.TestCorrelator(testCorrelatorSinkId)
-                .Enrich.FromLogContext()
-                .CreateLogger();
-
-            var behavior = new TaskNameLoggingBehavior<ITask, ValueTuple>(logger);
+            var behavior = new TaskNameLoggingBehavior<ITask, ValueTuple>(_logger);
             var handleBehavior = new TaskNameLoggingBehaviorTestHandleBehavior();
             behavior.SetInnerHandler(handleBehavior);
 
@@ -41,7 +52,7 @@ namespace MainCore.Test.Behaviors
 
             await behavior.HandleAsync(task, CancellationToken.None);
 
-            var logEvent = TestCorrelator.GetLogEventsForSinksFromCurrentContext(testCorrelatorSinkId)[0];
+            var logEvent = TestCorrelator.GetLogEventsForSinksFromCurrentContext(_testCorrelatorSinkId)[0];
 
             var nameProperty = logEvent.Properties["TaskName"] as ScalarValue;
 

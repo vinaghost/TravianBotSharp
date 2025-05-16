@@ -5,6 +5,7 @@ using MainCore.Commands.Features.ClaimQuest;
 using MainCore.Constraints;
 using MainCore.Entities;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using Serilog.Sinks.TestCorrelator;
 
@@ -19,21 +20,31 @@ namespace MainCore.Test.Behaviors
         }
     }
 
-    public class CommandNameLoggingBehaviorTest
+    public class CommandNameLoggingBehaviorTest : IDisposable
     {
+        private readonly TestCorrelatorSinkId _testCorrelatorSinkId = new();
+        private readonly Logger _logger;
+
+        public CommandNameLoggingBehaviorTest()
+        {
+            _logger = new LoggerConfiguration()
+                .WriteTo.TestCorrelator(_testCorrelatorSinkId)
+                .Enrich.FromLogContext()
+                .CreateLogger();
+        }
+
+        public void Dispose()
+        {
+            _logger.Dispose();
+        }
+
         [Theory]
         [MemberData(nameof(Data))]
         public async Task CommandNameLoggingBehaviorShouldLogCorrectName(ICommand command, string expected)
         {
             // Arrange
-            var testCorrelatorSinkId = new TestCorrelatorSinkId();
 
-            using var logger = new LoggerConfiguration()
-                .WriteTo.TestCorrelator(testCorrelatorSinkId)
-                .Enrich.FromLogContext()
-                .CreateLogger();
-
-            var behavior = new CommandNameLoggingBehavior<ICommand, ValueTuple>(logger);
+            var behavior = new CommandNameLoggingBehavior<ICommand, ValueTuple>(_logger);
             var handleBehavior = new CommandNameLoggingBehaviorTestHandleBehavior();
             behavior.SetInnerHandler(handleBehavior);
 
@@ -42,7 +53,7 @@ namespace MainCore.Test.Behaviors
 
             await behavior.HandleAsync(command, CancellationToken.None);
 
-            var logEvent = TestCorrelator.GetLogEventsForSinksFromCurrentContext(testCorrelatorSinkId)[0];
+            var logEvent = TestCorrelator.GetLogEventsForSinksFromCurrentContext(_testCorrelatorSinkId)[0];
 
             var nameProperty = logEvent.Properties["name"] as ScalarValue;
 

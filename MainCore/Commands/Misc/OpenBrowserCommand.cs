@@ -9,7 +9,7 @@ namespace MainCore.Commands.Misc
 
         private static async ValueTask HandleAsync(
             Command command,
-            IChromeBrowser browser, AppDbContext context, ILogger logger,
+            IChromeBrowser browser, AppDbContext context,
             CancellationToken cancellationToken
             )
         {
@@ -43,7 +43,7 @@ namespace MainCore.Commands.Misc
                 IsHeadless = headlessChrome,
             };
 
-            await browser.Setup(chromeSetting, logger);
+            await browser.Setup(chromeSetting);
             await browser.Navigate($"{account.Server}", cancellationToken);
 
             context.Accesses

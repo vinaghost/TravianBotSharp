@@ -11,6 +11,12 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <ParallelizeAssemblies>true</ParallelizeAssemblies>
+    <ParallelizeTestCollections>true</ParallelizeTestCollections>
+    <ParallelAlgorithm>aggressive</ParallelAlgorithm>
+  </PropertyGroup>
+
   <ItemGroup>
     <Content Include="Parsers\**\*.html" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
