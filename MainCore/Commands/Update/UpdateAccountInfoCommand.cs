@@ -7,7 +7,7 @@ namespace MainCore.Commands.Update
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        private static async ValueTask<Result> HandleAsync(
+        private static async ValueTask HandleAsync(
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
@@ -18,8 +18,6 @@ namespace MainCore.Commands.Update
 
             var dto = Get(html);
             context.UpdateToDatabase(command.AccountId, dto);
-
-            return Result.Ok();
         }
 
         private static AccountInfoDto Get(HtmlDocument doc)
