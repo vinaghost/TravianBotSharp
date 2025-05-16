@@ -24,9 +24,7 @@ namespace MainCore.Queries
             var items = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .Where(x => x.Jobs.Any(x => _jobTypes.Contains(x.Type)))
-                .Select(x => x.Id)
-                .AsEnumerable()
-                .Select(x => new VillageId(x))
+                .Select(x => new VillageId(x.Id))
                 .ToList();
             return items;
         }

@@ -51,6 +51,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="Xunit.Abstractions" />
     <Using Include="Shouldly" />
     <Using Include="NSubstitute" />    
   </ItemGroup>
