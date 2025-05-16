@@ -18,9 +18,9 @@ namespace WPFUI.Views.Tabs
             InitializeComponent();
             this.WhenActivated(d =>
             {
-                this.BindCommand(ViewModel, vm => vm.LoadCurrent, v => v.LoadCurrent).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.LoadUnload, v => v.LoadUnload).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.LoadAll, v => v.LoadAll).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.LoadCurrentCommand, v => v.LoadCurrent).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.LoadUnloadCommand, v => v.LoadUnload).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.LoadAllCommand, v => v.LoadAll).DisposeWith(d);
 
                 this.OneWayBind(ViewModel, vm => vm.Villages.Items, v => v.VillagesGrid.ItemsSource).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.Villages.SelectedItem, v => v.VillagesGrid.SelectedItem).DisposeWith(d);

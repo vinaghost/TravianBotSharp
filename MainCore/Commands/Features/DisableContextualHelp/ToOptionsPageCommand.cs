@@ -1,21 +1,25 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.DisableContextualHelp
 {
-    [RegisterScoped<ToOptionsPageCommand>]
-    public class ToOptionsPageCommand(IDataService dataService) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class ToOptionsPageCommand
     {
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
+
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+
+            var html = browser.Html;
 
             var button = OptionParser.GetOptionButton(html);
             if (button is null) return Retry.ButtonNotFound("options");
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            var result = await browser.Click(By.XPath(button.XPath));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

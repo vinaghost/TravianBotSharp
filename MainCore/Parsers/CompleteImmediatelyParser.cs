@@ -15,24 +15,29 @@
 
         public static HtmlNode GetCompleteButton(HtmlDocument doc)
         {
-            var finishClass = doc.DocumentNode
+            var finishDiv = doc.DocumentNode
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("finishNow"));
-            if (finishClass is null) return null;
-            var button = finishClass
+
+            BrokenParserException.ThrowIfNull(finishDiv);
+
+            var finishButton = finishDiv
                 .Descendants("button")
                 .FirstOrDefault();
-            return button;
+            BrokenParserException.ThrowIfNull(finishButton);
+            return finishButton;
         }
 
         public static HtmlNode GetConfirmButton(HtmlDocument doc)
         {
-            var dialog = doc.GetElementbyId("finishNowDialog");
-            if (dialog is null) return null;
-            var button = dialog
+            var finishDialog = doc.GetElementbyId("finishNowDialog");
+            BrokenParserException.ThrowIfNull(finishDialog);
+
+            var confirmFinishbutton = finishDialog
                 .Descendants("button")
                 .FirstOrDefault();
-            return button;
+            BrokenParserException.ThrowIfNull(confirmFinishbutton);
+            return confirmFinishbutton;
         }
     }
 }

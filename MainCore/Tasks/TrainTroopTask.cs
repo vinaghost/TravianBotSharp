@@ -1,105 +1,56 @@
 ﻿using MainCore.Commands.Features.TrainTroop;
-using MainCore.Commands.UI;
-using MainCore.Common.Errors.TrainTroop;
+using MainCore.Commands.NextExecute;
+using MainCore.Commands.UI.Misc;
+using MainCore.Errors.TrainTroop;
 using MainCore.Tasks.Base;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient<TrainTroopTask>]
-    public class TrainTroopTask : VillageTask
+    [Handler]
+    public static partial class TrainTroopTask
     {
-        private readonly ITaskManager _taskManager;
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly SaveSettingCommand _saveSettingCommand;
-
-        public TrainTroopTask(ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory, SaveSettingCommand saveSettingCommand)
+        public sealed class Task : VillageTask
         {
-            _taskManager = taskManager;
-            _contextFactory = contextFactory;
-            _saveSettingCommand = saveSettingCommand;
+            public Task(AccountId accountId, VillageId villageId, string villageName) : base(accountId, villageId, villageName)
+            {
+            }
+
+            protected override string TaskName => "Train troop";
         }
 
-        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Task task,
+            TrainTroopCommand.Handler trainTroopCommand,
+            GetTrainTroopBuildingQuery.Handler getTrainTroopBuildingQuery,
+            SaveVillageSettingCommand.Handler saveVillageSettingCommand,
+            NextExecuteTrainTroopTaskCommand.Handler nextExecuteTrainTroopTaskCommand,
+            CancellationToken cancellationToken)
         {
-            var buildings = GetTrainTroopBuilding(VillageId);
-            if (buildings.Count == 0) return Result.Ok();
-
             Result result;
+            var buildings = await getTrainTroopBuildingQuery.HandleAsync(new(task.VillageId), cancellationToken);
+
             var settings = new Dictionary<VillageSettingEnums, int>();
 
-            var trainTroopCommand = scoped.ServiceProvider.GetRequiredService<TrainTroopCommand>();
             foreach (var building in buildings)
             {
-                result = await trainTroopCommand.Execute(building, cancellationToken);
-                if (result.IsFailed)
+                result = await trainTroopCommand.HandleAsync(new(task.AccountId, task.VillageId, building), cancellationToken);
+                if (!result.IsFailed) continue;
+
+                if (result.HasError<MissingBuilding>())
                 {
-                    if (result.HasError<MissingBuilding>())
-                    {
-                        settings.Add(TrainTroopCommand.BuildingSettings[building], 0);
-                    }
-                    else if (result.HasError<MissingResource>())
-                    {
-                        break;
-                    }
+                    settings.Add(TrainTroopCommand.BuildingSettings[building], 0);
+                    continue;
+                }
+
+                if (result.HasError<MissingResource>())
+                {
+                    break;
                 }
             }
 
-            await _saveSettingCommand.Execute(AccountId, VillageId, settings, cancellationToken);
-            await SetNextExecute();
+            await saveVillageSettingCommand.HandleAsync(new(task.AccountId, task.VillageId, settings), cancellationToken);
+            await nextExecuteTrainTroopTaskCommand.HandleAsync(task, cancellationToken);
             return Result.Ok();
-        }
-
-        private async Task SetNextExecute()
-        {
-            var seconds = Locator.Current.GetService<IGetSetting>().ByName(VillageId, VillageSettingEnums.TrainTroopRepeatTimeMin, VillageSettingEnums.TrainTroopRepeatTimeMax, 60);
-            ExecuteAt = DateTime.Now.AddSeconds(seconds);
-            await _taskManager.ReOrder(AccountId);
-        }
-
-        protected override string TaskName => "Train troop";
-
-        private List<BuildingEnums> GetTrainTroopBuilding(VillageId villageId)
-        {
-            using var context = _contextFactory.CreateDbContext();
-            var settings = new List<VillageSettingEnums>() {
-                VillageSettingEnums.BarrackTroop,
-                VillageSettingEnums.StableTroop,
-                VillageSettingEnums.GreatBarrackTroop,
-                VillageSettingEnums.GreatStableTroop,
-                VillageSettingEnums.WorkshopTroop,
-            };
-
-            var filterdSettings = context.VillagesSetting
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => settings.Contains(x.Setting))
-                .Where(x => x.Value != 0)
-                .Select(x => x.Setting)
-                .ToList();
-
-            var buildings = new List<BuildingEnums>();
-
-            if (filterdSettings.Contains(VillageSettingEnums.BarrackTroop))
-            {
-                buildings.Add(BuildingEnums.Barracks);
-            }
-            if (filterdSettings.Contains(VillageSettingEnums.StableTroop))
-            {
-                buildings.Add(BuildingEnums.Stable);
-            }
-            if (filterdSettings.Contains(VillageSettingEnums.GreatBarrackTroop))
-            {
-                buildings.Add(BuildingEnums.GreatBarracks);
-            }
-            if (filterdSettings.Contains(VillageSettingEnums.GreatStableTroop))
-            {
-                buildings.Add(BuildingEnums.GreatStable);
-            }
-            if (filterdSettings.Contains(VillageSettingEnums.WorkshopTroop))
-            {
-                buildings.Add(BuildingEnums.Workshop);
-            }
-            return buildings;
         }
     }
 }

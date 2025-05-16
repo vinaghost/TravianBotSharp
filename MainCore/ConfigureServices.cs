@@ -1,10 +1,20 @@
-﻿using FluentValidation;
-using MainCore.UI.Models.Input;
-using MainCore.UI.Models.Validators;
+﻿using MainCore.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ReactiveUI;
+using Serilog;
+using Serilog.Events;
+using Serilog.Templates;
 using Splat.Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
+
+[assembly: Behaviors(
+    typeof(AccountDataLoggingBehavior<,>),
+    typeof(TaskNameLoggingBehavior<,>),
+    typeof(CommandNameLoggingBehavior<,>),
+    typeof(ErrorLoggingBehavior<,>),
+    typeof(AccountTaskBehavior<,>),
+    typeof(VillageTaskBehavior<,>)
+)]
 
 namespace MainCore
 {
@@ -14,36 +24,45 @@ namespace MainCore
 
         public static IServiceCollection AddCoreServices(this IServiceCollection services)
         {
-            services.AddPooledDbContextFactory<AppDbContext>(
+            services.AddDbContext<AppDbContext>(
                 options => options
 #if DEBUG
                     .EnableSensitiveDataLogging()
 #endif
-                    .UseSqlite(_connectionString)
+                    .UseSqlite(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
+
             );
 
             services
+                .AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, ServiceLifetime.Singleton)
                 .AddMainCore()
-                .AddValidator()
-                .AddMediatR(cfg =>
+                .AddMainCoreBehaviors()
+                .AddMainCoreHandlers();
+
+            services
+                .AddScoped<IChromeBrowser>(sp =>
                 {
-                    cfg.RegisterServicesFromAssemblyContaining<AppDbContext>();
+                    var dataService = sp.GetRequiredService<IDataService>();
+                    if (dataService.AccountId == AccountId.Empty) throw new InvalidOperationException("AccountId is empty");
+                    var chromeManager = sp.GetRequiredService<IChromeManager>();
+                    var logger = sp.GetRequiredService<ILogger>();
+                    logger = logger
+                        .ForContext("Account", dataService.AccountData)
+                        .ForContext("AccountId", dataService.AccountId);
+
+                    var browser = chromeManager.Get(dataService.AccountId);
+                    browser.Logger = logger;
+                    return browser;
                 });
+
             return services;
         }
 
-        public static IServiceCollection AddValidator(this IServiceCollection services)
+        private static string GetVersion()
         {
-            // Validators
-            services
-                .AddTransient<IValidator<AccountInput>, AccountInputValidator>()
-                .AddTransient<IValidator<AccessInput>, AccessInputValidator>()
-                .AddTransient<IValidator<AccountSettingInput>, AccountSettingInputValidator>()
-                .AddTransient<IValidator<VillageSettingInput>, VillageSettingInputValidator>()
-                .AddTransient<IValidator<NormalBuildInput>, NormalBuildInputValidator>()
-                .AddTransient<IValidator<FarmListSettingInput>, FarmListSettingInputValidator>()
-                .AddTransient<IValidator<ResourceBuildInput>, ResourceBuildInputValidator>();
-            return services;
+            var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version!;
+            var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
+            return $"{version}";
         }
 
         public static IServiceProvider Setup()
@@ -55,16 +74,32 @@ namespace MainCore
                    var resolver = Locator.CurrentMutable;
                    resolver.InitializeSplat();
                    resolver.InitializeReactiveUI();
+                   services.AddCoreServices();
+                   services.AddSerilog(c =>
+                   {
+                       c.MinimumLevel.Override("Microsoft", LogEventLevel.Warning);
 
-                   services
-                       .AddCoreServices();
+                       c.Filter.ByExcluding("SourceContext like 'ReactiveUI.POCOObservableForProperty' and Contains(@m, 'WhenAny will only return a single value')");
+                       c.WriteTo.Map("Account", "Other", (acc, wt) =>
+                       {
+                           wt.File(new ExpressionTemplate("[{@t:HH:mm:ss} {@l:u3}{#if SourceContext is not null} ({SourceContext}){#end}] {@m}\n{@x}"),
+                               path: $"./logs/log-{acc}-.txt",
+                               rollingInterval: RollingInterval.Day);
+                           wt.LogSink();
+                       });
+
+                       c.Enrich.FromLogContext();
+                   });
                })
                .UseDefaultServiceProvider(config =>
                {
                    config.ValidateOnBuild = true;
+                   config.ValidateScopes = true;
                })
                .Build();
+
             var container = host.Services;
+
             container.UseMicrosoftDependencyResolver();
             return container;
         }

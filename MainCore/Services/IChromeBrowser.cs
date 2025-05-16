@@ -1,5 +1,4 @@
-﻿using MainCore.Common.Models;
-using OpenQA.Selenium.Chrome;
+﻿using OpenQA.Selenium.Chrome;
 
 namespace MainCore.Services
 {
@@ -8,32 +7,29 @@ namespace MainCore.Services
         string CurrentUrl { get; }
         ChromeDriver Driver { get; }
         HtmlDocument Html { get; }
+        ILogger Logger { get; set; }
 
-        Task<Result> Click(By by, CancellationToken cancellationToken);
-
-        Task<Result> Click(By by, string url, CancellationToken cancellationToken);
-
-        Task<Result> Click(By by, Func<IWebDriver, bool> condition, CancellationToken cancellationToken);
-
-        Task<Result> Click(By by, string url, Func<IWebDriver, bool> condition, CancellationToken cancellationToken);
+        Task<Result> Click(By by);
 
         Task Close();
 
-        Task<Result> ExecuteJsScript(string javascript, string url, CancellationToken cancellationToken);
+        Task<Result> ExecuteJsScript(string javascript);
 
-        Task<Result> InputTextbox(By by, string content);
+        Task<Result> Input(By by, string content);
 
-        Task<Result> Navigate(string url, CancellationToken cancellationToken);
+        Task Navigate(string url, CancellationToken cancellationToken);
 
-        Task<Result> Refresh(CancellationToken cancellationToken);
+        Task Refresh(CancellationToken cancellationToken);
 
-        Task<Result> Setup(ChromeSetting setting);
+        Task Setup(ChromeSetting setting);
 
         Task Shutdown();
 
-        Task<Result> Wait(Func<IWebDriver, bool> condition, CancellationToken cancellationToken);
+        Task<Result> Wait(Predicate<IWebDriver> condition, CancellationToken cancellationToken);
 
         Task<Result> WaitPageChanged(string part, CancellationToken cancellationToken);
+
+        Task<Result> WaitPageChanged(string part, Predicate<IWebDriver> customCondition, CancellationToken cancellationToken);
 
         Task<Result> WaitPageLoaded(CancellationToken cancellationToken);
     }

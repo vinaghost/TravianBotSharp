@@ -8,16 +8,19 @@
             {
                 1 => GetResourceButton(doc),
                 2 => GetBuildingButton(doc),
-                _ => null,
+                _ => throw BrokenParserException.NotFound($"dorf{dorf}"),
             };
         }
 
         private static HtmlNode GetButton(HtmlDocument doc, int key)
         {
             var navigationBar = doc.GetElementbyId("navigation");
-            if (navigationBar is null) return null;
-            var buttonNode = navigationBar.Descendants("a").FirstOrDefault(x => x.GetAttributeValue("accesskey", 0) == key);
-            return buttonNode;
+            BrokenParserException.ThrowIfNull(navigationBar);
+            var button = navigationBar
+                .Descendants("a")
+                .FirstOrDefault(x => x.GetAttributeValue("accesskey", 0) == key);
+            BrokenParserException.ThrowIfNull(button);
+            return button;
         }
 
         private static HtmlNode GetResourceButton(HtmlDocument doc) => GetButton(doc, 1);

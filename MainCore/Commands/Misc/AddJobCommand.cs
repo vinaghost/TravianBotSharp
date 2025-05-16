@@ -1,55 +1,63 @@
-﻿using MainCore.Commands.Abstract;
-using MainCore.Common.Models;
+﻿using MainCore.Constraints;
 using System.Text.Json;
 
 namespace MainCore.Commands.Misc
 {
-    [RegisterSingleton<AddJobCommand>]
-    public class AddJobCommand(IDbContextFactory<AppDbContext> contextFactory) : QueryBase(contextFactory)
+    [Handler]
+    public static partial class AddJobCommand
     {
-        private static readonly Dictionary<Type, JobTypeEnums> _jobTypes = new()
+        public sealed record Command(VillageId VillageId, Job Job, bool Top = false) : IVillageCommand;
+
+        private static async ValueTask HandleAsync(
+            Command command,
+            AppDbContext context,
+            CancellationToken cancellationToken
+            )
         {
-            { typeof(NormalBuildPlan),JobTypeEnums.NormalBuild  },
-            { typeof(ResourceBuildPlan),JobTypeEnums.ResourceBuild },
-        };
+            await Task.CompletedTask;
+            var (villageId, job, top) = command;
 
-        public void ToTop<T>(VillageId villageId, T content)
-        {
-            using var context = _contextFactory.CreateDbContext();
-
-            context.Jobs
-               .Where(x => x.VillageId == villageId.Value)
-               .ExecuteUpdate(x =>
-                   x.SetProperty(x => x.Position, x => x.Position + 1));
-
-            var job = new Job()
+            if (top)
             {
-                Position = 0,
-                VillageId = villageId.Value,
-                Type = _jobTypes[typeof(T)],
-                Content = JsonSerializer.Serialize(content),
-            };
+                context.Jobs
+                   .Where(x => x.VillageId == villageId.Value)
+                   .ExecuteUpdate(x =>
+                       x.SetProperty(x => x.Position, x => x.Position + 1));
+                job.Position = 0;
+            }
+            else
+            {
+                var count = context.Jobs
+                    .Where(x => x.VillageId == villageId.Value)
+                    .Count();
+
+                job.Position = count;
+            }
+
             context.Add(job);
             context.SaveChanges();
         }
 
-        public void ToBottom<T>(VillageId villageId, T content)
+        public static Job ToJob(this NormalBuildPlan plan, VillageId villageId)
         {
-            using var context = _contextFactory.CreateDbContext();
-            var count = context.Jobs
-                .Where(x => x.VillageId == villageId.Value)
-                .Count();
-
-            var job = new Job()
+            return new Job()
             {
-                Position = count,
+                Position = 0,
                 VillageId = villageId.Value,
-                Type = _jobTypes[typeof(T)],
-                Content = JsonSerializer.Serialize(content),
+                Type = JobTypeEnums.NormalBuild,
+                Content = JsonSerializer.Serialize(plan),
             };
+        }
 
-            context.Add(job);
-            context.SaveChanges();
+        public static Job ToJob(this ResourceBuildPlan plan, VillageId villageId)
+        {
+            return new Job()
+            {
+                Position = 0,
+                VillageId = villageId.Value,
+                Type = JobTypeEnums.ResourceBuild,
+                Content = JsonSerializer.Serialize(plan),
+            };
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using FluentAssertions;
-
-namespace MainCore.Test.Parsers
+﻿namespace MainCore.Test.Parsers
 {
     public class BuildingTabParser : BaseParser
     {
@@ -18,7 +16,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(path);
             var actual = MainCore.Parsers.BuildingTabParser.GetNavigationBar(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
 
         [Theory]
@@ -30,7 +28,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(path);
             var actual = MainCore.Parsers.BuildingTabParser.CountTab(_html);
-            actual.Should().Be(expected);
+            actual.ShouldBe(expected);
         }
 
         [Theory]
@@ -43,7 +41,7 @@ namespace MainCore.Test.Parsers
             _html.Load(path);
             var node = MainCore.Parsers.BuildingTabParser.GetTab(_html, expected);
             var actual = MainCore.Parsers.BuildingTabParser.IsTabActive(node);
-            actual.Should().BeTrue();
+            actual.ShouldBeTrue();
         }
     }
 }
