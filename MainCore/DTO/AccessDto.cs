@@ -1,4 +1,4 @@
-﻿using Riok.Mapperly.Abstractions;
+﻿#nullable disable
 
 namespace MainCore.DTO
 {
@@ -18,8 +18,8 @@ namespace MainCore.DTO
         public string Proxy => string.IsNullOrEmpty(ProxyHost) ? "[default]" : ProxyHost;
     }
 
-    [Mapper]
-    public static partial class AccessStaticMapper
+    [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
+    public static partial class AccessMapper
     {
         public static Access ToEntity(this AccessDto dto, AccountId accountId)
         {
@@ -28,8 +28,10 @@ namespace MainCore.DTO
             return entity;
         }
 
-        private static partial Access ToEntity(this AccessDto dto);
+        [MapperIgnoreTarget(nameof(Access.AccountId))]
+        public static partial Access ToEntity(this AccessDto dto);
 
+        [MapperIgnoreTarget(nameof(AccessDto.Proxy))]
         public static partial AccessDto ToDto(this Access entity);
 
         public static partial IQueryable<AccessDto> ToDto(this IQueryable<Access> entities);

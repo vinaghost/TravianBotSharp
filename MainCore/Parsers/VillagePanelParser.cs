@@ -2,23 +2,24 @@
 {
     public static class VillagePanelParser
     {
-        public static HtmlNode GetVillageNode(HtmlDocument doc, VillageId villageId)
+        public static HtmlNode? GetVillageNode(HtmlDocument doc, VillageId villageId)
         {
-            var villageBox = doc.GetElementbyId("sidebarBoxVillagelist");
-            if (villageBox is null) return null;
-            var villages = villageBox
+            var sidebarBoxVillagelist = doc.GetElementbyId("sidebarBoxVillagelist");
+            if (sidebarBoxVillagelist is null) return null;
+            var villages = sidebarBoxVillagelist
                 .Descendants("div")
                 .Where(x => x.HasClass("listEntry"))
                 .ToList();
-            var village = villages.Find(x => GetId(x) == villageId);
+
+            var village = villages.FirstOrDefault(x => GetId(x) == villageId);
             return village;
         }
 
         public static VillageId GetCurrentVillageId(HtmlDocument doc)
         {
-            var villageBox = doc.GetElementbyId("sidebarBoxVillagelist");
-            if (villageBox is null) return VillageId.Empty;
-            var village = villageBox
+            var sidebarBoxVillagelist = doc.GetElementbyId("sidebarBoxVillagelist");
+            if (sidebarBoxVillagelist is null) return default;
+            var village = sidebarBoxVillagelist
                 .Descendants("div")
                 .Where(x => x.HasClass("listEntry"))
                 .Where(x => IsActive(x))
@@ -63,9 +64,13 @@
 
         private static List<HtmlNode> GetVillages(HtmlDocument doc)
         {
-            var villsNode = doc.GetElementbyId("sidebarBoxVillagelist");
-            if (villsNode is null) return new();
-            return villsNode.Descendants("div").Where(x => x.HasClass("listEntry") && x.HasClass("village")).ToList();
+            var sidebarBoxVillagelist = doc.GetElementbyId("sidebarBoxVillagelist");
+            if (sidebarBoxVillagelist is null) return [];
+            var villages = sidebarBoxVillagelist
+                .Descendants("div")
+                .Where(x => x.HasClass("listEntry") && x.HasClass("village"))
+                .ToList();
+            return villages;
         }
 
         private static bool IsUnderAttack(HtmlNode node)
@@ -75,23 +80,31 @@
 
         private static string GetName(HtmlNode node)
         {
-            var textNode = node.Descendants("a").FirstOrDefault();
+            var textNode = node
+                .Descendants("a")
+                .FirstOrDefault();
             if (textNode is null) return "";
-            var nameNode = textNode.Descendants("span").FirstOrDefault(x => x.HasClass("name"));
+            var nameNode = textNode
+                .Descendants("span")
+                .FirstOrDefault(x => x.HasClass("name"));
             if (nameNode is null) return "";
             return nameNode.InnerText;
         }
 
         private static int GetX(HtmlNode node)
         {
-            var xNode = node.Descendants("span").FirstOrDefault(x => x.HasClass("coordinateX"));
+            var xNode = node
+                .Descendants("span")
+                .FirstOrDefault(x => x.HasClass("coordinateX"));
             if (xNode is null) return 0;
             return xNode.InnerText.ParseInt();
         }
 
         private static int GetY(HtmlNode node)
         {
-            var yNode = node.Descendants("span").FirstOrDefault(x => x.HasClass("coordinateY"));
+            var yNode = node
+                .Descendants("span")
+                .FirstOrDefault(x => x.HasClass("coordinateY"));
             if (yNode is null) return 0;
             return yNode.InnerText.ParseInt();
         }

@@ -1,24 +1,51 @@
-﻿using MainCore.Commands.Abstract;
-using MainCore.Common.Errors.TrainTroop;
+﻿using MainCore.Constraints;
+using MainCore.Errors.TrainTroop;
 
 namespace MainCore.Commands.Features.TrainTroop
 {
-    [RegisterScoped<TrainTroopCommand>]
-    public class TrainTroopCommand : CommandBase, ICommand<BuildingEnums>
+    [Handler]
+    public static partial class TrainTroopCommand
     {
-        private readonly ToDorfCommand _toDorfCommand;
-        private readonly UpdateBuildingCommand _updateBuildingCommand;
-        private readonly ToBuildingCommand _toBuildingCommand;
-        private readonly IGetSetting _getSetting;
-        private readonly GetBuildingLocation _getBuildingLocation;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, BuildingEnums Building) : IAccountVillageCommand;
 
-        public TrainTroopCommand(IDataService dataService, ToDorfCommand toDorfCommand, UpdateBuildingCommand updateBuildingCommand, ToBuildingCommand toBuildingCommand, IGetSetting getSetting, GetBuildingLocation getBuildingLocation) : base(dataService)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            ISettingService settingService,
+            ToDorfCommand.Handler toDorfCommand,
+            UpdateBuildingCommand.Handler updateBuildingCommand,
+            ToBuildingCommand.Handler toBuildingCommand,
+            GetBuildingLocationQuery.Handler getBuildingLocation,
+            CancellationToken cancellationToken)
         {
-            _toDorfCommand = toDorfCommand;
-            _updateBuildingCommand = updateBuildingCommand;
-            _toBuildingCommand = toBuildingCommand;
-            _getSetting = getSetting;
-            _getBuildingLocation = getBuildingLocation;
+            var (accountId, villageId, building) = command;
+
+            Result result;
+            result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
+            if (result.IsFailed) return result;
+
+            var updateBuildingCommandResult = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            if (updateBuildingCommandResult.IsFailed) return Result.Fail(updateBuildingCommandResult.Errors);
+
+            var buildingLocation = await getBuildingLocation.HandleAsync(new(villageId, building), cancellationToken);
+            if (buildingLocation == default)
+            {
+                return MissingBuilding.Error(building);
+            }
+
+            result = await toBuildingCommand.HandleAsync(new(accountId, buildingLocation), cancellationToken);
+            if (result.IsFailed) return result;
+
+            var troopSetting = BuildingSettings[building];
+            var troop = (TroopEnums)settingService.ByName(villageId, troopSetting);
+
+            var (_, isFailed, amount, errors) = GetAmount(settingService, browser, villageId, building, troop);
+            if (isFailed) return Result.Fail(errors);
+
+            result = await TrainTroop(browser, troop, amount, cancellationToken);
+            if (result.IsFailed) return result;
+
+            return Result.Ok();
         }
 
         public static Dictionary<BuildingEnums, VillageSettingEnums> BuildingSettings { get; } = new()
@@ -30,7 +57,7 @@ namespace MainCore.Commands.Features.TrainTroop
             {BuildingEnums.Workshop, VillageSettingEnums.WorkshopTroop },
         };
 
-        private static Dictionary<BuildingEnums, (VillageSettingEnums, VillageSettingEnums)> AmountSettings { get; } = new()
+        public static Dictionary<BuildingEnums, (VillageSettingEnums, VillageSettingEnums)> AmountSettings { get; } = new()
         {
             {BuildingEnums.Barracks, (VillageSettingEnums.BarrackAmountMin,VillageSettingEnums.BarrackAmountMax ) },
             {BuildingEnums.Stable, (VillageSettingEnums.StableAmountMin,VillageSettingEnums.StableAmountMax ) },
@@ -39,51 +66,14 @@ namespace MainCore.Commands.Features.TrainTroop
             {BuildingEnums.Workshop, (VillageSettingEnums.WorkshopAmountMin,VillageSettingEnums.WorkshopAmountMax ) },
         };
 
-        public async Task<Result> Execute(BuildingEnums building, CancellationToken cancellationToken)
+        private static Result<long> GetAmount(
+            ISettingService settingService,
+            IChromeBrowser browser,
+            VillageId villageId,
+            BuildingEnums building,
+            TroopEnums troop)
         {
-            Result result;
-            result = await ToTrainBuilding(building, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var troopSeting = BuildingSettings[building];
-            var troop = (TroopEnums)_getSetting.ByName(_dataService.VillageId, troopSeting);
-
-            var (_, isFailed, amount, errors) = GetAmount(building, troop);
-            if (isFailed) return Result.Fail(errors).WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await TrainTroop(troop, amount, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-            return Result.Ok();
-        }
-
-        private async Task<Result> ToTrainBuilding(BuildingEnums building, CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await _toDorfCommand.Execute(2, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            result = await _updateBuildingCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var buildingLocation = _getBuildingLocation.Execute(_dataService.VillageId, building);
-            if (buildingLocation == default)
-            {
-                return MissingBuilding.Error(building);
-            }
-
-            result = await _toBuildingCommand.Execute(buildingLocation, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            return Result.Ok();
-        }
-
-        private Result<long> GetAmount(BuildingEnums building, TroopEnums troop)
-        {
-            var villageId = _dataService.VillageId;
-            var (minSetting, maxSetting) = AmountSettings[building];
-            var amount = _getSetting.ByName(villageId, minSetting, maxSetting);
-
-            var html = _dataService.ChromeBrowser.Html;
+            var html = browser.Html;
 
             var maxAmount = TrainTroopParser.GetMaxAmount(html, troop);
 
@@ -92,12 +82,14 @@ namespace MainCore.Commands.Features.TrainTroop
                 return MissingResource.Error(building);
             }
 
+            var (minSetting, maxSetting) = AmountSettings[building];
+            var amount = settingService.ByName(villageId, minSetting, maxSetting);
             if (amount < maxAmount)
             {
                 return amount;
             }
 
-            var trainWhenLowResource = _getSetting.BooleanByName(villageId, VillageSettingEnums.TrainWhenLowResource);
+            var trainWhenLowResource = settingService.BooleanByName(villageId, VillageSettingEnums.TrainWhenLowResource);
             if (!trainWhenLowResource)
             {
                 return MissingResource.Error(building);
@@ -107,23 +99,26 @@ namespace MainCore.Commands.Features.TrainTroop
             return amount;
         }
 
-        private async Task<Result> TrainTroop(TroopEnums troop, long amount, CancellationToken cancellationToken)
+        private static async ValueTask<Result> TrainTroop(
+            IChromeBrowser browser,
+            TroopEnums troop,
+            long amount,
+            CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
 
             var inputBox = TrainTroopParser.GetInputBox(html, troop);
             if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
 
             Result result;
-            result = await chromeBrowser.InputTextbox(By.XPath(inputBox.XPath), $"{amount}");
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await browser.Input(By.XPath(inputBox.XPath), $"{amount}");
+            if (result.IsFailed) return result;
 
             var trainButton = TrainTroopParser.GetTrainButton(html);
             if (trainButton is null) return Retry.ButtonNotFound("train troop");
 
-            result = await chromeBrowser.Click(By.XPath(trainButton.XPath), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await browser.Click(By.XPath(trainButton.XPath));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

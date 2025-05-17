@@ -1,5 +1,4 @@
 ﻿using MainCore.UI.Models.Output;
-using ReactiveUI;
 
 namespace MainCore.Services
 {
