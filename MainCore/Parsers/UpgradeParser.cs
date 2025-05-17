@@ -42,46 +42,40 @@
             return TimeSpan.FromSeconds(time);
         }
 
-        public static HtmlNode GetConstructButton(HtmlDocument doc, BuildingEnums building)
+        public static HtmlNode? GetConstructButton(HtmlDocument doc, BuildingEnums building)
         {
             if (building.IsResourceField()) return GetUpgradeButton(doc);
 
             var contract_building = doc.GetElementbyId($"contract_building{(int)building}");
-            BrokenParserException.ThrowIfNull(contract_building);
+            if (contract_building is null) return null;
 
             var button = contract_building
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("new"));
-
-            BrokenParserException.ThrowIfNull(button);
             return button;
         }
 
-        public static HtmlNode GetSpecialUpgradeButton(HtmlDocument doc)
+        public static HtmlNode? GetSpecialUpgradeButton(HtmlDocument doc)
         {
             var upgradeButtonsContainer = doc.DocumentNode
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("upgradeButtonsContainer"));
-            BrokenParserException.ThrowIfNull(upgradeButtonsContainer);
+            if (upgradeButtonsContainer is null) return null;
 
             var button = upgradeButtonsContainer
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("videoFeatureButton") && x.HasClass("green"));
-            BrokenParserException.ThrowIfNull(button);
-
             return button;
         }
 
-        public static HtmlNode GetUpgradeButton(HtmlDocument doc)
+        public static HtmlNode? GetUpgradeButton(HtmlDocument doc)
         {
             var upgradeButtonsContainer = doc.DocumentNode.Descendants("div")
                .FirstOrDefault(x => x.HasClass("upgradeButtonsContainer"));
-            BrokenParserException.ThrowIfNull(upgradeButtonsContainer);
+            if (upgradeButtonsContainer is null) return null;
 
             var button = upgradeButtonsContainer.Descendants("button")
                 .FirstOrDefault(x => x.HasClass("build"));
-            BrokenParserException.ThrowIfNull(button);
-
             return button;
         }
     }

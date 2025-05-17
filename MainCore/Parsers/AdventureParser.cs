@@ -22,13 +22,11 @@
             return table;
         }
 
-        public static HtmlNode GetHeroAdventureButton(HtmlDocument doc)
+        public static HtmlNode? GetHeroAdventureButton(HtmlDocument doc)
         {
             var adventureButton = doc.DocumentNode
                 .Descendants("a")
                 .FirstOrDefault(x => x.HasClass("adventure") && x.HasClass("round"));
-
-            BrokenParserException.ThrowIfNull(adventureButton);
             return adventureButton;
         }
 
@@ -37,43 +35,45 @@
             var heroStatus = doc.DocumentNode
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("heroStatus"));
-
-            BrokenParserException.ThrowIfNull(heroStatus);
-
+            if (heroStatus is null) return false;
             var heroHome = heroStatus.Descendants("i")
                 .Any(x => x.HasClass("heroHome"));
             if (!heroHome) return false;
 
             var adventureButton = GetHeroAdventureButton(doc);
-            BrokenParserException.ThrowIfNull(adventureButton);
+            if (adventureButton is null) return false;
 
             var adventureAvailabe = adventureButton.Descendants("div")
                 .Any(x => x.HasClass("content"));
             return adventureAvailabe;
         }
 
-        public static HtmlNode GetAdventureButton(HtmlDocument doc)
+        public static HtmlNode? GetAdventureButton(HtmlDocument doc)
         {
             var adventureTable = doc.GetElementbyId("heroAdventure");
-            BrokenParserException.ThrowIfNull(adventureTable);
+            if (adventureTable is null) return null;
 
-            var adventureTableBody = adventureTable.Descendants("tbody").FirstOrDefault();
-            BrokenParserException.ThrowIfNull(adventureTableBody);
+            var adventureTableBody = adventureTable
+                .Descendants("tbody")
+                .FirstOrDefault();
+            if (adventureTableBody is null) return null;
 
-            var adventureTableBodyRow = adventureTableBody.Descendants("tr").FirstOrDefault();
-            BrokenParserException.ThrowIfNull(adventureTableBodyRow);
+            var adventureTableBodyRow = adventureTableBody
+                .Descendants("tr")
+                .FirstOrDefault();
+            if (adventureTableBodyRow is null) return null;
 
-            var startAdventureButton = adventureTableBodyRow.Descendants("button").FirstOrDefault();
-            BrokenParserException.ThrowIfNull(startAdventureButton);
+            var startAdventureButton = adventureTableBodyRow
+                .Descendants("button")
+                .FirstOrDefault();
             return startAdventureButton;
         }
 
-        public static HtmlNode GetContinueButton(HtmlDocument doc)
+        public static HtmlNode? GetContinueButton(HtmlDocument doc)
         {
             var continueButton = doc.DocumentNode
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("continue"));
-            BrokenParserException.ThrowIfNull(continueButton);
             return continueButton;
         }
 

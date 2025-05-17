@@ -14,21 +14,19 @@
             return loginButton;
         }
 
-        public static HtmlNode GetUsernameInput(HtmlDocument doc)
+        public static HtmlNode? GetUsernameInput(HtmlDocument doc)
         {
             var usernameInput = doc.DocumentNode
                 .Descendants("input")
                 .FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("name"));
-            BrokenParserException.ThrowIfNull(usernameInput);
             return usernameInput;
         }
 
-        public static HtmlNode GetPasswordInput(HtmlDocument doc)
+        public static HtmlNode? GetPasswordInput(HtmlDocument doc)
         {
             var passwordInput = doc.DocumentNode
                 .Descendants("input")
                 .FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("password"));
-            BrokenParserException.ThrowIfNull(passwordInput);
             return passwordInput;
         }
 

@@ -1,30 +1,31 @@
-﻿using Humanizer;
-
-namespace MainCore.Parsers
+﻿namespace MainCore.Parsers
 {
     public static class TrainTroopParser
     {
-        public static HtmlNode GetInputBox(HtmlDocument doc, TroopEnums troop)
+        public static HtmlNode? GetInputBox(HtmlDocument doc, TroopEnums troop)
         {
             var node = GetNode(doc, troop);
+            if (node is null) return null;
             var cta = node.Descendants("div")
                 .FirstOrDefault(x => x.HasClass("cta"));
-            BrokenParserException.ThrowIfNull(cta);
+            if (cta is null) return null;
+
             var input = cta.Descendants("input")
                 .FirstOrDefault(x => x.HasClass("text"));
-            BrokenParserException.ThrowIfNull(input);
             return input;
         }
 
         public static int GetMaxAmount(HtmlDocument doc, TroopEnums troop)
         {
             var node = GetNode(doc, troop);
+            if (node is null) return 0;
             var cta = node.Descendants("div")
                 .FirstOrDefault(x => x.HasClass("cta"));
-            BrokenParserException.ThrowIfNull(cta);
+            if (cta is null) return 0;
             var a = cta.Descendants("a")
                 .FirstOrDefault();
-            BrokenParserException.ThrowIfNull(a);
+            if (a is null) return 0;
+
             return a.InnerText.ParseInt();
         }
 
@@ -33,7 +34,7 @@ namespace MainCore.Parsers
             return doc.GetElementbyId("s1");
         }
 
-        private static HtmlNode GetNode(HtmlDocument doc, TroopEnums troop)
+        private static HtmlNode? GetNode(HtmlDocument doc, TroopEnums troop)
         {
             var nodes = doc.DocumentNode.Descendants("div")
                .Where(x => x.HasClass("troop"))
@@ -52,8 +53,7 @@ namespace MainCore.Parsers
                 if (type is null) continue;
                 if (type.ParseInt() == (int)troop) return node;
             }
-
-            throw BrokenParserException.NotFound($"{troop.Humanize()} node");
+            return null;
         }
     }
 }

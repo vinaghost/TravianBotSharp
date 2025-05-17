@@ -6,16 +6,16 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
     [Handler]
     public static partial class FixJobsCommand
     {
-        public sealed record Command(VillageId VillageId, List<JobDto> Jobs) : IVillageCommand;
+        public sealed record Command(VillageId VillageId, List<JobDto> Jobs, bool Shuffle) : IVillageCommand;
 
         private static async ValueTask<List<JobDto>> HandleAsync(
             Command command,
             GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
             CancellationToken cancellationToken)
         {
-            var (villageId, jobs) = command;
+            var (villageId, jobs, shuffle) = command;
             var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId));
-            var modifiedJobs = GetModifiedJobs(buildings, jobs);
+            var modifiedJobs = GetModifiedJobs(buildings, jobs, shuffle);
             return [.. modifiedJobs];
         }
 
@@ -36,7 +36,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
                 BuildingEnums.Cropland,}},
         };
 
-        private static IEnumerable<JobDto> GetModifiedJobs(List<BuildingItem> buildings, List<JobDto> jobs)
+        private static IEnumerable<JobDto> GetModifiedJobs(List<BuildingItem> buildings, List<JobDto> jobs, bool shuffle)
         {
             var changedLocations = new Dictionary<int, int>();
             foreach (var job in jobs)
@@ -47,7 +47,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
                         {
                             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
 
-                            Modify(buildings, plan, changedLocations);
+                            Modify(buildings, plan, changedLocations, shuffle);
                             job.Content = GetContent(plan);
 
                             if (IsValidPlan(buildings, plan)) yield return job;
@@ -106,7 +106,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             return true;
         }
 
-        private static void Modify(List<BuildingItem> buildings, NormalBuildPlan plan, Dictionary<int, int> changedLocations)
+        private static void Modify(List<BuildingItem> buildings, NormalBuildPlan plan, Dictionary<int, int> changedLocations, bool shuffle)
         {
             if (plan.Type.IsResourceField()) return;
 
@@ -130,7 +130,10 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
             if (_excludedLocations.Contains(plan.Location)) return;
 
-            ModifyRandom(buildings, plan, changedLocations);
+            if (shuffle)
+            {
+                ModifyRandom(buildings, plan, changedLocations);
+            }
         }
 
         private static bool ModifyMultiple(List<BuildingItem> buildings, NormalBuildPlan plan)

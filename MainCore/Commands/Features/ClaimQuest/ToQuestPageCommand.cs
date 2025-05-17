@@ -12,8 +12,6 @@ namespace MainCore.Commands.Features.ClaimQuest
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-
-
             var adventure = QuestParser.GetQuestMaster(browser.Html);
             if (adventure is null) return Retry.ButtonNotFound("quest master");
 

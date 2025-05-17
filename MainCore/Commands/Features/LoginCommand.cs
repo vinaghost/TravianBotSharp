@@ -33,6 +33,7 @@ namespace MainCore.Commands.Features
             result = await browser.Click(By.XPath(buttonNode.XPath));
             if (result.IsFailed) return result;
             result = await browser.WaitPageChanged("dorf", cancellationToken);
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

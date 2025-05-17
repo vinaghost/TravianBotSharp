@@ -26,17 +26,19 @@
             return !inventoryPageWrapper.HasClass("loading");
         }
 
-        public static HtmlNode GetItemSlot(HtmlDocument doc, HeroItemEnums type)
+        public static HtmlNode? GetItemSlot(HtmlDocument doc, HeroItemEnums type)
         {
             var heroItemsDiv = doc.DocumentNode
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("heroItems"));
-            BrokenParserException.ThrowIfNull(heroItemsDiv);
+
+            if (heroItemsDiv is null) return null;
 
             var heroItemDivs = heroItemsDiv
                 .Descendants("div")
                 .Where(x => x.HasClass("heroItem") && !x.HasClass("empty"));
-            BrokenParserException.ThrowIfEmpty(heroItemDivs);
+
+            if (!heroItemDivs.Any()) return null;
 
             foreach (var itemSlot in heroItemDivs)
             {
@@ -49,36 +51,33 @@
 
                 if (itemValue.ParseInt() == (int)type) return itemSlot;
             }
-            throw BrokenParserException.NotFound("itemSlot");
+
+            return null;
         }
 
-        public static HtmlNode GetAmountBox(HtmlDocument doc)
+        public static HtmlNode? GetAmountBox(HtmlDocument doc)
         {
             var dialogHeroItemConsumable = doc.GetElementbyId("consumableHeroItem");
-            BrokenParserException.ThrowIfNull(dialogHeroItemConsumable);
+            if (dialogHeroItemConsumable is null) return null;
 
             var amountInput = dialogHeroItemConsumable
                 .Descendants("input")
                 .FirstOrDefault();
-
-            BrokenParserException.ThrowIfNull(amountInput);
             return amountInput;
         }
 
-        public static HtmlNode GetConfirmButton(HtmlDocument doc)
+        public static HtmlNode? GetConfirmButton(HtmlDocument doc)
         {
             var dialog = doc.GetElementbyId("dialogContent");
-
-            BrokenParserException.ThrowIfNull(dialog);
+            if (dialog is null) return null;
 
             var buttonWrapper = dialog
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("buttonsWrapper"));
-
-            BrokenParserException.ThrowIfNull(buttonWrapper);
+            if (buttonWrapper is null) return null;
 
             var buttonTransfer = buttonWrapper.Descendants("button");
-            if (buttonTransfer.Count() < 2) throw BrokenParserException.NotFound("buttonTransfer");
+            if (buttonTransfer.Count() < 2) return null;
             return buttonTransfer.ElementAt(1);
         }
     }

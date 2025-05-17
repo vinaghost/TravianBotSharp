@@ -19,7 +19,7 @@
             {
                 var classess = node.GetClasses();
                 var buildingSlot = classess.FirstOrDefault(x => x.StartsWith("buildingSlot"));
-                BrokenParserException.ThrowIfNull(buildingSlot);
+                if (buildingSlot is null) return -1;
                 return buildingSlot.ParseInt();
             }
 
@@ -27,7 +27,7 @@
             {
                 var classess = node.GetClasses();
                 var gid = classess.FirstOrDefault(x => x.StartsWith("gid"));
-                BrokenParserException.ThrowIfNull(gid);
+                if (gid is null) return BuildingEnums.Unknown;
                 return (BuildingEnums)gid.ParseInt();
             }
 
@@ -35,7 +35,7 @@
             {
                 var classess = node.GetClasses();
                 var level = classess.FirstOrDefault(x => x.StartsWith("level") && !x.Equals("level"));
-                BrokenParserException.ThrowIfNull(level);
+                if (level is null) return -1;
                 return level.ParseInt();
             }
 

@@ -361,9 +361,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var confirm = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "TBS will remove resource field build job if its position doesn't match with current village."));
             if (!confirm) return;
 
+            var shuffle = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "Do you want to random building location?"));
+
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var fixJobsCommand = scope.ServiceProvider.GetRequiredService<FixJobsCommand.Handler>();
-            var fixedJobs = await fixJobsCommand.HandleAsync(new(VillageId, jobs));
+            var fixedJobs = await fixJobsCommand.HandleAsync(new(VillageId, jobs, shuffle));
             var importCommand = scope.ServiceProvider.GetRequiredService<ImportCommand.Handler>();
             await importCommand.HandleAsync(new(VillageId, fixedJobs));
             var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();

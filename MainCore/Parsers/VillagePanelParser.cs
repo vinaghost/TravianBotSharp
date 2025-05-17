@@ -2,30 +2,29 @@
 {
     public static class VillagePanelParser
     {
-        public static HtmlNode GetVillageNode(HtmlDocument doc, VillageId villageId)
+        public static HtmlNode? GetVillageNode(HtmlDocument doc, VillageId villageId)
         {
             var sidebarBoxVillagelist = doc.GetElementbyId("sidebarBoxVillagelist");
-            BrokenParserException.ThrowIfNull(sidebarBoxVillagelist);
+            if (sidebarBoxVillagelist is null) return null;
             var villages = sidebarBoxVillagelist
                 .Descendants("div")
                 .Where(x => x.HasClass("listEntry"))
                 .ToList();
-            BrokenParserException.ThrowIfEmpty(villages);
 
-            var village = villages.First(x => GetId(x) == villageId);
+            var village = villages.FirstOrDefault(x => GetId(x) == villageId);
             return village;
         }
 
         public static VillageId GetCurrentVillageId(HtmlDocument doc)
         {
             var sidebarBoxVillagelist = doc.GetElementbyId("sidebarBoxVillagelist");
-            BrokenParserException.ThrowIfNull(sidebarBoxVillagelist);
+            if (sidebarBoxVillagelist is null) return default;
             var village = sidebarBoxVillagelist
                 .Descendants("div")
                 .Where(x => x.HasClass("listEntry"))
                 .Where(x => IsActive(x))
                 .Select(x => GetId(x))
-                .First();
+                .FirstOrDefault();
             return village;
         }
 
@@ -66,12 +65,11 @@
         private static List<HtmlNode> GetVillages(HtmlDocument doc)
         {
             var sidebarBoxVillagelist = doc.GetElementbyId("sidebarBoxVillagelist");
-            BrokenParserException.ThrowIfNull(sidebarBoxVillagelist);
+            if (sidebarBoxVillagelist is null) return [];
             var villages = sidebarBoxVillagelist
                 .Descendants("div")
                 .Where(x => x.HasClass("listEntry") && x.HasClass("village"))
                 .ToList();
-            BrokenParserException.ThrowIfEmpty(villages);
             return villages;
         }
 
@@ -85,11 +83,11 @@
             var textNode = node
                 .Descendants("a")
                 .FirstOrDefault();
-            BrokenParserException.ThrowIfNull(textNode);
+            if (textNode is null) return "";
             var nameNode = textNode
                 .Descendants("span")
                 .FirstOrDefault(x => x.HasClass("name"));
-            BrokenParserException.ThrowIfNull(nameNode);
+            if (nameNode is null) return "";
             return nameNode.InnerText;
         }
 
@@ -98,7 +96,7 @@
             var xNode = node
                 .Descendants("span")
                 .FirstOrDefault(x => x.HasClass("coordinateX"));
-            BrokenParserException.ThrowIfNull(xNode);
+            if (xNode is null) return 0;
             return xNode.InnerText.ParseInt();
         }
 
@@ -107,7 +105,7 @@
             var yNode = node
                 .Descendants("span")
                 .FirstOrDefault(x => x.HasClass("coordinateY"));
-            BrokenParserException.ThrowIfNull(yNode);
+            if (yNode is null) return 0;
             return yNode.InnerText.ParseInt();
         }
     }

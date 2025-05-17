@@ -18,19 +18,17 @@
             return newQuestSpeechBubble;
         }
 
-        public static HtmlNode GetQuestCollectButton(HtmlDocument doc)
+        public static HtmlNode? GetQuestCollectButton(HtmlDocument doc)
         {
             var taskOverviewTable = doc.DocumentNode
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("taskOverview"));
 
-            BrokenParserException.ThrowIfNull(taskOverviewTable);
+            if (taskOverviewTable is null) return null;
 
             var collectButton = taskOverviewTable
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("collect") && !x.HasClass("disabled"));
-
-            BrokenParserException.ThrowIfNull(collectButton);
             return collectButton;
         }
 

@@ -5,8 +5,7 @@
         public static IEnumerable<HtmlNode> GetFarmNodes(HtmlDocument doc)
         {
             var farmListTable = doc.GetElementbyId("rallyPointFarmList");
-
-            BrokenParserException.ThrowIfNull(farmListTable);
+            if (farmListTable is null) return [];
 
             var farmlistNodes = farmListTable
                 .Descendants("div")
@@ -20,7 +19,7 @@
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("dragAndDrop"));
 
-            BrokenParserException.ThrowIfNull(farmlistDiv);
+            if (farmlistDiv is null) return default;
 
             var id = farmlistDiv.GetAttributeValue("data-list", "0");
             return new FarmId(id.ParseInt());
@@ -31,12 +30,11 @@
             var farmlistName = node
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("name"));
-
-            BrokenParserException.ThrowIfNull(farmlistName);
+            if (farmlistName is null) return "";
             return farmlistName.InnerText.Trim();
         }
 
-        public static HtmlNode GetStartButton(HtmlDocument doc, FarmId raidId)
+        public static HtmlNode? GetStartButton(HtmlDocument doc, FarmId raidId)
         {
             var nodes = GetFarmNodes(doc);
             foreach (var node in nodes)
@@ -50,18 +48,17 @@
                 if (startNode is null) continue;
                 return startNode;
             }
-
-            throw BrokenParserException.NotFound($"startFarmlistButton {raidId}");
+            return null;
         }
 
-        public static HtmlNode GetStartAllButton(HtmlDocument doc)
+        public static HtmlNode? GetStartAllButton(HtmlDocument doc)
         {
             var farmlistTable = doc.GetElementbyId("rallyPointFarmList");
-            BrokenParserException.ThrowIfNull(farmlistTable);
+            if (farmlistTable is null) return null;
             var startAllFarmListButton = farmlistTable
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("startAllFarmLists"));
-            BrokenParserException.ThrowIfNull(startAllFarmListButton);
+
             return startAllFarmListButton;
         }
     }

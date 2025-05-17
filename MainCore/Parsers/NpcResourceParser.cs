@@ -8,17 +8,15 @@
             return dialog is not null;
         }
 
-        public static HtmlNode GetExchangeResourcesButton(HtmlDocument doc)
+        public static HtmlNode? GetExchangeResourcesButton(HtmlDocument doc)
         {
             var npcMerchantDialog = doc.DocumentNode
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("npcMerchant"));
-
-            BrokenParserException.ThrowIfNull(npcMerchantDialog);
+            if (npcMerchantDialog is null) return null;
 
             var exchangeResourceButton = npcMerchantDialog.Descendants("button")
                 .FirstOrDefault(x => x.HasClass("gold"));
-            BrokenParserException.ThrowIfNull(exchangeResourceButton);
             return exchangeResourceButton;
         }
 
@@ -39,22 +37,22 @@
         {
             var wood = doc.DocumentNode.Descendants("input")
                 .FirstOrDefault(x => x.GetAttributeValue("name", "") == "desired0");
-            BrokenParserException.ThrowIfNull(wood);
+            if (wood is null) throw new Exception("Wood input not found");
             yield return wood;
 
             var clay = doc.DocumentNode.Descendants("input")
                 .FirstOrDefault(x => x.GetAttributeValue("name", "") == "desired1");
-            BrokenParserException.ThrowIfNull(clay);
+            if (clay is null) throw new Exception("Clay input not found");
             yield return clay;
 
             var iron = doc.DocumentNode.Descendants("input")
                 .FirstOrDefault(x => x.GetAttributeValue("name", "") == "desired2");
-            BrokenParserException.ThrowIfNull(iron);
+            if (iron is null) throw new Exception("Iron input not found");
             yield return iron;
 
             var crop = doc.DocumentNode.Descendants("input")
                 .FirstOrDefault(x => x.GetAttributeValue("name", "") == "desired3");
-            BrokenParserException.ThrowIfNull(crop);
+            if (crop is null) throw new Exception("Crop input not found");
             yield return crop;
         }
     }

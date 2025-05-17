@@ -64,6 +64,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(AdventuresPage);
             var adventureButton = MainCore.Parsers.AdventureParser.GetAdventureButton(_html);
+            adventureButton.ShouldNotBeNull();
             var actual = MainCore.Parsers.AdventureParser.GetAdventureInfo(adventureButton);
             actual.ShouldNotContain("unknown");
             actual.ShouldNotContain("[~|~]");

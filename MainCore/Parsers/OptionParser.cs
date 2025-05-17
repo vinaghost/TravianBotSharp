@@ -8,14 +8,13 @@
             return node is not null;
         }
 
-        public static HtmlNode GetOptionButton(HtmlDocument doc)
+        public static HtmlNode? GetOptionButton(HtmlDocument doc)
         {
             var outOfGame = doc.GetElementbyId("outOfGame");
-            BrokenParserException.ThrowIfNull(outOfGame);
+            if (outOfGame is null) return null;
             var optionButton = outOfGame
                 .Descendants("a")
                 .FirstOrDefault(x => x.HasClass("options"));
-            BrokenParserException.ThrowIfNull(optionButton);
             return optionButton;
         }
 
@@ -25,16 +24,16 @@
             return node;
         }
 
-        public static HtmlNode GetSubmitButton(HtmlDocument doc)
+        public static HtmlNode? GetSubmitButton(HtmlDocument doc)
         {
             var submitButtonContainer = doc.DocumentNode
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("submitButtonContainer"));
-            BrokenParserException.ThrowIfNull(submitButtonContainer);
+            if (submitButtonContainer is null) return null;
+
             var submitButton = submitButtonContainer
                 .Descendants("button")
                 .FirstOrDefault();
-            BrokenParserException.ThrowIfNull(submitButton);
             return submitButton;
         }
     }
