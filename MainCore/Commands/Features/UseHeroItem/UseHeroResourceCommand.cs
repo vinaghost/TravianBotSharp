@@ -27,6 +27,7 @@ namespace MainCore.Commands.Features.UseHeroItem
 
             var resourceItems = await getHeroItemsQuery.HandleAsync(new(accountId, ResourceItemTypes), cancellationToken);
 
+            resource = resource.Select(RoundUpTo100).ToArray();
             var result = IsEnoughResource(resourceItems, resource);
             if (result.IsFailed) return result;
 
@@ -138,8 +139,6 @@ namespace MainCore.Commands.Features.UseHeroItem
             List<HeroItem> items,
             long[] requiredResource)
         {
-            requiredResource = requiredResource.Select(RoundUpTo100).ToArray();
-
             var errors = new List<Error>();
             for (var i = 0; i < 4; i++)
             {
