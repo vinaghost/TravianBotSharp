@@ -18,10 +18,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             Result result;
 
-            if (context.IsUpgradeable(plan))
+            if (context.IsUpgradeable(villageId, plan))
             {
                 var isSpecialUpgrade = context.BooleanByName(villageId, VillageSettingEnums.UseSpecialUpgrade);
-                var isSpecialUpgradeable = IsSpecialUpgradeable(context, villageId, plan, cancellationToken);
+                var isSpecialUpgradeable = context.IsSpecialUpgradeable(villageId, plan);
                 if (isSpecialUpgrade && isSpecialUpgradeable)
                 {
                     result = await browser.SpecialUpgrade(cancellationToken);
@@ -42,16 +42,15 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return Result.Ok();
         }
 
-        private static bool IsUpgradeable(this AppDbContext context, NormalBuildPlan plan)
+        private static bool IsUpgradeable(this AppDbContext context, VillageId villageId, NormalBuildPlan plan)
         {
-            return !context.IsEmptySite(plan.Location);
+            return !context.IsEmptySite(villageId, plan.Location);
         }
 
         private static bool IsSpecialUpgradeable(
-            AppDbContext context,
+            this AppDbContext context,
             VillageId villageId,
-            NormalBuildPlan plan,
-            CancellationToken cancellationToken
+            NormalBuildPlan plan
         )
         {
             if (plan.Type.IsResourceField())
@@ -62,9 +61,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return true;
         }
 
-        private static bool IsEmptySite(this AppDbContext context, int location)
+        private static bool IsEmptySite(this AppDbContext context, VillageId villageId, int location)
         {
             return context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Location == location)
                 .Where(x => x.Type == BuildingEnums.Site || x.Level == -1)
                 .Any();

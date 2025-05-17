@@ -20,13 +20,13 @@ namespace MainCore.Services
         public async Task StopCurrentTask(AccountId accountId)
         {
             var cts = GetCancellationTokenSource(accountId);
-            if (cts is null) return;
-            await cts.CancelAsync();
+            if (cts is not null) await cts.CancelAsync();
+
             BaseTask? currentTask;
             do
             {
                 currentTask = GetCurrentTask(accountId);
-                if (currentTask is null) return;
+                if (currentTask is null) break;
                 await Task.Delay(500);
             }
             while (currentTask.Stage != StageEnums.Waiting);
