@@ -2,12 +2,12 @@
 {
     public class StorageLimit : Error
     {
-        protected StorageLimit(string type, long storage, long required) : base($"{type} doesn't have enough capacity")
+        protected StorageLimit(string type, long storage, long required) : base($"{type} doesn't have enough capacity, need {required} but have {storage} ({required - storage})")
         {
-            WithMetadata("storage", storage);
-            WithMetadata("required", required);
         }
 
-        public static StorageLimit Error(string type, long storage, long required) => new(type, storage, required);
+        public static StorageLimit Warehouse(long storage, long required) => new("Warehouse", storage, required);
+
+        public static StorageLimit Granary(long storage, long required) => new("Granary", storage, required);
     }
 }

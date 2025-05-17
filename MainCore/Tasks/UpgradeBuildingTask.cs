@@ -19,6 +19,7 @@ namespace MainCore.Tasks
         private static async ValueTask<Result> HandleAsync(
             Task task,
             ILogger logger,
+            IChromeBrowser browser,
             HandleJobCommand.Handler handleJobCommand,
             ToBuildPageCommand.Handler toBuildPageCommand,
             HandleResourceCommand.Handler handleResourceCommand,
@@ -38,8 +39,13 @@ namespace MainCore.Tasks
                     if (errors.OfType<Continue>().Any()) continue;
 
                     var buildingQueue = await getFirstQueueBuildingQuery.HandleAsync(new(task.VillageId), cancellationToken);
+                    if (buildingQueue is null)
+                    {
+                        return Skip.BuildingJobQueueBroken;
+                    }
+
                     task.ExecuteAt = buildingQueue.CompleteTime.AddSeconds(3);
-                    return Skip.AutoBuilderBuildingQueueFull;
+                    return Skip.ConstructionQueueFull;
                 }
 
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
@@ -51,17 +57,20 @@ namespace MainCore.Tasks
                 if (result.IsFailed)
                 {
                     if (result.HasError<Continue>()) continue;
-                    if (!result.HasError<WaitResource>(out var waitResourceError))
+                    if (result.HasError<Skip>())
                     {
+                        var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
+                        task.ExecuteAt = DateTime.Now.Add(time);
                         return result;
                     }
 
-                    task.ExecuteAt = DateTime.Now.Add(waitResourceError.First().Time);
-                    return Skip.AutoBuilderNotEnoughResource;
+                    return result;
                 }
 
                 result = await handleUpgradeCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
                 if (result.IsFailed) return result;
+
+                logger.Information("Upgrade for {Type} at location {Location} completed successfully.", plan.Type, plan.Location);
             }
         }
     }

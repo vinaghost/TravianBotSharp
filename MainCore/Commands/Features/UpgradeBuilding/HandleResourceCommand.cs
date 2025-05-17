@@ -64,16 +64,13 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             if (!useHeroResource)
             {
-                if (result.HasError<Resource>(out var resourceErrors))
+                if (result.HasError<ResourceMissing>(out var errors))
                 {
-                    foreach (var error in resourceErrors)
-                    {
-                        logger.Warning("{Error}", error);
-                    }
+                    var message = string.Join(Environment.NewLine, errors.Select(x => x.Message));
+                    logger.Warning("{Error}", message);
                 }
 
-                var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
-                return WaitResource.Error(time);
+                return Skip.NotEnoughResource;
             }
 
             logger.Information("Use hero resource to upgrade building");
@@ -87,23 +84,20 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             result = await updateInventoryCommand.HandleAsync(new(accountId), cancellationToken);
             if (result.IsFailed) return result;
 
-            var heroResourceResult = await useHeroResourceCommand.HandleAsync(new(accountId, missingResource), cancellationToken);
+            result = await useHeroResourceCommand.HandleAsync(new(accountId, missingResource), cancellationToken);
             await browser.Navigate(url, cancellationToken);
 
-            if (heroResourceResult.IsFailed)
+            if (result.IsFailed)
             {
-                if (heroResourceResult.HasError<Retry>()) return heroResourceResult;
+                if (result.HasError<Retry>()) return result;
 
-                if (heroResourceResult.HasError<Resource>(out var resourceErrors))
+                if (result.HasError<ResourceMissing>(out var errors))
                 {
-                    foreach (var error in resourceErrors)
-                    {
-                        logger.Warning("{Error}", error);
-                    }
+                    var message = string.Join(Environment.NewLine, errors.Select(x => x.Message));
+                    logger.Warning("{Error}", message);
                 }
 
-                var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
-                return WaitResource.Error(time);
+                return Skip.NotEnoughResource;
             }
 
             return Result.Ok();

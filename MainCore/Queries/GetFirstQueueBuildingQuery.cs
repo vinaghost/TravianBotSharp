@@ -7,7 +7,7 @@ namespace MainCore.Queries
     {
         public sealed record Query(VillageId VillageId) : IVillageQuery;
 
-        private static async ValueTask<QueueBuilding> HandleAsync(
+        private static async ValueTask<QueueBuilding?> HandleAsync(
             Query query,
             AppDbContext context,
             CancellationToken cancellationToken)
@@ -18,7 +18,7 @@ namespace MainCore.Queries
                .Where(x => x.VillageId == villageId.Value)
                .Where(x => x.Type != BuildingEnums.Site)
                .OrderBy(x => x.Position)
-               .First();
+               .FirstOrDefault();
             return queueBuilding;
         }
     }

@@ -148,7 +148,7 @@ namespace MainCore.Commands.Features.UseHeroItem
                 var amount = item?.Amount ?? 0;
                 if (amount < requiredResource[i])
                 {
-                    errors.Add(Resource.Error($"{type}", amount, requiredResource[i]));
+                    errors.Add(ResourceMissing.Error($"{type}", amount, requiredResource[i]));
                 }
             }
 

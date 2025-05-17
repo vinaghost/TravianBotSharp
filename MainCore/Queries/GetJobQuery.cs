@@ -22,7 +22,8 @@ namespace MainCore.Queries
                .Where(x => x.VillageId == villageId.Value)
                .Where(x => BuildJobTypes.Contains(x.Type))
                .Count();
-            if (countJob == 0) return Skip.AutoBuilderJobQueueEmpty;
+
+            if (countJob == 0) return Skip.BuildingJobQueueEmpty;
 
             var countQueueBuilding = context.QueueBuildings
                .Where(x => x.VillageId == villageId.Value)
@@ -54,7 +55,7 @@ namespace MainCore.Queries
                     return result;
                 }
 
-                return BuildingQueueFull.Error(plusActive, countQueueBuilding);
+                return JobError.BuildingQueueFull;
             }
 
             if (countQueueBuilding == 2)
@@ -64,10 +65,10 @@ namespace MainCore.Queries
                     var result = context.GetBuildingJob(villageId, true);
                     return result;
                 }
-                return BuildingQueueFull.Error(plusActive, countQueueBuilding);
+                return JobError.BuildingQueueFull;
             }
 
-            return BuildingQueueFull.Error(plusActive, countQueueBuilding);
+            return JobError.BuildingQueueFull;
         }
 
         private static List<JobTypeEnums> BuildJobTypes = [
@@ -128,13 +129,13 @@ namespace MainCore.Queries
             if (countResourceQueueBuilding > countInfrastructureQueueBuilding)
             {
                 var job = context.GetInfrastructureBuildingJob(villageId);
-                if (job is null) return JobNotAvailable.Error("Infrastructure building");
+                if (job is null) return JobError.JobNotAvailable("Infrastructure building");
                 return job;
             }
             else
             {
                 var job = context.GetResourceBuildingJob(villageId);
-                if (job is null) return JobNotAvailable.Error("Resource field");
+                if (job is null) return JobError.JobNotAvailable("Resource field");
                 return job;
             }
         }
@@ -227,7 +228,7 @@ namespace MainCore.Queries
 
             var prerequisiteBuildings = plan.Type.GetPrerequisiteBuildings();
 
-            var errors = new List<PrerequisiteBuildingMissing>();
+            var errors = new List<JobError>();
 
             var buildings = context.Buildings
                 .Where(x => x.VillageId == villageId.Value)
@@ -239,7 +240,7 @@ namespace MainCore.Queries
                 var vaild = buildings
                     .Where(x => x.Type == prerequisiteBuilding.Type)
                     .Any(x => x.Level >= prerequisiteBuilding.Level);
-                if (!vaild) errors.Add(new(prerequisiteBuilding.Type, prerequisiteBuilding.Level));
+                if (!vaild) errors.Add(JobError.PrerequisiteBuildingMissing(prerequisiteBuilding.Type, prerequisiteBuilding.Level));
             }
 
             if (!plan.Type.IsMultipleBuilding()) return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
@@ -253,7 +254,7 @@ namespace MainCore.Queries
             if (firstBuilding is null) return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
             if (firstBuilding.Level == firstBuilding.Type.GetMaxLevel()) return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
 
-            errors.Add(new(firstBuilding.Type, firstBuilding.Level));
+            errors.Add(JobError.PrerequisiteBuildingMissing(firstBuilding.Type, firstBuilding.Level));
             return Result.Fail(errors);
         }
     }
