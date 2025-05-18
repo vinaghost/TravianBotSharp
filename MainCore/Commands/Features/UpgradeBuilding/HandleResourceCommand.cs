@@ -47,7 +47,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     Level = cropland.Level + 1,
                 };
 
-                await addJobCommand.HandleAsync(new(villageId, cropLandPlan.ToJob(villageId), true), cancellationToken);
+                await addJobCommand.HandleAsync(new(villageId, cropLandPlan.ToJob(), true), cancellationToken);
                 logger.Information($"Add cropland to top of the job queue");
                 await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
                 return Continue.Error;

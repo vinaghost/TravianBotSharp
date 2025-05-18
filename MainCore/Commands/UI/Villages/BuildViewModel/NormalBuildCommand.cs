@@ -1,5 +1,4 @@
-﻿using Humanizer;
-using MainCore.Constraints;
+﻿using MainCore.Constraints;
 using MainCore.UI.Models.Input;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
@@ -28,7 +27,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
                 plan.ValidateLocation(buildings);
             }
 
-            await addJobCommand.HandleAsync(new(villageId, plan.ToJob(villageId)));
+            await addJobCommand.HandleAsync(new(villageId, plan.ToJob()));
             return Result.Ok();
         }
 
@@ -42,7 +41,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
                     .Where(x => x.Type == prerequisiteBuilding.Type)
                     .Any(x => x.Level >= prerequisiteBuilding.Level);
 
-                if (!valid) return Result.Fail($"Required {prerequisiteBuilding.Type.Humanize()} lvl {prerequisiteBuilding.Level}");
+                if (!valid) return Result.Fail($"Required {prerequisiteBuilding}");
             }
             return Result.Ok();
         }

@@ -6,7 +6,7 @@ namespace MainCore.Commands.Misc
     [Handler]
     public static partial class AddJobCommand
     {
-        public sealed record Command(VillageId VillageId, Job Job, bool Top = false) : IVillageCommand;
+        public sealed record Command(VillageId VillageId, JobDto Job, bool ToTop = false) : IVillageCommand;
 
         private static async ValueTask HandleAsync(
             Command command,
@@ -34,27 +34,25 @@ namespace MainCore.Commands.Misc
                 job.Position = count;
             }
 
-            context.Add(job);
+            context.Add(job.ToEntity(villageId));
             context.SaveChanges();
         }
 
-        public static Job ToJob(this NormalBuildPlan plan, VillageId villageId)
+        public static JobDto ToJob(this NormalBuildPlan plan)
         {
-            return new Job()
+            return new JobDto()
             {
                 Position = 0,
-                VillageId = villageId.Value,
                 Type = JobTypeEnums.NormalBuild,
                 Content = JsonSerializer.Serialize(plan),
             };
         }
 
-        public static Job ToJob(this ResourceBuildPlan plan, VillageId villageId)
+        public static JobDto ToJob(this ResourceBuildPlan plan)
         {
-            return new Job()
+            return new JobDto()
             {
                 Position = 0,
-                VillageId = villageId.Value,
                 Type = JobTypeEnums.ResourceBuild,
                 Content = JsonSerializer.Serialize(plan),
             };

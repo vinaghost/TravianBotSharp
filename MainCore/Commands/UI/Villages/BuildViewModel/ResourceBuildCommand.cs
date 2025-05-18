@@ -15,7 +15,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             )
         {
             var (villageId, plan) = command;
-            await addJobCommand.HandleAsync(new(villageId, plan.ToJob(villageId)));
+            await addJobCommand.HandleAsync(new(villageId, plan.ToJob()));
         }
 
         public static ResourceBuildPlan ToPlan(this ResourceBuildInput input)

@@ -1,5 +1,7 @@
 ﻿#nullable disable
 
+using MainCore.Commands.UI.Villages.BuildViewModel;
+
 namespace MainCore.DTO
 {
     public class JobDto
@@ -8,6 +10,11 @@ namespace MainCore.DTO
         public int Position { get; set; }
         public JobTypeEnums Type { get; set; }
         public string Content { get; set; }
+
+        public override string ToString()
+        {
+            return this.GetContent();
+        }
     }
 
     [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]

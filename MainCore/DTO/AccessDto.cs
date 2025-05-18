@@ -16,6 +16,11 @@ namespace MainCore.DTO
         public DateTime LastUsed { get; set; }
 
         public string Proxy => string.IsNullOrEmpty(ProxyHost) ? "[default]" : ProxyHost;
+
+        public override string ToString()
+        {
+            return Proxy;
+        }
     }
 
     [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]

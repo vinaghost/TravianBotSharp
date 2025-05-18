@@ -19,6 +19,7 @@ namespace MainCore.Commands.Features.UseHeroItem
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
+            ILogger logger,
             DelayClickCommand.Handler delayClickCommand,
             GetHeroItemsQuery.Handler getHeroItemsQuery,
             CancellationToken cancellationToken)
@@ -42,6 +43,8 @@ namespace MainCore.Commands.Features.UseHeroItem
             foreach (var (item, amount) in items)
             {
                 if (amount == 0) continue;
+
+                logger.Information($"Use {amount} {item} from hero inventory");
 
                 result = await ClickItem(item, browser, cancellationToken);
                 if (result.IsFailed) return result;

@@ -38,7 +38,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
                 Level = level,
             };
 
-            await addJobCommand.HandleAsync(new(villageId, plan.ToJob(villageId)));
+            await addJobCommand.HandleAsync(new(villageId, plan.ToJob()));
         }
     }
 }

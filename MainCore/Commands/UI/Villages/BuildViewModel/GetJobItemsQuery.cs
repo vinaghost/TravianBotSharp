@@ -34,7 +34,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             return items;
         }
 
-        private static string GetContent(JobDto job)
+        public static string GetContent(this JobDto job)
         {
             switch (job.Type)
             {

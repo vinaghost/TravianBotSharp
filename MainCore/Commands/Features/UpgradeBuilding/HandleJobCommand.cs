@@ -38,7 +38,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 }
                 else
                 {
-                    await addJobCommand.HandleAsync(new(villageId, normalBuildPlan.ToJob(villageId), true));
+                    await addJobCommand.HandleAsync(new(villageId, normalBuildPlan.ToJob(), true));
                 }
                 await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
                 return Continue.Error;
