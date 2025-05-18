@@ -4,41 +4,39 @@ namespace MainCore.Services
 {
     public interface ITaskManager
     {
-        Task Add<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask;
+        event Action<AccountId> StatusUpdated;
 
-        Task Add<T>(AccountId accountId, VillageId villageId, bool first = false, DateTime executeTime = default) where T : VillageTask;
+        event Action<AccountId> TaskUpdated;
 
-        Task AddOrUpdate<T>(AccountId accountId, bool first = false, DateTime executeTime = default) where T : AccountTask;
+        void Add<T>(T task, bool first = false) where T : AccountTask;
 
-        Task AddOrUpdate<T>(AccountId accountId, VillageId villageId, bool first = false, DateTime executeTime = default) where T : VillageTask;
+        void AddOrUpdate<T>(T task, bool first = false) where T : AccountTask;
 
-        Task Clear(AccountId accountId);
+        void Clear(AccountId accountId);
 
-        AccountTask Get<T>(AccountId accountId) where T : AccountTask;
-
-        VillageTask Get<T>(AccountId accountId, VillageId villageId) where T : VillageTask;
-
-        CancellationTokenSource GetCancellationTokenSource(AccountId accountId);
-
-        TaskBase GetCurrentTask(AccountId accountId);
+        BaseTask? GetCurrentTask(AccountId accountId);
 
         StatusEnums GetStatus(AccountId accountId);
 
-        TaskManager.TaskInfo GetTaskInfo(AccountId accountId);
+        List<BaseTask> GetTaskList(AccountId accountId);
 
-        List<TaskBase> GetTaskList(AccountId accountId);
+        TaskQueue GetTaskQueue(AccountId accountId);
 
         bool IsExecuting(AccountId accountId);
 
-        bool IsExist<T>(AccountId accountId) where T : AccountTask;
+        bool IsExist<T>(AccountId accountId) where T : BaseTask;
 
-        bool IsExist<T>(AccountId accountId, VillageId villageId) where T : VillageTask;
+        bool IsExist<T>(AccountId accountId, VillageId villageId) where T : BaseTask;
 
-        Task Remove(AccountId accountId, TaskBase task);
+        void Remove<T>(AccountId accountId, VillageId villageId) where T : VillageTask;
 
-        Task ReOrder(AccountId accountId);
+        void Remove<T>(AccountId accountId) where T : AccountTask;
 
-        Task SetStatus(AccountId accountId, StatusEnums status);
+        void Remove(AccountId accountId, BaseTask task);
+
+        void ReOrder(AccountId accountId);
+
+        void SetStatus(AccountId accountId, StatusEnums status);
 
         Task StopCurrentTask(AccountId accountId);
     }

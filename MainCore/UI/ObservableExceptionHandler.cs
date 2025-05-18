@@ -1,5 +1,4 @@
 ﻿using MainCore.UI.Models.Output;
-using ReactiveUI;
 using Serilog;
 using System.Diagnostics;
 using System.Reactive.Concurrency;
@@ -28,7 +27,6 @@ namespace MainCore.UI
 
         public void OnCompleted()
         {
-            Handle(null);
         }
 
         private void Handle(Exception exception)
