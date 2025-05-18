@@ -41,7 +41,7 @@ namespace WPFUI.Views
         {
             if (_isLoaded) return;
             _isLoaded = false;
-            await ViewModel.Load.Execute();
+            await ViewModel.LoadCommand.Execute();
             _isLoaded = true;
         }
 
@@ -58,7 +58,7 @@ namespace WPFUI.Views
             if (_isClosing) return;
             _isClosing = true;
 
-            await ViewModel.Unload.Execute();
+            await ViewModel.UnloadCommand.Execute();
 
             _canClose = true;
             Close();

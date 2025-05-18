@@ -19,7 +19,7 @@ namespace WPFUI.Views.Tabs
 
             this.WhenActivated(d =>
             {
-                this.BindCommand(ViewModel, vm => vm.AddAccount, v => v.AddButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.AddAccountCommand, v => v.AddButton).DisposeWith(d);
 
                 this.Bind(ViewModel, vm => vm.Input, v => v.AccountsInput.Text).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.Accounts, v => v.AccountsView.ItemsSource).DisposeWith(d);
