@@ -36,6 +36,8 @@ namespace MainCore.Behaviors
 
             var response = await Next(request, cancellationToken);
 
+            if (response.IsFailed && !response.HasError<Skip>()) return response;
+
             result = await _toDorfCommand.HandleAsync(new(accountId, 0), cancellationToken);
             if (result.IsFailed) return (TResponse)result;
 

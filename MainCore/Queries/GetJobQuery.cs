@@ -25,6 +25,8 @@ namespace MainCore.Queries
 
             if (countJob == 0) return Skip.BuildingJobQueueEmpty;
 
+            context.Clean(villageId);
+
             var countQueueBuilding = context.QueueBuildings
                .Where(x => x.VillageId == villageId.Value)
                .Where(x => x.Type != BuildingEnums.Site)
@@ -39,6 +41,7 @@ namespace MainCore.Queries
                 .Where(x => x.AccountId == accountId.Value)
                 .Select(x => x.HasPlusAccount)
                 .FirstOrDefault();
+
             var applyRomanQueueLogic = context.BooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
 
             if (countQueueBuilding == 1)
@@ -256,6 +259,30 @@ namespace MainCore.Queries
 
             errors.Add(JobError.PrerequisiteBuildingMissing(firstBuilding.Type, firstBuilding.Level));
             return Result.Fail(errors);
+        }
+
+        private static void Clean(this AppDbContext context, VillageId villageId)
+        {
+            var now = DateTime.Now;
+            var completeBuildingQuery = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type != BuildingEnums.Site)
+                .Where(x => x.CompleteTime < now);
+
+            var completeBuildingLocations = completeBuildingQuery
+                .Select(x => x.Location)
+                .ToList();
+
+            foreach (var completeBuildingLocation in completeBuildingLocations)
+            {
+                context.Buildings
+                    .Where(x => x.VillageId == villageId.Value)
+                    .Where(x => x.Location == completeBuildingLocation)
+                    .ExecuteUpdate(x => x.SetProperty(x => x.Level, x => x.Level + 1));
+            }
+
+            completeBuildingQuery
+                .ExecuteUpdate(x => x.SetProperty(x => x.Type, BuildingEnums.Site));
         }
     }
 }
