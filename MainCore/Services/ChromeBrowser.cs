@@ -1,8 +1,6 @@
 ﻿using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
-using Polly;
-using Polly.Retry;
 using System.IO.Compression;
 
 namespace MainCore.Services
@@ -15,42 +13,6 @@ namespace MainCore.Services
 
         private readonly string[] _extensionsPath;
         private readonly HtmlDocument _htmlDoc = new();
-
-        public record ContextData(ILogger Logger, string TaskName);
-        private static readonly ResiliencePropertyKey<ContextData> _contextDataKey = new(nameof(ContextData));
-
-        private static readonly Func<OnRetryArguments<Result>, ValueTask> _onRetry = async args =>
-        {
-            await Task.CompletedTask;
-            if (!args.Context.Properties.TryGetValue(_contextDataKey, out var contextData)) return;
-
-            var (logger, taskName) = contextData;
-
-            var error = args.Outcome;
-            if (error.Exception is not null)
-            {
-                var exception = error.Exception;
-                logger.Error(exception, "{Message}", exception.Message);
-            }
-
-            logger.Warning("{TaskName} retry #{AttemptNumber} times", taskName, args.AttemptNumber + 1);
-        };
-
-        private static readonly RetryStrategyOptions<Result> _retryOptions = new()
-        {
-            MaxRetryAttempts = 3,
-            Delay = TimeSpan.FromMinutes(5),
-            UseJitter = true,
-            BackoffType = DelayBackoffType.Linear,
-            ShouldHandle = new PredicateBuilder<Result>()
-               .Handle<Exception>()
-               .HandleResult(static x => x.HasError<Retry>()),
-            OnRetry = _onRetry
-        };
-
-        private static readonly ResiliencePipeline<Result> _pipeline = new ResiliencePipelineBuilder<Result>()
-            .AddRetry(_retryOptions)
-            .Build();
 
         public ChromeBrowser(string[] extensionsPath)
         {
@@ -136,44 +98,22 @@ namespace MainCore.Services
 
         public ILogger Logger { get; set; } = null!;
 
-        public async Task Refresh(CancellationToken cancellationToken)
+        public async Task<Result> Refresh(CancellationToken cancellationToken)
         {
-            async Task<Result> refresh(CancellationToken cancellationToken)
-            {
-                await Driver.Navigate().RefreshAsync();
-                var result = await WaitPageLoaded(cancellationToken);
-                return result;
-            }
-
-            var context = ResilienceContextPool.Shared.Get(cancellationToken);
-            var contextData = new ContextData(Logger, "refresh page");
-            context.Properties.Set(_contextDataKey, contextData);
-            var result = await _pipeline.ExecuteAsync(
-                async (ctx, state) => await refresh(context.CancellationToken),
-                context);
-            ResilienceContextPool.Shared.Return(context);
+            await Driver.Navigate().RefreshAsync();
+            var result = await WaitPageLoaded(cancellationToken);
+            return result;
         }
 
         private static bool PageLoaded(IWebDriver driver) => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState")?.Equals("complete") ?? false;
 
         private static bool PageChanged(IWebDriver driver, string url_nested) => driver.Url.Contains(url_nested) && PageLoaded(driver);
 
-        public async Task Navigate(string url, CancellationToken cancellationToken)
+        public async Task<Result> Navigate(string url, CancellationToken cancellationToken)
         {
-            async Task<Result> navigate(string url_nested, CancellationToken cancellationToken)
-            {
-                await Driver.Navigate().GoToUrlAsync(url_nested);
-                var result = await Wait(driver => PageChanged(driver, url_nested), cancellationToken);
-                return result;
-            }
-
-            var context = ResilienceContextPool.Shared.Get(cancellationToken);
-            var contextData = new ContextData(Logger, $"navigate to {url}");
-            context.Properties.Set(_contextDataKey, contextData);
-            var result = await _pipeline.ExecuteAsync(
-                async (ctx, state) => await navigate(url, context.CancellationToken),
-                context, url);
-            ResilienceContextPool.Shared.Return(context);
+            await Driver.Navigate().GoToUrlAsync(url);
+            var result = await Wait(driver => PageChanged(driver, url), cancellationToken);
+            return result;
         }
 
         public async Task<Result> Click(By by)

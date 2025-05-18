@@ -4,7 +4,7 @@ namespace MainCore.Behaviors
 {
     public sealed class ErrorLoggingBehavior<TRequest, TResponse>
         : Behavior<TRequest, TResponse>
-        where TRequest : IConstraint
+        where TRequest : ICommand
         where TResponse : IResultBase
     {
         private readonly ILogger _logger;
@@ -21,7 +21,10 @@ namespace MainCore.Behaviors
             if (response.IsFailed)
             {
                 var message = string.Join(Environment.NewLine, response.Reasons.Select(e => e.Message));
-                _logger.Warning("{message}", message);
+                if (!string.IsNullOrEmpty(message))
+                {
+                    _logger.Warning("{message}", message);
+                }
             }
 
             return response;

@@ -17,9 +17,9 @@ namespace MainCore.Services
 
         Task<Result> Input(By by, string content);
 
-        Task Navigate(string url, CancellationToken cancellationToken);
+        Task<Result> Navigate(string url, CancellationToken cancellationToken);
 
-        Task Refresh(CancellationToken cancellationToken);
+        Task<Result> Refresh(CancellationToken cancellationToken);
 
         Task Setup(ChromeSetting setting);
 

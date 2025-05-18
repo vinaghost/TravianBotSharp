@@ -2,6 +2,8 @@
 {
     public interface ICommand : IConstraint;
 
+    public class Command : ICommand;
+
     public interface IAccountCommand : ICommand, IAccountConstraint;
 
     public interface IVillageCommand : ICommand, IVillageConstraint;

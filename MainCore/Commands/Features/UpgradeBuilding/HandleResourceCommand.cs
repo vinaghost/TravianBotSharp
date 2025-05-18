@@ -85,6 +85,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (result.IsFailed) return result;
 
             result = await useHeroResourceCommand.HandleAsync(new(accountId, missingResource), cancellationToken);
+
             await browser.Navigate(url, cancellationToken);
 
             if (result.IsFailed)

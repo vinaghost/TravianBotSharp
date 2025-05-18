@@ -161,8 +161,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             result = await browser.WaitPageChanged("dorf", cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await browser.WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result;
             await Task.Delay(Random.Shared.Next(5_000, 10_000), CancellationToken.None);
 
             html = browser.Html;

@@ -25,7 +25,11 @@ namespace MainCore.Behaviors
                 var dict = request.GetType().GetProperties()
                     .Where(prop => !prop.Name.Equals("AccountId"))
                     .Where(prop => !prop.Name.Equals("VillageId"))
-                    .ToDictionary(prop => prop.Name, prop => prop.GetValue(request));
+                    .ToDictionary(prop => prop.Name, prop =>
+                    {
+                        var value = prop.GetValue(request);
+                        return value is long[] array ? string.Join(",", array) : value?.ToString() ?? "";
+                    });
 
                 if (dict.Count == 0)
                 {

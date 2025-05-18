@@ -58,7 +58,7 @@ namespace MainCore.Queries
                     return result;
                 }
 
-                return JobError.BuildingQueueFull;
+                return JobError.ConstructionQueueFull;
             }
 
             if (countQueueBuilding == 2)
@@ -68,10 +68,10 @@ namespace MainCore.Queries
                     var result = context.GetBuildingJob(villageId, true);
                     return result;
                 }
-                return JobError.BuildingQueueFull;
+                return JobError.ConstructionQueueFull;
             }
 
-            return JobError.BuildingQueueFull;
+            return JobError.ConstructionQueueFull;
         }
 
         private static List<JobTypeEnums> BuildJobTypes = [

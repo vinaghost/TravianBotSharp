@@ -12,7 +12,7 @@
         public static JobError PrerequisiteBuildingMissing(BuildingEnums prerequisiteBuilding, int level)
             => new($"{prerequisiteBuilding} level {level} is missing");
 
-        public static JobError BuildingQueueFull
-            => new("Building queue is full");
+        public static JobError ConstructionQueueFull
+            => new("Construction queue is full");
     }
 }

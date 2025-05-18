@@ -10,11 +10,11 @@ using Serilog.Sinks.TestCorrelator;
 
 namespace MainCore.Test.Behaviors
 {
-    public sealed class ErrorLoggingBehaviorTestHandleBehavior(Result result) : Behavior<IConstraint, Result>
+    public sealed class ErrorLoggingBehaviorTestHandleBehavior(Result result) : Behavior<ICommand, IResultBase>
     {
         private readonly Result _result = result;
 
-        public override async ValueTask<Result> HandleAsync(IConstraint request, CancellationToken cancellationToken)
+        public override async ValueTask<IResultBase> HandleAsync(ICommand request, CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
             return _result;
@@ -45,14 +45,14 @@ namespace MainCore.Test.Behaviors
         {
             // Arrange
 
-            var behavior = new ErrorLoggingBehavior<IConstraint, Result>(_logger);
+            var behavior = new ErrorLoggingBehavior<ICommand, IResultBase>(_logger);
             var handleBehavior = new ErrorLoggingBehaviorTestHandleBehavior(result);
             behavior.SetInnerHandler(handleBehavior);
 
             // Act
             using var testCorrelatorContext = TestCorrelator.CreateContext();
 
-            await behavior.HandleAsync(new Constraint(), CancellationToken.None);
+            await behavior.HandleAsync(new Command(), CancellationToken.None);
 
             var logEvent = TestCorrelator.GetLogEventsForSinksFromCurrentContext(_testCorrelatorSinkId)[0];
 
