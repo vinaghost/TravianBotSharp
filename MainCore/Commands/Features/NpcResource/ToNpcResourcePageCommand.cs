@@ -15,7 +15,6 @@ namespace MainCore.Commands.Features.NpcResource
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToBuildingCommand.Handler toBuildingCommand,
             SwitchTabCommand.Handler switchTabCommand,
-            GetBuildingLocationQuery.Handler getBuildingLocation,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
@@ -26,17 +25,17 @@ namespace MainCore.Commands.Features.NpcResource
             var (_, isFailed, response, errors) = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
-            var market = response.Buildings
+            var marketLocation = response.Buildings
                 .Where(x => x.Type == BuildingEnums.Marketplace)
                 .Select(x => x.Location)
                 .FirstOrDefault();
 
-            if (market == default)
+            if (marketLocation == default)
             {
                 return MissingBuilding.Error(BuildingEnums.Marketplace);
             }
 
-            result = await toBuildingCommand.HandleAsync(new(accountId, market), cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(accountId, marketLocation), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await switchTabCommand.HandleAsync(new(accountId, 0), cancellationToken);

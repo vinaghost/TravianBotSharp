@@ -15,7 +15,6 @@ namespace MainCore.Commands.Features.TrainTroop
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToBuildingCommand.Handler toBuildingCommand,
-            GetBuildingLocationQuery.Handler getBuildingLocation,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId, building) = command;
@@ -24,10 +23,14 @@ namespace MainCore.Commands.Features.TrainTroop
             result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
             if (result.IsFailed) return result;
 
-            var updateBuildingCommandResult = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
-            if (updateBuildingCommandResult.IsFailed) return Result.Fail(updateBuildingCommandResult.Errors);
+            var (_, isFailed, response, errors) = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-            var buildingLocation = await getBuildingLocation.HandleAsync(new(villageId, building), cancellationToken);
+            var buildingLocation = response.Buildings
+                .Where(x => x.Type == building)
+                .Select(x => x.Location)
+                .FirstOrDefault();
+
             if (buildingLocation == default)
             {
                 return MissingBuilding.Error(building);
@@ -39,7 +42,7 @@ namespace MainCore.Commands.Features.TrainTroop
             var troopSetting = BuildingSettings[building];
             var troop = (TroopEnums)settingService.ByName(villageId, troopSetting);
 
-            var (_, isFailed, amount, errors) = GetAmount(settingService, browser, villageId, building, troop);
+            (_, isFailed, var amount, errors) = GetAmount(settingService, browser, villageId, building, troop);
             if (isFailed) return Result.Fail(errors);
 
             result = await TrainTroop(browser, troop, amount, cancellationToken);
