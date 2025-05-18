@@ -2,7 +2,7 @@
 {
     public interface ICommand : IConstraint;
 
-    public class Command : ICommand;
+    public sealed record Command : ICommand;
 
     public interface IAccountCommand : ICommand, IAccountConstraint;
 

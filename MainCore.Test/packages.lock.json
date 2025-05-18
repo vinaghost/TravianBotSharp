@@ -39,6 +39,20 @@
         "resolved": "1.0.17",
         "contentHash": "Pwz0MD7CAM/G/fvJjM3ceOfI+S0IgjanHcK7evwyrW9qAWUG8fgiEXYfSX1/s3h2JUNDOw6ik0G8zp+RT61Y1g=="
       },
+      "ReactiveUI.Testing": {
+        "type": "Direct",
+        "requested": "[20.2.45, )",
+        "resolved": "20.2.45",
+        "contentHash": "rwMGW3uuwivEtRA++3DnbcTuM1J4mGjJdnGl2IgK6QFmLJ+NUJw/dSc5U9Ef3pSRnLZUL1RtgjJ0yfw2Uyv9dg==",
+        "dependencies": {
+          "DynamicData": "9.1.2",
+          "Microsoft.Reactive.Testing": "6.0.1",
+          "ReactiveUI": "20.2.45",
+          "Splat": "15.3.1",
+          "System.ComponentModel.Annotations": "5.0.0",
+          "System.Text.Json": "9.0.2"
+        }
+      },
       "Serilog.Sinks.TestCorrelator": {
         "type": "Direct",
         "requested": "[4.0.0, )",
@@ -577,6 +591,14 @@
         "type": "Transitive",
         "resolved": "1.1.3",
         "contentHash": "3Wrmi0kJDzClwAC+iBdUBpEKmEle8FQNsCs77fkiOIw/9oYA07bL1EZNX0kQ2OMN3xpwvl0vAtOCYY3ndDNlhQ=="
+      },
+      "Microsoft.Reactive.Testing": {
+        "type": "Transitive",
+        "resolved": "6.0.1",
+        "contentHash": "80d47atUKBZnQ515Ns57Z4a7v/cbcUppqDTIhWJyBd7k46sh4dNq3xNGLMvVRHQ672Q2di7OmH//1WTMEkJ7bg==",
+        "dependencies": {
+          "System.Reactive": "6.0.1"
+        }
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Transitive",
