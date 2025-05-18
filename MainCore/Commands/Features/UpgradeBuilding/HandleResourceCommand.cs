@@ -1,7 +1,5 @@
 ﻿using MainCore.Commands.Features.UseHeroItem;
 using MainCore.Constraints;
-using MainCore.Errors.AutoBuilder;
-using MainCore.Errors.Storage;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
@@ -33,10 +31,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             Result result = storage.IsResourceEnough(requiredResource);
             if (!result.IsFailed) return Result.Ok();
 
-            if (result.HasError<FreeCrop>(out var freeCropErrors))
+            if (result.HasError<LackOfFreeCrop>(out var freeCropErrors))
             {
-                var error = freeCropErrors.First();
-                logger.Warning("{Error}", error);
+                var message = string.Join(Environment.NewLine, freeCropErrors.Select(x => x.Message));
+                logger.Warning("{Error}", message);
 
                 var cropland = await getLowestBuildingQuery.HandleAsync(new(villageId, BuildingEnums.Cropland), cancellationToken);
 
@@ -48,27 +46,23 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 };
 
                 await addJobCommand.HandleAsync(new(villageId, cropLandPlan.ToJob(), true), cancellationToken);
-                logger.Information($"Add cropland to top of the job queue");
                 await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
                 return Continue.Error;
             }
 
             if (result.HasError<StorageLimit>(out var storageLimitErrors))
             {
-                var error = storageLimitErrors.First();
-                logger.Warning("{Error}", error);
+                var message = string.Join(Environment.NewLine, storageLimitErrors.Select(x => x.Message));
+                logger.Warning("{Error}", message);
                 return Stop.NotEnoughStorageCapacity;
             }
 
             var useHeroResource = settingService.BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
 
-            if (!useHeroResource)
+            if (!useHeroResource && result.HasError<ResourceMissing>(out var resourceMissingErrors))
             {
-                if (result.HasError<ResourceMissing>(out var errors))
-                {
-                    var message = string.Join(Environment.NewLine, errors.Select(x => x.Message));
-                    logger.Warning("{Error}", message);
-                }
+                var message = string.Join(Environment.NewLine, resourceMissingErrors.Select(x => x.Message));
+                logger.Warning("{Error}", message);
 
                 return Skip.NotEnoughResource;
             }

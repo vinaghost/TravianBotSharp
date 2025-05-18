@@ -23,10 +23,14 @@ namespace MainCore.Commands.Features.NpcResource
             var result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
             if (result.IsFailed) return result;
 
-            var updateBuildingCommandResult = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
-            if (updateBuildingCommandResult.IsFailed) return Result.Fail(updateBuildingCommandResult.Errors);
+            var (_, isFailed, response, errors) = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-            var market = await getBuildingLocation.HandleAsync(new(villageId, BuildingEnums.Marketplace), cancellationToken);
+            var market = response.Buildings
+                .Where(x => x.Type == BuildingEnums.Marketplace)
+                .Select(x => x.Location)
+                .FirstOrDefault();
+
             if (market == default)
             {
                 return MissingBuilding.Error(BuildingEnums.Marketplace);

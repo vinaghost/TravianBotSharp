@@ -16,8 +16,6 @@ namespace MainCore.Notifications.Handlers.Trigger
             var villageId = notification.VillageId;
             if (taskManager.IsExist<CompleteImmediatelyTask.Task>(accountId, villageId)) return;
 
-            context.Clean(villageId);
-
             var count = context.Count(villageId);
             if (count == 0) return;
 
@@ -62,30 +60,6 @@ namespace MainCore.Notifications.Handlers.Trigger
                 .Where(x => !buildings.Contains(x.Type))
                 .Any();
             return queueBuilding;
-        }
-
-        private static void Clean(this AppDbContext context, VillageId villageId)
-        {
-            var now = DateTime.Now;
-            var completeBuildingQuery = context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type != BuildingEnums.Site)
-                .Where(x => x.CompleteTime < now);
-
-            var completeBuildingLocations = completeBuildingQuery
-                .Select(x => x.Location)
-                .ToList();
-
-            foreach (var completeBuildingLocation in completeBuildingLocations)
-            {
-                context.Buildings
-                    .Where(x => x.VillageId == villageId.Value)
-                    .Where(x => x.Location == completeBuildingLocation)
-                    .ExecuteUpdate(x => x.SetProperty(x => x.Level, x => x.Level + 1));
-            }
-
-            completeBuildingQuery
-                .ExecuteUpdate(x => x.SetProperty(x => x.Type, BuildingEnums.Site));
         }
 
         private static int Count(this AppDbContext context, VillageId villageId)

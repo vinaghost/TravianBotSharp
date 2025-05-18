@@ -19,6 +19,7 @@ namespace MainCore.Commands.Update
         {
             await Task.CompletedTask;
             var (accountId, villageId) = command;
+            context.Clean(villageId);
 
             var html = browser.Html;
 
@@ -35,6 +36,8 @@ namespace MainCore.Commands.Update
 
             var dtoUnderConstructionBuildings = dtoBuilding.Where(x => x.IsUnderConstruction).ToList();
             context.UpdateQueueToDatabase(villageId, dtoUnderConstructionBuildings);
+
+            context.SaveChanges();
 
             return context.GetResponse(villageId);
         }
@@ -131,7 +134,6 @@ namespace MainCore.Commands.Update
                 }
             }
             context.UpdateRange(queueBuildings);
-            context.SaveChanges();
         }
 
         private static void UpdateQueueToDatabase(this AppDbContext context, VillageId villageId, List<QueueBuildingDto> dtos)
@@ -149,7 +151,6 @@ namespace MainCore.Commands.Update
             }
 
             context.AddRange(entities);
-            context.SaveChanges();
         }
 
         private static void UpdateBuildToDatabase(this AppDbContext context, VillageId villageId, List<BuildingDto> dtos)
@@ -181,7 +182,32 @@ namespace MainCore.Commands.Update
                     context.Update(dbBuilding);
                 }
             }
-            context.SaveChanges();
+        }
+
+        private static void Clean(this AppDbContext context, VillageId villageId)
+        {
+            var now = DateTime.Now;
+            var completeBuildingQuery = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type != BuildingEnums.Site)
+                .Where(x => x.CompleteTime < now);
+
+            var completeBuildingLocations = completeBuildingQuery
+                .Select(x => x.Location)
+                .ToList();
+
+            foreach (var completeBuildingLocation in completeBuildingLocations)
+            {
+                context.Buildings
+                    .Where(x => x.VillageId == villageId.Value)
+                    .Where(x => x.Location == completeBuildingLocation)
+                    .ExecuteUpdate(x => x.SetProperty(x => x.Level, x => x.Level + 1));
+            }
+
+            completeBuildingQuery
+                .ExecuteUpdate(x => x.SetProperty(x => x.Type, BuildingEnums.Site));
+
+            context.ChangeTracker.Clear();
         }
     }
 }

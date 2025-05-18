@@ -1,4 +1,4 @@
-﻿namespace MainCore.Errors.Storage
+﻿namespace MainCore.Errors
 {
     public class ResourceMissing : Error
     {

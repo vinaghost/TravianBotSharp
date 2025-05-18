@@ -1,4 +1,4 @@
-﻿namespace MainCore.Errors.AutoBuilder
+﻿namespace MainCore.Errors
 {
     public class Continue : Error
     {

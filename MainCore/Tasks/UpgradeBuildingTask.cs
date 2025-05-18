@@ -1,5 +1,4 @@
 ﻿using MainCore.Commands.Features.UpgradeBuilding;
-using MainCore.Errors.AutoBuilder;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -60,6 +59,8 @@ namespace MainCore.Tasks
                     if (result.HasError<Skip>())
                     {
                         var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
+                        string formatted = time.ToString(@"dd\.hh\:mm\:ss");
+                        logger.Warning("Not enough resource, wait for {Time}", formatted);
                         task.ExecuteAt = DateTime.Now.Add(time);
                         return result;
                     }

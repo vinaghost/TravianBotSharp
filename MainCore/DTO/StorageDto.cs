@@ -1,6 +1,4 @@
-﻿using MainCore.Errors.Storage;
-
-namespace MainCore.DTO
+﻿namespace MainCore.DTO
 {
     public class StorageDto
     {
@@ -42,7 +40,7 @@ namespace MainCore.DTO
 
             if (requiredResource.Length == 5 && storage.FreeCrop < requiredResource[4])
             {
-                result.WithError(FreeCrop.Error(storage.FreeCrop, requiredResource[4]));
+                result.WithError(LackOfFreeCrop.Error(storage.FreeCrop, requiredResource[4]));
             }
 
             if (storage.Granary < requiredResource[3])
