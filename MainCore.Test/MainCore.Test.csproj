@@ -13,7 +13,7 @@
 
   <PropertyGroup>
     <ParallelizeAssemblies>false</ParallelizeAssemblies>
-    <ParallelizeTestCollections>true</ParallelizeTestCollections>
+    <ParallelizeTestCollections>false</ParallelizeTestCollections>
     <ParallelAlgorithm>aggressive</ParallelAlgorithm>
   </PropertyGroup>
 
