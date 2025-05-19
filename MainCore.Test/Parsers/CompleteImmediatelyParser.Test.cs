@@ -15,7 +15,7 @@
         {
             _html.Load(path);
             var actual = MainCore.Parsers.CompleteImmediatelyParser.CountQueueBuilding(_html);
-            actual.Should().Be(expected);
+            actual.ShouldBe(expected);
         }
 
         [Theory]
@@ -25,7 +25,7 @@
         {
             _html.Load(path);
             var actual = MainCore.Parsers.CompleteImmediatelyParser.GetCompleteButton(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
 
         [Fact]
@@ -33,7 +33,7 @@
         {
             _html.Load(ConfirmDialog);
             var actual = MainCore.Parsers.CompleteImmediatelyParser.GetConfirmButton(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
     }
 }

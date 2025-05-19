@@ -11,7 +11,7 @@
         {
             _html.Load(Buildings);
             var actual = MainCore.Parsers.NavigationBarParser.GetDorfButton(_html, input);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
     }
 }
