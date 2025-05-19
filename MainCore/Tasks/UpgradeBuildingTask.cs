@@ -44,6 +44,7 @@ namespace MainCore.Tasks
                     }
 
                     task.ExecuteAt = buildingQueue.CompleteTime.AddSeconds(3);
+                    logger.Information("Construction queue is full. Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     return Skip.ConstructionQueueFull;
                 }
 
@@ -59,10 +60,8 @@ namespace MainCore.Tasks
                     if (result.HasError<Skip>())
                     {
                         var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
-                        string formatted = time.ToString(@"dd\.hh\:mm\:ss");
-                        logger.Warning("Not enough resource, wait for {Time}", formatted);
                         task.ExecuteAt = DateTime.Now.Add(time);
-                        return result;
+                        logger.Information("Not enough resource. Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     }
 
                     return result;

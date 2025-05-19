@@ -1,4 +1,5 @@
-﻿using MainCore.Tasks.Base;
+﻿using MainCore.Commands.NextExecute;
+using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -21,6 +22,7 @@ namespace MainCore.Tasks
             ISettingService settingService,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToDorfCommand.Handler toDorfCommand,
+            NextExecuteUpdateVillageTaskCommand.Handler nextExecuteUpdateVillageTaskCommand,
             CancellationToken cancellationToken)
         {
             var url = browser.CurrentUrl;
@@ -54,9 +56,7 @@ namespace MainCore.Tasks
                 if (isFailed) return Result.Fail(errors);
             }
 
-            var seconds = settingService.ByName(task.VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
-            task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
-            taskManager.ReOrder(task.AccountId);
+            await nextExecuteUpdateVillageTaskCommand.HandleAsync(task, cancellationToken);
             return Result.Ok();
         }
     }

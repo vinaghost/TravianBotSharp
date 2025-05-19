@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.Features.StartAdventure;
+using MainCore.Commands.NextExecute;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -17,10 +18,9 @@ namespace MainCore.Tasks
 
         private static async ValueTask<Result> HandleAsync(
             Task task,
-            ITaskManager taskManager,
-            IChromeBrowser browser,
             ToAdventurePageCommand.Handler toAdventurePageCommand,
             ExploreAdventureCommand.Handler exploreAdventureCommand,
+            NextExecuteStartAdventureTaskCommand.Handler nextExecuteStartAdventureTaskCommand,
             CancellationToken cancellationToken)
         {
             Result result;
@@ -29,9 +29,7 @@ namespace MainCore.Tasks
             result = await exploreAdventureCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
 
-            var adventureDuration = AdventureParser.GetAdventureDuration(browser.Html);
-            task.ExecuteAt = DateTime.Now.Add(adventureDuration * 2);
-            taskManager.ReOrder(task.AccountId);
+            await nextExecuteStartAdventureTaskCommand.HandleAsync(task, cancellationToken);
             return Result.Ok();
         }
     }

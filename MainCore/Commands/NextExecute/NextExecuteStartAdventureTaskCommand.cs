@@ -2,18 +2,17 @@
 {
     [Handler]
     [Behaviors]
-    public static partial class NextExecuteStartFarmListTaskCommand
+    public static partial class NextExecuteStartAdventureTaskCommand
     {
         private static async ValueTask HandleAsync(
-            StartFarmListTask.Task task,
-            ISettingService settingService,
+            StartAdventureTask.Task task,
+            IChromeBrowser browser,
             ILogger logger,
             CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
-            var seconds = settingService.ByName(task.AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
-            task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
-
+            var adventureDuration = AdventureParser.GetAdventureDuration(browser.Html);
+            task.ExecuteAt = DateTime.Now.Add(adventureDuration * 2);
             logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
         }
     }
