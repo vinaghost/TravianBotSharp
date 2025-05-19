@@ -9,6 +9,7 @@ using static ArchUnitNET.Fluent.ArchRuleDefinition;
 
 namespace MainCore.Test
 {
+    [Trait("Mode", "Debug")]
     public class ArchitectureTest
     {
         private static readonly Architecture Architecture = new ArchLoader()

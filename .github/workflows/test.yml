@@ -27,8 +27,11 @@ jobs:
       - name: Install dependencies
         run: dotnet restore --locked-mode
         
-      - name: Test
-        run: dotnet test -c Debug        
+      - name: Test architecture
+        run: dotnet test -c Debug --filter Mode=Debug
+        
+      - name: Test others
+        run: dotnet test -c Release --filter Mode!=Debug
         
   Version:
     runs-on: ubuntu-latest
