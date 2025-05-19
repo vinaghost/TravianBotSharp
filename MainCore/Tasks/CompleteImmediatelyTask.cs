@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.Features.CompleteImmediately;
+using MainCore.Notifications.Handlers.Trigger;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -19,7 +20,7 @@ namespace MainCore.Tasks
             Task task,
             ToDorfCommand.Handler toDorfCommand,
             CompleteImmediatelyCommand.Handler completeImmediatelyCommand,
-            UpdateBuildingCommand.Handler updateBuildingCommand,
+            UpgradeBuildingTaskTrigger.Handler upgradeBuildingTaskTrigger,
             CancellationToken cancellationToken)
         {
             Result result;
@@ -27,8 +28,9 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result;
             result = await completeImmediatelyCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
             if (result.IsFailed) return result;
-            var (_, isFailed, _, errors) = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
+
+            await upgradeBuildingTaskTrigger.HandleAsync(task, cancellationToken);
+
             return Result.Ok();
         }
     }

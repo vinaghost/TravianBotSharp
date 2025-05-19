@@ -17,4 +17,6 @@
     }
 
     public interface IAccountVillageConstraint : IAccountConstraint, IVillageConstraint;
+
+    public record AccountVillageConstraint(AccountId AccountId, VillageId VillageId) : IAccountVillageConstraint;
 }

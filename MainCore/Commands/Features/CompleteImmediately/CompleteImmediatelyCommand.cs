@@ -1,20 +1,15 @@
-﻿using MainCore.Behaviors;
-using MainCore.Constraints;
-using MainCore.Notifications.Behaviors;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.CompleteImmediately
 {
     [Handler]
-    [Behaviors(
-        typeof(CommandNameLoggingBehavior<,>),
-        typeof(ErrorLoggingBehavior<,>),
-        typeof(CompleteImmediatelyBehavior<,>))]
     public static partial class CompleteImmediatelyCommand
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
+            AppDbContext context,
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
