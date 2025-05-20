@@ -1,5 +1,4 @@
-﻿using FluentValidation;
-using MainCore.UI.Models.Input;
+﻿using MainCore.UI.Models.Input;
 
 namespace MainCore.UI.Models.Validators
 {
@@ -22,6 +21,13 @@ namespace MainCore.UI.Models.Validators
             RuleFor(x => x.Tribe.SelectedItem.Tribe)
                 .NotEqual(TribeEnums.Any)
                 .WithMessage("Tribe should be specific");
+
+            RuleFor(x => x.FarmInterval.Min)
+                .LessThanOrEqualTo(x => x.FarmInterval.Max)
+                .WithMessage("Minimum farm interval ({PropertyValue}) should be less than maximum farm interval ({ComparisonValue})");
+            RuleFor(x => x.FarmInterval.Min)
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Minimum farm interval ({PropertyValue}) should be positive number");
         }
     }
 }

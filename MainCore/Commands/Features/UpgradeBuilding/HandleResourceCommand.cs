@@ -1,125 +1,109 @@
-﻿using MainCore.Commands.Abstract;
-using MainCore.Commands.Features.UseHeroItem;
-using MainCore.Common.Errors.AutoBuilder;
-using MainCore.Common.Errors.Storage;
-using MainCore.Common.Models;
+﻿using MainCore.Commands.Features.UseHeroItem;
+using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
-    [RegisterScoped<HandleResourceCommand>]
-    public class HandleResourceCommand : CommandBase, ICommand<NormalBuildPlan>
+    [Handler]
+    public static partial class HandleResourceCommand
     {
-        private readonly IMediator _mediator;
-        private readonly UpdateStorageCommand _updateStorageCommand;
-        private readonly UseHeroResourceCommand _useHeroResourceCommand;
-        private readonly ToHeroInventoryCommand _toHeroInventoryCommand;
-        private readonly UpdateInventoryCommand _updateInventoryCommand;
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IsResourceEnough _isResourceEnough;
-        private readonly IGetSetting _getSetting;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand;
 
-        public HandleResourceCommand(IDataService dataService, IMediator mediator, UpdateStorageCommand updateStorageCommand, UseHeroResourceCommand useHeroResourceCommand, IDbContextFactory<AppDbContext> contextFactory, ToHeroInventoryCommand toHeroInventoryCommand, UpdateInventoryCommand updateInventoryCommand, IsResourceEnough isResourceEnough, IGetSetting getSetting) : base(dataService)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            JobUpdated.Handler jobUpdated,
+            UpdateStorageCommand.Handler updateStorageCommand,
+            UseHeroResourceCommand.Handler useHeroResourceCommand,
+            ToHeroInventoryCommand.Handler toHeroInventoryCommand,
+            UpdateInventoryCommand.Handler updateInventoryCommand,
+            GetLowestBuildingQuery.Handler getLowestBuildingQuery,
+            AddJobCommand.Handler addJobCommand,
+            ISettingService settingService,
+            IChromeBrowser browser,
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
-            _mediator = mediator;
-            _updateStorageCommand = updateStorageCommand;
-            _useHeroResourceCommand = useHeroResourceCommand;
-            _toHeroInventoryCommand = toHeroInventoryCommand;
-            _updateInventoryCommand = updateInventoryCommand;
-            _contextFactory = contextFactory;
-            _isResourceEnough = isResourceEnough;
-            _getSetting = getSetting;
-        }
+            var (accountId, villageId, plan) = command;
 
-        public async Task<Result> Execute(NormalBuildPlan plan, CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await _updateStorageCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            var storage = await updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
 
-            var requiredResource = GetRequiredResource(plan.Type);
+            var requiredResource = GetRequiredResource(browser, plan.Type);
 
-            result = _isResourceEnough.Execute(_dataService.VillageId, requiredResource);
-            if (!result.IsFailed)
+            Result result = storage.IsResourceEnough(requiredResource);
+            if (!result.IsFailed) return Result.Ok();
+
+            if (result.HasError<LackOfFreeCrop>(out var freeCropErrors))
             {
-                return Result.Ok();
-            }
+                var message = string.Join(Environment.NewLine, freeCropErrors.Select(x => x.Message));
+                logger.Warning("{Error}", message);
 
-            if (result.HasError<FreeCrop>(out var freeCropErrors))
-            {
-                foreach (var item in freeCropErrors)
+                var cropland = await getLowestBuildingQuery.HandleAsync(new(villageId, BuildingEnums.Cropland), cancellationToken);
+
+                var cropLandPlan = new NormalBuildPlan()
                 {
-                    item.Log(_dataService.Logger);
-                }
-                await AddCropland(cancellationToken);
+                    Location = cropland.Location,
+                    Type = cropland.Type,
+                    Level = cropland.Level + 1,
+                };
+
+                await addJobCommand.HandleAsync(new(villageId, cropLandPlan.ToJob(), true), cancellationToken);
+                await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
                 return Continue.Error;
             }
 
             if (result.HasError<StorageLimit>(out var storageLimitErrors))
             {
-                foreach (var item in storageLimitErrors)
-                {
-                    item.Log(_dataService.Logger);
-                }
+                var message = string.Join(Environment.NewLine, storageLimitErrors.Select(x => x.Message));
+                logger.Warning("{Error}", message);
                 return Stop.NotEnoughStorageCapacity;
             }
 
-            if (!IsUseHeroResource())
-            {
-                if (result.HasError<Resource>(out var resourceErrors))
-                {
-                    foreach (var item in resourceErrors)
-                    {
-                        item.Log(_dataService.Logger);
-                    }
-                }
+            var useHeroResource = settingService.BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
 
-                var time = UpgradeParser.GetTimeWhenEnoughResource(_dataService.ChromeBrowser.Html, plan.Type);
-                return WaitResource.Error(time);
+            if (!useHeroResource && result.HasError<ResourceMissing>(out var resourceMissingErrors))
+            {
+                var message = string.Join(Environment.NewLine, resourceMissingErrors.Select(x => x.Message));
+                logger.Warning("{Error}", message);
+
+                return Skip.NotEnoughResource;
             }
 
-            _dataService.Logger.Information("Use hero resource to upgrade building");
-            var missingResource = new GetMissingResource(_contextFactory).Execute(_dataService.VillageId, requiredResource);
+            logger.Information("Use hero resource to upgrade building");
+            var missingResource = storage.GetMissingResource(requiredResource);
 
-            var url = _dataService.ChromeBrowser.CurrentUrl;
+            var url = browser.CurrentUrl;
 
-            result = await _toHeroInventoryCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await toHeroInventoryCommand.HandleAsync(new(accountId), cancellationToken);
+            if (result.IsFailed) return result;
 
-            result = await _updateInventoryCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await updateInventoryCommand.HandleAsync(new(accountId), cancellationToken);
+            if (result.IsFailed) return result;
 
-            var heroResourceResult = await _useHeroResourceCommand.Execute(missingResource, cancellationToken);
-            if (heroResourceResult.IsFailed)
+            result = await useHeroResourceCommand.HandleAsync(new(accountId, missingResource), cancellationToken);
+
+            await browser.Navigate(url, cancellationToken);
+
+            if (result.IsFailed)
             {
-                if (heroResourceResult.HasError<Retry>()) return heroResourceResult.WithError(TraceMessage.Error(TraceMessage.Line()));
+                if (result.HasError<Retry>()) return result;
 
-                if (heroResourceResult.HasError<Resource>(out var resourceErrors))
+                if (result.HasError<ResourceMissing>(out var errors))
                 {
-                    foreach (var item in resourceErrors)
-                    {
-                        item.Log(_dataService.Logger);
-                    }
+                    var message = string.Join(Environment.NewLine, errors.Select(x => x.Message));
+                    logger.Warning("{Error}", message);
                 }
 
-                result = await _dataService.ChromeBrowser.Navigate(url, cancellationToken);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-                var time = UpgradeParser.GetTimeWhenEnoughResource(_dataService.ChromeBrowser.Html, plan.Type);
-                return WaitResource.Error(time);
+                return Skip.NotEnoughResource;
             }
-
-            result = await _dataService.ChromeBrowser.Navigate(url, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
 
             return Result.Ok();
         }
 
-        private long[] GetRequiredResource(BuildingEnums building)
+        private static long[] GetRequiredResource(IChromeBrowser browser, BuildingEnums building)
         {
-            var doc = _dataService.ChromeBrowser.Html;
+            var doc = browser.Html;
 
             var resources = UpgradeParser.GetRequiredResource(doc, building);
-            if (resources is null) return [0, 0, 0, 0, 0];
+            if (resources is null || resources.Count != 5) return new long[5];
 
             var resourceBuilding = new long[5];
             for (var i = 0; i < 5; i++)
@@ -128,42 +112,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             }
 
             return resourceBuilding;
-        }
-
-        private async Task AddCropland(CancellationToken cancellationToken)
-        {
-            var cropland = GetCropland();
-
-            var plan = new NormalBuildPlan()
-            {
-                Location = cropland.Location,
-                Type = cropland.Type,
-                Level = cropland.Level + 1,
-            };
-
-            new AddJobCommand(_contextFactory).ToTop(_dataService.VillageId, plan);
-            var logger = _dataService.Logger;
-            logger.Information($"Add cropland to top of the job queue");
-            await _mediator.Publish(new JobUpdated(_dataService.AccountId, _dataService.VillageId), cancellationToken);
-        }
-
-        private bool IsUseHeroResource()
-        {
-            var villageId = _dataService.VillageId;
-            var useHeroResource = _getSetting.BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
-            return useHeroResource;
-        }
-
-        private Building GetCropland()
-        {
-            var villageId = _dataService.VillageId;
-            using var context = _contextFactory.CreateDbContext();
-            var building = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type == BuildingEnums.Cropland)
-                .OrderBy(x => x.Level)
-                .FirstOrDefault();
-            return building;
         }
     }
 }

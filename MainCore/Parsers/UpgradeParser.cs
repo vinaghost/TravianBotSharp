@@ -42,43 +42,40 @@
             return TimeSpan.FromSeconds(time);
         }
 
-        public static HtmlNode GetConstructButton(HtmlDocument doc, BuildingEnums building)
+        public static HtmlNode? GetConstructButton(HtmlDocument doc, BuildingEnums building)
         {
             if (building.IsResourceField()) return GetUpgradeButton(doc);
 
-            var node = doc.GetElementbyId($"contract_building{(int)building}");
-            if (node is null) return null;
+            var contract_building = doc.GetElementbyId($"contract_building{(int)building}");
+            if (contract_building is null) return null;
 
-            var button = node
+            var button = contract_building
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("new"));
-
             return button;
         }
 
-        public static HtmlNode GetSpecialUpgradeButton(HtmlDocument doc)
+        public static HtmlNode? GetSpecialUpgradeButton(HtmlDocument doc)
         {
-            var node = doc.DocumentNode
+            var upgradeButtonsContainer = doc.DocumentNode
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("upgradeButtonsContainer"));
-            if (node is null) return null;
+            if (upgradeButtonsContainer is null) return null;
 
-            var button = node
+            var button = upgradeButtonsContainer
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("videoFeatureButton") && x.HasClass("green"));
-
             return button;
         }
 
-        public static HtmlNode GetUpgradeButton(HtmlDocument doc)
+        public static HtmlNode? GetUpgradeButton(HtmlDocument doc)
         {
-            var node = doc.DocumentNode.Descendants("div")
+            var upgradeButtonsContainer = doc.DocumentNode.Descendants("div")
                .FirstOrDefault(x => x.HasClass("upgradeButtonsContainer"));
-            if (node is null) return null;
+            if (upgradeButtonsContainer is null) return null;
 
-            var button = node.Descendants("button")
+            var button = upgradeButtonsContainer.Descendants("button")
                 .FirstOrDefault(x => x.HasClass("build"));
-
             return button;
         }
     }

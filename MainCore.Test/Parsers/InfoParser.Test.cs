@@ -10,7 +10,7 @@
         {
             _html.Load(NoPlusAccount);
             var actual = MainCore.Parsers.InfoParser.GetGold(_html);
-            actual.Should().BeGreaterThan(-1);
+            actual.ShouldBeGreaterThan(-1);
         }
 
         [Fact]
@@ -18,7 +18,7 @@
         {
             _html.Load(NoPlusAccount);
             var actual = MainCore.Parsers.InfoParser.GetSilver(_html);
-            actual.Should().BeGreaterThan(-1);
+            actual.ShouldBeGreaterThan(-1);
         }
 
         [Theory]
@@ -28,7 +28,7 @@
         {
             _html.Load(file);
             var actual = MainCore.Parsers.InfoParser.HasPlusAccount(_html);
-            actual.Should().Be(expected);
+            actual.ShouldBe(expected);
         }
     }
 }

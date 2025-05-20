@@ -4,11 +4,9 @@ namespace MainCore.Services
 {
     public interface ILogService
     {
+        Dictionary<AccountId, ILogger> Loggers { get; }
+
         LinkedList<LogEvent> GetLog(AccountId accountId);
-
-        ILogger GetLogger(AccountId accountId);
-
-        void Load();
 
         void Shutdown();
     }

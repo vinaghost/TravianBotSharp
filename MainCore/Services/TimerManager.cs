@@ -13,22 +13,32 @@ namespace MainCore.Services
         private bool _isShutdown = false;
 
         private readonly ITaskManager _taskManager;
-        private readonly IChromeManager _chromeManager;
-        private readonly ILogService _logService;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
 
-        private readonly ResiliencePropertyKey<ILogger> contextLoggerKey = new("logger");
-        private readonly ResiliencePropertyKey<string> contextTaskNameKey = new("task_name");
-        private readonly ResiliencePropertyKey<AccountId> contextAccountIdKey = new("account_id");
-
+        private static ResiliencePropertyKey<ContextData> contextDataKey = new(nameof(ContextData));
         private readonly ResiliencePipeline<Result> _pipeline;
 
-        public TimerManager(ITaskManager taskManager, ILogService logService, IChromeManager chromeManager, IServiceScopeFactory serviceScopeFactory)
+        public TimerManager(ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory)
         {
             _taskManager = taskManager;
-            _chromeManager = chromeManager;
-            _logService = logService;
             _serviceScopeFactory = serviceScopeFactory;
+
+            Func<OnRetryArguments<Result>, ValueTask> OnRetry = async static args =>
+            {
+                if (!args.Context.Properties.TryGetValue(contextDataKey, out var contextData)) return;
+
+                var (accountId, taskName, browser) = contextData;
+                var error = args.Outcome;
+                if (error.Exception is not null)
+                {
+                    var exception = error.Exception;
+                    browser.Logger.Error(exception, "{Message}", exception.Message);
+                }
+
+                browser.Logger.Warning("{TaskName} retry #{AttemptNumber} times after {times} seconds", taskName, args.AttemptNumber + 1, args.Duration.TotalSeconds);
+
+                await browser.Refresh(args.Context.CancellationToken);
+            };
 
             var retryOptions = new RetryStrategyOptions<Result>()
             {
@@ -39,29 +49,7 @@ namespace MainCore.Services
                 ShouldHandle = new PredicateBuilder<Result>()
                    .Handle<Exception>()
                    .HandleResult(static x => x.HasError<Retry>()),
-                OnRetry = async args =>
-                {
-                    args.Context.Properties.TryGetValue(contextLoggerKey, out var logger);
-                    logger.Warning("There is something wrong.");
-                    var error = args.Outcome;
-                    if (error.Exception is null)
-                    {
-                        var errors = error.Result.Reasons.Select(x => x.Message).ToList();
-                        logger.Error("{Errors}", string.Join(Environment.NewLine, errors));
-                    }
-                    else
-                    {
-                        var exception = error.Exception;
-                        logger.Error(exception, "{Message}", exception.Message);
-                    }
-
-                    args.Context.Properties.TryGetValue(contextTaskNameKey, out var taskName);
-                    logger.Warning("Retry {AttemptNumber} for {TaskName}", args.AttemptNumber + 1, taskName);
-
-                    args.Context.Properties.TryGetValue(contextAccountIdKey, out var accountId);
-                    var chromeBrowser = _chromeManager.Get(accountId);
-                    await chromeBrowser.Refresh(args.Context.CancellationToken);
-                }
+                OnRetry = OnRetry
             };
 
             _pipeline = new ResiliencePipelineBuilder<Result>()
@@ -71,97 +59,99 @@ namespace MainCore.Services
 
         public async Task Execute(AccountId accountId)
         {
-            var status = _taskManager.GetStatus(accountId);
+            var taskQueue = _taskManager.GetTaskQueue(accountId);
+
+            var status = taskQueue.Status;
             if (status != StatusEnums.Online) return;
-            var tasks = _taskManager.GetTaskList(accountId);
+            var tasks = taskQueue.Tasks;
             if (tasks.Count == 0) return;
             var task = tasks[0];
 
             if (task.ExecuteAt > DateTime.Now) return;
 
-            var logger = _logService.GetLogger(accountId);
-
-            var taskInfo = _taskManager.GetTaskInfo(accountId);
-            taskInfo.IsExecuting = true;
-            task.Stage = StageEnums.Executing;
+            taskQueue.IsExecuting = true;
             var cts = new CancellationTokenSource();
-            taskInfo.CancellationTokenSource = cts;
+            taskQueue.CancellationTokenSource = cts;
 
+            task.Stage = StageEnums.Executing;
             var cacheExecuteTime = task.ExecuteAt;
 
-            logger.Information("{TaskName} is started", task.GetName());
-            using var scoped = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
+
+            ///===========================================================///
+            var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
+            var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
+            var logger = browser.Logger;
+
+            var contextData = new ContextData(accountId, task.Description, browser);
+
             ///===========================================================///
             var context = ResilienceContextPool.Shared.Get(cts.Token);
 
-            context.Properties.Set(contextLoggerKey, logger);
-            context.Properties.Set(contextTaskNameKey, task.GetName());
-            context.Properties.Set(contextAccountIdKey, accountId);
+            context.Properties.Set(contextDataKey, contextData);
 
             var poliResult = await _pipeline.ExecuteOutcomeAsync(
-                async (ctx, state) => Outcome.FromResult(await task.Handle(state, ctx.CancellationToken)),
+                async (ctx, state) => Outcome.FromResult(await scope.Execute(state, ctx.CancellationToken)),
                 context,
-                scoped);
+                task);
 
             ResilienceContextPool.Shared.Return(context);
             ///===========================================================///
-            logger.Information("{TaskName} is finished", task.GetName());
 
             task.Stage = StageEnums.Waiting;
-            taskInfo.IsExecuting = false;
+            taskQueue.IsExecuting = false;
 
             cts.Dispose();
-            taskInfo.CancellationTokenSource = null;
+            taskQueue.CancellationTokenSource = null;
 
             if (poliResult.Exception is not null)
             {
                 logger.Warning("There is something wrong. Bot is pausing. Last exception is");
                 var ex = poliResult.Exception;
                 logger.Error(ex, "{Message}", ex.Message);
-                await _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                _taskManager.SetStatus(accountId, StatusEnums.Paused);
             }
-            else
+
+            if (poliResult.Result is not null)
             {
                 var result = poliResult.Result;
                 if (result.IsFailed)
                 {
-                    var errors = result.Reasons.Select(x => x.Message).ToList();
-                    logger.Warning(string.Join(Environment.NewLine, errors));
-
                     if (result.HasError<Stop>() || result.HasError<Retry>())
                     {
-                        await _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                        _taskManager.SetStatus(accountId, StatusEnums.Paused);
                     }
                     else if (result.HasError<Skip>())
                     {
                         if (task.ExecuteAt == cacheExecuteTime)
                         {
-                            await _taskManager.Remove(accountId, task);
+                            _taskManager.Remove(accountId, task);
                         }
                         else
                         {
-                            await _taskManager.ReOrder(accountId);
+                            _taskManager.ReOrder(accountId);
                         }
                     }
                     else if (result.HasError<Cancel>())
                     {
-                        await _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                        _taskManager.SetStatus(accountId, StatusEnums.Paused);
                     }
                 }
                 else
                 {
                     if (task.ExecuteAt == cacheExecuteTime)
                     {
-                        await _taskManager.Remove(accountId, task);
+                        _taskManager.Remove(accountId, task);
                     }
                     else
                     {
-                        await _taskManager.ReOrder(accountId);
+                        _taskManager.ReOrder(accountId);
                     }
                 }
             }
-            var delayTaskCommand = scoped.ServiceProvider.GetService<DelayTaskCommand>();
-            await delayTaskCommand.Execute(CancellationToken.None);
+
+            var delayTaskCommand = scope.ServiceProvider.GetRequiredService<DelayTaskCommand.Handler>();
+            await delayTaskCommand.HandleAsync(new(accountId));
         }
 
         public void Shutdown()
@@ -189,5 +179,7 @@ namespace MainCore.Services
                 timer.Start();
             }
         }
+
+        public record ContextData(AccountId AccountId, string TaskName, IChromeBrowser Browser);
     }
 }

@@ -1,31 +1,24 @@
 ﻿using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
 using System.Collections.ObjectModel;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
-    public class ListBoxItemViewModel : ViewModelBase
+    public partial class ListBoxItemViewModel : ViewModelBase
     {
+        [Reactive]
         private int _selectedIndex;
-        private ListBoxItem _selectedItem;
+
+        [Reactive]
+        private ListBoxItem? _selectedItem;
+
+        [Reactive]
+        private bool _isEnable = true;
 
         public ObservableCollection<ListBoxItem> Items { get; } = new();
 
         public bool IsSelected => SelectedItem is not null;
         public int SelectedItemId => SelectedItem?.Id ?? -1;
-
-        public ListBoxItem SelectedItem
-        {
-            get => _selectedItem;
-            set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
-        }
-
-        public int SelectedIndex
-        {
-            get => _selectedIndex;
-            set => this.RaiseAndSetIfChanged(ref _selectedIndex, value);
-        }
 
         public void Load(IEnumerable<ListBoxItem> items)
         {
@@ -64,13 +57,5 @@ namespace MainCore.UI.ViewModels.UserControls
         }
 
         public int Count => Items.Count;
-
-        private bool _isEnable = true;
-
-        public bool IsEnable
-        {
-            get => _isEnable;
-            set => this.RaiseAndSetIfChanged(ref _isEnable, value);
-        }
     }
 }
