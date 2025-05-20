@@ -12,15 +12,15 @@ jobs:
         DOTNET_INSTALL_DIR: "D:/tools/dotnet"
         DOTNET_ROOT: "D:/tools/dotnet"
         NUGET_PACKAGES: "D:/.nuget/packages"
-    steps:
+    steps:        
+      - name: Checkout
+        uses: actions/checkout@v4.1.5
+        
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
           cache: true
-        
-      - name: Checkout
-        uses: actions/checkout@v4.1.5
 
       - name: Install dependencies
         run: dotnet restore --locked-mode
@@ -70,15 +70,15 @@ jobs:
         DOTNET_ROOT: "D:/tools/dotnet"
         NUGET_PACKAGES: "D:/.nuget/packages"
     
-    steps:
+    steps:        
+      - name: Checkout
+        uses: actions/checkout@v4.1.5
+        
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
           cache: true
-        
-      - name: Checkout
-        uses: actions/checkout@v4.1.5
 
       - name: Install dependencies
         run: dotnet restore --locked-mode
