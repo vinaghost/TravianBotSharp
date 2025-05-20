@@ -134,6 +134,14 @@
           "System.Diagnostics.EventLog": "6.0.0"
         }
       },
+      "CP.Extensions.Hosting.SingleInstance": {
+        "type": "Transitive",
+        "resolved": "2.1.13",
+        "contentHash": "9MyyTqdZ1J6OQMAZLEfiwEPIiulKL3Wfv5TAQSfnyOD/vRp+kiYZOGSANhDdJhkpodIS39GEc7kTr/feWVDPkw==",
+        "dependencies": {
+          "Microsoft.Extensions.Hosting": "9.0.4"
+        }
+      },
       "CycleDetection": {
         "type": "Transitive",
         "resolved": "2.0.0",
@@ -850,15 +858,6 @@
           "Splat": "15.3.1"
         }
       },
-      "Splat.Microsoft.Extensions.DependencyInjection": {
-        "type": "Transitive",
-        "resolved": "15.3.1",
-        "contentHash": "9iKQ2T2Mit/yzVew/FEi+A3wWgHEDv8EQtoUX7ArK/bughD17DYVlalM2X/uxW3Jf5BO0xqRByXXTMmV0z2BfA==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection": "9.0.1",
-          "Splat": "15.3.1"
-        }
-      },
       "SQLitePCLRaw.bundle_e_sqlite3": {
         "type": "Transitive",
         "resolved": "2.1.10",
@@ -1449,6 +1448,7 @@
       "maincore": {
         "type": "Project",
         "dependencies": {
+          "CP.Extensions.Hosting.SingleInstance": "[2.1.13, )",
           "FluentResults": "[3.16.0, )",
           "FluentValidation": "[12.0.0, )",
           "FluentValidation.DependencyInjectionExtensions": "[12.0.0, )",
@@ -1469,8 +1469,7 @@
           "Serilog.Sinks.File": "[7.0.0, )",
           "Serilog.Sinks.Map": "[2.0.0, )",
           "Splat": "[15.3.1, )",
-          "Splat.Drawing": "[15.3.1, )",
-          "Splat.Microsoft.Extensions.DependencyInjection": "[15.3.1, )"
+          "Splat.Drawing": "[15.3.1, )"
         }
       }
     },

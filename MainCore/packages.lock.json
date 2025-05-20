@@ -2,6 +2,15 @@
   "version": 1,
   "dependencies": {
     "net8.0": {
+      "CP.Extensions.Hosting.SingleInstance": {
+        "type": "Direct",
+        "requested": "[2.1.13, )",
+        "resolved": "2.1.13",
+        "contentHash": "9MyyTqdZ1J6OQMAZLEfiwEPIiulKL3Wfv5TAQSfnyOD/vRp+kiYZOGSANhDdJhkpodIS39GEc7kTr/feWVDPkw==",
+        "dependencies": {
+          "Microsoft.Extensions.Hosting": "9.0.4"
+        }
+      },
       "FluentResults": {
         "type": "Direct",
         "requested": "[3.16.0, )",
@@ -210,16 +219,6 @@
         "resolved": "15.3.1",
         "contentHash": "cnSYZ3/zRE0Kh14SqCEV6NtlkS1mOeUTSsgeREivLSdWtHdjWoNj+NyekaZ+fPQatFc+ACyTphFHC/8vMtQcmQ==",
         "dependencies": {
-          "Splat": "15.3.1"
-        }
-      },
-      "Splat.Microsoft.Extensions.DependencyInjection": {
-        "type": "Direct",
-        "requested": "[15.3.1, )",
-        "resolved": "15.3.1",
-        "contentHash": "9iKQ2T2Mit/yzVew/FEi+A3wWgHEDv8EQtoUX7ArK/bughD17DYVlalM2X/uxW3Jf5BO0xqRByXXTMmV0z2BfA==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection": "9.0.1",
           "Splat": "15.3.1"
         }
       },

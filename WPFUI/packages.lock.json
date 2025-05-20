@@ -2,6 +2,18 @@
   "version": 1,
   "dependencies": {
     "net8.0-windows10.0.19041": {
+      "CP.Extensions.Hosting.ReactiveUI.Wpf": {
+        "type": "Direct",
+        "requested": "[2.1.13, )",
+        "resolved": "2.1.13",
+        "contentHash": "SpXz/eQia9QcsnFVJREZmwKaHh12Mn1eNz5bzMKFOs9Zw2heOGtN+/TuJ4gmV6K9a5eo5NBDs8JbQi1k4j6NvA==",
+        "dependencies": {
+          "CP.Extensions.Hosting.Wpf": "2.1.13",
+          "ReactiveUI.Drawing": "20.2.45",
+          "ReactiveUI.WPF": "20.2.45",
+          "Splat.Microsoft.Extensions.DependencyInjection": "15.3.1"
+        }
+      },
       "MaterialDesignThemes": {
         "type": "Direct",
         "requested": "[5.1.0, )",
@@ -12,17 +24,28 @@
           "Microsoft.Xaml.Behaviors.Wpf": "1.1.39"
         }
       },
-      "ReactiveUI.WPF": {
-        "type": "Direct",
-        "requested": "[20.2.45, )",
-        "resolved": "20.2.45",
-        "contentHash": "B5/q8Ewhdw1rH7z/+xRCpEgzDnqEQG5s4FiG1Cj0oU8/oUSOE3I0j86INVbEgzA66gWFWgryMONnrpmrz3PnBw==",
+      "CP.Extensions.Hosting.MainUIThread": {
+        "type": "Transitive",
+        "resolved": "2.1.13",
+        "contentHash": "libsLcpgvHLVCo4SKMTjXo/TMJPQoyo8Z/6zvrjPyv1L6zsM0II5bdpeJheshj5s2Ld9Uhk2JLSxYZKpmptvoA==",
         "dependencies": {
-          "DynamicData": "9.1.2",
-          "ReactiveUI": "20.2.45",
-          "Splat": "15.3.1",
-          "System.ComponentModel.Annotations": "5.0.0",
-          "System.Text.Json": "9.0.2"
+          "Microsoft.Extensions.Hosting": "9.0.4"
+        }
+      },
+      "CP.Extensions.Hosting.SingleInstance": {
+        "type": "Transitive",
+        "resolved": "2.1.13",
+        "contentHash": "9MyyTqdZ1J6OQMAZLEfiwEPIiulKL3Wfv5TAQSfnyOD/vRp+kiYZOGSANhDdJhkpodIS39GEc7kTr/feWVDPkw==",
+        "dependencies": {
+          "Microsoft.Extensions.Hosting": "9.0.4"
+        }
+      },
+      "CP.Extensions.Hosting.Wpf": {
+        "type": "Transitive",
+        "resolved": "2.1.13",
+        "contentHash": "ordzTnZ0157i73nXsgUfzY4U931pmOdup0781pvB5emUeMXgZz+sI8eLUVkyYCPbVsZMEy255ZNyK/l3gUAnQA==",
+        "dependencies": {
+          "CP.Extensions.Hosting.MainUIThread": "2.1.13"
         }
       },
       "DynamicData": {
@@ -495,6 +518,31 @@
           "System.Text.Json": "9.0.2"
         }
       },
+      "ReactiveUI.Drawing": {
+        "type": "Transitive",
+        "resolved": "20.2.45",
+        "contentHash": "/fnDloe0wrQHUvoyIG/MTTszNs/0Mr6sClYZ6EW/bNR0OlY6rADd8aC4xUYgr6KroPV48a7kg9feA5mfTuREfw==",
+        "dependencies": {
+          "DynamicData": "9.1.2",
+          "ReactiveUI": "20.2.45",
+          "Splat": "15.3.1",
+          "Splat.Drawing": "15.3.1",
+          "System.ComponentModel.Annotations": "5.0.0",
+          "System.Text.Json": "9.0.2"
+        }
+      },
+      "ReactiveUI.WPF": {
+        "type": "Transitive",
+        "resolved": "20.2.45",
+        "contentHash": "B5/q8Ewhdw1rH7z/+xRCpEgzDnqEQG5s4FiG1Cj0oU8/oUSOE3I0j86INVbEgzA66gWFWgryMONnrpmrz3PnBw==",
+        "dependencies": {
+          "DynamicData": "9.1.2",
+          "ReactiveUI": "20.2.45",
+          "Splat": "15.3.1",
+          "System.ComponentModel.Annotations": "5.0.0",
+          "System.Text.Json": "9.0.2"
+        }
+      },
       "Riok.Mapperly": {
         "type": "Transitive",
         "resolved": "4.2.1",
@@ -667,6 +715,7 @@
       "maincore": {
         "type": "Project",
         "dependencies": {
+          "CP.Extensions.Hosting.SingleInstance": "[2.1.13, )",
           "FluentResults": "[3.16.0, )",
           "FluentValidation": "[12.0.0, )",
           "FluentValidation.DependencyInjectionExtensions": "[12.0.0, )",
@@ -687,8 +736,7 @@
           "Serilog.Sinks.File": "[7.0.0, )",
           "Serilog.Sinks.Map": "[2.0.0, )",
           "Splat": "[15.3.1, )",
-          "Splat.Drawing": "[15.3.1, )",
-          "Splat.Microsoft.Extensions.DependencyInjection": "[15.3.1, )"
+          "Splat.Drawing": "[15.3.1, )"
         }
       }
     },

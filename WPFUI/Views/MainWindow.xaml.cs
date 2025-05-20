@@ -1,7 +1,7 @@
 ﻿using MainCore.UI.ViewModels;
 using MainCore.UI.ViewModels.UserControls;
+using ReactiveMarbles.Extensions.Hosting.Wpf;
 using ReactiveUI;
-using Splat;
 using System;
 using System.ComponentModel;
 using System.Reactive.Disposables;
@@ -17,19 +17,20 @@ namespace WPFUI.Views
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : MainWindowBase
+    public partial class MainWindow : MainWindowBase, IWpfShell
     {
         private bool _canClose = false;
         private bool _isClosing = false;
         private bool _isLoaded = false;
 
-        public MainWindow()
+        public MainWindow(MainViewModel mainViewModel, WaitingOverlayViewModel waitingOverlayViewModel)
         {
             InitializeComponent();
             Loaded += OnLoaded;
             Closing += OnClosing;
 
-            WaitingOverlay.ViewModel = Locator.Current.GetService<WaitingOverlayViewModel>();
+            ViewModel = mainViewModel;
+            WaitingOverlay.ViewModel = waitingOverlayViewModel;
 
             this.WhenActivated(d =>
             {
@@ -62,12 +63,6 @@ namespace WPFUI.Views
 
             _canClose = true;
             Close();
-        }
-
-        protected override void OnClosed(EventArgs e)
-        {
-            base.OnClosed(e);
-            Application.Current.Shutdown();
         }
     }
 }
