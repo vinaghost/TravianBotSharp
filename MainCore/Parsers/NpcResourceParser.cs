@@ -8,14 +8,16 @@
             return dialog is not null;
         }
 
-        public static HtmlNode GetExchangeResourcesButton(HtmlDocument doc)
+        public static HtmlNode? GetExchangeResourcesButton(HtmlDocument doc)
         {
-            var npcMerchant = doc.DocumentNode.Descendants("div")
+            var npcMerchantDialog = doc.DocumentNode
+                .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("npcMerchant"));
-            if (npcMerchant is null) return null;
-            var button = npcMerchant.Descendants("button")
+            if (npcMerchantDialog is null) return null;
+
+            var exchangeResourceButton = npcMerchantDialog.Descendants("button")
                 .FirstOrDefault(x => x.HasClass("gold"));
-            return button;
+            return exchangeResourceButton;
         }
 
         public static HtmlNode GetRedeemButton(HtmlDocument doc)
@@ -33,12 +35,25 @@
 
         public static IEnumerable<HtmlNode> GetInputs(HtmlDocument doc)
         {
-            for (int i = 0; i < 4; i++)
-            {
-                var node = doc.DocumentNode.Descendants("input")
-                    .FirstOrDefault(x => x.GetAttributeValue("name", "") == $"desired{i}");
-                yield return node;
-            }
+            var wood = doc.DocumentNode.Descendants("input")
+                .FirstOrDefault(x => x.GetAttributeValue("name", "") == "desired0");
+            if (wood is null) throw new Exception("Wood input not found");
+            yield return wood;
+
+            var clay = doc.DocumentNode.Descendants("input")
+                .FirstOrDefault(x => x.GetAttributeValue("name", "") == "desired1");
+            if (clay is null) throw new Exception("Clay input not found");
+            yield return clay;
+
+            var iron = doc.DocumentNode.Descendants("input")
+                .FirstOrDefault(x => x.GetAttributeValue("name", "") == "desired2");
+            if (iron is null) throw new Exception("Iron input not found");
+            yield return iron;
+
+            var crop = doc.DocumentNode.Descendants("input")
+                .FirstOrDefault(x => x.GetAttributeValue("name", "") == "desired3");
+            if (crop is null) throw new Exception("Crop input not found");
+            yield return crop;
         }
     }
 }

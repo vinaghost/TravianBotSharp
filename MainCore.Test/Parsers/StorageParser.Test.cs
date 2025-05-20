@@ -9,7 +9,7 @@
         {
             _html.Load(Buildings);
             var result = MainCore.Parsers.StorageParser.GetWood(_html);
-            result.Should().BeGreaterThan(-1);
+            result.ShouldBeGreaterThan(-1);
         }
 
         [Fact]
@@ -17,7 +17,7 @@
         {
             _html.Load(Buildings);
             var result = MainCore.Parsers.StorageParser.GetClay(_html);
-            result.Should().BeGreaterThan(-1);
+            result.ShouldBeGreaterThan(-1);
         }
 
         [Fact]
@@ -25,7 +25,7 @@
         {
             _html.Load(Buildings);
             var result = MainCore.Parsers.StorageParser.GetIron(_html);
-            result.Should().BeGreaterThan(-1);
+            result.ShouldBeGreaterThan(-1);
         }
 
         [Fact]
@@ -33,7 +33,7 @@
         {
             _html.Load(Buildings);
             var result = MainCore.Parsers.StorageParser.GetCrop(_html);
-            result.Should().BeGreaterThan(-1);
+            result.ShouldBeGreaterThan(-1);
         }
 
         [Fact]
@@ -41,7 +41,7 @@
         {
             _html.Load(Buildings);
             var result = MainCore.Parsers.StorageParser.GetFreeCrop(_html);
-            result.Should().BeGreaterThan(-1);
+            result.ShouldBeGreaterThan(-1);
         }
 
         [Fact]
@@ -49,7 +49,7 @@
         {
             _html.Load(Buildings);
             var result = MainCore.Parsers.StorageParser.GetWarehouseCapacity(_html);
-            result.Should().BeGreaterThan(-1);
+            result.ShouldBeGreaterThan(-1);
         }
 
         [Fact]
@@ -57,7 +57,7 @@
         {
             _html.Load(Buildings);
             var result = MainCore.Parsers.StorageParser.GetGranaryCapacity(_html);
-            result.Should().BeGreaterThan(-1);
+            result.ShouldBeGreaterThan(-1);
         }
     }
 }

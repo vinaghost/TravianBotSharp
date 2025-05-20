@@ -4,34 +4,37 @@
     {
         public static IEnumerable<HtmlNode> GetFarmNodes(HtmlDocument doc)
         {
-            var raidList = doc.GetElementbyId("rallyPointFarmList");
-            if (raidList is null) return Enumerable.Empty<HtmlNode>();
-            var fls = raidList
+            var farmListTable = doc.GetElementbyId("rallyPointFarmList");
+            if (farmListTable is null) return [];
+
+            var farmlistNodes = farmListTable
                 .Descendants("div")
                 .Where(x => x.HasClass("farmListHeader"));
-            return fls;
+            return farmlistNodes;
         }
 
         public static FarmId GetId(HtmlNode node)
         {
-            var flId = node
+            var farmlistDiv = node
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("dragAndDrop"));
-            if (flId is null) return FarmId.Empty;
-            var id = flId.GetAttributeValue("data-list", "0");
+
+            if (farmlistDiv is null) return default;
+
+            var id = farmlistDiv.GetAttributeValue("data-list", "0");
             return new FarmId(id.ParseInt());
         }
 
         public static string GetName(HtmlNode node)
         {
-            var flName = node
+            var farmlistName = node
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("name"));
-            if (flName is null) return null;
-            return flName.InnerText.Trim();
+            if (farmlistName is null) return "";
+            return farmlistName.InnerText.Trim();
         }
 
-        public static HtmlNode GetStartButton(HtmlDocument doc, FarmId raidId)
+        public static HtmlNode? GetStartButton(HtmlDocument doc, FarmId raidId)
         {
             var nodes = GetFarmNodes(doc);
             foreach (var node in nodes)
@@ -42,19 +45,21 @@
                 var startNode = node
                     .Descendants("button")
                     .FirstOrDefault(x => x.HasClass("startFarmList"));
+                if (startNode is null) continue;
                 return startNode;
             }
             return null;
         }
 
-        public static HtmlNode GetStartAllButton(HtmlDocument doc)
+        public static HtmlNode? GetStartAllButton(HtmlDocument doc)
         {
-            var raidList = doc.GetElementbyId("rallyPointFarmList");
-            if (raidList is null) return null;
-            var startAll = raidList
+            var farmlistTable = doc.GetElementbyId("rallyPointFarmList");
+            if (farmlistTable is null) return null;
+            var startAllFarmListButton = farmlistTable
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("startAllFarmLists"));
-            return startAll;
+
+            return startAllFarmListButton;
         }
     }
 }

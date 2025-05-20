@@ -1,28 +1,30 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
+using MainCore.Notifications.Behaviors;
 
 namespace MainCore.Commands.Update
 {
-    [RegisterScoped<UpdateFarmlistCommand>]
-    public class UpdateFarmlistCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
+    [Handler]
+    [Behaviors(typeof(FarmListUpdatedBehavior<,>))]
+    public static partial class UpdateFarmlistCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly IMediator _mediator = mediator;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            AppDbContext context,
+            CancellationToken cancellationToken)
         {
-            var accountId = _dataService.AccountId;
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
-            var dtos = Get(html);
-            UpdateToDatabase(accountId, dtos);
-            await _mediator.Publish(new FarmListUpdated(accountId), cancellationToken);
+            await Task.CompletedTask;
+            var html = browser.Html;
 
+            var dtos = Get(html);
+            context.UpdateToDatabase(command.AccountId, dtos);
             return Result.Ok();
         }
 
-        private void UpdateToDatabase(AccountId accountId, IEnumerable<FarmDto> dtos)
+        private static void UpdateToDatabase(this AppDbContext context, AccountId accountId, IEnumerable<FarmDto> dtos)
         {
-            using var context = _contextFactory.CreateDbContext();
             var farms = context.FarmLists
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();
@@ -38,7 +40,7 @@ namespace MainCore.Commands.Update
 
             foreach (var farm in farmUpdated)
             {
-                var dto = dtos.FirstOrDefault(x => x.Id.Value == farm.Id);
+                var dto = dtos.First(x => x.Id.Value == farm.Id);
                 dto.To(farm);
                 context.Update(farm);
             }

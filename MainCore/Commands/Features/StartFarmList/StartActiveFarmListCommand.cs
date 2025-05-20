@@ -1,47 +1,36 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.StartFarmList
 {
-    [RegisterScoped<StartActiveFarmListCommand>]
-    public class StartActiveFarmListCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, DelayClickCommand delayClickCommand) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class StartActiveFarmListCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly DelayClickCommand _delayClickCommand = delayClickCommand;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            DelayClickCommand.Handler delayClickCommand,
+            GetActiveFarmsQuery.Handler getActiveFarmsQuery,
+            CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-
-            var farmLists = GetActive();
+            var farmLists = await getActiveFarmsQuery.HandleAsync(new(command.AccountId), cancellationToken);
             if (farmLists.Count == 0) return Skip.NoActiveFarmlist;
 
-            var html = chromeBrowser.Html;
-            Result result;
+            var html = browser.Html;
 
             foreach (var farmList in farmLists)
             {
                 var startButton = FarmListParser.GetStartButton(html, farmList);
                 if (startButton is null) return Retry.ButtonNotFound($"Start farm {farmList}");
 
-                result = await chromeBrowser.Click(By.XPath(startButton.XPath), CancellationToken.None);
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                var result = await browser.Click(By.XPath(startButton.XPath));
+                if (result.IsFailed) return result;
 
-                await _delayClickCommand.Execute(cancellationToken);
+                await delayClickCommand.HandleAsync(new(command.AccountId), cancellationToken);
             }
 
             return Result.Ok();
-        }
-
-        private List<FarmId> GetActive()
-        {
-            var accountId = _dataService.AccountId;
-            using var context = _contextFactory.CreateDbContext();
-            var farmListIds = context.FarmLists
-                    .Where(x => x.AccountId == accountId.Value)
-                    .Where(x => x.IsActive)
-                    .Select(x => new FarmId(x.Id))
-                    .ToList();
-            return farmListIds;
         }
     }
 }

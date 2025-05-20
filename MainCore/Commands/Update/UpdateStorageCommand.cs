@@ -1,23 +1,29 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
+using MainCore.Notifications.Behaviors;
 
 namespace MainCore.Commands.Update
 {
-    [RegisterScoped<UpdateStorageCommand>]
-    public class UpdateStorageCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
+    [Handler]
+    [Behaviors(typeof(StorageUpdatedBehavior<,>))]
+    public static partial class UpdateStorageCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly IMediator _mediator = mediator;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask<StorageDto> HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            AppDbContext context,
+            CancellationToken cancellationToken)
         {
-            var accountId = _dataService.AccountId;
-            var villageId = _dataService.VillageId;
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+            await Task.CompletedTask;
+            var (accountId, villageId) = command;
+
+            var html = browser.Html;
+
             var dto = Get(html);
-            UpdateToDatabase(villageId, dto);
-            await _mediator.Publish(new StorageUpdated(accountId, villageId), cancellationToken);
-            return Result.Ok();
+
+            context.UpdateStorage(villageId, dto);
+            return dto;
         }
 
         private static StorageDto Get(HtmlDocument doc)
@@ -35,9 +41,8 @@ namespace MainCore.Commands.Update
             return storage;
         }
 
-        private void UpdateToDatabase(VillageId villageId, StorageDto dto)
+        private static void UpdateStorage(this AppDbContext context, VillageId villageId, StorageDto dto)
         {
-            using var context = _contextFactory.CreateDbContext();
             var dbStorage = context.Storages
                 .Where(x => x.VillageId == villageId.Value)
                 .FirstOrDefault();
