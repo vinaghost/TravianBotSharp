@@ -1,4 +1,4 @@
-﻿using MainCore.Common.Enums;
+﻿using MainCore.Enums;
 
 namespace MainCore.Test.Parsers
 {
@@ -20,7 +20,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(path);
             var actual = MainCore.Parsers.UpgradeParser.GetRequiredResource(_html, building);
-            actual.Count.Should().Be(5);
+            actual.Count.ShouldBe(5);
         }
 
         [Fact]
@@ -28,7 +28,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(MarketplaceWithoutResource);
             var actual = MainCore.Parsers.UpgradeParser.GetTimeWhenEnoughResource(_html, BuildingEnums.Marketplace);
-            actual.Should().BeGreaterThan(TimeSpan.Zero);
+            actual.ShouldBeGreaterThan(TimeSpan.Zero);
         }
 
         [Theory]
@@ -38,7 +38,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(path);
             var actual = MainCore.Parsers.UpgradeParser.GetConstructButton(_html, building);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
 
         [Theory]
@@ -48,7 +48,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(path);
             var actual = MainCore.Parsers.UpgradeParser.GetUpgradeButton(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
 
         [Theory]
@@ -58,7 +58,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(path);
             var actual = MainCore.Parsers.UpgradeParser.GetSpecialUpgradeButton(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
     }
 }

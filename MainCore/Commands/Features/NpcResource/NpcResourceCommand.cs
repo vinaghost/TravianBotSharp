@@ -1,67 +1,69 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.NpcResource
 {
-    [RegisterScoped<NpcResourceCommand>]
-    public class NpcResourceCommand : CommandBase, ICommand
+    [Handler]
+    public static partial class NpcResourceCommand
     {
-        private static readonly List<VillageSettingEnums> _settingNames = [
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+
+        private static readonly List<VillageSettingEnums> SettingNames = new()
+        {
             VillageSettingEnums.AutoNPCWood,
             VillageSettingEnums.AutoNPCClay,
             VillageSettingEnums.AutoNPCIron,
             VillageSettingEnums.AutoNPCCrop,
-        ];
+        };
 
-        private readonly IGetSetting _getSetting;
-
-        public NpcResourceCommand(IDataService dataService, IGetSetting getSetting) : base(dataService)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            ISettingService settingService,
+            CancellationToken cancellationToken)
         {
-            _getSetting = getSetting;
-        }
+            var (accountId, villageId) = command;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
-        {
-            Result result;
-            result = await OpenNPCDialog(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            var result = await OpenNPCDialog(browser, cancellationToken);
+            if (result.IsFailed) return result;
 
-            var ratio = GetRatio();
+            var settings = settingService.ByName(villageId, SettingNames);
+            var ratio = GetRatio(settings, villageId);
 
-            result = await InputAmount(ratio);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await InputAmount(browser, ratio);
+            if (result.IsFailed) return result;
 
-            result = await Redeem(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await Redeem(browser, cancellationToken);
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }
 
-        private async Task<Result> OpenNPCDialog(CancellationToken cancellationToken)
+        private static async Task<Result> OpenNPCDialog(IChromeBrowser browser, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
 
             var button = NpcResourceParser.GetExchangeResourcesButton(html);
             if (button is null) return Retry.ButtonNotFound("Exchange resources");
 
-            static bool dialogShown(IWebDriver driver)
+            static bool DialogShown(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
                 return NpcResourceParser.IsNpcDialog(doc);
             }
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath), dialogShown, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            var result = await browser.Click(By.XPath(button.XPath));
+            if (result.IsFailed) return result;
+
+            result = await browser.Wait(DialogShown, cancellationToken);
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }
 
-        public async Task<Result> InputAmount(long[] ratio)
+        private static async Task<Result> InputAmount(IChromeBrowser browser, long[] ratio)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
 
             var sum = NpcResourceParser.GetSum(html);
             var sumRatio = ratio.Sum();
@@ -76,19 +78,16 @@ namespace MainCore.Commands.Features.NpcResource
 
             var inputs = NpcResourceParser.GetInputs(html).ToArray();
 
-            Result result;
             for (var i = 0; i < 4; i++)
             {
-                result = await chromeBrowser.InputTextbox(By.XPath(inputs[i].XPath), $"{values[i]}");
-                if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                var result = await browser.Input(By.XPath(inputs[i].XPath), $"{values[i]}");
+                if (result.IsFailed) return result;
             }
             return Result.Ok();
         }
 
-        private long[] GetRatio()
+        private static long[] GetRatio(Dictionary<VillageSettingEnums, int> settings, VillageId villageId)
         {
-            var settings = _getSetting.ByName(_dataService.VillageId, _settingNames);
-
             var ratio = new long[4]
             {
                 settings[VillageSettingEnums.AutoNPCWood],
@@ -105,17 +104,16 @@ namespace MainCore.Commands.Features.NpcResource
             return ratio;
         }
 
-        public async Task<Result> Redeem(CancellationToken cancellationToken)
+        private static async Task<Result> Redeem(IChromeBrowser browser, CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
 
             var button = NpcResourceParser.GetRedeemButton(html);
             if (button is null) return Retry.ButtonNotFound("redeem");
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath), cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            var result = await browser.Click(By.XPath(button.XPath));
+            if (result.IsFailed) return result;
+
             return Result.Ok();
         }
     }

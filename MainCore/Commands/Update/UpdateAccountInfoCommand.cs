@@ -1,24 +1,23 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Update
 {
-    [RegisterScoped<UpdateAccountInfoCommand>]
-    public class UpdateAccountInfoCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class UpdateAccountInfoCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly IMediator _mediator = mediator;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            AppDbContext context,
+            CancellationToken cancellationToken)
         {
-            var accountId = _dataService.AccountId;
-            var chromeBrowser = _dataService.ChromeBrowser;
+            await Task.CompletedTask;
+            var html = browser.Html;
 
-            var html = chromeBrowser.Html;
             var dto = Get(html);
-            UpdateToDatabase(accountId, dto);
-
-            await _mediator.Publish(new AccountInfoUpdated(accountId), cancellationToken);
-            return Result.Ok();
+            context.UpdateToDatabase(command.AccountId, dto);
         }
 
         private static AccountInfoDto Get(HtmlDocument doc)
@@ -27,23 +26,19 @@ namespace MainCore.Commands.Update
             var silver = InfoParser.GetSilver(doc);
             var hasPlusAccount = InfoParser.HasPlusAccount(doc);
 
-            var dto = new AccountInfoDto()
+            return new AccountInfoDto
             {
                 Gold = gold,
                 Silver = silver,
                 HasPlusAccount = hasPlusAccount,
                 Tribe = TribeEnums.Any,
             };
-            return dto;
         }
 
-        private void UpdateToDatabase(AccountId accountId, AccountInfoDto dto)
+        private static void UpdateToDatabase(this AppDbContext context, AccountId accountId, AccountInfoDto dto)
         {
-            using var context = _contextFactory.CreateDbContext();
-
             var dbAccountInfo = context.AccountsInfo
-                .Where(x => x.AccountId == accountId.Value)
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.AccountId == accountId.Value);
 
             if (dbAccountInfo is null)
             {

@@ -1,38 +1,36 @@
-﻿using MainCore.Commands.UI;
+﻿using MainCore.Commands.UI.AddAccountsViewModel;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
+using MainCore.UI.ViewModels.UserControls;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
-using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
     [RegisterSingleton<AddAccountsViewModel>]
-    public class AddAccountsViewModel : TabViewModelBase
+    public partial class AddAccountsViewModel : TabViewModelBase
     {
-        public ReactiveCommand<Unit, Unit> AddAccount { get; }
-        private ReactiveCommand<string, List<AccountDetailDto>> Parse { get; }
-
+        private readonly IDialogService _dialogService;
+        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         public ObservableCollection<AccountDetailDto> Accounts { get; } = [];
-        private string _input;
 
-        public string Input
-        {
-            get => _input;
-            set => this.RaiseAndSetIfChanged(ref _input, value);
-        }
+        [Reactive]
+        private string _input = "";
 
-        public AddAccountsViewModel()
+        public AddAccountsViewModel(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IServiceScopeFactory serviceScopeFactory)
         {
-            AddAccount = ReactiveCommand.CreateFromTask(AddAccountHandler);
-            Parse = ReactiveCommand.Create<string, List<AccountDetailDto>>(ParseHandler);
+            _dialogService = dialogService;
+            _waitingOverlayViewModel = waitingOverlayViewModel;
+            _serviceScopeFactory = serviceScopeFactory;
 
             this.WhenAnyValue(x => x.Input)
                 .ObserveOn(RxApp.TaskpoolScheduler)
-                .InvokeCommand(Parse);
+                .InvokeCommand(ParseCommand);
 
-            Parse.Subscribe(UpdateTable);
+            ParseCommand.Subscribe(UpdateTable);
 
-            AddAccount.Subscribe(_ => Clear());
+            AddAccountCommand.Subscribe(_ => Clear());
         }
 
         private void UpdateTable(List<AccountDetailDto> data)
@@ -47,13 +45,28 @@ namespace MainCore.UI.ViewModels.Tabs
             Input = "";
         }
 
-        private async Task AddAccountHandler()
+        [ReactiveCommand]
+        private async Task AddAccount()
         {
-            var addAccountCommand = Locator.Current.GetService<AddAccountCommand>();
-            await addAccountCommand.Execute([.. Accounts], default);
+            await _waitingOverlayViewModel.Show("adding accounts");
+
+            using var scope = _serviceScopeFactory.CreateScope();
+            var addAccountsCommand = scope.ServiceProvider.GetRequiredService<AddAccountsCommand.Handler>();
+            var resultInput = await addAccountsCommand.HandleAsync(new([.. Accounts.Select(x => x.ToDto())]));
+
+            await _waitingOverlayViewModel.Hide();
+
+            if (resultInput.IsFailed)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", resultInput.Errors[0].Message));
+                return;
+            }
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added accounts"));
+            await _waitingOverlayViewModel.Hide();
         }
 
-        private static List<AccountDetailDto> ParseHandler(string input)
+        [ReactiveCommand]
+        private static List<AccountDetailDto> Parse(string input)
         {
             if (string.IsNullOrEmpty(input)) return [];
 
@@ -63,41 +76,42 @@ namespace MainCore.UI.ViewModels.Tabs
                 .AsParallel()
                 .Select(ParseLine)
                 .Where(x => x is not null)
+                .Select(x => x!)
                 .ToList();
 
             return accounts;
         }
 
-        private static AccountDetailDto ParseLine(string input)
+        private static AccountDetailDto? ParseLine(string input)
         {
             var strAccount = input.Trim().Split(' ');
-            Uri url = null;
-            if (strAccount.Length > 0 && !Uri.TryCreate(strAccount[0], UriKind.Absolute, out url))
-            {
+            if (strAccount.Length < 3 || strAccount.Length > 7)
                 return null;
-            }
 
-            if (url is null) return null;
+            if (string.IsNullOrWhiteSpace(strAccount[0]))
+                return null;
+
+            if (!Uri.TryCreate(strAccount[0], UriKind.Absolute, out var uri))
+                return null;
+
+            if (uri is null)
+                return null;
 
             if (strAccount.Length > 4)
             {
-                if (int.TryParse(strAccount[4], out var port))
-                {
-                    strAccount[4] = port.ToString();
-                }
-                else
-                {
+                if (!int.TryParse(strAccount[4], out var port))
                     return null;
-                }
+
+                strAccount[4] = port.ToString();
             }
 
-            var host = url.GetLeftPart(UriPartial.Authority);
+            var serverUrl = $"{uri.Scheme}://{uri.Host}";
 
             return strAccount.Length switch
             {
-                3 => AccountDetailDto.Create(strAccount[1], host, strAccount[2]),
-                5 => AccountDetailDto.Create(strAccount[1], host, strAccount[2], strAccount[3], int.Parse(strAccount[4])),
-                7 => AccountDetailDto.Create(strAccount[1], host, strAccount[2], strAccount[3], int.Parse(strAccount[4]), strAccount[5], strAccount[6]),
+                3 => AccountDetailDto.Create(strAccount[1], serverUrl, strAccount[2]),
+                5 => AccountDetailDto.Create(strAccount[1], serverUrl, strAccount[2], strAccount[3], int.Parse(strAccount[4])),
+                7 => AccountDetailDto.Create(strAccount[1], serverUrl, strAccount[2], strAccount[3], int.Parse(strAccount[4]), strAccount[5], strAccount[6]),
                 _ => null,
             };
         }

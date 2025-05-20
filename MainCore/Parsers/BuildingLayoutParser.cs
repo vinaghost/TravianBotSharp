@@ -18,22 +18,25 @@
             static int GetId(HtmlNode node)
             {
                 var classess = node.GetClasses();
-                var needClass = classess.FirstOrDefault(x => x.StartsWith("buildingSlot"));
-                return needClass.ParseInt();
+                var buildingSlot = classess.FirstOrDefault(x => x.StartsWith("buildingSlot"));
+                if (buildingSlot is null) return -1;
+                return buildingSlot.ParseInt();
             }
 
             static BuildingEnums GetBuildingType(HtmlNode node)
             {
                 var classess = node.GetClasses();
-                var needClass = classess.FirstOrDefault(x => x.StartsWith("gid"));
-                return (BuildingEnums)needClass.ParseInt();
+                var gid = classess.FirstOrDefault(x => x.StartsWith("gid"));
+                if (gid is null) return BuildingEnums.Unknown;
+                return (BuildingEnums)gid.ParseInt();
             }
 
             static int GetLevel(HtmlNode node)
             {
                 var classess = node.GetClasses();
-                var needClass = classess.FirstOrDefault(x => x.StartsWith("level") && !x.Equals("level"));
-                return needClass.ParseInt();
+                var level = classess.FirstOrDefault(x => x.StartsWith("level") && !x.Equals("level"));
+                if (level is null) return -1;
+                return level.ParseInt();
             }
 
             static bool IsUnderConstruction(HtmlNode node)
