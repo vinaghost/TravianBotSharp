@@ -8,21 +8,19 @@ on:
 jobs:
   Test:
     runs-on: windows-latest
+    env:
+        DOTNET_INSTALL_DIR: "D:\tools\dotnet"
+        DOTNET_ROOT: "D:\tools\dotnet"
+        NUGET_PACKAGES: "D:\.nuget\packages"
     steps:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+          cache: true
         
       - name: Checkout
         uses: actions/checkout@v4.1.5
-      
-      - name: Load cached dependencies
-        uses: actions/cache@v4.2.3
-        with:
-            path: ~/.nuget/packages
-            key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-            restore-keys: ${{ runner.os }}-nuget-
 
       - name: Install dependencies
         run: dotnet restore --locked-mode
@@ -67,22 +65,20 @@ jobs:
   Build:
     runs-on: windows-latest
     needs: Version
+    env:
+        DOTNET_INSTALL_DIR: "D:\tools\dotnet"
+        DOTNET_ROOT: "D:\tools\dotnet"
+        NUGET_PACKAGES: "D:\.nuget\packages"
     
     steps:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+          cache: true
         
       - name: Checkout
         uses: actions/checkout@v4.1.5
-      
-      - name: Load cached dependencies
-        uses: actions/cache@v4.2.3
-        with:
-            path: ~/.nuget/packages
-            key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-            restore-keys: ${{ runner.os }}-nuget-
 
       - name: Install dependencies
         run: dotnet restore --locked-mode
