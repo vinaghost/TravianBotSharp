@@ -9,9 +9,9 @@ jobs:
   Test:
     runs-on: windows-latest
     env:
-        DOTNET_INSTALL_DIR: "D:\tools\dotnet"
-        DOTNET_ROOT: "D:\tools\dotnet"
-        NUGET_PACKAGES: "D:\.nuget\packages"
+        DOTNET_INSTALL_DIR: "D:/tools/dotnet"
+        DOTNET_ROOT: "D:/tools/dotnet"
+        NUGET_PACKAGES: "D:/.nuget/packages"
     steps:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
@@ -66,9 +66,9 @@ jobs:
     runs-on: windows-latest
     needs: Version
     env:
-        DOTNET_INSTALL_DIR: "D:\tools\dotnet"
-        DOTNET_ROOT: "D:\tools\dotnet"
-        NUGET_PACKAGES: "D:\.nuget\packages"
+        DOTNET_INSTALL_DIR: "D:/tools/dotnet"
+        DOTNET_ROOT: "D:/tools/dotnet"
+        NUGET_PACKAGES: "D:/.nuget/packages"
     
     steps:
       - name: Setup dotnet
