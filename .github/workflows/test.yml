@@ -21,10 +21,7 @@ jobs:
         with:
           dotnet-version: 8.0.x
           cache: true
-          cache-dependency-path: 
-            - MainCore/packages.lock.json
-            - MainCore.Test/packages.lock.json
-            - WPFUI/packages.lock.json
+          cache-dependency-path: '**/packages.lock.json'
 
       - name: Install dependencies
         run: dotnet restore --locked-mode
@@ -83,10 +80,7 @@ jobs:
         with:
           dotnet-version: 8.0.x
           cache: true
-          cache-dependency-path: 
-            - MainCore/packages.lock.json
-            - MainCore.Test/packages.lock.json
-            - WPFUI/packages.lock.json
+          cache-dependency-path: '**/packages.lock.json'
 
       - name: Install dependencies
         run: dotnet restore --locked-mode
