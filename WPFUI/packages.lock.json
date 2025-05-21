@@ -736,7 +736,8 @@
           "Serilog.Sinks.File": "[7.0.0, )",
           "Serilog.Sinks.Map": "[2.0.0, )",
           "Splat": "[15.3.1, )",
-          "Splat.Drawing": "[15.3.1, )"
+          "Splat.Drawing": "[15.3.1, )",
+          "Splat.Microsoft.Extensions.DependencyInjection": "[15.3.1, )"
         }
       }
     },

@@ -3,7 +3,6 @@ using MainCore.Services;
 using MainCore.UI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ReactiveMarbles.Extensions.Hosting.ReactiveUI;
 using ReactiveMarbles.Extensions.Hosting.Wpf;
 using ReactiveUI;
 using Splat;
@@ -25,7 +24,6 @@ namespace WPFUI
         {
             Splat.ModeDetector.OverrideModeDetector(Mode.Run);
             var host = AppMixins.GetHostBuilder()
-                .ConfigureSplatForMicrosoftDependencyResolver()
                 .ConfigureWpf(wpfBuilder => wpfBuilder.UseCurrentApplication(this).UseWindow<MainWindow>())
                 .UseWpfLifetime()
                 .Build();

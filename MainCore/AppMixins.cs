@@ -6,6 +6,7 @@ using ReactiveMarbles.Extensions.Hosting.AppServices;
 using Serilog;
 using Serilog.Events;
 using Serilog.Templates;
+using Splat.Microsoft.Extensions.DependencyInjection;
 
 [assembly: Behaviors(
     typeof(AccountDataLoggingBehavior<,>),
@@ -69,12 +70,22 @@ namespace MainCore
                 });
             });
 
+        private static IHostBuilder ConfigureSplatForMicrosoftDependencyResolver(this IHostBuilder hostBuilder) =>
+            hostBuilder.ConfigureServices((serviceCollection) =>
+            {
+                serviceCollection.UseMicrosoftDependencyResolver();
+                var resolver = Locator.CurrentMutable;
+                resolver.InitializeSplat();
+                resolver.InitializeReactiveUI();
+            });
+
         public static IHostBuilder GetHostBuilder()
         {
             var hostBuilder = Host.CreateDefaultBuilder()
+                .ConfigureSplatForMicrosoftDependencyResolver()
                 .ConfigureSingleInstance(builder =>
                 {
-                    builder.MutexId = "{30a4e448-1975-4a2d-afed-615d4a318283}";
+                    builder.MutexId = "{hcmmn304-1975-4a2d-afed-615d4a318283}";
                     builder.WhenNotFirstInstance = (hostingEnvironment, logger) =>
                     {
                         logger.LogWarning("Application {0} already running.", hostingEnvironment.ApplicationName);
