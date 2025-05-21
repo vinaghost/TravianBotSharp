@@ -108,12 +108,21 @@ namespace MainCore.Services
 
             if (poliResult.Exception is not null)
             {
-                var filename = await browser.Screenshot();
                 var ex = poliResult.Exception;
-                logger.Warning("There is something wrong. Bot is pausing. Last exception is");
-                logger.Error(ex, "{Message}", ex.Message);
+
+                if (ex is OperationCanceledException)
+                {
+                    logger.Information("Pause button is pressed");
+                }
+                else
+                {
+                    var filename = await browser.Screenshot();
+                    logger.Information("Screenshot saved as {FileName}", filename);
+                    logger.Warning("There is something wrong. Bot is pausing. Last exception is");
+                    logger.Error(ex, "{Message}", ex.Message);
+                }
+
                 _taskManager.SetStatus(accountId, StatusEnums.Paused);
-                logger.Information("Screenshot saved as {FileName}", filename);
             }
 
             if (poliResult.Result is not null)
