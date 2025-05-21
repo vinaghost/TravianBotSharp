@@ -4,9 +4,9 @@ namespace MainCore.UI.Models.Output
 {
     public class TaskItem
     {
-        public TaskItem(TaskBase task)
+        public TaskItem(BaseTask task)
         {
-            Task = task.GetName();
+            Task = task.Description;
             ExecuteAt = task.ExecuteAt;
             Stage = task.Stage;
         }

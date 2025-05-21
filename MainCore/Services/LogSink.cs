@@ -1,14 +1,17 @@
-﻿using Serilog.Core;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using Serilog.Configuration;
+using Serilog.Core;
 using Serilog.Events;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton<ILogEventSink, LogSink>]
+    [RegisterSingleton<LogSink>]
     public sealed class LogSink : ILogEventSink
     {
         private Dictionary<AccountId, LinkedList<LogEvent>> Logs { get; } = [];
 
-        public event Action<AccountId, LogEvent> LogEmitted;
+        public event Action<AccountId, LogEvent> LogEmitted = delegate { };
 
         public LinkedList<LogEvent> GetLogs(AccountId accountId)
         {
@@ -27,7 +30,8 @@ namespace MainCore.Services
             var logEventPropertyValue = logEvent.Properties.GetValueOrDefault("AccountId");
             if (logEventPropertyValue is null) return;
             if (logEventPropertyValue is not ScalarValue scalarValue) return;
-            var accountId = new AccountId(int.Parse(scalarValue.Value as string));
+            var value = scalarValue.Value as string;
+            var accountId = new AccountId(int.Parse(value!));
 
             var logs = GetLogs(accountId);
             logs.AddFirst(logEvent);
@@ -37,7 +41,16 @@ namespace MainCore.Services
                 logs.RemoveLast();
             }
 
-            LogEmitted?.Invoke(accountId, logEvent);
+            LogEmitted.Invoke(accountId, logEvent);
+        }
+    }
+
+    public static class LogSinkExtensions
+    {
+        public static LoggerConfiguration LogSink(
+                  this LoggerSinkConfiguration loggerConfiguration)
+        {
+            return loggerConfiguration.Sink(Locator.Current.GetService<LogSink>()!);
         }
     }
 }
