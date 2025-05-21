@@ -1,5 +1,7 @@
 ﻿using StronglyTypedIds;
 
+#nullable disable
+
 namespace MainCore.Entities
 {
     public class Farm

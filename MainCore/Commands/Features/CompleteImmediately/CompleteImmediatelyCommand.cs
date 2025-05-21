@@ -1,40 +1,48 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.CompleteImmediately
 {
-    [RegisterScoped<CompleteImmediatelyCommand>]
-    public class CompleteImmediatelyCommand(IDataService dataService, IMediator mediator) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class CompleteImmediatelyCommand
     {
-        private readonly IMediator _mediator = mediator;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            AppDbContext context,
+            IChromeBrowser browser,
+            CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+            var (accountId, villageId) = command;
+
+            var html = browser.Html;
 
             var completeNowButton = CompleteImmediatelyParser.GetCompleteButton(html);
             if (completeNowButton is null) return Retry.ButtonNotFound("complete now");
 
-            bool confirmShown(IWebDriver driver)
+            var result = await browser.Click(By.XPath(completeNowButton.XPath));
+            if (result.IsFailed) return result;
+
+            static bool ConfirmShown(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
                 var confirmButton = CompleteImmediatelyParser.GetConfirmButton(doc);
                 return confirmButton is not null;
             }
+            result = await browser.Wait(ConfirmShown, cancellationToken);
+            if (result.IsFailed) return result;
 
-            Result result;
-
-            result = await chromeBrowser.Click(By.XPath(completeNowButton.XPath), confirmShown, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            html = chromeBrowser.Html;
+            html = browser.Html;
             var confirmButton = CompleteImmediatelyParser.GetConfirmButton(html);
-            if (confirmButton is null) return Retry.ButtonNotFound("complete now");
+            if (confirmButton is null) return Retry.ButtonNotFound("confirm complete now");
 
             var oldQueueCount = CompleteImmediatelyParser.CountQueueBuilding(html);
 
-            bool queueDifferent(IWebDriver driver)
+            result = await browser.Click(By.XPath(confirmButton.XPath));
+            if (result.IsFailed) return result;
+
+            static bool QueueDifferent(IWebDriver driver, int oldQueueCount)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
@@ -42,10 +50,8 @@ namespace MainCore.Commands.Features.CompleteImmediately
                 return oldQueueCount != newQueueCount;
             }
 
-            result = await chromeBrowser.Click(By.XPath(confirmButton.XPath), queueDifferent, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            await _mediator.Publish(new CompleteImmediatelyMessage(_dataService.AccountId, _dataService.VillageId), cancellationToken);
+            result = await browser.Wait(driver => QueueDifferent(driver, oldQueueCount), cancellationToken);
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

@@ -1,5 +1,4 @@
-﻿using ReactiveUI;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Drawing;
 
 namespace MainCore.UI.Models.Output

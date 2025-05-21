@@ -1,15 +1,22 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
 using System.Web;
 
 namespace MainCore.Commands.Navigate
 {
-    [RegisterScoped<ToBuildingCommand>]
-    public class ToBuildingCommand(IDataService dataService) : CommandBase(dataService), ICommand<int>
+    [Handler]
+    public static partial class ToBuildingCommand
     {
-        public async Task<Result> Execute(int location, CancellationToken cancellationToken)
+        public sealed record Command(AccountId AccountId, int Location) : IAccountCommand;
+
+        private static async ValueTask<Result> HandleAsync(
+           Command command,
+           IChromeBrowser browser,
+           CancellationToken cancellationToken
+           )
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+            var (accountId, location) = command;
+
+            var html = browser.Html;
             var node = GetBuilding(html, location);
             if (node is null) return Retry.NotFound($"{location}", "nodeBuilding");
 
@@ -18,16 +25,17 @@ namespace MainCore.Commands.Navigate
             {
                 if (location == 40) // wall
                 {
-                    var currentUrl = new Uri(chromeBrowser.CurrentUrl);
+                    var currentUrl = new Uri(browser.CurrentUrl);
                     var host = currentUrl.GetLeftPart(UriPartial.Authority);
-                    result = await chromeBrowser.Navigate($"{host}/build.php?id={location}", cancellationToken);
-                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                    await browser.Navigate($"{host}/build.php?id={location}", cancellationToken);
                 }
                 else
                 {
                     var css = $"#villageContent > div.buildingSlot.a{location} > svg > path";
-                    result = await chromeBrowser.Click(By.CssSelector(css), "build.php", cancellationToken);
-                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                    result = await browser.Click(By.CssSelector(css));
+                    if (result.IsFailed) return result;
+                    result = await browser.WaitPageChanged("build.php", cancellationToken);
+                    if (result.IsFailed) return result;
                 }
             }
             else
@@ -42,14 +50,16 @@ namespace MainCore.Commands.Navigate
 
                     var decodedJs = HttpUtility.HtmlDecode(javascript);
 
-                    result = await chromeBrowser.ExecuteJsScript(decodedJs, "build.php", cancellationToken);
-                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                    result = await browser.ExecuteJsScript(decodedJs);
+                    if (result.IsFailed) return result;
                 }
                 else
                 {
-                    result = await chromeBrowser.Click(By.XPath(node.XPath), "build.php", cancellationToken);
-                    if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+                    result = await browser.Click(By.XPath(node.XPath));
+                    if (result.IsFailed) return result;
                 }
+                result = await browser.WaitPageChanged("build.php", cancellationToken);
+                if (result.IsFailed) return result;
             }
             return Result.Ok();
         }
@@ -64,7 +74,7 @@ namespace MainCore.Commands.Navigate
         {
             var node = doc.DocumentNode
                    .Descendants("a")
-                   .FirstOrDefault(x => x.HasClass($"buildingSlot{location}"));
+                   .First(x => x.HasClass($"buildingSlot{location}"));
             return node;
         }
 
@@ -73,7 +83,7 @@ namespace MainCore.Commands.Navigate
             var tmpLocation = location - 18;
             var div = doc.DocumentNode
                 .SelectSingleNode($"//*[@id='villageContent']/div[{tmpLocation}]");
-
+            if (div is null) throw new NullReferenceException($"Cannot find //*[@id='villageContent']/div[{tmpLocation}]");
             return div;
         }
     }
