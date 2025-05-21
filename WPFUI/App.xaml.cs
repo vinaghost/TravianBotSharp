@@ -1,10 +1,12 @@
 ﻿using MainCore;
 using MainCore.Services;
 using MainCore.UI;
-using MainCore.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using ReactiveMarbles.Extensions.Hosting.Wpf;
 using ReactiveUI;
 using Splat;
+using Splat.ModeDetection;
 using System;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -18,20 +20,22 @@ namespace WPFUI
     /// </summary>
     public partial class App : Application
     {
-        private readonly MainWindow mainWindow;
-
-        public IServiceProvider Container { get; private set; }
-
         public App()
         {
-            Container = DependencyInjection.Setup();
+            Splat.ModeDetector.OverrideModeDetector(Mode.Run);
+            var host = AppMixins.GetHostBuilder()
+                .ConfigureWpf(wpfBuilder => wpfBuilder.UseCurrentApplication(this).UseWindow<MainWindow>())
+                .UseWpfLifetime()
+                .Build();
+
             RxApp.DefaultExceptionHandler = Locator.Current.GetService<ObservableExceptionHandler>();
+            SetupDialogService();
 
-            mainWindow = new MainWindow()
-            {
-                ViewModel = Locator.Current.GetService<MainViewModel>(),
-            };
+            host.RunAsync();
+        }
 
+        private static void SetupDialogService()
+        {
             var dialogService = Locator.Current.GetService<IDialogService>();
             dialogService.MessageBox.RegisterHandler(async context =>
             {
@@ -93,12 +97,6 @@ namespace WPFUI
             };
             if (ofd.ShowDialog() != true) return "";
             return ofd.FileName;
-        }
-
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            mainWindow.Show();
-            base.OnStartup(e);
         }
     }
 }

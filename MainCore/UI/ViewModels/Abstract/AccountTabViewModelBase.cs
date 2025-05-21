@@ -1,35 +1,31 @@
 ﻿using MainCore.UI.Stores;
-using ReactiveUI;
-using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.Abstract
 {
-    public abstract class AccountTabViewModelBase : TabViewModelBase
+    public abstract partial class AccountTabViewModelBase : TabViewModelBase
     {
         protected readonly SelectedItemStore _selectedItemStore;
 
-        private readonly ObservableAsPropertyHelper<AccountId> _accountId;
-        public AccountId AccountId => _accountId.Value;
-
-        private ReactiveCommand<AccountId, Unit> AccountChanged { get; }
+        [ObservableAsProperty]
+        private AccountId _accountId;
 
         protected AccountTabViewModelBase()
         {
-            _selectedItemStore = Locator.Current.GetService<SelectedItemStore>();
-
-            AccountChanged = ReactiveCommand.CreateFromTask<AccountId>(AccountChangedHandler);
+            _selectedItemStore = Locator.Current.GetService<SelectedItemStore>()!;
 
             var accountIdObservable = this.WhenAnyValue(vm => vm._selectedItemStore.Account)
                                         .WhereNotNull()
                                         .Select(x => new AccountId(x.Id));
 
-            accountIdObservable.ToProperty(this, vm => vm.AccountId, out _accountId);
+            _accountIdHelper = accountIdObservable.ToProperty(this, vm => vm.AccountId);
+
             accountIdObservable
                 .ObserveOn(RxApp.TaskpoolScheduler)
-                .InvokeCommand(AccountChanged);
+                .InvokeCommand(AccountChangedCommand);
         }
 
-        private async Task AccountChangedHandler(AccountId accountId)
+        [ReactiveCommand]
+        private async Task AccountChanged(AccountId accountId)
         {
             if (!IsActive) return;
             if (accountId == AccountId.Empty) return;

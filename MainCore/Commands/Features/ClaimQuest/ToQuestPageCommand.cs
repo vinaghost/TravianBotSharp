@@ -1,27 +1,32 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.ClaimQuest
 {
-    [RegisterScoped<ToQuestPageCommand>]
-    public class ToQuestPageCommand(IDataService dataService) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class ToQuestPageCommand
     {
-        public async Task<Result> Execute(CancellationToken cancellationToken)
-        {
-            var chromeBrowser = _dataService.ChromeBrowser;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-            var adventure = QuestParser.GetQuestMaster(chromeBrowser.Html);
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            CancellationToken cancellationToken)
+        {
+            var adventure = QuestParser.GetQuestMaster(browser.Html);
             if (adventure is null) return Retry.ButtonNotFound("quest master");
 
-            static bool tableShow(IWebDriver driver)
+            static bool TableShow(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
                 return QuestParser.IsQuestPage(doc);
             }
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(adventure.XPath), "tasks", tableShow, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            var result = await browser.Click(By.XPath(adventure.XPath));
+            if (result.IsFailed) return result;
+
+            result = await browser.WaitPageChanged("tasks", TableShow, cancellationToken);
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }
