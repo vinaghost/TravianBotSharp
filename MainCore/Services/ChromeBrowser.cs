@@ -98,6 +98,15 @@ namespace MainCore.Services
 
         public ILogger Logger { get; set; } = null!;
 
+        public async Task<string> Screenshot()
+        {
+            var screenshot = Driver.GetScreenshot();
+            var fileName = Path.Combine(AppContext.BaseDirectory, "Screenshots", $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png");
+            Directory.CreateDirectory(Path.GetDirectoryName(fileName)!);
+            await File.WriteAllBytesAsync(fileName, screenshot.AsByteArray, CancellationToken.None);
+            return fileName;
+        }
+
         public async Task<Result> Refresh(CancellationToken cancellationToken)
         {
             await Driver.Navigate().RefreshAsync();

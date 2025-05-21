@@ -21,6 +21,8 @@ namespace MainCore.Services
 
         Task<Result> Refresh(CancellationToken cancellationToken);
 
+        Task<string> Screenshot();
+
         Task Setup(ChromeSetting setting);
 
         Task Shutdown();

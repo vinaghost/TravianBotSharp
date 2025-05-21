@@ -36,7 +36,8 @@ namespace MainCore.Services
                     browser.Logger.Error(exception, "{Message}", exception.Message);
                 }
 
-                browser.Logger.Warning("{TaskName} retry #{AttemptNumber} times after {times}", taskName, args.AttemptNumber + 1, args.Duration.ToString(@"hh\:mm\:ss"));
+                browser.Logger.Warning("{TaskName} will retry after {times} (#{AttemptNumber} times)", taskName, args.AttemptNumber + 1, args.Duration.ToString(@"hh\:mm\:ss"));
+                await browser.Refresh(CancellationToken.None);
             };
 
             var retryOptions = new RetryStrategyOptions<Result>()
@@ -105,10 +106,12 @@ namespace MainCore.Services
 
             if (poliResult.Exception is not null)
             {
-                logger.Warning("There is something wrong. Bot is pausing. Last exception is");
+                var filename = await browser.Screenshot();
                 var ex = poliResult.Exception;
+                logger.Warning("There is something wrong. Bot is pausing. Last exception is");
                 logger.Error(ex, "{Message}", ex.Message);
                 _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                logger.Information("Screenshot saved as {FileName}", filename);
             }
 
             if (poliResult.Result is not null)
@@ -118,6 +121,8 @@ namespace MainCore.Services
                 {
                     if (result.HasError<Stop>() || result.HasError<Retry>())
                     {
+                        var filename = await browser.Screenshot();
+                        logger.Information(messageTemplate: "Screenshot saved as {FileName}", filename);
                         _taskManager.SetStatus(accountId, StatusEnums.Paused);
                     }
                     else if (result.HasError<Skip>())
