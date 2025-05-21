@@ -48,6 +48,8 @@ namespace MainCore.Tasks
                     return Skip.ConstructionQueueFull;
                 }
 
+                var countQueueBuilding = BuildingLayoutParser.GetQueueBuilding(browser.Html).Count(x => x.Location == -1);
+
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
 
                 result = await toBuildPageCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
@@ -69,6 +71,13 @@ namespace MainCore.Tasks
 
                 result = await handleUpgradeCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
                 if (result.IsFailed) return result;
+
+                await browser.Wait(driver =>
+                {
+                    var doc = new HtmlDocument();
+                    doc.LoadHtml(driver.PageSource);
+                    return countQueueBuilding != BuildingLayoutParser.GetQueueBuilding(doc).Count(x => x.Location == -1);
+                }, cancellationToken);
 
                 logger.Information("Upgrade for {Type} at location {Location} completed successfully.", plan.Type, plan.Location);
             }
