@@ -24,10 +24,7 @@ namespace MainCore.Queries
 
             if (countJob == 0) return Skip.BuildingJobQueueEmpty;
 
-            var countQueueBuilding = context.QueueBuildings
-               .Where(x => x.VillageId == villageId.Value)
-               .Where(x => x.Type != BuildingEnums.Site)
-               .Count();
+            var countQueueBuilding = context.CountQueueBuilding(villageId);
 
             if (countQueueBuilding == 0)
             {
@@ -146,7 +143,7 @@ namespace MainCore.Queries
         {
             var count = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type != BuildingEnums.Site)
+                .Where(x => x.Level != -1)
                 .Count();
             return count;
         }

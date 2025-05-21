@@ -50,7 +50,7 @@ namespace MainCore.Commands.Update
                 .ToList();
             var queueBuildings = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Location != -1)
+                .Where(x => x.Type != BuildingEnums.Site)
                 .ToList();
             return new Response(buildings, queueBuildings);
         }

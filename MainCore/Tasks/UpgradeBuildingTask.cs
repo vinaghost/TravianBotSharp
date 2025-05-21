@@ -24,6 +24,7 @@ namespace MainCore.Tasks
             HandleResourceCommand.Handler handleResourceCommand,
             HandleUpgradeCommand.Handler handleUpgradeCommand,
             GetFirstQueueBuildingQuery.Handler getFirstQueueBuildingQuery,
+            UpdateBuildingCommand.Handler updateBuildingCommand,
             CancellationToken cancellationToken)
         {
             Result result;
@@ -32,8 +33,8 @@ namespace MainCore.Tasks
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-                var (_, isFalied, plan, errors) = await handleJobCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
-                if (isFalied)
+                var (_, isFailed, plan, errors) = await handleJobCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                if (isFailed)
                 {
                     if (errors.OfType<Continue>().Any()) continue;
 
@@ -47,8 +48,6 @@ namespace MainCore.Tasks
                     logger.Information("Construction queue is full. Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     return Skip.ConstructionQueueFull;
                 }
-
-                var countQueueBuilding = BuildingLayoutParser.GetQueueBuilding(browser.Html).Count(x => x.Location == -1);
 
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
 
@@ -72,14 +71,10 @@ namespace MainCore.Tasks
                 result = await handleUpgradeCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
                 if (result.IsFailed) return result;
 
-                await browser.Wait(driver =>
-                {
-                    var doc = new HtmlDocument();
-                    doc.LoadHtml(driver.PageSource);
-                    return countQueueBuilding != BuildingLayoutParser.GetQueueBuilding(doc).Count(x => x.Location == -1);
-                }, cancellationToken);
-
                 logger.Information("Upgrade for {Type} at location {Location} completed successfully.", plan.Type, plan.Location);
+
+                (_, isFailed, _, errors) = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                if (isFailed) return result;
             }
         }
     }

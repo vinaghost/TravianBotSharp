@@ -62,6 +62,8 @@ namespace MainCore.UI.ViewModels
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var chromeManager = scope.ServiceProvider.GetRequiredService<IChromeManager>();
+                await chromeManager.Shutdown();
+
                 var path = Path.Combine(AppContext.BaseDirectory, "Plugins");
                 if (Directory.Exists(path))
                 {
