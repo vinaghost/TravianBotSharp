@@ -3,9 +3,9 @@ using MainCore.Services;
 using MainCore.UI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ReactiveMarbles.Extensions.Hosting.ReactiveUI;
 using ReactiveMarbles.Extensions.Hosting.Wpf;
 using ReactiveUI;
-using Splat;
 using Splat.ModeDetection;
 using System;
 using System.Reactive;
@@ -28,15 +28,18 @@ namespace WPFUI
                 .UseWpfLifetime()
                 .Build();
 
-            RxApp.DefaultExceptionHandler = Locator.Current.GetService<ObservableExceptionHandler>();
-            SetupDialogService();
+            host.MapSplatLocator(sp =>
+            {
+                RxApp.DefaultExceptionHandler = sp.GetRequiredService<ObservableExceptionHandler>();
+                SetupDialogService(sp);
+            });
 
             host.RunAsync();
         }
 
-        private static void SetupDialogService()
+        private static void SetupDialogService(IServiceProvider serviceProvider)
         {
-            var dialogService = Locator.Current.GetService<IDialogService>();
+            var dialogService = serviceProvider.GetRequiredService<IDialogService>();
             dialogService.MessageBox.RegisterHandler(async context =>
             {
                 ShowMessage(context.Input.Title, context.Input.Message);

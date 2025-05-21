@@ -11,7 +11,7 @@ namespace MainCore.Commands.UI.AddAccountViewModel
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            AppDbContext context, IUseragentManager useragentManager,
+            AppDbContext context, IUseragentManager useragentManager, IChromeManager chromeManager,
             CancellationToken cancellationToken
             )
         {

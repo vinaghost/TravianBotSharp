@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Humanizer;
+using Humanizer.Localisation;
+using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Retry;
 using Timer = System.Timers.Timer;
@@ -36,7 +38,7 @@ namespace MainCore.Services
                     browser.Logger.Error(exception, "{Message}", exception.Message);
                 }
 
-                browser.Logger.Warning("{TaskName} will retry after {times} (#{AttemptNumber} times)", taskName, args.AttemptNumber + 1, args.Duration.ToString(@"hh\:mm\:ss"));
+                browser.Logger.Warning("{TaskName} will retry after {times} (#{AttemptNumber} times)", taskName, args.Duration.Humanize(minUnit: TimeUnit.Second), args.AttemptNumber + 1);
                 await browser.Refresh(CancellationToken.None);
             };
 

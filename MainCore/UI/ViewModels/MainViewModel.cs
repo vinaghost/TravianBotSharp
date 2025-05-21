@@ -11,19 +11,11 @@ namespace MainCore.UI.ViewModels
         private MainLayoutViewModel _mainLayoutViewModel = null!;
 
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
-
-        private readonly IChromeDriverInstaller _chromeDriverInstaller;
-        private readonly IChromeManager _chromeManager;
-        private readonly IUseragentManager _useragentManager;
-
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public MainViewModel(IWaitingOverlayViewModel waitingOverlayViewModel, IChromeDriverInstaller chromeDriverInstaller, IChromeManager chromeManager, IUseragentManager useragentManager, IServiceScopeFactory serviceScopeFactory)
+        public MainViewModel(IWaitingOverlayViewModel waitingOverlayViewModel, IServiceScopeFactory serviceScopeFactory)
         {
             _waitingOverlayViewModel = waitingOverlayViewModel;
-            _chromeDriverInstaller = chromeDriverInstaller;
-            _chromeManager = chromeManager;
-            _useragentManager = useragentManager;
             _serviceScopeFactory = serviceScopeFactory;
         }
 
@@ -31,19 +23,22 @@ namespace MainCore.UI.ViewModels
         private async Task Load()
         {
             await _waitingOverlayViewModel.Show();
-
-            await _waitingOverlayViewModel.ChangeMessage("installing chrome driver");
-            await Task.Run(_chromeDriverInstaller.Install);
-
-            await _waitingOverlayViewModel.ChangeMessage("installing chrome extension");
-            await Task.Run(_chromeManager.LoadExtension);
-
-            await _waitingOverlayViewModel.ChangeMessage("loading chrome useragent");
-            await Task.Run(_useragentManager.Load);
-
-            await _waitingOverlayViewModel.ChangeMessage("loading database");
             using (var scope = _serviceScopeFactory.CreateScope())
             {
+                await _waitingOverlayViewModel.ChangeMessage("installing chrome driver");
+                var chromeDriverInstaller = scope.ServiceProvider.GetRequiredService<IChromeDriverInstaller>();
+                await Task.Run(chromeDriverInstaller.Install);
+
+                await _waitingOverlayViewModel.ChangeMessage("installing chrome extension");
+                var chromeManager = scope.ServiceProvider.GetRequiredService<IChromeManager>();
+                await Task.Run(chromeManager.LoadExtension);
+
+                await _waitingOverlayViewModel.ChangeMessage("loading chrome useragent");
+                var useragentManager = scope.ServiceProvider.GetRequiredService<IUseragentManager>();
+                await Task.Run(useragentManager.Load);
+
+                await _waitingOverlayViewModel.ChangeMessage("loading database");
+
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 var notExist = await context.Database.EnsureCreatedAsync();
 
@@ -52,26 +47,30 @@ namespace MainCore.UI.ViewModels
                     await Task.Run(context.FillAccountSettings);
                     await Task.Run(context.FillVillageSettings);
                 }
+
+                await _waitingOverlayViewModel.ChangeMessage("loading program layout");
+                MainLayoutViewModel = scope.ServiceProvider.GetRequiredService<MainLayoutViewModel>();
+                await MainLayoutViewModel.Load();
             }
 
-            await _waitingOverlayViewModel.ChangeMessage("loading program layout");
-            MainLayoutViewModel = Locator.Current.GetService<MainLayoutViewModel>()!;
-
-            await MainLayoutViewModel.Load();
             await _waitingOverlayViewModel.Hide();
         }
 
         [ReactiveCommand]
         private async Task Unload()
         {
-            await Task.Run(_chromeManager.Shutdown);
-
-            var path = Path.Combine(AppContext.BaseDirectory, "Plugins");
-            if (Directory.Exists(path))
+            using (var scope = _serviceScopeFactory.CreateScope())
             {
-                await Task.Run(() => Directory.Delete(path, true));
+                var chromeManager = scope.ServiceProvider.GetRequiredService<IChromeManager>();
+                var path = Path.Combine(AppContext.BaseDirectory, "Plugins");
+                if (Directory.Exists(path))
+                {
+                    await Task.Run(() => Directory.Delete(path, true));
+                }
+
+                var useragentManager = scope.ServiceProvider.GetRequiredService<IUseragentManager>();
+                await Task.Run(useragentManager.Dispose);
             }
-            await Task.Run(_useragentManager.Dispose);
         }
     }
 }
