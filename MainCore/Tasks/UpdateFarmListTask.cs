@@ -1,27 +1,33 @@
 ﻿using MainCore.Commands.Features.StartFarmList;
 using MainCore.Tasks.Base;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient<UpdateFarmListTask>]
-    public class UpdateFarmListTask : AccountTask
+    [Handler]
+    public static partial class UpdateFarmListTask
     {
-        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
+        public sealed class Task : AccountTask
+        {
+            public Task(AccountId accountId) : base(accountId)
+            {
+            }
+
+            protected override string TaskName => "Update farm list";
+        }
+
+        private static async ValueTask<Result> HandleAsync(
+            Task task,
+            ToFarmListPageCommand.Handler toFarmListPageCommand,
+            UpdateFarmlistCommand.Handler updateFarmlistCommand,
+            CancellationToken cancellationToken)
         {
             Result result;
-
-            var toFarmListPageCommand = scoped.ServiceProvider.GetRequiredService<ToFarmListPageCommand>();
-            result = await toFarmListPageCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var updateFarmlistCommand = scoped.ServiceProvider.GetRequiredService<UpdateFarmlistCommand>();
-            result = await updateFarmlistCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await toFarmListPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            if (result.IsFailed) return result;
+            result = await updateFarmlistCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }
-
-        protected override string TaskName => "Update farm list";
     }
 }

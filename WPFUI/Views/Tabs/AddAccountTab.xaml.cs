@@ -18,10 +18,10 @@ namespace WPFUI.Views.Tabs
             InitializeComponent();
             this.WhenActivated(d =>
             {
-                this.BindCommand(ViewModel, vm => vm.AddAccess, v => v.AddAccessButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.EditAccess, v => v.EditAccessButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.DeleteAccess, v => v.DeleteAccessButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.AddAccount, v => v.AddAccountButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.AddAccessCommand, v => v.AddAccessButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.EditAccessCommand, v => v.EditAccessButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.DeleteAccessCommand, v => v.DeleteAccessButton).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.AddAccountCommand, v => v.AddAccountButton).DisposeWith(d);
 
                 this.Bind(ViewModel, vm => vm.AccountInput.Username, v => v.NicknameTextBox.Text).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountInput.Server, v => v.ServerTextBox.Text).DisposeWith(d);

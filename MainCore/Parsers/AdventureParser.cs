@@ -22,58 +22,64 @@
             return table;
         }
 
-        public static HtmlNode GetHeroAdventureButton(HtmlDocument doc)
+        public static HtmlNode? GetHeroAdventureButton(HtmlDocument doc)
         {
-            var adventure = doc.DocumentNode
+            var adventureButton = doc.DocumentNode
                 .Descendants("a")
                 .FirstOrDefault(x => x.HasClass("adventure") && x.HasClass("round"));
-            return adventure;
+            return adventureButton;
         }
 
         public static bool CanStartAdventure(HtmlDocument doc)
         {
-            var status = doc.DocumentNode
+            var heroStatus = doc.DocumentNode
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("heroStatus"));
-            if (status is null) return false;
-
-            var heroHome = status.Descendants("i")
+            if (heroStatus is null) return false;
+            var heroHome = heroStatus.Descendants("i")
                 .Any(x => x.HasClass("heroHome"));
             if (!heroHome) return false;
 
-            var adventure = GetHeroAdventureButton(doc);
-            if (adventure is null) return false;
+            var adventureButton = GetHeroAdventureButton(doc);
+            if (adventureButton is null) return false;
 
-            var adventureAvailabe = adventure.Descendants("div")
+            var adventureAvailabe = adventureButton.Descendants("div")
                 .Any(x => x.HasClass("content"));
             return adventureAvailabe;
         }
 
-        public static HtmlNode GetAdventureButton(HtmlDocument doc)
+        public static HtmlNode? GetAdventureButton(HtmlDocument doc)
         {
-            var adventures = doc.GetElementbyId("heroAdventure");
-            if (adventures is null) return null;
+            var adventureTable = doc.GetElementbyId("heroAdventure");
+            if (adventureTable is null) return null;
 
-            var tbody = adventures.Descendants("tbody").FirstOrDefault();
-            if (tbody is null) return null;
+            var adventureTableBody = adventureTable
+                .Descendants("tbody")
+                .FirstOrDefault();
+            if (adventureTableBody is null) return null;
 
-            var tr = tbody.Descendants("tr").FirstOrDefault();
-            if (tr is null) return null;
-            var button = tr.Descendants("button").FirstOrDefault();
-            return button;
+            var adventureTableBodyRow = adventureTableBody
+                .Descendants("tr")
+                .FirstOrDefault();
+            if (adventureTableBodyRow is null) return null;
+
+            var startAdventureButton = adventureTableBodyRow
+                .Descendants("button")
+                .FirstOrDefault();
+            return startAdventureButton;
         }
 
-        public static HtmlNode GetContinueButton(HtmlDocument doc)
+        public static HtmlNode? GetContinueButton(HtmlDocument doc)
         {
-            var button = doc.DocumentNode
+            var continueButton = doc.DocumentNode
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("continue"));
-            return button;
+            return continueButton;
         }
 
         public static string GetAdventureInfo(HtmlNode node)
         {
-            // tr/td/buton
+            // adventureTableBodyRow/td/buton
             var trNode = node.ParentNode.ParentNode;
             var difficult = GetAdventureDifficult(trNode);
             var coordinates = GetAdventureCoordinates(trNode);
