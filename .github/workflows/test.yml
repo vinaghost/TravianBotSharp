@@ -6,8 +6,35 @@ on:
       - main
 
 jobs:
+  Test:
+    runs-on: windows-latest
+    env:
+        DOTNET_INSTALL_DIR: "D:/tools/dotnet"
+        DOTNET_ROOT: "D:/tools/dotnet"
+        NUGET_PACKAGES: "D:/.nuget/packages"
+    steps:        
+      - name: Checkout
+        uses: actions/checkout@v4.1.5
+        
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+
+      - name: Install dependencies
+        run: dotnet restore --locked-mode
+        
+      - name: Test architecture
+        run: dotnet test -c Debug --filter Mode=Debug
+        
+      - name: Test others
+        run: dotnet test -c Release --filter Mode!=Debug
+        
   Version:
     runs-on: ubuntu-latest
+    needs: Test
     permissions:
         contents: write
     outputs:
@@ -39,22 +66,21 @@ jobs:
   Build:
     runs-on: windows-latest
     needs: Version
+    env:
+        DOTNET_INSTALL_DIR: "D:/tools/dotnet"
+        DOTNET_ROOT: "D:/tools/dotnet"
+        NUGET_PACKAGES: "D:/.nuget/packages"
     
-    steps:
+    steps:        
+      - name: Checkout
+        uses: actions/checkout@v4.1.5
+        
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-        
-      - name: Checkout
-        uses: actions/checkout@v4.1.5
-      
-      - name: Load cached dependencies
-        uses: actions/cache@v4.2.3
-        with:
-            path: ~/.nuget/packages
-            key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-            restore-keys: ${{ runner.os }}-nuget-
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
 
       - name: Install dependencies
         run: dotnet restore --locked-mode

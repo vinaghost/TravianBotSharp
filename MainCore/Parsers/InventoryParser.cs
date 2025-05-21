@@ -26,11 +26,18 @@
             return !inventoryPageWrapper.HasClass("loading");
         }
 
-        public static HtmlNode GetItemSlot(HtmlDocument doc, HeroItemEnums type)
+        public static HtmlNode? GetItemSlot(HtmlDocument doc, HeroItemEnums type)
         {
-            var heroItemsDiv = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("heroItems"));
+            var heroItemsDiv = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("heroItems"));
+
             if (heroItemsDiv is null) return null;
-            var heroItemDivs = heroItemsDiv.Descendants("div").Where(x => x.HasClass("heroItem") && !x.HasClass("empty"));
+
+            var heroItemDivs = heroItemsDiv
+                .Descendants("div")
+                .Where(x => x.HasClass("heroItem") && !x.HasClass("empty"));
+
             if (!heroItemDivs.Any()) return null;
 
             foreach (var itemSlot in heroItemDivs)
@@ -44,20 +51,31 @@
 
                 if (itemValue.ParseInt() == (int)type) return itemSlot;
             }
+
             return null;
         }
 
-        public static HtmlNode GetAmountBox(HtmlDocument doc)
+        public static HtmlNode? GetAmountBox(HtmlDocument doc)
         {
-            var form = doc.GetElementbyId("consumableHeroItem");
-            return form.Descendants("input").FirstOrDefault();
+            var dialogHeroItemConsumable = doc.GetElementbyId("consumableHeroItem");
+            if (dialogHeroItemConsumable is null) return null;
+
+            var amountInput = dialogHeroItemConsumable
+                .Descendants("input")
+                .FirstOrDefault();
+            return amountInput;
         }
 
-        public static HtmlNode GetConfirmButton(HtmlDocument doc)
+        public static HtmlNode? GetConfirmButton(HtmlDocument doc)
         {
             var dialog = doc.GetElementbyId("dialogContent");
-            var buttonWrapper = dialog.Descendants("div").FirstOrDefault(x => x.HasClass("buttonsWrapper"));
+            if (dialog is null) return null;
+
+            var buttonWrapper = dialog
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("buttonsWrapper"));
             if (buttonWrapper is null) return null;
+
             var buttonTransfer = buttonWrapper.Descendants("button");
             if (buttonTransfer.Count() < 2) return null;
             return buttonTransfer.ElementAt(1);

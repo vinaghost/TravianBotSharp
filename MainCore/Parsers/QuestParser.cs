@@ -18,17 +18,18 @@
             return newQuestSpeechBubble;
         }
 
-        public static HtmlNode GetQuestCollectButton(HtmlDocument doc)
+        public static HtmlNode? GetQuestCollectButton(HtmlDocument doc)
         {
-            var taskTable = doc.DocumentNode
+            var taskOverviewTable = doc.DocumentNode
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("taskOverview"));
-            if (taskTable is null) return null;
 
-            var button = taskTable
+            if (taskOverviewTable is null) return null;
+
+            var collectButton = taskOverviewTable
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("collect") && !x.HasClass("disabled"));
-            return button;
+            return collectButton;
         }
 
         public static bool IsQuestPage(HtmlDocument doc)

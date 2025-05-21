@@ -11,7 +11,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(Page);
             var actual = MainCore.Parsers.VillagePanelParser.GetCurrentVillageId(_html);
-            actual.Should().BeGreaterThan(VillageId.Empty);
+            actual.ShouldBeGreaterThan(VillageId.Empty);
         }
 
         [Fact]
@@ -20,7 +20,7 @@ namespace MainCore.Test.Parsers
             _html.Load(Page);
             var villageId = MainCore.Parsers.VillagePanelParser.GetCurrentVillageId(_html);
             var actual = MainCore.Parsers.VillagePanelParser.GetVillageNode(_html, villageId);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
     }
 }

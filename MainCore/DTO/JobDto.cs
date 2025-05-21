@@ -1,4 +1,6 @@
-﻿using Riok.Mapperly.Abstractions;
+﻿#nullable disable
+
+using MainCore.Commands.UI.Villages.BuildViewModel;
 
 namespace MainCore.DTO
 {
@@ -8,9 +10,14 @@ namespace MainCore.DTO
         public int Position { get; set; }
         public JobTypeEnums Type { get; set; }
         public string Content { get; set; }
+
+        public override string ToString()
+        {
+            return this.GetContent();
+        }
     }
 
-    [Mapper]
+    [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
     public static partial class JobMapper
     {
         public static Job ToEntity(this JobDto dto, VillageId villageId)
@@ -20,6 +27,7 @@ namespace MainCore.DTO
             return entity;
         }
 
+        [MapperIgnoreTarget(nameof(Job.VillageId))]
         private static partial Job ToEntity(this JobDto dto);
 
         public static partial JobDto ToDto(this Job dto);

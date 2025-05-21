@@ -2,31 +2,32 @@
 {
     public static class LoginParser
     {
-        public static HtmlNode GetLoginButton(HtmlDocument doc)
+        public static HtmlNode? GetLoginButton(HtmlDocument doc)
         {
             var loginScene = doc.GetElementbyId("loginScene");
             if (loginScene is null) return null;
 
-            var node = loginScene
+            var loginButton = loginScene
                 .Descendants("button")
                 .FirstOrDefault(x => x.HasClass("green"));
-            return node;
+
+            return loginButton;
         }
 
-        public static HtmlNode GetUsernameInput(HtmlDocument doc)
+        public static HtmlNode? GetUsernameInput(HtmlDocument doc)
         {
-            var node = doc.DocumentNode
+            var usernameInput = doc.DocumentNode
                 .Descendants("input")
                 .FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("name"));
-            return node;
+            return usernameInput;
         }
 
-        public static HtmlNode GetPasswordInput(HtmlDocument doc)
+        public static HtmlNode? GetPasswordInput(HtmlDocument doc)
         {
-            var node = doc.DocumentNode
+            var passwordInput = doc.DocumentNode
                 .Descendants("input")
                 .FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("password"));
-            return node;
+            return passwordInput;
         }
 
         public static bool IsIngamePage(HtmlDocument doc)
