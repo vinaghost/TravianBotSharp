@@ -1,6 +1,4 @@
-﻿using Riok.Mapperly.Abstractions;
-
-namespace MainCore.DTO
+﻿namespace MainCore.DTO
 {
     public class AccountInfoDto
     {
@@ -10,7 +8,7 @@ namespace MainCore.DTO
         public bool HasPlusAccount { get; set; } = false;
     }
 
-    [Mapper]
+    [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
     public static partial class AccountInfoMapper
     {
         public static AccountInfo ToEntity(this AccountInfoDto dto, AccountId accountId)
@@ -20,8 +18,12 @@ namespace MainCore.DTO
             return entity;
         }
 
+        [MapperIgnoreTarget(nameof(AccountInfo.Id))]
+        [MapperIgnoreTarget(nameof(AccountInfo.AccountId))]
         public static partial void To(this AccountInfoDto dto, AccountInfo entity);
 
+        [MapperIgnoreTarget(nameof(AccountInfo.Id))]
+        [MapperIgnoreTarget(nameof(AccountInfo.AccountId))]
         private static partial AccountInfo ToEntity(AccountInfoDto dto);
     }
 }

@@ -1,29 +1,31 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
+using MainCore.Notifications.Behaviors;
 
 namespace MainCore.Commands.Update
 {
-    [RegisterScoped<UpdateVillageListCommand>]
-    public class UpdateVillageListCommand(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory, IMediator mediator) : CommandBase(dataService), ICommand
+    [Handler]
+    [Behaviors(typeof(VillageListUpdatedBehavior<,>))]
+    public static partial class UpdateVillageListCommand
     {
-        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-        private readonly IMediator _mediator = mediator;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        private static async ValueTask HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            AppDbContext context,
+            CancellationToken cancellationToken)
         {
-            var accountId = _dataService.AccountId;
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
-            var dtos = VillagePanelParser.Get(html);
-            if (!dtos.Any()) return Result.Ok();
+            await Task.CompletedTask;
+            var html = browser.Html;
 
-            UpdateToDatabase(accountId, dtos.ToList());
-            await _mediator.Publish(new VillageUpdated(accountId), cancellationToken);
-            return Result.Ok();
+            var dtos = VillagePanelParser.Get(html);
+            if (!dtos.Any()) return;
+
+            context.UpdateToDatabase(command.AccountId, dtos.ToList());
         }
 
-        private void UpdateToDatabase(AccountId accountId, List<VillageDto> dtos)
+        private static void UpdateToDatabase(this AppDbContext context, AccountId accountId, List<VillageDto> dtos)
         {
-            using var context = _contextFactory.CreateDbContext();
             var villages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();
@@ -43,7 +45,7 @@ namespace MainCore.Commands.Update
 
             foreach (var village in villageUpdated)
             {
-                var dto = dtos.Find(x => x.Id.Value == village.Id);
+                var dto = dtos.First(x => x.Id.Value == village.Id);
                 dto.To(village);
                 context.Update(village);
             }

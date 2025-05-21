@@ -13,26 +13,29 @@
             return nodes.Count();
         }
 
-        public static HtmlNode GetCompleteButton(HtmlDocument doc)
+        public static HtmlNode? GetCompleteButton(HtmlDocument doc)
         {
-            var finishClass = doc.DocumentNode
+            var finishDiv = doc.DocumentNode
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("finishNow"));
-            if (finishClass is null) return null;
-            var button = finishClass
+
+            if (finishDiv is null) return null;
+
+            var finishButton = finishDiv
                 .Descendants("button")
                 .FirstOrDefault();
-            return button;
+            return finishButton;
         }
 
-        public static HtmlNode GetConfirmButton(HtmlDocument doc)
+        public static HtmlNode? GetConfirmButton(HtmlDocument doc)
         {
-            var dialog = doc.GetElementbyId("finishNowDialog");
-            if (dialog is null) return null;
-            var button = dialog
+            var finishDialog = doc.GetElementbyId("finishNowDialog");
+            if (finishDialog is null) return null;
+
+            var confirmFinishbutton = finishDialog
                 .Descendants("button")
                 .FirstOrDefault();
-            return button;
+            return confirmFinishbutton;
         }
     }
 }

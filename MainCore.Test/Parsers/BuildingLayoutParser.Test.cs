@@ -1,5 +1,5 @@
-﻿using FluentAssertions;
-using MainCore.Common.Enums;
+﻿using MainCore.Enums;
+using Shouldly;
 
 namespace MainCore.Test.Parsers
 {
@@ -15,8 +15,8 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(Resources);
             var actual = MainCore.Parsers.BuildingLayoutParser.GetFields(_html);
-            actual.Count().Should().Be(18);
-            actual.Should().NotContain(x => x.Location == -1 || x.Type == BuildingEnums.Unknown);
+            actual.Count().ShouldBe(18);
+            actual.ShouldNotContain(x => x.Location == -1 || x.Type == BuildingEnums.Unknown);
         }
 
         [Fact]
@@ -24,8 +24,8 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(Buildings);
             var actual = MainCore.Parsers.BuildingLayoutParser.GetInfrastructures(_html);
-            actual.Count().Should().Be(22);
-            actual.Should().NotContain(x => x.Location == -1 || x.Type == BuildingEnums.Unknown);
+            actual.Count().ShouldBe(22);
+            actual.ShouldNotContain(x => x.Location == -1 || x.Type == BuildingEnums.Unknown);
         }
 
         [Fact]
@@ -33,8 +33,8 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(BuildingsWithWall);
             var actual = MainCore.Parsers.BuildingLayoutParser.GetInfrastructures(_html);
-            actual.Count().Should().Be(22);
-            actual.Should().NotContain(x => x.Location == -1 || x.Type == BuildingEnums.Unknown);
+            actual.Count().ShouldBe(22);
+            actual.ShouldNotContain(x => x.Location == -1 || x.Type == BuildingEnums.Unknown);
         }
 
         [Theory]
@@ -45,7 +45,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(path);
             var actual = MainCore.Parsers.BuildingLayoutParser.GetQueueBuilding(_html);
-            actual.Count(x => x.Level != -1).Should().Be(expected);
+            actual.Count(x => x.Level != -1).ShouldBe(expected);
         }
     }
 }

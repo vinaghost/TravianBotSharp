@@ -14,7 +14,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(path);
             var actual = MainCore.Parsers.AdventureParser.IsAdventurePage(_html);
-            actual.Should().Be(expected);
+            actual.ShouldBe(expected);
         }
 
         [Fact]
@@ -22,7 +22,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(AdventuresPage);
             var actual = MainCore.Parsers.AdventureParser.GetHeroAdventureButton(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
 
         [Theory]
@@ -32,7 +32,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(path);
             var actual = MainCore.Parsers.AdventureParser.CanStartAdventure(_html);
-            actual.Should().Be(expected);
+            actual.ShouldBe(expected);
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(AdventuresPageOnItsWay);
             var actual = MainCore.Parsers.AdventureParser.GetAdventureDuration(_html);
-            actual.Should().BeGreaterThan(TimeSpan.Zero);
+            actual.ShouldBeGreaterThan(TimeSpan.Zero);
         }
 
         [Fact]
@@ -48,7 +48,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(AdventuresPage);
             var actual = MainCore.Parsers.AdventureParser.GetAdventureButton(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(AdventuresPageOnItsWay);
             var actual = MainCore.Parsers.AdventureParser.GetContinueButton(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
 
         [Fact]
@@ -64,9 +64,10 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(AdventuresPage);
             var adventureButton = MainCore.Parsers.AdventureParser.GetAdventureButton(_html);
+            adventureButton.ShouldNotBeNull();
             var actual = MainCore.Parsers.AdventureParser.GetAdventureInfo(adventureButton);
-            actual.Should().NotContain("unknown");
-            actual.Should().NotContain("[~|~]");
+            actual.ShouldNotContain("unknown");
+            actual.ShouldNotContain("[~|~]");
         }
     }
 }

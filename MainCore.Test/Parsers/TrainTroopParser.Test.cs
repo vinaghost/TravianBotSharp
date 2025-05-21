@@ -1,4 +1,4 @@
-﻿using MainCore.Common.Enums;
+﻿using MainCore.Enums;
 
 namespace MainCore.Test.Parsers
 {
@@ -14,7 +14,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(file);
             var result = MainCore.Parsers.TrainTroopParser.GetTrainButton(_html);
-            result.Should().NotBeNull();
+            result.ShouldNotBeNull();
         }
 
         [Theory]
@@ -24,7 +24,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(file);
             var result = MainCore.Parsers.TrainTroopParser.GetInputBox(_html, troop);
-            result.Should().NotBeNull();
+            result.ShouldNotBeNull();
         }
 
         [Theory]
@@ -34,7 +34,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(file);
             var result = MainCore.Parsers.TrainTroopParser.GetMaxAmount(_html, troop);
-            result.Should().BeGreaterThan(-1);
+            result.ShouldBeGreaterThan(-1);
         }
     }
 }

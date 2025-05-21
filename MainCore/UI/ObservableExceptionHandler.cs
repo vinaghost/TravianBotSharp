@@ -1,6 +1,4 @@
 ﻿using MainCore.UI.Models.Output;
-using ReactiveUI;
-using Serilog;
 using System.Diagnostics;
 using System.Reactive.Concurrency;
 
@@ -10,10 +8,12 @@ namespace MainCore.UI
     public class ObservableExceptionHandler : IObserver<Exception>
     {
         private readonly IDialogService _dialogService;
+        private readonly ILogger _logger;
 
-        public ObservableExceptionHandler(IDialogService dialogService)
+        public ObservableExceptionHandler(IDialogService dialogService, ILogger logger)
         {
             _dialogService = dialogService;
+            _logger = logger.ForContext<ObservableExceptionHandler>();
         }
 
         public void OnNext(Exception value)
@@ -28,17 +28,15 @@ namespace MainCore.UI
 
         public void OnCompleted()
         {
-            Handle(null);
         }
 
         private void Handle(Exception exception)
         {
             if (exception is null) return;
-            Log.Error(exception, "UI execption");
+            _logger.Error(exception, "UI execption");
             if (Debugger.IsAttached)
             {
                 RxApp.MainThreadScheduler.Schedule(() => { throw exception; });
-                Debugger.Break();
             }
 
             _dialogService.MessageBox.Handle(new MessageBoxData("Error", "There is something wrong. Please check logs/logs-Other.txt."))
