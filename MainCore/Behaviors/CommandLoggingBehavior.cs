@@ -2,13 +2,13 @@
 
 namespace MainCore.Behaviors
 {
-    public sealed class CommandNameLoggingBehavior<TRequest, TResponse>
+    public sealed class CommandLoggingBehavior<TRequest, TResponse>
         : Behavior<TRequest, TResponse>
         where TRequest : ICommand
     {
         private readonly ILogger _logger;
 
-        public CommandNameLoggingBehavior(ILogger logger)
+        public CommandLoggingBehavior(ILogger logger)
         {
             _logger = logger;
         }

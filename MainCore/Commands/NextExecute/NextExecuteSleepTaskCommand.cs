@@ -1,7 +1,9 @@
-﻿namespace MainCore.Commands.NextExecute
+﻿using MainCore.Behaviors;
+
+namespace MainCore.Commands.NextExecute
 {
     [Handler]
-    [Behaviors]
+    [Behaviors(typeof(NextExecuteLoggingBehaviors<,>))]
     public static partial class NextExecuteSleepTaskCommand
     {
         private static async ValueTask HandleAsync(
@@ -13,8 +15,6 @@
             await Task.CompletedTask;
             var workTime = settingService.ByName(task.AccountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
             task.ExecuteAt = DateTime.Now.AddMinutes(workTime);
-
-            logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
         }
     }
 }

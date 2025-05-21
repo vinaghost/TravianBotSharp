@@ -25,6 +25,7 @@ namespace MainCore.Services
 
             Func<OnRetryArguments<Result>, ValueTask> OnRetry = async static args =>
             {
+                await Task.CompletedTask;
                 if (!args.Context.Properties.TryGetValue(contextDataKey, out var contextData)) return;
 
                 var (accountId, taskName, browser) = contextData;
@@ -35,9 +36,7 @@ namespace MainCore.Services
                     browser.Logger.Error(exception, "{Message}", exception.Message);
                 }
 
-                browser.Logger.Warning("{TaskName} retry #{AttemptNumber} times after {times} seconds", taskName, args.AttemptNumber + 1, args.Duration.TotalSeconds);
-
-                await browser.Refresh(args.Context.CancellationToken);
+                browser.Logger.Warning("{TaskName} retry #{AttemptNumber} times after {times}", taskName, args.AttemptNumber + 1, args.Duration.ToString(@"hh\:mm\:ss"));
             };
 
             var retryOptions = new RetryStrategyOptions<Result>()
@@ -45,7 +44,7 @@ namespace MainCore.Services
                 MaxRetryAttempts = 3,
                 Delay = TimeSpan.FromSeconds(5),
                 UseJitter = true,
-                BackoffType = DelayBackoffType.Linear,
+                BackoffType = DelayBackoffType.Exponential,
                 ShouldHandle = new PredicateBuilder<Result>()
                    .Handle<Exception>()
                    .HandleResult(static x => x.HasError<Retry>()),

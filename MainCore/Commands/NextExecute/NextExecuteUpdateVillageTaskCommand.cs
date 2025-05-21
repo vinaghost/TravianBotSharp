@@ -1,7 +1,9 @@
-﻿namespace MainCore.Commands.NextExecute
+﻿using MainCore.Behaviors;
+
+namespace MainCore.Commands.NextExecute
 {
     [Handler]
-    [Behaviors]
+    [Behaviors(typeof(NextExecuteLoggingBehaviors<,>))]
     public static partial class NextExecuteUpdateVillageTaskCommand
     {
         private static async ValueTask HandleAsync(
@@ -13,8 +15,6 @@
             await Task.CompletedTask;
             var seconds = settingService.ByName(task.VillageId, VillageSettingEnums.AutoRefreshMin, VillageSettingEnums.AutoRefreshMax, 60);
             task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
-
-            logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
         }
     }
 }

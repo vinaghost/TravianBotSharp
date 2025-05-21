@@ -40,11 +40,11 @@ namespace MainCore.Test.Behaviors
 
         [Theory]
         [MemberData(nameof(Data))]
-        public async Task CommandNameLoggingBehaviorShouldLogCorrectName(ICommand command, string expected)
+        public async Task CommandLoggingBehaviorShouldLogCorrectName(ICommand command, string expected)
         {
             // Arrange
 
-            var behavior = new CommandNameLoggingBehavior<ICommand, ValueTuple>(_logger);
+            var behavior = new CommandLoggingBehavior<ICommand, ValueTuple>(_logger);
             var handleBehavior = new CommandNameLoggingBehaviorTestHandleBehavior();
             behavior.SetInnerHandler(handleBehavior);
 

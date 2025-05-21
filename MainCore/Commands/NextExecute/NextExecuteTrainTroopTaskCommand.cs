@@ -1,7 +1,9 @@
+using MainCore.Behaviors;
+
 namespace MainCore.Commands.NextExecute
 {
     [Handler]
-    [Behaviors]
+    [Behaviors(typeof(NextExecuteLoggingBehaviors<,>))]
     public static partial class NextExecuteTrainTroopTaskCommand
     {
         private static async ValueTask HandleAsync(
@@ -18,8 +20,6 @@ namespace MainCore.Commands.NextExecute
             );
 
             task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
-
-            logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
         }
     }
 }

@@ -10,7 +10,7 @@ using Serilog.Templates;
 [assembly: Behaviors(
     typeof(AccountDataLoggingBehavior<,>),
     typeof(TaskNameLoggingBehavior<,>),
-    typeof(CommandNameLoggingBehavior<,>),
+    typeof(CommandLoggingBehavior<,>),
     typeof(ErrorLoggingBehavior<,>),
     typeof(AccountTaskBehavior<,>),
     typeof(VillageTaskBehavior<,>)
