@@ -43,7 +43,7 @@ namespace MainCore.Services
             var retryOptions = new RetryStrategyOptions<Result>()
             {
                 MaxRetryAttempts = 3,
-                Delay = TimeSpan.FromSeconds(5),
+                Delay = TimeSpan.FromSeconds(30),
                 UseJitter = true,
                 BackoffType = DelayBackoffType.Exponential,
                 ShouldHandle = new PredicateBuilder<Result>()
