@@ -10,7 +10,6 @@ namespace MainCore.Services
         private List<string> _userAgentList = [];
         private DateTime _dateTime;
 
-        private string message = "default";
         private const string _userAgentUrl = "https://raw.githubusercontent.com/vinaghost/user-agent/main/user-agent.json";
         private readonly HttpClient _httpClient = new();
 
@@ -55,14 +54,12 @@ namespace MainCore.Services
             var modelLoaded = JsonSerializer.Deserialize<Model>(userAgentJsonString)!;
             _userAgentList = modelLoaded.UserAgentList;
             _dateTime = modelLoaded.DateTime;
-            message = "loaded";
 
             if (_dateTime < DateTime.Now || _userAgentList.Count < 100)
             {
                 _logger.Information("User agent file is outdated, updating.");
                 await Update();
             }
-            message = "loaded";
         }
 
         public string Get()
