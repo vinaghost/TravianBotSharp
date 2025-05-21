@@ -3,7 +3,6 @@ using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 using System.Reflection;
 
 namespace MainCore.UI.ViewModels.UserControls
@@ -14,6 +13,7 @@ namespace MainCore.UI.ViewModels.UserControls
         private readonly IDialogService _dialogService;
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
         private readonly ITaskManager _taskManager;
+        private readonly ILogger _logger;
 
         private readonly AccountTabStore _accountTabStore;
         public ListBoxItemViewModel Accounts { get; } = new();
@@ -21,11 +21,12 @@ namespace MainCore.UI.ViewModels.UserControls
 
         private IObservable<bool> _canExecute;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory, ILogger logger)
         {
             _accountTabStore = accountTabStore;
             _dialogService = dialogService;
             _serviceScopeFactory = serviceScopeFactory;
+            _logger = logger.ForContext<MainLayoutViewModel>();
 
             taskManager.StatusUpdated += LoadStatus;
             _taskManager = taskManager;
@@ -49,7 +50,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 .InvokeCommand(GetStatusCommand);
 
             _versionHelper = LoadVersionCommand
-                .Do(version => Log.Information("===============> Current version: {Version} <===============", version))
+                .Do(version => _logger.Information("===============> Current version: {Version} <===============", version))
                 .ToProperty(this, x => x.Version);
 
             LoadAccountCommand.Subscribe(Accounts.Load);

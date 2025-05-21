@@ -1,12 +1,12 @@
-﻿using Serilog;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace MainCore.Services
 {
     [RegisterSingleton<IUseragentManager, UseragentManager>]
-    public sealed class UseragentManager : IUseragentManager
+    public sealed class UseragentManager(ILogger logger) : IUseragentManager
     {
+        private readonly ILogger _logger = logger.ForContext<UseragentManager>();
         private List<string> _userAgentList = [];
         private DateTime _dateTime;
 
@@ -18,10 +18,10 @@ namespace MainCore.Services
             var useragents = await _httpClient.GetFromJsonAsync<List<string>>(_userAgentUrl);
             if (useragents is null || useragents.Count == 0)
             {
-                Log.Error("User agent list is empty or null.");
+                _logger.Error("User agent list is empty or null.");
             }
             _userAgentList = useragents ?? new List<string>();
-            Log.Information("User agent list loaded, count: {Count}", _userAgentList.Count);
+            _logger.Information("User agent list loaded, count: {Count}", _userAgentList.Count);
             _dateTime = DateTime.Now.AddMonths(1); // need update after 1 month, thought so
             Save();
         }
@@ -45,7 +45,7 @@ namespace MainCore.Services
             var pathFile = Path.Combine(pathFolder, "useragent.json");
             if (!File.Exists(pathFile))
             {
-                Log.Information("User agent file not found, creating new one.");
+                _logger.Information("User agent file not found, creating new one.");
                 await Update();
                 return;
             }
@@ -57,7 +57,7 @@ namespace MainCore.Services
 
             if (_dateTime < DateTime.Now || _userAgentList.Count < 100)
             {
-                Log.Information("User agent file is outdated, updating.");
+                _logger.Information("User agent file is outdated, updating.");
                 await Update();
             }
         }
