@@ -1,38 +1,32 @@
 ﻿using MainCore.Commands.Features.NpcResource;
 using MainCore.Tasks.Base;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Tasks
 {
-    [RegisterTransient<NpcTask>]
-    public class NpcTask : VillageTask
+    [Handler]
+    public static partial class NpcTask
     {
-        private readonly IMediator _mediator;
-
-        public NpcTask(IMediator mediator)
+        public sealed class Task : VillageTask
         {
-            _mediator = mediator;
+            public Task(AccountId accountId, VillageId villageId, string villageName) : base(accountId, villageId, villageName)
+            {
+            }
+
+            protected override string TaskName => "NPC";
         }
 
-        protected override async Task<Result> Execute(IServiceScope scoped, CancellationToken cancellationToken)
+        private static async ValueTask<Result> HandleAsync(
+            Task task,
+            ToNpcResourcePageCommand.Handler toNpcResourcePageCommand,
+            NpcResourceCommand.Handler npcResourceCommand,
+            CancellationToken cancellationToken)
         {
             Result result;
-            var toNpcResourcePageCommand = scoped.ServiceProvider.GetRequiredService<ToNpcResourcePageCommand>();
-            result = await toNpcResourcePageCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var npcResourceCommand = scoped.ServiceProvider.GetRequiredService<NpcResourceCommand>();
-            result = await npcResourceCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            var updateStorageCommand = scoped.ServiceProvider.GetRequiredService<UpdateStorageCommand>();
-            result = await updateStorageCommand.Execute(cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
-
-            await _mediator.Publish(new StorageUpdated(AccountId, VillageId), cancellationToken);
+            result = await toNpcResourcePageCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            if (result.IsFailed) return result;
+            result = await npcResourceCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            if (result.IsFailed) return result;
             return Result.Ok();
         }
-
-        protected override string TaskName => "NPC";
     }
 }

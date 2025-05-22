@@ -11,7 +11,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(FarmListPage);
             var actual = MainCore.Parsers.FarmListParser.GetFarmNodes(_html);
-            actual.Should().NotBeEmpty();
+            actual.ShouldNotBeEmpty();
         }
 
         [Fact]
@@ -20,7 +20,7 @@ namespace MainCore.Test.Parsers
             _html.Load(FarmListPage);
             var nodes = MainCore.Parsers.FarmListParser.GetFarmNodes(_html);
             var actual = MainCore.Parsers.FarmListParser.GetId(nodes.First());
-            actual.Should().NotBe(FarmId.Empty);
+            actual.ShouldNotBe(FarmId.Empty);
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace MainCore.Test.Parsers
             _html.Load(FarmListPage);
             var nodes = MainCore.Parsers.FarmListParser.GetFarmNodes(_html);
             var actual = MainCore.Parsers.FarmListParser.GetName(nodes.First());
-            actual.Should().NotBeNullOrEmpty();
+            actual.ShouldNotBeNullOrEmpty();
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace MainCore.Test.Parsers
             var nodes = MainCore.Parsers.FarmListParser.GetFarmNodes(_html);
             var id = MainCore.Parsers.FarmListParser.GetId(nodes.First());
             var actual = MainCore.Parsers.FarmListParser.GetStartButton(_html, id);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
 
         [Fact]
@@ -48,7 +48,7 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(FarmListPage);
             var actual = MainCore.Parsers.FarmListParser.GetStartAllButton(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
     }
 }

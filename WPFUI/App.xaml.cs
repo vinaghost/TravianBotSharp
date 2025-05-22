@@ -1,10 +1,12 @@
 ﻿using MainCore;
 using MainCore.Services;
 using MainCore.UI;
-using MainCore.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using ReactiveMarbles.Extensions.Hosting.ReactiveUI;
+using ReactiveMarbles.Extensions.Hosting.Wpf;
 using ReactiveUI;
-using Splat;
+using Splat.ModeDetection;
 using System;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -18,21 +20,26 @@ namespace WPFUI
     /// </summary>
     public partial class App : Application
     {
-        private readonly MainWindow mainWindow;
-
-        public IServiceProvider Container { get; private set; }
-
         public App()
         {
-            Container = DependencyInjection.Setup();
-            RxApp.DefaultExceptionHandler = Locator.Current.GetService<ObservableExceptionHandler>();
+            Splat.ModeDetector.OverrideModeDetector(Mode.Run);
+            var host = AppMixins.GetHostBuilder()
+                .ConfigureWpf(wpfBuilder => wpfBuilder.UseCurrentApplication(this).UseWindow<MainWindow>())
+                .UseWpfLifetime()
+                .Build();
 
-            mainWindow = new MainWindow()
+            host.MapSplatLocator(sp =>
             {
-                ViewModel = Locator.Current.GetService<MainViewModel>(),
-            };
+                RxApp.DefaultExceptionHandler = sp.GetRequiredService<ObservableExceptionHandler>();
+                SetupDialogService(sp);
+            });
 
-            var dialogService = Locator.Current.GetService<IDialogService>();
+            host.RunAsync();
+        }
+
+        private static void SetupDialogService(IServiceProvider serviceProvider)
+        {
+            var dialogService = serviceProvider.GetRequiredService<IDialogService>();
             dialogService.MessageBox.RegisterHandler(async context =>
             {
                 ShowMessage(context.Input.Title, context.Input.Message);
@@ -93,12 +100,6 @@ namespace WPFUI
             };
             if (ofd.ShowDialog() != true) return "";
             return ofd.FileName;
-        }
-
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            mainWindow.Show();
-            base.OnStartup(e);
         }
     }
 }

@@ -1,23 +1,16 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
 using Microsoft.Extensions.DependencyInjection;
-using ReactiveUI;
-using System.Reactive.Linq;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
     [RegisterSingleton<IWaitingOverlayViewModel, WaitingOverlayViewModel>]
-    public class WaitingOverlayViewModel : ViewModelBase, IWaitingOverlayViewModel
+    public partial class WaitingOverlayViewModel : ViewModelBase, IWaitingOverlayViewModel
     {
         [RegisterServices]
         public static void Register(IServiceCollection services)
         {
             services
-                .AddSingleton(x => x.GetService<IWaitingOverlayViewModel>() as WaitingOverlayViewModel);
-        }
-
-        public WaitingOverlayViewModel()
-        {
-            Message = "is initializing";
+                .AddSingleton(x => (x.GetRequiredService<IWaitingOverlayViewModel>() as WaitingOverlayViewModel)!);
         }
 
         public async Task Show(string message)
@@ -54,15 +47,10 @@ namespace MainCore.UI.ViewModels.UserControls
             }, RxApp.MainThreadScheduler);
         }
 
+        [Reactive]
         private bool _shown;
 
-        public bool Shown
-        {
-            get => _shown;
-            set => this.RaiseAndSetIfChanged(ref _shown, value);
-        }
-
-        private string _message;
+        private string _message = "TBS is initializing";
 
         public string Message
         {
