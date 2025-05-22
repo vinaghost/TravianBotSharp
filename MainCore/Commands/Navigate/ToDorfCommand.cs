@@ -1,15 +1,21 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Navigate
 {
-    [RegisterScoped<ToDorfCommand>]
-    public class ToDorfCommand(IDataService dataService) : CommandBase(dataService), ICommand<int>
+    [Handler]
+    public static partial class ToDorfCommand
     {
-        public async Task<Result> Execute(int dorf, CancellationToken cancellationToken)
-        {
-            var chromeBrowser = _dataService.ChromeBrowser;
+        public sealed record Command(AccountId AccountId, int Dorf) : IAccountCommand;
 
-            var currentUrl = chromeBrowser.CurrentUrl;
+        private static async ValueTask<Result> HandleAsync(
+           Command command,
+           IChromeBrowser browser,
+           CancellationToken cancellationToken
+           )
+        {
+            var (accountId, dorf) = command;
+
+            var currentUrl = browser.CurrentUrl;
             var currentDorf = GetCurrentDorf(currentUrl);
             if (dorf == 0)
             {
@@ -22,14 +28,16 @@ namespace MainCore.Commands.Navigate
                 return Result.Ok();
             }
 
-            var html = chromeBrowser.Html;
+            var html = browser.Html;
 
             var button = NavigationBarParser.GetDorfButton(html, dorf);
             if (button is null) return Retry.ButtonNotFound($"dorf{dorf}");
 
             Result result;
-            result = await chromeBrowser.Click(By.XPath(button.XPath), $"dorf{dorf}", cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            result = await browser.Click(By.XPath(button.XPath));
+            if (result.IsFailed) return result;
+            result = await browser.WaitPageChanged($"dorf{dorf}", cancellationToken);
+            if (result.IsFailed) return result;
             return Result.Ok();
         }
 

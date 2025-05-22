@@ -1,6 +1,8 @@
 ﻿using StronglyTypedIds;
 using System.ComponentModel.DataAnnotations.Schema;
 
+#nullable disable
+
 namespace MainCore.Entities
 {
     public class Job

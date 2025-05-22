@@ -12,7 +12,7 @@
         {
             _html.Load(file);
             var actual = MainCore.Parsers.LoginParser.IsIngamePage(_html);
-            actual.Should().Be(expected);
+            actual.ShouldBe(expected);
         }
 
         [Theory]
@@ -22,7 +22,7 @@
         {
             _html.Load(file);
             var actual = MainCore.Parsers.LoginParser.IsLoginPage(_html);
-            actual.Should().Be(expected);
+            actual.ShouldBe(expected);
         }
 
         [Fact]
@@ -30,7 +30,7 @@
         {
             _html.Load(LoginPage);
             var actual = MainCore.Parsers.LoginParser.GetLoginButton(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
 
         [Fact]
@@ -38,7 +38,7 @@
         {
             _html.Load(LoginPage);
             var actual = MainCore.Parsers.LoginParser.GetUsernameInput(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
 
         [Fact]
@@ -46,7 +46,7 @@
         {
             _html.Load(LoginPage);
             var actual = MainCore.Parsers.LoginParser.GetPasswordInput(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
     }
 }

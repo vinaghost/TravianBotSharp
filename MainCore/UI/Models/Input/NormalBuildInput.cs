@@ -2,13 +2,11 @@
 using Humanizer;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using ReactiveUI;
 using System.Collections.ObjectModel;
-using System.Reactive.Linq;
 
 namespace MainCore.UI.Models.Input
 {
-    public class NormalBuildInput : ViewModelBase
+    public partial class NormalBuildInput : ViewModelBase
     {
         public NormalBuildInput()
         {
@@ -31,6 +29,7 @@ namespace MainCore.UI.Models.Input
             {
                 SelectedBuilding = null;
             }
+
             if (level != -1)
             {
                 Level = level;
@@ -54,20 +53,11 @@ namespace MainCore.UI.Models.Input
         }
 
         public ObservableCollection<ComboBoxItem<BuildingEnums>> Buildings { get; set; } = new();
-        private ComboBoxItem<BuildingEnums> _selectedBuilding;
 
-        public ComboBoxItem<BuildingEnums> SelectedBuilding
-        {
-            get => _selectedBuilding;
-            set => this.RaiseAndSetIfChanged(ref _selectedBuilding, value);
-        }
+        [Reactive]
+        private ComboBoxItem<BuildingEnums>? _selectedBuilding;
 
+        [Reactive]
         private int _level;
-
-        public int Level
-        {
-            get => _level;
-            set => this.RaiseAndSetIfChanged(ref _level, value);
-        }
     }
 }
