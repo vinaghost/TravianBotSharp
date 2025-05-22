@@ -119,6 +119,7 @@ namespace MainCore.UI.ViewModels.Tabs
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
             await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Saved"));
         }
 
         [ReactiveCommand]
@@ -136,6 +137,7 @@ namespace MainCore.UI.ViewModels.Tabs
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var activationCommand = scope.ServiceProvider.GetRequiredService<ActivationCommand.Handler>();
             await activationCommand.HandleAsync(new(AccountId, new FarmId(selectedFarmList.Id)));
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Activated farm list"));
         }
 
         [ReactiveCommand]

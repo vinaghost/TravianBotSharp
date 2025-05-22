@@ -19,7 +19,6 @@ namespace MainCore.Tasks
             Task task,
             ToNpcResourcePageCommand.Handler toNpcResourcePageCommand,
             NpcResourceCommand.Handler npcResourceCommand,
-            UpdateStorageCommand.Handler updateStorageCommand,
             CancellationToken cancellationToken)
         {
             Result result;
@@ -27,7 +26,6 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result;
             result = await npcResourceCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
             if (result.IsFailed) return result;
-            await updateStorageCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
             return Result.Ok();
         }
     }

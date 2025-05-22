@@ -51,6 +51,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var saveVillageSettingCommand = scope.ServiceProvider.GetRequiredService<SaveVillageSettingCommand.Handler>();
             await saveVillageSettingCommand.HandleAsync(new(AccountId, VillageId, VillageSettingInput.Get()));
+
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings saved."));
         }
 
         [ReactiveCommand]
@@ -80,6 +82,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var saveVillageSettingCommand = scope.ServiceProvider.GetRequiredService<SaveVillageSettingCommand.Handler>();
             await saveVillageSettingCommand.HandleAsync(new(AccountId, VillageId, VillageSettingInput.Get()));
+
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings imported"));
         }
 
         [ReactiveCommand]
