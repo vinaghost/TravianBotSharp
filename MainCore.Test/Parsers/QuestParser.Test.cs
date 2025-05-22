@@ -13,7 +13,7 @@
         {
             _html.Load(file);
             var actual = MainCore.Parsers.QuestParser.GetQuestMaster(_html);
-            actual.Should().NotBeNull();
+            actual.ShouldNotBeNull();
         }
 
         [Theory]
@@ -23,7 +23,7 @@
         {
             _html.Load(file);
             var actual = MainCore.Parsers.QuestParser.IsQuestClaimable(_html);
-            actual.Should().Be(expected);
+            actual.ShouldBe(expected);
         }
 
         [Fact]
@@ -31,7 +31,7 @@
         {
             _html.Load(QuestPage);
             var result = MainCore.Parsers.QuestParser.GetQuestCollectButton(_html);
-            result.Should().NotBeNull();
+            result.ShouldNotBeNull();
         }
 
         [Fact]
@@ -39,7 +39,7 @@
         {
             _html.Load(QuestPage);
             var result = MainCore.Parsers.QuestParser.IsQuestPage(_html);
-            result.Should().BeTrue();
+            result.ShouldBeTrue();
         }
     }
 }

@@ -1,27 +1,35 @@
-﻿using MainCore.Commands.Abstract;
+﻿using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.UseHeroItem
 {
-    [RegisterScoped<ToHeroInventoryCommand>]
-    public class ToHeroInventoryCommand(IDataService dataService) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class ToHeroInventoryCommand
     {
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
+
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+
+            var html = browser.Html;
+
             var avatar = InventoryParser.GetHeroAvatar(html);
             if (avatar is null) return Retry.ButtonNotFound("avatar hero");
 
-            static bool tabActived(IWebDriver driver)
+            static bool TabActived(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
                 return InventoryParser.IsInventoryPage(doc);
             }
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(avatar.XPath), "hero", tabActived, cancellationToken);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            var result = await browser.Click(By.XPath(avatar.XPath));
+            if (result.IsFailed) return result;
+
+            result = await browser.WaitPageChanged("hero", TabActived, cancellationToken);
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

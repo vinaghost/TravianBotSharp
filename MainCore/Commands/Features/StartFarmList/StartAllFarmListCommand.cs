@@ -1,20 +1,25 @@
-using MainCore.Commands.Abstract;
+using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.StartFarmList
 {
-    [RegisterScoped<StartAllFarmListCommand>]
-    public class StartAllFarmListCommand(IDataService dataService) : CommandBase(dataService), ICommand
+    [Handler]
+    public static partial class StartAllFarmListCommand
     {
-        public async Task<Result> Execute(CancellationToken cancellationToken)
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
+
+        private static async ValueTask<Result> HandleAsync(
+            Command command,
+            IChromeBrowser browser,
+            CancellationToken cancellationToken)
         {
-            var chromeBrowser = _dataService.ChromeBrowser;
-            var html = chromeBrowser.Html;
+
+            var html = browser.Html;
+
             var startAllButton = FarmListParser.GetStartAllButton(html);
             if (startAllButton is null) return Retry.ButtonNotFound("Start all farms");
 
-            Result result;
-            result = await chromeBrowser.Click(By.XPath(startAllButton.XPath), CancellationToken.None);
-            if (result.IsFailed) return result.WithError(TraceMessage.Error(TraceMessage.Line()));
+            var result = await browser.Click(By.XPath(startAllButton.XPath));
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converter="clr-namespace:WPFUI.Converter">
 
-    <converter:DrawingColorToMediaColorConverter x:Key="ColorConverter" />
+    <converter:SplatColorToMediaColorConverter x:Key="ColorConverter" />
 
     <DataTemplate x:Key="ListBoxItem">
         <TextBlock Text="{Binding Content}" />

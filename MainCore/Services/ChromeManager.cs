@@ -4,16 +4,18 @@ using System.Reflection;
 namespace MainCore.Services
 {
     [RegisterSingleton<IChromeManager, ChromeManager>]
-    public sealed class ChromeManager : IChromeManager
+    public sealed class ChromeManager(ILogger logger) : IChromeManager
     {
+        private readonly ILogger _logger = logger.ForContext<ChromeManager>();
         private readonly ConcurrentDictionary<AccountId, ChromeBrowser> _dictionary = new();
-        private string[] _extensionsPath;
+        private string[] _extensionsPath = default!;
 
         public IChromeBrowser Get(AccountId accountId)
         {
-            var result = _dictionary.TryGetValue(accountId, out ChromeBrowser browser);
-            if (result) return browser;
-
+            if (_dictionary.TryGetValue(accountId, out ChromeBrowser? browser))
+            {
+                return browser;
+            }
             browser = new ChromeBrowser(_extensionsPath);
             _dictionary.TryAdd(accountId, browser);
             return browser;
@@ -23,8 +25,10 @@ namespace MainCore.Services
         {
             foreach (var id in _dictionary.Keys)
             {
-                _dictionary.Remove(id, out ChromeBrowser browser);
-                await browser.Shutdown();
+                if (_dictionary.Remove(id, out ChromeBrowser? browser))
+                {
+                    await browser.Shutdown();
+                }
             }
         }
 
@@ -34,6 +38,7 @@ namespace MainCore.Services
             if (!Directory.Exists(extenstionDir))
             {
                 Directory.CreateDirectory(extenstionDir);
+                _logger.Information("Create directory {extenstionDir} for extension files.", extenstionDir);
             }
 
             var asmb = Assembly.GetExecutingAssembly();
@@ -48,13 +53,15 @@ namespace MainCore.Services
 
                 if (!File.Exists(path))
                 {
-                    using Stream input = asmb.GetManifestResourceStream(extensionName);
+                    using Stream input = asmb.GetManifestResourceStream(extensionName)!;
                     using Stream output = File.Create(path);
                     input.CopyTo(output);
+                    _logger.Information("Copy default extension file {extensionName} to {path}.", extensionName, path);
                 }
             }
 
             _extensionsPath = list.ToArray();
+            _logger.Information("Loaded {count} extension files.", _extensionsPath.Length);
         }
     }
 }
