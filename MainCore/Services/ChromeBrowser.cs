@@ -52,6 +52,7 @@ namespace MainCore.Services
             options.AddArgument("--disable-backgrounding-occluded-windows");
             options.AddArgument("--disable-features=CalculateNativeWinOcclusion");
             options.AddArgument("--disable-features=UserAgentClientHint");
+            options.AddArgument("--disable-features=DisableLoadExtensionCommandLineSwitch");
             options.AddArgument("--disable-blink-features=AutomationControlled");
 
             if (setting.IsHeadless)

@@ -550,16 +550,16 @@
       },
       "Selenium.Support": {
         "type": "Transitive",
-        "resolved": "4.32.0",
-        "contentHash": "rWIsE2xBZ4i0x7u22dUHC5mUiaNCdZSfPo8+C4xq680ANR7ZIA5eF0a1lJYD+UNntm9LAK/BvZPjMaTOk2fQEg==",
+        "resolved": "4.33.0",
+        "contentHash": "AsjM8PqJkueDBzw9StEHLLUq6bT7au9IY9mMLlwMxOdNYfu7PMJOqpHCMg2xVtLrUHGd6mADqrbFxcs9QWe6JA==",
         "dependencies": {
-          "Selenium.WebDriver": "4.32.0"
+          "Selenium.WebDriver": "4.33.0"
         }
       },
       "Selenium.WebDriver": {
         "type": "Transitive",
-        "resolved": "4.32.0",
-        "contentHash": "7mocv9JMt3jth7nkfrKISv23dwRR8+1/QE0REyNco+L6A9tSFdR+makPZpGKSE8ppTt8JMyvFPQLgRnPzRL5+w=="
+        "resolved": "4.33.0",
+        "contentHash": "5dzwA1cMorwYWudX46zyeUqyZn48TZeCHbSERxbpKezGxZ8hMBpcL12XwG4RGUuQKGH8FiEOJOFK4eCE//uNpQ=="
       },
       "Serilog": {
         "type": "Transitive",
@@ -728,8 +728,8 @@
           "Polly": "[8.5.2, )",
           "ReactiveUI": "[20.2.45, )",
           "Riok.Mapperly": "[4.2.1, )",
-          "Selenium.Support": "[4.32.0, )",
-          "Selenium.WebDriver": "[4.32.0, )",
+          "Selenium.Support": "[4.33.0, )",
+          "Selenium.WebDriver": "[4.33.0, )",
           "Serilog": "[4.3.0, )",
           "Serilog.Expressions": "[5.0.0, )",
           "Serilog.Extensions.Hosting": "[9.0.0, )",
