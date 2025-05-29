@@ -13,7 +13,10 @@ namespace MainCore.Commands.NextExecute
             CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
-            var seconds = settingService.ByName(task.AccountId, AccountSettingEnums.FarmIntervalMin, AccountSettingEnums.FarmIntervalMax);
+            var seconds = settingService.ByName(
+                task.AccountId,
+                AccountSettingEnums.FarmIntervalMin,
+                AccountSettingEnums.FarmIntervalMax);
             task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
         }
     }

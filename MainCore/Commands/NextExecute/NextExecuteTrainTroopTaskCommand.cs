@@ -16,7 +16,8 @@ namespace MainCore.Commands.NextExecute
             var seconds = settingService.ByName(
                 task.VillageId,
                 VillageSettingEnums.TrainTroopRepeatTimeMin,
-                VillageSettingEnums.TrainTroopRepeatTimeMax
+                VillageSettingEnums.TrainTroopRepeatTimeMax,
+                60
             );
 
             task.ExecuteAt = DateTime.Now.AddSeconds(seconds);

@@ -13,8 +13,12 @@ namespace MainCore.Commands.NextExecute
             CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
-            var workTime = settingService.ByName(task.AccountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
-            task.ExecuteAt = DateTime.Now.AddMinutes(workTime);
+            var workTime = settingService.ByName(
+                task.AccountId,
+                AccountSettingEnums.WorkTimeMin,
+                AccountSettingEnums.WorkTimeMax,
+                60);
+            task.ExecuteAt = DateTime.Now.AddSeconds(workTime);
         }
     }
 }
