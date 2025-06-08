@@ -87,10 +87,13 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             if (chosenOne is null) return null;
 
+            // Fix: Use the highest of current, queue, and job levels for the next job
+            int nextLevel = Math.Max(Math.Max(chosenOne.CurrentLevel, chosenOne.QueueLevel), chosenOne.JobLevel) + 1;
+
             var normalBuildPlan = new NormalBuildPlan()
             {
                 Type = chosenOne.Type,
-                Level = chosenOne.Level + 1,
+                Level = nextLevel,
                 Location = chosenOne.Location,
             };
             return normalBuildPlan;
