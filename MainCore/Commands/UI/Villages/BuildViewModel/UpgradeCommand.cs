@@ -22,13 +22,16 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
             var level = 0;
 
+            // Fix: Use the maximum of current, queue, and job levels to avoid off-by-one error
+            var currentLevel = Math.Max(Math.Max(building.CurrentLevel, building.QueueLevel), building.JobLevel);
+
             if (isMaxLevel)
             {
                 level = building.Type.GetMaxLevel();
             }
             else
             {
-                level = building.Level + 1;
+                level = currentLevel + 1;
             }
 
             var plan = new NormalBuildPlan()

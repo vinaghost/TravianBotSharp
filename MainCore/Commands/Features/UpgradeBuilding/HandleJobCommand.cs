@@ -102,19 +102,20 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
 
-            var queueBuilding = queueBuildings
+            // Find the highest level for this location in both queue and current
+            var maxQueueLevel = queueBuildings
                 .Where(x => x.Location == plan.Location)
                 .OrderByDescending(x => x.Level)
                 .Select(x => x.Level)
                 .FirstOrDefault();
 
-            if (queueBuilding >= plan.Level) return true;
-
-            var villageBuilding = buildings
+            var maxCurrentLevel = buildings
                 .Where(x => x.Location == plan.Location)
                 .Select(x => x.Level)
                 .FirstOrDefault();
-            if (villageBuilding >= plan.Level) return true;
+
+            // If either the current or queued level is >= requested, job is complete
+            if (maxQueueLevel >= plan.Level || maxCurrentLevel >= plan.Level) return true;
 
             return false;
         }
