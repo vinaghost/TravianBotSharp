@@ -108,14 +108,15 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             // Only consider queue/buildings with matching location AND type
             var maxQueueLevel = queueBuildings
                 .Where(x => x.Location == plan.Location && x.Type == plan.Type)
-                .OrderByDescending(x => x.Level)
                 .Select(x => x.Level)
-                .FirstOrDefault();
+                .DefaultIfEmpty(int.MinValue)
+                .Max();
 
             var maxCurrentLevel = buildings
                 .Where(x => x.Location == plan.Location && x.Type == plan.Type)
                 .Select(x => x.Level)
-                .FirstOrDefault();
+                .DefaultIfEmpty(int.MinValue)
+                .Max();
 
             // If either the current or queued level is >= requested, job is complete
             if (maxQueueLevel >= plan.Level || maxCurrentLevel >= plan.Level) return true;
