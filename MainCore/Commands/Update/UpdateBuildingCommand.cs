@@ -142,11 +142,25 @@ namespace MainCore.Commands.Update
                 .Where(x => x.VillageId == villageId.Value)
                 .ExecuteDelete();
 
+            var buildings = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
+                .ToList();
+
             var entities = new List<QueueBuilding>();
 
             foreach (var dto in dtos)
             {
+                // Try to assign the correct location by matching type and (queued) level+1 to a building
+                int location = -1;
+                if (Enum.TryParse<BuildingEnums>(dto.Type, out var type))
+                {
+                    // Find a building with this type and level == dto.Level - 1 (since queue is for next level)
+                    var match = buildings.FirstOrDefault(b => b.Type == type && b.Level == dto.Level - 1);
+                    if (match != null)
+                        location = match.Location;
+                }
                 var queueBuilding = dto.ToEntity(villageId);
+                queueBuilding.Location = location;
                 entities.Add(queueBuilding);
             }
 
