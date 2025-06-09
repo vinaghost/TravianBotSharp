@@ -159,6 +159,12 @@ namespace MainCore.Commands.Update
                 .Where(x => x.VillageId == villageId.Value)
                 .ToList();
 
+            // Get all queue buildings for this village
+            var queueBuildings = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Type != BuildingEnums.Site)
+                .ToList();
+
             foreach (var dto in dtos)
             {
                 if (dto.Location == 40)
@@ -171,14 +177,24 @@ namespace MainCore.Commands.Update
                 var dbBuilding = dbBuildings
                     .Find(x => x.Location == dto.Location);
 
+                // Find all queued upgrades for this location
+                var queuedLevels = queueBuildings
+                    .Where(q => q.Location == dto.Location && q.Type == dto.Type)
+                    .Select(q => q.Level)
+                    .ToList();
+                var maxQueuedLevel = queuedLevels.Count > 0 ? queuedLevels.Max() : dto.Level;
+                var effectiveLevel = Math.Max(dto.Level, maxQueuedLevel);
+
                 if (dbBuilding is null)
                 {
                     var building = dto.ToEntity(villageId);
+                    building.Level = effectiveLevel;
                     context.Add(building);
                 }
                 else
                 {
                     dto.To(dbBuilding);
+                    dbBuilding.Level = effectiveLevel;
                     context.Update(dbBuilding);
                 }
             }
