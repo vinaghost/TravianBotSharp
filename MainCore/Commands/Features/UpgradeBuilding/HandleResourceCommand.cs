@@ -16,6 +16,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             ToHeroInventoryCommand.Handler toHeroInventoryCommand,
             UpdateInventoryCommand.Handler updateInventoryCommand,
             GetLowestBuildingQuery.Handler getLowestBuildingQuery,
+            GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery, // <-- Injected
             AddJobCommand.Handler addJobCommand,
             ISettingService settingService,
             IChromeBrowser browser,
@@ -54,6 +55,57 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             {
                 var message = string.Join(Environment.NewLine, storageLimitErrors.Select(x => x.Message));
                 logger.Warning("{Error}", message);
+
+                // Determine if it's a warehouse or granary issue
+                var warehouseError = storageLimitErrors.OfType<MainCore.Errors.StorageLimit>().FirstOrDefault(e => e.Message.Contains("Warehouse"));
+                var granaryError = storageLimitErrors.OfType<MainCore.Errors.StorageLimit>().FirstOrDefault(e => e.Message.Contains("Granary"));
+
+                if (warehouseError != null)
+                {
+                    // Find the lowest level warehouse
+                    var warehouse = await getLowestBuildingQuery.HandleAsync(new(villageId, BuildingEnums.Warehouse), cancellationToken);
+                    // Check if warehouse upgrade is already in queue
+                    var layoutBuildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId), cancellationToken);
+                    var warehouseBuilding = layoutBuildings.FirstOrDefault(x => x.Type == BuildingEnums.Warehouse && x.Location == warehouse.Location);
+                    if (warehouseBuilding != null && warehouseBuilding.QueueLevel > warehouseBuilding.CurrentLevel)
+                    {
+                        // Wait for upgrade to finish
+                        return Continue.Error;
+                    }
+                    // Queue warehouse upgrade
+                    var warehousePlan = new NormalBuildPlan()
+                    {
+                        Location = warehouse.Location,
+                        Type = warehouse.Type,
+                        Level = warehouse.Level + 1,
+                    };
+                    await addJobCommand.HandleAsync(new(villageId, warehousePlan.ToJob(), true), cancellationToken);
+                    await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
+                    return Continue.Error;
+                }
+                if (granaryError != null)
+                {
+                    // Find the lowest level granary
+                    var granary = await getLowestBuildingQuery.HandleAsync(new(villageId, BuildingEnums.Granary), cancellationToken);
+                    // Check if granary upgrade is already in queue
+                    var layoutBuildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId), cancellationToken);
+                    var granaryBuilding = layoutBuildings.FirstOrDefault(x => x.Type == BuildingEnums.Granary && x.Location == granary.Location);
+                    if (granaryBuilding != null && granaryBuilding.QueueLevel > granaryBuilding.CurrentLevel)
+                    {
+                        // Wait for upgrade to finish
+                        return Continue.Error;
+                    }
+                    // Queue granary upgrade
+                    var granaryPlan = new NormalBuildPlan()
+                    {
+                        Location = granary.Location,
+                        Type = granary.Type,
+                        Level = granary.Level + 1,
+                    };
+                    await addJobCommand.HandleAsync(new(villageId, granaryPlan.ToJob(), true), cancellationToken);
+                    await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
+                    return Continue.Error;
+                }
                 return Stop.NotEnoughStorageCapacity;
             }
 
