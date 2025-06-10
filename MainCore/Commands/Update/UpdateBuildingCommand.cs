@@ -150,7 +150,6 @@ namespace MainCore.Commands.Update
 
             foreach (var dto in dtos)
             {
-                // Try to assign the correct location by matching type and (queued) level+1 to a building
                 int location = -1;
                 if (Enum.TryParse<BuildingEnums>(dto.Type, out var type))
                 {
@@ -158,13 +157,16 @@ namespace MainCore.Commands.Update
                     var match = buildings.FirstOrDefault(b => b.Type == type && b.Level == dto.Level - 1);
                     if (match != null)
                         location = match.Location;
+                    // If not found, location stays -1 (safe default)
                 }
                 var queueBuilding = dto.ToEntity(villageId);
                 queueBuilding.Location = location;
                 entities.Add(queueBuilding);
             }
 
-            context.AddRange(entities);
+            // Only add if there are any queue entries
+            if (entities.Count > 0)
+                context.AddRange(entities);
         }
 
         private static void UpdateBuildToDatabase(this AppDbContext context, VillageId villageId, List<BuildingDto> dtos)
