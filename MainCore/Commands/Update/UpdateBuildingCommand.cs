@@ -115,7 +115,9 @@ namespace MainCore.Commands.Update
                     queueBuildings = queueBuildings.Where(x => x.Type == dtos[0].Type).ToList();
                     if (dtos[0].Level == dtos[1].Level)
                     {
-                        for (var i = 0; i < dtos.Count; i++)
+                        // Fix: Only update up to the minimum count to avoid out-of-range
+                        int minCount = Math.Min(dtos.Count, queueBuildings.Count);
+                        for (var i = 0; i < minCount; i++)
                         {
                             queueBuildings[i].Location = dtos[i].Location;
                         }
