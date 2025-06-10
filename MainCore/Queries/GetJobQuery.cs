@@ -144,6 +144,7 @@ namespace MainCore.Queries
             var count = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Level != -1)
+                .Where(x => x.Type != BuildingEnums.Site) // Exclude Site entries
                 .Count();
             return count;
         }
@@ -155,6 +156,7 @@ namespace MainCore.Queries
             var count = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => ResourceTypes.Contains(x.Type))
+                .Where(x => x.Type != BuildingEnums.Site) // Exclude Site entries
                 .Count();
             return count;
         }
