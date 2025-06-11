@@ -28,12 +28,17 @@ namespace MainCore.Commands.Update
 
         private static StorageDto Get(HtmlDocument doc)
         {
+            var production = StorageParser.GetProduction(doc);
             var storage = new StorageDto()
             {
                 Wood = StorageParser.GetWood(doc),
                 Clay = StorageParser.GetClay(doc),
                 Iron = StorageParser.GetIron(doc),
                 Crop = StorageParser.GetCrop(doc),
+                ProductionWood = production.Wood,
+                ProductionClay = production.Clay,
+                ProductionIron = production.Iron,
+                ProductionCrop = production.Crop,
                 FreeCrop = StorageParser.GetFreeCrop(doc),
                 Warehouse = StorageParser.GetWarehouseCapacity(doc),
                 Granary = StorageParser.GetGranaryCapacity(doc)

@@ -59,5 +59,16 @@
             var result = MainCore.Parsers.StorageParser.GetGranaryCapacity(_html);
             result.ShouldBeGreaterThan(-1);
         }
+
+        [Fact]
+        public void GetProduction()
+        {
+            _html.Load(Buildings);
+            var result = MainCore.Parsers.StorageParser.GetProduction(_html);
+            result.Wood.ShouldBeGreaterThan(-1);
+            result.Clay.ShouldBeGreaterThan(-1);
+            result.Iron.ShouldBeGreaterThan(-1);
+            result.Crop.ShouldBeGreaterThan(-1);
+        }
     }
 }
