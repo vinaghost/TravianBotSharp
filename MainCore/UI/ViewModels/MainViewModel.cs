@@ -46,6 +46,7 @@ namespace MainCore.UI.ViewModels
                 {
                     await Task.Run(context.FillAccountSettings);
                     await Task.Run(context.FillVillageSettings);
+                    await Task.Run(context.EnsureStorageProductionColumns);
                 }
 
                 await _waitingOverlayViewModel.ChangeMessage("loading program layout");

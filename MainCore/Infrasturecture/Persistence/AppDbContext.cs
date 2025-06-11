@@ -223,6 +223,35 @@ namespace MainCore.Infrasturecture.Persistence
             AddRange(settings);
         }
 
+        public void EnsureStorageProductionColumns()
+        {
+            using var command = Database.GetDbConnection().CreateCommand();
+            command.CommandText = "PRAGMA table_info('Storages')";
+            Database.OpenConnection();
+            var columns = new HashSet<string>();
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    columns.Add(reader.GetString(1));
+                }
+            }
+
+            void AddColumn(string name)
+            {
+                if (columns.Contains(name)) return;
+                using var add = Database.GetDbConnection().CreateCommand();
+                add.CommandText = $"ALTER TABLE \"Storages\" ADD COLUMN \"{name}\" INTEGER NOT NULL DEFAULT 0";
+                add.ExecuteNonQuery();
+            }
+
+            AddColumn("ProductionWood");
+            AddColumn("ProductionClay");
+            AddColumn("ProductionIron");
+            AddColumn("ProductionCrop");
+            Database.CloseConnection();
+        }
+
         #endregion village setting
     }
 }
