@@ -29,10 +29,14 @@ namespace MainCore.Notifications.Handlers.Trigger
             var currentPercent = crop * 100f / granary;
             var villageName = context.GetVillageName(villageId);
 
-            NpcTask.Task? existing = taskManager
+            var tasks = taskManager
                 .GetTaskList(accountId)
                 .OfType<NpcTask.Task>()
-                .FirstOrDefault(x => x.VillageId == villageId);
+                .Where(x => x.VillageId == villageId)
+                .ToList();
+
+            var executing = tasks.FirstOrDefault(x => x.Stage == StageEnums.Executing);
+            var waiting = tasks.FirstOrDefault(x => x.Stage == StageEnums.Waiting);
 
             DateTime? executeAt = null;
 
@@ -49,19 +53,34 @@ namespace MainCore.Notifications.Handlers.Trigger
 
             if (executeAt is null) return;
 
-            if (existing is not null && existing.Stage == StageEnums.Executing)
+            if (executing is not null)
             {
-                var next = new NpcTask.Task(accountId, villageId, villageName)
+                if (waiting is not null)
                 {
-                    ExecuteAt = executeAt.Value
-                };
-                taskManager.Add<NpcTask.Task>(next);
+                    waiting.ExecuteAt = executeAt.Value;
+                    taskManager.ReOrder(accountId);
+                }
+                else
+                {
+                    var next = new NpcTask.Task(accountId, villageId, villageName)
+                    {
+                        ExecuteAt = executeAt.Value
+                    };
+                    taskManager.Add<NpcTask.Task>(next);
+                }
+            }
+            else if (waiting is not null)
+            {
+                waiting.ExecuteAt = executeAt.Value;
+                taskManager.ReOrder(accountId);
             }
             else
             {
-                var npcTask = existing ?? new NpcTask.Task(accountId, villageId, villageName);
-                npcTask.ExecuteAt = executeAt.Value;
-                taskManager.AddOrUpdate<NpcTask.Task>(npcTask);
+                var npcTask = new NpcTask.Task(accountId, villageId, villageName)
+                {
+                    ExecuteAt = executeAt.Value
+                };
+                taskManager.Add<NpcTask.Task>(npcTask);
             }
         }
 
