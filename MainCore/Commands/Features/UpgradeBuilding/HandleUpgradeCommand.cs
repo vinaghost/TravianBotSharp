@@ -11,7 +11,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
-            UpdateBuildingCommand.Handler updateBuildingCommand, // <-- Add this dependency
             CancellationToken cancellationToken
         )
         {
@@ -40,10 +39,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 if (result.IsFailed) return result;
             }
 
-            // Always refresh building/queue state after any upgrade
-            var updateResult = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
-            if (updateResult.IsFailed) return Result.Fail(updateResult.Errors);
-
+            // Building information will be updated by the task after this command
             return Result.Ok();
         }
 
