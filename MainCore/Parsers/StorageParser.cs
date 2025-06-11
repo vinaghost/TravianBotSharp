@@ -1,4 +1,6 @@
 ﻿using System.Net;
+using System.Text.RegularExpressions;
+using MainCore.DTO;
 
 namespace MainCore.Parsers
 {
@@ -47,6 +49,34 @@ namespace MainCore.Parsers
             var valueStrFixed = WebUtility.HtmlDecode(valueNode.InnerText);
             if (string.IsNullOrEmpty(valueStrFixed)) return -1;
             return valueNode.InnerText.ParseLong();
+        }
+
+        public static ProductionDto GetProduction(HtmlDocument doc)
+        {
+            var script = doc.DocumentNode
+                .Descendants("script")
+                .FirstOrDefault(x => x.InnerText.Contains("resources = {"));
+            if (script is null) return new();
+
+            var match = Regex.Match(script.InnerText, @"production\s*:\s*\{(?<data>[^}]*)\}", RegexOptions.Singleline);
+            if (!match.Success) return new();
+
+            var data = match.Groups["data"].Value;
+
+            long Parse(string key)
+            {
+                var m = Regex.Match(data, $"\"{key}\"\\s*:\\s*(?<v>[-0-9,]+)");
+                if (!m.Success) return -1;
+                return m.Groups["v"].Value.ParseLong();
+            }
+
+            return new ProductionDto
+            {
+                Wood = Parse("l1"),
+                Clay = Parse("l2"),
+                Iron = Parse("l3"),
+                Crop = Parse("l4"),
+            };
         }
     }
 }
