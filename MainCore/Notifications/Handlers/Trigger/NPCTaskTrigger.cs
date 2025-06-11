@@ -16,19 +16,52 @@ namespace MainCore.Notifications.Handlers.Trigger
             var villageId = notification.VillageId;
 
             var autoNPCEnable = context.BooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
-            if (autoNPCEnable)
+            if (!autoNPCEnable)
             {
-                var granaryPercent = context.GetGranaryPercent(villageId);
-                var autoNPCGranaryPercent = context.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
+                taskManager.Remove<NpcTask.Task>(accountId, villageId);
+                return;
+            }
 
-                if (granaryPercent < autoNPCGranaryPercent) return;
-                if (taskManager.IsExist<NpcTask.Task>(accountId, villageId)) return;
-                var villageName = context.GetVillageName(villageId);
-                taskManager.Add<NpcTask.Task>(new(accountId, villageId, villageName));
+            var autoNPCGranaryPercent = context.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
+            var (crop, granary, production) = context.GetCropInfo(villageId);
+            if (granary == 0) return;
+
+            var currentPercent = crop * 100f / granary;
+            var villageName = context.GetVillageName(villageId);
+
+            NpcTask.Task? existing = taskManager
+                .GetTaskList(accountId)
+                .OfType<NpcTask.Task>()
+                .FirstOrDefault(x => x.VillageId == villageId);
+
+            DateTime? executeAt = null;
+
+            if (currentPercent >= autoNPCGranaryPercent)
+            {
+                executeAt = DateTime.Now;
+            }
+            else if (production > 0)
+            {
+                var targetCrop = granary * autoNPCGranaryPercent / 100.0;
+                var hours = (targetCrop - crop) / production;
+                executeAt = DateTime.Now.AddHours(hours);
+            }
+
+            if (executeAt is null) return;
+
+            if (existing is not null && existing.Stage == StageEnums.Executing)
+            {
+                var next = new NpcTask.Task(accountId, villageId, villageName)
+                {
+                    ExecuteAt = executeAt.Value
+                };
+                taskManager.Add<NpcTask.Task>(next);
             }
             else
             {
-                taskManager.Remove<NpcTask.Task>(accountId);
+                var npcTask = existing ?? new NpcTask.Task(accountId, villageId, villageName);
+                npcTask.ExecuteAt = executeAt.Value;
+                taskManager.AddOrUpdate<NpcTask.Task>(npcTask);
             }
         }
 
@@ -39,6 +72,16 @@ namespace MainCore.Notifications.Handlers.Trigger
                 .Select(x => x.Crop * 100f / x.Granary)
                 .FirstOrDefault();
             return (int)percent;
+        }
+
+        private static (long Crop, long Granary, long Production) GetCropInfo(this AppDbContext context, VillageId villageId)
+        {
+            var data = context.Storages
+                .Where(x => x.VillageId == villageId.Value)
+                .Select(x => new { x.Crop, x.Granary, x.ProductionCrop })
+                .FirstOrDefault();
+            if (data is null) return (0, 0, 0);
+            return (data.Crop, data.Granary, data.ProductionCrop);
         }
     }
 }
