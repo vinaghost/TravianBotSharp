@@ -12,6 +12,7 @@ namespace MainCore.UI.ViewModels.Tabs
     public partial class AccountSettingViewModel : AccountTabViewModelBase
     {
         public AccountSettingInput AccountSettingInput { get; } = new();
+        public TelegramSettingInput TelegramSettingInput { get; } = new();
 
         private readonly IDialogService _dialogService;
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
@@ -24,6 +25,7 @@ namespace MainCore.UI.ViewModels.Tabs
             _serviceScopeFactory = serviceScopeFactory;
 
             LoadSettingsCommand.Subscribe(AccountSettingInput.Set);
+            LoadTelegramSettingCommand.Subscribe(TelegramSettingInput.Set);
         }
 
         public async Task SettingRefresh(AccountId accountId)
@@ -31,11 +33,13 @@ namespace MainCore.UI.ViewModels.Tabs
             if (!IsActive) return;
             if (accountId != AccountId) return;
             await LoadSettingsCommand.Execute(accountId);
+            await LoadTelegramSettingCommand.Execute(accountId);
         }
 
         protected override async Task Load(AccountId accountId)
         {
             await LoadSettingsCommand.Execute(accountId);
+            await LoadTelegramSettingCommand.Execute(accountId);
         }
 
         [ReactiveCommand]
@@ -48,9 +52,21 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
+            if (AccountSettingInput.EnableTelegramMessage)
+            {
+                if (string.IsNullOrWhiteSpace(TelegramSettingInput.BotToken) || string.IsNullOrWhiteSpace(TelegramSettingInput.ChatId))
+                {
+                    await _dialogService.MessageBox.Handle(new MessageBoxData("Error", "Bot token and chat id are required"));
+                    return;
+                }
+            }
+
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
             await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
+
+            var saveTelegramSettingCommand = scope.ServiceProvider.GetRequiredService<SaveTelegramSettingCommand.Handler>();
+            await saveTelegramSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.EnableTelegramMessage, TelegramSettingInput.BotToken, TelegramSettingInput.ChatId));
 
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings saved."));
         }
@@ -108,6 +124,15 @@ namespace MainCore.UI.ViewModels.Tabs
             var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
             var settings = await getSettingQuery.HandleAsync(new(accountId));
             return settings;
+        }
+
+        [ReactiveCommand]
+        private async Task<TelegramSetting?> LoadTelegramSetting(AccountId accountId)
+        {
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
+            var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetTelegramSettingQuery.Handler>();
+            var setting = await getSettingQuery.HandleAsync(new(accountId));
+            return setting;
         }
     }
 }

@@ -263,13 +263,13 @@ namespace MainCore.Infrasturecture.Persistence
             if (!exists)
             {
                 using var create = Database.GetDbConnection().CreateCommand();
-                create.CommandText = @"CREATE TABLE \"TelegramSettings\" (
-                    \"Id\" INTEGER NOT NULL CONSTRAINT \"PK_TelegramSettings\" PRIMARY KEY AUTOINCREMENT,
-                    \"AccountId\" INTEGER NOT NULL,
-                    \"IsEnabled\" INTEGER NOT NULL,
-                    \"BotToken\" TEXT NOT NULL,
-                    \"ChatId\" TEXT NOT NULL
-                )";
+                create.CommandText = @"CREATE TABLE ""TelegramSettings"" (
+    ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_TelegramSettings"" PRIMARY KEY AUTOINCREMENT,
+    ""AccountId"" INTEGER NOT NULL,
+    ""IsEnabled"" INTEGER NOT NULL,
+    ""BotToken"" TEXT NOT NULL,
+    ""ChatId"" TEXT NOT NULL
+)";
                 create.ExecuteNonQuery();
             }
             Database.CloseConnection();
