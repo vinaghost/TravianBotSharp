@@ -25,6 +25,7 @@ namespace MainCore.Infrasturecture.Persistence
         public DbSet<Storage> Storages { get; set; }
         public DbSet<VillageSetting> VillagesSetting { get; set; }
         public DbSet<Farm> FarmLists { get; set; }
+        public DbSet<TelegramSetting> TelegramSettings { get; set; }
 
         #endregion table
 
@@ -250,6 +251,27 @@ namespace MainCore.Infrasturecture.Persistence
             AddColumn("ProductionClay");
             AddColumn("ProductionIron");
             AddColumn("ProductionCrop");
+            Database.CloseConnection();
+        }
+
+        public void EnsureTelegramSettings()
+        {
+            using var command = Database.GetDbConnection().CreateCommand();
+            command.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name='TelegramSettings'";
+            Database.OpenConnection();
+            var exists = command.ExecuteScalar() != null;
+            if (!exists)
+            {
+                using var create = Database.GetDbConnection().CreateCommand();
+                create.CommandText = @"CREATE TABLE \"TelegramSettings\" (
+                    \"Id\" INTEGER NOT NULL CONSTRAINT \"PK_TelegramSettings\" PRIMARY KEY AUTOINCREMENT,
+                    \"AccountId\" INTEGER NOT NULL,
+                    \"IsEnabled\" INTEGER NOT NULL,
+                    \"BotToken\" TEXT NOT NULL,
+                    \"ChatId\" TEXT NOT NULL
+                )";
+                create.ExecuteNonQuery();
+            }
             Database.CloseConnection();
         }
 
