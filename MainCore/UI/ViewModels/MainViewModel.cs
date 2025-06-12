@@ -41,6 +41,7 @@ namespace MainCore.UI.ViewModels
 
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 var notExist = await context.Database.EnsureCreatedAsync();
+                context.EnsureTelegramSettings();
 
                 if (!notExist)
                 {
