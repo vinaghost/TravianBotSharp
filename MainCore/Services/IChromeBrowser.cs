@@ -34,5 +34,7 @@ namespace MainCore.Services
         Task<Result> WaitPageChanged(string part, Predicate<IWebDriver> customCondition, CancellationToken cancellationToken);
 
         Task<Result> WaitPageLoaded(CancellationToken cancellationToken);
+
+        Task<Result> WaitElement(By by, CancellationToken cancellationToken);
     }
 }
