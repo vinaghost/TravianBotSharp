@@ -42,6 +42,26 @@ namespace MainCore.Services
             }
 
             LogEmitted.Invoke(accountId, logEvent);
+
+            try
+            {
+                var scopeFactory = Locator.Current.GetService<ICustomServiceScopeFactory>();
+                var telegram = Locator.Current.GetService<ITelegramService>();
+                if (scopeFactory is not null && telegram is not null)
+                {
+                    using var scope = scopeFactory.CreateScope(accountId);
+                    var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+                    var enable = settingService.BooleanByName(accountId, AccountSettingEnums.EnableTelegramMessage);
+                    if (enable)
+                    {
+                        _ = telegram.SendText(logEvent.RenderMessage(), accountId);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // ignore telegram errors
+            }
         }
     }
 

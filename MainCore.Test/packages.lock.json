@@ -1417,6 +1417,15 @@
         "resolved": "4.5.0",
         "contentHash": "okurQJO6NRE/apDIP23ajJ0hpiNmJ+f0BwOlB/cSqTLQlw5upkf+5+96+iG2Jw40G1fCVCyPz/FhIABUjMR+RQ=="
       },
+      "Telegram.Bot": {
+        "type": "Transitive",
+        "resolved": "22.0.0",
+        "contentHash": "S6AmptLXByejOwG5xWzqY7DaV22BQoB6RP3zLfXuJ7i/OKVnCh+6mHFiCtq4DNYGjiU0YAmpT1KWnWc8nR/YDw==",
+        "dependencies": {
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
+          "System.Text.Json": "8.0.5"
+        }
+      },
       "xunit.abstractions": {
         "type": "Transitive",
         "resolved": "2.0.3",
@@ -1482,7 +1491,8 @@
           "Serilog.Sinks.Map": "[2.0.0, )",
           "Splat": "[15.3.1, )",
           "Splat.Drawing": "[15.3.1, )",
-          "Splat.Microsoft.Extensions.DependencyInjection": "[15.3.1, )"
+          "Splat.Microsoft.Extensions.DependencyInjection": "[15.3.1, )",
+          "Telegram.Bot": "[22.0.0, )"
         }
       }
     },

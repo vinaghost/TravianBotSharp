@@ -55,6 +55,8 @@ namespace MainCore
                 services.AddMainCoreBehaviors();
                 services.AddMainCoreHandlers();
 
+                services.AddSingleton<ITelegramService, TelegramService>();
+
                 services.AddScoped<IChromeBrowser>(sp =>
                 {
                     var dataService = sp.GetRequiredService<IDataService>();

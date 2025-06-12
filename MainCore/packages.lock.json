@@ -238,6 +238,16 @@
         "resolved": "1.0.0-beta06",
         "contentHash": "f8ujS/QA3Yhy6ULozBgNfmdX3mhWtHrjHa6TdXFTWDWMfym8MJX1aOTTyiFhUezwUvG2MDD/PXfAWuy4Hm0oeA=="
       },
+      "Telegram.Bot": {
+        "type": "Direct",
+        "requested": "[22.0.0, )",
+        "resolved": "22.0.0",
+        "contentHash": "S6AmptLXByejOwG5xWzqY7DaV22BQoB6RP3zLfXuJ7i/OKVnCh+6mHFiCtq4DNYGjiU0YAmpT1KWnWc8nR/YDw==",
+        "dependencies": {
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
+          "System.Text.Json": "8.0.5"
+        }
+      },
       "DynamicData": {
         "type": "Transitive",
         "resolved": "9.1.2",

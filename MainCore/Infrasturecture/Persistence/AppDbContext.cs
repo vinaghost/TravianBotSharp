@@ -47,6 +47,7 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.WorkTimeMax, 720 },
             {AccountSettingEnums.HeadlessChrome, 0 },
             {AccountSettingEnums.EnableAutoStartAdventure, 0 },
+            {AccountSettingEnums.EnableTelegramMessage, 0 },
         }.ToImmutableDictionary();
 
         private List<AccountSettingEnums> GetMissingAccountSettings()
