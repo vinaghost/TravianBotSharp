@@ -55,5 +55,23 @@
             if (crop is null) throw new Exception("Crop input not found");
             yield return crop;
         }
+
+        public static HtmlNode? GetDistributeButton(HtmlDocument doc)
+        {
+            var submitText = doc.GetElementbyId("submitText");
+            if (submitText is null) return null;
+            if (submitText.GetAttributeValue("style", string.Empty).Contains("display: none")) return null;
+            var button = submitText.Descendants("button").FirstOrDefault();
+            return button;
+        }
+
+        public static HtmlNode? GetOkButton(HtmlDocument doc)
+        {
+            var button = doc.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
+            if (button is null) return null;
+            var style = button.ParentNode?.GetAttributeValue("style", string.Empty) ?? string.Empty;
+            if (style.Contains("display: none")) return null;
+            return button;
+        }
     }
 }

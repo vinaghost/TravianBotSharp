@@ -114,6 +114,40 @@ namespace MainCore.Commands.Features.NpcResource
             var result = await browser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result;
 
+            static bool DistributeShown(IWebDriver driver)
+            {
+                var doc = new HtmlDocument();
+                doc.LoadHtml(driver.PageSource);
+                return NpcResourceParser.GetDistributeButton(doc) is not null;
+            }
+
+            result = await browser.Wait(DistributeShown, cancellationToken);
+            if (result.IsFailed) return result;
+
+            html = browser.Html;
+            var distributeButton = NpcResourceParser.GetDistributeButton(html);
+            if (distributeButton is null) return Retry.ButtonNotFound("distribute remaining resources");
+
+            result = await browser.Click(By.XPath(distributeButton.XPath));
+            if (result.IsFailed) return result;
+
+            static bool OkShown(IWebDriver driver)
+            {
+                var doc = new HtmlDocument();
+                doc.LoadHtml(driver.PageSource);
+                return NpcResourceParser.GetOkButton(doc) is not null;
+            }
+
+            result = await browser.Wait(OkShown, cancellationToken);
+            if (result.IsFailed) return result;
+
+            html = browser.Html;
+            var okButton = NpcResourceParser.GetOkButton(html);
+            if (okButton is null) return Retry.ButtonNotFound("ok");
+
+            result = await browser.Click(By.XPath(okButton.XPath));
+            if (result.IsFailed) return result;
+
             return Result.Ok();
         }
     }
