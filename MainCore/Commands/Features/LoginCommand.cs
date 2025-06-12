@@ -16,6 +16,14 @@ namespace MainCore.Commands.Features
             var html = browser.Html;
             if (LoginParser.IsIngamePage(html)) return Result.Ok();
 
+            Result result;
+            result = await browser.WaitElement(By.Name("name"), cancellationToken);
+            if (result.IsFailed) return result;
+            result = await browser.WaitElement(By.Name("password"), cancellationToken);
+            if (result.IsFailed) return result;
+            result = await browser.WaitElement(By.CssSelector("#loginScene button.green"), cancellationToken);
+            if (result.IsFailed) return result;
+
             var buttonNode = LoginParser.GetLoginButton(html);
             if (buttonNode is null) return Retry.ButtonNotFound("login");
             var usernameNode = LoginParser.GetUsernameInput(html);
@@ -25,7 +33,6 @@ namespace MainCore.Commands.Features
 
             var (username, password) = GetLoginInfo(command.AccountId, context);
 
-            Result result;
             result = await browser.Input(By.XPath(usernameNode.XPath), username);
             if (result.IsFailed) return result;
             result = await browser.Input(By.XPath(passwordNode.XPath), password);

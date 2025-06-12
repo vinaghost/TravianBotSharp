@@ -195,6 +195,17 @@ namespace MainCore.Services
             return Wait(driver => PageChanged(driver, part) && customCondition(driver), cancellationToken);
         }
 
+        public Task<Result> WaitElement(By by, CancellationToken cancellationToken)
+        {
+            return Wait(driver =>
+            {
+                var elements = driver.FindElements(by);
+                if (elements.Count == 0) return false;
+                var element = elements[0];
+                return element.Displayed && element.Enabled;
+            }, cancellationToken);
+        }
+
         public async Task Close()
         {
             await Task.Run(() => _driver?.Quit());
