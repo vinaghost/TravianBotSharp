@@ -57,7 +57,9 @@
                         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Feature settings" VerticalAlignment="Center" FontWeight="Bold" />
                         <CheckBox x:Name="EnableAutoLoadVillage" Content="Enable auto load village's building" />
                         <CheckBox x:Name="EnableAutoStartAdventure" Content="Enable auto start adventure" />
-                        <CheckBox x:Name="EnableTelegramMessage" Content="Enable Telegram notification" />
+                        <CheckBox x:Name="EnableTelegramMessage" Content="Enable msg system" />
+                        <TextBox x:Name="BotToken" materialDesign:HintAssist.Hint="Bot token" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
+                        <TextBox x:Name="ChatId" materialDesign:HintAssist.Hint="Chat id" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" />
                     </StackPanel>
                 </Border>
                 <Border Style="{DynamicResource Box}">
