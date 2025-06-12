@@ -64,5 +64,14 @@
             var result = MainCore.Parsers.NpcResourceParser.GetOkButton(_html);
             result.ShouldNotBeNull();
         }
+
+        [Fact]
+        public void IsOkButtonVisible()
+        {
+            _html.Load(DistributeDialog);
+            var result = MainCore.Parsers.NpcResourceParser.IsOkButtonVisible(_html);
+            result.ShouldBeFalse();
+        }
     }
 }
+

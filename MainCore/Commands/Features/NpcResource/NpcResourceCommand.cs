@@ -135,7 +135,7 @@ namespace MainCore.Commands.Features.NpcResource
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                return NpcResourceParser.GetOkButton(doc) is not null;
+                return NpcResourceParser.IsOkButtonVisible(doc);
             }
 
             result = await browser.Wait(OkShown, cancellationToken);

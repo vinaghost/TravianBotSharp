@@ -67,11 +67,19 @@
 
         public static HtmlNode? GetOkButton(HtmlDocument doc)
         {
-            var button = doc.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
-            if (button is null) return null;
-            var style = button.ParentNode?.GetAttributeValue("style", string.Empty) ?? string.Empty;
-            if (style.Contains("display: none")) return null;
+            var button = doc.DocumentNode
+                .Descendants("button")
+                .FirstOrDefault(x => x.HasClass("dialogButtonOk"));
             return button;
+        }
+
+        public static bool IsOkButtonVisible(HtmlDocument doc)
+        {
+            var button = GetOkButton(doc);
+            if (button is null) return false;
+            var style = button.ParentNode?.GetAttributeValue("style", string.Empty) ?? string.Empty;
+            return !style.Contains("display: none");
         }
     }
 }
+
