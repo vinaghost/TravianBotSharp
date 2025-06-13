@@ -56,6 +56,8 @@ namespace MainCore
                 services.AddMainCoreHandlers();
 
                 services.AddSingleton<ITelegramService, TelegramService>();
+                services.AddSingleton<TelegramCommandService>();
+                services.AddHostedService<TelegramCommandHostedService>();
 
                 services.AddScoped<IChromeBrowser>(sp =>
                 {
