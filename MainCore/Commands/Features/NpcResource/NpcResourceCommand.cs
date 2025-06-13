@@ -131,22 +131,13 @@ namespace MainCore.Commands.Features.NpcResource
             result = await browser.Click(By.XPath(distributeButton.XPath));
             if (result.IsFailed) return result;
 
-            static bool OkShown(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                return NpcResourceParser.IsOkButtonVisible(doc);
-            }
-
-            result = await browser.Wait(OkShown, cancellationToken);
-            if (result.IsFailed) return result;
-
             html = browser.Html;
             var okButton = NpcResourceParser.GetOkButton(html);
-            if (okButton is null) return Retry.ButtonNotFound("ok");
-
-            result = await browser.Click(By.XPath(okButton.XPath));
-            if (result.IsFailed) return result;
+            if (okButton is not null)
+            {
+                var okResult = await browser.Click(By.XPath(okButton.XPath));
+                if (okResult.IsFailed) return okResult;
+            }
 
             return Result.Ok();
         }
