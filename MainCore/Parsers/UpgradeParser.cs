@@ -1,4 +1,6 @@
-﻿namespace MainCore.Parsers
+using System.Text.RegularExpressions;
+
+namespace MainCore.Parsers
 {
     public static class UpgradeParser
     {
@@ -77,6 +79,25 @@
             var button = upgradeButtonsContainer.Descendants("button")
                 .FirstOrDefault(x => x.HasClass("build"));
             return button;
+        }
+
+        public static int? GetUpgradingLevel(HtmlDocument doc)
+        {
+            var contract = doc.GetElementbyId("contract");
+            if (contract is null) return null;
+
+            var text = contract.InnerText;
+            var matches = Regex.Matches(text, @"Currently upgrading to level\s*(\d+)", RegexOptions.IgnoreCase);
+            int? level = null;
+            foreach (Match match in matches)
+            {
+                if (!match.Success) continue;
+                if (int.TryParse(match.Groups[1].Value, out var value))
+                {
+                    if (level is null || value > level) level = value;
+                }
+            }
+            return level;
         }
     }
 }
