@@ -69,8 +69,34 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             List<BuildingItem> layoutBuildings
         )
         {
+            var fieldList = new Dictionary<ResourcePlanEnums, List<BuildingEnums>>()
+            {
+                {
+                    ResourcePlanEnums.AllResources,
+                    new()
+                    {
+                        BuildingEnums.Woodcutter,
+                        BuildingEnums.ClayPit,
+                        BuildingEnums.IronMine,
+                        BuildingEnums.Cropland,
+                    }
+                },
+                {
+                    ResourcePlanEnums.ExcludeCrop,
+                    new()
+                    {
+                        BuildingEnums.Woodcutter,
+                        BuildingEnums.ClayPit,
+                        BuildingEnums.IronMine,
+                    }
+                },
+                { ResourcePlanEnums.OnlyCrop, new() { BuildingEnums.Cropland, } },
+            };
+
+            var fieldTypes = fieldList[plan.Plan];
+
             layoutBuildings = layoutBuildings
-                .Where(x => GetJobQuery.ResourceTypes.Contains(x.Type))
+                .Where(x => fieldTypes.Contains(x.Type))
                 .Where(x => x.Level < plan.Level)
                 .ToList();
 
