@@ -110,15 +110,12 @@ namespace MainCore.Commands.Update
                 else if (typeCount == 1)
                 {
                     queueBuildings = queueBuildings.Where(x => x.Type == underConstructionDtos[0].Type).ToList();
-                    if (underConstructionDtos[0].Level == underConstructionDtos[1].Level)
+
+                    if (queueBuildings.Count == 2 && underConstructionDtos[0].Level == underConstructionDtos[1].Level)
                     {
                         for (var i = 0; i < underConstructionDtos.Count; i++)
                         {
-                            var queueBuilding = queueBuildings.Find(x => x.Type == underConstructionDtos[i].Type);
-                            if (queueBuilding is not null)
-                            {
-                                queueBuilding.Location = underConstructionDtos[i].Location;
-                            }
+                            queueBuildings[i].Location = underConstructionDtos[i].Location;
                         }
                     }
                     else
