@@ -1,4 +1,5 @@
 ﻿using MainCore.Constraints;
+using MainCore.Parsers;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
@@ -17,6 +18,12 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var (accountId, villageId, plan) = command;
 
             Result result;
+
+            var upgradingLevel = UpgradeParser.GetUpgradingLevel(browser.Html);
+            if (upgradingLevel.HasValue && upgradingLevel.Value >= plan.Level)
+            {
+                return Continue.Error;
+            }
 
             if (context.IsUpgradeable(villageId, plan))
             {
