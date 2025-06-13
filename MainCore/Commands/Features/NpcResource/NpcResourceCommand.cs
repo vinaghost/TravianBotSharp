@@ -139,6 +139,16 @@ namespace MainCore.Commands.Features.NpcResource
                 if (okResult.IsFailed) return okResult;
             }
 
+            static bool DialogClosed(IWebDriver driver)
+            {
+                var doc = new HtmlDocument();
+                doc.LoadHtml(driver.PageSource);
+                return !NpcResourceParser.IsNpcDialog(doc);
+            }
+
+            result = await browser.Wait(DialogClosed, cancellationToken);
+            if (result.IsFailed) return result;
+
             return Result.Ok();
         }
     }
