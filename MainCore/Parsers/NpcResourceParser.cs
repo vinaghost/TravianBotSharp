@@ -29,9 +29,13 @@
             return exchangeResourceButton;
         }
 
-        public static HtmlNode GetRedeemButton(HtmlDocument doc)
+        public static HtmlNode? GetRedeemButton(HtmlDocument doc)
         {
-            var button = doc.GetElementbyId("npc_market_button");
+            var submitButton = doc.GetElementbyId("submitButton");
+            if (submitButton is null) return null;
+            if (submitButton.GetAttributeValue("style", string.Empty).Contains("display: none", StringComparison.OrdinalIgnoreCase))
+                return null;
+            var button = submitButton.Descendants("button").FirstOrDefault();
             return button;
         }
 

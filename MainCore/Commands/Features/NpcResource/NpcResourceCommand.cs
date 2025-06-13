@@ -109,7 +109,11 @@ namespace MainCore.Commands.Features.NpcResource
             var html = browser.Html;
 
             var button = NpcResourceParser.GetRedeemButton(html);
-            if (button is null) return Retry.ButtonNotFound("redeem");
+            if (button is null)
+            {
+                button = NpcResourceParser.GetDistributeButton(html);
+                if (button is null) return Retry.ButtonNotFound("redeem");
+            }
 
             var result = await browser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result;
