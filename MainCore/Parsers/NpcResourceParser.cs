@@ -5,7 +5,16 @@
         public static bool IsNpcDialog(HtmlDocument doc)
         {
             var dialog = doc.GetElementbyId("npc");
-            return dialog is not null;
+            if (dialog is null) return false;
+
+            var node = dialog;
+            while (node is not null)
+            {
+                var style = node.GetAttributeValue("style", string.Empty);
+                if (style.Contains("display: none", StringComparison.OrdinalIgnoreCase)) return false;
+                node = node.ParentNode;
+            }
+            return true;
         }
 
         public static HtmlNode? GetExchangeResourcesButton(HtmlDocument doc)
@@ -20,9 +29,13 @@
             return exchangeResourceButton;
         }
 
-        public static HtmlNode GetRedeemButton(HtmlDocument doc)
+        public static HtmlNode? GetRedeemButton(HtmlDocument doc)
         {
-            var button = doc.GetElementbyId("npc_market_button");
+            var submitButton = doc.GetElementbyId("submitButton");
+            if (submitButton is null) return null;
+            if (submitButton.GetAttributeValue("style", string.Empty).Contains("display: none", StringComparison.OrdinalIgnoreCase))
+                return null;
+            var button = submitButton.Descendants("button").FirstOrDefault();
             return button;
         }
 
