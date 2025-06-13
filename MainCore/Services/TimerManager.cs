@@ -38,7 +38,7 @@ namespace MainCore.Services
                     browser.Logger.Error(exception, "{Message}", exception.Message);
                 }
 
-                browser.Logger.Warning("{TaskName} will retry after {times} (#{AttemptNumber} times)", taskName, args.Duration.Humanize(minUnit: TimeUnit.Second), args.AttemptNumber + 1);
+                browser.Logger.Warning("{TaskName} will retry after {times} (#{AttemptNumber} times)", taskName, args.Duration.Humanize(3, minUnit: TimeUnit.Second), args.AttemptNumber + 1);
                 await browser.Refresh(CancellationToken.None);
             };
 

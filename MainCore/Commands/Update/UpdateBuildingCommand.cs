@@ -76,32 +76,29 @@ namespace MainCore.Commands.Update
             return Result.Ok();
         }
 
-        private static void UpdateQueueToDatabase(this AppDbContext context, VillageId villageId, List<BuildingDto> dtos)
+        private static void UpdateQueueToDatabase(this AppDbContext context, VillageId villageId, List<BuildingDto> underConstructionDtos)
         {
             var queueBuildings = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Type != BuildingEnums.Site)
                 .ToList();
 
-            if (dtos.Count == 1)
+            if (underConstructionDtos.Count == 1)
             {
-                var building = dtos[0];
-                queueBuildings = queueBuildings
-                    .Where(x => x.Type == building.Type)
-                    .ToList();
+                var building = underConstructionDtos[0];
 
-                foreach (var item in queueBuildings)
+                foreach (var item in queueBuildings.Where(x => x.Type == building.Type))
                 {
                     item.Location = building.Location;
                 }
             }
-            else if (dtos.Count == 2)
+            else if (underConstructionDtos.Count == 2)
             {
-                var typeCount = dtos.DistinctBy(x => x.Type).Count();
+                var typeCount = underConstructionDtos.DistinctBy(x => x.Type).Count();
 
                 if (typeCount == 2)
                 {
-                    foreach (var dto in dtos)
+                    foreach (var dto in underConstructionDtos)
                     {
                         var queueBuilding = queueBuildings.Find(x => x.Type == dto.Type);
                         if (queueBuilding is not null)
@@ -112,17 +109,18 @@ namespace MainCore.Commands.Update
                 }
                 else if (typeCount == 1)
                 {
-                    queueBuildings = queueBuildings.Where(x => x.Type == dtos[0].Type).ToList();
-                    if (dtos[0].Level == dtos[1].Level)
+                    queueBuildings = queueBuildings.Where(x => x.Type == underConstructionDtos[0].Type).ToList();
+
+                    if (queueBuildings.Count == 2 && underConstructionDtos[0].Level == underConstructionDtos[1].Level)
                     {
-                        for (var i = 0; i < dtos.Count; i++)
+                        for (var i = 0; i < underConstructionDtos.Count; i++)
                         {
-                            queueBuildings[i].Location = dtos[i].Location;
+                            queueBuildings[i].Location = underConstructionDtos[i].Location;
                         }
                     }
                     else
                     {
-                        foreach (var dto in dtos)
+                        foreach (var dto in underConstructionDtos)
                         {
                             var queueBuilding = queueBuildings.Find(x => x.Level == dto.Level + 1);
                             if (queueBuilding is not null)
