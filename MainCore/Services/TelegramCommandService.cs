@@ -2,7 +2,7 @@ using System.Text;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton<TelegramCommandService>]
+    // This service is registered manually in AppMixins
     public sealed class TelegramCommandService
     {
         private readonly ITelegramService _telegramService;
