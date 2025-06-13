@@ -54,7 +54,15 @@
         public static bool IsLoginPage(HtmlDocument doc)
         {
             var loginButton = GetLoginButton(doc);
-            return loginButton is not null;
+            if (loginButton is not null) return true;
+
+            var body = doc.DocumentNode
+                .Descendants("body")
+                .FirstOrDefault(node => node.GetAttributeValue("class", string.Empty)
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                    .Contains("logout"));
+
+            return body is not null;
         }
     }
 }
