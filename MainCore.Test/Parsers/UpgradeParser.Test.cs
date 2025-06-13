@@ -9,6 +9,8 @@ namespace MainCore.Test.Parsers
         private const string MarketplaceWithoutResource = "Parsers/Upgrade/MarketplaceWithoutResource.html";
         private const string CroplandConstructed = "Parsers/Upgrade/CroplandConstructed.html";
         private const string CroplandEmpty = "Parsers/Upgrade/CroplandEmpty.html";
+        private const string CroplandUpgradingSingle = "Parsers/Upgrade/CroplandUpgradingSingle.html";
+        private const string CroplandUpgradingDouble = "Parsers/Upgrade/CroplandUpgradingDouble.html";
 
         [Theory]
         [InlineData(CrannyEmpty, BuildingEnums.Cranny)]
@@ -59,6 +61,22 @@ namespace MainCore.Test.Parsers
             _html.Load(path);
             var actual = MainCore.Parsers.UpgradeParser.GetSpecialUpgradeButton(_html);
             actual.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public void GetUpgradingLevel_Single()
+        {
+            _html.Load(CroplandUpgradingSingle);
+            var actual = MainCore.Parsers.UpgradeParser.GetUpgradingLevel(_html);
+            actual.ShouldBe(9);
+        }
+
+        [Fact]
+        public void GetUpgradingLevel_Multiple()
+        {
+            _html.Load(CroplandUpgradingDouble);
+            var actual = MainCore.Parsers.UpgradeParser.GetUpgradingLevel(_html);
+            actual.ShouldBe(10);
         }
     }
 }
