@@ -4,12 +4,27 @@
     {
         public static HtmlNode? GetLoginButton(HtmlDocument doc)
         {
+            // original login page
             var loginScene = doc.GetElementbyId("loginScene");
-            if (loginScene is null) return null;
+            HtmlNode? loginButton = null;
+            if (loginScene is not null)
+            {
+                loginButton = loginScene
+                    .Descendants("button")
+                    .FirstOrDefault(x => x.HasClass("green"));
+            }
 
-            var loginButton = loginScene
-                .Descendants("button")
-                .FirstOrDefault(x => x.HasClass("green"));
+            // logout page uses a different layout
+            if (loginButton is null)
+            {
+                var loginForm = doc.GetElementbyId("loginForm");
+                if (loginForm is not null)
+                {
+                    loginButton = loginForm
+                        .Descendants("button")
+                        .FirstOrDefault(x => x.HasClass("green"));
+                }
+            }
 
             return loginButton;
         }
