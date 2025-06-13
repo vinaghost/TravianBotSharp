@@ -48,5 +48,30 @@
             var result = MainCore.Parsers.NpcResourceParser.GetInputs(_html);
             result.Count().ShouldBe(4);
         }
+
+        [Fact]
+        public void GetDistributeButton()
+        {
+            _html.Load(DistributeDialog);
+            var result = MainCore.Parsers.NpcResourceParser.GetDistributeButton(_html);
+            result.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public void GetOkButton()
+        {
+            _html.Load(DistributeDialog);
+            var result = MainCore.Parsers.NpcResourceParser.GetOkButton(_html);
+            result.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public void IsOkButtonVisible()
+        {
+            _html.Load(DistributeDialog);
+            var result = MainCore.Parsers.NpcResourceParser.IsOkButtonVisible(_html);
+            result.ShouldBeFalse();
+        }
     }
 }
+
