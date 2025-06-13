@@ -177,6 +177,10 @@ namespace MainCore.Services
             {
                 return Cancel.Error;
             }
+            catch (WebDriverTimeoutException ex)
+            {
+                return Retry.BrowserTimeout(ex.Message);
+            }
             return Result.Ok();
         }
 
