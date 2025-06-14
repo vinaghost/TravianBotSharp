@@ -7,8 +7,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     public static partial class HandleJobCommand
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Response(NormalBuildPlan Plan, JobId JobId);
 
-        private static async ValueTask<Result<NormalBuildPlan>> HandleAsync(
+        private static async ValueTask<Result<Response>> HandleAsync(
             Command command,
             GetJobQuery.Handler getJobQuery,
             ToDorfCommand.Handler toDorfCommand,
@@ -23,7 +24,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var (accountId, villageId) = command;
 
             var (_, isFailed, job, errors) = await getJobQuery.HandleAsync(new(accountId, villageId), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
+            if (isFailed) return Result.Fail<Response>(errors);
 
             Result result;
             if (job.Type == JobTypeEnums.ResourceBuild)
@@ -40,27 +41,27 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     await addJobCommand.HandleAsync(new(villageId, normalBuildPlan.ToJob(), true));
                 }
                 await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
-                return Continue.Error;
+                return Result.Fail<Response>(Continue.Error);
             }
 
             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
 
             var dorf = plan.Location < 19 ? 1 : 2;
             result = await toDorfCommand.HandleAsync(new(accountId, dorf), cancellationToken);
-            if (result.IsFailed) return result;
+            if (result.IsFailed) return Result.Fail<Response>(result.Errors);
 
             var updateBuildingCommandResult = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
-            if (updateBuildingCommandResult.IsFailed) return result;
+            if (updateBuildingCommandResult.IsFailed) return Result.Fail<Response>(updateBuildingCommandResult.Errors);
 
             var (buildings, queueBuildings) = updateBuildingCommandResult.Value;
             if (IsJobComplete(job, buildings, queueBuildings))
             {
                 await deleteJobByIdCommand.HandleAsync(new(villageId, job.Id), cancellationToken);
                 await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
-                return Continue.Error;
+                return Result.Fail<Response>(Continue.Error);
             }
 
-            return plan;
+            return Result.Ok(new Response(plan, job.Id));
         }
 
         private static NormalBuildPlan? GetNormalBuildPlan(

@@ -33,7 +33,7 @@ namespace MainCore.Tasks
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-                var (_, isFailed, plan, errors) = await handleJobCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                var (_, isFailed, response, errors) = await handleJobCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (isFailed)
                 {
                     if (errors.OfType<Continue>().Any()) continue;
@@ -48,6 +48,9 @@ namespace MainCore.Tasks
                     logger.Information("Construction queue is full. Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     return Skip.ConstructionQueueFull;
                 }
+
+                var plan = response.Plan;
+                var jobId = response.JobId;
 
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
 
@@ -68,8 +71,12 @@ namespace MainCore.Tasks
                     return result;
                 }
 
-                result = await handleUpgradeCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
-                if (result.IsFailed) return result;
+                result = await handleUpgradeCommand.HandleAsync(new(task.AccountId, task.VillageId, plan, jobId), cancellationToken);
+                if (result.IsFailed)
+                {
+                    if (result.HasError<Continue>()) continue;
+                    return result;
+                }
 
                 logger.Information("Upgrade for {Type} at location {Location} completed successfully.", plan.Type, plan.Location);
 

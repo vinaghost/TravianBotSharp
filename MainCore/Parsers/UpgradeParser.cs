@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using MainCore.Enums;
 
 namespace MainCore.Parsers
 {
@@ -98,6 +99,35 @@ namespace MainCore.Parsers
                 }
             }
             return level;
+        }
+
+        public static int? GetNextLevel(HtmlDocument doc, BuildingEnums building)
+        {
+            var resources = GetRequiredResource(doc, building);
+            if (resources is null || resources.Count != 5) return null;
+
+            var values = new long[4];
+            for (int i = 0; i < 4; i++)
+            {
+                values[i] = resources[i].InnerText.ParseLong();
+            }
+
+            var max = building.GetMaxLevel();
+            for (int level = 1; level <= max; level++)
+            {
+                var cost = building.GetCost(level);
+                bool match = true;
+                for (int i = 0; i < 4; i++)
+                {
+                    if (cost[i] != values[i])
+                    {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) return level;
+            }
+            return null;
         }
     }
 }
