@@ -24,9 +24,6 @@ namespace MainCore.Notifications.Handlers.Trigger
 
             var autoNPCGranaryPercent = context.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
             var (crop, granary, production) = context.GetCropInfo(villageId);
-            if (granary == 0) return;
-
-            var currentPercent = crop * 100f / granary;
             var villageName = context.GetVillageName(villageId);
 
             var tasks = taskManager
@@ -37,6 +34,21 @@ namespace MainCore.Notifications.Handlers.Trigger
 
             var executing = tasks.FirstOrDefault(x => x.Stage == StageEnums.Executing);
             var waiting = tasks.FirstOrDefault(x => x.Stage == StageEnums.Waiting);
+
+            if (granary == 0)
+            {
+                if (executing is null && waiting is null)
+                {
+                    var npcTask = new NpcTask.Task(accountId, villageId, villageName)
+                    {
+                        ExecuteAt = DateTime.Now
+                    };
+                    taskManager.Add<NpcTask.Task>(npcTask);
+                }
+                return;
+            }
+
+            var currentPercent = crop * 100f / granary;
 
             DateTime? executeAt = null;
 
@@ -51,7 +63,18 @@ namespace MainCore.Notifications.Handlers.Trigger
                 executeAt = DateTime.Now.AddHours(hours);
             }
 
-            if (executeAt is null) return;
+            if (executeAt is null)
+            {
+                if (executing is null && waiting is null)
+                {
+                    var npcTask = new NpcTask.Task(accountId, villageId, villageName)
+                    {
+                        ExecuteAt = DateTime.Now
+                    };
+                    taskManager.Add<NpcTask.Task>(npcTask);
+                }
+                return;
+            }
 
             if (executing is not null)
             {
