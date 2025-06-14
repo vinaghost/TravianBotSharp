@@ -1,25 +1,21 @@
 ﻿using MainCore.Constraints;
 using MainCore.Parsers;
-using MainCore.Commands.Misc;
-using MainCore.Notifications.Message;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
     public static partial class HandleUpgradeCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan, JobId JobId) : IAccountVillageCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
-            DeleteJobByIdCommand.Handler deleteJobByIdCommand,
-            JobUpdated.Handler jobUpdated,
             CancellationToken cancellationToken
         )
         {
-            var (accountId, villageId, plan, jobId) = command;
+            var (accountId, villageId, plan) = command;
 
             Result result;
 
@@ -28,8 +24,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if ((upgradingLevel.HasValue && upgradingLevel.Value >= plan.Level) ||
                 (nextLevel.HasValue && nextLevel.Value >= plan.Level))
             {
-                await deleteJobByIdCommand.HandleAsync(new(villageId, jobId), cancellationToken);
-                await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
                 return Continue.Error;
             }
 

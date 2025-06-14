@@ -1,4 +1,6 @@
 ﻿using MainCore.Commands.Features.UpgradeBuilding;
+using MainCore.Commands.Misc;
+using MainCore.Notifications.Message;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -23,6 +25,8 @@ namespace MainCore.Tasks
             ToBuildPageCommand.Handler toBuildPageCommand,
             HandleResourceCommand.Handler handleResourceCommand,
             HandleUpgradeCommand.Handler handleUpgradeCommand,
+            DeleteJobByIdCommand.Handler deleteJobByIdCommand,
+            JobUpdated.Handler jobUpdated,
             GetFirstQueueBuildingQuery.Handler getFirstQueueBuildingQuery,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             CancellationToken cancellationToken)
@@ -71,10 +75,15 @@ namespace MainCore.Tasks
                     return result;
                 }
 
-                result = await handleUpgradeCommand.HandleAsync(new(task.AccountId, task.VillageId, plan, jobId), cancellationToken);
+                result = await handleUpgradeCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
                 if (result.IsFailed)
                 {
-                    if (result.HasError<Continue>()) continue;
+                    if (result.HasError<Continue>())
+                    {
+                        await deleteJobByIdCommand.HandleAsync(new(task.VillageId, jobId), cancellationToken);
+                        await jobUpdated.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                        continue;
+                    }
                     return result;
                 }
 
