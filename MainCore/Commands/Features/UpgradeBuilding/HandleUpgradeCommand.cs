@@ -22,7 +22,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var upgradingLevel = UpgradeParser.GetUpgradingLevel(browser.Html);
             var nextLevel = UpgradeParser.GetNextLevel(browser.Html, plan.Type);
             if ((upgradingLevel.HasValue && upgradingLevel.Value >= plan.Level) ||
-                (nextLevel.HasValue && nextLevel.Value >= plan.Level))
+                (nextLevel.HasValue && nextLevel.Value > plan.Level))
             {
                 return Continue.Error;
             }
