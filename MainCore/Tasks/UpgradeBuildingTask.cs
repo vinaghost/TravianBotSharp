@@ -1,4 +1,6 @@
 ﻿using MainCore.Commands.Features.UpgradeBuilding;
+using MainCore.Commands.Misc;
+using MainCore.Notifications.Message;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -23,6 +25,8 @@ namespace MainCore.Tasks
             ToBuildPageCommand.Handler toBuildPageCommand,
             HandleResourceCommand.Handler handleResourceCommand,
             HandleUpgradeCommand.Handler handleUpgradeCommand,
+            DeleteJobByIdCommand.Handler deleteJobByIdCommand,
+            JobUpdated.Handler jobUpdated,
             GetFirstQueueBuildingQuery.Handler getFirstQueueBuildingQuery,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             CancellationToken cancellationToken)
@@ -33,7 +37,7 @@ namespace MainCore.Tasks
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-                var (_, isFailed, plan, errors) = await handleJobCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                var (_, isFailed, response, errors) = await handleJobCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (isFailed)
                 {
                     if (errors.OfType<Continue>().Any()) continue;
@@ -48,6 +52,9 @@ namespace MainCore.Tasks
                     logger.Information("Construction queue is full. Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     return Skip.ConstructionQueueFull;
                 }
+
+                var plan = response.Plan;
+                var jobId = response.JobId;
 
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
 
@@ -69,7 +76,16 @@ namespace MainCore.Tasks
                 }
 
                 result = await handleUpgradeCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
-                if (result.IsFailed) return result;
+                if (result.IsFailed)
+                {
+                    if (result.HasError<Continue>())
+                    {
+                        await deleteJobByIdCommand.HandleAsync(new(task.VillageId, jobId), cancellationToken);
+                        await jobUpdated.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                        continue;
+                    }
+                    return result;
+                }
 
                 logger.Information("Upgrade for {Type} at location {Location} completed successfully.", plan.Type, plan.Location);
 

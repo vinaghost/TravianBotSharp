@@ -20,7 +20,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             Result result;
 
             var upgradingLevel = UpgradeParser.GetUpgradingLevel(browser.Html);
-            if (upgradingLevel.HasValue && upgradingLevel.Value >= plan.Level)
+            var nextLevel = UpgradeParser.GetNextLevel(browser.Html, plan.Type);
+            if ((upgradingLevel.HasValue && upgradingLevel.Value >= plan.Level) ||
+                (nextLevel.HasValue && nextLevel.Value > plan.Level))
             {
                 return Continue.Error;
             }
