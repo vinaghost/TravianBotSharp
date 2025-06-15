@@ -39,7 +39,9 @@ namespace MainCore.Commands.Features.UseHeroItem
                 (HeroItemEnums.Crop, resource[3]),
             };
 
-            foreach (var (item, amount) in items.OrderBy(_ => Random.Shared.Next()))
+            var randomItems = items.OrderBy(_ => Random.Shared.Next()).ToList();
+
+            foreach (var (item, amount) in randomItems)
             {
                 if (amount == 0) continue;
 
