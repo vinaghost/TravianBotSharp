@@ -1,5 +1,6 @@
 ﻿using MainCore.Constraints;
 using MainCore.Parsers;
+using MainCore.Errors;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
@@ -18,6 +19,11 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var (accountId, villageId, plan) = command;
 
             Result result;
+
+            if (IsConstructionQueueFull(context, accountId, villageId))
+            {
+                return Skip.ConstructionQueueFull;
+            }
 
             var upgradingLevel = UpgradeParser.GetUpgradingLevel(browser.Html);
             var nextLevel = UpgradeParser.GetNextLevel(browser.Html, plan.Type);
@@ -225,6 +231,28 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (result.IsFailed) return result;
 
             return Result.Ok();
+        }
+
+        private static bool IsConstructionQueueFull(AppDbContext context, AccountId accountId, VillageId villageId)
+        {
+            var queueCount = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Level != -1)
+                .Where(x => x.Type != BuildingEnums.Site)
+                .Count();
+
+            var plusActive = context.AccountsInfo
+                .Where(x => x.AccountId == accountId.Value)
+                .Select(x => x.HasPlusAccount)
+                .FirstOrDefault();
+
+            var applyRomanQueueLogic = context.BooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
+
+            int limit = 1;
+            if (plusActive) limit++;
+            if (applyRomanQueueLogic) limit++;
+
+            return queueCount >= limit;
         }
     }
 }
