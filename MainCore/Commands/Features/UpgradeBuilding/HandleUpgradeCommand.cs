@@ -70,6 +70,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         )
         {
             if (plan.Type == BuildingEnums.Palace) return false;
+            if (plan.Type == BuildingEnums.Residence) return false;
             if (plan.Type.IsResourceField())
             {
                 var dto = context.GetBuilding(villageId, plan.Location);
