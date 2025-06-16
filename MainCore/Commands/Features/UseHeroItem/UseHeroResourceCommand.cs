@@ -31,15 +31,17 @@ namespace MainCore.Commands.Features.UseHeroItem
             var result = IsEnoughResource(resourceItems, resource);
             if (result.IsFailed) return result;
 
-            var items = new Dictionary<HeroItemEnums, long>
+            var items = new List<(HeroItemEnums Item, long Amount)>
             {
-                { HeroItemEnums.Wood, resource[0] },
-                { HeroItemEnums.Clay, resource[1] },
-                { HeroItemEnums.Iron, resource[2] },
-                { HeroItemEnums.Crop, resource[3] },
+                (HeroItemEnums.Wood, resource[0]),
+                (HeroItemEnums.Clay, resource[1]),
+                (HeroItemEnums.Iron, resource[2]),
+                (HeroItemEnums.Crop, resource[3]),
             };
 
-            foreach (var (item, amount) in items)
+            var randomItems = items.OrderBy(_ => Random.Shared.Next()).ToList();
+
+            foreach (var (item, amount) in randomItems)
             {
                 if (amount == 0) continue;
 
