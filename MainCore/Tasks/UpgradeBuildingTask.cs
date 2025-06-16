@@ -2,6 +2,7 @@
 using MainCore.Commands.Misc;
 using MainCore.Notifications.Message;
 using MainCore.Tasks.Base;
+using MainCore.Errors;
 
 namespace MainCore.Tasks
 {
@@ -84,6 +85,19 @@ namespace MainCore.Tasks
                         await jobUpdated.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                         continue;
                     }
+
+                    if (result.HasError<Skip>())
+                    {
+                        var buildingQueue = await getFirstQueueBuildingQuery.HandleAsync(new(task.VillageId), cancellationToken);
+                        if (buildingQueue is null)
+                        {
+                            return Skip.BuildingJobQueueBroken;
+                        }
+
+                        task.ExecuteAt = buildingQueue.CompleteTime.AddSeconds(3);
+                        logger.Information("Construction queue is full. Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
+                    }
+
                     return result;
                 }
 
