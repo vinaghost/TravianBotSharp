@@ -1,6 +1,6 @@
 ﻿using MainCore.Constraints;
 using System.Text.Json;
-using MainCore.Infrasturecture.Persistence;
+using MainCore.Queries;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
@@ -18,7 +18,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
             DeleteJobByIdCommand.Handler deleteJobByIdCommand,
             JobUpdated.Handler jobUpdated,
-            AppDbContext context,
+            GetStorageQuery.Handler getStorageQuery,
             CancellationToken cancellationToken
         )
         {
@@ -30,16 +30,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             Result result;
             if (job.Type == JobTypeEnums.ResourceBuild)
             {
-                var storage = context.Storages
-                    .Where(x => x.VillageId == villageId.Value)
-                    .Select(x => new StorageDto
-                    {
-                        Wood = x.Wood,
-                        Clay = x.Clay,
-                        Iron = x.Iron,
-                        Crop = x.Crop
-                    })
-                    .FirstOrDefault() ?? new();
+                var storage = await getStorageQuery.HandleAsync(new(villageId), cancellationToken);
 
                 var layoutBuildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId, true));
                 var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content)!;
