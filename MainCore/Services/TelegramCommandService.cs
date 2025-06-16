@@ -1,5 +1,7 @@
 using System.Text;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using MainCore.Commands.UI.Villages.BuildViewModel;
 
 namespace MainCore.Services
 {
@@ -21,6 +23,15 @@ namespace MainCore.Services
         private async void OnCommandReceived(AccountId accountId, string message)
         {
             var command = message.Trim();
+
+            // build related commands have parameters, handle them separately
+            if (command.StartsWith("build", StringComparison.OrdinalIgnoreCase))
+            {
+                var tokens = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                await HandleBuildCommand(accountId, tokens);
+                return;
+            }
+
             switch (command.ToLowerInvariant())
             {
                 case "tasks":
@@ -34,6 +45,40 @@ namespace MainCore.Services
                     break;
                 case "restart":
                     await Restart(accountId);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private async Task HandleBuildCommand(AccountId accountId, string[] tokens)
+        {
+            if (tokens.Length < 3) return;
+
+            if (!int.TryParse(tokens[2], out var villageInt)) return;
+            var villageId = new VillageId(villageInt);
+
+            switch (tokens[1])
+            {
+                case "list":
+                    await SendBuildList(accountId, villageId);
+                    break;
+                case "pause":
+                    BuildPause(accountId, villageId);
+                    break;
+                case "resume":
+                    await BuildResume(accountId, villageId);
+                    break;
+                case "rem":
+                    if (tokens.Length < 4) return;
+                    if (int.TryParse(tokens[3], out var index))
+                        await RemoveBuildJob(accountId, villageId, index);
+                    break;
+                case "add":
+                    if (tokens.Length < 5) return;
+                    if (!Enum.TryParse<BuildingEnums>(tokens[3], true, out var building)) return;
+                    if (int.TryParse(tokens[4], out var level))
+                        await AddBuildJob(accountId, villageId, building, level);
                     break;
                 default:
                     break;
@@ -88,6 +133,73 @@ namespace MainCore.Services
             }
 
             _taskManager.SetStatus(accountId, StatusEnums.Online);
+        }
+
+        private async Task SendBuildList(AccountId accountId, VillageId villageId)
+        {
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
+            var getJobItemsQuery = scope.ServiceProvider.GetRequiredService<GetJobItemsQuery.Handler>();
+            var jobs = await getJobItemsQuery.HandleAsync(new(villageId));
+            if (jobs.Count == 0)
+            {
+                await _telegramService.SendText("No build jobs", accountId);
+                return;
+            }
+
+            var sb = new StringBuilder();
+            for (var i = 0; i < jobs.Count; i++)
+            {
+                sb.AppendLine($"{i + 1}. {jobs[i].Content}");
+            }
+
+            await _telegramService.SendText(sb.ToString(), accountId);
+        }
+
+        private void BuildPause(AccountId accountId, VillageId villageId)
+        {
+            _taskManager.Remove<UpgradeBuildingTask.Task>(accountId, villageId);
+        }
+
+        private async Task BuildResume(AccountId accountId, VillageId villageId)
+        {
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
+            var getVillageNameQuery = scope.ServiceProvider.GetRequiredService<GetVillageNameQuery.Handler>();
+            var name = await getVillageNameQuery.HandleAsync(new(villageId));
+            _taskManager.AddOrUpdate<UpgradeBuildingTask.Task>(new(accountId, villageId, name));
+        }
+
+        private async Task RemoveBuildJob(AccountId accountId, VillageId villageId, int index)
+        {
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var jobId = context.Jobs
+                .Where(x => x.VillageId == villageId.Value)
+                .OrderBy(x => x.Position)
+                .Skip(index - 1)
+                .Select(x => x.Id)
+                .FirstOrDefault();
+            if (jobId == 0) return;
+
+            var deleteJobByIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByIdCommand.Handler>();
+            await deleteJobByIdCommand.HandleAsync(new(villageId, new JobId(jobId)));
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(accountId, villageId));
+        }
+
+        private async Task AddBuildJob(AccountId accountId, VillageId villageId, BuildingEnums building, int level)
+        {
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
+            var normalBuildCommand = scope.ServiceProvider.GetRequiredService<NormalBuildCommand.Handler>();
+            var plan = new NormalBuildPlan { Location = 0, Type = building, Level = level };
+            var result = await normalBuildCommand.HandleAsync(new(villageId, plan));
+            if (result.IsFailed)
+            {
+                await _telegramService.SendText(result.ToString(), accountId);
+                return;
+            }
+
+            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
+            await jobUpdated.HandleAsync(new(accountId, villageId));
         }
     }
 }
