@@ -55,8 +55,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 result = await toDorfCommand.HandleAsync(new(accountId, dorfIndex), cancellationToken);
                 if (result.IsFailed) return Result.Fail<Response>(result.Errors);
 
-                var updateBuildingCommandResult = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
-                if (updateBuildingCommandResult.IsFailed) return Result.Fail<Response>(updateBuildingCommandResult.Errors);
+                var updateResult = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+                if (updateResult.IsFailed) return Result.Fail<Response>(updateResult.Errors);
 
                 return Result.Ok(new Response(normalBuildPlan, job.Id));
             }
