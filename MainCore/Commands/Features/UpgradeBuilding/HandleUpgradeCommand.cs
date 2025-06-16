@@ -69,6 +69,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             NormalBuildPlan plan
         )
         {
+            if (plan.Type == BuildingEnums.Palace) return false;
             if (plan.Type.IsResourceField())
             {
                 var dto = context.GetBuilding(villageId, plan.Location);
