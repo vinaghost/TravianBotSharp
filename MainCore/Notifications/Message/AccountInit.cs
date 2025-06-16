@@ -18,6 +18,7 @@ namespace MainCore.Notifications.Message
             SleepTaskTrigger.Handler sleepTaskTrigger,
             StartAdventureTaskTrigger.Handler startAdventureTaskTrigger,
             TrainTroopTaskTrigger.Handler trainTroopTaskTrigger,
+            NpcVillageUpdateTrigger.Handler npcVillageUpdateTrigger,
             UpgradeBuildingTaskTrigger.Handler upgradeBuildingTaskTrigger,
             CancellationToken cancellationToken)
         {
@@ -33,6 +34,7 @@ namespace MainCore.Notifications.Message
             {
                 await refreshVillageTaskTrigger.HandleAsync(new VillageNotification(accountId, village), cancellationToken);
                 await trainTroopTaskTrigger.HandleAsync(new VillageNotification(accountId, village), cancellationToken);
+                await npcVillageUpdateTrigger.HandleAsync(new VillageNotification(accountId, village), cancellationToken);
             }
 
             var hasBuildingJobVillages = await getHasBuildJobVillagesQuery.HandleAsync(new(accountId));
