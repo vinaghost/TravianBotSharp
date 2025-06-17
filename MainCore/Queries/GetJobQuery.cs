@@ -31,6 +31,7 @@ namespace MainCore.Queries
                 var result = context.GetBuildingJob(villageId, false);
                 return result;
             }
+
             var plusActive = context.AccountsInfo
                 .Where(x => x.AccountId == accountId.Value)
                 .Select(x => x.HasPlusAccount)
@@ -154,6 +155,7 @@ namespace MainCore.Queries
         {
             var count = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Level != -1)
                 .Where(x => ResourceTypes.Contains(x.Type))
                 .Count();
             return count;
@@ -216,40 +218,37 @@ namespace MainCore.Queries
             VillageId villageId,
             NormalBuildPlan plan)
         {
-            var currentBuilding = context.Buildings
+            var buildings = context.Buildings
                 .Where(x => x.VillageId == villageId.Value)
+                .ToList();
+
+            var oldBuilding = buildings
                 .Where(x => x.Location == plan.Location)
                 .FirstOrDefault();
 
-            if (currentBuilding is not null && currentBuilding.Type == plan.Type) return Result.Ok();
+            if (oldBuilding is not null && oldBuilding.Type == plan.Type) return Result.Ok();
 
             var prerequisiteBuildings = plan.Type.GetPrerequisiteBuildings();
 
             var errors = new List<JobError>();
 
-            var buildings = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => prerequisiteBuildings.Select(x => x.Type).Contains(x.Type))
-                .ToList();
-
             foreach (var prerequisiteBuilding in prerequisiteBuildings)
             {
                 var vaild = buildings
-                    .Where(x => x.Type == prerequisiteBuilding.Type)
-                    .Any(x => x.Level >= prerequisiteBuilding.Level);
+                    .Any(x => x.Type == prerequisiteBuilding.Type && x.Level >= prerequisiteBuilding.Level);
                 if (!vaild) errors.Add(JobError.PrerequisiteBuildingMissing(prerequisiteBuilding.Type, prerequisiteBuilding.Level));
             }
 
-            if (!plan.Type.IsMultipleBuilding()) return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
+            if (!plan.Type.IsMultipleBuilding()) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
 
-            var firstBuilding = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
+            var firstBuilding = buildings
                 .Where(x => x.Type == plan.Type)
                 .OrderByDescending(x => x.Level)
                 .FirstOrDefault();
 
-            if (firstBuilding is null) return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
-            if (firstBuilding.Level == firstBuilding.Type.GetMaxLevel()) return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
+            if (firstBuilding is null) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
+            if (firstBuilding.Location == plan.Location) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
+            if (firstBuilding.Level == firstBuilding.Type.GetMaxLevel()) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
 
             errors.Add(JobError.PrerequisiteBuildingMissing(firstBuilding.Type, firstBuilding.Level));
             return Result.Fail(errors);
