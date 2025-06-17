@@ -1,5 +1,6 @@
 using System.Text;
 using System.Linq;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using MainCore.Commands.UI.Villages.BuildViewModel;
 
@@ -20,6 +21,40 @@ namespace MainCore.Services
             _telegramService.CommandReceived += OnCommandReceived;
         }
 
+        private static string[] Tokenize(string command)
+        {
+            var tokens = new List<string>();
+            var sb = new StringBuilder();
+            var inQuote = false;
+
+            foreach (var ch in command)
+            {
+                if (ch == '"')
+                {
+                    inQuote = !inQuote;
+                    continue;
+                }
+
+                if (char.IsWhiteSpace(ch) && !inQuote)
+                {
+                    if (sb.Length > 0)
+                    {
+                        tokens.Add(sb.ToString());
+                        sb.Clear();
+                    }
+                }
+                else
+                {
+                    sb.Append(ch);
+                }
+            }
+
+            if (sb.Length > 0)
+                tokens.Add(sb.ToString());
+
+            return tokens.ToArray();
+        }
+
         private async void OnCommandReceived(AccountId accountId, string message)
         {
             var command = message.Trim();
@@ -27,7 +62,7 @@ namespace MainCore.Services
             // build related commands have parameters, handle them separately
             if (command.StartsWith("build", StringComparison.OrdinalIgnoreCase))
             {
-                var tokens = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var tokens = Tokenize(command);
                 await HandleBuildCommand(accountId, tokens);
                 return;
             }
@@ -55,30 +90,40 @@ namespace MainCore.Services
         {
             if (tokens.Length < 3) return;
 
-            if (!int.TryParse(tokens[2], out var villageInt)) return;
-            var villageId = new VillageId(villageInt);
+            var villageName = tokens[2];
+            VillageId? villageId;
+            using (var scope = _serviceScopeFactory.CreateScope(accountId))
+            {
+                var getVillageIdQuery = scope.ServiceProvider.GetRequiredService<GetVillageIdByNameQuery.Handler>();
+                villageId = await getVillageIdQuery.HandleAsync(new(accountId, villageName));
+            }
+            if (villageId is null)
+            {
+                await _telegramService.SendText($"Village '{villageName}' not found", accountId);
+                return;
+            }
 
             switch (tokens[1])
             {
                 case "list":
-                    await SendBuildList(accountId, villageId);
+                    await SendBuildList(accountId, villageId.Value);
                     break;
                 case "pause":
-                    BuildPause(accountId, villageId);
+                    BuildPause(accountId, villageId.Value);
                     break;
                 case "resume":
-                    await BuildResume(accountId, villageId);
+                    await BuildResume(accountId, villageId.Value);
                     break;
                 case "rem":
                     if (tokens.Length < 4) return;
                     if (int.TryParse(tokens[3], out var index))
-                        await RemoveBuildJob(accountId, villageId, index);
+                        await RemoveBuildJob(accountId, villageId.Value, index);
                     break;
                 case "add":
                     if (tokens.Length < 5) return;
                     if (!Enum.TryParse<BuildingEnums>(tokens[3], true, out var building)) return;
                     if (int.TryParse(tokens[4], out var level))
-                        await AddBuildJob(accountId, villageId, building, level);
+                        await AddBuildJob(accountId, villageId.Value, building, level);
                     break;
                 default:
                     break;
