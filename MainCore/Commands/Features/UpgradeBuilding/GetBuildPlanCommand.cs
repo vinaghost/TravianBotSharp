@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
-    public static partial class HandleJobCommand
+    public static partial class GetBuildPlanCommand
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
