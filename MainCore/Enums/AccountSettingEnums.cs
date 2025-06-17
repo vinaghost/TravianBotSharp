@@ -17,6 +17,7 @@
         SleepTimeMax,
         HeadlessChrome,
         EnableAutoStartAdventure,
+        AdventureMaxTravelTime,
         EnableTelegramMessage,
     }
 }

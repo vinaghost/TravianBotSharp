@@ -30,6 +30,7 @@ namespace WPFUI.Views.Tabs
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.Tribe, v => v.Tribes.ViewModel).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.HeadlessChrome, v => v.HeadlessChrome.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.EnableAutoStartAdventure, v => v.EnableAutoStartAdventure.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.AdventureMaxTravelTime, v => v.AdventureMaxTravelTime.Text).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.EnableTelegramMessage, v => v.EnableTelegramMessage.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.TelegramSettingInput.BotToken, v => v.BotToken.Text).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.TelegramSettingInput.ChatId, v => v.ChatId.Text).DisposeWith(d);

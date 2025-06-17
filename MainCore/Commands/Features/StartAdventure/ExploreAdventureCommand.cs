@@ -1,4 +1,6 @@
 ﻿using MainCore.Constraints;
+using MainCore.Services;
+using System;
 
 namespace MainCore.Commands.Features.StartAdventure
 {
@@ -11,14 +13,16 @@ namespace MainCore.Commands.Features.StartAdventure
             Command command,
             IChromeBrowser browser,
             ILogger logger,
+            ISettingService settingService,
             CancellationToken cancellationToken)
         {
             var html = browser.Html;
 
             if (!AdventureParser.CanStartAdventure(html)) return Skip.NoAdventure;
 
-            var adventureButton = AdventureParser.GetAdventureButton(html);
-            if (adventureButton is null) return Retry.ButtonNotFound("adventure");
+            var maxMinutes = settingService.ByName(command.AccountId, AccountSettingEnums.AdventureMaxTravelTime);
+            var adventureButton = AdventureParser.GetAdventureButton(html, TimeSpan.FromMinutes(maxMinutes));
+            if (adventureButton is null) return Skip.NoAdventure;
             logger.Information("Start adventure {Adventure}", AdventureParser.GetAdventureInfo(adventureButton));
 
             static bool ContinueShow(IWebDriver driver)
