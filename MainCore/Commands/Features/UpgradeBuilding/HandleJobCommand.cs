@@ -1,5 +1,6 @@
 ﻿using MainCore.Constraints;
 using System.Text.Json;
+using MainCore.Queries;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
@@ -16,8 +17,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             UpdateBuildingCommand.Handler updateBuildingCommand,
             GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
             DeleteJobByIdCommand.Handler deleteJobByIdCommand,
-            AddJobCommand.Handler addJobCommand,
             JobUpdated.Handler jobUpdated,
+            GetStorageQuery.Handler getStorageQuery,
             CancellationToken cancellationToken
         )
         {
@@ -29,19 +30,26 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             Result result;
             if (job.Type == JobTypeEnums.ResourceBuild)
             {
+                var storage = await getStorageQuery.HandleAsync(new(villageId), cancellationToken);
+
                 var layoutBuildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId, true));
                 var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content)!;
-                var normalBuildPlan = GetNormalBuildPlan(villageId, resourceBuildPlan, layoutBuildings);
+                var normalBuildPlan = GetNormalBuildPlan(resourceBuildPlan, layoutBuildings, storage);
                 if (normalBuildPlan is null)
                 {
                     await deleteJobByIdCommand.HandleAsync(new(villageId, job.Id), cancellationToken);
+                    await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
+                    return Result.Fail<Response>(Continue.Error);
                 }
-                else
-                {
-                    await addJobCommand.HandleAsync(new(villageId, normalBuildPlan.ToJob(), true));
-                }
-                await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
-                return Result.Fail<Response>(Continue.Error);
+
+                var dorfIndex = normalBuildPlan.Location < 19 ? 1 : 2;
+                result = await toDorfCommand.HandleAsync(new(accountId, dorfIndex), cancellationToken);
+                if (result.IsFailed) return Result.Fail<Response>(result.Errors);
+
+                var updateResult = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+                if (updateResult.IsFailed) return Result.Fail<Response>(updateResult.Errors);
+
+                return Result.Ok(new Response(normalBuildPlan, job.Id));
             }
 
             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
@@ -65,9 +73,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         }
 
         private static NormalBuildPlan? GetNormalBuildPlan(
-            VillageId villageId,
             ResourceBuildPlan plan,
-            List<BuildingItem> layoutBuildings
+            List<BuildingItem> layoutBuildings,
+            StorageDto storage
         )
         {
             var fieldList = new Dictionary<ResourcePlanEnums, List<BuildingEnums>>()
@@ -103,27 +111,47 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             if (layoutBuildings.Count == 0) return null;
 
-            var minLevel = layoutBuildings
-                .Select(x => x.Level)
-                .Min();
-
-            var chosenOne = layoutBuildings
-                .Where(x => x.Level == minLevel)
-                .OrderBy(x => x.Id.Value + Random.Shared.Next())
-                .FirstOrDefault();
-
-            if (chosenOne is null) return null;
-
-            // Fix: Use the highest of current, queue, and job levels for the next job
-            int nextLevel = Math.Max(Math.Max(chosenOne.CurrentLevel, chosenOne.QueueLevel), chosenOne.JobLevel) + 1;
-
-            var normalBuildPlan = new NormalBuildPlan()
+            var typeStorage = new Dictionary<BuildingEnums, long>
             {
-                Type = chosenOne.Type,
-                Level = nextLevel,
-                Location = chosenOne.Location,
+                { BuildingEnums.Woodcutter, storage.Wood },
+                { BuildingEnums.ClayPit, storage.Clay },
+                { BuildingEnums.IronMine, storage.Iron },
+                { BuildingEnums.Cropland, storage.Crop },
             };
-            return normalBuildPlan;
+
+            var orderedTypes = fieldTypes
+                .OrderBy(t => typeStorage[t])
+                .ToList();
+
+            foreach (var type in orderedTypes)
+            {
+                var candidates = layoutBuildings
+                    .Where(x => x.Type == type)
+                    .ToList();
+                if (candidates.Count == 0) continue;
+
+                var minLevel = candidates
+                    .Select(x => x.Level)
+                    .Min();
+
+                var chosenOne = candidates
+                    .Where(x => x.Level == minLevel)
+                    .OrderBy(x => x.Id.Value + Random.Shared.Next())
+                    .FirstOrDefault();
+
+                if (chosenOne is null) continue;
+
+                int nextLevel = Math.Max(Math.Max(chosenOne.CurrentLevel, chosenOne.QueueLevel), chosenOne.JobLevel) + 1;
+
+                return new NormalBuildPlan
+                {
+                    Type = chosenOne.Type,
+                    Level = nextLevel,
+                    Location = chosenOne.Location,
+                };
+            }
+
+            return null;
         }
 
         private static bool IsJobComplete(JobDto job, List<BuildingDto> buildings, List<QueueBuilding> queueBuildings)
