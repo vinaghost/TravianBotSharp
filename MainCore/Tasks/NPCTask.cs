@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.Features.NpcResource;
+using MainCore.Notifications.Handlers.Trigger;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -20,6 +21,7 @@ namespace MainCore.Tasks
             ToNpcResourcePageCommand.Handler toNpcResourcePageCommand,
             NpcResourceCommand.Handler npcResourceCommand,
             UpdateStorageCommand.Handler updateStorageCommand, // <-- Inject
+            UpgradeBuildingTaskTrigger.Handler upgradeBuildingTaskTrigger,
             CancellationToken cancellationToken)
         {
             Result result;
@@ -29,6 +31,9 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result;
             // Update storage after NPC trade
             await updateStorageCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+
+            await upgradeBuildingTaskTrigger.HandleAsync(task, cancellationToken);
+
             return Result.Ok();
         }
     }
