@@ -68,7 +68,7 @@ namespace MainCore.Services
 
             try
             {
-                await client.SendTextMessageAsync(chatId, message);
+                await client.SendMessage(chatId, message);
             }
             catch (Exception ex) when (ex is ApiRequestException or HttpRequestException)
             {
