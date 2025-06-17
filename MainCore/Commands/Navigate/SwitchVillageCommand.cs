@@ -37,7 +37,7 @@ namespace MainCore.Commands.Navigate
             if (result.IsFailed) return result;
 
             result = await browser.Wait(villageChanged, cancellationToken);
-            if (result.IsFailed) return result;`
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }
