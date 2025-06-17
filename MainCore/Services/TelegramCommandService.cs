@@ -143,6 +143,7 @@ namespace MainCore.Services
             sb.AppendLine("Task\tExecute at\tStage");
             foreach (var task in tasks)
             {
+                // omit year from timestamp to keep the output concise
                 sb.AppendLine($"{task.Description}\t{task.ExecuteAt:MM-dd HH:mm:ss}\t{task.Stage}");
             }
 
