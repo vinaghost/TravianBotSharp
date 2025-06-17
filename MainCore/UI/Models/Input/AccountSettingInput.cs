@@ -15,6 +15,7 @@ namespace MainCore.UI.Models.Input
             EnableAutoLoadVillage = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoLoadVillageBuilding) == 1;
             HeadlessChrome = settings.GetValueOrDefault(AccountSettingEnums.HeadlessChrome) == 1;
             EnableAutoStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoStartAdventure) == 1;
+            AdventureMaxTravelTime = settings.GetValueOrDefault(AccountSettingEnums.AdventureMaxTravelTime);
             EnableTelegramMessage = settings.GetValueOrDefault(AccountSettingEnums.EnableTelegramMessage) == 1;
             FarmInterval.Set(settings.GetValueOrDefault(AccountSettingEnums.FarmIntervalMin), settings.GetValueOrDefault(AccountSettingEnums.FarmIntervalMax));
             UseStartAllButton = settings.GetValueOrDefault(AccountSettingEnums.UseStartAllButton) == 1;
@@ -54,6 +55,7 @@ namespace MainCore.UI.Models.Input
 
                 { AccountSettingEnums.HeadlessChrome, headlessChrome },
                 { AccountSettingEnums.EnableAutoStartAdventure, autoStartAdventure },
+                { AccountSettingEnums.AdventureMaxTravelTime, AdventureMaxTravelTime },
                 { AccountSettingEnums.EnableTelegramMessage, EnableTelegramMessage ? 1 : 0 },
             };
             return settings;
@@ -75,6 +77,9 @@ namespace MainCore.UI.Models.Input
 
         [Reactive]
         private bool _enableAutoStartAdventure;
+
+        [Reactive]
+        private int _adventureMaxTravelTime = 90;
 
         [Reactive]
         private bool _enableTelegramMessage;

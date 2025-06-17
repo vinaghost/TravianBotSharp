@@ -69,5 +69,25 @@ namespace MainCore.Test.Parsers
             actual.ShouldNotContain("unknown");
             actual.ShouldNotContain("[~|~]");
         }
+
+        [Fact]
+        public void GetAdventureTravelTime()
+        {
+            _html.Load(AdventuresPage);
+            var adventureButton = MainCore.Parsers.AdventureParser.GetAdventureButton(_html);
+            adventureButton.ShouldNotBeNull();
+            var travelTime = MainCore.Parsers.AdventureParser.GetAdventureTravelTime(adventureButton.ParentNode.ParentNode);
+            travelTime.ShouldBeLessThan(TimeSpan.FromMinutes(10));
+        }
+
+        [Fact]
+        public void GetAdventureButtonWithMaxTime()
+        {
+            _html.Load(AdventuresPage);
+            var button = MainCore.Parsers.AdventureParser.GetAdventureButton(_html, TimeSpan.FromMinutes(10));
+            button.ShouldNotBeNull();
+            var none = MainCore.Parsers.AdventureParser.GetAdventureButton(_html, TimeSpan.FromMinutes(5));
+            none.ShouldBeNull();
+        }
     }
 }

@@ -48,7 +48,7 @@
             return adventureAvailabe;
         }
 
-        public static HtmlNode? GetAdventureButton(HtmlDocument doc)
+        public static HtmlNode? GetAdventureButton(HtmlDocument doc, TimeSpan? maxTravelTime = null)
         {
             var adventureTable = doc.GetElementbyId("heroAdventure");
             if (adventureTable is null) return null;
@@ -58,15 +58,29 @@
                 .FirstOrDefault();
             if (adventureTableBody is null) return null;
 
-            var adventureTableBodyRow = adventureTableBody
-                .Descendants("tr")
-                .FirstOrDefault();
-            if (adventureTableBodyRow is null) return null;
+            foreach (var adventureTableBodyRow in adventureTableBody.Descendants("tr"))
+            {
+                if (maxTravelTime is not null)
+                {
+                    var travelTime = GetAdventureTravelTime(adventureTableBodyRow);
+                    if (travelTime > maxTravelTime) continue;
+                }
 
-            var startAdventureButton = adventureTableBodyRow
-                .Descendants("button")
-                .FirstOrDefault();
-            return startAdventureButton;
+                var startAdventureButton = adventureTableBodyRow
+                    .Descendants("button")
+                    .FirstOrDefault();
+                if (startAdventureButton is not null) return startAdventureButton;
+            }
+
+            return null;
+        }
+
+        public static TimeSpan GetAdventureTravelTime(HtmlNode node)
+        {
+            var tdList = node.Descendants("td").ToArray();
+            if (tdList.Length < 3) return TimeSpan.MaxValue;
+            var durationText = tdList[2].InnerText.Trim();
+            return TimeSpan.TryParse(durationText, out var result) ? result : TimeSpan.MaxValue;
         }
 
         public static HtmlNode? GetContinueButton(HtmlDocument doc)
