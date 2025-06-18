@@ -17,5 +17,9 @@
         public static Skip NoRallypoint => new("No rallypoint found. Recheck & load village has rallypoint in Village>Build tab");
         public static Skip NoActiveFarmlist => new("No farmlist is active");
         public static Skip NoAdventure => new("No adventure available");
+
+        public static Skip WrongVillage => new("Wrong village active");
+
+        public static Skip GranaryNotReady => new("Granary percent below threshold");
     }
 }

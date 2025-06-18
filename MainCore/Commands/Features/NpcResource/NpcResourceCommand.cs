@@ -17,6 +17,7 @@ namespace MainCore.Commands.Features.NpcResource
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
+            AppDbContext context,
             IChromeBrowser browser,
             ISettingService settingService,
             CancellationToken cancellationToken)
@@ -25,6 +26,21 @@ namespace MainCore.Commands.Features.NpcResource
 
             var result = await OpenNPCDialog(browser, cancellationToken);
             if (result.IsFailed) return result;
+
+            var html = browser.Html;
+            var currentVillage = VillagePanelParser.GetCurrentVillageId(html);
+            if (currentVillage != villageId) return Skip.WrongVillage;
+
+            var percentSetting = settingService.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
+            var storage = context.Storages
+                .Where(x => x.VillageId == villageId.Value)
+                .Select(x => new { x.Crop, x.Granary })
+                .FirstOrDefault();
+            if (storage is not null && storage.Granary > 0)
+            {
+                var percent = storage.Crop * 100f / storage.Granary;
+                if (percent < percentSetting) return Skip.GranaryNotReady;
+            }
 
             var settings = settingService.ByName(villageId, SettingNames);
             var ratio = GetRatio(settings, villageId);
