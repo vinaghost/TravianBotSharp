@@ -23,7 +23,7 @@
             <TextBox x:Name="YInput" Width="50" Margin="5,0" />
             <Label Content="Time" VerticalAlignment="Center" Margin="10,0,0,0" />
             <DatePicker x:Name="DateInput" Width="120" Margin="5,0" />
-            <materialDesign:TimePicker x:Name="TimeInput" Width="100" Margin="5,0" />
+            <materialDesign:TimePicker x:Name="TimeInput" Width="120" Margin="5,0" WithSeconds="True" />
     <ComboBox x:Name="AttackType" Width="100" Margin="10,0" SelectedValuePath="Tag">
         <ComboBoxItem Content="Reinforce" Tag="{x:Static enums:AttackTypeEnums.Reinforcement}" />
         <ComboBoxItem Content="Raid" Tag="{x:Static enums:AttackTypeEnums.Raid}" />
