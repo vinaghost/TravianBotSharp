@@ -57,6 +57,7 @@ namespace MainCore.DTO
         [MapperIgnoreTarget(nameof(AccessDto.Id))]
         [MapperIgnoreTarget(nameof(AccessDto.Useragent))]
         [MapperIgnoreTarget(nameof(AccessDto.LastUsed))]
+        [MapperIgnoreTarget(nameof(AccessDto.Cookies))]
         private static partial AccessDto ToAccess(this AccountDetailDto dto);
     }
 }

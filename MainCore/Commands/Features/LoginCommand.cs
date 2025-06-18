@@ -1,4 +1,7 @@
 ﻿using MainCore.Constraints;
+using System.Text.Json;
+using MainCore.DTO;
+using System.Linq;
 
 namespace MainCore.Commands.Features
 {
@@ -41,6 +44,21 @@ namespace MainCore.Commands.Features
             if (result.IsFailed) return result;
             result = await browser.WaitPageChanged("dorf", cancellationToken);
             if (result.IsFailed) return result;
+
+            var cookies = await browser.GetCookies();
+            var cookieDtos = cookies.Select(CookieDto.FromCookie).ToList();
+            var cookieJson = JsonSerializer.Serialize(cookieDtos);
+            var accessId = context.Accesses
+                .Where(x => x.AccountId == command.AccountId.Value)
+                .OrderByDescending(x => x.LastUsed)
+                .Select(x => x.Id)
+                .FirstOrDefault();
+            if (accessId != 0)
+            {
+                context.Accesses
+                    .Where(x => x.Id == accessId)
+                    .ExecuteUpdate(x => x.SetProperty(a => a.Cookies, a => cookieJson));
+            }
 
             return Result.Ok();
         }

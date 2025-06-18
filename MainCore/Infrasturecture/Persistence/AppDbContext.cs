@@ -1,5 +1,6 @@
 ﻿using StronglyTypedIds;
 using System.Collections.Immutable;
+using System.Collections.Generic;
 
 [assembly: StronglyTypedIdDefaults(backingType: StronglyTypedIdBackingType.Int, converters: StronglyTypedIdConverter.None)]
 
@@ -272,6 +273,29 @@ namespace MainCore.Infrasturecture.Persistence
     ""ChatId"" TEXT NOT NULL
 )";
                 create.ExecuteNonQuery();
+            }
+            Database.CloseConnection();
+        }
+
+        public void EnsureAccessCookiesColumn()
+        {
+            using var command = Database.GetDbConnection().CreateCommand();
+            command.CommandText = "PRAGMA table_info('Accesses')";
+            Database.OpenConnection();
+            var columns = new HashSet<string>();
+            using (var reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    columns.Add(reader.GetString(1));
+                }
+            }
+
+            if (!columns.Contains("Cookies"))
+            {
+                using var add = Database.GetDbConnection().CreateCommand();
+                add.CommandText = "ALTER TABLE \"Accesses\" ADD COLUMN \"Cookies\" TEXT NOT NULL DEFAULT ''";
+                add.ExecuteNonQuery();
             }
             Database.CloseConnection();
         }

@@ -1,4 +1,5 @@
 ﻿using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System.IO.Compression;
@@ -204,6 +205,28 @@ namespace MainCore.Services
                 var element = elements[0];
                 return element.Displayed && element.Enabled;
             }, cancellationToken);
+        }
+
+        public Task<IEnumerable<Cookie>> GetCookies()
+        {
+            var cookies = Driver.Manage().Cookies.AllCookies;
+            return Task.FromResult((IEnumerable<Cookie>)cookies);
+        }
+
+        public Task SetCookies(IEnumerable<Cookie> cookies)
+        {
+            foreach (var cookie in cookies)
+            {
+                try
+                {
+                    Driver.Manage().Cookies.AddCookie(cookie);
+                }
+                catch
+                {
+                    // ignore invalid cookies
+                }
+            }
+            return Task.CompletedTask;
         }
 
         public async Task Close()
