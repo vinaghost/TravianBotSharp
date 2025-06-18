@@ -59,7 +59,7 @@ namespace MainCore.Commands.Misc
                 if (cookieDtos is not null && cookieDtos.Count > 0)
                 {
                     await browser.SetCookies(cookieDtos.Select(c => c.ToCookie()));
-                    await browser.Refresh(cancellationToken);
+                    await browser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
                 }
             }
 
