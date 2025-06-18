@@ -1,4 +1,5 @@
 ﻿using MainCore.Tasks.Base;
+using MainCore.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Services
@@ -83,6 +84,10 @@ namespace MainCore.Services
                 case TrainTroopTask.Task trainTroopTask:
                     var trainTroopTaskHandler = scope.GetHandler<TrainTroopTask.Task>();
                     return await trainTroopTaskHandler.HandleAsync(trainTroopTask, cancellationToken);
+
+                case AttackTask.Task attackTask:
+                    var attackTaskHandler = scope.GetHandler<AttackTask.Task>();
+                    return await attackTaskHandler.HandleAsync(attackTask, cancellationToken);
 
                 case UpdateBuildingTask.Task updateBuildingTask:
                     var updateBuildingTaskHandler = scope.GetHandler<UpdateBuildingTask.Task>();

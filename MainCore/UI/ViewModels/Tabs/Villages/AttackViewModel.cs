@@ -1,8 +1,11 @@
 using MainCore.Commands.UI.Villages.AttackViewModel;
 using MainCore.Models;
+using MainCore.Tasks;
+using MainCore.Queries;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
+using MainCore.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
@@ -13,29 +16,30 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public AttackInput AttackInput { get; } = new();
         private readonly IDialogService _dialogService;
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
+        private readonly ITaskManager _taskManager;
 
-        public AttackViewModel(IDialogService dialogService, ICustomServiceScopeFactory serviceScopeFactory)
+        public AttackViewModel(IDialogService dialogService, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager)
         {
             _dialogService = dialogService;
             _serviceScopeFactory = serviceScopeFactory;
+            _taskManager = taskManager;
         }
 
         [ReactiveCommand]
         private async Task Send()
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var handler = scope.ServiceProvider.GetRequiredService<SendAttackCommand.Handler>();
-            var (x, y, type, troops) = AttackInput.Get();
+            var getVillageNameQuery = scope.ServiceProvider.GetRequiredService<GetVillageNameQuery.Handler>();
+            var villageName = await getVillageNameQuery.HandleAsync(new(VillageId));
+
+            var (x, y, type, troops, executeAt) = AttackInput.Get();
             var plan = new AttackPlan { X = x, Y = y, Type = type, Troops = troops };
-            var result = await handler.HandleAsync(new(AccountId, VillageId, plan));
-            if (result.IsFailed)
+            var task = new AttackTask.Task(AccountId, VillageId, villageName, plan)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
-            }
-            else
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Attack sent"));
-            }
+                ExecuteAt = executeAt
+            };
+            _taskManager.Add(task);
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Attack task scheduled"));
         }
 
         protected override Task Load(VillageId villageId)
