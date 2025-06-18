@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System.Collections.Immutable;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 
 namespace WPFUI.Views.Tabs.Villages
 {
@@ -72,6 +73,7 @@ namespace WPFUI.Views.Tabs.Villages
                 T11.ViewModel = troops[10];
 
                 this.WhenAnyValue(x => x.ViewModel.Tribe)
+                    .ObserveOn(RxApp.MainThreadScheduler)
                     .Subscribe(UpdateTroopNames)
                     .DisposeWith(d);
 
