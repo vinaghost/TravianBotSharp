@@ -152,16 +152,18 @@ namespace MainCore.Commands.Update
                                 continue;
                             }
                         }
-
                         queueBuilding.Location = building.Location;
+                        if (underConstruction.Where(x => x.Type == queueBuilding.Type).Count() > 1)
+                        {
+                            underConstruction.Remove(building);
+                        }
                     }
                 }
+                else
+                {
+                    context.RemoveRange(dbQueueBuildings);
+                }
+                context.SaveChanges();
             }
-            else
-            {
-                context.RemoveRange(dbQueueBuildings);
-            }
-            context.SaveChanges();
         }
     }
-}
