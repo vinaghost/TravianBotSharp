@@ -19,12 +19,16 @@ namespace MainCore.UI.Models.Input
         private AttackTypeEnums _attackType = AttackTypeEnums.Raid;
 
         [Reactive]
-        private DateTime _executeAt = DateTime.Now;
+        private DateTime _executeDate = DateTime.Today;
+
+        [Reactive]
+        private DateTime _executeTime = DateTime.Now;
 
         public (int x, int y, AttackTypeEnums type, int[] troops, DateTime executeAt) Get()
         {
             var troopValues = Troops.Select(t => t.Get()).ToArray();
-            return (X, Y, AttackType, troopValues, ExecuteAt);
+            var executeAt = ExecuteDate.Date.Add(ExecuteTime.TimeOfDay);
+            return (X, Y, AttackType, troopValues, executeAt);
         }
     }
 }
