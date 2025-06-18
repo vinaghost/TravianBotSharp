@@ -32,7 +32,9 @@ namespace MainCore.Commands.UI.Villages.AttackViewModel
             result = await toBuildingCommand.HandleAsync(new(accountId, location), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await switchTabCommand.HandleAsync(new(accountId, 1), cancellationToken);
+            // Open the send troops tab in the rally point
+            // Tab index 2 corresponds to the "Send troops" tab
+            result = await switchTabCommand.HandleAsync(new(accountId, 2), cancellationToken);
             if (result.IsFailed) return result;
 
             var script = BuildScript(plan);
