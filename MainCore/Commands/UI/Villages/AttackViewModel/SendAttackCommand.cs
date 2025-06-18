@@ -1,5 +1,6 @@
 using MainCore.Constraints;
 using MainCore.Models;
+using OpenQA.Selenium;
 
 namespace MainCore.Commands.UI.Villages.AttackViewModel
 {
@@ -12,6 +13,7 @@ namespace MainCore.Commands.UI.Villages.AttackViewModel
             Command command,
             IChromeBrowser browser,
             ToDorfCommand.Handler toDorfCommand,
+            SwitchVillageCommand.Handler switchVillageCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToBuildingCommand.Handler toBuildingCommand,
             SwitchTabCommand.Handler switchTabCommand,
@@ -20,6 +22,9 @@ namespace MainCore.Commands.UI.Villages.AttackViewModel
             var (accountId, villageId, plan) = command;
 
             Result result;
+            result = await switchVillageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            if (result.IsFailed) return result;
+
             result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
             if (result.IsFailed) return result;
 
@@ -39,6 +44,15 @@ namespace MainCore.Commands.UI.Villages.AttackViewModel
 
             var script = BuildScript(plan);
             result = await browser.ExecuteJsScript(script);
+            if (result.IsFailed) return result;
+
+            result = await browser.WaitElement(By.Id("confirmSendTroops"), cancellationToken);
+            if (result.IsFailed) return result;
+
+            result = await browser.Click(By.Id("confirmSendTroops"));
+            if (result.IsFailed) return result;
+
+            result = await browser.WaitPageChanged("dorf", cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();
