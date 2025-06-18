@@ -5,6 +5,7 @@ namespace MainCore.DTO
     public class QueueBuildingDto
     {
         public int Position { get; set; }
+
         public int Location { get; set; } = -1;
         public string Type { get; set; }
         public int Level { get; set; }
@@ -23,6 +24,7 @@ namespace MainCore.DTO
 
         [MapperIgnoreTarget(nameof(QueueBuilding.Id))]
         [MapperIgnoreTarget(nameof(QueueBuilding.VillageId))]
+        [MapperIgnoreTarget(nameof(QueueBuilding.Location))]
         public static partial void To(this QueueBuildingDto dto, QueueBuilding entity);
 
         [MapperIgnoreTarget(nameof(QueueBuilding.Id))]

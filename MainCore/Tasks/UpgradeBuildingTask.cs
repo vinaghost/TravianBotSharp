@@ -23,7 +23,6 @@ namespace MainCore.Tasks
             ToBuildPageCommand.Handler toBuildPageCommand,
             HandleResourceCommand.Handler handleResourceCommand,
             HandleUpgradeCommand.Handler handleUpgradeCommand,
-            GetFirstQueueBuildingQuery.Handler getFirstQueueBuildingQuery,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             CancellationToken cancellationToken)
         {
