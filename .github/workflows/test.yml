@@ -107,3 +107,4 @@ jobs:
           message: |
             Version of this build is ${{needs.version.outputs.version}}
             Check download link [here](https://nightly.link/kikuman/TravianBotSharp/actions/runs/${{ github.run_id }})
+            Direct link [here](https://nightly.link/kikuman/TravianBotSharp/actions/runs/${{ github.run_id }}/TBS-${{needs.version.outputs.version}})
