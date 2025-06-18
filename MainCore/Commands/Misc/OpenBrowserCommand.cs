@@ -46,7 +46,6 @@ namespace MainCore.Commands.Misc
             };
 
             await browser.Setup(chromeSetting);
-            await browser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
 
             var cookieData = context.Accesses
                .Where(x => x.Id == access.Id.Value)
@@ -59,9 +58,10 @@ namespace MainCore.Commands.Misc
                 if (cookieDtos is not null && cookieDtos.Count > 0)
                 {
                     await browser.SetCookies(cookieDtos.Select(c => c.ToCookie()));
-                    await browser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
                 }
             }
+
+            await browser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
 
             context.Accesses
                .Where(x => x.Id == access.Id.Value)
