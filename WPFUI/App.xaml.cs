@@ -8,6 +8,7 @@ using ReactiveMarbles.Extensions.Hosting.Wpf;
 using ReactiveUI;
 using Splat.ModeDetection;
 using System;
+using System.IO;
 using System.Reactive;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,6 +23,12 @@ namespace WPFUI
     {
         public App()
         {
+            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+            {
+                var ex = (Exception)args.ExceptionObject;
+                File.WriteAllText("crash.log", ex.ToString());
+            };
+
             Splat.ModeDetector.OverrideModeDetector(Mode.Run);
             var host = AppMixins.GetHostBuilder()
                 .ConfigureWpf(wpfBuilder => wpfBuilder.UseCurrentApplication(this).UseWindow<MainWindow>())
