@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System.Collections.Immutable;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 
 namespace WPFUI.Views.Tabs.Villages
 {
