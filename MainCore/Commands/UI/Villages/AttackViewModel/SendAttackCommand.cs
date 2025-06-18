@@ -52,7 +52,10 @@ namespace MainCore.Commands.UI.Villages.AttackViewModel
             result = await browser.Click(By.Id("confirmSendTroops"));
             if (result.IsFailed) return result;
 
-            result = await browser.WaitPageChanged("dorf", cancellationToken);
+            // After confirming the attack Travian returns to the rally point
+            // page. Waiting for a generic page reload is enough here since the
+            // URL usually stays on build.php.
+            result = await browser.WaitPageLoaded(cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();
