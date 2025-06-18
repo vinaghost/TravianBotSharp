@@ -1,3 +1,4 @@
+using System;
 using MainCore.UI.ViewModels.Tabs.Villages;
 using ReactiveUI;
 using System.Reactive.Disposables;
@@ -26,6 +27,12 @@ namespace WPFUI.Views.Tabs.Villages
                         v => v.YInput.Text,
                         y => y.ToString(),
                         s => int.TryParse(s, out var value) ? value : 0)
+                    .DisposeWith(d);
+                this.Bind(ViewModel,
+                        vm => vm.AttackInput.ExecuteAt,
+                        v => v.TimeInput.Text,
+                        dt => dt.ToString("yyyy-MM-dd HH:mm:ss"),
+                        s => DateTime.TryParse(s, out var value) ? value : DateTime.Now)
                     .DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AttackInput.AttackType, v => v.AttackType.SelectedValue).DisposeWith(d);
 

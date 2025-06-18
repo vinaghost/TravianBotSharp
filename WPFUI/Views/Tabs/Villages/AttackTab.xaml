@@ -20,6 +20,8 @@
             <TextBox x:Name="XInput" Width="50" Margin="5,0" />
             <Label Content="Y" VerticalAlignment="Center" />
             <TextBox x:Name="YInput" Width="50" Margin="5,0" />
+            <Label Content="Time" VerticalAlignment="Center" Margin="10,0,0,0" />
+            <TextBox x:Name="TimeInput" Width="150" Margin="5,0" />
     <ComboBox x:Name="AttackType" Width="100" Margin="10,0" SelectedValuePath="Tag">
         <ComboBoxItem Content="Reinforce" Tag="{x:Static enums:AttackTypeEnums.Reinforcement}" />
         <ComboBoxItem Content="Raid" Tag="{x:Static enums:AttackTypeEnums.Raid}" />
