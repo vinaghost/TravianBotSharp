@@ -46,7 +46,7 @@ namespace MainCore.Commands.Misc
             };
 
             await browser.Setup(chromeSetting);
-            await browser.Navigate($"{account.Server}", cancellationToken);
+            await browser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
 
             var cookieData = context.Accesses
                .Where(x => x.Id == access.Id.Value)
