@@ -69,6 +69,15 @@ namespace MainCore.Tasks
                     if (result.HasError<Skip>())
                     {
                         var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
+                        if (result.Errors.OfType<Skip>().Any(x => x.Message == Skip.WaitingStorageUpgrade.Message))
+                        {
+                            var buildingQueue = await getFirstQueueBuildingQuery.HandleAsync(new(task.VillageId), cancellationToken);
+                            if (buildingQueue != null)
+                            {
+                                time = buildingQueue.CompleteTime - DateTime.Now + TimeSpan.FromSeconds(3);
+                                if (time < TimeSpan.Zero) time = TimeSpan.Zero;
+                            }
+                        }
                         task.ExecuteAt = DateTime.Now.Add(time);
                         logger.Information("Not enough resource. Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     }
