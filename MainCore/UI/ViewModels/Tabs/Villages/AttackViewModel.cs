@@ -1,5 +1,6 @@
 using MainCore.Commands.UI.Villages.AttackViewModel;
 using MainCore.Models;
+using MainCore.Enums;
 using MainCore.Tasks;
 using MainCore.Queries;
 using MainCore.UI.Models.Input;
@@ -17,6 +18,13 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private readonly IDialogService _dialogService;
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
         private readonly ITaskManager _taskManager;
+
+        private TribeEnums _tribe = TribeEnums.Any;
+        public TribeEnums Tribe
+        {
+            get => _tribe;
+            private set => this.RaiseAndSetIfChanged(ref _tribe, value);
+        }
 
         public AttackViewModel(IDialogService dialogService, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager)
         {
@@ -44,7 +52,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         protected override Task Load(VillageId villageId)
         {
-            // no async load for now
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
+            var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+            Tribe = (TribeEnums)settingService.ByName(villageId, VillageSettingEnums.Tribe);
             return Task.CompletedTask;
         }
     }
