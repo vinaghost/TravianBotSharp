@@ -36,6 +36,15 @@ namespace MainCore.Services
                     var exception = error.Exception;
                     browser.Logger.Error(exception, "{Message}", exception.Message);
                 }
+                if (error.Result is not null)
+                {
+                    var message = string.Join(Environment.NewLine, error.Result.Reasons.Select(e => e.Message));
+                    if (!string.IsNullOrEmpty(message))
+                    {
+                        browser.Logger.Warning("Task {TaskName} failed", taskName, message);
+                        browser.Logger.Warning("{Message}", message);
+                    }
+                }
 
                 browser.Logger.Warning("{TaskName} will retry after {RetryDelay} (#{AttemptNumber} times)", taskName, args.RetryDelay.Humanize(3, minUnit: Humanizer.Localisation.TimeUnit.Second), args.AttemptNumber + 1);
                 await browser.Refresh(CancellationToken.None);
