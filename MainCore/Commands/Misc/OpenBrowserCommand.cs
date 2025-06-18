@@ -1,5 +1,6 @@
 ﻿using MainCore.Constraints;
 using MainCore.DTO;
+using OpenQA.Selenium;
 
 namespace MainCore.Commands.Misc
 {
@@ -49,7 +50,15 @@ namespace MainCore.Commands.Misc
 
             // cookies are not loaded during browser setup for now
 
-            await browser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
+            try
+            {
+                await browser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
+            }
+            catch (WebDriverTimeoutException)
+            {
+                // navigation may redirect to the login page which does not contain
+                // dorf1.php in the URL. Ignore this timeout so login can proceed.
+            }
 
             context.Accesses
                .Where(x => x.Id == access.Id.Value)
