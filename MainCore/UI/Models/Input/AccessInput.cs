@@ -13,6 +13,7 @@
             ProxyPassword = "";
             Useragent = "";
             LastUsed = DateTime.MinValue;
+            Cookies = "";
         }
 
         public void CopyTo(AccessInput target)
@@ -26,6 +27,7 @@
             target.ProxyPassword = ProxyPassword;
             target.Useragent = Useragent;
             target.LastUsed = LastUsed;
+            target.Cookies = Cookies;
         }
 
         public AccessInput Clone()
@@ -41,6 +43,7 @@
                 ProxyPassword = ProxyPassword,
                 Useragent = Useragent,
                 LastUsed = LastUsed,
+                Cookies = Cookies,
             };
         }
 
@@ -69,6 +72,9 @@
 
         [Reactive]
         private DateTime _lastUsed;
+
+        [Reactive]
+        private string _cookies = "";
     }
 
     public static class AccessInputExtensions
@@ -86,6 +92,7 @@
                 ProxyPassword = dto.ProxyPassword,
                 Useragent = dto.Useragent,
                 LastUsed = dto.LastUsed,
+                Cookies = dto.Cookies,
             };
         }
 
@@ -102,6 +109,7 @@
                 ProxyPassword = input.ProxyPassword,
                 Useragent = input.Useragent,
                 LastUsed = input.LastUsed,
+                Cookies = input.Cookies,
             };
         }
     }

@@ -19,6 +19,7 @@ namespace MainCore.Entities
         public string ProxyPassword { get; set; }
         public string Useragent { get; set; }
         public DateTime LastUsed { get; set; }
+        public string Cookies { get; set; }
 
         public int AccountId { get; set; }
     }

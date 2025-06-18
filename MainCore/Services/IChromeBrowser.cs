@@ -1,4 +1,5 @@
 ﻿using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium;
 
 namespace MainCore.Services
 {
@@ -36,5 +37,9 @@ namespace MainCore.Services
         Task<Result> WaitPageLoaded(CancellationToken cancellationToken);
 
         Task<Result> WaitElement(By by, CancellationToken cancellationToken);
+
+        Task<IEnumerable<Cookie>> GetCookies();
+
+        Task SetCookies(IEnumerable<Cookie> cookies);
     }
 }
