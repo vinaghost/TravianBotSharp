@@ -20,6 +20,11 @@ namespace MainCore.Commands.Update
             await Task.CompletedTask;
             var (accountId, villageId) = command;
 
+            context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.CompleteTime < DateTime.Now)
+                .ExecuteDelete();
+
             var html = browser.Html;
 
             var dtoBuilding = GetBuildings(browser.CurrentUrl, html).ToList();
@@ -99,62 +104,62 @@ namespace MainCore.Commands.Update
                     context.Update(dbBuilding);
                 }
             }
-
-            context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.CompleteTime < DateTime.Now)
-                .ExecuteDelete();
-
             var dbQueueBuildings = context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .ToList();
-
-            foreach (var dto in queueBuildingDtos)
+                   .Where(x => x.VillageId == villageId.Value)
+                   .ToList();
+            if (queueBuildingDtos.Count > 0)
             {
-                var buildingType = Enum.Parse<BuildingEnums>(dto.Type);
-                var dbQueueBuilding = dbQueueBuildings.Find(x => x.Level == dto.Level && x.Type == buildingType);
-
-                if (dbQueueBuilding is null)
+                foreach (var dto in queueBuildingDtos)
                 {
-                    var building = dto.ToEntity(villageId);
-                    dbQueueBuildings.Add(building);
-                    context.Add(building);
-                }
-                else
-                {
-                    dto.To(dbQueueBuilding);
-                    context.Update(dbQueueBuilding);
-                }
-            }
+                    var buildingType = Enum.Parse<BuildingEnums>(dto.Type);
+                    var dbQueueBuilding = dbQueueBuildings.Find(x => x.Level == dto.Level && x.Type == buildingType);
 
-            var missingLocation = dbQueueBuildings
-                .Where(x => x.Location == -1)
-                .ToList();
+                    if (dbQueueBuilding is null)
+                    {
+                        var building = dto.ToEntity(villageId);
+                        dbQueueBuildings.Add(building);
+                        context.Add(building);
+                    }
+                    else
+                    {
+                        dto.To(dbQueueBuilding);
+                        context.Update(dbQueueBuilding);
+                    }
+                }
 
-            if (missingLocation.Count != 0)
-            {
-                var underConstruction = dbBuildings
-                    .Where(x => x.IsUnderConstruction)
+                var missingLocation = dbQueueBuildings
+                    .Where(x => x.Location == -1)
                     .ToList();
 
-                for (var i = 0; i < missingLocation.Count; i++)
+                if (missingLocation.Count != 0)
                 {
-                    var queueBuilding = missingLocation[i];
+                    var underConstruction = dbBuildings
+                        .Where(x => x.IsUnderConstruction)
+                        .ToList();
 
-                    var building = underConstruction.Find(x => x.Type == queueBuilding.Type && x.Level == queueBuilding.Level - 1);
-
-                    if (building is null)
+                    for (var i = 0; i < missingLocation.Count; i++)
                     {
-                        building = underConstruction.Find(x => x.Type == queueBuilding.Type && x.Level == queueBuilding.Level - 2);
+                        var queueBuilding = missingLocation[i];
+
+                        var building = underConstruction.Find(x => x.Type == queueBuilding.Type && x.Level == queueBuilding.Level - 1);
 
                         if (building is null)
                         {
-                            continue;
-                        }
-                    }
+                            building = underConstruction.Find(x => x.Type == queueBuilding.Type && x.Level == queueBuilding.Level - 2);
 
-                    queueBuilding.Location = building.Location;
+                            if (building is null)
+                            {
+                                continue;
+                            }
+                        }
+
+                        queueBuilding.Location = building.Location;
+                    }
                 }
+            }
+            else
+            {
+                context.RemoveRange(dbQueueBuildings);
             }
             context.SaveChanges();
         }
