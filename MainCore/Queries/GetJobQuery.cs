@@ -68,14 +68,23 @@ namespace MainCore.Queries
                 return job;
             }
 
+            if (queueBuildings.Count == 3)
+            {
+                return NextExecuteError.ConstructionQueueFull(queueBuildings[0].CompleteTime.AddSeconds(3));
+            }
+
             return UpgradeBuildingError.BuildingJobQueueBroken;
         }
 
         private static List<QueueBuilding> GetQueueBuildings(this AppDbContext context, VillageId villageId)
         {
+            context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.CompleteTime < DateTime.Now)
+                .ExecuteDelete();
+
             var queueBuildings = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Level != -1)
                 .OrderBy(x => x.CompleteTime)
                 .ToList();
             return queueBuildings;

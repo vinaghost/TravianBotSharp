@@ -65,7 +65,6 @@ namespace MainCore.Notifications.Handlers.Trigger
         {
             var count = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type != BuildingEnums.Site)
                 .Count();
             return count;
         }

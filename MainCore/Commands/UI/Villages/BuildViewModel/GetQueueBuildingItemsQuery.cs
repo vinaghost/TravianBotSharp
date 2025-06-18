@@ -20,7 +20,6 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
             var items = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type != BuildingEnums.Site)
                 .AsEnumerable()
                 .Select(x => new ListBoxItem()
                 {

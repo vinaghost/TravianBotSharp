@@ -159,12 +159,13 @@ namespace MainCore.Commands.Update
                         }
                     }
                 }
-                else
-                {
-                    context.RemoveRange(dbQueueBuildings);
-                }
-                context.SaveChanges();
             }
+            else
+            {
+                context.RemoveRange(dbQueueBuildings);
+            }
+            context.SaveChanges();
+
         }
     }
 }

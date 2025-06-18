@@ -31,7 +31,6 @@ namespace MainCore.Queries
 
             var queueBuildings = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type != BuildingEnums.Site)
                 .GroupBy(x => x.Location)
                 .ToList();
 
