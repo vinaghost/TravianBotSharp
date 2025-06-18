@@ -29,10 +29,16 @@ namespace WPFUI.Views.Tabs.Villages
                         s => int.TryParse(s, out var value) ? value : 0)
                     .DisposeWith(d);
                 this.Bind(ViewModel,
-                        vm => vm.AttackInput.ExecuteAt,
-                        v => v.TimeInput.Text,
-                        dt => dt.ToString("yyyy-MM-dd HH:mm:ss"),
-                        s => DateTime.TryParse(s, out var value) ? value : DateTime.Now)
+                        vm => vm.AttackInput.ExecuteDate,
+                        v => v.DateInput.SelectedDate,
+                        d => (DateTime?)d,
+                        d => d ?? DateTime.Today)
+                    .DisposeWith(d);
+                this.Bind(ViewModel,
+                        vm => vm.AttackInput.ExecuteTime,
+                        v => v.TimeInput.SelectedTime,
+                        dt => (DateTime?)dt,
+                        dt => dt ?? DateTime.Now)
                     .DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AttackInput.AttackType, v => v.AttackType.SelectedValue).DisposeWith(d);
 

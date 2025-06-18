@@ -1,13 +1,14 @@
 using MainCore.Constraints;
 using MainCore.Models;
 using OpenQA.Selenium;
+using System;
 
 namespace MainCore.Commands.UI.Villages.AttackViewModel
 {
     [Handler]
     public static partial class SendAttackCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, AttackPlan Plan) : IAccountVillageCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, AttackPlan Plan, DateTime ConfirmAt) : IAccountVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -19,7 +20,7 @@ namespace MainCore.Commands.UI.Villages.AttackViewModel
             SwitchTabCommand.Handler switchTabCommand,
             CancellationToken cancellationToken)
         {
-            var (accountId, villageId, plan) = command;
+            var (accountId, villageId, plan, confirmAt) = command;
 
             Result result;
             result = await switchVillageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
@@ -48,6 +49,12 @@ namespace MainCore.Commands.UI.Villages.AttackViewModel
 
             result = await browser.WaitElement(By.Id("confirmSendTroops"), cancellationToken);
             if (result.IsFailed) return result;
+
+            var waitTime = confirmAt - DateTime.Now;
+            if (waitTime > TimeSpan.Zero)
+            {
+                await Task.Delay(waitTime, cancellationToken);
+            }
 
             result = await browser.Click(By.Id("confirmSendTroops"));
             if (result.IsFailed) return result;

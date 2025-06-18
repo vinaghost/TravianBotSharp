@@ -34,9 +34,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             var (x, y, type, troops, executeAt) = AttackInput.Get();
             var plan = new AttackPlan { X = x, Y = y, Type = type, Troops = troops };
-            var task = new AttackTask.Task(AccountId, VillageId, villageName, plan)
+            var task = new AttackTask.Task(AccountId, VillageId, villageName, plan, executeAt)
             {
-                ExecuteAt = executeAt
+                ExecuteAt = executeAt.AddSeconds(-20) > DateTime.Now ? executeAt.AddSeconds(-20) : DateTime.Now
             };
             _taskManager.Add(task);
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Attack task scheduled"));

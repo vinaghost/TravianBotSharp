@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:uc="clr-namespace:WPFUI.Views.UserControls"
     xmlns:enums="clr-namespace:MainCore.Enums;assembly=MainCore"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
@@ -21,7 +22,8 @@
             <Label Content="Y" VerticalAlignment="Center" />
             <TextBox x:Name="YInput" Width="50" Margin="5,0" />
             <Label Content="Time" VerticalAlignment="Center" Margin="10,0,0,0" />
-            <TextBox x:Name="TimeInput" Width="150" Margin="5,0" />
+            <DatePicker x:Name="DateInput" Width="120" Margin="5,0" />
+            <materialDesign:TimePicker x:Name="TimeInput" Width="120" Margin="5,0" WithSeconds="True" />
     <ComboBox x:Name="AttackType" Width="100" Margin="10,0" SelectedValuePath="Tag">
         <ComboBoxItem Content="Reinforce" Tag="{x:Static enums:AttackTypeEnums.Reinforcement}" />
         <ComboBoxItem Content="Raid" Tag="{x:Static enums:AttackTypeEnums.Raid}" />
