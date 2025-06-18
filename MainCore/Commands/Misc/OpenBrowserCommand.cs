@@ -52,12 +52,13 @@ namespace MainCore.Commands.Misc
 
             try
             {
-                await browser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
+                await browser.Driver.Navigate().GoToUrlAsync($"{account.Server}/dorf1.php");
+                await browser.WaitPageLoaded(cancellationToken);
             }
             catch (WebDriverTimeoutException)
             {
                 // navigation may redirect to the login page which does not contain
-                // dorf1.php in the URL. Ignore this timeout so login can proceed.
+                // dorf1.php in the URL. Ignore the timeout so login can proceed.
             }
 
             context.Accesses
