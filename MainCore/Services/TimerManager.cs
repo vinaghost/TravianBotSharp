@@ -129,6 +129,13 @@ namespace MainCore.Services
                 var result = poliResult.Result;
                 if (result.IsFailed)
                 {
+                    var message = string.Join(Environment.NewLine, result.Reasons.Select(e => e.Message));
+                    if (!string.IsNullOrEmpty(message))
+                    {
+                        logger.Warning("Task {TaskName} failed", task.Description, message);
+                        logger.Warning("{Message}", message);
+                    }
+
                     if (result.HasError<Stop>() || result.HasError<Retry>())
                     {
                         var filename = await browser.Screenshot();
@@ -144,6 +151,7 @@ namespace MainCore.Services
                         else
                         {
                             _taskManager.ReOrder(accountId);
+                            logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                         }
                     }
                     else if (result.HasError<Cancel>())
@@ -160,6 +168,7 @@ namespace MainCore.Services
                     else
                     {
                         _taskManager.ReOrder(accountId);
+                        logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     }
                 }
             }

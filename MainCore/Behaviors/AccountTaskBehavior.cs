@@ -32,7 +32,6 @@ namespace MainCore.Behaviors
             {
                 if (!LoginParser.IsLoginPage(_browser.Html))
                 {
-                    _logger.Information("Browser is not ingame nor login page. Please check browser");
                     return (TResponse)Stop.NotTravianPage;
                 }
 
@@ -40,7 +39,6 @@ namespace MainCore.Behaviors
                 {
                     _taskManager.AddOrUpdate<LoginTask.Task>(new(accountId), first: true);
                     request.ExecuteAt = request.ExecuteAt.AddSeconds(1);
-                    _logger.Information("Account is logout. Re-login now. Schedule next run at {Time}", request.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     return (TResponse)Skip.AccountLogout;
                 }
             }

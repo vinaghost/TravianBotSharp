@@ -38,9 +38,7 @@ namespace MainCore.Tasks
                     if (errors.Count == 1 && errors[0] is NextExecuteError nextExecuteError)
                     {
                         task.ExecuteAt = nextExecuteError.NextExecute;
-                        logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     }
-
                     return new Skip();
                 }
 
@@ -57,7 +55,6 @@ namespace MainCore.Tasks
                     {
                         var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
                         task.ExecuteAt = DateTime.Now.Add(time);
-                        logger.Information("Not enough resource. Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     }
 
                     return result;

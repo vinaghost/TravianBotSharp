@@ -167,3 +167,4 @@ namespace MainCore.Commands.Update
             }
         }
     }
+}
