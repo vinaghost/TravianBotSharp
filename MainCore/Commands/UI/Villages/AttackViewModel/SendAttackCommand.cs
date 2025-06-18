@@ -49,7 +49,7 @@ namespace MainCore.Commands.UI.Villages.AttackViewModel
             var sb = new System.Text.StringBuilder();
             sb.AppendLine($"document.getElementsByName('x')[0].value='{plan.X}';");
             sb.AppendLine($"document.getElementsByName('y')[0].value='{plan.Y}';");
-            sb.AppendLine($"var et=document.querySelector('input[name=\"eventType\"][value=\"{(int)plan.Type}\"]');if(et)et.checked=true;");
+            sb.AppendLine($"var et=document.querySelector(\"input[name='eventType'][value='{(int)plan.Type}']\");if(et)et.checked=true;");
             for (int i = 0; i < plan.Troops.Length; i++)
             {
                 var value = plan.Troops[i];
