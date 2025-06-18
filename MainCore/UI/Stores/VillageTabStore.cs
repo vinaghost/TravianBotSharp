@@ -17,15 +17,17 @@ namespace MainCore.UI.Stores
 
         private readonly NoVillageViewModel _noVillageViewModel;
         private readonly VillageSettingViewModel _villageSettingViewModel;
+        private readonly AttackViewModel _attackViewModel;
         private readonly BuildViewModel _buildViewModel;
         private readonly InfoViewModel _infoViewModel;
 
-        public VillageTabStore(NoVillageViewModel noVillageViewModel, InfoViewModel infoViewModel, BuildViewModel buildViewModel, VillageSettingViewModel villageSettingViewModel)
+        public VillageTabStore(NoVillageViewModel noVillageViewModel, InfoViewModel infoViewModel, BuildViewModel buildViewModel, VillageSettingViewModel villageSettingViewModel, AttackViewModel attackViewModel)
         {
             _noVillageViewModel = noVillageViewModel;
             _buildViewModel = buildViewModel;
             _infoViewModel = infoViewModel;
             _villageSettingViewModel = villageSettingViewModel;
+            _attackViewModel = attackViewModel;
         }
 
         public void SetTabType(VillageTabType tabType)
@@ -50,6 +52,7 @@ namespace MainCore.UI.Stores
 
                 case VillageTabType.Normal:
                     _buildViewModel.IsActive = true;
+                    _attackViewModel.IsActive = true;
                     break;
 
                 default:
@@ -61,5 +64,6 @@ namespace MainCore.UI.Stores
         public BuildViewModel BuildViewModel => _buildViewModel;
         public VillageSettingViewModel VillageSettingViewModel => _villageSettingViewModel;
         public InfoViewModel InfoViewModel => _infoViewModel;
+        public AttackViewModel AttackViewModel => _attackViewModel;
     }
 }

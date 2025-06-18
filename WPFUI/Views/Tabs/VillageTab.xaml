@@ -34,6 +34,9 @@
                 <TabItem x:Name="BuildTab" Header="Build">
                     <v_tab:BuildTab x:Name="Build" />
                 </TabItem>
+                <TabItem x:Name="AttackTab" Header="Attacks">
+                    <v_tab:AttackTab x:Name="Attack" />
+                </TabItem>
                 <TabItem x:Name="SettingsTab" Header="Settings">
                     <v_tab:VillageSettingTab x:Name="Settings" />
                 </TabItem>
