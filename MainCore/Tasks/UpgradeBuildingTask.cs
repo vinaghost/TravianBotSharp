@@ -19,11 +19,10 @@ namespace MainCore.Tasks
             Task task,
             ILogger logger,
             IChromeBrowser browser,
-            HandleJobCommand.Handler handleJobCommand,
+            GetBuildPlanCommand.Handler getBuildPlanCommand,
             ToBuildPageCommand.Handler toBuildPageCommand,
             HandleResourceCommand.Handler handleResourceCommand,
             HandleUpgradeCommand.Handler handleUpgradeCommand,
-            GetFirstQueueBuildingQuery.Handler getFirstQueueBuildingQuery,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             CancellationToken cancellationToken)
         {
@@ -33,20 +32,16 @@ namespace MainCore.Tasks
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-                var (_, isFailed, plan, errors) = await handleJobCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                var (_, isFailed, plan, errors) = await getBuildPlanCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (isFailed)
                 {
-                    if (errors.OfType<Continue>().Any()) continue;
-
-                    var buildingQueue = await getFirstQueueBuildingQuery.HandleAsync(new(task.VillageId), cancellationToken);
-                    if (buildingQueue is null)
+                    if (errors.Count == 1 && errors[0] is NextExecuteError nextExecuteError)
                     {
-                        return Skip.BuildingJobQueueBroken;
+                        task.ExecuteAt = nextExecuteError.NextExecute;
+                        logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     }
 
-                    task.ExecuteAt = buildingQueue.CompleteTime.AddSeconds(3);
-                    logger.Information("Construction queue is full. Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
-                    return Skip.ConstructionQueueFull;
+                    return new Skip();
                 }
 
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);

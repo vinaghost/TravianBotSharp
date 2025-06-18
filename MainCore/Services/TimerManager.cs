@@ -1,5 +1,4 @@
 ﻿using Humanizer;
-using Humanizer.Localisation;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Retry;
@@ -38,7 +37,7 @@ namespace MainCore.Services
                     browser.Logger.Error(exception, "{Message}", exception.Message);
                 }
 
-                browser.Logger.Warning("{TaskName} will retry after {times} (#{AttemptNumber} times)", taskName, args.Duration.Humanize(minUnit: TimeUnit.Second), args.AttemptNumber + 1);
+                browser.Logger.Warning("{TaskName} will retry after {RetryDelay} (#{AttemptNumber} times)", taskName, args.RetryDelay.Humanize(3, minUnit: Humanizer.Localisation.TimeUnit.Second), args.AttemptNumber + 1);
                 await browser.Refresh(CancellationToken.None);
             };
 

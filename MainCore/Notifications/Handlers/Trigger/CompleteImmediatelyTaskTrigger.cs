@@ -38,8 +38,7 @@ namespace MainCore.Notifications.Handlers.Trigger
         {
             var queueBuilding = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type != BuildingEnums.Site)
-                .OrderByDescending(x => x.Position)
+                .OrderByDescending(x => x.CompleteTime)
                 .Select(x => x.CompleteTime)
                 .FirstOrDefault();
             return queueBuilding;
