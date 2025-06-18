@@ -1,5 +1,4 @@
 ﻿using MainCore.Constraints;
-using System.Text.Json;
 using MainCore.DTO;
 
 namespace MainCore.Commands.Misc
@@ -48,19 +47,7 @@ namespace MainCore.Commands.Misc
             await browser.Setup(chromeSetting);
             await browser.Navigate($"{account.Server}", cancellationToken);
 
-            var cookieData = context.Accesses
-               .Where(x => x.Id == access.Id.Value)
-               .Select(x => x.Cookies)
-               .FirstOrDefault();
-
-            if (!string.IsNullOrEmpty(cookieData))
-            {
-                var cookieDtos = JsonSerializer.Deserialize<List<CookieDto>>(cookieData);
-                if (cookieDtos is not null && cookieDtos.Count > 0)
-                {
-                    await browser.SetCookies(cookieDtos.Select(c => c.ToCookie()));
-                }
-            }
+            // cookies are not loaded during browser setup for now
 
             await browser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
 

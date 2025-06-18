@@ -45,20 +45,7 @@ namespace MainCore.Commands.Features
             result = await browser.WaitPageChanged("dorf", cancellationToken);
             if (result.IsFailed) return result;
 
-            var cookies = await browser.GetCookies();
-            var cookieDtos = cookies.Select(CookieDto.FromCookie).ToList();
-            var cookieJson = JsonSerializer.Serialize(cookieDtos);
-            var accessId = context.Accesses
-                .Where(x => x.AccountId == command.AccountId.Value)
-                .OrderByDescending(x => x.LastUsed)
-                .Select(x => x.Id)
-                .FirstOrDefault();
-            if (accessId != 0)
-            {
-                context.Accesses
-                    .Where(x => x.Id == accessId)
-                    .ExecuteUpdate(x => x.SetProperty(a => a.Cookies, a => cookieJson));
-            }
+            // cookies are not used for now, skip saving them
 
             return Result.Ok();
         }
