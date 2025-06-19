@@ -88,7 +88,7 @@ namespace MainCore.Test.Parsers
         }
 
         [Theory]
-        [InlineData(MarketplaceConstructed, BuildingEnums.Marketplace, 2)]
+        [InlineData(MarketplaceConstructed, BuildingEnums.Marketplace, 4)]
         [InlineData(CroplandConstructed, BuildingEnums.Cropland, 2)]
         public void GetNextLevel_ShouldParse(string path, BuildingEnums building, int expected)
         {
