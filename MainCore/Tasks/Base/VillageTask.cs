@@ -6,7 +6,7 @@ namespace MainCore.Tasks.Base
     {
         public VillageId VillageId { get; } = villageId;
 
-        protected string VillageName { get; } = villageName;
+        public string VillageName { get; } = villageName;
 
         public override string Description => $"{TaskName} in {VillageName}";
         public override string Key => $"{AccountId}-{VillageId}";
