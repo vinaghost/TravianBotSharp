@@ -1,4 +1,5 @@
 ﻿using MainCore.Tasks.Base;
+using Serilog.Context;
 
 namespace MainCore.Behaviors
 {
@@ -24,8 +25,11 @@ namespace MainCore.Behaviors
 
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
-            var accountId = request.AccountId;
-            var villageId = request.VillageId;
+            using (LogContext.PushProperty("VillageName", request.VillageName))
+            using (LogContext.PushProperty("VillageId", request.VillageId))
+            {
+                var accountId = request.AccountId;
+                var villageId = request.VillageId;
 
             Result result;
 

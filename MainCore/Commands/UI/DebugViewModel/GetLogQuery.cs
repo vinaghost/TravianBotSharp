@@ -8,7 +8,7 @@ namespace MainCore.Commands.UI.DebugViewModel
     public static partial class GetLogQuery
     {
         public sealed record Query(AccountId AccountId) : IAccountQuery;
-        private static readonly ExpressionTemplate _template = new("{@t:HH:mm:ss} [{@l:u3}] {@m}\n{@x}");
+        private static readonly ExpressionTemplate _template = new("{@t:HH:mm:ss} [coalesce(VillageName, @l:u3)] {@m}\n{@x}");
 
         private static async ValueTask<string> HandleAsync(
             Query query,
