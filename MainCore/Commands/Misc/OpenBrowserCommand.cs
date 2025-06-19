@@ -1,6 +1,6 @@
 ﻿using MainCore.Constraints;
-using System.Text.Json;
 using MainCore.DTO;
+using OpenQA.Selenium;
 
 namespace MainCore.Commands.Misc
 {
@@ -48,21 +48,18 @@ namespace MainCore.Commands.Misc
             await browser.Setup(chromeSetting);
             await browser.Navigate($"{account.Server}", cancellationToken);
 
-            var cookieData = context.Accesses
-               .Where(x => x.Id == access.Id.Value)
-               .Select(x => x.Cookies)
-               .FirstOrDefault();
+            // cookies are not loaded during browser setup for now
 
-            if (!string.IsNullOrEmpty(cookieData))
+            try
             {
-                var cookieDtos = JsonSerializer.Deserialize<List<CookieDto>>(cookieData);
-                if (cookieDtos is not null && cookieDtos.Count > 0)
-                {
-                    await browser.SetCookies(cookieDtos.Select(c => c.ToCookie()));
-                }
+                await browser.Driver.Navigate().GoToUrlAsync($"{account.Server}/dorf1.php");
+                await browser.WaitPageLoaded(cancellationToken);
             }
-
-            await browser.Navigate($"{account.Server}/dorf1.php", cancellationToken);
+            catch (WebDriverTimeoutException)
+            {
+                // navigation may redirect to the login page which does not contain
+                // dorf1.php in the URL. Ignore the timeout so login can proceed.
+            }
 
             context.Accesses
                .Where(x => x.Id == access.Id.Value)
