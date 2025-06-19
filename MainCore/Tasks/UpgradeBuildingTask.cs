@@ -36,10 +36,12 @@ namespace MainCore.Tasks
                 var (_, isFailed, plan, errors) = await getBuildPlanCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (isFailed)
                 {
-                    if (errors.Count == 1 && errors[0] is NextExecuteError nextExecuteError)
+                    var nextExecuteErrors = errors.OfType<NextExecuteError>().OrderBy(x => x.NextExecute).ToList();
+                    if (nextExecuteErrors.Count > 0)
                     {
-                        task.ExecuteAt = nextExecuteError.NextExecute;
+                        task.ExecuteAt = nextExecuteErrors[0].NextExecute;
                     }
+
                     return new Skip().CausedBy(errors);
                 }
 

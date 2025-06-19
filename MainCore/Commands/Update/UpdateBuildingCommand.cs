@@ -20,15 +20,10 @@ namespace MainCore.Commands.Update
             await Task.CompletedTask;
             var (accountId, villageId) = command;
 
-            context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.CompleteTime < DateTime.Now)
-                .ExecuteDelete();
-
             var html = browser.Html;
 
             var dtoBuilding = GetBuildings(browser.CurrentUrl, html).ToList();
-            if (dtoBuilding.Count == 0) return Result.Ok();
+            if (dtoBuilding.Count == 0) return context.GetResponse(villageId);
 
             var dtoQueueBuilding = BuildingLayoutParser.GetQueueBuilding(html).ToList();
 
@@ -104,19 +99,48 @@ namespace MainCore.Commands.Update
                     context.Update(dbBuilding);
                 }
             }
+
+            context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.CompleteTime < DateTime.Now)
+                .ExecuteDelete();
+
             var dbQueueBuildings = context.QueueBuildings
-                   .Where(x => x.VillageId == villageId.Value)
-                   .ToList();
+                .Where(x => x.VillageId == villageId.Value)
+                .ToList();
+
+            var completeQueueBuildings = dbQueueBuildings
+                .Where(x => x.CompleteTime < DateTime.Now)
+                .OrderBy(x => x.Level)
+                .ToList();
+
+            if (completeQueueBuildings.Count > 0)
+            {
+                foreach (var completeQueueBuilding in completeQueueBuildings)
+                {
+                    if (completeQueueBuilding.Location == -1) continue;
+
+                    var building = dbBuildings.Find(x => x.Location == completeQueueBuilding.Location);
+                    if (building is null) continue;
+
+                    building.Level = completeQueueBuilding.Level;
+                    context.Update(building);
+                    dbQueueBuildings.Remove(completeQueueBuilding);
+                    context.Remove(completeQueueBuilding);
+                }
+            }
+
             if (queueBuildingDtos.Count > 0)
             {
                 var sets = new HashSet<string>();
                 foreach (var dto in queueBuildingDtos)
                 {
                     var buildingType = Enum.Parse<BuildingEnums>(dto.Type);
-                    var dbQueueBuilding = dbQueueBuildings.Find(x => x.Level == dto.Level && x.Type == buildingType);
 
+                    // same level same type but different location, bot need a way to check that
                     if (sets.Add($"{dto.Level}-{dto.Type}"))
                     {
+                        var dbQueueBuilding = dbQueueBuildings.Find(x => x.Level == dto.Level && x.Type == buildingType);
                         if (dbQueueBuilding is null)
                         {
                             var building = dto.ToEntity(villageId);
@@ -131,9 +155,20 @@ namespace MainCore.Commands.Update
                     }
                     else
                     {
-                        var building = dto.ToEntity(villageId);
-                        dbQueueBuildings.Add(building);
-                        context.Add(building);
+                        var dbDuplicateQueueBuildings = dbQueueBuildings
+                            .FindAll(x => x.Level == dto.Level && x.Type == buildingType);
+
+                        if (dbDuplicateQueueBuildings.Count > 1)
+                        {
+                            dto.To(dbDuplicateQueueBuildings[1]);
+                            context.Update(dbDuplicateQueueBuildings[1]);
+                        }
+                        else
+                        {
+                            var building = dto.ToEntity(villageId);
+                            dbQueueBuildings.Add(building);
+                            context.Add(building);
+                        }
                     }
 
                     var missingLocation = dbQueueBuildings

@@ -21,12 +21,12 @@ namespace MainCore.Queries
             var buildJobs = context.GetBuildJobs(villageId);
             if (buildJobs.Count == 0) return UpgradeBuildingError.BuildingJobQueueEmpty;
 
-            var queueBuildings = context.GetQueueBuildings(villageId);
+            var (buildings, queueBuildings) = context.GetBuildings(villageId);
 
             if (queueBuildings.Count == 0)
             {
                 var job = buildJobs.First();
-                var result = context.IsJobValid(villageId, job);
+                var result = IsJobValid(job, buildings, queueBuildings);
                 if (result.IsFailed) return result;
                 return job;
             }
@@ -43,7 +43,7 @@ namespace MainCore.Queries
                 if (plusActive)
                 {
                     var job = buildJobs.First();
-                    var result = context.IsJobValid(villageId, job);
+                    var result = IsJobValid(job, buildings, queueBuildings);
                     if (result.IsFailed) return result;
                     return job;
                 }
@@ -52,7 +52,7 @@ namespace MainCore.Queries
                 {
                     var (_, isFailed, job, errors) = GetJobBasedOnRomanLogic(queueBuildings, buildJobs);
                     if (isFailed) return Result.Fail(errors);
-                    var result = context.IsJobValid(villageId, job);
+                    var result = IsJobValid(job, buildings, queueBuildings);
                     if (result.IsFailed) return result;
                     return job;
                 }
@@ -65,7 +65,7 @@ namespace MainCore.Queries
                 {
                     var (_, isFailed, job, errors) = GetJobBasedOnRomanLogic(queueBuildings, buildJobs);
                     if (isFailed) return Result.Fail(errors);
-                    var result = context.IsJobValid(villageId, job);
+                    var result = IsJobValid(job, buildings, queueBuildings);
                     if (result.IsFailed) return result;
                     return job;
                 }
@@ -80,23 +80,47 @@ namespace MainCore.Queries
             return UpgradeBuildingError.BuildingJobQueueBroken;
         }
 
-        private static List<QueueBuilding> GetQueueBuildings(this AppDbContext context, VillageId villageId)
+        private static (List<Building>, List<QueueBuilding>) GetBuildings(this AppDbContext context, VillageId villageId)
         {
-            context.QueueBuildings
+            var buildings = context.Buildings
+                .AsNoTracking()
                 .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.CompleteTime < DateTime.Now)
-                .ExecuteDelete();
+                .ToList();
 
             var queueBuildings = context.QueueBuildings
+                .AsNoTracking()
                 .Where(x => x.VillageId == villageId.Value)
                 .OrderBy(x => x.CompleteTime)
                 .ToList();
-            return queueBuildings;
+
+            var completeQueueBuildings = queueBuildings
+                .Where(x => x.CompleteTime < DateTime.Now)
+                .OrderBy(x => x.Level)
+                .ToList();
+
+            if (completeQueueBuildings.Count > 0)
+            {
+                foreach (var completeQueueBuilding in completeQueueBuildings)
+                {
+                    if (completeQueueBuilding.Location == -1) continue;
+
+                    var building = buildings.Find(x => x.Location == completeQueueBuilding.Location);
+                    if (building is null) continue;
+
+                    building.Level = completeQueueBuilding.Level;
+                    context.Update(building);
+                    queueBuildings.Remove(completeQueueBuilding);
+                    context.Remove(completeQueueBuilding);
+                }
+            }
+
+            return (buildings, queueBuildings);
         }
 
         private static List<JobDto> GetBuildJobs(this AppDbContext context, VillageId villageId)
         {
             var jobs = context.Jobs
+                .AsNoTracking()
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => BuildJobTypes.Contains(x.Type))
                 .OrderBy(x => x.Position)
@@ -185,19 +209,12 @@ namespace MainCore.Queries
             return resourceBuildJob;
         }
 
-        private static Result IsJobValid(
-            this AppDbContext context,
-            VillageId villageId,
-            JobDto job)
+        private static Result IsJobValid(JobDto job, List<Building> buildings, List<QueueBuilding> queueBuildings)
         {
             if (job.Type == JobTypeEnums.ResourceBuild) return Result.Ok();
 
             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
             if (plan.Type.IsResourceField()) return Result.Ok();
-
-            var buildings = context.Buildings
-               .Where(x => x.VillageId == villageId.Value)
-               .ToList();
 
             var oldBuilding = buildings
                .Where(x => x.Location == plan.Location)
@@ -205,7 +222,7 @@ namespace MainCore.Queries
 
             if (oldBuilding is not null && oldBuilding.Type == plan.Type) return Result.Ok();
 
-            var errors = new List<UpgradeBuildingError>();
+            var errors = new List<IError>();
             var prerequisiteBuildings = plan.Type.GetPrerequisiteBuildings();
 
             foreach (var prerequisiteBuilding in prerequisiteBuildings)
@@ -213,7 +230,15 @@ namespace MainCore.Queries
                 var vaild = buildings
                    .Any(x => x.Type == prerequisiteBuilding.Type && x.Level >= prerequisiteBuilding.Level);
 
-                if (!vaild) errors.Add(UpgradeBuildingError.PrerequisiteBuildingMissing(prerequisiteBuilding.Type, prerequisiteBuilding.Level));
+                if (!vaild)
+                {
+                    errors.Add(UpgradeBuildingError.PrerequisiteBuildingMissing(prerequisiteBuilding.Type, prerequisiteBuilding.Level));
+                    var queueBuilding = queueBuildings.Find(x => x.Type == prerequisiteBuilding.Type && x.Level == prerequisiteBuilding.Level);
+                    if (queueBuilding is not null)
+                    {
+                        errors.Add(NextExecuteError.PrerequisiteBuildingInQueue(prerequisiteBuilding.Type, prerequisiteBuilding.Level, queueBuilding.CompleteTime));
+                    }
+                }
             }
 
             if (!plan.Type.IsMultipleBuilding()) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
@@ -227,7 +252,14 @@ namespace MainCore.Queries
             if (firstBuilding.Location == plan.Location) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
             if (firstBuilding.Level == firstBuilding.Type.GetMaxLevel()) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
 
-            errors.Add(UpgradeBuildingError.PrerequisiteBuildingMissing(firstBuilding.Type, firstBuilding.Level));
+            {
+                errors.Add(UpgradeBuildingError.PrerequisiteBuildingMissing(firstBuilding.Type, firstBuilding.Level));
+                var queueBuilding = queueBuildings.Find(x => x.Type == firstBuilding.Type && x.Level == firstBuilding.Level);
+                if (queueBuilding is not null)
+                {
+                    errors.Add(NextExecuteError.PrerequisiteBuildingInQueue(firstBuilding.Type, firstBuilding.Level, queueBuilding.CompleteTime));
+                }
+            }
             return Result.Fail(errors);
         }
     }
