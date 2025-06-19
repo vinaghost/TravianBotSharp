@@ -102,8 +102,13 @@ namespace MainCore.Commands.Features.UseHeroItem
             if (node is null) return Retry.TextboxNotFound("amount");
 
             Result result;
+
+            result = await browser.WaitElement(By.XPath(node.XPath), cancellationToken);
+            if (result.IsFailed) return result;
+
             result = await browser.Input(By.XPath(node.XPath), amount.ToString());
             if (result.IsFailed) return result;
+
             return Result.Ok();
         }
 
@@ -123,6 +128,10 @@ namespace MainCore.Commands.Features.UseHeroItem
             }
 
             Result result;
+
+            result = await browser.WaitElement(By.XPath(node.XPath), cancellationToken);
+            if (result.IsFailed) return result;
+
             result = await browser.Click(By.XPath(node.XPath));
             if (result.IsFailed) return result;
 
