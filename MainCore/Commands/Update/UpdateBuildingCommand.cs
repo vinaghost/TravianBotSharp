@@ -169,14 +169,15 @@ namespace MainCore.Commands.Update
                         }
                     }
                 }
-            else
-                {
-                    if (dbQueueBuildings.Count != 0)
-                    {
-                        context.RemoveRange(dbQueueBuildings);
-                    }
-                }
-                context.SaveChanges();
             }
+            else
+            {
+                if (dbQueueBuildings.Count != 0)
+                {
+                    context.RemoveRange(dbQueueBuildings);
+                }
+            }
+            context.SaveChanges();
         }
     }
+}
