@@ -119,39 +119,75 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 { BuildingEnums.Cropland, storage.Crop },
             };
 
-            var orderedTypes = fieldTypes
-                .OrderBy(t => typeStorage[t])
+            var candidates = layoutBuildings
+                .Select(x => new
+                {
+                    Building = x,
+                    NextLevel = Math.Max(Math.Max(x.CurrentLevel, x.QueueLevel), x.JobLevel) + 1,
+                })
                 .ToList();
 
-            foreach (var type in orderedTypes)
+            if (candidates.Count == 0) return null;
+
+            var upgradeable = candidates
+                .Where(x => !storage.IsResourceEnough(x.Building.Type.GetCost(x.NextLevel)).IsFailed)
+                .ToList();
+
+            if (upgradeable.Count == 0)
             {
-                var candidates = layoutBuildings
-                    .Where(x => x.Type == type)
+                var soonest = candidates
+                    .Select(x => new
+                    {
+                        x.Building,
+                        x.NextLevel,
+                        Time = GetTimeUntilAffordable(storage, x.Building.Type.GetCost(x.NextLevel))
+                    })
                     .ToList();
-                if (candidates.Count == 0) continue;
 
-                var minLevel = candidates
-                    .Select(x => x.Level)
-                    .Min();
-
-                var chosenOne = candidates
-                    .Where(x => x.Level == minLevel)
-                    .OrderBy(x => x.Id.Value + Random.Shared.Next())
-                    .FirstOrDefault();
-
-                if (chosenOne is null) continue;
-
-                int nextLevel = Math.Max(Math.Max(chosenOne.CurrentLevel, chosenOne.QueueLevel), chosenOne.JobLevel) + 1;
-
-                return new NormalBuildPlan
-                {
-                    Type = chosenOne.Type,
-                    Level = nextLevel,
-                    Location = chosenOne.Location,
-                };
+                var minTime = soonest.Min(x => x.Time);
+                upgradeable = soonest
+                    .Where(x => x.Time == minTime)
+                    .Select(x => new { x.Building, x.NextLevel })
+                    .ToList();
             }
 
-            return null;
+            candidates = upgradeable.Count > 0 ? upgradeable : candidates;
+
+            var minLevel = candidates
+                .Select(x => x.Building.Level)
+                .Min();
+
+            candidates = candidates
+                .Where(x => x.Building.Level == minLevel)
+                .ToList();
+
+            var minResource = candidates
+                .Min(x => typeStorage[x.Building.Type]);
+
+            var chosenOne = candidates
+                .Where(x => typeStorage[x.Building.Type] == minResource)
+                .OrderBy(x => x.Building.Location)
+                .First();
+
+            return new NormalBuildPlan
+            {
+                Type = chosenOne.Building.Type,
+                Level = chosenOne.NextLevel,
+                Location = chosenOne.Building.Location,
+            };
+        }
+
+        private static double GetTimeUntilAffordable(StorageDto storage, long[] required)
+        {
+            var missing = storage.GetMissingResource(required);
+            var times = new double[4];
+
+            times[0] = storage.ProductionWood > 0 ? missing[0] / (double)storage.ProductionWood : double.PositiveInfinity;
+            times[1] = storage.ProductionClay > 0 ? missing[1] / (double)storage.ProductionClay : double.PositiveInfinity;
+            times[2] = storage.ProductionIron > 0 ? missing[2] / (double)storage.ProductionIron : double.PositiveInfinity;
+            times[3] = storage.ProductionCrop > 0 ? missing[3] / (double)storage.ProductionCrop : double.PositiveInfinity;
+
+            return times.Max();
         }
 
         private static bool IsJobComplete(JobDto job, List<BuildingDto> buildings, List<QueueBuilding> queueBuildings)
