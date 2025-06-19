@@ -51,13 +51,13 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task LoadCurrent()
         {
-            if (!Villages.IsSelected)
+            if (Villages.SelectedItem is null)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No village selected"));
                 return;
             }
 
-            var villageId = new VillageId(Villages.SelectedItemId);
+            var villageId = new VillageId(Villages.SelectedItem.Id);
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var getVillageNameQuery = scope.ServiceProvider.GetRequiredService<GetVillageNameQuery.Handler>();

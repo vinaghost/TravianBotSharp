@@ -17,36 +17,43 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public ObservableCollection<ListBoxItem> Items { get; } = new();
 
-        public bool IsSelected => SelectedItem is not null;
-        public int SelectedItemId => SelectedItem?.Id ?? -1;
-
-        public void Load(IEnumerable<ListBoxItem> items)
+        public void Load(List<ListBoxItem> inputs)
         {
-            var oldIndex = SelectedIndex;
-            Items.Clear();
-            foreach (var item in items)
+            if (Items.Count == 0)
             {
-                Items.Add(item);
+                foreach (var input in inputs)
+                {
+                    Items.Add(input);
+                }
+                return;
             }
 
-            if (Items.Count > 0)
+            var oldId = SelectedItem?.Id ?? -1;
+
+            for (var i = 0; i < inputs.Count; i++)
             {
-                if (oldIndex == -1)
+                var input = inputs[i];
+                var item = Items.FirstOrDefault(x => x.Id == input.Id);
+
+                if (item is not null)
                 {
-                    SelectedItem = Items[0];
-                }
-                else if (oldIndex < Items.Count)
-                {
-                    SelectedItem = Items[oldIndex];
+                    item.Content = input.Content;
+                    item.Color = input.Color;
+
+                    var index = Items.IndexOf(item);
+
+                    if (index != i)
+                        Items.Move(index, i);
                 }
                 else
                 {
-                    SelectedItem = Items[^1];
+                    Items.Insert(i, input);
                 }
-            }
-            else
-            {
-                SelectedItem = null;
+
+                if (input.Id == oldId)
+                {
+                    SelectedIndex = i;
+                }
             }
         }
 
