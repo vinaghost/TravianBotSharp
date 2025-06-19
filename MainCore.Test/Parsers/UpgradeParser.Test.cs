@@ -78,5 +78,23 @@ namespace MainCore.Test.Parsers
             var actual = MainCore.Parsers.UpgradeParser.GetUpgradingLevel(_html);
             actual.ShouldBe(10);
         }
+
+        [Fact]
+        public void GetNextLevel_NoButton()
+        {
+            _html.Load(CrannyEmpty);
+            var actual = MainCore.Parsers.UpgradeParser.GetNextLevel(_html, BuildingEnums.Cranny);
+            actual.ShouldBeNull();
+        }
+
+        [Theory]
+        [InlineData(MarketplaceConstructed, BuildingEnums.Marketplace, 4)]
+        [InlineData(CroplandConstructed, BuildingEnums.Cropland, 2)]
+        public void GetNextLevel_ShouldParse(string path, BuildingEnums building, int expected)
+        {
+            _html.Load(path);
+            var actual = MainCore.Parsers.UpgradeParser.GetNextLevel(_html, building);
+            actual.ShouldBe(expected);
+        }
     }
 }

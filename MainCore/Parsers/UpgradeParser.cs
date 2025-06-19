@@ -103,6 +103,10 @@ namespace MainCore.Parsers
 
         public static int? GetNextLevel(HtmlDocument doc, BuildingEnums building)
         {
+            // Upgrade button is only available when the building can be upgraded
+            var upgradeButton = GetUpgradeButton(doc);
+            if (upgradeButton is null) return null;
+
             var resources = GetRequiredResource(doc, building);
             if (resources is null || resources.Count != 5) return null;
 
