@@ -40,37 +40,41 @@ namespace MainCore.Queries
 
             if (queueBuildings.Count == 1)
             {
-                // each
-                if (!plusActive && !applyRomanQueueLogic)
+                if (plusActive)
                 {
-                    return NextExecuteError.ConstructionQueueFull(queueBuildings[0].CompleteTime.AddSeconds(3));
+                    var job = buildJobs.First();
+                    var result = context.IsJobValid(villageId, job);
+                    if (result.IsFailed) return result;
+                    return job;
                 }
 
-                var (_, isFailed, job, errors) = GetJobBasedOnRomanLogic(queueBuildings, buildJobs);
-                if (isFailed) return Result.Fail(errors);
-                var result = context.IsJobValid(villageId, job);
-                if (result.IsFailed) return result;
-                return job;
+                if (applyRomanQueueLogic)
+                {
+                    var (_, isFailed, job, errors) = GetJobBasedOnRomanLogic(queueBuildings, buildJobs);
+                    if (isFailed) return Result.Fail(errors);
+                    var result = context.IsJobValid(villageId, job);
+                    if (result.IsFailed) return result;
+                    return job;
+                }
+                return NextExecuteError.ConstructionQueueFull(queueBuildings[0].CompleteTime);
             }
 
             if (queueBuildings.Count == 2)
             {
-                // both
-                if (!plusActive || !applyRomanQueueLogic)
+                if (plusActive && applyRomanQueueLogic)
                 {
-                    return NextExecuteError.ConstructionQueueFull(queueBuildings[0].CompleteTime.AddSeconds(3));
+                    var (_, isFailed, job, errors) = GetJobBasedOnRomanLogic(queueBuildings, buildJobs);
+                    if (isFailed) return Result.Fail(errors);
+                    var result = context.IsJobValid(villageId, job);
+                    if (result.IsFailed) return result;
+                    return job;
                 }
-
-                var (_, isFailed, job, errors) = GetJobBasedOnRomanLogic(queueBuildings, buildJobs);
-                if (isFailed) return Result.Fail(errors);
-                var result = context.IsJobValid(villageId, job);
-                if (result.IsFailed) return result;
-                return job;
+                return NextExecuteError.ConstructionQueueFull(queueBuildings[0].CompleteTime);
             }
 
             if (queueBuildings.Count == 3)
             {
-                return NextExecuteError.ConstructionQueueFull(queueBuildings[0].CompleteTime.AddSeconds(3));
+                return NextExecuteError.ConstructionQueueFull(queueBuildings[0].CompleteTime);
             }
 
             return UpgradeBuildingError.BuildingJobQueueBroken;
