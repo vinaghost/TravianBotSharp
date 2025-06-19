@@ -125,10 +125,33 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     Building = x,
                     NextLevel = Math.Max(Math.Max(x.CurrentLevel, x.QueueLevel), x.JobLevel) + 1,
                 })
-                .Where(x => !storage.IsResourceEnough(x.Building.Type.GetCost(x.NextLevel)).IsFailed)
                 .ToList();
 
             if (candidates.Count == 0) return null;
+
+            var upgradeable = candidates
+                .Where(x => !storage.IsResourceEnough(x.Building.Type.GetCost(x.NextLevel)).IsFailed)
+                .ToList();
+
+            if (upgradeable.Count == 0)
+            {
+                var soonest = candidates
+                    .Select(x => new
+                    {
+                        x.Building,
+                        x.NextLevel,
+                        Time = GetTimeUntilAffordable(storage, x.Building.Type.GetCost(x.NextLevel))
+                    })
+                    .ToList();
+
+                var minTime = soonest.Min(x => x.Time);
+                upgradeable = soonest
+                    .Where(x => x.Time == minTime)
+                    .Select(x => new { x.Building, x.NextLevel })
+                    .ToList();
+            }
+
+            candidates = upgradeable.Count > 0 ? upgradeable : candidates;
 
             var minLevel = candidates
                 .Select(x => x.Building.Level)
@@ -152,6 +175,19 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 Level = chosenOne.NextLevel,
                 Location = chosenOne.Building.Location,
             };
+        }
+
+        private static double GetTimeUntilAffordable(StorageDto storage, long[] required)
+        {
+            var missing = storage.GetMissingResource(required);
+            var times = new double[4];
+
+            times[0] = storage.ProductionWood > 0 ? missing[0] / (double)storage.ProductionWood : double.PositiveInfinity;
+            times[1] = storage.ProductionClay > 0 ? missing[1] / (double)storage.ProductionClay : double.PositiveInfinity;
+            times[2] = storage.ProductionIron > 0 ? missing[2] / (double)storage.ProductionIron : double.PositiveInfinity;
+            times[3] = storage.ProductionCrop > 0 ? missing[3] / (double)storage.ProductionCrop : double.PositiveInfinity;
+
+            return times.Max();
         }
 
         private static bool IsJobComplete(JobDto job, List<BuildingDto> buildings, List<QueueBuilding> queueBuildings)
