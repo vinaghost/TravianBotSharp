@@ -227,7 +227,7 @@ namespace MainCore.Services
             if (jobId == 0) return;
 
             var deleteJobByIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByIdCommand.Handler>();
-            await deleteJobByIdCommand.HandleAsync(new(villageId, new JobId(jobId)));
+            await deleteJobByIdCommand.HandleAsync(new(villageId, new JobId(jobId), "Deleted via Telegram command"));
             var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
             await jobUpdated.HandleAsync(new(accountId, villageId));
         }

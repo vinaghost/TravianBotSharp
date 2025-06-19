@@ -37,7 +37,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 var normalBuildPlan = GetNormalBuildPlan(resourceBuildPlan, layoutBuildings, storage);
                 if (normalBuildPlan is null)
                 {
-                    await deleteJobByIdCommand.HandleAsync(new(villageId, job.Id), cancellationToken);
+                    await deleteJobByIdCommand.HandleAsync(new(villageId, job.Id, "Normal build plan could not be resolved"), cancellationToken);
                     await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
                     return Result.Fail<Response>(Continue.Error);
                 }
@@ -64,7 +64,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var (buildings, queueBuildings) = updateBuildingCommandResult.Value;
             if (IsJobComplete(job, buildings, queueBuildings))
             {
-                await deleteJobByIdCommand.HandleAsync(new(villageId, job.Id), cancellationToken);
+                await deleteJobByIdCommand.HandleAsync(new(villageId, job.Id, "Job already completed"), cancellationToken);
                 await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
                 return Result.Fail<Response>(Continue.Error);
             }

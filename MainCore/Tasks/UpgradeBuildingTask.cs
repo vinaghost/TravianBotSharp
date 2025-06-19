@@ -90,7 +90,7 @@ namespace MainCore.Tasks
                 {
                     if (result.HasError<Continue>())
                     {
-                        await deleteJobByIdCommand.HandleAsync(new(task.VillageId, jobId), cancellationToken);
+                        await deleteJobByIdCommand.HandleAsync(new(task.VillageId, jobId, "Upgrade command failed"), cancellationToken);
                         await jobUpdated.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                         continue;
                     }
