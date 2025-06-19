@@ -152,7 +152,20 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var node = html.GetElementbyId("videoFeature");
             if (node is null) return Retry.ButtonNotFound($"play ads");
 
-            result = await browser.Click(By.XPath(node.XPath));
+            var playButton = node.Descendants("div")
+                .FirstOrDefault(x => x.HasClass("atg-gima-big-play-button-outer"))?
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("atg-gima-big-play-button"));
+
+            if (playButton is not null)
+            {
+                result = await browser.Click(By.XPath(playButton.XPath));
+            }
+            else
+            {
+                result = await browser.Click(By.XPath(node.XPath));
+            }
+
             if (result.IsFailed) return result;
 
             driver.SwitchTo().DefaultContent();
