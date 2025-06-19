@@ -96,7 +96,6 @@ namespace MainCore.Commands.Update
                 else
                 {
                     dto.To(dbBuilding);
-                    context.Update(dbBuilding);
                 }
             }
 
@@ -124,7 +123,6 @@ namespace MainCore.Commands.Update
                     if (building is null) continue;
 
                     building.Level = completeQueueBuilding.Level;
-                    context.Update(building);
                     dbQueueBuildings.Remove(completeQueueBuilding);
                     context.Remove(completeQueueBuilding);
                 }
@@ -148,7 +146,6 @@ namespace MainCore.Commands.Update
                     else
                     {
                         dto.To(dbQueueBuilding);
-                        context.Update(dbQueueBuilding);
                     }
                 }
                 else
@@ -159,7 +156,6 @@ namespace MainCore.Commands.Update
                     if (dbDuplicateQueueBuildings.Count > 1)
                     {
                         dto.To(dbDuplicateQueueBuildings[1]);
-                        context.Update(dbDuplicateQueueBuildings[1]);
                     }
                     else
                     {
@@ -215,7 +211,6 @@ namespace MainCore.Commands.Update
                         if (building is null) continue;
 
                         building.Level = queueBuilding.Level;
-                        context.Update(building);
                     }
                 }
             }

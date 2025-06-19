@@ -82,18 +82,8 @@ namespace MainCore.Queries
 
         private static (List<Building>, List<QueueBuilding>) GetBuildings(this AppDbContext context, VillageId villageId)
         {
-            var buildings = context.Buildings
-                .AsNoTracking()
+            var completeQueueBuildings = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
-                .ToList();
-
-            var queueBuildings = context.QueueBuildings
-                .AsNoTracking()
-                .Where(x => x.VillageId == villageId.Value)
-                .OrderBy(x => x.CompleteTime)
-                .ToList();
-
-            var completeQueueBuildings = queueBuildings
                 .Where(x => x.CompleteTime < DateTime.Now)
                 .OrderBy(x => x.Level)
                 .ToList();
@@ -104,15 +94,25 @@ namespace MainCore.Queries
                 {
                     if (completeQueueBuilding.Location == -1) continue;
 
-                    var building = buildings.Find(x => x.Location == completeQueueBuilding.Location);
+                    var building = context.Buildings.FirstOrDefault(x => x.Location == completeQueueBuilding.Location);
                     if (building is null) continue;
 
                     building.Level = completeQueueBuilding.Level;
-                    context.Update(building);
-                    queueBuildings.Remove(completeQueueBuilding);
                     context.Remove(completeQueueBuilding);
                 }
+                context.SaveChanges();
             }
+
+            var buildings = context.Buildings
+                .AsNoTracking()
+                .Where(x => x.VillageId == villageId.Value)
+                .ToList();
+
+            var queueBuildings = context.QueueBuildings
+                .AsNoTracking()
+                .Where(x => x.VillageId == villageId.Value)
+                .OrderBy(x => x.CompleteTime)
+                .ToList();
 
             return (buildings, queueBuildings);
         }

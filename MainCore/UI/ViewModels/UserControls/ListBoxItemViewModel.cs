@@ -28,6 +28,12 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
+            if (inputs.Count == 0)
+            {
+                Items.Clear();
+                return;
+            }
+
             var oldId = SelectedItem?.Id ?? -1;
 
             for (var i = 0; i < inputs.Count; i++)
@@ -54,6 +60,11 @@ namespace MainCore.UI.ViewModels.UserControls
                 {
                     SelectedIndex = i;
                 }
+            }
+
+            while (Items.Count > inputs.Count)
+            {
+                Items.RemoveAt(Items.Count - 1);
             }
         }
 
