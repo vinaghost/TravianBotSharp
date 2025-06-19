@@ -1,6 +1,7 @@
 ﻿using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
@@ -22,7 +23,7 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public void Load(IEnumerable<ListBoxItem> items)
         {
-            var oldIndex = SelectedIndex;
+            var oldId = SelectedItemId;
             Items.Clear();
             foreach (var item in items)
             {
@@ -31,17 +32,14 @@ namespace MainCore.UI.ViewModels.UserControls
 
             if (Items.Count > 0)
             {
-                if (oldIndex == -1)
+                var matched = Items.FirstOrDefault(x => x.Id == oldId);
+                if (matched is not null)
                 {
-                    SelectedItem = Items[0];
-                }
-                else if (oldIndex < Items.Count)
-                {
-                    SelectedItem = Items[oldIndex];
+                    SelectedItem = matched;
                 }
                 else
                 {
-                    SelectedItem = Items[^1];
+                    SelectedItem = Items[0];
                 }
             }
             else
