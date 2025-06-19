@@ -1,4 +1,5 @@
 ﻿using MainCore.Constraints;
+using MainCore.Parsers;
 
 namespace MainCore.Commands.Features.NpcResource
 {
@@ -32,13 +33,13 @@ namespace MainCore.Commands.Features.NpcResource
             if (currentVillage != villageId) return Skip.WrongVillage;
 
             var percentSetting = settingService.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
-            var storage = context.Storages
-                .Where(x => x.VillageId == villageId.Value)
-                .Select(x => new { x.Crop, x.Granary })
-                .FirstOrDefault();
-            if (storage is not null && storage.Granary > 0)
+
+            // Check granary level from current page to avoid using stale DB data
+            var currentCrop = StorageParser.GetCrop(html);
+            var granaryCapacity = StorageParser.GetGranaryCapacity(html);
+            if (granaryCapacity > 0)
             {
-                var percent = storage.Crop * 100f / storage.Granary;
+                var percent = currentCrop * 100f / granaryCapacity;
                 if (percent < percentSetting) return Skip.GranaryNotReady;
             }
 
