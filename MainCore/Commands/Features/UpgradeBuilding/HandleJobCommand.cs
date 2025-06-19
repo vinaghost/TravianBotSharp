@@ -119,39 +119,39 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 { BuildingEnums.Cropland, storage.Crop },
             };
 
-            var orderedTypes = fieldTypes
-                .OrderBy(t => typeStorage[t])
+            var candidates = layoutBuildings
+                .Select(x => new
+                {
+                    Building = x,
+                    NextLevel = Math.Max(Math.Max(x.CurrentLevel, x.QueueLevel), x.JobLevel) + 1,
+                })
+                .Where(x => !storage.IsResourceEnough(x.Building.Type.GetCost(x.NextLevel)).IsFailed)
                 .ToList();
 
-            foreach (var type in orderedTypes)
+            if (candidates.Count == 0) return null;
+
+            var minLevel = candidates
+                .Select(x => x.Building.Level)
+                .Min();
+
+            candidates = candidates
+                .Where(x => x.Building.Level == minLevel)
+                .ToList();
+
+            var minResource = candidates
+                .Min(x => typeStorage[x.Building.Type]);
+
+            var chosenOne = candidates
+                .Where(x => typeStorage[x.Building.Type] == minResource)
+                .OrderBy(x => x.Building.Location)
+                .First();
+
+            return new NormalBuildPlan
             {
-                var candidates = layoutBuildings
-                    .Where(x => x.Type == type)
-                    .ToList();
-                if (candidates.Count == 0) continue;
-
-                var minLevel = candidates
-                    .Select(x => x.Level)
-                    .Min();
-
-                var chosenOne = candidates
-                    .Where(x => x.Level == minLevel)
-                    .OrderBy(x => x.Id.Value + Random.Shared.Next())
-                    .FirstOrDefault();
-
-                if (chosenOne is null) continue;
-
-                int nextLevel = Math.Max(Math.Max(chosenOne.CurrentLevel, chosenOne.QueueLevel), chosenOne.JobLevel) + 1;
-
-                return new NormalBuildPlan
-                {
-                    Type = chosenOne.Type,
-                    Level = nextLevel,
-                    Location = chosenOne.Location,
-                };
-            }
-
-            return null;
+                Type = chosenOne.Building.Type,
+                Level = chosenOne.NextLevel,
+                Location = chosenOne.Building.Location,
+            };
         }
 
         private static bool IsJobComplete(JobDto job, List<BuildingDto> buildings, List<QueueBuilding> queueBuildings)
