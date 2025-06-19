@@ -314,7 +314,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var deleteJobByIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByIdCommand.Handler>();
-            await deleteJobByIdCommand.HandleAsync(new(VillageId, new JobId(jobId)));
+            await deleteJobByIdCommand.HandleAsync(new(VillageId, new JobId(jobId), "User deleted job from UI"));
             var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
             await jobUpdated.HandleAsync(new(AccountId, VillageId));
         }
