@@ -33,7 +33,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
                 var content = $"{arrow}({building.QueueLevel})";
                 sb.Append(content);
             }
-            if (building.JobLevel != 0)
+            if (building.JobLevel != 0 && building.JobLevel > building.CurrentLevel)
             {
                 var content = $"{arrow}[{building.JobLevel}]";
                 sb.Append(content);
