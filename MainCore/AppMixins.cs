@@ -7,6 +7,7 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Templates;
 using Splat.Microsoft.Extensions.DependencyInjection;
+using MainCore.Services;
 
 [assembly: Behaviors(
     typeof(AccountDataLoggingBehavior<,>),
@@ -58,6 +59,7 @@ namespace MainCore
                 services.AddSingleton<ITelegramService, TelegramService>();
                 services.AddSingleton<TelegramCommandService>();
                 services.AddHostedService<TelegramCommandHostedService>();
+                services.AddHostedService<PassiveUpdateHostedService>();
 
                 services.AddScoped<IChromeBrowser>(sp =>
                 {
