@@ -61,10 +61,6 @@ namespace MainCore.Services
                 options.AddArgument("--headless=new");
                 options.AddArgument("--disable-dev-shm-usage");
             }
-            else
-            {
-                options.AddArgument("--start-maximized");
-            }
             var pathUserData = Path.Combine(AppContext.BaseDirectory, "Data", "Cache", setting.ProfilePath);
             if (!Directory.Exists(pathUserData)) Directory.CreateDirectory(pathUserData);
 
@@ -73,6 +69,11 @@ namespace MainCore.Services
             options.AddArguments($"user-data-dir={pathUserData}");
 
             _driver = await Task.Run(() => new ChromeDriver(_chromeService, options, TimeSpan.FromMinutes(3)));
+
+            if (!setting.IsHeadless)
+            {
+                _driver.Manage().Window.Minimize();
+            }
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(3);
             _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3)); // watch ads
