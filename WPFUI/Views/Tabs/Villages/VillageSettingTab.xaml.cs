@@ -32,7 +32,7 @@ namespace WPFUI.Views.Tabs.Villages
 
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.TrainTroopEnable, v => v.TrainTroopEnable.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.TrainWhenLowResource, v => v.TrainWhenLowResource.IsChecked).DisposeWith(d);
-                this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.TrainTroopRepeatTime, v => v.TrainTroopRepeatTime.ViewModel).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.TrainTroopQueueTime, v => v.TrainTroopQueueTime.ViewModel).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.BarrackTroop, v => v.BarrackTroop.ViewModel).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.BarrackAmount, v => v.BarrackAmount.ViewModel).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.VillageSettingInput.StableTroop, v => v.StableTroop.ViewModel).DisposeWith(d);

@@ -1,26 +1,22 @@
 using MainCore.Behaviors;
 
 namespace MainCore.Commands.NextExecute
-{
-    [Handler]
-    [Behaviors(typeof(NextExecuteLoggingBehaviors<,>))]
-    public static partial class NextExecuteTrainTroopTaskCommand
     {
-        private static async ValueTask HandleAsync(
-            TrainTroopTask.Task task,
-            ILogger logger,
-            ISettingService settingService,
-            CancellationToken cancellationToken)
+        [Handler]
+        [Behaviors(typeof(NextExecuteLoggingBehaviors<,>))]
+        public static partial class NextExecuteTrainTroopTaskCommand
         {
-            await Task.CompletedTask;
-            var seconds = settingService.ByName(
-                task.VillageId,
-                VillageSettingEnums.TrainTroopRepeatTimeMin,
-                VillageSettingEnums.TrainTroopRepeatTimeMax,
-                60
-            );
+            public sealed record Command(TrainTroopTask.Task Task, TimeSpan QueueTime);
 
-            task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
+            private static async ValueTask HandleAsync(
+                Command command,
+                ILogger logger,
+                CancellationToken cancellationToken)
+            {
+                await Task.CompletedTask;
+                var (task, queueTime) = command;
+                if (queueTime <= TimeSpan.Zero) queueTime = TimeSpan.FromMinutes(1);
+                task.ExecuteAt = DateTime.Now.Add(queueTime);
+            }
         }
     }
-}

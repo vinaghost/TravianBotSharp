@@ -10,12 +10,9 @@ namespace MainCore.UI.Models.Validators
                 .NotEqual(TribeEnums.Any)
                 .WithMessage("Tribe should be specific");
 
-            RuleFor(x => x.TrainTroopRepeatTime.Min)
-                .LessThanOrEqualTo(x => x.TrainTroopRepeatTime.Max)
-                .WithMessage("Minimum next train troop ({PropertyValue}) should be less than maximum next train troop ({ComparisonValue})");
-            RuleFor(x => x.TrainTroopRepeatTime.Min)
+            RuleFor(x => x.TrainTroopQueueTime.Value)
                 .GreaterThanOrEqualTo(0)
-                .WithMessage("Minimum next train troop ({PropertyValue}) should be positive number");
+                .WithMessage("Min Troops Queue ({PropertyValue}) should be positive number");
 
             RuleFor(x => x.BarrackAmount.Min)
                 .LessThanOrEqualTo(x => x.BarrackAmount.Max)

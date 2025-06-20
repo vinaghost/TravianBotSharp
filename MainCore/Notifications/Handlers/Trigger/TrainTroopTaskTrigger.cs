@@ -1,4 +1,7 @@
 ﻿using MainCore.Constraints;
+using MainCore.Commands.Features.TrainTroop;
+using MainCore.Commands.NextExecute;
+using MainCore.Enums;
 
 namespace MainCore.Notifications.Handlers.Trigger
 {
@@ -8,6 +11,8 @@ namespace MainCore.Notifications.Handlers.Trigger
         private static async ValueTask HandleAsync(
             IAccountVillageConstraint notification,
             GetVillageNameQuery.Handler getVillageNameQuery,
+            GetTrainQueueTimeCommand.Handler getTrainQueueTimeCommand,
+            NextExecuteTrainTroopTaskCommand.Handler nextExecuteTrainTroopTaskCommand,
             ITaskManager taskManager,
             ISettingService settingService,
             CancellationToken cancellationToken)
@@ -19,12 +24,19 @@ namespace MainCore.Notifications.Handlers.Trigger
             if (trainTroopEnable)
             {
                 if (taskManager.IsExist<TrainTroopTask.Task>(accountId, villageId)) return;
+
                 var villageName = await getVillageNameQuery.HandleAsync(new(villageId), cancellationToken);
-                taskManager.Add<TrainTroopTask.Task>(new(accountId, villageId, villageName));
+                var task = new TrainTroopTask.Task(accountId, villageId, villageName);
+
+                var queueResult = await getTrainQueueTimeCommand.HandleAsync(new(accountId, villageId, BuildingEnums.Barracks), cancellationToken);
+                var queueTime = queueResult.IsFailed ? TimeSpan.Zero : queueResult.Value;
+                await nextExecuteTrainTroopTaskCommand.HandleAsync(new(task, queueTime), cancellationToken);
+
+                taskManager.Add<TrainTroopTask.Task>(task);
             }
             else
             {
-                taskManager.Remove<TrainTroopTask.Task>(accountId);
+                taskManager.Remove<TrainTroopTask.Task>(accountId, villageId);
             }
         }
     }
