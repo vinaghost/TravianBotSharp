@@ -159,6 +159,7 @@ namespace MainCore.UI.Models.Input
                 { VillageSettingEnums.TrainTroopEnable, trainTroopEnable },
                 { VillageSettingEnums.TrainWhenLowResource, trainWhenLowResource },
                 { VillageSettingEnums.TrainTroopRepeatTimeMin, trainTroopQueueTime },
+                { VillageSettingEnums.TrainTroopRepeatTimeMax, trainTroopQueueTime },
                 { VillageSettingEnums.BarrackTroop, barrackTroop },
                 { VillageSettingEnums.BarrackAmountMin, barrackAmountMin },
                 { VillageSettingEnums.BarrackAmountMax, barrackAmountMax },
