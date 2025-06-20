@@ -24,6 +24,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         {
             var (accountId, villageId) = command;
 
+            var updateResult = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            if (updateResult.IsFailed) return Result.Fail<Response>(updateResult.Errors);
+
             var (_, isFailed, job, errors) = await getJobQuery.HandleAsync(new(accountId, villageId), cancellationToken);
             if (isFailed) return Result.Fail<Response>(errors);
 
