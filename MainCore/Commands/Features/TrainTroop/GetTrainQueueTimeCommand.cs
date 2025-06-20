@@ -36,7 +36,7 @@ namespace MainCore.Commands.Features.TrainTroop
 
             if (buildingLocation == default)
             {
-                return Result.Fail(MissingBuilding.Error(building).Errors);
+                return Result.Fail<TimeSpan>(MissingBuilding.Error(building));
             }
 
             result = await toBuildingCommand.HandleAsync(new(accountId, buildingLocation), cancellationToken);
