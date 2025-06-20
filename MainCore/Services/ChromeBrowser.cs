@@ -41,20 +41,13 @@ namespace MainCore.Services
                 }
             }
 
-            options.AddArgument($"--user-agent={setting.UserAgent}");
-            options.AddArgument("--ignore-certificate-errors");
-            options.AddArguments("--no-default-browser-check", "--no-first-run", "--ash-no-nudges");
-            options.AddArguments("--mute-audio", "--disable-gpu", "--disable-search-engine-choice-screen");
-
-            options.AddExcludedArgument("enable-automation");
-            options.AddAdditionalOption("useAutomationExtension", "undefined");
-
-            options.AddArgument("--disable-background-timer-throttling");
-            options.AddArgument("--disable-backgrounding-occluded-windows");
-            options.AddArgument("--disable-features=CalculateNativeWinOcclusion");
-            options.AddArgument("--disable-features=UserAgentClientHint");
-            options.AddArgument("--disable-features=DisableLoadExtensionCommandLineSwitch");
-            options.AddArgument("--disable-blink-features=AutomationControlled");
+options.AddArgument("--start-maximized");                       // regular full-screen window
+options.AddArgument("--lang=th-TH,en-US,en");                   // Thai UI, English fall-backs → authentic Accept-Language header :contentReference[oaicite:0]{index=0}
+options.AddArgument("--disable-blink-features=AutomationControlled"); // hides navigator.webdriver
+options.AddArgument("--user-agent=" +
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+    "AppleWebKit/537.36 (KHTML, like Gecko) " +
+    "Chrome/138.0.0.0 Safari/537.36");                          // current Stable UA, 17 Jun 2025
 
             if (setting.IsHeadless)
             {
