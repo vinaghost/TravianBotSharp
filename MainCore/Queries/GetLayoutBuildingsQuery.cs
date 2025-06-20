@@ -18,18 +18,20 @@ namespace MainCore.Queries
             var (villageId, ignoreJobBuilding) = query;
 
             var villageBuildings = context.Buildings
-               .Where(x => x.VillageId == villageId.Value)
-               .OrderBy(x => x.Location)
-               .Select(x => new BuildingItem()
-               {
-                   Id = new(x.Id),
-                   Location = x.Location,
-                   Type = x.Type,
-                   CurrentLevel = x.Level
-               })
-            .ToList();
+                .AsNoTracking()
+                .Where(x => x.VillageId == villageId.Value)
+                .OrderBy(x => x.Location)
+                .Select(x => new BuildingItem()
+                {
+                    Id = new(x.Id),
+                    Location = x.Location,
+                    Type = x.Type,
+                    CurrentLevel = x.Level
+                })
+                .ToList();
 
             var queueBuildings = context.QueueBuildings
+                .AsNoTracking()
                 .Where(x => x.VillageId == villageId.Value)
                 .GroupBy(x => x.Location)
                 .ToList();
@@ -47,6 +49,7 @@ namespace MainCore.Queries
             if (!ignoreJobBuilding)
             {
                 var jobBuildings = context.Jobs
+                    .AsNoTracking()
                     .Where(x => x.VillageId == villageId.Value)
                     .Where(x => x.Type == JobTypeEnums.NormalBuild)
                     .Select(x => x.Content)
@@ -65,12 +68,13 @@ namespace MainCore.Queries
                 }
 
                 var resourceJobs = context.Jobs
-                   .Where(x => x.VillageId == villageId.Value)
-                   .Where(x => x.Type == JobTypeEnums.ResourceBuild)
-                   .Select(x => x.Content)
-                   .AsEnumerable()
-                   .Select(x => JsonSerializer.Deserialize<ResourceBuildPlan>(x)!)
-                   .GroupBy(x => x.Plan);
+                    .AsNoTracking()
+                    .Where(x => x.VillageId == villageId.Value)
+                    .Where(x => x.Type == JobTypeEnums.ResourceBuild)
+                    .Select(x => x.Content)
+                    .AsEnumerable()
+                    .Select(x => JsonSerializer.Deserialize<ResourceBuildPlan>(x)!)
+                    .GroupBy(x => x.Plan);
 
                 var fields = villageBuildings.Where(x => x.Type.IsResourceField()).ToList();
 
