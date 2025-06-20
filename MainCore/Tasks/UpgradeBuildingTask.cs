@@ -19,11 +19,11 @@ namespace MainCore.Tasks
             Task task,
             ILogger logger,
             IChromeBrowser browser,
-            HandleJobCommand.Handler handleJobCommand,
+            GetBuildPlanCommand.Handler getBuildPlanCommand,
             ToBuildPageCommand.Handler toBuildPageCommand,
             HandleResourceCommand.Handler handleResourceCommand,
+            AddCroplandCommand.Handler addCroplandCommand,
             HandleUpgradeCommand.Handler handleUpgradeCommand,
-            GetFirstQueueBuildingQuery.Handler getFirstQueueBuildingQuery,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             CancellationToken cancellationToken)
         {
@@ -33,20 +33,16 @@ namespace MainCore.Tasks
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-                var (_, isFailed, plan, errors) = await handleJobCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                var (_, isFailed, plan, errors) = await getBuildPlanCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (isFailed)
                 {
-                    if (errors.OfType<Continue>().Any()) continue;
-
-                    var buildingQueue = await getFirstQueueBuildingQuery.HandleAsync(new(task.VillageId), cancellationToken);
-                    if (buildingQueue is null)
+                    var nextExecuteErrors = errors.OfType<NextExecuteError>().OrderBy(x => x.NextExecute).ToList();
+                    if (nextExecuteErrors.Count > 0)
                     {
-                        return Skip.BuildingJobQueueBroken;
+                        task.ExecuteAt = nextExecuteErrors[0].NextExecute;
                     }
 
-                    task.ExecuteAt = buildingQueue.CompleteTime.AddSeconds(3);
-                    logger.Information("Construction queue is full. Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
-                    return Skip.ConstructionQueueFull;
+                    return new Skip().CausedBy(errors);
                 }
 
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
@@ -57,12 +53,24 @@ namespace MainCore.Tasks
                 result = await handleResourceCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
                 if (result.IsFailed)
                 {
-                    if (result.HasError<Continue>()) continue;
-                    if (result.HasError<Skip>())
+                    if (result.HasError<LackOfFreeCrop>(out var freeCropErrors))
+                    {
+                        var message = string.Join(Environment.NewLine, freeCropErrors.Select(x => x.Message));
+                        logger.Warning("{Error}", message);
+
+                        await addCroplandCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                        continue;
+                    }
+
+                    if (result.HasError<StorageLimit>(out var storageLimitErrors))
+                    {
+                        return new Stop().CausedBy(storageLimitErrors);
+                    }
+                    if (result.HasError<ResourceMissing>(out var resourceMissingErrors))
                     {
                         var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
                         task.ExecuteAt = DateTime.Now.Add(time);
-                        logger.Information("Not enough resource. Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
+                        return new Skip().CausedBy(resourceMissingErrors);
                     }
 
                     return result;

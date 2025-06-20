@@ -8,6 +8,6 @@
     xmlns:uc="clr-namespace:WPFUI.Views.UserControls"
     d:DesignHeight="450" d:DesignWidth="800">
     <Grid Background="#FFE5E5E5">
-        <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="No account, use Add account or Add accounts button to add account" VerticalAlignment="Center" TextAlignment="Center" LineHeight="11" />
+        <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="Click account on the left side, if no account, use Add account or Add accounts button to add account" VerticalAlignment="Center" TextAlignment="Center" LineHeight="11" />
     </Grid>
 </v:NoAccountTabBase>

@@ -46,6 +46,10 @@ namespace MainCore.UI.ViewModels
                 {
                     await Task.Run(context.FillAccountSettings);
                     await Task.Run(context.FillVillageSettings);
+
+                    await Task.Run(context.QueueBuildings
+                        .Where(x => x.Level == -1)
+                        .ExecuteDelete);
                 }
 
                 await _waitingOverlayViewModel.ChangeMessage("loading program layout");
