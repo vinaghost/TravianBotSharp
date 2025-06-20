@@ -47,7 +47,6 @@ namespace MainCore.Services
                 }
 
                 browser.Logger.Warning("{TaskName} will retry after {RetryDelay} (#{AttemptNumber} times)", taskName, args.RetryDelay.Humanize(3, minUnit: Humanizer.Localisation.TimeUnit.Second), args.AttemptNumber + 1);
-                await browser.Refresh(CancellationToken.None);
             };
 
             var retryOptions = new RetryStrategyOptions<Result>()
