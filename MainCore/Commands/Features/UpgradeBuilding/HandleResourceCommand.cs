@@ -10,13 +10,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            JobUpdated.Handler jobUpdated,
             UpdateStorageCommand.Handler updateStorageCommand,
             UseHeroResourceCommand.Handler useHeroResourceCommand,
             ToHeroInventoryCommand.Handler toHeroInventoryCommand,
             UpdateInventoryCommand.Handler updateInventoryCommand,
-            GetLowestBuildingQuery.Handler getLowestBuildingQuery,
-            AddJobCommand.Handler addJobCommand,
             ISettingService settingService,
             IChromeBrowser browser,
             ILogger logger,
@@ -31,43 +28,14 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             Result result = storage.IsResourceEnough(requiredResource);
             if (!result.IsFailed) return Result.Ok();
 
-            if (result.HasError<LackOfFreeCrop>(out var freeCropErrors))
-            {
-                var message = string.Join(Environment.NewLine, freeCropErrors.Select(x => x.Message));
-                logger.Warning("{Error}", message);
-
-                var cropland = await getLowestBuildingQuery.HandleAsync(new(villageId, BuildingEnums.Cropland), cancellationToken);
-
-                var cropLandPlan = new NormalBuildPlan()
-                {
-                    Location = cropland.Location,
-                    Type = cropland.Type,
-                    Level = cropland.Level + 1,
-                };
-
-                await addJobCommand.HandleAsync(new(villageId, cropLandPlan.ToJob(), true), cancellationToken);
-                await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
-                return Continue.Error;
-            }
-
-            if (result.HasError<StorageLimit>(out var storageLimitErrors))
-            {
-                var message = string.Join(Environment.NewLine, storageLimitErrors.Select(x => x.Message));
-                logger.Warning("{Error}", message);
-                return Stop.NotEnoughStorageCapacity;
-            }
+            if (result.HasError<LackOfFreeCrop>()) return result;
+            if (result.HasError<StorageLimit>()) return result;
 
             var useHeroResource = settingService.BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
 
-            if (!useHeroResource && result.HasError<ResourceMissing>(out var resourceMissingErrors))
-            {
-                var message = string.Join(Environment.NewLine, resourceMissingErrors.Select(x => x.Message));
-                logger.Warning("{Error}", message);
+            if (!useHeroResource && result.HasError<ResourceMissing>(out var resourceMissingErrors)) return result;
 
-                return Skip.NotEnoughResource;
-            }
-
-            logger.Information("Use hero resource to upgrade building");
+            logger.Information("Don't have enough resource. Use resource in hero invetory to upgrade building");
             var missingResource = storage.GetMissingResource(requiredResource);
 
             var url = browser.CurrentUrl;
@@ -82,18 +50,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             await browser.Navigate(url, cancellationToken);
 
-            if (result.IsFailed)
-            {
-                if (result.HasError<Retry>()) return result;
-
-                if (result.HasError<ResourceMissing>(out var errors))
-                {
-                    var message = string.Join(Environment.NewLine, errors.Select(x => x.Message));
-                    logger.Warning("{Error}", message);
-                }
-
-                return Skip.NotEnoughResource;
-            }
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }

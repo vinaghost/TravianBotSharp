@@ -23,7 +23,7 @@ namespace MainCore.Behaviors
                 var message = string.Join(Environment.NewLine, response.Reasons.Select(e => e.Message));
                 if (!string.IsNullOrEmpty(message))
                 {
-                    _logger.Warning("{message}", message);
+                    _logger.Warning("{Message}", message);
                 }
             }
 

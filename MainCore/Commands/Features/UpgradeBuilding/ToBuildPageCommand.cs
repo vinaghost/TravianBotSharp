@@ -12,6 +12,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             ToBuildingCommand.Handler toBuildingCommand,
             SwitchTabCommand.Handler switchTabCommand,
             GetBuildingQuery.Handler getBuilding,
+            DelayClickCommand.Handler delayClickCommand,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId, plan) = command;
@@ -19,6 +20,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             Result result;
             result = await toBuildingCommand.HandleAsync(new(accountId, plan.Location), cancellationToken);
             if (result.IsFailed) return result;
+
+            await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
 
             var building = await getBuilding.HandleAsync(new(villageId, plan.Location), cancellationToken);
             if (building.Type == BuildingEnums.Site)
@@ -34,6 +37,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 result = await switchTabCommand.HandleAsync(new(accountId, 0), cancellationToken);
                 if (result.IsFailed) return result;
             }
+
+            await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+
             return Result.Ok();
         }
     }

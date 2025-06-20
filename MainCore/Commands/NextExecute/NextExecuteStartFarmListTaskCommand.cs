@@ -1,9 +1,7 @@
-﻿using MainCore.Behaviors;
-
-namespace MainCore.Commands.NextExecute
+﻿namespace MainCore.Commands.NextExecute
 {
     [Handler]
-    [Behaviors(typeof(NextExecuteLoggingBehaviors<,>))]
+
     public static partial class NextExecuteStartFarmListTaskCommand
     {
         private static async ValueTask HandleAsync(
