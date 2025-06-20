@@ -1,4 +1,5 @@
-﻿using MainCore.UI.ViewModels.Abstract;
+﻿using MainCore.Enums;
+using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.Tabs.Villages;
 
 namespace MainCore.UI.Stores
@@ -8,6 +9,7 @@ namespace MainCore.UI.Stores
     {
         private readonly bool[] _tabVisibility = new bool[2];
         private VillageTabType _currentTabType;
+        private VillageNormalTabType _currentNormalTab = VillageNormalTabType.Build;
 
         [Reactive]
         private bool _isNoVillageTabVisible = true;
@@ -28,6 +30,16 @@ namespace MainCore.UI.Stores
             _infoViewModel = infoViewModel;
             _villageSettingViewModel = villageSettingViewModel;
             _attackViewModel = attackViewModel;
+
+            _buildViewModel.WhenAnyValue(x => x.IsActive)
+                .Where(x => x)
+                .Subscribe(_ => _currentNormalTab = VillageNormalTabType.Build);
+            _attackViewModel.WhenAnyValue(x => x.IsActive)
+                .Where(x => x)
+                .Subscribe(_ => _currentNormalTab = VillageNormalTabType.Attack);
+            _villageSettingViewModel.WhenAnyValue(x => x.IsActive)
+                .Where(x => x)
+                .Subscribe(_ => _currentNormalTab = VillageNormalTabType.Settings);
         }
 
         public void SetTabType(VillageTabType tabType)
@@ -51,13 +63,19 @@ namespace MainCore.UI.Stores
                     break;
 
                 case VillageTabType.Normal:
-                    _buildViewModel.IsActive = true;
-                    _attackViewModel.IsActive = true;
+                    ActivateCurrentNormalTab();
                     break;
 
                 default:
                     break;
             }
+        }
+
+        private void ActivateCurrentNormalTab()
+        {
+            _buildViewModel.IsActive = _currentNormalTab == VillageNormalTabType.Build;
+            _attackViewModel.IsActive = _currentNormalTab == VillageNormalTabType.Attack;
+            _villageSettingViewModel.IsActive = _currentNormalTab == VillageNormalTabType.Settings;
         }
 
         public NoVillageViewModel NoVillageViewModel => _noVillageViewModel;
