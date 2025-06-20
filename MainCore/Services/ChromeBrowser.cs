@@ -13,7 +13,7 @@ namespace MainCore.Services
         private WebDriverWait _wait = null!;
 
         private readonly string[] _extensionsPath;
-        private readonly HtmlDocument _htmlDoc = new();
+        private readonly HtmlDocument _htmlDoc = new() { OptionUseIdAttribute = true };
 
         public ChromeBrowser(string[] extensionsPath)
         {
