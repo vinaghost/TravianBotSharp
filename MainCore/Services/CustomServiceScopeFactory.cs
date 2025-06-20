@@ -31,7 +31,12 @@ namespace MainCore.Services
                    x.Username,
                    x.Server,
                })
-               .First();
+               .FirstOrDefault();
+
+            if (account is null)
+            {
+                throw new InvalidOperationException($"Account with ID {accountId.Value} not found.");
+            }
 
             var uri = new Uri(account.Server);
 

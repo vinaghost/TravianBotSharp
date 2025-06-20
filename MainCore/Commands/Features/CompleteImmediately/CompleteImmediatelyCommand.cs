@@ -16,6 +16,9 @@ namespace MainCore.Commands.Features.CompleteImmediately
             var (accountId, villageId) = command;
 
             var html = browser.Html;
+            var oldQueueCount = CompleteImmediatelyParser.CountQueueBuilding(html);
+
+            if (oldQueueCount == 0) return Result.Ok();
 
             var completeNowButton = CompleteImmediatelyParser.GetCompleteButton(html);
             if (completeNowButton is null) return Retry.ButtonNotFound("complete now");
@@ -37,7 +40,6 @@ namespace MainCore.Commands.Features.CompleteImmediately
             var confirmButton = CompleteImmediatelyParser.GetConfirmButton(html);
             if (confirmButton is null) return Retry.ButtonNotFound("confirm complete now");
 
-            var oldQueueCount = CompleteImmediatelyParser.CountQueueBuilding(html);
 
             result = await browser.Click(By.XPath(confirmButton.XPath));
             if (result.IsFailed) return result;

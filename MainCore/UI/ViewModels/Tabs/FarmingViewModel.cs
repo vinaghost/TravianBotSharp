@@ -125,7 +125,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task ActiveFarmList()
         {
-            if (!FarmLists.IsSelected)
+            if (FarmLists.SelectedItem is null)
             {
                 await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "No farm list selected"));
                 return;

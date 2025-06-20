@@ -44,8 +44,7 @@
                 return node.GetClasses().Contains("underConstruction");
             }
 
-            var nodes = GetNodes(doc);
-            foreach (var node in nodes)
+            foreach (var node in GetNodes(doc))
             {
                 var location = GetId(node);
                 var level = GetLevel(node);
@@ -63,14 +62,14 @@
 
         public static IEnumerable<BuildingDto> GetInfrastructures(HtmlDocument doc)
         {
-            static List<HtmlNode> GetNodes(HtmlDocument doc)
+            static IEnumerable<HtmlNode> GetNodes(HtmlDocument doc)
             {
                 var villageContentNode = doc.GetElementbyId("villageContent");
-                if (villageContentNode is null) return new();
-                var list = villageContentNode.Descendants("div").Where(x => x.HasClass("buildingSlot")).ToList();
-                if (list.Count == 23) // level 1 wall and above has 2 part
+                if (villageContentNode is null) return [];
+                var list = villageContentNode.Descendants("div").Where(x => x.HasClass("buildingSlot"));
+                if (list.Count() == 23) // level 1 wall and above has 2 part
                 {
-                    list.RemoveAt(list.Count - 1);
+                    return list.SkipLast(1);
                 }
 
                 return list;
@@ -98,8 +97,7 @@
                 return node.Descendants("a").Any(x => x.HasClass("underConstruction"));
             }
 
-            var nodes = GetNodes(doc);
-            foreach (var node in nodes)
+            foreach (var node in GetNodes(doc))
             {
                 var location = GetId(node);
                 var level = GetLevel(node);
@@ -123,11 +121,11 @@
 
         public static IEnumerable<QueueBuildingDto> GetQueueBuilding(HtmlDocument doc)
         {
-            static List<HtmlNode> GetNodes(HtmlDocument doc)
+            static IEnumerable<HtmlNode> GetNodes(HtmlDocument doc)
             {
                 var finishButton = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("finishNow"));
                 if (finishButton is null) return [];
-                return finishButton.ParentNode.Descendants("li").ToList();
+                return finishButton.ParentNode.Descendants("li");
             }
 
             static string GetBuildingType(HtmlNode node)
@@ -155,31 +153,16 @@
             }
 
             var nodes = GetNodes(doc);
-
-            for (int i = 0; i < nodes.Count; i++)
+            foreach (var node in nodes)
             {
-                var node = nodes[i];
                 var type = GetBuildingType(node);
                 var level = GetLevel(node);
                 var duration = GetDuration(node);
-                yield return new()
+                yield return new QueueBuildingDto()
                 {
-                    Position = i,
                     Type = type,
                     Level = level,
                     CompleteTime = DateTime.Now.Add(duration),
-                    Location = -1,
-                };
-            }
-
-            for (int i = nodes.Count; i < 4; i++) // we will save 3 slot for each village, Roman can build 3 building in one time
-            {
-                yield return new()
-                {
-                    Position = i,
-                    Type = "Site",
-                    Level = -1,
-                    CompleteTime = DateTime.MaxValue,
                     Location = -1,
                 };
             }

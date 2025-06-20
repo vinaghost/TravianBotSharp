@@ -25,9 +25,7 @@ namespace MainCore.Tasks
             NextExecuteSleepTaskCommand.Handler nextExecuteSleepTaskCommand,
             CancellationToken cancellationToken)
         {
-            Result result;
-            result = await sleepCommand.HandleAsync(new(task.AccountId), cancellationToken);
-            if (result.IsFailed) return result;
+            await sleepCommand.HandleAsync(new(task.AccountId), cancellationToken);
             var (_, isFailed, access, errors) = await getAccessQuery.HandleAsync(new(task.AccountId), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 

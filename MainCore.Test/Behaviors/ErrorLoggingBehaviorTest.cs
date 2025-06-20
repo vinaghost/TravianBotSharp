@@ -56,7 +56,7 @@ namespace MainCore.Test.Behaviors
 
             var logEvent = TestCorrelator.GetLogEventsForSinksFromCurrentContext(_testCorrelatorSinkId)[0];
 
-            var nameProperty = logEvent.Properties["message"] as ScalarValue;
+            var nameProperty = logEvent.Properties["Message"] as ScalarValue;
 
             // Assert
             nameProperty!.Value.ShouldBe(expected);
