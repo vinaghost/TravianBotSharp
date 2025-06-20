@@ -17,20 +17,20 @@ namespace MainCore.Queries
             await Task.CompletedTask;
 
             var (accountId, villageId) = query;
-            var countJob = context.Jobs
-               .Where(x => x.VillageId == villageId.Value)
-               .Where(x => BuildJobTypes.Contains(x.Type))
-               .Count();
 
-            if (countJob == 0) return Skip.BuildingJobQueueEmpty;
+            var buildJobs = context.GetBuildJobs(villageId);
+            if (buildJobs.Count == 0) return UpgradeBuildingError.BuildingJobQueueEmpty;
 
-            var countQueueBuilding = context.CountQueueBuilding(villageId);
+            var (buildings, queueBuildings) = context.GetBuildings(villageId);
 
-            if (countQueueBuilding == 0)
+            if (queueBuildings.Count == 0)
             {
-                var result = context.GetBuildingJob(villageId, false);
-                return result;
+                var job = buildJobs.First();
+                var result = IsJobValid(job, buildings, queueBuildings);
+                if (result.IsFailed) return result;
+                return job;
             }
+
             var plusActive = context.AccountsInfo
                 .Where(x => x.AccountId == accountId.Value)
                 .Select(x => x.HasPlusAccount)
@@ -38,34 +38,95 @@ namespace MainCore.Queries
 
             var applyRomanQueueLogic = context.BooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
 
-            if (countQueueBuilding == 1)
+            if (queueBuildings.Count == 1)
             {
                 if (plusActive)
                 {
-                    var result = context.GetBuildingJob(villageId, false);
-                    return result;
+                    var job = buildJobs.First();
+                    var result = IsJobValid(job, buildings, queueBuildings);
+                    if (result.IsFailed) return result;
+                    return job;
                 }
 
                 if (applyRomanQueueLogic)
                 {
-                    var result = context.GetBuildingJob(villageId, true);
-                    return result;
+                    var (_, isFailed, job, errors) = GetJobBasedOnRomanLogic(queueBuildings, buildJobs);
+                    if (isFailed) return Result.Fail(errors);
+                    var result = IsJobValid(job, buildings, queueBuildings);
+                    if (result.IsFailed) return result;
+                    return job;
                 }
-
-                return JobError.ConstructionQueueFull;
+                return NextExecuteError.ConstructionQueueFull(queueBuildings[0].CompleteTime);
             }
 
-            if (countQueueBuilding == 2)
+            if (queueBuildings.Count == 2)
             {
                 if (plusActive && applyRomanQueueLogic)
                 {
-                    var result = context.GetBuildingJob(villageId, true);
-                    return result;
+                    var (_, isFailed, job, errors) = GetJobBasedOnRomanLogic(queueBuildings, buildJobs);
+                    if (isFailed) return Result.Fail(errors);
+                    var result = IsJobValid(job, buildings, queueBuildings);
+                    if (result.IsFailed) return result;
+                    return job;
                 }
-                return JobError.ConstructionQueueFull;
+                return NextExecuteError.ConstructionQueueFull(queueBuildings[0].CompleteTime);
             }
 
-            return JobError.ConstructionQueueFull;
+            if (queueBuildings.Count == 3)
+            {
+                return NextExecuteError.ConstructionQueueFull(queueBuildings[0].CompleteTime);
+            }
+
+            return UpgradeBuildingError.BuildingJobQueueBroken;
+        }
+
+        private static (List<Building>, List<QueueBuilding>) GetBuildings(this AppDbContext context, VillageId villageId)
+        {
+            var completeQueueBuildings = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.CompleteTime < DateTime.Now)
+                .OrderBy(x => x.Level)
+                .ToList();
+
+            if (completeQueueBuildings.Count > 0)
+            {
+                foreach (var completeQueueBuilding in completeQueueBuildings)
+                {
+                    if (completeQueueBuilding.Location == -1) continue;
+
+                    var building = context.Buildings.FirstOrDefault(x => x.Location == completeQueueBuilding.Location);
+                    if (building is null) continue;
+
+                    building.Level = completeQueueBuilding.Level;
+                    context.Remove(completeQueueBuilding);
+                }
+                context.SaveChanges();
+            }
+
+            var buildings = context.Buildings
+                .AsNoTracking()
+                .Where(x => x.VillageId == villageId.Value)
+                .ToList();
+
+            var queueBuildings = context.QueueBuildings
+                .AsNoTracking()
+                .Where(x => x.VillageId == villageId.Value)
+                .OrderBy(x => x.CompleteTime)
+                .ToList();
+
+            return (buildings, queueBuildings);
+        }
+
+        private static List<JobDto> GetBuildJobs(this AppDbContext context, VillageId villageId)
+        {
+            var jobs = context.Jobs
+                .AsNoTracking()
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => BuildJobTypes.Contains(x.Type))
+                .OrderBy(x => x.Position)
+                .ToDto()
+                .ToList();
+            return jobs;
         }
 
         private static List<JobTypeEnums> BuildJobTypes = [
@@ -80,94 +141,38 @@ namespace MainCore.Queries
             BuildingEnums.Cropland,
         ];
 
-        private static Result<JobDto> GetBuildingJob(this AppDbContext context, VillageId villageId, bool romanLogic)
+        private static Result<JobDto> GetJobBasedOnRomanLogic(List<QueueBuilding> queueBuildings, List<JobDto> jobs)
         {
-            JobDto job;
-            if (romanLogic)
-            {
-                var romanResult = context.GetJobBasedOnRomanLogic(villageId);
-                if (romanResult.IsFailed) return Result.Fail(romanResult.Errors);
-                job = romanResult.Value;
-            }
-            else
-            {
-                job = context.GetBuildingJob(villageId);
-            }
-
-            if (job.Type == JobTypeEnums.ResourceBuild) return job;
-
-            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
-            if (plan.Type.IsResourceField()) return job;
-            var (isSuccess, _, erros) = context.IsJobValid(villageId, plan);
-            if (isSuccess) return job;
-            return Result.Fail(erros);
-        }
-
-        private static JobDto GetBuildingJob(
-            this AppDbContext context,
-            VillageId villageId)
-        {
-            var job = context.Jobs
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => BuildJobTypes.Contains(x.Type))
-                .OrderBy(x => x.Position)
-                .ToDto()
-                .First();
-            return job;
-        }
-
-        private static Result<JobDto> GetJobBasedOnRomanLogic(
-            this AppDbContext context,
-            VillageId villageId)
-        {
-            var countQueueBuilding = context.CountQueueBuilding(villageId);
-            var countResourceQueueBuilding = context.CountResourceQueueBuilding(villageId);
+            var countQueueBuilding = queueBuildings.Count;
+            var countResourceQueueBuilding = CountResourceQueueBuilding(queueBuildings);
             var countInfrastructureQueueBuilding = countQueueBuilding - countResourceQueueBuilding;
+
             if (countResourceQueueBuilding > countInfrastructureQueueBuilding)
             {
-                var job = context.GetInfrastructureBuildingJob(villageId);
-                if (job is null) return JobError.JobNotAvailable("Infrastructure building");
+                var job = GetInfrastructureBuildingJob(jobs);
+                if (job is null) return UpgradeBuildingError.JobNotAvailable("Infrastructure building");
                 return job;
             }
             else
             {
-                var job = context.GetResourceBuildingJob(villageId);
-                if (job is null) return JobError.JobNotAvailable("Resource field");
+                var job = GetResourceBuildingJob(jobs);
+                if (job is null) return UpgradeBuildingError.JobNotAvailable("Resource field");
                 return job;
             }
         }
 
-        private static int CountQueueBuilding(
-            this AppDbContext context,
-            VillageId villageId)
+        private static int CountResourceQueueBuilding(List<QueueBuilding> queueBuildings)
         {
-            var count = context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Level != -1)
-                .Count();
-            return count;
-        }
-
-        private static int CountResourceQueueBuilding(
-            this AppDbContext context,
-            VillageId villageId)
-        {
-            var count = context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
+            var count = queueBuildings
                 .Where(x => ResourceTypes.Contains(x.Type))
                 .Count();
             return count;
         }
 
-        private static JobDto GetInfrastructureBuildingJob(
-            this AppDbContext context,
-            VillageId villageId)
+        private static JobDto? GetInfrastructureBuildingJob(List<JobDto> jobs)
         {
-            var job = context.Jobs
-                .Where(x => x.VillageId == villageId.Value)
+            var job = jobs
                 .Where(x => x.Type == JobTypeEnums.NormalBuild)
-                .ToDto()
-                .AsEnumerable()
                 .Select(x => new
                 {
                     Job = x,
@@ -176,19 +181,14 @@ namespace MainCore.Queries
                 .Where(x => !ResourceTypes.Contains(x.Content.Type))
                 .Select(x => x.Job)
                 .OrderBy(x => x.Position)
-                .First();
+                .FirstOrDefault();
             return job;
         }
 
-        private static JobDto? GetResourceBuildingJob(
-            this AppDbContext context,
-            VillageId villageId)
+        private static JobDto? GetResourceBuildingJob(List<JobDto> jobs)
         {
-            var job = context.Jobs
-                .Where(x => x.VillageId == villageId.Value)
+            var job = jobs
                 .Where(x => x.Type == JobTypeEnums.NormalBuild)
-                .ToDto()
-                .AsEnumerable()
                 .Select(x => new
                 {
                     Job = x,
@@ -199,10 +199,8 @@ namespace MainCore.Queries
                 .OrderBy(x => x.Position)
                 .FirstOrDefault();
 
-            var resourceBuildJob = context.Jobs
-                .Where(x => x.VillageId == villageId.Value)
+            var resourceBuildJob = jobs
                 .Where(x => x.Type == JobTypeEnums.ResourceBuild)
-                .ToDto()
                 .FirstOrDefault();
 
             if (job is null) return resourceBuildJob;
@@ -211,47 +209,57 @@ namespace MainCore.Queries
             return resourceBuildJob;
         }
 
-        private static Result IsJobValid(
-            this AppDbContext context,
-            VillageId villageId,
-            NormalBuildPlan plan)
+        private static Result IsJobValid(JobDto job, List<Building> buildings, List<QueueBuilding> queueBuildings)
         {
-            var currentBuilding = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Location == plan.Location)
-                .FirstOrDefault();
+            if (job.Type == JobTypeEnums.ResourceBuild) return Result.Ok();
 
-            if (currentBuilding is not null && currentBuilding.Type == plan.Type) return Result.Ok();
+            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
+            if (plan.Type.IsResourceField()) return Result.Ok();
 
+            var oldBuilding = buildings
+               .Where(x => x.Location == plan.Location)
+               .FirstOrDefault();
+
+            if (oldBuilding is not null && oldBuilding.Type == plan.Type) return Result.Ok();
+
+            var errors = new List<IError>();
             var prerequisiteBuildings = plan.Type.GetPrerequisiteBuildings();
-
-            var errors = new List<JobError>();
-
-            var buildings = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => prerequisiteBuildings.Select(x => x.Type).Contains(x.Type))
-                .ToList();
 
             foreach (var prerequisiteBuilding in prerequisiteBuildings)
             {
                 var vaild = buildings
-                    .Where(x => x.Type == prerequisiteBuilding.Type)
-                    .Any(x => x.Level >= prerequisiteBuilding.Level);
-                if (!vaild) errors.Add(JobError.PrerequisiteBuildingMissing(prerequisiteBuilding.Type, prerequisiteBuilding.Level));
+                   .Any(x => x.Type == prerequisiteBuilding.Type && x.Level >= prerequisiteBuilding.Level);
+
+                if (!vaild)
+                {
+                    errors.Add(UpgradeBuildingError.PrerequisiteBuildingMissing(prerequisiteBuilding.Type, prerequisiteBuilding.Level));
+                    var queueBuilding = queueBuildings.Find(x => x.Type == prerequisiteBuilding.Type && x.Level == prerequisiteBuilding.Level);
+                    if (queueBuilding is not null)
+                    {
+                        errors.Add(NextExecuteError.PrerequisiteBuildingInQueue(prerequisiteBuilding.Type, prerequisiteBuilding.Level, queueBuilding.CompleteTime));
+                    }
+                }
             }
 
-            if (!plan.Type.IsMultipleBuilding()) return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
+            if (!plan.Type.IsMultipleBuilding()) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
 
-            var firstBuilding = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
+            var firstBuilding = buildings
                 .Where(x => x.Type == plan.Type)
                 .OrderByDescending(x => x.Level)
                 .FirstOrDefault();
 
-            if (firstBuilding is null) return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
-            if (firstBuilding.Level == firstBuilding.Type.GetMaxLevel()) return errors.Count > 0 ? Result.Fail(errors) : Result.Ok();
+            if (firstBuilding is null) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
+            if (firstBuilding.Location == plan.Location) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
+            if (firstBuilding.Level == firstBuilding.Type.GetMaxLevel()) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
 
-            errors.Add(JobError.PrerequisiteBuildingMissing(firstBuilding.Type, firstBuilding.Level));
+            {
+                errors.Add(UpgradeBuildingError.PrerequisiteBuildingMissing(firstBuilding.Type, firstBuilding.Level));
+                var queueBuilding = queueBuildings.Find(x => x.Type == firstBuilding.Type && x.Level == firstBuilding.Level);
+                if (queueBuilding is not null)
+                {
+                    errors.Add(NextExecuteError.PrerequisiteBuildingInQueue(firstBuilding.Type, firstBuilding.Level, queueBuilding.CompleteTime));
+                }
+            }
             return Result.Fail(errors);
         }
     }

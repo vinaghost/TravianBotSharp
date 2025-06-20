@@ -90,14 +90,14 @@ namespace MainCore.UI.ViewModels.UserControls
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
         private async Task DeleteAccount()
         {
-            if (!Accounts.IsSelected)
+            if (Accounts.SelectedItem is null)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No account selected"));
                 return;
             }
             if (Accounts.SelectedItem is null) return;
 
-            var accountId = new AccountId(Accounts.SelectedItemId);
+            var accountId = new AccountId(Accounts.SelectedItem.Id);
             using var scope = _serviceScopeFactory.CreateScope(accountId);
 
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
@@ -118,13 +118,13 @@ namespace MainCore.UI.ViewModels.UserControls
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
         private async Task Login()
         {
-            if (!Accounts.IsSelected)
+            if (Accounts.SelectedItem is null)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No account selected"));
                 return;
             }
 
-            var accountId = new AccountId(Accounts.SelectedItemId);
+            var accountId = new AccountId(Accounts.SelectedItem.Id);
             using var scope = _serviceScopeFactory.CreateScope(accountId);
 
             var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
@@ -157,13 +157,13 @@ namespace MainCore.UI.ViewModels.UserControls
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
         private async Task Logout()
         {
-            if (!Accounts.IsSelected)
+            if (Accounts.SelectedItem is null)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No account selected"));
                 return;
             }
 
-            var accountId = new AccountId(Accounts.SelectedItemId);
+            var accountId = new AccountId(Accounts.SelectedItem.Id);
             var status = _taskManager.GetStatus(accountId);
             switch (status)
             {
@@ -191,13 +191,13 @@ namespace MainCore.UI.ViewModels.UserControls
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
         private async Task Pause()
         {
-            if (!Accounts.IsSelected)
+            if (Accounts.SelectedItem is null)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No account selected"));
                 return;
             }
 
-            var accountId = new AccountId(Accounts.SelectedItemId);
+            var accountId = new AccountId(Accounts.SelectedItem.Id);
 
             var status = _taskManager.GetStatus(accountId);
             switch (status)
@@ -225,13 +225,13 @@ namespace MainCore.UI.ViewModels.UserControls
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
         private async Task Restart()
         {
-            if (!Accounts.IsSelected)
+            if (Accounts.SelectedItem is null)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No account selected"));
                 return;
             }
 
-            var accountId = new AccountId(Accounts.SelectedItemId);
+            var accountId = new AccountId(Accounts.SelectedItem.Id);
             var status = _taskManager.GetStatus(accountId);
 
             switch (status)
@@ -261,9 +261,10 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public void LoadStatus(AccountId accountId)
         {
+            if (Accounts.SelectedItem is null) return;
             var status = GetStatus(accountId);
             GetAccountCommand.Execute(accountId).WhereNotNull().Subscribe(account => account.Color = status.GetColor());
-            if (accountId.Value != Accounts.SelectedItemId) return;
+            if (accountId.Value != Accounts.SelectedItem.Id) return;
             GetStatusCommand.Execute(accountId).Subscribe();
         }
 

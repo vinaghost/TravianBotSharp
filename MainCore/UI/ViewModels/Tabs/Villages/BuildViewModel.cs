@@ -219,7 +219,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return;
             }
 
-            if (!Jobs.IsSelected)
+            if (Jobs.SelectedItem is null)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
                 return;
@@ -242,7 +242,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            if (!Jobs.IsSelected)
+            if (Jobs.SelectedItem is null)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
                 return;
@@ -264,7 +264,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            if (!Jobs.IsSelected)
+            if (Jobs.SelectedItem is null)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
                 return;
@@ -287,7 +287,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            if (!Jobs.IsSelected)
+            if (Jobs.SelectedItem is null)
             {
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
                 return;
@@ -309,8 +309,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
                 return;
             }
-            if (!Jobs.IsSelected) return;
-            var jobId = Jobs.SelectedItemId;
+            if (Jobs.SelectedItem is null) return;
+            var jobId = Jobs.SelectedItem.Id;
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var deleteJobByIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByIdCommand.Handler>();

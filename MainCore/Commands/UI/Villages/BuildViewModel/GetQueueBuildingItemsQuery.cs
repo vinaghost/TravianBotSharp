@@ -20,7 +20,6 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
             var items = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type != BuildingEnums.Site)
                 .AsEnumerable()
                 .Select(x => new ListBoxItem()
                 {
@@ -37,7 +36,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
             var count = 2;
             if (tribe == TribeEnums.Romans) count = 3;
-            items.AddRange(Enumerable.Range(0, count - items.Count).Select(x => new ListBoxItem()));
+            items.AddRange(Enumerable.Range(0, Math.Max(count - items.Count, 0)).Select((x) => new ListBoxItem() { Id = x - 5 }));
             return items;
         }
     }
