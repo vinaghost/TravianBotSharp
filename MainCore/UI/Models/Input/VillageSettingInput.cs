@@ -31,7 +31,7 @@ namespace MainCore.UI.Models.Input
         public TroopSelectorViewModel GreatStableTroop { get; } = new();
         public TroopSelectorViewModel WorkshopTroop { get; } = new();
 
-        public RangeInputViewModel TrainTroopRepeatTime { get; } = new();
+        public AmountInputViewModel TrainTroopQueueTime { get; } = new();
         public RangeInputViewModel BarrackAmount { get; } = new();
         public RangeInputViewModel StableAmount { get; } = new();
         public RangeInputViewModel GreatBarrackAmount { get; } = new();
@@ -70,9 +70,7 @@ namespace MainCore.UI.Models.Input
 
             TrainTroopEnable = settings.GetValueOrDefault(VillageSettingEnums.TrainTroopEnable) == 1;
             TrainWhenLowResource = settings.GetValueOrDefault(VillageSettingEnums.TrainWhenLowResource) == 1;
-            TrainTroopRepeatTime.Set(
-                settings.GetValueOrDefault(VillageSettingEnums.TrainTroopRepeatTimeMin),
-                settings.GetValueOrDefault(VillageSettingEnums.TrainTroopRepeatTimeMax));
+            TrainTroopQueueTime.Set(settings.GetValueOrDefault(VillageSettingEnums.TrainTroopRepeatTimeMin));
             var barrackTroop = (TroopEnums)settings.GetValueOrDefault(VillageSettingEnums.BarrackTroop);
             BarrackTroop.Set(barrackTroop, BuildingEnums.Barracks, tribe);
             BarrackAmount.Set(
@@ -128,7 +126,7 @@ namespace MainCore.UI.Models.Input
 
             var trainTroopEnable = TrainTroopEnable ? 1 : 0;
             var trainWhenLowResource = TrainWhenLowResource ? 1 : 0;
-            var (trainTroopRepeatTimeMin, trainTroopRepeatTimeMax) = TrainTroopRepeatTime.Get();
+            var trainTroopQueueTime = TrainTroopQueueTime.Get();
             var barrackTroop = (int)BarrackTroop.Get();
             var (barrackAmountMin, barrackAmountMax) = BarrackAmount.Get();
             var stableTroop = (int)StableTroop.Get();
@@ -160,8 +158,7 @@ namespace MainCore.UI.Models.Input
                 { VillageSettingEnums.Tribe, tribe },
                 { VillageSettingEnums.TrainTroopEnable, trainTroopEnable },
                 { VillageSettingEnums.TrainWhenLowResource, trainWhenLowResource },
-                { VillageSettingEnums.TrainTroopRepeatTimeMin, trainTroopRepeatTimeMin },
-                { VillageSettingEnums.TrainTroopRepeatTimeMax, trainTroopRepeatTimeMax },
+                { VillageSettingEnums.TrainTroopRepeatTimeMin, trainTroopQueueTime },
                 { VillageSettingEnums.BarrackTroop, barrackTroop },
                 { VillageSettingEnums.BarrackAmountMin, barrackAmountMin },
                 { VillageSettingEnums.BarrackAmountMax, barrackAmountMax },

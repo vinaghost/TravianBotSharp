@@ -34,6 +34,20 @@
             return doc.GetElementbyId("s1");
         }
 
+        public static TimeSpan GetQueueTime(HtmlDocument doc)
+        {
+            var timers = doc.DocumentNode
+                .Descendants("span")
+                .Where(x => x.HasClass("timer"))
+                .Where(x => x.GetAttributeValue("counting", "") == "down")
+                .Select(x => x.GetAttributeValue("value", 0));
+
+            if (!timers.Any()) return TimeSpan.Zero;
+
+            var seconds = timers.Max();
+            return TimeSpan.FromSeconds(seconds);
+        }
+
         private static HtmlNode? GetNode(HtmlDocument doc, TroopEnums troop)
         {
             var nodes = doc.DocumentNode.Descendants("div")

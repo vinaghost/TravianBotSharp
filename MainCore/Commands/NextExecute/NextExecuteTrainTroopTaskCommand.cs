@@ -8,19 +8,13 @@ namespace MainCore.Commands.NextExecute
     {
         private static async ValueTask HandleAsync(
             TrainTroopTask.Task task,
+            TimeSpan queueTime,
             ILogger logger,
-            ISettingService settingService,
             CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
-            var seconds = settingService.ByName(
-                task.VillageId,
-                VillageSettingEnums.TrainTroopRepeatTimeMin,
-                VillageSettingEnums.TrainTroopRepeatTimeMax,
-                60
-            );
-
-            task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
+            if (queueTime <= TimeSpan.Zero) queueTime = TimeSpan.FromMinutes(1);
+            task.ExecuteAt = DateTime.Now.Add(queueTime);
         }
     }
 }
