@@ -7,7 +7,107 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:WPFUI.Views.Tabs"
     mc:Ignorable="d"
-    d:DesignHeight="450" d:DesignWidth="800">
+    d:DesignHeight="450" d:DesignWidth="800"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5*" />
+            <ColumnDefinition Width="2" />
+            <ColumnDefinition Width="2*" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Button x:Name="StartButton"    Grid.Column="0" ToolTip="Start" Margin="10">
+                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Play" />
+                </Button>
+                <Button x:Name="StopButton"     Grid.Column="1" ToolTip="Stop"             Margin="10">
+                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Stop" />
+                </Button>
+            </Grid>
+
+
+            <Border Grid.Row="1" Style="{DynamicResource Box}">
+                <ListBox x:Name="JobsGrid" SelectionMode="Single" ItemTemplate="{DynamicResource ListBoxColorItem}">
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem x:Name="TopButton" Header="Top">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="ArrowUpBold" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="UpButton" Header="Up">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="ArrowUp" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="DownButton" Header="Down">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="ArrowDown" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="BottomButton" Header="Bottom">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="ArrowDownBold" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="DeleteButton" Header="Delete">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Delete" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="DeleteAllButton" Header="Delete all">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="DeleteForever" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                </ListBox>
+            </Border>
+
+
+            <Grid Grid.Row="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Button x:Name="ImportButton"       Grid.Column="0" Content="Import" Margin="5" />
+                <Button x:Name="ExportButton"       Grid.Column="1" Content="Export" Margin="5" />
+            </Grid>
+        </Grid>
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Style="{DynamicResource Box}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                        <Label Content="Stop when hero health is below" Width="NaN" VerticalAlignment="Bottom" Margin="0,0,10,0" />
+                        <TextBox x:Name="HeroFarmingHealthCondition" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="50" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                        <Label Content="Ignore if total resource is less than" Width="NaN" VerticalAlignment="Bottom" Margin="0,0,10,0" />
+                        <TextBox x:Name="HeroFarmingIgnoreCondition" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="50" />
+                    </StackPanel>
+                    <Button x:Name="SaveButton" ToolTip="Save"                              Margin="10">
+                        <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="ContentSave" />
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+        
     </Grid>
 </v:HeroFarmingTabBase>
