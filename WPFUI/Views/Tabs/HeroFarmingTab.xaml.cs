@@ -1,5 +1,6 @@
 ﻿using MainCore.UI.ViewModels.Tabs;
 using ReactiveUI;
+using System.Reactive.Disposables;
 
 namespace WPFUI.Views.Tabs
 {
@@ -15,6 +16,10 @@ namespace WPFUI.Views.Tabs
         public HeroFarmingTab()
         {
             InitializeComponent();
+            this.WhenActivated(d =>
+            {
+                this.OneWayBind(ViewModel, vm => vm.Oasises, v => v.OasisesGrid.ItemsSource).DisposeWith(d);
+            });
         }
     }
 }
