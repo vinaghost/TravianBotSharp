@@ -248,13 +248,7 @@ namespace MainCore.UI.ViewModels.UserControls
                     return;
 
                 case StatusEnums.Paused:
-                    _taskManager.SetStatus(accountId, StatusEnums.Starting);
-                    _taskManager.Clear(accountId);
-                    using (var scope = _serviceScopeFactory.CreateScope(accountId))
-                    {
-                        await scope.ServiceProvider.GetRequiredService<AccountInit.Handler>().HandleAsync(new(accountId));
-                    }
-                    _taskManager.SetStatus(accountId, StatusEnums.Online);
+                    await _taskManager.Restart(accountId);
                     return;
             }
         }

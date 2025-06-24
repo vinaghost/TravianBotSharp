@@ -1,11 +1,19 @@
 ﻿using MainCore.Tasks.Base;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Services
 {
     [RegisterSingleton<ITaskManager, TaskManager>]
     public sealed class TaskManager : ITaskManager
     {
+        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
+
         private readonly Dictionary<AccountId, TaskQueue> _queues = new();
+
+        public TaskManager(ICustomServiceScopeFactory serviceScopeFactory)
+        {
+            _serviceScopeFactory = serviceScopeFactory;
+        }
 
         public event Action<AccountId> StatusUpdated = delegate { };
 
@@ -205,6 +213,18 @@ namespace MainCore.Services
                 _queues.Add(accountId, queue);
                 return queue;
             }
+        }
+
+        public async Task Restart(AccountId accountId)
+        {
+            if (GetStatus(accountId) != StatusEnums.Paused) return;
+            SetStatus(accountId, StatusEnums.Starting);
+            Clear(accountId);
+            using (var scope = _serviceScopeFactory.CreateScope(accountId))
+            {
+                await scope.ServiceProvider.GetRequiredService<AccountInit.Handler>().HandleAsync(new(accountId));
+            }
+            SetStatus(accountId, StatusEnums.Online);
         }
     }
 

@@ -10,6 +10,7 @@ namespace MainCore.Services
     public sealed class TimerManager : ITimerManager
     {
         private readonly Dictionary<AccountId, Timer> _timers = [];
+        private readonly Dictionary<AccountId, DateTime> _restartTimerTime = [];
 
         private bool _isShutdown = false;
 
@@ -71,6 +72,18 @@ namespace MainCore.Services
             var taskQueue = _taskManager.GetTaskQueue(accountId);
 
             var status = taskQueue.Status;
+
+            if (status == StatusEnums.Paused)
+            {
+                if (_restartTimerTime.ContainsKey(accountId) &&
+                    _restartTimerTime[accountId] > DateTime.Now)
+                {
+                    await Restart(accountId);
+                    _restartTimerTime.Remove(accountId);
+                    return;
+                }
+            }
+
             if (status != StatusEnums.Online) return;
             var tasks = taskQueue.Tasks;
             if (tasks.Count == 0) return;
@@ -84,7 +97,6 @@ namespace MainCore.Services
 
             task.Stage = StageEnums.Executing;
             var cacheExecuteTime = task.ExecuteAt;
-
             using var scope = _serviceScopeFactory.CreateScope(accountId);
 
             ///===========================================================///
@@ -127,6 +139,9 @@ namespace MainCore.Services
                     logger.Information("Screenshot saved as {FileName}", filename);
                     logger.Warning("There is something wrong. Bot is pausing. Last exception is");
                     logger.Error(ex, "{Message}", ex.Message);
+
+                    logger.Warning("Restarting timer in 15 minutes.");
+                    SetRestartTime(accountId, logger);
                 }
 
                 _taskManager.SetStatus(accountId, StatusEnums.Paused);
@@ -149,6 +164,7 @@ namespace MainCore.Services
                         var filename = await browser.Screenshot();
                         logger.Information(messageTemplate: "Screenshot saved as {FileName}", filename);
                         _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                        SetRestartTime(accountId, logger);
                     }
                     else if (result.HasError<Skip>())
                     {
@@ -209,6 +225,45 @@ namespace MainCore.Services
                 _timers.Add(accountId, timer);
                 timer.Start();
             }
+        }
+
+        private void SetRestartTime(AccountId accountId, ILogger logger)
+        {
+            logger.Information("Restarting timer in 15 minutes.");
+            _restartTimerTime[accountId] = DateTime.Now.AddMinutes(15);
+        }
+
+        private async Task Restart(AccountId accountId)
+        {
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
+
+            var getAccessQuery = scope.ServiceProvider.GetRequiredService<GetValidAccessQuery.Handler>();
+            var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
+            var logger = browser.Logger;
+
+            var result = await getAccessQuery.HandleAsync(new(accountId, true));
+            if (result.IsFailed)
+            {
+                logger.Information("{message}", string.Join(", ", result.Errors.Select(x => x.Message)));
+                SetRestartTime(accountId, logger);
+
+                return;
+            }
+
+            var openBrowserCommand = scope.ServiceProvider.GetRequiredService<OpenBrowserCommand.Handler>();
+
+            try
+            {
+                await openBrowserCommand.HandleAsync(new(accountId, result.Value));
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Failed to open browser: {Message}", ex.Message);
+                SetRestartTime(accountId, logger);
+                return;
+            }
+
+            await _taskManager.Restart(accountId);
         }
 
         public record ContextData(AccountId AccountId, string TaskName, IChromeBrowser Browser);
