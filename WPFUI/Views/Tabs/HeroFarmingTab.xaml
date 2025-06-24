@@ -50,7 +50,15 @@
                             <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="AddBox" />
                         </Button>
                     </StackPanel>
-                    <DataGrid Grid.Row="2" x:Name="OasisesGrid" SelectionMode="Single" SelectionUnit="FullRow" IsReadOnly="True">
+                    <DataGrid Grid.Row="2" x:Name="OasisesGrid" SelectionMode="Single" SelectionUnit="FullRow" IsReadOnly="True" AutoGenerateColumns="False" >
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="X" Binding="{Binding X}"/>
+                            <DataGridTextColumn Header="Y" Binding="{Binding Y}"/>
+                            <DataGridTextColumn Header="Oasis" Binding="{Binding OasisType}"/>
+                            <DataGridTextColumn Header="Last send" Binding="{Binding LastSend}"/>
+                            <DataGridTextColumn Header="Last resource" Binding="{Binding Resource}"/>
+                            <DataGridTextColumn Header="Last animal" Binding="{Binding Animal}"/>
+                        </DataGrid.Columns>
                         <DataGrid.ContextMenu>
                             <ContextMenu>
                                 <MenuItem x:Name="TopButton" Header="Top">
