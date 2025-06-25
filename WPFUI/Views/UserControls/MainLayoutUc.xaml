@@ -70,6 +70,9 @@
                 <TabItem x:Name="FarmingTab" Header="Farming">
                     <v_tab:FarmingTab x:Name="Farming" />
                 </TabItem>
+                <TabItem x:Name="HeroFarmingTab" Header="Hero farming">
+                    <v_tab:HeroFarmingTab x:Name="HeroFarming" />
+                </TabItem>
                 <TabItem x:Name="EditAccountTab" Header="Edit account">
                     <v_tab:EditAccountTab x:Name="EditAccount" />
                 </TabItem>

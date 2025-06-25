@@ -105,8 +105,12 @@ namespace MainCore.Services
                     var upgradeBuildingTaskHandler = scope.GetHandler<UpgradeBuildingTask.Task>();
                     return await upgradeBuildingTaskHandler.HandleAsync(upgradeBuildingTask, cancellationToken);
 
+                case StartHeroFarmingTask.Task startHeroFarmingTask:
+                    var startHeroFarmingTaskHandler = scope.GetHandler<StartHeroFarmingTask.Task>();
+                    return await startHeroFarmingTaskHandler.HandleAsync(startHeroFarmingTask, cancellationToken);
+
                 default:
-                    throw new NotImplementedException($"Task {task.GetType().Name} is not implemented");
+                    throw new NotImplementedException($"Task {task.GetType().FullName} is not implemented");
             }
         }
     }
