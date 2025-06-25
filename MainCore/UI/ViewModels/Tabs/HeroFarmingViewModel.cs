@@ -52,6 +52,24 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
+        private async Task Start()
+        {
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "This feature is not implemented yet"));
+        }
+
+        [ReactiveCommand]
+        private async Task Stop()
+        {
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "This feature is not implemented yet"));
+        }
+
+        [ReactiveCommand]
+        private async Task Save()
+        {
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "This feature is not implemented yet"));
+        }
+
+        [ReactiveCommand]
         private async Task Add()
         {
             if (Oasises.Items.Any(x => x.X == X && x.Y == Y))
