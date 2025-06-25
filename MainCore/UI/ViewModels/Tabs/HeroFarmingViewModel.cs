@@ -54,7 +54,9 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task Start()
         {
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "This feature is not implemented yet"));
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
+            _taskManager.AddOrUpdate<StartHeroFarmingTask.Task>(new(AccountId));
+            await _dialogService.MessageBox.Handle(input: new MessageBoxData("Information", "Added start hero farming task"));
         }
 
         [ReactiveCommand]
