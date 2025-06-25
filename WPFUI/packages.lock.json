@@ -56,6 +56,47 @@
           "System.Reactive": "6.0.1"
         }
       },
+      "FluentMigrator": {
+        "type": "Transitive",
+        "resolved": "7.1.0",
+        "contentHash": "CA2xJsEQaGVn/jHmwhTqzgMSNUlNoPJ4G3IMKyHwlbTTLUHxiSllKfreejq29G5W5gz5MVtD23lWmBT/LnSLKg==",
+        "dependencies": {
+          "FluentMigrator.Abstractions": "7.1.0",
+          "Microsoft.Extensions.DependencyInjection": "9.0.3",
+          "Microsoft.Extensions.Options": "9.0.2"
+        }
+      },
+      "FluentMigrator.Abstractions": {
+        "type": "Transitive",
+        "resolved": "7.1.0",
+        "contentHash": "dmO8Zo3V/lRPsL/FeWUSLwCFJoOQvb2fog/oKRkUHzOIdLiwIrFVbD1HIOpDJEHGxm7f/3n3emCv+mhTsa1A0Q==",
+        "dependencies": {
+          "System.ComponentModel.Annotations": "5.0.0",
+          "System.ValueTuple": "4.5.0"
+        }
+      },
+      "FluentMigrator.Runner.Core": {
+        "type": "Transitive",
+        "resolved": "7.1.0",
+        "contentHash": "kbnkwYTuNSNY64YVfwFftO5BCu81cjoZDvQeTgz6T55hRajSNQxIxXjTl7T1wlQQIz6/64e1CYx7suEZYptvig==",
+        "dependencies": {
+          "FluentMigrator": "7.1.0",
+          "FluentMigrator.Abstractions": "7.1.0",
+          "Microsoft.Extensions.Configuration.Abstractions": "9.0.2",
+          "Microsoft.Extensions.DependencyInjection": "9.0.3",
+          "Microsoft.Extensions.Logging": "9.0.2",
+          "Microsoft.Extensions.Options": "9.0.2"
+        }
+      },
+      "FluentMigrator.Runner.SQLite": {
+        "type": "Transitive",
+        "resolved": "7.1.0",
+        "contentHash": "eBM+MiooHhAIbmmNBF7Bu6ImOvTPJ1BTURP6miTzJLGOgNfYiSp1zFc+ZwDgaQzsP8A5RTPdPSUWJQA0cuViHA==",
+        "dependencies": {
+          "FluentMigrator": "7.1.0",
+          "FluentMigrator.Runner.Core": "7.1.0"
+        }
+      },
       "FluentResults": {
         "type": "Transitive",
         "resolved": "3.16.0",
@@ -712,10 +753,16 @@
         "resolved": "4.5.4",
         "contentHash": "zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg=="
       },
+      "System.ValueTuple": {
+        "type": "Transitive",
+        "resolved": "4.5.0",
+        "contentHash": "okurQJO6NRE/apDIP23ajJ0hpiNmJ+f0BwOlB/cSqTLQlw5upkf+5+96+iG2Jw40G1fCVCyPz/FhIABUjMR+RQ=="
+      },
       "maincore": {
         "type": "Project",
         "dependencies": {
           "CP.Extensions.Hosting.SingleInstance": "[2.1.13, )",
+          "FluentMigrator.Runner.SQLite": "[7.1.0, )",
           "FluentResults": "[3.16.0, )",
           "FluentValidation": "[12.0.0, )",
           "FluentValidation.DependencyInjectionExtensions": "[12.0.0, )",

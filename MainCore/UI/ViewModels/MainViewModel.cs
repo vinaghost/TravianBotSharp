@@ -1,4 +1,5 @@
-﻿using MainCore.UI.ViewModels.Abstract;
+﻿using FluentMigrator.Runner;
+using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -44,6 +45,8 @@ namespace MainCore.UI.ViewModels
 
                 if (!notExist)
                 {
+                    var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+                    runner.MigrateUp();
                     await Task.Run(context.FillAccountSettings);
                     await Task.Run(context.FillVillageSettings);
 
@@ -51,7 +54,10 @@ namespace MainCore.UI.ViewModels
                         .Where(x => x.Level == -1)
                         .ExecuteDelete);
                 }
-
+                else
+                {
+                    await Task.Run(context.AddVersionInfo);
+                }
                 await _waitingOverlayViewModel.ChangeMessage("loading program layout");
                 MainLayoutViewModel = scope.ServiceProvider.GetRequiredService<MainLayoutViewModel>();
                 await MainLayoutViewModel.Load();

@@ -224,5 +224,18 @@ namespace MainCore.Infrasturecture.Persistence
         }
 
         #endregion village setting
+
+        public void AddVersionInfo()
+        {
+            Database.ExecuteSqlRaw("CREATE TABLE \"VersionInfo\" (\"Version\" INTEGER NOT NULL, \"AppliedOn\" DATETIME, \"Description\" TEXT)");
+
+            var migrations = new List<KeyValuePair<long, string>>()
+            {
+            };
+            foreach (var migration in migrations)
+            {
+                Database.ExecuteSql($"INSERT INTO VersionInfo (Version, Description) VALUES ('{migration.Key}','{migration.Value}')");
+            }
+        }
     }
 }
