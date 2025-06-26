@@ -41,7 +41,7 @@ namespace MainCore.Parsers
             var i = doc.DocumentNode
                 .Descendants("i")
                 .LastOrDefault(x => x.HasClass("hero_health"));
-            if (i is null) return 0;
+            if (i is null) return 100; // no damage to hero
 
             var span = i.NextSibling;
             if (span is null) return 0;
