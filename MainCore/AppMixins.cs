@@ -1,4 +1,5 @@
-﻿using MainCore.Behaviors;
+﻿using FluentMigrator.Runner;
+using MainCore.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -45,6 +46,12 @@ namespace MainCore
                 services.AddDbContext<AppDbContext>(options => options
                     .EnableSensitiveDataLogging(hostContext.HostingEnvironment.IsDevelopment())
                     .UseSqlite(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
+
+                services.AddFluentMigratorCore()
+                    .ConfigureRunner(runner => runner
+                        .AddSQLite()
+                        .WithGlobalConnectionString(_connectionString)
+                        .ScanIn(typeof(AppMixins).Assembly).For.Migrations());
             });
 
         public static IHostBuilder ConfigureServices(this IHostBuilder hostBuilder) =>
