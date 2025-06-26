@@ -135,8 +135,12 @@ namespace MainCore.Services
                 }
                 else
                 {
-                    var filename = await browser.Screenshot();
-                    logger.Information("Screenshot saved as {FileName}", filename);
+                    try
+                    {
+                        var filename = await browser.Screenshot();
+                        logger.Information("Screenshot saved as {FileName}", filename);
+                    }
+                    catch { }
                     logger.Warning("There is something wrong. Bot is pausing. Last exception is");
                     logger.Error(ex, "{Message}", ex.Message);
 
@@ -240,6 +244,8 @@ namespace MainCore.Services
             var getAccessQuery = scope.ServiceProvider.GetRequiredService<GetValidAccessQuery.Handler>();
             var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
             var logger = browser.Logger;
+
+            await browser.Close();
 
             var result = await getAccessQuery.HandleAsync(new(accountId, true));
             if (result.IsFailed)
