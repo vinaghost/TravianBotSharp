@@ -11,16 +11,16 @@
         private int _y;
 
         [Reactive]
+        private string _oasisType = "Unknown";
+
+        [Reactive]
         private string _animal = "";
 
         [Reactive]
-        private string _resource = "";
+        private int _resource;
 
         [Reactive]
         private DateTime _lastSend = DateTime.MinValue;
-
-        [Reactive]
-        private string _oasisType = "Unknown";
 
         public void Set(HeroFarmItem input)
         {

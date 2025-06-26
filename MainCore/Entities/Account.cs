@@ -21,6 +21,7 @@ namespace MainCore.Entities
 
         public ICollection<HeroItem> HeroItems { get; set; }
         public ICollection<Farm> FarmLists { get; set; }
+        public ICollection<HeroFarmTarget> HeroFarmTargets { get; set; }
     }
 
     [StronglyTypedId]

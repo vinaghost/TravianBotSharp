@@ -2,6 +2,7 @@
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs
@@ -38,16 +39,9 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<List<HeroFarmItem>> LoadOasis(AccountId accountId)
         {
-            await Task.CompletedTask;
-            var items = new List<HeroFarmItem>()
-            {
-                new HeroFarmItem { Id= 1, X = 1, Y = 2, LastSend = DateTime.Now.AddSeconds(1), OasisType = "Clay" },
-                new HeroFarmItem { Id= 2, X = 3, Y = 4, LastSend = DateTime.Now.AddSeconds(2), OasisType = "Iron" },
-                new HeroFarmItem { Id= 3, X = 5, Y = 6, LastSend = DateTime.Now.AddSeconds(3), OasisType = "Crop" },
-                new HeroFarmItem { Id= 4, X = 7, Y = 8, LastSend = DateTime.Now.AddSeconds(4), OasisType = "Mixed" },
-                new HeroFarmItem { Id= 5, X = 9, Y = 10, LastSend = DateTime.Now.AddSeconds(5), OasisType = "Clay" },
-                new HeroFarmItem { Id= 6, X = 11, Y = 12, LastSend = DateTime.Now.AddSeconds(6), OasisType = "Iron" }
-            };
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
+            var getHeroFarmTargetQuery = scope.ServiceProvider.GetRequiredService<GetHeroFarmTargetQuery.Handler>();
+            var items = await getHeroFarmTargetQuery.HandleAsync(new(accountId));
             return items;
         }
 
@@ -84,10 +78,25 @@ namespace MainCore.UI.ViewModels.Tabs
                 Id = Oasises.Items.Count + 1,
                 X = X,
                 Y = Y,
-                LastSend = DateTime.Now,
+                LastSend = DateTime.MinValue,
             };
+
             Oasises.Items.Add(item);
             Oasises.SelectedItem = item;
+
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
+            using var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            context.HeroFarmTargets.Add(new HeroFarmTarget
+            {
+                AccountId = AccountId.Value,
+                X = item.X,
+                Y = item.Y,
+                Animal = item.Animal,
+                Resource = item.Resource,
+                OasisType = item.OasisType,
+                LastSend = item.LastSend
+            });
+            context.SaveChanges();
         }
 
         [ReactiveCommand]
@@ -160,6 +169,16 @@ namespace MainCore.UI.ViewModels.Tabs
             var confirm = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", $"Are you sure you want to delete {selectedItem.OasisType} ({selectedItem.X}|{selectedItem.Y})?"));
             if (!confirm) return;
             Oasises.Items.Remove(selectedItem);
+
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
+
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            context.HeroFarmTargets
+               .Where(x => x.Id == selectedItem.Id)
+               .ExecuteDelete();
+
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Target deleted successfully"));
         }
 
         [ReactiveCommand]
@@ -169,6 +188,14 @@ namespace MainCore.UI.ViewModels.Tabs
             if (!confirm) return;
             Oasises.Items.Clear();
             Oasises.SelectedIndex = -1;
+
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            context.HeroFarmTargets
+                .Where(x => x.AccountId == AccountId.Value)
+                .ExecuteDelete();
+
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "All targets deleted successfully"));
         }
 
         [ReactiveCommand]
@@ -193,6 +220,23 @@ namespace MainCore.UI.ViewModels.Tabs
             }).ToList();
 
             Oasises.Items.AddRange(items);
+
+            var enities = items.Select(x => new HeroFarmTarget
+            {
+                AccountId = AccountId.Value,
+                X = x.X,
+                Y = x.Y,
+                Animal = x.Animal,
+                Resource = x.Resource,
+                OasisType = x.OasisType,
+                LastSend = x.LastSend
+            });
+
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            context.HeroFarmTargets.AddRange(enities);
+            context.SaveChanges();
+
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"{items.Count} targets imported"));
         }
 

@@ -25,6 +25,7 @@ namespace MainCore.Infrasturecture.Persistence
         public DbSet<Storage> Storages { get; set; }
         public DbSet<VillageSetting> VillagesSetting { get; set; }
         public DbSet<Farm> FarmLists { get; set; }
+        public DbSet<HeroFarmTarget> HeroFarmTargets { get; set; }
 
         #endregion table
 
