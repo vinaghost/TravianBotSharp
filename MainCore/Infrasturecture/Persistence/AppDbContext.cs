@@ -231,7 +231,6 @@ namespace MainCore.Infrasturecture.Persistence
 
             var migrations = new List<KeyValuePair<long, string>>()
             {
-                new KeyValuePair<long, string>(202506261500, "HeroFarmTargets"),
             };
             foreach (var migration in migrations)
             {
