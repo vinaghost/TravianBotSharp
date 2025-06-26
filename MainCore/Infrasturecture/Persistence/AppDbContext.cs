@@ -234,7 +234,7 @@ namespace MainCore.Infrasturecture.Persistence
             };
             foreach (var migration in migrations)
             {
-                Database.ExecuteSql($"INSERT INTO VersionInfo (Version, Description) VALUES ('{migration.Key}','{migration.Value}')");
+                Database.ExecuteSql($"INSERT INTO VersionInfo (Version, Description) VALUES ({migration.Key},{migration.Value})");
             }
         }
     }
