@@ -39,6 +39,9 @@ namespace WPFUI.Views.Tabs
 
                 this.BindCommand(ViewModel, vm => vm.ImportCommand, v => v.ImportButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.ExportCommand, v => v.ExportButton).DisposeWith(d);
+
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.HeroFarmingHealthCondition, v => v.HeroFarmingHealthCondition.Text).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.HeroFarmingIgnoreCondition, v => v.HeroFarmingIgnoreCondition.Text).DisposeWith(d);
             });
         }
     }

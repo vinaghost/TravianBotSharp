@@ -17,5 +17,8 @@
         SleepTimeMax,
         HeadlessChrome,
         EnableAutoStartAdventure,
+
+        HeroFarmingHealthCondition,
+        HeroFarmingIgnoreCondition,
     }
 }

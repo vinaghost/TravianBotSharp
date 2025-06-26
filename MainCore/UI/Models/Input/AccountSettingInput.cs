@@ -17,6 +17,9 @@ namespace MainCore.UI.Models.Input
             EnableAutoStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoStartAdventure) == 1;
             FarmInterval.Set(settings.GetValueOrDefault(AccountSettingEnums.FarmIntervalMin), settings.GetValueOrDefault(AccountSettingEnums.FarmIntervalMax));
             UseStartAllButton = settings.GetValueOrDefault(AccountSettingEnums.UseStartAllButton) == 1;
+
+            HeroFarmingHealthCondition = settings.GetValueOrDefault(AccountSettingEnums.HeroFarmingHealthCondition);
+            HeroFarmingIgnoreCondition = settings.GetValueOrDefault(AccountSettingEnums.HeroFarmingIgnoreCondition);
         }
 
         public Dictionary<AccountSettingEnums, int> Get()
@@ -32,6 +35,9 @@ namespace MainCore.UI.Models.Input
 
             var (farmIntervalMin, farmIntervalMax) = FarmInterval.Get();
             var useStartAllButton = UseStartAllButton ? 1 : 0;
+
+            var heroFarmingHealthCondition = HeroFarmingHealthCondition;
+            var heroFarmingIgnoreCondition = HeroFarmingIgnoreCondition;
 
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
@@ -53,6 +59,9 @@ namespace MainCore.UI.Models.Input
 
                 { AccountSettingEnums.HeadlessChrome, headlessChrome },
                 { AccountSettingEnums.EnableAutoStartAdventure, autoStartAdventure },
+
+                { AccountSettingEnums.HeroFarmingHealthCondition, heroFarmingHealthCondition },
+                { AccountSettingEnums.HeroFarmingIgnoreCondition, heroFarmingIgnoreCondition },
             };
             return settings;
         }
@@ -76,5 +85,11 @@ namespace MainCore.UI.Models.Input
 
         [Reactive]
         private bool _useStartAllButton;
+
+        [Reactive]
+        private int _heroFarmingHealthCondition;
+
+        [Reactive]
+        private int _heroFarmingIgnoreCondition;
     }
 }

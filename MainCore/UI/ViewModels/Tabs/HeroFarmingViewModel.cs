@@ -1,4 +1,7 @@
 ﻿using DynamicData;
+using MainCore.Commands.UI.AccountSettingViewModel;
+using MainCore.Commands.UI.Misc;
+using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
@@ -13,6 +16,9 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly IDialogService _dialogService;
         private readonly ITaskManager _taskManager;
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
+        private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
+
+        public AccountSettingInput AccountSettingInput { get; } = new();
 
         [Reactive]
         private int _x;
@@ -22,18 +28,21 @@ namespace MainCore.UI.ViewModels.Tabs
 
         public HeroFarmGridViewModel Oasises { get; } = new();
 
-        public HeroFarmingViewModel(IDialogService dialogService, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager)
+        public HeroFarmingViewModel(IDialogService dialogService, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager, IValidator<AccountSettingInput> accountsettingInputValidator)
         {
             _dialogService = dialogService;
             _serviceScopeFactory = serviceScopeFactory;
             _taskManager = taskManager;
+            _accountsettingInputValidator = accountsettingInputValidator;
 
             LoadOasisCommand.Subscribe(Oasises.Load);
+            LoadSettingCommand.Subscribe(AccountSettingInput.Set);
         }
 
         protected override async Task Load(AccountId accountId)
         {
             await LoadOasisCommand.Execute(accountId);
+            await LoadSettingCommand.Execute(accountId);
         }
 
         [ReactiveCommand]
@@ -42,6 +51,15 @@ namespace MainCore.UI.ViewModels.Tabs
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var getHeroFarmTargetQuery = scope.ServiceProvider.GetRequiredService<GetHeroFarmTargetQuery.Handler>();
             var items = await getHeroFarmTargetQuery.HandleAsync(new(accountId));
+            return items;
+        }
+
+        [ReactiveCommand]
+        private async Task<Dictionary<AccountSettingEnums, int>> LoadSetting(AccountId accountId)
+        {
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
+            var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
+            var items = await getSettingQuery.HandleAsync(new(accountId));
             return items;
         }
 
@@ -56,13 +74,24 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task Stop()
         {
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "This feature is not implemented yet"));
+            _taskManager.Remove<StartHeroFarmingTask.Task>(AccountId);
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Removed start hero farming task"));
         }
 
         [ReactiveCommand]
         private async Task Save()
         {
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "This feature is not implemented yet"));
+            var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
+            if (!result.IsValid)
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                return;
+            }
+
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
+            var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
+            await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
+            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Saved"));
         }
 
         [ReactiveCommand]
