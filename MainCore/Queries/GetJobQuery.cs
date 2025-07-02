@@ -147,18 +147,9 @@ namespace MainCore.Queries
             var countResourceQueueBuilding = CountResourceQueueBuilding(queueBuildings);
             var countInfrastructureQueueBuilding = countQueueBuilding - countResourceQueueBuilding;
 
-            if (countResourceQueueBuilding > countInfrastructureQueueBuilding)
-            {
-                var job = GetInfrastructureBuildingJob(jobs);
-                if (job is null) return UpgradeBuildingError.JobNotAvailable("Infrastructure building");
-                return job;
-            }
-            else
-            {
-                var job = GetResourceBuildingJob(jobs);
-                if (job is null) return UpgradeBuildingError.JobNotAvailable("Resource field");
-                return job;
-            }
+            var job = countResourceQueueBuilding > countInfrastructureQueueBuilding ? GetInfrastructureBuildingJob(jobs) : GetResourceBuildingJob(jobs);
+            if (job is null) return NextExecuteError.ConstructionQueueFull(queueBuildings[0].CompleteTime);
+            return job;
         }
 
         private static int CountResourceQueueBuilding(List<QueueBuilding> queueBuildings)
