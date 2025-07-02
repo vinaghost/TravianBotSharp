@@ -77,10 +77,29 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             List<BuildingItem> layoutBuildings
         )
         {
-            layoutBuildings = layoutBuildings
-                .Where(x => GetJobQuery.ResourceTypes.Contains(x.Type))
-                .Where(x => x.Level < plan.Level)
-                .ToList();
+            List<BuildingItem> resourceFields;
+
+            if (plan.Plan == ResourcePlanEnums.ExcludeCrop)
+            {
+                resourceFields = layoutBuildings
+                    .Where(x => x.Type == BuildingEnums.Woodcutter || x.Type == BuildingEnums.ClayPit || x.Type == BuildingEnums.IronMine)
+                    .Where(x => x.Level < plan.Level)
+                    .ToList();
+            }
+            else if (plan.Plan == ResourcePlanEnums.OnlyCrop)
+            {
+                resourceFields = layoutBuildings
+                    .Where(x => x.Type == BuildingEnums.Cropland)
+                    .Where(x => x.Level < plan.Level)
+                    .ToList();
+            }
+            else
+            {
+                resourceFields = layoutBuildings
+                    .Where(x => x.Type.IsResourceField())
+                    .Where(x => x.Level < plan.Level)
+                    .ToList();
+            }
 
             if (layoutBuildings.Count == 0) return null;
 
