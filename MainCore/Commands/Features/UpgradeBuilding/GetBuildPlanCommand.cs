@@ -107,13 +107,13 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     .ToList();
             }
 
-            if (layoutBuildings.Count == 0) return null;
+            if (resourceFields.Count == 0) return null;
 
-            var minLevel = layoutBuildings
+            var minLevel = resourceFields
                 .Select(x => x.Level)
                 .Min();
 
-            var chosenOne = layoutBuildings
+            var chosenOne = resourceFields
                 .Where(x => x.Level == minLevel)
                 .OrderBy(x => x.Id.Value + Random.Shared.Next())
                 .FirstOrDefault();
