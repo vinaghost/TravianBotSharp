@@ -7,25 +7,21 @@ namespace MainCore.Notifications.Trigger
     {
         private static async ValueTask HandleAsync(
             IAccountVillageConstraint notification,
-            GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
-            ISettingService settingService,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
-            var accountId = notification.AccountId;
-            var villageId = notification.VillageId;
+            await Task.CompletedTask;
+            var (accountId, villageId) = notification;
 
-            var trainTroopEnable = settingService.BooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
-            if (trainTroopEnable)
-            {
-                if (taskManager.IsExist<TrainTroopTask.Task>(accountId, villageId)) return;
-                var villageName = await getVillageNameQuery.HandleAsync(new(villageId), cancellationToken);
-                taskManager.Add<TrainTroopTask.Task>(new(accountId, villageId, villageName));
-            }
-            else
-            {
-                taskManager.Remove<TrainTroopTask.Task>(accountId);
-            }
+            var taskExist = taskManager.IsExist<TrainTroopTask.Task>(accountId, villageId);
+            if (taskExist) return;
+
+            var settingEnable = context.BooleanByName(villageId, VillageSettingEnums.TrainTroopEnable);
+            if (!settingEnable) return;
+
+            var villageName = context.GetVillageName(villageId);
+            taskManager.Add<TrainTroopTask.Task>(new(accountId, villageId, villageName));
         }
     }
 }

@@ -3,23 +3,20 @@
 namespace MainCore.Notifications.Trigger
 {
     [Handler]
-    public static partial class StartAdventureTaskTrigger
+    public static partial class StartFarmListTaskTrigger
     {
         private static async ValueTask HandleAsync(
             IAccountConstraint notification,
             ITaskManager taskManager,
-            AppDbContext context,
             CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
             var accountId = notification.AccountId;
 
-            var taskExist = taskManager.IsExist<StartAdventureTask.Task>(accountId);
+            var taskExist = taskManager.IsExist<StartFarmListTask.Task>(accountId);
             if (taskExist) return;
 
-            var settingEnable = context.BooleanByName(accountId, AccountSettingEnums.EnableAutoStartAdventure);
-            if (!settingEnable) return;
-            taskManager.Add<StartAdventureTask.Task>(new(accountId));
+            taskManager.Add<StartFarmListTask.Task>(new(accountId));
         }
     }
 }

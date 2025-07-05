@@ -7,25 +7,21 @@ namespace MainCore.Notifications.Trigger
     {
         private static async ValueTask HandleAsync(
             IAccountVillageConstraint notification,
-            GetVillageNameQuery.Handler getVillageNameQuery,
             ITaskManager taskManager,
-            ISettingService settingService,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
-            var accountId = notification.AccountId;
-            var villageId = notification.VillageId;
+            await Task.CompletedTask;
+            var (accountId, villageId) = notification;
 
-            var autoClaimQuest = settingService.BooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
-            if (autoClaimQuest)
-            {
-                if (taskManager.IsExist<ClaimQuestTask.Task>(accountId, villageId)) return;
-                var villageName = await getVillageNameQuery.HandleAsync(new(villageId), cancellationToken);
-                taskManager.Add<ClaimQuestTask.Task>(new(accountId, villageId, villageName));
-            }
-            else
-            {
-                taskManager.Remove<ClaimQuestTask.Task>(accountId);
-            }
+            var taskExist = taskManager.IsExist<CompleteImmediatelyTask.Task>(accountId, villageId);
+            if (taskExist) return;
+
+            var settingEnable = context.BooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
+            if (!settingEnable) return;
+
+            var villageName = context.GetVillageName(villageId);
+            taskManager.Add<ClaimQuestTask.Task>(new(accountId, villageId, villageName));
         }
     }
 }

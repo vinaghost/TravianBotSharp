@@ -12,33 +12,30 @@ namespace MainCore.Notifications.Trigger
             CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
-            var accountId = notification.AccountId;
-            var villageId = notification.VillageId;
+            var (accountId, villageId) = notification;
 
-            var autoNPCEnable = context.BooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
-            if (autoNPCEnable)
-            {
-                var granaryPercent = context.GetGranaryPercent(villageId);
-                var autoNPCGranaryPercent = context.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
+            var taskExist = taskManager.IsExist<NpcTask.Task>(accountId, villageId);
+            if (taskExist) return;
 
-                if (granaryPercent < autoNPCGranaryPercent) return;
-                if (taskManager.IsExist<NpcTask.Task>(accountId, villageId)) return;
-                var villageName = context.GetVillageName(villageId);
-                taskManager.Add<NpcTask.Task>(new(accountId, villageId, villageName));
-            }
-            else
-            {
-                taskManager.Remove<NpcTask.Task>(accountId);
-            }
-        }
+            var settingEnable = context.BooleanByName(villageId, VillageSettingEnums.AutoNPCEnable);
+            if (!settingEnable) return;
 
-        private static int GetGranaryPercent(this AppDbContext context, VillageId villageId)
-        {
-            var percent = context.Storages
-                .Where(x => x.VillageId == villageId.Value)
-                .Select(x => x.Crop * 100f / x.Granary)
+            var gold = context.AccountsInfo
+                .Where(x => x.AccountId == accountId.Value)
+                .Select(x => x.Gold)
                 .FirstOrDefault();
-            return (int)percent;
+            if (gold < 3) return;
+
+            var granaryPercent = (int)context.Storages
+               .Where(x => x.VillageId == villageId.Value)
+               .Select(x => x.Crop * 100f / x.Granary)
+               .FirstOrDefault();
+
+            var autoNPCGranaryPercent = context.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
+            if (granaryPercent < autoNPCGranaryPercent) return;
+
+            var villageName = context.GetVillageName(villageId);
+            taskManager.Add<NpcTask.Task>(new(accountId, villageId, villageName));
         }
     }
 }

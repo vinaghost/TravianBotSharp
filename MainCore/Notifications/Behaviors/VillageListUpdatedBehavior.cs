@@ -7,9 +7,9 @@ namespace MainCore.Notifications.Behaviors
        : Behavior<TRequest, TResponse>
            where TRequest : IAccountConstraint
     {
-        private readonly BuildingUpdateTaskTrigger.Handler _buildingUpdateTaskTrigger;
+        private readonly UpdateBuildingTaskTrigger.Handler _buildingUpdateTaskTrigger;
 
-        public VillageListUpdatedBehavior(BuildingUpdateTaskTrigger.Handler buildingUpdateTaskTrigger)
+        public VillageListUpdatedBehavior(UpdateBuildingTaskTrigger.Handler buildingUpdateTaskTrigger)
         {
             _buildingUpdateTaskTrigger = buildingUpdateTaskTrigger;
         }
