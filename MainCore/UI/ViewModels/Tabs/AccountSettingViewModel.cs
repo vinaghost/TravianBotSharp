@@ -26,13 +26,6 @@ namespace MainCore.UI.ViewModels.Tabs
             LoadSettingsCommand.Subscribe(AccountSettingInput.Set);
         }
 
-        public async Task SettingRefresh(AccountId accountId)
-        {
-            if (!IsActive) return;
-            if (accountId != AccountId) return;
-            await LoadSettingsCommand.Execute(accountId);
-        }
-
         protected override async Task Load(AccountId accountId)
         {
             await LoadSettingsCommand.Execute(accountId);

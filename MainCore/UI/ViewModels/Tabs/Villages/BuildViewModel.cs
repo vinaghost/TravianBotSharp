@@ -24,7 +24,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(IDialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager)
+        public BuildViewModel(IDialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager, IRxQueue rxQueue)
         {
             _dialogService = dialogService;
             _normalBuildInputValidator = normalBuildInputValidator;
@@ -54,20 +54,17 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                         break;
                 }
             });
+
+            rxQueue.RegisterCommand<BuildingsModified>(BuildingsModifiedCommand);
         }
 
-        public async Task QueueRefresh(VillageId villageId)
+        [ReactiveCommand]
+        public async Task BuildingsModified(BuildingsModified notification)
         {
             if (!IsActive) return;
-            if (villageId != VillageId) return;
-            await LoadQueueCommand.Execute(villageId);
-        }
-
-        public async Task BuildingListRefresh(VillageId villageId)
-        {
-            if (!IsActive) return;
-            if (villageId != VillageId) return;
-            await LoadBuildingCommand.Execute(villageId);
+            if (notification.VillageId != VillageId) return;
+            await LoadBuildingCommand.Execute(notification.VillageId);
+            await LoadQueueCommand.Execute(notification.VillageId);
         }
 
         public async Task JobListRefresh(VillageId villageId)
