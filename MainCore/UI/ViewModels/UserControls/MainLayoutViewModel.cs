@@ -21,7 +21,7 @@ namespace MainCore.UI.ViewModels.UserControls
 
         private IObservable<bool> _canExecute;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory, ILogger logger)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory, ILogger logger, IRxQueue rxQueue)
         {
             _accountTabStore = accountTabStore;
             _dialogService = dialogService;
@@ -65,11 +65,19 @@ namespace MainCore.UI.ViewModels.UserControls
                     RestartCommand.IsExecuting.Select(x => !x)
                 )
                 .BindTo(Accounts, x => x.IsEnable);
+
+            rxQueue.RegisterCommand<AccountsModified>(AccountModifiedCommand);
         }
 
         public async Task Load()
         {
             await LoadVersionCommand.Execute();
+            await LoadAccountCommand.Execute();
+        }
+
+        [ReactiveCommand]
+        private async Task AccountModified(AccountsModified notification)
+        {
             await LoadAccountCommand.Execute();
         }
 
