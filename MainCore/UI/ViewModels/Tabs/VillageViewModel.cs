@@ -18,7 +18,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         public VillageTabStore VillageTabStore => _villageTabStore;
 
-        public VillageViewModel(VillageTabStore villageTabStore, IDialogService dialogService, ICustomServiceScopeFactory serviceScopeFactory)
+        public VillageViewModel(VillageTabStore villageTabStore, IDialogService dialogService, ICustomServiceScopeFactory serviceScopeFactory, IRxQueue rxQueue)
         {
             _villageTabStore = villageTabStore;
             _dialogService = dialogService;
@@ -34,13 +34,16 @@ namespace MainCore.UI.ViewModels.Tabs
             });
 
             LoadVillageCommand.Subscribe(Villages.Load);
+
+            rxQueue.RegisterCommand(VillagesModifiedCommand);
         }
 
-        public async Task VillageListRefresh(AccountId accountId)
+        [ReactiveCommand]
+        public async Task VillagesModified(VillagesModified notification)
         {
             if (!IsActive) return;
-            if (accountId != AccountId) return;
-            await LoadVillageCommand.Execute(accountId);
+            if (notification.AccountId != AccountId) return;
+            await LoadVillageCommand.Execute(notification.AccountId);
         }
 
         protected override async Task Load(AccountId accountId)

@@ -13,6 +13,7 @@ namespace MainCore.Commands.Update
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
+            IRxQueue rxQueue,
             CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
@@ -22,6 +23,8 @@ namespace MainCore.Commands.Update
             if (!dtos.Any()) return;
 
             context.UpdateToDatabase(command.AccountId, dtos.ToList());
+
+            rxQueue.Enqueue(new VillagesModified(command.AccountId));
         }
 
         private static void UpdateToDatabase(this AppDbContext context, AccountId accountId, List<VillageDto> dtos)

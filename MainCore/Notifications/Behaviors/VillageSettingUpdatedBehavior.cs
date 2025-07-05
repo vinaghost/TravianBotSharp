@@ -1,5 +1,4 @@
 ﻿using MainCore.Constraints;
-using MainCore.Notifications.Handlers.Refresh;
 using MainCore.Notifications.Handlers.Trigger;
 
 namespace MainCore.Notifications.Behaviors
@@ -14,9 +13,8 @@ namespace MainCore.Notifications.Behaviors
         private readonly NpcTaskTrigger.Handler _npcTaskTrigger;
         private readonly RefreshVillageTaskTrigger.Handler _refreshVillageTaskTrigger;
         private readonly TrainTroopTaskTrigger.Handler _trainTroopTaskTrigger;
-        private readonly VillageSettingRefresh.Handler _villageSettingRefresh;
 
-        public VillageSettingUpdatedBehavior(ChangeWallTrigger.Handler changeWallTrigger, ClaimQuestTaskTrigger.Handler claimQuestTaskTrigger, CompleteImmediatelyTaskTrigger.Handler completeImmediatelyTaskTrigger, NpcTaskTrigger.Handler npcTaskTrigger, RefreshVillageTaskTrigger.Handler refreshVillageTaskTrigger, TrainTroopTaskTrigger.Handler trainTroopTaskTrigger, VillageSettingRefresh.Handler villageSettingRefresh)
+        public VillageSettingUpdatedBehavior(ChangeWallTrigger.Handler changeWallTrigger, ClaimQuestTaskTrigger.Handler claimQuestTaskTrigger, CompleteImmediatelyTaskTrigger.Handler completeImmediatelyTaskTrigger, NpcTaskTrigger.Handler npcTaskTrigger, RefreshVillageTaskTrigger.Handler refreshVillageTaskTrigger, TrainTroopTaskTrigger.Handler trainTroopTaskTrigger)
         {
             _changeWallTrigger = changeWallTrigger;
             _claimQuestTaskTrigger = claimQuestTaskTrigger;
@@ -24,7 +22,6 @@ namespace MainCore.Notifications.Behaviors
             _npcTaskTrigger = npcTaskTrigger;
             _refreshVillageTaskTrigger = refreshVillageTaskTrigger;
             _trainTroopTaskTrigger = trainTroopTaskTrigger;
-            _villageSettingRefresh = villageSettingRefresh;
         }
 
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
@@ -37,7 +34,6 @@ namespace MainCore.Notifications.Behaviors
             await _npcTaskTrigger.HandleAsync(request, cancellationToken);
             await _refreshVillageTaskTrigger.HandleAsync(request, cancellationToken);
             await _trainTroopTaskTrigger.HandleAsync(request, cancellationToken);
-            await _villageSettingRefresh.HandleAsync(request, cancellationToken);
             return response;
         }
     }
