@@ -3,7 +3,7 @@
 namespace MainCore.Services
 {
     [RegisterSingleton<ITaskManager, TaskManager>]
-    public sealed class TaskManager : ITaskManager
+    public sealed record TaskManager : ITaskManager
     {
         private readonly Dictionary<AccountId, TaskQueue> _queues = new();
 

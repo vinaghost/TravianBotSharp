@@ -5,7 +5,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     [Handler]
     public static partial class HandleUpgradeCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand
+        {
+            public void Deconstruct(out AccountId accountId, out VillageId villageId) => (accountId, villageId) = (AccountId, VillageId);
+        }
 
         private static async ValueTask<Result> HandleAsync(
             Command command,

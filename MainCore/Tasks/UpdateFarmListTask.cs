@@ -6,7 +6,7 @@ namespace MainCore.Tasks
     [Handler]
     public static partial class UpdateFarmListTask
     {
-        public sealed class Task : AccountTask
+        public sealed record Task : AccountTask
         {
             public Task(AccountId accountId) : base(accountId)
             {

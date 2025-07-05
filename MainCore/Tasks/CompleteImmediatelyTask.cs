@@ -7,7 +7,7 @@ namespace MainCore.Tasks
     [Handler]
     public static partial class CompleteImmediatelyTask
     {
-        public sealed class Task : VillageTask
+        public sealed record Task : VillageTask
         {
             public Task(AccountId accountId, VillageId villageId, string villageName) : base(accountId, villageId, villageName)
             {

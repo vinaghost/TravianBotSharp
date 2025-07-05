@@ -2,7 +2,7 @@
 
 namespace MainCore.Tasks.Base
 {
-    public abstract class BaseTask : ITask
+    public abstract record BaseTask : ITask
     {
         public virtual string Key { get; } = "";
         public StageEnums Stage { get; set; } = StageEnums.Waiting;

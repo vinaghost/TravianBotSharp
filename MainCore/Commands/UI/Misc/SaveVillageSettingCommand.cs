@@ -7,7 +7,13 @@ namespace MainCore.Commands.UI.Misc
     [Behaviors(typeof(VillageSettingUpdatedBehavior<,>))]
     public static partial class SaveVillageSettingCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, Dictionary<VillageSettingEnums, int> Settings) : IAccountVillageCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, Dictionary<VillageSettingEnums, int> Settings) : IAccountVillageCommand
+        {
+            public void Deconstruct(out AccountId accountId, out VillageId villageId)
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         private static async ValueTask HandleAsync(
             Command command,
