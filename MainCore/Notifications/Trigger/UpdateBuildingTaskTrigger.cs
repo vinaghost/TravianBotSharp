@@ -1,4 +1,5 @@
 ﻿using MainCore.Constraints;
+using MainCore.Specifications;
 
 namespace MainCore.Notifications.Trigger
 {
@@ -8,16 +9,21 @@ namespace MainCore.Notifications.Trigger
         private static async ValueTask HandleAsync(
             IAccountConstraint notification,
             ITaskManager taskManager,
-            GetMissingBuildingVillagesQuery.Handler getMissingBuildingVillageQuery,
             AppDbContext context,
             CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
             var accountId = notification.AccountId;
 
             var settingEnable = context.BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             if (!settingEnable) return;
 
-            var villages = await getMissingBuildingVillageQuery.HandleAsync(new(accountId));
+            var missingBuildingVillagesSpec = new MissingBuildingVillagesSpec(accountId);
+
+            var villages = context.Villages
+                .WithSpecification(missingBuildingVillagesSpec)
+                .ToList();
+
             foreach (var village in villages)
             {
                 var villageName = context.GetVillageName(village);

@@ -56,6 +56,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Using Include="Ardalis.Specification.EntityFrameworkCore" />
     <Using Include="FluentResults" />
     <Using Include="FluentValidation" />
     <Using Include="HtmlAgilityPack" />

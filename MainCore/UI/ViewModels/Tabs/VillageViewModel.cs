@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.UI.VillageViewModel;
+using MainCore.Specifications;
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
@@ -75,15 +76,21 @@ namespace MainCore.UI.ViewModels.Tabs
         private async Task LoadUnload()
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getMissingBuildingVillageQuery = scope.ServiceProvider.GetRequiredService<GetMissingBuildingVillagesQuery.Handler>();
-            var villages = await getMissingBuildingVillageQuery.HandleAsync(new(AccountId));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var missingBuildingVillagesSpec = new MissingBuildingVillagesSpec(AccountId);
+
+            var villages = context.Villages
+                .WithSpecification(missingBuildingVillagesSpec)
+                .ToList();
+
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
-            var getVillageNameQuery = scope.ServiceProvider.GetRequiredService<GetVillageNameQuery.Handler>();
+
             foreach (var village in villages)
             {
-                var villageName = await getVillageNameQuery.HandleAsync(new(village));
+                var villageName = context.GetVillageName(village);
                 taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village, villageName));
             }
+
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
 

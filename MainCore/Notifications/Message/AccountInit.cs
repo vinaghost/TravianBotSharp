@@ -14,7 +14,7 @@ namespace MainCore.Notifications.Message
             GetVillagesQuery.Handler getVillagesQuery,
             GetHasBuildJobVillagesQuery.Handler getHasBuildJobVillagesQuery,
             LoginTaskTrigger.Handler loginTaskTrigger,
-            RefreshVillageTaskTrigger.Handler refreshVillageTaskTrigger,
+            UpdateVillageTaskTrigger.Handler refreshVillageTaskTrigger,
             SleepTaskTrigger.Handler sleepTaskTrigger,
             StartAdventureTaskTrigger.Handler startAdventureTaskTrigger,
             TrainTroopTaskTrigger.Handler trainTroopTaskTrigger,

@@ -11,10 +11,10 @@ namespace MainCore.Notifications.Behaviors
         private readonly ClaimQuestTaskTrigger.Handler _claimQuestTaskTrigger;
         private readonly CompleteImmediatelyTaskTrigger.Handler _completeImmediatelyTaskTrigger;
         private readonly NpcTaskTrigger.Handler _npcTaskTrigger;
-        private readonly RefreshVillageTaskTrigger.Handler _refreshVillageTaskTrigger;
+        private readonly UpdateVillageTaskTrigger.Handler _refreshVillageTaskTrigger;
         private readonly TrainTroopTaskTrigger.Handler _trainTroopTaskTrigger;
 
-        public VillageSettingUpdatedBehavior(ChangeWallTrigger.Handler changeWallTrigger, ClaimQuestTaskTrigger.Handler claimQuestTaskTrigger, CompleteImmediatelyTaskTrigger.Handler completeImmediatelyTaskTrigger, NpcTaskTrigger.Handler npcTaskTrigger, RefreshVillageTaskTrigger.Handler refreshVillageTaskTrigger, TrainTroopTaskTrigger.Handler trainTroopTaskTrigger)
+        public VillageSettingUpdatedBehavior(ChangeWallTrigger.Handler changeWallTrigger, ClaimQuestTaskTrigger.Handler claimQuestTaskTrigger, CompleteImmediatelyTaskTrigger.Handler completeImmediatelyTaskTrigger, NpcTaskTrigger.Handler npcTaskTrigger, UpdateVillageTaskTrigger.Handler refreshVillageTaskTrigger, TrainTroopTaskTrigger.Handler trainTroopTaskTrigger)
         {
             _changeWallTrigger = changeWallTrigger;
             _claimQuestTaskTrigger = claimQuestTaskTrigger;
