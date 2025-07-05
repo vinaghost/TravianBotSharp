@@ -1,5 +1,5 @@
 ﻿using MainCore.Constraints;
-using MainCore.Notifications.Handlers.Trigger;
+using MainCore.Notifications.Trigger;
 
 namespace MainCore.Commands.Update
 {

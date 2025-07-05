@@ -1,9 +1,9 @@
 ﻿using MainCore.Constraints;
 
-namespace MainCore.Notifications.Handlers.Trigger
+namespace MainCore.Notifications.Trigger
 {
     [Handler]
-    public static partial class ClaimQuestTaskTrigger
+    public static partial class RefreshVillageTaskTrigger
     {
         private static async ValueTask HandleAsync(
             IAccountVillageConstraint notification,
@@ -15,16 +15,16 @@ namespace MainCore.Notifications.Handlers.Trigger
             var accountId = notification.AccountId;
             var villageId = notification.VillageId;
 
-            var autoClaimQuest = settingService.BooleanByName(villageId, VillageSettingEnums.AutoClaimQuestEnable);
-            if (autoClaimQuest)
+            var autoRefreshEnable = settingService.BooleanByName(villageId, VillageSettingEnums.AutoRefreshEnable);
+            if (autoRefreshEnable)
             {
-                if (taskManager.IsExist<ClaimQuestTask.Task>(accountId, villageId)) return;
+                if (taskManager.IsExist<UpdateVillageTask.Task>(accountId, villageId)) return;
                 var villageName = await getVillageNameQuery.HandleAsync(new(villageId), cancellationToken);
-                taskManager.Add<ClaimQuestTask.Task>(new(accountId, villageId, villageName));
+                taskManager.Add<UpdateVillageTask.Task>(new(accountId, villageId, villageName));
             }
             else
             {
-                taskManager.Remove<ClaimQuestTask.Task>(accountId);
+                taskManager.Remove<UpdateVillageTask.Task>(accountId);
             }
         }
     }

@@ -1,5 +1,5 @@
 ﻿using MainCore.Commands.Features.CompleteImmediately;
-using MainCore.Notifications.Handlers.Trigger;
+using MainCore.Notifications.Trigger;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks

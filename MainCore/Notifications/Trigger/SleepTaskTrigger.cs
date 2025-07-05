@@ -1,6 +1,6 @@
 ﻿using MainCore.Constraints;
 
-namespace MainCore.Notifications.Handlers.Trigger
+namespace MainCore.Notifications.Trigger
 {
     [Handler]
     public static partial class SleepTaskTrigger
