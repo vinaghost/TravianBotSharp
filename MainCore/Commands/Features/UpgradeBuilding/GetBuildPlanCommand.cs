@@ -17,8 +17,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
             DeleteJobByIdCommand.Handler deleteJobByIdCommand,
             AddJobCommand.Handler addJobCommand,
-            JobUpdated.Handler jobUpdated,
             ILogger logger,
+            IRxQueue rxQueue,
             CancellationToken cancellationToken
         )
         {
@@ -52,7 +52,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     {
                         await addJobCommand.HandleAsync(new(villageId, normalBuildPlan.ToJob(), true));
                     }
-                    await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
+                    rxQueue.Enqueue(new JobsModified(villageId));
                     continue;
                 }
 
@@ -69,7 +69,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 if (IsJobComplete(job, buildings, queueBuildings))
                 {
                     await deleteJobByIdCommand.HandleAsync(new(villageId, job.Id), cancellationToken);
-                    await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
+                    rxQueue.Enqueue(new JobsModified(villageId));
                     continue;
                 }
 

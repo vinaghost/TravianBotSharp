@@ -27,7 +27,7 @@ namespace MainCore.UI.ViewModels.Tabs
             { SplatColor.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager)
+        public FarmingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager, IRxQueue rxQueue)
         {
             _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;
@@ -57,13 +57,16 @@ namespace MainCore.UI.ViewModels.Tabs
                     var color = selectedItem.Color;
                     ActiveText = _activeTexts[color];
                 });
+
+            rxQueue.RegisterCommand<FarmsModified>(FarmsModifiedCommand);
         }
 
-        public async Task FarmListRefresh(AccountId accountId)
+        [ReactiveCommand]
+        public async Task FarmsModified(FarmsModified notification)
         {
             if (!IsActive) return;
-            if (accountId != AccountId) return;
-            await LoadFarmListCommand.Execute(accountId);
+            if (notification.AccountId != AccountId) return;
+            await LoadFarmListCommand.Execute(notification.AccountId);
         }
 
         protected override async Task Load(AccountId accountId)

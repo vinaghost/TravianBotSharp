@@ -1,10 +1,8 @@
 ﻿using MainCore.Constraints;
-using MainCore.Notifications.Behaviors;
 
 namespace MainCore.Commands.Update
 {
     [Handler]
-    [Behaviors(typeof(FarmListUpdatedBehavior<,>))]
     public static partial class UpdateFarmlistCommand
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
@@ -13,6 +11,7 @@ namespace MainCore.Commands.Update
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
+            IRxQueue rxQueue,
             CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
@@ -20,6 +19,7 @@ namespace MainCore.Commands.Update
 
             var dtos = Get(html);
             context.UpdateToDatabase(command.AccountId, dtos);
+            rxQueue.Enqueue(new FarmsModified(command.AccountId));
             return Result.Ok();
         }
 
