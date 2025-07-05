@@ -19,15 +19,20 @@ namespace MainCore.Commands.Features.UseHeroItem
             Command command,
             IChromeBrowser browser,
             ILogger logger,
+            AppDbContext context,
             DelayClickCommand.Handler delayClickCommand,
-            GetHeroItemsQuery.Handler getHeroItemsQuery,
             CancellationToken cancellationToken)
         {
             var (accountId, resource) = command;
 
-            var resourceItems = await getHeroItemsQuery.HandleAsync(new(accountId, ResourceItemTypes), cancellationToken);
+            var resourceItems = context.HeroItems
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => ResourceItemTypes.Contains(x.Type))
+                .OrderBy(x => x.Type)
+                .ToList();
 
             resource = resource.Select(RoundUpTo100).ToArray();
+
             var result = IsEnoughResource(resourceItems, resource);
             if (result.IsFailed) return result;
 

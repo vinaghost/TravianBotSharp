@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.StartFarmList
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            GetVillageHasRallypointQuery.Handler getVillageHasRallypointQuery,
+            AppDbContext context,
             SwitchVillageCommand.Handler switchVillageCommand,
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
@@ -18,7 +18,14 @@ namespace MainCore.Commands.Features.StartFarmList
             DelayClickCommand.Handler delayClickCommand,
             CancellationToken cancellationToken)
         {
-            var rallypointVillageId = await getVillageHasRallypointQuery.HandleAsync(new(command.AccountId), cancellationToken);
+            var accountId = command.AccountId;
+            var rallypointVillageId = context.Villages
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => x.Buildings.Any(x => x.Type == BuildingEnums.RallyPoint && x.Level > 0))
+                .OrderByDescending(x => x.IsActive)
+                .Select(x => new VillageId(x.Id))
+                .FirstOrDefault();
+
             if (rallypointVillageId == VillageId.Empty) return Skip.NoRallypoint;
 
             var result = await switchVillageCommand.HandleAsync(new(command.AccountId, rallypointVillageId), cancellationToken);

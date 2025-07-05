@@ -11,10 +11,15 @@ namespace MainCore.Commands.Features.StartFarmList
             Command command,
             IChromeBrowser browser,
             DelayClickCommand.Handler delayClickCommand,
-            GetActiveFarmsQuery.Handler getActiveFarmsQuery,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
-            var farmLists = await getActiveFarmsQuery.HandleAsync(new(command.AccountId), cancellationToken);
+            var accountId = command.AccountId;
+            var farmLists = context.FarmLists
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => x.IsActive)
+                .Select(x => new FarmId(x.Id))
+                .ToList();
             if (farmLists.Count == 0) return Skip.NoActiveFarmlist;
 
             var html = browser.Html;
