@@ -1,6 +1,7 @@
 ﻿using MainCore.Constraints;
 
 using MainCore.Notifications.Trigger;
+using MainCore.Specifications;
 
 namespace MainCore.Notifications.Message
 {
@@ -11,8 +12,7 @@ namespace MainCore.Notifications.Message
 
         private static async ValueTask HandleAsync(
             Notification notification,
-            GetVillagesQuery.Handler getVillagesQuery,
-            GetHasBuildJobVillagesQuery.Handler getHasBuildJobVillagesQuery,
+            AppDbContext context,
             LoginTaskTrigger.Handler loginTaskTrigger,
             UpdateVillageTaskTrigger.Handler refreshVillageTaskTrigger,
             SleepTaskTrigger.Handler sleepTaskTrigger,
@@ -27,7 +27,11 @@ namespace MainCore.Notifications.Message
             await startAdventureTaskTrigger.HandleAsync(notification, cancellationToken);
 
             var accountId = notification.AccountId;
-            var villages = await getVillagesQuery.HandleAsync(new(accountId));
+
+            var villagesSpec = new VillagesSpec(accountId);
+            var villages = context.Villages
+                .WithSpecification(villagesSpec)
+                .ToList();
 
             foreach (var village in villages)
             {
@@ -35,8 +39,11 @@ namespace MainCore.Notifications.Message
                 await trainTroopTaskTrigger.HandleAsync(new VillageNotification(accountId, village), cancellationToken);
             }
 
-            var hasBuildingJobVillages = await getHasBuildJobVillagesQuery.HandleAsync(new(accountId));
-            foreach (var village in hasBuildingJobVillages)
+            var hasBuildJobVillagesSpec = new HasBuildJobVillagesSpec(accountId);
+            var hasBuildJobVillages = context.Villages
+                .WithSpecification(hasBuildJobVillagesSpec)
+                .ToList();
+            foreach (var village in hasBuildJobVillages)
             {
                 await upgradeBuildingTaskTrigger.HandleAsync(new VillageNotification(accountId, village), cancellationToken);
             }

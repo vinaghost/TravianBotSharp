@@ -64,8 +64,8 @@ namespace MainCore.UI.ViewModels.Tabs
             var villageId = new VillageId(Villages.SelectedItem.Id);
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getVillageNameQuery = scope.ServiceProvider.GetRequiredService<GetVillageNameQuery.Handler>();
-            var villageName = await getVillageNameQuery.HandleAsync(new(villageId));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var villageName = context.GetVillageName(villageId);
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
             taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, villageId, villageName));
 
@@ -98,13 +98,16 @@ namespace MainCore.UI.ViewModels.Tabs
         private async Task LoadAll()
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getVillagesQuery = scope.ServiceProvider.GetRequiredService<GetVillagesQuery.Handler>();
-            var villages = await getVillagesQuery.HandleAsync(new(AccountId));
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
-            var getVillageNameQuery = scope.ServiceProvider.GetRequiredService<GetVillageNameQuery.Handler>();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var villagesSpec = new VillagesSpec(AccountId);
+            var villages = context.Villages
+                .WithSpecification(villagesSpec)
+                .ToList();
             foreach (var village in villages)
             {
-                var villageName = await getVillageNameQuery.HandleAsync(new(village));
+                var villageName = context.GetVillageName(village);
                 taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village, villageName));
             }
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
