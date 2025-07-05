@@ -1,4 +1,5 @@
 ﻿using MainCore.Constraints;
+using MainCore.Specifications;
 
 namespace MainCore.Queries
 {
@@ -16,18 +17,11 @@ namespace MainCore.Queries
             await Task.CompletedTask;
             var (villageId, location) = query;
 
-            var building = context.GetBuilding(villageId, location);
-            return building;
-        }
-
-        public static BuildingDto GetBuilding(this AppDbContext context, VillageId villageId, int location)
-        {
+            var spec = new GetBuildingSpec(villageId, location);
             var building = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Location == location)
+                .WithSpecification(spec)
                 .ToDto()
                 .First();
-
             return building;
         }
     }

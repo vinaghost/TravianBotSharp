@@ -2,9 +2,9 @@
 
 namespace MainCore.Specifications
 {
-    public class VillageNameByIdSpec : Specification<Village, string>
+    public class GetVillageNameSpec : Specification<Village, string>
     {
-        public VillageNameByIdSpec(VillageId villageId)
+        public GetVillageNameSpec(VillageId villageId)
         {
             Query
                 .Where(x => x.Id == villageId.Value)
