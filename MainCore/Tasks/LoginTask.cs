@@ -7,7 +7,7 @@ namespace MainCore.Tasks
     [Handler]
     public static partial class LoginTask
     {
-        public sealed record Task(AccountId accountId) : AccountTask(accountId)
+        public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {
             protected override string TaskName => "Login";
         }

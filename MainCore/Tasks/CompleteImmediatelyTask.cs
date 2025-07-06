@@ -7,13 +7,46 @@ namespace MainCore.Tasks
     [Handler]
     public static partial class CompleteImmediatelyTask
     {
-        public sealed record Task : VillageTask
+        public sealed class Task : VillageTask
         {
-            public Task(AccountId accountId, VillageId villageId, string villageName) : base(accountId, villageId, villageName)
+            public Task(AccountId accountId, VillageId villageId) : base(accountId, villageId)
             {
             }
 
             protected override string TaskName => "Complete immediately";
+
+            private static List<BuildingEnums> UnskippableBuildings = new()
+            {
+                BuildingEnums.Residence,
+                BuildingEnums.Palace,
+                BuildingEnums.CommandCenter,
+            };
+
+            public override bool CanStart(AppDbContext context)
+            {
+                var settingEnable = context.BooleanByName(VillageId, VillageSettingEnums.CompleteImmediately);
+                if (!settingEnable) return false;
+
+                var queueBuildings = context.QueueBuildings
+                    .Where(x => x.VillageId == VillageId.Value)
+                    .ToList();
+
+                // empty
+                if (queueBuildings.Count == 0) return false;
+                // contains unskippable building
+                if (queueBuildings.Any(x => UnskippableBuildings.Contains(x.Type))) return false;
+
+                var completeImmediatelyMinimumTime = context.ByName(VillageId, VillageSettingEnums.CompleteImmediatelyTime);
+                var requiredTime = DateTime.Now.AddMinutes(completeImmediatelyMinimumTime);
+
+                var firstQueueBuildingCompleteTime = queueBuildings
+                    .OrderBy(x => x.CompleteTime)
+                    .Select(x => x.CompleteTime)
+                    .FirstOrDefault();
+
+                if (requiredTime > firstQueueBuildingCompleteTime) return false;
+                return true;
+            }
         }
 
         private static async ValueTask<Result> HandleAsync(

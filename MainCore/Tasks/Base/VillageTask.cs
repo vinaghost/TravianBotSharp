@@ -1,12 +1,18 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Tasks.Base
+﻿namespace MainCore.Tasks.Base
 {
-    public abstract record VillageTask(AccountId accountId, VillageId villageId, string villageName) : AccountTask(accountId), IAccountVillageConstraint
+    public abstract class VillageTask(AccountId accountId, VillageId villageId) : AccountTask(accountId), IAccountVillageConstraint
     {
         public VillageId VillageId { get; } = villageId;
 
-        protected string VillageName { get; } = villageName;
+        protected string VillageName { get; set; } = "Unknown village";
+
+        public void SetVillageName(AppDbContext context)
+        {
+            var getVillageNameSpec = new GetVillageNameSpec(VillageId);
+            VillageName = context.Villages
+                .WithSpecification(getVillageNameSpec)
+                .FirstOrDefault() ?? "Unknown village";
+        }
 
         public override string Description => $"{TaskName} in {VillageName}";
         public override string Key => $"{AccountId}-{VillageId}";

@@ -7,13 +7,21 @@ namespace MainCore.Tasks
     [Handler]
     public static partial class StartAdventureTask
     {
-        public sealed record Task : AccountTask
+        public sealed class Task : AccountTask
         {
             public Task(AccountId accountId) : base(accountId)
             {
             }
 
             protected override string TaskName => "Start adventure";
+
+            public override bool CanStart(AppDbContext context)
+            {
+                var settingEnable = context.BooleanByName(AccountId, AccountSettingEnums.EnableAutoStartAdventure);
+                if (!settingEnable) return false;
+
+                return true;
+            }
         }
 
         private static async ValueTask<Result> HandleAsync(

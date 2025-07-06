@@ -73,6 +73,8 @@
     <Using Include="MainCore.DTO" />
     <Using Include="MainCore.Entities" />
     <Using Include="MainCore.Services" />
+    <Using Include="MainCore.Specifications" />    
+    <Using Include="MainCore.Constraints" />    
     <Using Include="MainCore.Infrasturecture.Persistence" />
     <Using Include="MainCore.Parsers" />
     <Using Include="MainCore.Commands.Navigate" />

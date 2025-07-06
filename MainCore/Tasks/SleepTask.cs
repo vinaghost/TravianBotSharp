@@ -7,7 +7,7 @@ namespace MainCore.Tasks
     [Handler]
     public static partial class SleepTask
     {
-        public sealed record Task : AccountTask
+        public sealed class Task : AccountTask
         {
             public Task(AccountId accountId) : base(accountId)
             {

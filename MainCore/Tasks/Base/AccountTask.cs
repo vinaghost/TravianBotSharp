@@ -2,7 +2,7 @@
 
 namespace MainCore.Tasks.Base
 {
-    public abstract record AccountTask(AccountId accountId) : BaseTask, IAccountConstraint
+    public abstract class AccountTask(AccountId accountId) : BaseTask, IAccountConstraint
     {
         public AccountId AccountId { get; } = accountId;
 
