@@ -1,4 +1,5 @@
 ﻿using MainCore.Constraints;
+using MainCore.Specifications;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
@@ -14,8 +15,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             Command command,
             ToBuildingCommand.Handler toBuildingCommand,
             SwitchTabCommand.Handler switchTabCommand,
-            GetBuildingQuery.Handler getBuilding,
             DelayClickCommand.Handler delayClickCommand,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId, plan) = command;
@@ -26,7 +27,12 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
 
-            var building = await getBuilding.HandleAsync(new(villageId, plan.Location), cancellationToken);
+            var spec = new GetBuildingSpec(villageId, plan.Location);
+            var building = context.Buildings
+                .WithSpecification(spec)
+                .ToDto()
+                .First();
+
             if (building.Type == BuildingEnums.Site)
             {
                 var tabIndex = plan.Type.GetBuildingsCategory();
