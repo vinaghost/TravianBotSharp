@@ -1,22 +1,22 @@
 ﻿using MainCore.Constraints;
 using System.Text.Json;
 
-namespace MainCore.Queries
+namespace MainCore.Commands.Misc
 {
     [Handler]
-    public static partial class GetJobQuery
+    public static partial class GetJobCommand
     {
-        public sealed record Query(AccountId AccountId, VillageId VillageId) : IAccountVillageQuery;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
         private static async ValueTask<Result<JobDto>> HandleAsync(
-            Query query,
+            Command command,
             AppDbContext context,
             CancellationToken cancellationToken
             )
         {
             await Task.CompletedTask;
 
-            var (accountId, villageId) = query;
+            var (accountId, villageId) = command;
 
             var buildJobs = context.GetBuildJobs(villageId);
             if (buildJobs.Count == 0) return UpgradeBuildingError.BuildingJobQueueEmpty;

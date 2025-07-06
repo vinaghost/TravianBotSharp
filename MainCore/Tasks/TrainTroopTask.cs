@@ -21,7 +21,7 @@ namespace MainCore.Tasks
         private static async ValueTask<Result> HandleAsync(
             Task task,
             TrainTroopCommand.Handler trainTroopCommand,
-            GetTrainTroopBuildingQuery.Handler getTrainTroopBuildingQuery,
+            GetTrainTroopBuildingCommand.Handler getTrainTroopBuildingQuery,
             SaveVillageSettingCommand.Handler saveVillageSettingCommand,
             NextExecuteTrainTroopTaskCommand.Handler nextExecuteTrainTroopTaskCommand,
             CancellationToken cancellationToken)

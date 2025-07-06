@@ -9,7 +9,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask<List<BuildingEnums>> HandleAsync(
             Query query,
-            GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
+            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
             CancellationToken cancellationToken
             )
         {

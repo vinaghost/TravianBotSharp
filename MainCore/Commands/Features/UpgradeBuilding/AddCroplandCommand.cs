@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private static async ValueTask HandleAsync(
             Command command,
-            GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
+            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
             AddJobCommand.Handler addJobCommand,
             IRxQueue rxQueue,
             CancellationToken cancellationToken)

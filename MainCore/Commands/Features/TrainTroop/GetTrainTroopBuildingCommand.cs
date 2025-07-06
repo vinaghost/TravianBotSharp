@@ -1,20 +1,19 @@
-﻿using MainCore.Commands.Features.TrainTroop;
-using MainCore.Constraints;
+﻿using MainCore.Constraints;
 
-namespace MainCore.Queries
+namespace MainCore.Commands.Features.TrainTroop
 {
     [Handler]
-    public static partial class GetTrainTroopBuildingQuery
+    public static partial class GetTrainTroopBuildingCommand
     {
-        public sealed record Query(VillageId VillageId) : IVillageQuery;
+        public sealed record Command(VillageId VillageId) : IVillageCommand;
 
         private static async ValueTask<List<BuildingEnums>> HandleAsync(
-            Query query,
+            Command command,
             AppDbContext context,
             CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
-            var villageId = query.VillageId;
+            var villageId = command.VillageId;
 
             var settings = context.VillagesSetting
                 .Where(x => x.VillageId == villageId.Value)

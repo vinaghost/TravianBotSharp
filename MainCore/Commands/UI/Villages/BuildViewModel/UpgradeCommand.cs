@@ -9,7 +9,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            AddJobCommand.Handler addJobCommand, GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
+            AddJobCommand.Handler addJobCommand, GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
             CancellationToken cancellationToken
             )
         {

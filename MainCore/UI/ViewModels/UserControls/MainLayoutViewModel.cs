@@ -150,7 +150,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            var getAccessQuery = scope.ServiceProvider.GetRequiredService<GetValidAccessQuery.Handler>();
+            var getAccessQuery = scope.ServiceProvider.GetRequiredService<GetValidAccessCommand.Handler>();
             var result = await getAccessQuery.HandleAsync(new(accountId));
             if (result.IsFailed)
             {

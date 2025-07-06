@@ -11,10 +11,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private static async ValueTask<Result<NormalBuildPlan>> HandleAsync(
             Command command,
-            GetJobQuery.Handler getJobQuery,
+            GetJobCommand.Handler getJobQuery,
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
-            GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
+            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
             DeleteJobByIdCommand.Handler deleteJobByIdCommand,
             AddJobCommand.Handler addJobCommand,
             ILogger logger,

@@ -1,21 +1,21 @@
 ﻿using MainCore.Constraints;
 using System.Net;
 
-namespace MainCore.Queries
+namespace MainCore.Commands.Misc
 {
     [Handler]
-    public static partial class GetValidAccessQuery
+    public static partial class GetValidAccessCommand
     {
-        public sealed record Query(AccountId AccountId, bool IgnoreSleepTime = false) : IAccountQuery;
+        public sealed record Command(AccountId AccountId, bool IgnoreSleepTime = false) : IAccountCommand;
 
         private static async ValueTask<Result<AccessDto>> HandleAsync(
-            Query query,
+            Command command,
             ILogger logger,
             AppDbContext context,
             CancellationToken cancellationToken
             )
         {
-            var (accountId, ignoreSleepTime) = query;
+            var (accountId, ignoreSleepTime) = command;
 
             var accesses = context.Accesses
                .Where(x => x.AccountId == accountId.Value)

@@ -1,21 +1,21 @@
 ﻿using MainCore.Constraints;
 using System.Text.Json;
 
-namespace MainCore.Queries
+namespace MainCore.Commands.Misc
 {
     [Handler]
-    public static partial class GetLayoutBuildingsQuery
+    public static partial class GetLayoutBuildingsCommand
     {
-        public sealed record Query(VillageId VillageId, bool IgnoreJobBuilding = false) : IVillageQuery;
+        public sealed record Command(VillageId VillageId, bool IgnoreJobBuilding = false) : IVillageCommand;
 
         private static async ValueTask<List<BuildingItem>> HandleAsync(
-            Query query,
+            Command command,
             AppDbContext context,
             CancellationToken cancellationToken
             )
         {
             await Task.CompletedTask;
-            var (villageId, ignoreJobBuilding) = query;
+            var (villageId, ignoreJobBuilding) = command;
 
             var villageBuildings = context.Buildings
                 .AsNoTracking()

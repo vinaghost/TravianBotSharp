@@ -19,7 +19,7 @@ namespace MainCore.Tasks
         private static async ValueTask<Result> HandleAsync(
             Task task,
             SleepCommand.Handler sleepCommand,
-            GetValidAccessQuery.Handler getAccessQuery,
+            GetValidAccessCommand.Handler getAccessQuery,
             OpenBrowserCommand.Handler openBrowserCommand,
             ToDorfCommand.Handler toDorfCommand,
             NextExecuteSleepTaskCommand.Handler nextExecuteSleepTaskCommand,
