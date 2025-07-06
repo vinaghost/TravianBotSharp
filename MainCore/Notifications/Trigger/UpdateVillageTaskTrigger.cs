@@ -1,4 +1,5 @@
 ﻿using MainCore.Constraints;
+using MainCore.Specifications;
 
 namespace MainCore.Notifications.Trigger
 {
@@ -20,7 +21,10 @@ namespace MainCore.Notifications.Trigger
             var settingEnable = context.BooleanByName(villageId, VillageSettingEnums.AutoRefreshEnable);
             if (!settingEnable) return;
 
-            var villageName = context.GetVillageName(villageId);
+            var getVillageSpec = new GetVillageNameSpec(villageId);
+            var villageName = context.Villages
+                .WithSpecification(getVillageSpec)
+                .First();
             taskManager.Add<UpdateVillageTask.Task>(new(accountId, villageId, villageName));
         }
     }

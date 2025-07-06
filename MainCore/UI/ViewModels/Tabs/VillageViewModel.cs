@@ -65,7 +65,10 @@ namespace MainCore.UI.ViewModels.Tabs
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var villageName = context.GetVillageName(villageId);
+            var getVillageSpec = new GetVillageNameSpec(villageId);
+            var villageName = context.Villages
+                .WithSpecification(getVillageSpec)
+                .First();
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
             taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, villageId, villageName));
 
@@ -87,7 +90,10 @@ namespace MainCore.UI.ViewModels.Tabs
 
             foreach (var village in villages)
             {
-                var villageName = context.GetVillageName(village);
+                var getVillageSpec = new GetVillageNameSpec(village);
+                var villageName = context.Villages
+                    .WithSpecification(getVillageSpec)
+                    .First();
                 taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village, villageName));
             }
 
@@ -107,7 +113,10 @@ namespace MainCore.UI.ViewModels.Tabs
                 .ToList();
             foreach (var village in villages)
             {
-                var villageName = context.GetVillageName(village);
+                var getVillageSpec = new GetVillageNameSpec(village);
+                var villageName = context.Villages
+                    .WithSpecification(getVillageSpec)
+                    .First();
                 taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village, villageName));
             }
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));

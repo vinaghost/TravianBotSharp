@@ -1,4 +1,5 @@
 ﻿using MainCore.Constraints;
+using MainCore.Specifications;
 
 namespace MainCore.Notifications.Trigger
 {
@@ -34,7 +35,10 @@ namespace MainCore.Notifications.Trigger
             var autoNPCGranaryPercent = context.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
             if (granaryPercent < autoNPCGranaryPercent) return;
 
-            var villageName = context.GetVillageName(villageId);
+            var getVillageSpec = new GetVillageNameSpec(villageId);
+            var villageName = context.Villages
+                .WithSpecification(getVillageSpec)
+                .First();
             taskManager.Add<NpcTask.Task>(new(accountId, villageId, villageName));
         }
     }

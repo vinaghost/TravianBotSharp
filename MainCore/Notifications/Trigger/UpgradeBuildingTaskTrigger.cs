@@ -1,4 +1,5 @@
 ﻿using MainCore.Constraints;
+using MainCore.Specifications;
 
 namespace MainCore.Notifications.Trigger
 {
@@ -7,13 +8,17 @@ namespace MainCore.Notifications.Trigger
     {
         private static async ValueTask HandleAsync(
             IAccountVillageConstraint notification,
-           AppDbContext context,
+            AppDbContext context,
             ITaskManager taskManager,
             CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
             var (accountId, villageId) = notification;
-            var villageName = context.GetVillageName(villageId);
+            var getVillageSpec = new GetVillageNameSpec(villageId);
+            var villageName = context.Villages
+                .WithSpecification(getVillageSpec)
+                .First();
+
             taskManager.AddOrUpdate<UpgradeBuildingTask.Task>(new(accountId, villageId, villageName));
         }
     }

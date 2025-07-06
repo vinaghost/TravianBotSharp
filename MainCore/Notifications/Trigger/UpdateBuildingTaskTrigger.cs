@@ -26,7 +26,10 @@ namespace MainCore.Notifications.Trigger
 
             foreach (var village in villages)
             {
-                var villageName = context.GetVillageName(village);
+                var getVillageSpec = new GetVillageNameSpec(village);
+                var villageName = context.Villages
+                    .WithSpecification(getVillageSpec)
+                    .First();
                 taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(accountId, village, villageName));
             }
         }
