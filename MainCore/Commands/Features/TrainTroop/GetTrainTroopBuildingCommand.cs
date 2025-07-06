@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features.TrainTroop
+﻿namespace MainCore.Commands.Features.TrainTroop
 {
     [Handler]
     public static partial class GetTrainTroopBuildingCommand

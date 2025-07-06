@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features.UseHeroItem
+﻿namespace MainCore.Commands.Features.UseHeroItem
 {
     [Handler]
     public static partial class UseHeroResourceCommand

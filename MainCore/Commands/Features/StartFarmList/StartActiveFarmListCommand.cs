@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features.StartFarmList
+﻿namespace MainCore.Commands.Features.StartFarmList
 {
     [Handler]
     public static partial class StartActiveFarmListCommand

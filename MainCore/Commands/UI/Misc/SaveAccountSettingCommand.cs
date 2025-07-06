@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.Misc
+﻿namespace MainCore.Commands.UI.Misc
 {
     [Handler]
     public static partial class SaveAccountSettingCommand

@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Services
+﻿namespace MainCore.Services
 {
     public interface IRxQueue
     {
@@ -9,5 +7,6 @@ namespace MainCore.Services
         void RegisterCommand<T>(ReactiveCommand<T, Unit> command) where T : INotification;
 
         void RegisterHandler<T>(Action<T> handleAction) where T : INotification;
+        void Setup();
     }
 }

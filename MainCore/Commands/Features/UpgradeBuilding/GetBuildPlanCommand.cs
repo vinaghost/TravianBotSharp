@@ -1,5 +1,4 @@
 ﻿using MainCore.Commands.UI.Villages.BuildViewModel;
-using MainCore.Constraints;
 using System.Text.Json;
 
 namespace MainCore.Commands.Features.UpgradeBuilding

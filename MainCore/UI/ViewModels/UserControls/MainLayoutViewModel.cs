@@ -15,6 +15,8 @@ namespace MainCore.UI.ViewModels.UserControls
         private readonly ITaskManager _taskManager;
         private readonly ILogger _logger;
 
+        private readonly IRxQueue _rxQueue;
+
         private readonly AccountTabStore _accountTabStore;
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
@@ -26,6 +28,7 @@ namespace MainCore.UI.ViewModels.UserControls
             _accountTabStore = accountTabStore;
             _dialogService = dialogService;
             _serviceScopeFactory = serviceScopeFactory;
+            _rxQueue = rxQueue;
             _logger = logger.ForContext<MainLayoutViewModel>();
 
             taskManager.StatusUpdated += LoadStatus;
@@ -258,10 +261,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 case StatusEnums.Paused:
                     _taskManager.SetStatus(accountId, StatusEnums.Starting);
                     _taskManager.Clear(accountId);
-                    using (var scope = _serviceScopeFactory.CreateScope(accountId))
-                    {
-                        await scope.ServiceProvider.GetRequiredService<AccountInit.Handler>().HandleAsync(new(accountId));
-                    }
+                    _rxQueue.Enqueue(new AccountInit(accountId));
                     _taskManager.SetStatus(accountId, StatusEnums.Online);
                     return;
             }

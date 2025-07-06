@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.AddAccountViewModel
+﻿namespace MainCore.Commands.UI.AddAccountViewModel
 {
     [Handler]
     public static partial class AddAccountCommand

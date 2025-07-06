@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.AccountSettingViewModel
+﻿namespace MainCore.Commands.UI.AccountSettingViewModel
 {
     [Handler]
     public static partial class GetSettingQuery

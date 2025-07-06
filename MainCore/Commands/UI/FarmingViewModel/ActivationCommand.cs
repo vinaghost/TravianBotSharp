@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.FarmingViewModel
+﻿namespace MainCore.Commands.UI.FarmingViewModel
 {
     [Handler]
     public static partial class ActivationCommand

@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.DebugViewModel
+﻿namespace MainCore.Commands.UI.DebugViewModel
 {
     [Handler]
     public static partial class GetEndpointAdressQuery

@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Notifications.Message
+﻿namespace MainCore.Notifications
 {
     public record BuildingsModified(VillageId VillageId) : IVillageNotification;
 }

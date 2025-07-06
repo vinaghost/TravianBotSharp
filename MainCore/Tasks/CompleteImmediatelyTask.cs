@@ -1,5 +1,4 @@
 ﻿using MainCore.Commands.Features.CompleteImmediately;
-using MainCore.Notifications.Trigger;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -53,7 +52,7 @@ namespace MainCore.Tasks
             Task task,
             ToDorfCommand.Handler toDorfCommand,
             CompleteImmediatelyCommand.Handler completeImmediatelyCommand,
-            UpgradeBuildingTaskTrigger.Handler upgradeBuildingTaskTrigger,
+            ITaskManager taskManager,
             CancellationToken cancellationToken)
         {
             Result result;
@@ -62,7 +61,7 @@ namespace MainCore.Tasks
             result = await completeImmediatelyCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
             if (result.IsFailed) return result;
 
-            await upgradeBuildingTaskTrigger.HandleAsync(task, cancellationToken);
+            taskManager.Add(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId));
 
             return Result.Ok();
         }

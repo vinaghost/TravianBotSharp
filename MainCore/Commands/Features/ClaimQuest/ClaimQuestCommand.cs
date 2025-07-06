@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features.ClaimQuest
+﻿namespace MainCore.Commands.Features.ClaimQuest
 {
     [Handler]
     public static partial class ClaimQuestCommand

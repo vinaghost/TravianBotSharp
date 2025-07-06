@@ -1,5 +1,4 @@
 ﻿using MainCore.Commands.UI.VillageViewModel;
-using MainCore.Specifications;
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
@@ -15,15 +14,17 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private readonly IDialogService _dialogService;
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
+        private readonly ITaskManager _taskManager;
         public ListBoxItemViewModel Villages { get; } = new();
 
         public VillageTabStore VillageTabStore => _villageTabStore;
 
-        public VillageViewModel(VillageTabStore villageTabStore, IDialogService dialogService, ICustomServiceScopeFactory serviceScopeFactory, IRxQueue rxQueue)
+        public VillageViewModel(VillageTabStore villageTabStore, IDialogService dialogService, ICustomServiceScopeFactory serviceScopeFactory, IRxQueue rxQueue, ITaskManager taskManager)
         {
             _villageTabStore = villageTabStore;
             _dialogService = dialogService;
             _serviceScopeFactory = serviceScopeFactory;
+            _taskManager = taskManager;
 
             var villageObservable = this.WhenAnyValue(x => x.Villages.SelectedItem);
             villageObservable.BindTo(_selectedItemStore, vm => vm.Village);
@@ -62,15 +63,7 @@ namespace MainCore.UI.ViewModels.Tabs
             }
 
             var villageId = new VillageId(Villages.SelectedItem.Id);
-
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var getVillageSpec = new GetVillageNameSpec(villageId);
-            var villageName = context.Villages
-                .WithSpecification(getVillageSpec)
-                .First();
-            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
-            taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, villageId, villageName));
+            _taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, villageId));
 
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }
@@ -86,15 +79,9 @@ namespace MainCore.UI.ViewModels.Tabs
                 .WithSpecification(missingBuildingVillagesSpec)
                 .ToList();
 
-            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
-
             foreach (var village in villages)
             {
-                var getVillageSpec = new GetVillageNameSpec(village);
-                var villageName = context.Villages
-                    .WithSpecification(getVillageSpec)
-                    .First();
-                taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village, villageName));
+                _taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village));
             }
 
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
@@ -104,7 +91,6 @@ namespace MainCore.UI.ViewModels.Tabs
         private async Task LoadAll()
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             var villagesSpec = new VillagesSpec(AccountId);
@@ -113,11 +99,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 .ToList();
             foreach (var village in villages)
             {
-                var getVillageSpec = new GetVillageNameSpec(village);
-                var villageName = context.Villages
-                    .WithSpecification(getVillageSpec)
-                    .First();
-                taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village, villageName));
+                _taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village));
             }
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
         }

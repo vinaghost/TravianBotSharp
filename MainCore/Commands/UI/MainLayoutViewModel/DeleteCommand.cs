@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.MainLayoutViewModel
+﻿namespace MainCore.Commands.UI.MainLayoutViewModel
 {
     [Handler]
     public static partial class DeleteCommand
