@@ -46,7 +46,7 @@
             {
                 if (amount == 0) continue;
 
-                logger.Information("Use {amount} {item} from hero inventory", amount, item);
+                logger.Information("Use {Amount} {Item} from hero inventory", amount, item);
 
                 result = await ClickItem(item, browser, cancellationToken);
                 if (result.IsFailed) return result;

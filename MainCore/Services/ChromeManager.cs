@@ -38,7 +38,7 @@ namespace MainCore.Services
             if (!Directory.Exists(extenstionDir))
             {
                 Directory.CreateDirectory(extenstionDir);
-                _logger.Information("Create directory {extenstionDir} for extension files.", extenstionDir);
+                _logger.Information("Create directory {ExtenstionDir} for extension files.", extenstionDir);
             }
 
             var asmb = Assembly.GetExecutingAssembly();
