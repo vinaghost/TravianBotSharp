@@ -9,8 +9,8 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query _,
-            AppDbContext context, ITaskManager taskManager,
-            CancellationToken cancellationToken
+            AppDbContext context,
+            ITaskManager taskManager
             )
         {
             await Task.CompletedTask;

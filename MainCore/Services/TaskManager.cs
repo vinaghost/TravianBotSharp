@@ -213,6 +213,6 @@ namespace MainCore.Services
         public bool IsExecuting { get; set; } = false;
         public StatusEnums Status { get; set; } = StatusEnums.Offline;
         public CancellationTokenSource? CancellationTokenSource { get; set; }
-        public List<BaseTask> Tasks = [];
+        public List<BaseTask> Tasks { get; } = [];
     }
 }

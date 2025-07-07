@@ -5,7 +5,7 @@ namespace MainCore.Commands.Features.NpcResource
     [Handler]
     public static partial class ToNpcResourcePageCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command(VillageId VillageId) : IVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -15,7 +15,7 @@ namespace MainCore.Commands.Features.NpcResource
             SwitchTabCommand.Handler switchTabCommand,
             CancellationToken cancellationToken)
         {
-            var (accountId, villageId) = command;
+            var villageId = command.VillageId;
 
             var result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
             if (result.IsFailed) return result;

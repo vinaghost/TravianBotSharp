@@ -190,7 +190,7 @@
                             }
                         }
                         queueBuilding.Location = building.Location;
-                        if (underConstruction.Where(x => x.Type == queueBuilding.Type).Count() > 1)
+                        if (underConstruction.Count(x => x.Type == queueBuilding.Type) > 1)
                         {
                             underConstruction.Remove(building);
                         }

@@ -23,7 +23,7 @@ namespace MainCore.Commands.Misc
 
             if (queueBuildings.Count == 0)
             {
-                var job = buildJobs.First();
+                var job = buildJobs[0];
                 var result = IsJobValid(job, buildings, queueBuildings);
                 if (result.IsFailed) return result;
                 return job;
@@ -40,7 +40,7 @@ namespace MainCore.Commands.Misc
             {
                 if (plusActive)
                 {
-                    var job = buildJobs.First();
+                    var job = buildJobs[0];
                     var result = IsJobValid(job, buildings, queueBuildings);
                     if (result.IsFailed) return result;
                     return job;
@@ -153,8 +153,7 @@ namespace MainCore.Commands.Misc
         private static int CountResourceQueueBuilding(List<QueueBuilding> queueBuildings)
         {
             var count = queueBuildings
-                .Where(x => ResourceTypes.Contains(x.Type))
-                .Count();
+                .Count(x => ResourceTypes.Contains(x.Type));
             return count;
         }
 
@@ -189,8 +188,7 @@ namespace MainCore.Commands.Misc
                 .FirstOrDefault();
 
             var resourceBuildJob = jobs
-                .Where(x => x.Type == JobTypeEnums.ResourceBuild)
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.Type == JobTypeEnums.ResourceBuild);
 
             if (job is null) return resourceBuildJob;
             if (resourceBuildJob is null) return job;
@@ -206,8 +204,7 @@ namespace MainCore.Commands.Misc
             if (plan.Type.IsResourceField()) return Result.Ok();
 
             var oldBuilding = buildings
-               .Where(x => x.Location == plan.Location)
-               .FirstOrDefault();
+               .FirstOrDefault(x => x.Location == plan.Location);
 
             if (oldBuilding is not null && oldBuilding.Type == plan.Type) return Result.Ok();
 
@@ -241,14 +238,13 @@ namespace MainCore.Commands.Misc
             if (firstBuilding.Location == plan.Location) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
             if (firstBuilding.Level == firstBuilding.Type.GetMaxLevel()) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
 
+            errors.Add(UpgradeBuildingError.PrerequisiteBuildingMissing(firstBuilding.Type, firstBuilding.Level));
+            var prerequisiteBuildingUndercontruction = queueBuildings.Find(x => x.Type == firstBuilding.Type && x.Level == firstBuilding.Level);
+            if (prerequisiteBuildingUndercontruction is not null)
             {
-                errors.Add(UpgradeBuildingError.PrerequisiteBuildingMissing(firstBuilding.Type, firstBuilding.Level));
-                var queueBuilding = queueBuildings.Find(x => x.Type == firstBuilding.Type && x.Level == firstBuilding.Level);
-                if (queueBuilding is not null)
-                {
-                    errors.Add(NextExecuteError.PrerequisiteBuildingInQueue(firstBuilding.Type, firstBuilding.Level, queueBuilding.CompleteTime));
-                }
+                errors.Add(NextExecuteError.PrerequisiteBuildingInQueue(firstBuilding.Type, firstBuilding.Level, prerequisiteBuildingUndercontruction.CompleteTime));
             }
+
             return Result.Fail(errors);
         }
     }

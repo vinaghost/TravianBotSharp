@@ -3,15 +3,13 @@
     [Handler]
     public static partial class CompleteImmediatelyCommand
     {
-        public sealed record Command(VillageId VillageId) : IVillageCommand;
+        public sealed record Command : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
-            Command command,
+            Command _,
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var villageId = command.VillageId;
-
             var html = browser.Html;
             var oldQueueCount = CompleteImmediatelyParser.CountQueueBuilding(html);
 

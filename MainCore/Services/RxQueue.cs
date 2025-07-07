@@ -8,7 +8,7 @@ namespace MainCore.Services
     public class RxQueue : IRxQueue
     {
         private readonly Subject<INotification> _notifications = new Subject<INotification>();
-        private IConnectableObservable<INotification> _connectableObservable;
+        private readonly IConnectableObservable<INotification> _connectableObservable;
 
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
 

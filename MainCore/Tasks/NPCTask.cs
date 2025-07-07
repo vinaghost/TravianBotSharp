@@ -44,7 +44,7 @@ namespace MainCore.Tasks
             CancellationToken cancellationToken)
         {
             Result result;
-            result = await toNpcResourcePageCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            result = await toNpcResourcePageCommand.HandleAsync(new(task.VillageId), cancellationToken);
             if (result.IsFailed) return result;
             result = await npcResourceCommand.HandleAsync(new(task.VillageId), cancellationToken);
             if (result.IsFailed) return result;

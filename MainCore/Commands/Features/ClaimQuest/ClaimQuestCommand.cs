@@ -3,17 +3,15 @@
     [Handler]
     public static partial class ClaimQuestCommand
     {
-        public sealed record Command(VillageId VillageId) : IVillageCommand;
+        public sealed record Command : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
-            Command command,
+            Command _,
             IChromeBrowser browser,
             IDelayService delayService,
             SwitchTabCommand.Handler switchTabCommand,
             CancellationToken cancellationToken)
         {
-            var villageId = command;
-
             HtmlDocument html;
             Result result;
 

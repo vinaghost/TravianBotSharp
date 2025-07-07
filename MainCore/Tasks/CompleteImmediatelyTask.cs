@@ -58,7 +58,7 @@ namespace MainCore.Tasks
             Result result;
             result = await toDorfCommand.HandleAsync(new(0), cancellationToken);
             if (result.IsFailed) return result;
-            result = await completeImmediatelyCommand.HandleAsync(new(task.VillageId), cancellationToken);
+            result = await completeImmediatelyCommand.HandleAsync(new(), cancellationToken);
             if (result.IsFailed) return result;
 
             taskManager.Add(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId));

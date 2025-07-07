@@ -57,6 +57,7 @@ dotnet_diagnostic.S112.severity = none
 csharp_prefer_system_threading_lock = true:suggestion
 dotnet_diagnostic.S6966.severity = none
 dotnet_diagnostic.IHR0012.severity = none
+dotnet_diagnostic.S2094.severity = none
 
 [*.{cs,vb}]
 #### Naming styles ####

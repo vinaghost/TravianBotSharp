@@ -46,7 +46,7 @@ namespace MainCore.Tasks
             {
                 (_, isFailed, _, errors) = await updateBuildingCommand.HandleAsync(new(task.VillageId), cancellationToken);
                 if (isFailed) return Result.Fail(errors);
-                ;
+
                 result = await toDorfCommand.HandleAsync(new(1), cancellationToken);
                 if (result.IsFailed) return result;
 

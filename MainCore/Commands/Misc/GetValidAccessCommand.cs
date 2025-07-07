@@ -42,7 +42,6 @@ namespace MainCore.Commands.Misc
                     catch (Exception ex)
                     {
                         logger.Error(ex, "{Message}", ex.Message);
-                        continue;
                     }
                 }
                 return null;

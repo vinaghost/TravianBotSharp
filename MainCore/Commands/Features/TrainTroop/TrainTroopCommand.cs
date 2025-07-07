@@ -5,10 +5,7 @@ namespace MainCore.Commands.Features.TrainTroop
     [Handler]
     public static partial class TrainTroopCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, BuildingEnums Building) : IAccountVillageCommand
-        {
-            public void Deconstruct(out AccountId accountId, out VillageId villageId) => (accountId, villageId) = (AccountId, VillageId);
-        }
+        public sealed record Command(VillageId VillageId, BuildingEnums Building) : IVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -19,7 +16,7 @@ namespace MainCore.Commands.Features.TrainTroop
             ToBuildingCommand.Handler toBuildingCommand,
             CancellationToken cancellationToken)
         {
-            var (accountId, villageId, building) = command;
+            var (villageId, building) = command;
 
             Result result;
             result = await toDorfCommand.HandleAsync(new(2), cancellationToken);

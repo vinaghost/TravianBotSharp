@@ -40,7 +40,7 @@ namespace MainCore.Tasks
 
             foreach (var building in buildings)
             {
-                result = await trainTroopCommand.HandleAsync(new(task.AccountId, task.VillageId, building), cancellationToken);
+                result = await trainTroopCommand.HandleAsync(new(task.VillageId, building), cancellationToken);
                 if (!result.IsFailed) continue;
 
                 if (result.HasError<MissingBuilding>())
