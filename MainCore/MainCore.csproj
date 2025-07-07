@@ -9,6 +9,8 @@
     <SelfContained>true</SelfContained>
 
     <AssemblyVersion>1975.4.30</AssemblyVersion>
+
+    <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
   </PropertyGroup>
   <!--<PropertyGroup>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>

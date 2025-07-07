@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.UI.AccountSettingViewModel;
-using MainCore.Commands.UI.FarmingViewModel;
+﻿using MainCore.Commands.UI.FarmingViewModel;
 using MainCore.Commands.UI.Misc;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
@@ -144,12 +143,14 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private async Task<Dictionary<AccountSettingEnums, int>> LoadSetting(AccountId accountId)
+        private Dictionary<AccountSettingEnums, int> LoadSetting(AccountId accountId)
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
-            var items = await getSettingQuery.HandleAsync(new(accountId));
-            return items;
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var settings = context.AccountsSetting
+              .Where(x => x.AccountId == AccountId.Value)
+              .ToDictionary(x => x.Setting, x => x.Value);
+            return settings;
         }
 
         [ReactiveCommand]
