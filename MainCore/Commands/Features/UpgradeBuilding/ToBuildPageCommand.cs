@@ -18,11 +18,11 @@
         {
             var (accountId, villageId, plan) = command;
 
-            var (_, isFailed, (buildings, _), errors) = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            var (_, isFailed, (buildings, _), errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
             Result result;
-            result = await toBuildingCommand.HandleAsync(new(accountId, plan.Location), cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(plan.Location), cancellationToken);
             if (result.IsFailed) return result;
 
             await delayService.DelayClick(cancellationToken);
@@ -32,14 +32,14 @@
             if (building.Type == BuildingEnums.Site)
             {
                 var tabIndex = plan.Type.GetBuildingsCategory();
-                result = await switchTabCommand.HandleAsync(new(accountId, tabIndex), cancellationToken);
+                result = await switchTabCommand.HandleAsync(new(tabIndex), cancellationToken);
                 if (result.IsFailed) return result;
             }
             else
             {
                 if (building.Level < 1) return Result.Ok();
                 if (!building.Type.HasMultipleTabs()) return Result.Ok();
-                result = await switchTabCommand.HandleAsync(new(accountId, 0), cancellationToken);
+                result = await switchTabCommand.HandleAsync(new(0), cancellationToken);
                 if (result.IsFailed) return result;
             }
 

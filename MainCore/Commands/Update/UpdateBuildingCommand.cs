@@ -3,7 +3,7 @@
     [Handler]
     public static partial class UpdateBuildingCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command(VillageId VillageId) : IVillageCommand;
 
         public sealed record Response(List<BuildingDto> Buildings, List<QueueBuilding> QueueBuildings);
 
@@ -15,7 +15,7 @@
             )
         {
             await Task.CompletedTask;
-            var (accountId, villageId) = command;
+            var villageId = command.VillageId;
 
             var html = browser.Html;
 

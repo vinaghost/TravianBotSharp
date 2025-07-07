@@ -3,7 +3,7 @@
     [Handler]
     public static partial class SwitchTabCommand
     {
-        public sealed record Command(AccountId AccountId, int TabIndex) : IAccountCommand;
+        public sealed record Command(int TabIndex) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
@@ -11,7 +11,7 @@
            CancellationToken cancellationToken
            )
         {
-            var (accountId, tabIndex) = command;
+            var tabIndex = command.TabIndex;
 
             var html = browser.Html;
             var count = BuildingTabParser.CountTab(html);

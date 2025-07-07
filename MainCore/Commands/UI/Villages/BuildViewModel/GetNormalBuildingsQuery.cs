@@ -13,7 +13,7 @@
         {
             var (villageId, buildingId) = query;
 
-            var buildingItems = await getLayoutBuildingsQuery.HandleAsync(new(query.VillageId), cancellationToken);
+            var buildingItems = await getLayoutBuildingsQuery.HandleAsync(new(villageId), cancellationToken);
 
             var type = buildingItems
                 .Where(x => x.Id == buildingId)

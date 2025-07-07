@@ -3,7 +3,7 @@
     [Handler]
     public static partial class ToDorfCommand
     {
-        public sealed record Command(AccountId AccountId, int Dorf) : IAccountCommand;
+        public sealed record Command(int Dorf) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
@@ -11,7 +11,7 @@
            CancellationToken cancellationToken
            )
         {
-            var (accountId, dorf) = command;
+            var dorf = command.Dorf;
 
             var currentUrl = browser.CurrentUrl;
             var currentDorf = GetCurrentDorf(currentUrl);

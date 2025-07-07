@@ -20,21 +20,21 @@
             var rallypointVillageId = await getHasRallypointVillageCommand.HandleAsync(new(accountId), cancellationToken);
             if (rallypointVillageId == VillageId.Empty) return Skip.NoRallypoint;
 
-            var result = await switchVillageCommand.HandleAsync(new(command.AccountId, rallypointVillageId), cancellationToken);
+            var result = await switchVillageCommand.HandleAsync(new(rallypointVillageId), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await toDorfCommand.HandleAsync(new(command.AccountId, 2), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
             if (result.IsFailed) return result;
 
-            var (_, isFailed, _, errors) = await updateBuildingCommand.HandleAsync(new(command.AccountId, rallypointVillageId), cancellationToken);
+            var (_, isFailed, _, errors) = await updateBuildingCommand.HandleAsync(new(rallypointVillageId), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
-            result = await toBuildingCommand.HandleAsync(new(command.AccountId, 39), cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(39), cancellationToken);
             if (result.IsFailed) return result;
 
             await delayService.DelayClick(cancellationToken);
 
-            result = await switchTabCommand.HandleAsync(new(command.AccountId, 4), cancellationToken);
+            result = await switchTabCommand.HandleAsync(new(4), cancellationToken);
             if (result.IsFailed) return result;
 
             await delayService.DelayClick(cancellationToken);

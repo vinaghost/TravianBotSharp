@@ -27,10 +27,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-                var result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
+                var result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
                 if (result.IsFailed) return result;
 
-                var (_, isFailed, updateBuildingValue, errors) = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+                var (_, isFailed, updateBuildingValue, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
                 if (isFailed) return Result.Fail(errors);
 
                 (_, isFailed, var job, errors) = await getJobQuery.HandleAsync(new(accountId, villageId), cancellationToken);
@@ -45,7 +45,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     var normalBuildPlan = GetNormalBuildPlan(resourceBuildPlan, layoutBuildings);
                     if (normalBuildPlan is null)
                     {
-                        await deleteJobByIdCommand.HandleAsync(new(villageId, job.Id), cancellationToken);
+                        await deleteJobByIdCommand.HandleAsync(new(job.Id), cancellationToken);
                     }
                     else
                     {
@@ -58,16 +58,16 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
 
                 var dorf = plan.Location < 19 ? 1 : 2;
-                result = await toDorfCommand.HandleAsync(new(accountId, dorf), cancellationToken);
+                result = await toDorfCommand.HandleAsync(new(dorf), cancellationToken);
                 if (result.IsFailed) return result;
 
-                (_, isFailed, updateBuildingValue, errors) = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+                (_, isFailed, updateBuildingValue, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
                 if (isFailed) return Result.Fail(errors);
 
                 var (buildings, queueBuildings) = updateBuildingValue;
                 if (IsJobComplete(job, buildings, queueBuildings))
                 {
-                    await deleteJobByIdCommand.HandleAsync(new(villageId, job.Id), cancellationToken);
+                    await deleteJobByIdCommand.HandleAsync(new(job.Id), cancellationToken);
                     rxQueue.Enqueue(new JobsModified(villageId));
                     continue;
                 }

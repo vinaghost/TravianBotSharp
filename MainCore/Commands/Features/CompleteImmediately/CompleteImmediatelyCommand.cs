@@ -3,14 +3,14 @@
     [Handler]
     public static partial class CompleteImmediatelyCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command(VillageId VillageId) : IVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var (accountId, villageId) = command;
+            var villageId = command.VillageId;
 
             var html = browser.Html;
             var oldQueueCount = CompleteImmediatelyParser.CountQueueBuilding(html);

@@ -3,7 +3,7 @@
     [Handler]
     public static partial class SwitchVillageCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command(VillageId VillageId) : IVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
@@ -11,15 +11,13 @@
            CancellationToken cancellationToken
            )
         {
-            var (accountId, villageId) = command;
+            var villageId = command.VillageId;
 
             var html = browser.Html;
             var node = VillagePanelParser.GetVillageNode(html, villageId);
             if (node is null) return Skip.VillageNotFound;
 
             if (VillagePanelParser.IsActive(node)) return Result.Ok();
-
-            var current = VillagePanelParser.GetCurrentVillageId(html);
 
             bool villageChanged(IWebDriver driver)
             {

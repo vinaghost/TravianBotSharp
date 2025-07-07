@@ -35,7 +35,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             var useHeroResource = settingService.BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
 
-            if (!useHeroResource && result.HasError<ResourceMissing>(out var resourceMissingErrors)) return result;
+            if (!useHeroResource && result.HasError<ResourceMissing>(out var resourceMissingErrors)) return Result.Fail(resourceMissingErrors);
 
             logger.Information("Don't have enough resource. Use resource in hero invetory to upgrade building");
             var missingResource = storage.GetMissingResource(requiredResource);

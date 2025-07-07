@@ -32,7 +32,7 @@ namespace MainCore.Tasks
             Result result;
             result = await toQuestPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
-            result = await claimQuestCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            result = await claimQuestCommand.HandleAsync(new(task.VillageId), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }

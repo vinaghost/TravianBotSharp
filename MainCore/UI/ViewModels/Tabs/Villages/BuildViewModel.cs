@@ -223,7 +223,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
-            var newIndex = await swapCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Up));
+            var newIndex = await swapCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Up));
             Jobs.SelectedIndex = newIndex;
 
             await JobsModifiedCommand.Execute(new JobsModified(VillageId));
@@ -245,7 +245,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
-            var newIndex = await swapCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Down));
+            var newIndex = await swapCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Down));
             Jobs.SelectedIndex = newIndex;
             await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
@@ -266,7 +266,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
-            var newIndex = await moveCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Top));
+            var newIndex = await moveCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Top));
             Jobs.SelectedIndex = newIndex;
 
             await JobsModifiedCommand.Execute(new JobsModified(VillageId));
@@ -288,7 +288,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
-            var newIndex = await moveCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Bottom));
+            var newIndex = await moveCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Bottom));
             Jobs.SelectedIndex = newIndex;
             await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
@@ -306,7 +306,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var deleteJobByIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByIdCommand.Handler>();
-            await deleteJobByIdCommand.HandleAsync(new(VillageId, new JobId(jobId)));
+            await deleteJobByIdCommand.HandleAsync(new(new JobId(jobId)));
             await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 

@@ -3,10 +3,7 @@
     [Handler]
     public static partial class HandleUpgradeCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand
-        {
-            public void Deconstruct(out AccountId accountId, out VillageId villageId) => (accountId, villageId) = (AccountId, VillageId);
-        }
+        public sealed record Command(VillageId VillageId, NormalBuildPlan Plan) : IVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -15,7 +12,7 @@
             CancellationToken cancellationToken
         )
         {
-            var (accountId, villageId, plan) = command;
+            var (villageId, plan) = command;
 
             Result result;
 

@@ -32,7 +32,7 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result;
             result = await disableContextualHelpCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
-            result = await toDorfCommand.HandleAsync(new(task.AccountId, 0), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(0), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }

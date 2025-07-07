@@ -3,7 +3,7 @@
     [Handler]
     public static partial class AddCroplandCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command(VillageId VillageId) : IVillageCommand;
 
         private static async ValueTask HandleAsync(
             Command command,
@@ -12,7 +12,7 @@
             IRxQueue rxQueue,
             CancellationToken cancellationToken)
         {
-            var (accountId, villageId) = command;
+            var villageId = command.VillageId;
 
             var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId, true), cancellationToken);
 

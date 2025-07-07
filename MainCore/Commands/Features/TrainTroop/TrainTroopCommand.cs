@@ -22,10 +22,10 @@ namespace MainCore.Commands.Features.TrainTroop
             var (accountId, villageId, building) = command;
 
             Result result;
-            result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
             if (result.IsFailed) return result;
 
-            var (_, isFailed, response, errors) = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            var (_, isFailed, response, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
             var buildingLocation = response.Buildings
@@ -38,7 +38,7 @@ namespace MainCore.Commands.Features.TrainTroop
                 return MissingBuilding.Error(building);
             }
 
-            result = await toBuildingCommand.HandleAsync(new(accountId, buildingLocation), cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(buildingLocation), cancellationToken);
             if (result.IsFailed) return result;
 
             var troopSetting = BuildingSettings[building];

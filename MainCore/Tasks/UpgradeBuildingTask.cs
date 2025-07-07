@@ -58,7 +58,7 @@ namespace MainCore.Tasks
                         var message = string.Join(Environment.NewLine, freeCropErrors.Select(x => x.Message));
                         logger.Warning("{Error}", message);
 
-                        await addCroplandCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                        await addCroplandCommand.HandleAsync(new(task.VillageId), cancellationToken);
                         continue;
                     }
 
@@ -76,12 +76,12 @@ namespace MainCore.Tasks
                     return result;
                 }
 
-                result = await handleUpgradeCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
+                result = await handleUpgradeCommand.HandleAsync(new(task.VillageId, plan), cancellationToken);
                 if (result.IsFailed) return result;
 
                 logger.Information("Upgrade for {Type} at location {Location} completed successfully.", plan.Type, plan.Location);
 
-                (_, isFailed, _, errors) = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                (_, isFailed, _, errors) = await updateBuildingCommand.HandleAsync(new(task.VillageId), cancellationToken);
                 if (isFailed) return result;
             }
         }

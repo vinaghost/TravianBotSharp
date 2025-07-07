@@ -30,13 +30,19 @@ namespace MainCore.Commands.Misc
                     try
                     {
                         var response = await client.GetAsync(TRAVIAN_PAGE);
-                        logger.Information("Access {Proxy} is good", proxy.Proxy);
-                        return proxy;
+                        if (response.IsSuccessStatusCode)
+                        {
+                            logger.Information("Access {Proxy} is good", proxy.Proxy);
+                            return proxy;
+                        }
+
+                        logger.Warning("Access {Proxy} is not working, status code: {StatusCode}", proxy.Proxy, response.StatusCode);
+                        continue;
                     }
                     catch (Exception ex)
                     {
                         logger.Error(ex, "{message}", ex.Message);
-                        return null;
+                        continue;
                     }
                 }
                 return null;

@@ -3,7 +3,7 @@
     [Handler]
     public static partial class ClaimQuestCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command(VillageId VillageId) : IVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -12,7 +12,7 @@
             SwitchTabCommand.Handler switchTabCommand,
             CancellationToken cancellationToken)
         {
-            var (accountId, villageId) = command;
+            var villageId = command;
 
             HtmlDocument html;
             Result result;
@@ -25,7 +25,7 @@
 
                 if (quest is null)
                 {
-                    result = await switchTabCommand.HandleAsync(new(accountId, 1), cancellationToken);
+                    result = await switchTabCommand.HandleAsync(new(1), cancellationToken);
                     if (result.IsFailed) return result;
 
                     await delayService.DelayClick(cancellationToken);

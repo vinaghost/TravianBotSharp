@@ -3,7 +3,7 @@
     [Handler]
     public static partial class NpcResourceCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command(VillageId VillageId) : IVillageCommand;
 
         private static readonly List<VillageSettingEnums> SettingNames = new()
         {
@@ -19,7 +19,7 @@
             ISettingService settingService,
             CancellationToken cancellationToken)
         {
-            var (accountId, villageId) = command;
+            var villageId = command.VillageId;
 
             var result = await OpenNPCDialog(browser, cancellationToken);
             if (result.IsFailed) return result;
