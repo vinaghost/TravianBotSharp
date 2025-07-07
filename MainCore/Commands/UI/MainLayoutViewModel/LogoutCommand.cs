@@ -7,14 +7,13 @@
 
         private static async ValueTask HandleAsync(
             Command command,
-            IChromeBrowser browser, ITaskManager taskManager,
-            CancellationToken cancellationToken
+            IChromeBrowser browser,
+            ITaskManager taskManager
             )
         {
             var accountId = command.AccountId;
             taskManager.SetStatus(accountId, StatusEnums.Stopping);
             await taskManager.StopCurrentTask(accountId);
-
 
             await browser.Close();
 

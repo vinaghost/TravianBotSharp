@@ -11,8 +11,7 @@
         private static async ValueTask HandleAsync(
             Command command,
             AppDbContext context,
-            ITaskManager taskManager,
-            CancellationToken cancellationToken
+            ITaskManager taskManager
             )
         {
             await Task.CompletedTask;

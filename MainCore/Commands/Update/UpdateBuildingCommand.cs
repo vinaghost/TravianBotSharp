@@ -11,8 +11,8 @@
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
-            IRxQueue rxQueue,
-            CancellationToken cancellationToken)
+            IRxQueue rxQueue
+            )
         {
             await Task.CompletedTask;
             var (accountId, villageId) = command;

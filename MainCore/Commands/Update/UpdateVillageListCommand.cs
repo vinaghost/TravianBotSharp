@@ -10,8 +10,7 @@
             IChromeBrowser browser,
             AppDbContext context,
             IRxQueue rxQueue,
-            ITaskManager taskManager,
-            CancellationToken cancellationToken)
+            ITaskManager taskManager)
         {
             await Task.CompletedTask;
             var accountId = command.AccountId;

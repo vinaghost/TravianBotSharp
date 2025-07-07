@@ -5,9 +5,8 @@
     {
         private static async ValueTask HandleAsync(
             StartAdventureTask.Task task,
-            IChromeBrowser browser,
-            ILogger logger,
-            CancellationToken cancellationToken)
+            IChromeBrowser browser
+            )
         {
             await Task.CompletedTask;
             var adventureDuration = AdventureParser.GetAdventureDuration(browser.Html);

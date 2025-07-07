@@ -6,7 +6,7 @@
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
         private static async ValueTask<Result> HandleAsync(
-            Command command,
+            Command _,
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {

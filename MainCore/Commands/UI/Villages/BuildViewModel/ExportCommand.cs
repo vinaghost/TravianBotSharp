@@ -9,8 +9,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             var (villageId, path) = command;

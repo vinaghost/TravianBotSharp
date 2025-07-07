@@ -9,8 +9,7 @@ namespace MainCore.Commands.UI.FarmingViewModel
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query query,
-            AppDbContext context,
-        CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             await Task.CompletedTask;

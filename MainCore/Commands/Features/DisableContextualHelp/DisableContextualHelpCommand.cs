@@ -6,11 +6,10 @@
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
         private static async ValueTask<Result> HandleAsync(
-            Command command,
-            IChromeBrowser browser,
-            CancellationToken cancellationToken)
+            Command _,
+            IChromeBrowser browser
+            )
         {
-
             var html = browser.Html;
 
             var option = OptionParser.GetHideContextualHelpOption(html);

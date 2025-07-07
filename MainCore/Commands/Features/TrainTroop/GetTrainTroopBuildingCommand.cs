@@ -7,8 +7,7 @@
 
         private static async ValueTask<List<BuildingEnums>> HandleAsync(
             Command command,
-            AppDbContext context,
-            CancellationToken cancellationToken)
+            AppDbContext context)
         {
             await Task.CompletedTask;
             var villageId = command.VillageId;

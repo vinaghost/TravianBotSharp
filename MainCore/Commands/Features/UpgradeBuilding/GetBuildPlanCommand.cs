@@ -42,7 +42,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
                     var layoutBuildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId, true));
                     var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content)!;
-                    var normalBuildPlan = GetNormalBuildPlan(villageId, resourceBuildPlan, layoutBuildings);
+                    var normalBuildPlan = GetNormalBuildPlan(resourceBuildPlan, layoutBuildings);
                     if (normalBuildPlan is null)
                     {
                         await deleteJobByIdCommand.HandleAsync(new(villageId, job.Id), cancellationToken);
@@ -77,7 +77,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         }
 
         private static NormalBuildPlan? GetNormalBuildPlan(
-            VillageId villageId,
             ResourceBuildPlan plan,
             List<BuildingItem> layoutBuildings
         )

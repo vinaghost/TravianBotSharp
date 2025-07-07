@@ -10,8 +10,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query query,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             await Task.CompletedTask;

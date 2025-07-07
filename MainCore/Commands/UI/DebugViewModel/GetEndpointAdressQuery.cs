@@ -8,8 +8,7 @@
 
         private static async ValueTask<string> HandleAsync(
             Query query,
-            ITaskManager taskManager,
-            CancellationToken cancellationToken
+            ITaskManager taskManager
         )
         {
             await Task.CompletedTask;

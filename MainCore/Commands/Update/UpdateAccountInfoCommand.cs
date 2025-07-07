@@ -8,8 +8,8 @@
         private static async ValueTask HandleAsync(
             Command command,
             IChromeBrowser browser,
-            AppDbContext context,
-            CancellationToken cancellationToken)
+            AppDbContext context
+            )
         {
             await Task.CompletedTask;
             var html = browser.Html;

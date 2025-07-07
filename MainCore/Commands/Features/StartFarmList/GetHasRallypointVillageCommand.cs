@@ -7,8 +7,7 @@
 
         private static async ValueTask<VillageId> HandleAsync(
             Command command,
-            AppDbContext context,
-            CancellationToken cancellationToken)
+            AppDbContext context)
         {
             await Task.CompletedTask;
             var accountId = command.AccountId;

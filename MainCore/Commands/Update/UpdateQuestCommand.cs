@@ -8,8 +8,7 @@
         private static async ValueTask HandleAsync(
             Command command,
             IChromeBrowser browser,
-            ITaskManager taskManager,
-            CancellationToken cancellationToken
+            ITaskManager taskManager
            )
         {
             await Task.CompletedTask;

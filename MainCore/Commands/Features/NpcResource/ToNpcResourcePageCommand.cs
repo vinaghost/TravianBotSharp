@@ -9,7 +9,6 @@ namespace MainCore.Commands.Features.NpcResource
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToBuildingCommand.Handler toBuildingCommand,

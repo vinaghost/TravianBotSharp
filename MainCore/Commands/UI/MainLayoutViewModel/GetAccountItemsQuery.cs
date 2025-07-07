@@ -8,7 +8,7 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
         public sealed record Query() : IQuery;
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
-            Query query,
+            Query _,
             AppDbContext context, ITaskManager taskManager,
             CancellationToken cancellationToken
             )

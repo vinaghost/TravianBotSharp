@@ -7,8 +7,7 @@
 
         private static async ValueTask<Dictionary<VillageSettingEnums, int>> HandleAsync(
             Query query,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             await Task.CompletedTask;

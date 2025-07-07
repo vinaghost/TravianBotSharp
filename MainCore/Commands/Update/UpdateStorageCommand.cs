@@ -9,8 +9,8 @@
             Command command,
             AppDbContext context,
             IChromeBrowser browser,
-            ITaskManager taskManager,
-            CancellationToken cancellationToken)
+            ITaskManager taskManager
+            )
         {
             await Task.CompletedTask;
             var (accountId, villageId) = command;

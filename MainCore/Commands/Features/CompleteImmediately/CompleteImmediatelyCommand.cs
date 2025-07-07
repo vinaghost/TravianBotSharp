@@ -7,7 +7,6 @@
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            AppDbContext context,
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
@@ -37,7 +36,6 @@
             html = browser.Html;
             var confirmButton = CompleteImmediatelyParser.GetConfirmButton(html);
             if (confirmButton is null) return Retry.ButtonNotFound("confirm complete now");
-
 
             result = await browser.Click(By.XPath(confirmButton.XPath));
             if (result.IsFailed) return result;

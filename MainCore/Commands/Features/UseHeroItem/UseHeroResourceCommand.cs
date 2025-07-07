@@ -53,7 +53,7 @@
 
                 await delayService.DelayClick(cancellationToken);
 
-                result = await EnterAmount(amount, browser, cancellationToken);
+                result = await EnterAmount(amount, browser);
                 if (result.IsFailed) return result;
 
                 await delayService.DelayClick(cancellationToken);
@@ -95,8 +95,8 @@
 
         private static async Task<Result> EnterAmount(
             long amount,
-            IChromeBrowser browser,
-            CancellationToken cancellationToken)
+            IChromeBrowser browser
+            )
         {
             var html = browser.Html;
             var node = InventoryParser.GetAmountBox(html);

@@ -47,7 +47,7 @@ namespace MainCore.Commands.Features.TrainTroop
             (_, isFailed, var amount, errors) = GetAmount(settingService, browser, villageId, building, troop);
             if (isFailed) return Result.Fail(errors);
 
-            result = await TrainTroop(browser, troop, amount, cancellationToken);
+            result = await TrainTroop(browser, troop, amount);
             if (result.IsFailed) return result;
 
             return Result.Ok();
@@ -107,8 +107,7 @@ namespace MainCore.Commands.Features.TrainTroop
         private static async ValueTask<Result> TrainTroop(
             IChromeBrowser browser,
             TroopEnums troop,
-            long amount,
-            CancellationToken cancellationToken)
+            long amount)
         {
             var html = browser.Html;
 

@@ -10,8 +10,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
         private static async ValueTask<Result> HandleAsync(
             Command command,
             GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
-            AddJobCommand.Handler addJobCommand,
-            CancellationToken cancellationToken
+            AddJobCommand.Handler addJobCommand
             )
         {
             var (villageId, plan) = command;

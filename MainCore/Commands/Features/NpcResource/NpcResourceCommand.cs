@@ -25,12 +25,12 @@
             if (result.IsFailed) return result;
 
             var settings = settingService.ByName(villageId, SettingNames);
-            var ratio = GetRatio(settings, villageId);
+            var ratio = GetRatio(settings);
 
             result = await InputAmount(browser, ratio);
             if (result.IsFailed) return result;
 
-            result = await Redeem(browser, cancellationToken);
+            result = await Redeem(browser);
             if (result.IsFailed) return result;
 
             return Result.Ok();
@@ -84,7 +84,7 @@
             return Result.Ok();
         }
 
-        private static long[] GetRatio(Dictionary<VillageSettingEnums, int> settings, VillageId villageId)
+        private static long[] GetRatio(Dictionary<VillageSettingEnums, int> settings)
         {
             var ratio = new long[4]
             {
@@ -102,7 +102,7 @@
             return ratio;
         }
 
-        private static async Task<Result> Redeem(IChromeBrowser browser, CancellationToken cancellationToken)
+        private static async Task<Result> Redeem(IChromeBrowser browser)
         {
             var html = browser.Html;
 

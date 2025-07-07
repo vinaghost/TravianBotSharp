@@ -9,8 +9,8 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask<List<JobDto>> HandleAsync(
             Command command,
-            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
-            CancellationToken cancellationToken)
+            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery
+            )
         {
             var (villageId, jobs, shuffle) = command;
             var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId));

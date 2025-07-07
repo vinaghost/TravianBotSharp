@@ -7,8 +7,8 @@
 
         private static async ValueTask HandleAsync(
             Command command,
-            AddJobCommand.Handler addJobCommand, GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
-            CancellationToken cancellationToken
+            AddJobCommand.Handler addJobCommand,
+            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery
             )
         {
             var (villageId, location, isMaxLevel) = command;

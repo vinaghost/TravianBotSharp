@@ -7,8 +7,7 @@
 
         private static async ValueTask<AccountDto> HandleAsync(
             Query query,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             await Task.CompletedTask;

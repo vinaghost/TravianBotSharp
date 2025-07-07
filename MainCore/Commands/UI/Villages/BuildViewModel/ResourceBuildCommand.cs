@@ -9,8 +9,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            AddJobCommand.Handler addJobCommand,
-            CancellationToken cancellationToken
+            AddJobCommand.Handler addJobCommand
             )
         {
             var (villageId, plan) = command;

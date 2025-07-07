@@ -10,8 +10,7 @@ namespace MainCore.Commands.Misc
         private static async ValueTask<Result<AccessDto>> HandleAsync(
             Command command,
             ILogger logger,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             var (accountId, ignoreSleepTime) = command;

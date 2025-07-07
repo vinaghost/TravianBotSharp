@@ -7,7 +7,10 @@
 
         private static async ValueTask HandleAsync(
             Command command,
-            IChromeBrowser browser, ITaskManager taskManager, ITimerManager timerManager, ILogger logger, IRxQueue rxQueue,
+            ITaskManager taskManager,
+            ITimerManager timerManager,
+            ILogger logger,
+            IRxQueue rxQueue,
             OpenBrowserCommand.Handler openBrowserCommand,
             CancellationToken cancellationToken
             )

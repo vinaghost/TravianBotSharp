@@ -9,8 +9,7 @@ namespace MainCore.Commands.UI.DebugViewModel
 
         private static async ValueTask<List<TaskItem>> HandleAsync(
             Query query,
-            ITaskManager taskManager,
-            CancellationToken cancellationToken
+            ITaskManager taskManager
         )
         {
             await Task.CompletedTask;

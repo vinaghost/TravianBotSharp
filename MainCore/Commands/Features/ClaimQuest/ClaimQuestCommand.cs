@@ -34,6 +34,7 @@
                     if (quest is null) return Result.Ok();
 
                     result = await browser.Click(By.XPath(quest.XPath));
+                    if (result.IsFailed) return result;
                     continue;
                 }
 

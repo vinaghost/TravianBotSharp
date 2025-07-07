@@ -8,8 +8,7 @@
         private static async ValueTask HandleAsync(
             Command command,
             AppDbContext context,
-            IRxQueue rxQueue,
-            CancellationToken cancellationToken
+            IRxQueue rxQueue
             )
         {
             await Task.CompletedTask;

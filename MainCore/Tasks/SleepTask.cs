@@ -21,11 +21,11 @@ namespace MainCore.Tasks
             SleepCommand.Handler sleepCommand,
             GetValidAccessCommand.Handler getAccessQuery,
             OpenBrowserCommand.Handler openBrowserCommand,
-            ToDorfCommand.Handler toDorfCommand,
             NextExecuteSleepTaskCommand.Handler nextExecuteSleepTaskCommand,
             CancellationToken cancellationToken)
         {
             await sleepCommand.HandleAsync(new(task.AccountId), cancellationToken);
+
             var (_, isFailed, access, errors) = await getAccessQuery.HandleAsync(new(task.AccountId), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 

@@ -9,8 +9,7 @@ namespace MainCore.Commands.Misc
 
         private static async ValueTask HandleAsync(
             Command command,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             await Task.CompletedTask;

@@ -25,9 +25,7 @@ namespace MainCore.Tasks
 
         private static async ValueTask<Result> HandleAsync(
             Task task,
-            ITaskManager taskManager,
             IChromeBrowser browser,
-            ISettingService settingService,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToDorfCommand.Handler toDorfCommand,
             NextExecuteUpdateVillageTaskCommand.Handler nextExecuteUpdateVillageTaskCommand,
