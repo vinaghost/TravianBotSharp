@@ -217,6 +217,12 @@
           "Serilog": "4.0.0"
         }
       },
+      "SonarAnalyzer.CSharp": {
+        "type": "Direct",
+        "requested": "[10.12.0.118525, )",
+        "resolved": "10.12.0.118525",
+        "contentHash": "uP38bsYegQBk8WOM6LYIAht6hrA7tcJgep/WuifPJjhjtjysPUP/iM/c1+P2+llNIDmm1s8Xh86+WG3K71eycw=="
+      },
       "Splat": {
         "type": "Direct",
         "requested": "[15.4.1, )",
