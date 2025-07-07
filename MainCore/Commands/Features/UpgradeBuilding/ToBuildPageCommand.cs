@@ -12,23 +12,22 @@
             Command command,
             ToBuildingCommand.Handler toBuildingCommand,
             SwitchTabCommand.Handler switchTabCommand,
-            DelayClickCommand.Handler delayClickCommand,
-            AppDbContext context,
+            UpdateBuildingCommand.Handler updateBuildingCommand,
+            IDelayService delayService,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId, plan) = command;
+
+            var (_, isFailed, (buildings, _), errors) = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
             Result result;
             result = await toBuildingCommand.HandleAsync(new(accountId, plan.Location), cancellationToken);
             if (result.IsFailed) return result;
 
-            await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+            await delayService.DelayClick(cancellationToken);
 
-            var spec = new GetBuildingSpec(villageId, plan.Location);
-            var building = context.Buildings
-                .WithSpecification(spec)
-                .ToDto()
-                .First();
+            var building = buildings.First(x => x.Location == plan.Location);
 
             if (building.Type == BuildingEnums.Site)
             {
@@ -44,7 +43,7 @@
                 if (result.IsFailed) return result;
             }
 
-            await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+            await delayService.DelayClick(cancellationToken);
 
             return Result.Ok();
         }

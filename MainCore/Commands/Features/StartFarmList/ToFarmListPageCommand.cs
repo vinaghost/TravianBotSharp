@@ -7,23 +7,17 @@
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            AppDbContext context,
+            GetHasRallypointVillageCommand.Handler getHasRallypointVillageCommand,
             SwitchVillageCommand.Handler switchVillageCommand,
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToBuildingCommand.Handler toBuildingCommand,
             SwitchTabCommand.Handler switchTabCommand,
-            DelayClickCommand.Handler delayClickCommand,
+            IDelayService delayService,
             CancellationToken cancellationToken)
         {
             var accountId = command.AccountId;
-            var rallypointVillageId = context.Villages
-                .Where(x => x.AccountId == accountId.Value)
-                .Where(x => x.Buildings.Any(x => x.Type == BuildingEnums.RallyPoint && x.Level > 0))
-                .OrderByDescending(x => x.IsActive)
-                .Select(x => new VillageId(x.Id))
-                .FirstOrDefault();
-
+            var rallypointVillageId = await getHasRallypointVillageCommand.HandleAsync(new(accountId), cancellationToken);
             if (rallypointVillageId == VillageId.Empty) return Skip.NoRallypoint;
 
             var result = await switchVillageCommand.HandleAsync(new(command.AccountId, rallypointVillageId), cancellationToken);
@@ -32,16 +26,18 @@
             result = await toDorfCommand.HandleAsync(new(command.AccountId, 2), cancellationToken);
             if (result.IsFailed) return result;
 
-            var updateBuildingCommandResult = await updateBuildingCommand.HandleAsync(new(command.AccountId, rallypointVillageId), cancellationToken);
-            if (updateBuildingCommandResult.IsFailed) return Result.Fail(updateBuildingCommandResult.Errors);
+            var (_, isFailed, _, errors) = await updateBuildingCommand.HandleAsync(new(command.AccountId, rallypointVillageId), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
             result = await toBuildingCommand.HandleAsync(new(command.AccountId, 39), cancellationToken);
             if (result.IsFailed) return result;
 
+            await delayService.DelayClick(cancellationToken);
+
             result = await switchTabCommand.HandleAsync(new(command.AccountId, 4), cancellationToken);
             if (result.IsFailed) return result;
 
-            await delayClickCommand.HandleAsync(new(command.AccountId), cancellationToken);
+            await delayService.DelayClick(cancellationToken);
             return Result.Ok();
         }
     }

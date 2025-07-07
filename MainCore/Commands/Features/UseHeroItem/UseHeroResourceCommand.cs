@@ -17,8 +17,8 @@
             Command command,
             IChromeBrowser browser,
             ILogger logger,
+            IDelayService delayService,
             AppDbContext context,
-            DelayClickCommand.Handler delayClickCommand,
             CancellationToken cancellationToken)
         {
             var (accountId, resource) = command;
@@ -51,17 +51,17 @@
                 result = await ClickItem(item, browser, cancellationToken);
                 if (result.IsFailed) return result;
 
-                await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+                await delayService.DelayClick(cancellationToken);
 
                 result = await EnterAmount(amount, browser, cancellationToken);
                 if (result.IsFailed) return result;
 
-                await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+                await delayService.DelayClick(cancellationToken);
 
                 result = await Confirm(browser, cancellationToken);
                 if (result.IsFailed) return result;
 
-                await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+                await delayService.DelayClick(cancellationToken);
             }
 
             return Result.Ok();

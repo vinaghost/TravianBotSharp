@@ -8,7 +8,7 @@
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            DelayClickCommand.Handler delayClickCommand,
+            IDelayService delayService,
             AppDbContext context,
             CancellationToken cancellationToken)
         {
@@ -30,7 +30,7 @@
                 var result = await browser.Click(By.XPath(startButton.XPath));
                 if (result.IsFailed) return result;
 
-                await delayClickCommand.HandleAsync(new(command.AccountId), cancellationToken);
+                await delayService.DelayClick(cancellationToken);
             }
 
             return Result.Ok();
