@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.DebugViewModel
+﻿namespace MainCore.Commands.UI.DebugViewModel
 {
     [Handler]
     public static partial class GetEndpointAdressQuery
@@ -10,8 +8,7 @@ namespace MainCore.Commands.UI.DebugViewModel
 
         private static async ValueTask<string> HandleAsync(
             Query query,
-            ITaskManager taskManager,
-            CancellationToken cancellationToken
+            ITaskManager taskManager
         )
         {
             await Task.CompletedTask;

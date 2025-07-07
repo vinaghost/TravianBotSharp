@@ -15,17 +15,20 @@ namespace MainCore.UI.ViewModels.UserControls
         private readonly ITaskManager _taskManager;
         private readonly ILogger _logger;
 
+        private readonly IRxQueue _rxQueue;
+
         private readonly AccountTabStore _accountTabStore;
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
         private IObservable<bool> _canExecute;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory, ILogger logger)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory, ILogger logger, IRxQueue rxQueue)
         {
             _accountTabStore = accountTabStore;
             _dialogService = dialogService;
             _serviceScopeFactory = serviceScopeFactory;
+            _rxQueue = rxQueue;
             _logger = logger.ForContext<MainLayoutViewModel>();
 
             taskManager.StatusUpdated += LoadStatus;
@@ -65,11 +68,19 @@ namespace MainCore.UI.ViewModels.UserControls
                     RestartCommand.IsExecuting.Select(x => !x)
                 )
                 .BindTo(Accounts, x => x.IsEnable);
+
+            rxQueue.RegisterCommand<AccountsModified>(AccountModifiedCommand);
         }
 
         public async Task Load()
         {
             await LoadVersionCommand.Execute();
+            await LoadAccountCommand.Execute();
+        }
+
+        [ReactiveCommand]
+        private async Task AccountModified(AccountsModified notification)
+        {
             await LoadAccountCommand.Execute();
         }
 
@@ -142,7 +153,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            var getAccessQuery = scope.ServiceProvider.GetRequiredService<GetValidAccessQuery.Handler>();
+            var getAccessQuery = scope.ServiceProvider.GetRequiredService<GetValidAccessCommand.Handler>();
             var result = await getAccessQuery.HandleAsync(new(accountId));
             if (result.IsFailed)
             {
@@ -250,10 +261,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 case StatusEnums.Paused:
                     _taskManager.SetStatus(accountId, StatusEnums.Starting);
                     _taskManager.Clear(accountId);
-                    using (var scope = _serviceScopeFactory.CreateScope(accountId))
-                    {
-                        await scope.ServiceProvider.GetRequiredService<AccountInit.Handler>().HandleAsync(new(accountId));
-                    }
+                    _rxQueue.Enqueue(new AccountInit(accountId));
                     _taskManager.SetStatus(accountId, StatusEnums.Online);
                     return;
             }

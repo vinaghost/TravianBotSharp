@@ -1,12 +1,11 @@
-﻿using MainCore.Constraints;
-using MainCore.Errors.TrainTroop;
+﻿using MainCore.Errors.TrainTroop;
 
 namespace MainCore.Commands.Features.TrainTroop
 {
     [Handler]
     public static partial class TrainTroopCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, BuildingEnums Building) : IAccountVillageCommand;
+        public sealed record Command(VillageId VillageId, BuildingEnums Building) : IVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -17,13 +16,13 @@ namespace MainCore.Commands.Features.TrainTroop
             ToBuildingCommand.Handler toBuildingCommand,
             CancellationToken cancellationToken)
         {
-            var (accountId, villageId, building) = command;
+            var (villageId, building) = command;
 
             Result result;
-            result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
             if (result.IsFailed) return result;
 
-            var (_, isFailed, response, errors) = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            var (_, isFailed, response, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
             var buildingLocation = response.Buildings
@@ -36,7 +35,7 @@ namespace MainCore.Commands.Features.TrainTroop
                 return MissingBuilding.Error(building);
             }
 
-            result = await toBuildingCommand.HandleAsync(new(accountId, buildingLocation), cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(buildingLocation), cancellationToken);
             if (result.IsFailed) return result;
 
             var troopSetting = BuildingSettings[building];
@@ -45,7 +44,7 @@ namespace MainCore.Commands.Features.TrainTroop
             (_, isFailed, var amount, errors) = GetAmount(settingService, browser, villageId, building, troop);
             if (isFailed) return Result.Fail(errors);
 
-            result = await TrainTroop(browser, troop, amount, cancellationToken);
+            result = await TrainTroop(browser, troop, amount);
             if (result.IsFailed) return result;
 
             return Result.Ok();
@@ -76,9 +75,7 @@ namespace MainCore.Commands.Features.TrainTroop
             BuildingEnums building,
             TroopEnums troop)
         {
-            var html = browser.Html;
-
-            var maxAmount = TrainTroopParser.GetMaxAmount(html, troop);
+            var maxAmount = TrainTroopParser.GetMaxAmount(browser.Html, troop);
 
             if (maxAmount == 0)
             {
@@ -105,19 +102,16 @@ namespace MainCore.Commands.Features.TrainTroop
         private static async ValueTask<Result> TrainTroop(
             IChromeBrowser browser,
             TroopEnums troop,
-            long amount,
-            CancellationToken cancellationToken)
+            long amount)
         {
-            var html = browser.Html;
-
-            var inputBox = TrainTroopParser.GetInputBox(html, troop);
+            var inputBox = TrainTroopParser.GetInputBox(browser.Html, troop);
             if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
 
             Result result;
             result = await browser.Input(By.XPath(inputBox.XPath), $"{amount}");
             if (result.IsFailed) return result;
 
-            var trainButton = TrainTroopParser.GetTrainButton(html);
+            var trainButton = TrainTroopParser.GetTrainButton(browser.Html);
             if (trainButton is null) return Retry.ButtonNotFound("train troop");
 
             result = await browser.Click(By.XPath(trainButton.XPath));

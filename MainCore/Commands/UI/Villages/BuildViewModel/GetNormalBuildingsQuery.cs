@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.Villages.BuildViewModel
+﻿namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
     [Handler]
     public static partial class GetNormalBuildingsQuery
@@ -9,13 +7,13 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask<List<BuildingEnums>> HandleAsync(
             Query query,
-            GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
+            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
             CancellationToken cancellationToken
             )
         {
             var (villageId, buildingId) = query;
 
-            var buildingItems = await getLayoutBuildingsQuery.HandleAsync(new(query.VillageId), cancellationToken);
+            var buildingItems = await getLayoutBuildingsQuery.HandleAsync(new(villageId), cancellationToken);
 
             var type = buildingItems
                 .Where(x => x.Id == buildingId)

@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features.StartFarmList
+﻿namespace MainCore.Commands.Features.StartFarmList
 {
     [Handler]
     public static partial class StartActiveFarmListCommand
@@ -10,24 +8,27 @@ namespace MainCore.Commands.Features.StartFarmList
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            DelayClickCommand.Handler delayClickCommand,
-            GetActiveFarmsQuery.Handler getActiveFarmsQuery,
+            IDelayService delayService,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
-            var farmLists = await getActiveFarmsQuery.HandleAsync(new(command.AccountId), cancellationToken);
+            var accountId = command.AccountId;
+            var farmLists = context.FarmLists
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => x.IsActive)
+                .Select(x => new FarmId(x.Id))
+                .ToList();
             if (farmLists.Count == 0) return Skip.NoActiveFarmlist;
-
-            var html = browser.Html;
 
             foreach (var farmList in farmLists)
             {
-                var startButton = FarmListParser.GetStartButton(html, farmList);
+                var startButton = FarmListParser.GetStartButton(browser.Html, farmList);
                 if (startButton is null) return Retry.ButtonNotFound($"Start farm {farmList}");
 
                 var result = await browser.Click(By.XPath(startButton.XPath));
                 if (result.IsFailed) return result;
 
-                await delayClickCommand.HandleAsync(new(command.AccountId), cancellationToken);
+                await delayService.DelayClick(cancellationToken);
             }
 
             return Result.Ok();

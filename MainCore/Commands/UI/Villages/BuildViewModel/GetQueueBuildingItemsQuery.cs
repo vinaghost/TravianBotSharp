@@ -1,5 +1,4 @@
 ﻿using Humanizer;
-using MainCore.Constraints;
 using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
@@ -11,8 +10,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query query,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             await Task.CompletedTask;

@@ -1,11 +1,9 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features.NpcResource
+﻿namespace MainCore.Commands.Features.NpcResource
 {
     [Handler]
     public static partial class NpcResourceCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command(VillageId VillageId) : IVillageCommand;
 
         private static readonly List<VillageSettingEnums> SettingNames = new()
         {
@@ -21,18 +19,18 @@ namespace MainCore.Commands.Features.NpcResource
             ISettingService settingService,
             CancellationToken cancellationToken)
         {
-            var (accountId, villageId) = command;
+            var villageId = command.VillageId;
 
             var result = await OpenNPCDialog(browser, cancellationToken);
             if (result.IsFailed) return result;
 
             var settings = settingService.ByName(villageId, SettingNames);
-            var ratio = GetRatio(settings, villageId);
+            var ratio = GetRatio(settings);
 
             result = await InputAmount(browser, ratio);
             if (result.IsFailed) return result;
 
-            result = await Redeem(browser, cancellationToken);
+            result = await Redeem(browser);
             if (result.IsFailed) return result;
 
             return Result.Ok();
@@ -40,9 +38,7 @@ namespace MainCore.Commands.Features.NpcResource
 
         private static async Task<Result> OpenNPCDialog(IChromeBrowser browser, CancellationToken cancellationToken)
         {
-            var html = browser.Html;
-
-            var button = NpcResourceParser.GetExchangeResourcesButton(html);
+            var button = NpcResourceParser.GetExchangeResourcesButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("Exchange resources");
 
             static bool DialogShown(IWebDriver driver)
@@ -63,9 +59,7 @@ namespace MainCore.Commands.Features.NpcResource
 
         private static async Task<Result> InputAmount(IChromeBrowser browser, long[] ratio)
         {
-            var html = browser.Html;
-
-            var sum = NpcResourceParser.GetSum(html);
+            var sum = NpcResourceParser.GetSum(browser.Html);
             var sumRatio = ratio.Sum();
             var values = new long[4];
             for (var i = 0; i < 4; i++)
@@ -76,7 +70,7 @@ namespace MainCore.Commands.Features.NpcResource
             var diff = sum - sumValue;
             values[3] += diff;
 
-            var inputs = NpcResourceParser.GetInputs(html).ToArray();
+            var inputs = NpcResourceParser.GetInputs(browser.Html).ToArray();
 
             for (var i = 0; i < 4; i++)
             {
@@ -86,7 +80,7 @@ namespace MainCore.Commands.Features.NpcResource
             return Result.Ok();
         }
 
-        private static long[] GetRatio(Dictionary<VillageSettingEnums, int> settings, VillageId villageId)
+        private static long[] GetRatio(Dictionary<VillageSettingEnums, int> settings)
         {
             var ratio = new long[4]
             {
@@ -104,11 +98,9 @@ namespace MainCore.Commands.Features.NpcResource
             return ratio;
         }
 
-        private static async Task<Result> Redeem(IChromeBrowser browser, CancellationToken cancellationToken)
+        private static async Task<Result> Redeem(IChromeBrowser browser)
         {
-            var html = browser.Html;
-
-            var button = NpcResourceParser.GetRedeemButton(html);
+            var button = NpcResourceParser.GetRedeemButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("redeem");
 
             var result = await browser.Click(By.XPath(button.XPath));

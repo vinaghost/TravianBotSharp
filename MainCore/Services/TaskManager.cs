@@ -3,7 +3,7 @@
 namespace MainCore.Services
 {
     [RegisterSingleton<ITaskManager, TaskManager>]
-    public sealed class TaskManager : ITaskManager
+    public sealed record TaskManager : ITaskManager
     {
         private readonly Dictionary<AccountId, TaskQueue> _queues = new();
 
@@ -213,6 +213,6 @@ namespace MainCore.Services
         public bool IsExecuting { get; set; } = false;
         public StatusEnums Status { get; set; } = StatusEnums.Offline;
         public CancellationTokenSource? CancellationTokenSource { get; set; }
-        public List<BaseTask> Tasks = [];
+        public List<BaseTask> Tasks { get; } = [];
     }
 }

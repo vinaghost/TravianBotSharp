@@ -1,28 +1,26 @@
-﻿using MainCore.Constraints;
-using MainCore.Errors.TrainTroop;
+﻿using MainCore.Errors.TrainTroop;
 
 namespace MainCore.Commands.Features.NpcResource
 {
     [Handler]
     public static partial class ToNpcResourcePageCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command(VillageId VillageId) : IVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToBuildingCommand.Handler toBuildingCommand,
             SwitchTabCommand.Handler switchTabCommand,
             CancellationToken cancellationToken)
         {
-            var (accountId, villageId) = command;
+            var villageId = command.VillageId;
 
-            var result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
+            var result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
             if (result.IsFailed) return result;
 
-            var (_, isFailed, response, errors) = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            var (_, isFailed, response, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
             var marketLocation = response.Buildings
@@ -35,10 +33,10 @@ namespace MainCore.Commands.Features.NpcResource
                 return MissingBuilding.Error(BuildingEnums.Marketplace);
             }
 
-            result = await toBuildingCommand.HandleAsync(new(accountId, marketLocation), cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(marketLocation), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await switchTabCommand.HandleAsync(new(accountId, 0), cancellationToken);
+            result = await switchTabCommand.HandleAsync(new(0), cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

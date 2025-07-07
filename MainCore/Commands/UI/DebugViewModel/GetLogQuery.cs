@@ -1,5 +1,4 @@
-﻿using MainCore.Constraints;
-using Serilog.Templates;
+﻿using Serilog.Templates;
 using System.Text;
 
 namespace MainCore.Commands.UI.DebugViewModel
@@ -12,8 +11,7 @@ namespace MainCore.Commands.UI.DebugViewModel
 
         private static async ValueTask<string> HandleAsync(
             Query query,
-            LogSink logSink,
-            CancellationToken cancellationToken
+            LogSink logSink
         )
         {
             await Task.CompletedTask;

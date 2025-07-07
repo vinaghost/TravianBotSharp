@@ -1,5 +1,4 @@
-﻿using MainCore.Constraints;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
@@ -10,8 +9,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             var (villageId, path) = command;

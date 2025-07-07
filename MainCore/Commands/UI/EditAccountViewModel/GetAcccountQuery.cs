@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.EditAccountViewModel
+﻿namespace MainCore.Commands.UI.EditAccountViewModel
 {
     [Handler]
     public static partial class GetAcccountQuery
@@ -9,8 +7,7 @@ namespace MainCore.Commands.UI.EditAccountViewModel
 
         private static async ValueTask<AccountDto> HandleAsync(
             Query query,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             await Task.CompletedTask;

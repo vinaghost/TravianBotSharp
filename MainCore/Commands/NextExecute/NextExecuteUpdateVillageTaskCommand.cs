@@ -1,14 +1,12 @@
 ﻿namespace MainCore.Commands.NextExecute
 {
     [Handler]
-
     public static partial class NextExecuteUpdateVillageTaskCommand
     {
         private static async ValueTask HandleAsync(
             UpdateVillageTask.Task task,
-            ILogger logger,
-            ISettingService settingService,
-            CancellationToken cancellationToken)
+            ISettingService settingService
+            )
         {
             await Task.CompletedTask;
             var seconds = settingService.ByName(

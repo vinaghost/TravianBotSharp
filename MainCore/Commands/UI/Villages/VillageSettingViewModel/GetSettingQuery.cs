@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.Villages.VillageSettingViewModel
+﻿namespace MainCore.Commands.UI.Villages.VillageSettingViewModel
 {
     [Handler]
     public static partial class GetSettingQuery
@@ -9,8 +7,7 @@ namespace MainCore.Commands.UI.Villages.VillageSettingViewModel
 
         private static async ValueTask<Dictionary<VillageSettingEnums, int>> HandleAsync(
             Query query,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             await Task.CompletedTask;

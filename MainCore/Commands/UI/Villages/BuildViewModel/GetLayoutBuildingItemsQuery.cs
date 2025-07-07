@@ -1,5 +1,4 @@
 ﻿using Humanizer;
-using MainCore.Constraints;
 using MainCore.UI.Models.Output;
 using System.Text;
 
@@ -12,7 +11,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query query,
-            GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
+            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
             CancellationToken cancellationToken
             )
         {

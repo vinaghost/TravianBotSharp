@@ -1,5 +1,4 @@
-﻿using MainCore.Constraints;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.VillageViewModel
 {
@@ -10,8 +9,7 @@ namespace MainCore.Commands.UI.VillageViewModel
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query query,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             await Task.CompletedTask;

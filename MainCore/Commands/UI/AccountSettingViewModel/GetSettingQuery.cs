@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.AccountSettingViewModel
+﻿namespace MainCore.Commands.UI.AccountSettingViewModel
 {
     [Handler]
     public static partial class GetSettingQuery
@@ -9,8 +7,7 @@ namespace MainCore.Commands.UI.AccountSettingViewModel
 
         private static async ValueTask<Dictionary<AccountSettingEnums, int>> HandleAsync(
             Query query,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             await Task.CompletedTask;

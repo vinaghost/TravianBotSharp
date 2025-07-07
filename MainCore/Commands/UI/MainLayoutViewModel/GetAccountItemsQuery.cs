@@ -1,4 +1,5 @@
-﻿using MainCore.Constraints;
+﻿#pragma warning disable S1172
+
 using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.MainLayoutViewModel
@@ -10,8 +11,8 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
             Query query,
-            AppDbContext context, ITaskManager taskManager,
-            CancellationToken cancellationToken
+            AppDbContext context,
+            ITaskManager taskManager
             )
         {
             await Task.CompletedTask;

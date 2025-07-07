@@ -1,5 +1,4 @@
-﻿using MainCore.Constraints;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.DebugViewModel
 {
@@ -10,8 +9,7 @@ namespace MainCore.Commands.UI.DebugViewModel
 
         private static async ValueTask<List<TaskItem>> HandleAsync(
             Query query,
-            ITaskManager taskManager,
-            CancellationToken cancellationToken
+            ITaskManager taskManager
         )
         {
             await Task.CompletedTask;

@@ -1,24 +1,21 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
     [Handler]
     public static partial class UpdateInventoryCommand
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        private static async ValueTask<Result> HandleAsync(
+        private static async ValueTask<List<HeroItemDto>> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            AppDbContext context,
-            CancellationToken cancellationToken)
+            AppDbContext context
+            )
         {
             await Task.CompletedTask;
-            var html = browser.Html;
 
-            var dtos = GetItems(html);
-            context.Update(command.AccountId, dtos.ToList());
-            return Result.Ok();
+            var dtos = GetItems(browser.Html).ToList();
+            context.Update(command.AccountId, dtos);
+            return dtos;
         }
 
         private static IEnumerable<HeroItemDto> GetItems(HtmlDocument doc)
@@ -100,7 +97,6 @@ namespace MainCore.Commands.Update
             {
                 var dto = dtos.First(x => x.Type == item.Type);
                 dto.To(item);
-                context.Update(item);
             }
 
             context.SaveChanges();

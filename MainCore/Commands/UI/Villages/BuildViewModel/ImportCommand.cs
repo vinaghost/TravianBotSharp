@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.Villages.BuildViewModel
+﻿namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
     [Handler]
     public static partial class ImportCommand
@@ -9,8 +7,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             await Task.CompletedTask;
