@@ -1,4 +1,6 @@
-﻿namespace MainCore.Commands.Features.ClaimQuest
+﻿#pragma warning disable S1172
+
+namespace MainCore.Commands.Features.ClaimQuest
 {
     [Handler]
     public static partial class ClaimQuestCommand
@@ -6,7 +8,7 @@
         public sealed record Command : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
-            Command _,
+            Command command,
             IChromeBrowser browser,
             IDelayService delayService,
             SwitchTabCommand.Handler switchTabCommand,
@@ -17,7 +19,10 @@
 
             do
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return Cancel.Error;
+                }
                 html = browser.Html;
                 var quest = QuestParser.GetQuestCollectButton(html);
 

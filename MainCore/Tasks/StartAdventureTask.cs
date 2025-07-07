@@ -32,9 +32,9 @@ namespace MainCore.Tasks
             CancellationToken cancellationToken)
         {
             Result result;
-            result = await toAdventurePageCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            result = await toAdventurePageCommand.HandleAsync(new(), cancellationToken);
             if (result.IsFailed) return result;
-            result = await exploreAdventureCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            result = await exploreAdventureCommand.HandleAsync(new(), cancellationToken);
             if (result.IsFailed) return result;
 
             await nextExecuteStartAdventureTaskCommand.HandleAsync(task, cancellationToken);

@@ -1,12 +1,14 @@
-﻿namespace MainCore.Commands.Features.StartAdventure
+﻿#pragma warning disable S1172
+
+namespace MainCore.Commands.Features.StartAdventure
 {
     [Handler]
     public static partial class ExploreAdventureCommand
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand;
+        public sealed record Command : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
-            Command _,
+            Command command,
             IChromeBrowser browser,
             ILogger logger,
             CancellationToken cancellationToken)

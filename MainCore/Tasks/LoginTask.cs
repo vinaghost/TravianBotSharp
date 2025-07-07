@@ -28,9 +28,9 @@ namespace MainCore.Tasks
             var contextualHelpEnable = OptionParser.IsContextualHelpEnable(chromeBrowser.Html);
             if (!contextualHelpEnable) return Result.Ok();
 
-            result = await toOptionsPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            result = await toOptionsPageCommand.HandleAsync(new(), cancellationToken);
             if (result.IsFailed) return result;
-            result = await disableContextualHelpCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            result = await disableContextualHelpCommand.HandleAsync(new(), cancellationToken);
             if (result.IsFailed) return result;
             result = await toDorfCommand.HandleAsync(new(0), cancellationToken);
             if (result.IsFailed) return result;

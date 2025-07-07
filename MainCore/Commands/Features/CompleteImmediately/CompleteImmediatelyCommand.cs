@@ -1,4 +1,6 @@
-﻿namespace MainCore.Commands.Features.CompleteImmediately
+﻿#pragma warning disable S1172
+
+namespace MainCore.Commands.Features.CompleteImmediately
 {
     [Handler]
     public static partial class CompleteImmediatelyCommand
@@ -6,7 +8,7 @@
         public sealed record Command : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
-            Command _,
+            Command command,
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {

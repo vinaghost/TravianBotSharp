@@ -1,4 +1,6 @@
-﻿using MainCore.UI.Models.Output;
+﻿#pragma warning disable S1172
+
+using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.MainLayoutViewModel
 {
@@ -8,7 +10,7 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
         public sealed record Query() : IQuery;
 
         private static async ValueTask<List<ListBoxItem>> HandleAsync(
-            Query _,
+            Query query,
             AppDbContext context,
             ITaskManager taskManager
             )

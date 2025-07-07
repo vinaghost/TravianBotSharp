@@ -1,4 +1,6 @@
-﻿using MainCore.Commands.Features.ClaimQuest;
+﻿#pragma warning disable S1172
+
+using MainCore.Commands.Features.ClaimQuest;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -30,7 +32,7 @@ namespace MainCore.Tasks
             CancellationToken cancellationToken)
         {
             Result result;
-            result = await toQuestPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            result = await toQuestPageCommand.HandleAsync(new(), cancellationToken);
             if (result.IsFailed) return result;
             result = await claimQuestCommand.HandleAsync(new(), cancellationToken);
             if (result.IsFailed) return result;
