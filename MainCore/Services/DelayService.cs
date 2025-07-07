@@ -4,9 +4,9 @@
     public class DelayService : IDelayService
     {
         private readonly AppDbContext _context;
-        private readonly DataService _dataService;
+        private readonly IDataService _dataService;
 
-        public DelayService(AppDbContext context, DataService dataService)
+        public DelayService(AppDbContext context, IDataService dataService)
         {
             _context = context;
             _dataService = dataService;
