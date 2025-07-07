@@ -14,8 +14,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             Command command,
             UpdateStorageCommand.Handler updateStorageCommand,
             UseHeroResourceCommand.Handler useHeroResourceCommand,
-            ToHeroInventoryCommand.Handler toHeroInventoryCommand,
-            UpdateInventoryCommand.Handler updateInventoryCommand,
             ISettingService settingService,
             IChromeBrowser browser,
             ILogger logger,
@@ -42,13 +40,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             var url = browser.CurrentUrl;
 
-            result = await toHeroInventoryCommand.HandleAsync(new(accountId), cancellationToken);
-            if (result.IsFailed) return result;
-
-            result = await updateInventoryCommand.HandleAsync(new(accountId), cancellationToken);
-            if (result.IsFailed) return result;
-
             result = await useHeroResourceCommand.HandleAsync(new(accountId, missingResource), cancellationToken);
+            if (result.IsFailed) return result;
 
             await browser.Navigate(url, cancellationToken);
 
