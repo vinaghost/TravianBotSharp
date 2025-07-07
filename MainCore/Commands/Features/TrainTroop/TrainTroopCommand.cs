@@ -75,9 +75,7 @@ namespace MainCore.Commands.Features.TrainTroop
             BuildingEnums building,
             TroopEnums troop)
         {
-            var html = browser.Html;
-
-            var maxAmount = TrainTroopParser.GetMaxAmount(html, troop);
+            var maxAmount = TrainTroopParser.GetMaxAmount(browser.Html, troop);
 
             if (maxAmount == 0)
             {
@@ -106,16 +104,14 @@ namespace MainCore.Commands.Features.TrainTroop
             TroopEnums troop,
             long amount)
         {
-            var html = browser.Html;
-
-            var inputBox = TrainTroopParser.GetInputBox(html, troop);
+            var inputBox = TrainTroopParser.GetInputBox(browser.Html, troop);
             if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
 
             Result result;
             result = await browser.Input(By.XPath(inputBox.XPath), $"{amount}");
             if (result.IsFailed) return result;
 
-            var trainButton = TrainTroopParser.GetTrainButton(html);
+            var trainButton = TrainTroopParser.GetTrainButton(browser.Html);
             if (trainButton is null) return Retry.ButtonNotFound("train troop");
 
             result = await browser.Click(By.XPath(trainButton.XPath));

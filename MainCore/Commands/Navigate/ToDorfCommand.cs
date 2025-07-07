@@ -26,9 +26,7 @@
                 return Result.Ok();
             }
 
-            var html = browser.Html;
-
-            var button = NavigationBarParser.GetDorfButton(html, dorf);
+            var button = NavigationBarParser.GetDorfButton(browser.Html, dorf);
             if (button is null) return Retry.ButtonNotFound($"dorf{dorf}");
 
             Result result;

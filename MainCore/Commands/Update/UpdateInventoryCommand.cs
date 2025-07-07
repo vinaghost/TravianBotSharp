@@ -12,9 +12,8 @@
             )
         {
             await Task.CompletedTask;
-            var html = browser.Html;
 
-            var dtos = GetItems(html).ToList();
+            var dtos = GetItems(browser.Html).ToList();
             context.Update(command.AccountId, dtos);
             return dtos;
         }

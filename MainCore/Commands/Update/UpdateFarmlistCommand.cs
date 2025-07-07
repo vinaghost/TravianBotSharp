@@ -13,9 +13,8 @@
             )
         {
             await Task.CompletedTask;
-            var html = browser.Html;
 
-            var dtos = Get(html);
+            var dtos = Get(browser.Html);
             context.UpdateToDatabase(command.AccountId, dtos);
             rxQueue.Enqueue(new FarmsModified(command.AccountId));
             return Result.Ok();

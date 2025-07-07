@@ -12,9 +12,7 @@ namespace MainCore.Commands.Features.StartFarmList
             IChromeBrowser browser
             )
         {
-            var html = browser.Html;
-
-            var startAllButton = FarmListParser.GetStartAllButton(html);
+            var startAllButton = FarmListParser.GetStartAllButton(browser.Html);
             if (startAllButton is null) return Retry.ButtonNotFound("Start all farms");
 
             var result = await browser.Click(By.XPath(startAllButton.XPath));

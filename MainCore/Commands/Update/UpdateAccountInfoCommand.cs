@@ -12,9 +12,8 @@
             )
         {
             await Task.CompletedTask;
-            var html = browser.Html;
 
-            var dto = Get(html);
+            var dto = Get(browser.Html);
             context.UpdateToDatabase(command.AccountId, dto);
         }
 

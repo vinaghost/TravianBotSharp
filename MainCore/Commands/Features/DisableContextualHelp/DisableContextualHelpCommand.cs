@@ -12,15 +12,13 @@ namespace MainCore.Commands.Features.DisableContextualHelp
             IChromeBrowser browser
             )
         {
-            var html = browser.Html;
-
-            var option = OptionParser.GetHideContextualHelpOption(html);
+            var option = OptionParser.GetHideContextualHelpOption(browser.Html);
             if (option is null) return Retry.NotFound("hide contextual help", "option");
 
             var result = await browser.Click(By.XPath(option.XPath));
             if (result.IsFailed) return result;
 
-            var button = OptionParser.GetSubmitButton(html);
+            var button = OptionParser.GetSubmitButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("submit");
 
             result = await browser.Click(By.XPath(button.XPath));

@@ -38,9 +38,7 @@
 
         private static async Task<Result> OpenNPCDialog(IChromeBrowser browser, CancellationToken cancellationToken)
         {
-            var html = browser.Html;
-
-            var button = NpcResourceParser.GetExchangeResourcesButton(html);
+            var button = NpcResourceParser.GetExchangeResourcesButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("Exchange resources");
 
             static bool DialogShown(IWebDriver driver)
@@ -61,9 +59,7 @@
 
         private static async Task<Result> InputAmount(IChromeBrowser browser, long[] ratio)
         {
-            var html = browser.Html;
-
-            var sum = NpcResourceParser.GetSum(html);
+            var sum = NpcResourceParser.GetSum(browser.Html);
             var sumRatio = ratio.Sum();
             var values = new long[4];
             for (var i = 0; i < 4; i++)
@@ -74,7 +70,7 @@
             var diff = sum - sumValue;
             values[3] += diff;
 
-            var inputs = NpcResourceParser.GetInputs(html).ToArray();
+            var inputs = NpcResourceParser.GetInputs(browser.Html).ToArray();
 
             for (var i = 0; i < 4; i++)
             {
@@ -104,9 +100,7 @@
 
         private static async Task<Result> Redeem(IChromeBrowser browser)
         {
-            var html = browser.Html;
-
-            var button = NpcResourceParser.GetRedeemButton(html);
+            var button = NpcResourceParser.GetRedeemButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("redeem");
 
             var result = await browser.Click(By.XPath(button.XPath));

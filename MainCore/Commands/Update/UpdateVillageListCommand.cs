@@ -14,9 +14,8 @@
         {
             await Task.CompletedTask;
             var accountId = command.AccountId;
-            var html = browser.Html;
 
-            var dtos = VillagePanelParser.Get(html);
+            var dtos = VillagePanelParser.Get(browser.Html);
             if (!dtos.Any()) return;
 
             context.UpdateToDatabase(accountId, dtos.ToList());

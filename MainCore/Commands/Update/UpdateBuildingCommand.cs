@@ -17,12 +17,10 @@
             await Task.CompletedTask;
             var villageId = command.VillageId;
 
-            var html = browser.Html;
-
-            var dtoBuilding = GetBuildings(browser.CurrentUrl, html).ToList();
+            var dtoBuilding = GetBuildings(browser.CurrentUrl, browser.Html).ToList();
             if (dtoBuilding.Count == 0) return context.GetResponse(villageId);
 
-            var dtoQueueBuilding = BuildingLayoutParser.GetQueueBuilding(html).ToList();
+            var dtoQueueBuilding = BuildingLayoutParser.GetQueueBuilding(browser.Html).ToList();
 
             var result = IsValidQueueBuilding(dtoQueueBuilding);
             if (result.IsFailed) return result;

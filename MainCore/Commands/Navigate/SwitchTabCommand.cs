@@ -13,10 +13,9 @@
         {
             var tabIndex = command.TabIndex;
 
-            var html = browser.Html;
-            var count = BuildingTabParser.CountTab(html);
+            var count = BuildingTabParser.CountTab(browser.Html);
             if (tabIndex > count) return Retry.OutOfIndexTab(tabIndex, count);
-            var tab = BuildingTabParser.GetTab(html, tabIndex);
+            var tab = BuildingTabParser.GetTab(browser.Html, tabIndex);
             if (tab is null) return Retry.NotFound($"{tabIndex}", "tab");
             if (BuildingTabParser.IsTabActive(tab)) return Result.Ok();
 

@@ -12,12 +12,11 @@ namespace MainCore.Commands.Features.CompleteImmediately
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var html = browser.Html;
-            var oldQueueCount = CompleteImmediatelyParser.CountQueueBuilding(html);
+            var oldQueueCount = CompleteImmediatelyParser.CountQueueBuilding(browser.Html);
 
             if (oldQueueCount == 0) return Result.Ok();
 
-            var completeNowButton = CompleteImmediatelyParser.GetCompleteButton(html);
+            var completeNowButton = CompleteImmediatelyParser.GetCompleteButton(browser.Html);
             if (completeNowButton is null) return Retry.ButtonNotFound("complete now");
 
             var result = await browser.Click(By.XPath(completeNowButton.XPath));
@@ -33,8 +32,7 @@ namespace MainCore.Commands.Features.CompleteImmediately
             result = await browser.Wait(ConfirmShown, cancellationToken);
             if (result.IsFailed) return result;
 
-            html = browser.Html;
-            var confirmButton = CompleteImmediatelyParser.GetConfirmButton(html);
+            var confirmButton = CompleteImmediatelyParser.GetConfirmButton(browser.Html);
             if (confirmButton is null) return Retry.ButtonNotFound("confirm complete now");
 
             result = await browser.Click(By.XPath(confirmButton.XPath));

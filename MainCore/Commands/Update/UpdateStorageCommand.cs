@@ -15,8 +15,7 @@
             await Task.CompletedTask;
             var (accountId, villageId) = command;
 
-            var html = browser.Html;
-            var dto = Get(html);
+            var dto = Get(browser.Html);
             context.UpdateStorage(villageId, dto);
 
             var task = new NpcTask.Task(accountId, villageId);

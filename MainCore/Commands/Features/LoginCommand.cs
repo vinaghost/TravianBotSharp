@@ -11,14 +11,13 @@
             AppDbContext context,
             CancellationToken cancellationToken)
         {
-            var html = browser.Html;
-            if (LoginParser.IsIngamePage(html)) return Result.Ok();
+            if (LoginParser.IsIngamePage(browser.Html)) return Result.Ok();
 
-            var buttonNode = LoginParser.GetLoginButton(html);
+            var buttonNode = LoginParser.GetLoginButton(browser.Html);
             if (buttonNode is null) return Retry.ButtonNotFound("login");
-            var usernameNode = LoginParser.GetUsernameInput(html);
+            var usernameNode = LoginParser.GetUsernameInput(browser.Html);
             if (usernameNode is null) return Retry.TextboxNotFound("username");
-            var passwordNode = LoginParser.GetPasswordInput(html);
+            var passwordNode = LoginParser.GetPasswordInput(browser.Html);
             if (passwordNode is null) return Retry.TextboxNotFound("password");
 
             var (username, password) = GetLoginInfo(command.AccountId, context);

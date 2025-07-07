@@ -86,8 +86,7 @@
             CancellationToken cancellationToken
         )
         {
-            var html = browser.Html;
-            var button = UpgradeParser.GetSpecialUpgradeButton(html);
+            var button = UpgradeParser.GetSpecialUpgradeButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("Watch ads upgrade");
 
             var result = await browser.Click(By.XPath(button.XPath));
@@ -124,8 +123,7 @@
             var result = await browser.Wait(videoFeatureShown, cancellationToken);
             if (result.IsFailed) return result;
 
-            var html = browser.Html;
-            var videoFeature = html.GetElementbyId("videoFeature");
+            var videoFeature = browser.Html.GetElementbyId("videoFeature");
             if (videoFeature.HasClass("infoScreen"))
             {
                 var checkbox = videoFeature.Descendants("div").FirstOrDefault(x => x.HasClass("checkbox"));
@@ -141,8 +139,7 @@
 
             await Task.Delay(Random.Shared.Next(20_000, 25_000), CancellationToken.None);
 
-            html = browser.Html;
-            var node = html.GetElementbyId("videoFeature");
+            var node = browser.Html.GetElementbyId("videoFeature");
             if (node is null) return Retry.ButtonNotFound($"play ads");
 
             result = await browser.Click(By.XPath(node.XPath));
@@ -174,14 +171,13 @@
 
             await Task.Delay(Random.Shared.Next(5_000, 10_000), CancellationToken.None);
 
-            html = browser.Html;
-            var dontShowThisAgain = html.GetElementbyId("dontShowThisAgain");
+            var dontShowThisAgain = browser.Html.GetElementbyId("dontShowThisAgain");
             if (dontShowThisAgain is not null)
             {
                 result = await browser.Click(By.XPath(dontShowThisAgain.XPath));
                 if (result.IsFailed) return result;
 
-                var okButton = html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
+                var okButton = browser.Html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
                 if (okButton is null) return Retry.ButtonNotFound("ok");
                 result = await browser.Click(By.XPath(okButton.XPath));
                 if (result.IsFailed) return result;
@@ -194,9 +190,7 @@
             this IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var html = browser.Html;
-
-            var button = UpgradeParser.GetUpgradeButton(html);
+            var button = UpgradeParser.GetUpgradeButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("upgrade");
 
             var result = await browser.Click(By.XPath(button.XPath));
@@ -214,9 +208,7 @@
             CancellationToken cancellationToken
         )
         {
-            var html = browser.Html;
-
-            var button = UpgradeParser.GetConstructButton(html, building);
+            var button = UpgradeParser.GetConstructButton(browser.Html, building);
             if (button is null) return Retry.ButtonNotFound("construct");
 
             var result = await browser.Click(By.XPath(button.XPath));

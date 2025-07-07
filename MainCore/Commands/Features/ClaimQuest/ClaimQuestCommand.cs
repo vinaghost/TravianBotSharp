@@ -14,7 +14,6 @@ namespace MainCore.Commands.Features.ClaimQuest
             SwitchTabCommand.Handler switchTabCommand,
             CancellationToken cancellationToken)
         {
-            HtmlDocument html;
             Result result;
 
             do
@@ -23,8 +22,7 @@ namespace MainCore.Commands.Features.ClaimQuest
                 {
                     return Cancel.Error;
                 }
-                html = browser.Html;
-                var quest = QuestParser.GetQuestCollectButton(html);
+                var quest = QuestParser.GetQuestCollectButton(browser.Html);
 
                 if (quest is null)
                 {
@@ -45,7 +43,7 @@ namespace MainCore.Commands.Features.ClaimQuest
                 if (result.IsFailed) return result;
                 await delayService.DelayClick(cancellationToken);
             }
-            while (QuestParser.IsQuestClaimable(html));
+            while (QuestParser.IsQuestClaimable(browser.Html));
 
             return Result.Ok();
         }

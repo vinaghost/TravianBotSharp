@@ -12,9 +12,7 @@ namespace MainCore.Commands.Features.UseHeroItem
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var html = browser.Html;
-
-            var avatar = InventoryParser.GetHeroAvatar(html);
+            var avatar = InventoryParser.GetHeroAvatar(browser.Html);
             if (avatar is null) return Retry.ButtonNotFound("avatar hero");
 
             var result = await browser.Click(By.XPath(avatar.XPath));

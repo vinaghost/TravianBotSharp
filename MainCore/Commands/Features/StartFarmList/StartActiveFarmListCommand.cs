@@ -20,11 +20,9 @@
                 .ToList();
             if (farmLists.Count == 0) return Skip.NoActiveFarmlist;
 
-            var html = browser.Html;
-
             foreach (var farmList in farmLists)
             {
-                var startButton = FarmListParser.GetStartButton(html, farmList);
+                var startButton = FarmListParser.GetStartButton(browser.Html, farmList);
                 if (startButton is null) return Retry.ButtonNotFound($"Start farm {farmList}");
 
                 var result = await browser.Click(By.XPath(startButton.XPath));

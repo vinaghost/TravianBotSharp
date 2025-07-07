@@ -12,9 +12,7 @@ namespace MainCore.Commands.Features.DisableContextualHelp
             IChromeBrowser browser
             )
         {
-            var html = browser.Html;
-
-            var button = OptionParser.GetOptionButton(html);
+            var button = OptionParser.GetOptionButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("options");
 
             var result = await browser.Click(By.XPath(button.XPath));
