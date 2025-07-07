@@ -1,7 +1,4 @@
-﻿using MainCore.Constraints;
-using MainCore.Notifications.Handlers.Trigger;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
     [Handler]
     public static partial class UpdateAdventureCommand
@@ -11,12 +8,13 @@ namespace MainCore.Commands.Update
         private static async ValueTask HandleAsync(
            Command command,
            IChromeBrowser browser,
-           StartAdventureTaskTrigger.Handler startAdventureTaskTrigger,
+           ITaskManager taskManager,
            CancellationToken cancellationToken
            )
         {
+            await Task.CompletedTask;
             if (!AdventureParser.CanStartAdventure(browser.Html)) return;
-            await startAdventureTaskTrigger.HandleAsync(command, cancellationToken);
+            taskManager.Add(new StartAdventureTask.Task(command.AccountId));
         }
     }
 }

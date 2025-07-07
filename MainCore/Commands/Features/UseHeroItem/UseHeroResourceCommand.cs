@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features.UseHeroItem
+﻿namespace MainCore.Commands.Features.UseHeroItem
 {
     [Handler]
     public static partial class UseHeroResourceCommand
@@ -19,15 +17,20 @@ namespace MainCore.Commands.Features.UseHeroItem
             Command command,
             IChromeBrowser browser,
             ILogger logger,
-            DelayClickCommand.Handler delayClickCommand,
-            GetHeroItemsQuery.Handler getHeroItemsQuery,
+            IDelayService delayService,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
             var (accountId, resource) = command;
 
-            var resourceItems = await getHeroItemsQuery.HandleAsync(new(accountId, ResourceItemTypes), cancellationToken);
+            var resourceItems = context.HeroItems
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => ResourceItemTypes.Contains(x.Type))
+                .OrderBy(x => x.Type)
+                .ToList();
 
             resource = resource.Select(RoundUpTo100).ToArray();
+
             var result = IsEnoughResource(resourceItems, resource);
             if (result.IsFailed) return result;
 
@@ -48,17 +51,17 @@ namespace MainCore.Commands.Features.UseHeroItem
                 result = await ClickItem(item, browser, cancellationToken);
                 if (result.IsFailed) return result;
 
-                await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+                await delayService.DelayClick(cancellationToken);
 
                 result = await EnterAmount(amount, browser, cancellationToken);
                 if (result.IsFailed) return result;
 
-                await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+                await delayService.DelayClick(cancellationToken);
 
                 result = await Confirm(browser, cancellationToken);
                 if (result.IsFailed) return result;
 
-                await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+                await delayService.DelayClick(cancellationToken);
             }
 
             return Result.Ok();

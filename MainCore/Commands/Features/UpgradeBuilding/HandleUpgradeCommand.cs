@@ -1,11 +1,12 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features.UpgradeBuilding
+﻿namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
     public static partial class HandleUpgradeCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand
+        {
+            public void Deconstruct(out AccountId accountId, out VillageId villageId) => (accountId, villageId) = (AccountId, VillageId);
+        }
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -47,16 +48,29 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return !context.IsEmptySite(villageId, plan.Location);
         }
 
+        private static List<BuildingEnums> UnskippableBuildings = new()
+        {
+            BuildingEnums.Residence,
+            BuildingEnums.Palace,
+            BuildingEnums.CommandCenter,
+        };
+
         private static bool IsSpecialUpgradeable(
             this AppDbContext context,
             VillageId villageId,
             NormalBuildPlan plan
         )
         {
+            if (UnskippableBuildings.Contains(plan.Type)) return false;
+
             if (plan.Type.IsResourceField())
             {
-                var dto = context.GetBuilding(villageId, plan.Location);
-                if (dto.Level == 0) return false;
+                var getBuildingSpec = new GetBuildingSpec(villageId, plan.Location);
+                var level = context.Buildings
+                    .WithSpecification(getBuildingSpec)
+                    .Select(x => x.Level)
+                    .FirstOrDefault();
+                if (level == 0) return false;
             }
             return true;
         }

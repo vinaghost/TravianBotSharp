@@ -1,5 +1,4 @@
-﻿using MainCore.Constraints;
-using Serilog.Templates;
+﻿using Serilog.Templates;
 using System.Text;
 
 namespace MainCore.Commands.UI.DebugViewModel

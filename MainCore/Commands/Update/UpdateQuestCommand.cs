@@ -1,7 +1,4 @@
-﻿using MainCore.Constraints;
-using MainCore.Notifications.Handlers.Trigger;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
     [Handler]
     public static partial class UpdateQuestCommand
@@ -11,12 +8,14 @@ namespace MainCore.Commands.Update
         private static async ValueTask HandleAsync(
             Command command,
             IChromeBrowser browser,
-            ClaimQuestTaskTrigger.Handler claimQuestTaskTrigger,
+            ITaskManager taskManager,
             CancellationToken cancellationToken
            )
         {
+            await Task.CompletedTask;
             if (!QuestParser.IsQuestClaimable(browser.Html)) return;
-            await claimQuestTaskTrigger.HandleAsync(command, cancellationToken);
+            var (accountId, villageId) = command;
+            taskManager.Add(new ClaimQuestTask.Task(accountId, villageId));
         }
     }
 }

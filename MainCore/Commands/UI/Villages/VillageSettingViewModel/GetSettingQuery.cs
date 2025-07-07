@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.Villages.VillageSettingViewModel
+﻿namespace MainCore.Commands.UI.Villages.VillageSettingViewModel
 {
     [Handler]
     public static partial class GetSettingQuery

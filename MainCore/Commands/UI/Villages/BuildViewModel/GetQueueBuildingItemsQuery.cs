@@ -1,5 +1,4 @@
 ﻿using Humanizer;
-using MainCore.Constraints;
 using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel

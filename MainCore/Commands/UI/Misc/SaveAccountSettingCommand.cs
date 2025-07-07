@@ -1,10 +1,6 @@
-﻿using MainCore.Constraints;
-using MainCore.Notifications.Behaviors;
-
-namespace MainCore.Commands.UI.Misc
+﻿namespace MainCore.Commands.UI.Misc
 {
     [Handler]
-    [Behaviors(typeof(AccountSettingUpdatedBehavior<,>))]
     public static partial class SaveAccountSettingCommand
     {
         public sealed record Command(AccountId AccountId, Dictionary<AccountSettingEnums, int> Settings) : IAccountCommand;

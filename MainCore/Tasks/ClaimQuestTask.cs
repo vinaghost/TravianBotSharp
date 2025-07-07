@@ -8,11 +8,19 @@ namespace MainCore.Tasks
     {
         public sealed class Task : VillageTask
         {
-            public Task(AccountId accountId, VillageId villageId, string villageName) : base(accountId, villageId, villageName)
+            public Task(AccountId accountId, VillageId villageId) : base(accountId, villageId)
             {
             }
 
             protected override string TaskName => "Claim quest";
+
+            public override bool CanStart(AppDbContext context)
+            {
+                var settingEnable = context.BooleanByName(VillageId, VillageSettingEnums.AutoClaimQuestEnable);
+                if (!settingEnable) return false;
+
+                return true;
+            }
         }
 
         private static async ValueTask<Result> HandleAsync(

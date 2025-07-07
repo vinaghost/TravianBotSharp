@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features.CompleteImmediately
+﻿namespace MainCore.Commands.Features.CompleteImmediately
 {
     [Handler]
     public static partial class CompleteImmediatelyCommand

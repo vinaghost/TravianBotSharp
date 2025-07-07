@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.MainLayoutViewModel
+﻿namespace MainCore.Commands.UI.MainLayoutViewModel
 {
     [Handler]
     public static partial class LoginCommand
@@ -9,8 +7,8 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            IChromeBrowser browser, ITaskManager taskManager, ITimerManager timerManager, ILogger logger,
-            AccountInit.Handler accountInit, OpenBrowserCommand.Handler openBrowserCommand,
+            IChromeBrowser browser, ITaskManager taskManager, ITimerManager timerManager, ILogger logger, IRxQueue rxQueue,
+            OpenBrowserCommand.Handler openBrowserCommand,
             CancellationToken cancellationToken
             )
         {
@@ -29,10 +27,9 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
                 return;
             }
 
-            await accountInit.HandleAsync(new(accountId), cancellationToken);
-
             timerManager.Start(accountId);
             taskManager.SetStatus(accountId, StatusEnums.Online);
+            rxQueue.Enqueue(new AccountInit(accountId));
         }
     }
 }

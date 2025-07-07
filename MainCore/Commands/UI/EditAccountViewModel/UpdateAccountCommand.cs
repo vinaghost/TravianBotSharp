@@ -1,17 +1,13 @@
-﻿using MainCore.Constraints;
-using MainCore.Notifications.Behaviors;
-
-namespace MainCore.Commands.UI.EditAccountViewModel
+﻿namespace MainCore.Commands.UI.EditAccountViewModel
 {
     [Handler]
-    [Behaviors(typeof(AccountListUpdatedBehavior<,>))]
     public static partial class UpdateAccountCommand
     {
         public sealed record Command(AccountDto Dto) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            AppDbContext context, IUseragentManager useragentManager,
+            AppDbContext context, IUseragentManager useragentManager, IRxQueue rxQueue,
             CancellationToken cancellationToken
             )
         {
@@ -32,6 +28,8 @@ namespace MainCore.Commands.UI.EditAccountViewModel
 
             context.Update(account);
             context.SaveChanges();
+
+            rxQueue.Enqueue(new AccountsModified());
 
             return Result.Ok();
         }

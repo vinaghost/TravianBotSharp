@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features.DisableContextualHelp
+﻿namespace MainCore.Commands.Features.DisableContextualHelp
 {
     [Handler]
     public static partial class ToOptionsPageCommand

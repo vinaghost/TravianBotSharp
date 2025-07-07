@@ -1,5 +1,4 @@
-﻿using MainCore.Constraints;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 
 namespace MainCore.Commands.UI.DebugViewModel
 {

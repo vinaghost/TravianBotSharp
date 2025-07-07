@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features.ClaimQuest
+﻿namespace MainCore.Commands.Features.ClaimQuest
 {
     [Handler]
     public static partial class ClaimQuestCommand
@@ -10,7 +8,8 @@ namespace MainCore.Commands.Features.ClaimQuest
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            SwitchTabCommand.Handler switchTabCommand, DelayClickCommand.Handler delayClickCommand,
+            IDelayService delayService,
+            SwitchTabCommand.Handler switchTabCommand,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
@@ -29,7 +28,7 @@ namespace MainCore.Commands.Features.ClaimQuest
                     result = await switchTabCommand.HandleAsync(new(accountId, 1), cancellationToken);
                     if (result.IsFailed) return result;
 
-                    await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+                    await delayService.DelayClick(cancellationToken);
 
                     quest = QuestParser.GetQuestCollectButton(browser.Html);
                     if (quest is null) return Result.Ok();
@@ -40,7 +39,7 @@ namespace MainCore.Commands.Features.ClaimQuest
 
                 result = await browser.Click(By.XPath(quest.XPath));
                 if (result.IsFailed) return result;
-                await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+                await delayService.DelayClick(cancellationToken);
             }
             while (QuestParser.IsQuestClaimable(html));
 

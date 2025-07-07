@@ -1,10 +1,6 @@
-﻿using MainCore.Constraints;
-using MainCore.Notifications.Behaviors;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
     [Handler]
-    [Behaviors(typeof(BuildingUpdatedBehavior<,>))]
     public static partial class UpdateBuildingCommand
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
@@ -15,6 +11,7 @@ namespace MainCore.Commands.Update
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
+            IRxQueue rxQueue,
             CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
@@ -31,6 +28,8 @@ namespace MainCore.Commands.Update
             if (result.IsFailed) return result;
 
             context.UpdateToDatabase(villageId, dtoBuilding, dtoQueueBuilding);
+
+            rxQueue.Enqueue(new BuildingsModified(villageId));
             return context.GetResponse(villageId);
         }
 

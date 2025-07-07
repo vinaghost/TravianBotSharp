@@ -1,5 +1,4 @@
-﻿using MainCore.Constraints;
-using MainCore.UI.Models.Input;
+﻿using MainCore.UI.Models.Input;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
@@ -10,7 +9,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
+            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
             AddJobCommand.Handler addJobCommand,
             CancellationToken cancellationToken
             )

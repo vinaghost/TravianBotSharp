@@ -1,5 +1,4 @@
-﻿using MainCore.Constraints;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
@@ -10,7 +9,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask<List<JobDto>> HandleAsync(
             Command command,
-            GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
+            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
             CancellationToken cancellationToken)
         {
             var (villageId, jobs, shuffle) = command;

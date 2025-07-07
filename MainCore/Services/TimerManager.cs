@@ -181,8 +181,8 @@ namespace MainCore.Services
                 }
             }
 
-            var delayTaskCommand = scope.ServiceProvider.GetRequiredService<DelayTaskCommand.Handler>();
-            await delayTaskCommand.HandleAsync(new(accountId));
+            var delayService = scope.ServiceProvider.GetRequiredService<IDelayService>();
+            await delayService.DelayTask();
         }
 
         public void Shutdown()

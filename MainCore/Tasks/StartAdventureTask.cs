@@ -14,6 +14,14 @@ namespace MainCore.Tasks
             }
 
             protected override string TaskName => "Start adventure";
+
+            public override bool CanStart(AppDbContext context)
+            {
+                var settingEnable = context.BooleanByName(AccountId, AccountSettingEnums.EnableAutoStartAdventure);
+                if (!settingEnable) return false;
+
+                return true;
+            }
         }
 
         private static async ValueTask<Result> HandleAsync(

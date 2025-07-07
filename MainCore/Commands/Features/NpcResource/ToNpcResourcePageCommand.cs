@@ -1,5 +1,4 @@
-﻿using MainCore.Constraints;
-using MainCore.Errors.TrainTroop;
+﻿using MainCore.Errors.TrainTroop;
 
 namespace MainCore.Commands.Features.NpcResource
 {

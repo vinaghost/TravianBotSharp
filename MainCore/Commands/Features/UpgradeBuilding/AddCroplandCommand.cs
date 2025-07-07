@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features.UpgradeBuilding
+﻿namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
     public static partial class AddCroplandCommand
@@ -9,9 +7,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private static async ValueTask HandleAsync(
             Command command,
-            GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
+            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
             AddJobCommand.Handler addJobCommand,
-            JobUpdated.Handler jobUpdated,
+            IRxQueue rxQueue,
             CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
@@ -30,7 +28,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 Level = cropland.Level + 1,
             };
             await addJobCommand.HandleAsync(new(villageId, cropLandPlan.ToJob(), true), cancellationToken);
-            await jobUpdated.HandleAsync(new(accountId, villageId), cancellationToken);
+            rxQueue.Enqueue(new JobsModified(villageId));
         }
     }
 }

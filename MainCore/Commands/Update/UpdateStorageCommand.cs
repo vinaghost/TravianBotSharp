@@ -1,28 +1,29 @@
-﻿using MainCore.Constraints;
-using MainCore.Notifications.Behaviors;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
     [Handler]
-    [Behaviors(typeof(StorageUpdatedBehavior<,>))]
     public static partial class UpdateStorageCommand
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
         private static async ValueTask<StorageDto> HandleAsync(
             Command command,
-            IChromeBrowser browser,
             AppDbContext context,
+            IChromeBrowser browser,
+            ITaskManager taskManager,
             CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
             var (accountId, villageId) = command;
 
             var html = browser.Html;
-
             var dto = Get(html);
-
             context.UpdateStorage(villageId, dto);
+
+            var task = new NpcTask.Task(accountId, villageId);
+            if (task.CanStart(context) && !taskManager.IsExist<NpcTask.Task>(accountId, villageId))
+            {
+                taskManager.Add(task);
+            }
             return dto;
         }
 
@@ -55,7 +56,6 @@ namespace MainCore.Commands.Update
             else
             {
                 dto.To(dbStorage);
-                context.Update(dbStorage);
             }
 
             context.SaveChanges();
