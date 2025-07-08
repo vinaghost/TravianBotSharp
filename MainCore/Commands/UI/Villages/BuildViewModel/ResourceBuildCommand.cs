@@ -1,5 +1,4 @@
-﻿using MainCore.Constraints;
-using MainCore.UI.Models.Input;
+﻿using MainCore.UI.Models.Input;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
@@ -10,8 +9,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            AddJobCommand.Handler addJobCommand,
-            CancellationToken cancellationToken
+            AddJobCommand.Handler addJobCommand
             )
         {
             var (villageId, plan) = command;

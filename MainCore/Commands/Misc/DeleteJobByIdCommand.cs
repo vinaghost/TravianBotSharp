@@ -1,20 +1,17 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Misc
+﻿namespace MainCore.Commands.Misc
 {
     [Handler]
     public static partial class DeleteJobByIdCommand
     {
-        public sealed record Command(VillageId VillageId, JobId JobId) : IVillageCommand;
+        public sealed record Command(JobId JobId) : ICommand;
 
         private static async ValueTask HandleAsync(
             Command command,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             await Task.CompletedTask;
-            var (villageId, jobId) = command;
+            var jobId = command.JobId;
 
             var job = context.Jobs
                 .Where(x => x.Id == jobId.Value)

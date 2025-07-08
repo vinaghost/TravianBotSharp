@@ -1,14 +1,12 @@
 ﻿namespace MainCore.Commands.NextExecute
 {
     [Handler]
-
     public static partial class NextExecuteStartFarmListTaskCommand
     {
         private static async ValueTask HandleAsync(
             StartFarmListTask.Task task,
-            ISettingService settingService,
-            ILogger logger,
-            CancellationToken cancellationToken)
+            ISettingService settingService
+            )
         {
             await Task.CompletedTask;
             var seconds = settingService.ByName(

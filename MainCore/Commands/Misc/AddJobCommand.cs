@@ -1,5 +1,4 @@
-﻿using MainCore.Constraints;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace MainCore.Commands.Misc
 {
@@ -10,8 +9,7 @@ namespace MainCore.Commands.Misc
 
         private static async ValueTask HandleAsync(
             Command command,
-            AppDbContext context,
-            CancellationToken cancellationToken
+            AppDbContext context
             )
         {
             await Task.CompletedTask;

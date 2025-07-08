@@ -29,7 +29,7 @@ namespace MainCore.Services
                 await Task.CompletedTask;
                 if (!args.Context.Properties.TryGetValue(contextDataKey, out var contextData)) return;
 
-                var (accountId, taskName, browser) = contextData;
+                var (taskName, browser) = contextData;
                 var error = args.Outcome;
                 if (error.Exception is not null)
                 {
@@ -88,11 +88,10 @@ namespace MainCore.Services
             using var scope = _serviceScopeFactory.CreateScope(accountId);
 
             ///===========================================================///
-            var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
             var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
             var logger = browser.Logger;
 
-            var contextData = new ContextData(accountId, task.Description, browser);
+            var contextData = new ContextData(task.Description, browser);
 
             ///===========================================================///
             var context = ResilienceContextPool.Shared.Get(cts.Token);
@@ -181,8 +180,8 @@ namespace MainCore.Services
                 }
             }
 
-            var delayTaskCommand = scope.ServiceProvider.GetRequiredService<DelayTaskCommand.Handler>();
-            await delayTaskCommand.HandleAsync(new(accountId));
+            var delayService = scope.ServiceProvider.GetRequiredService<IDelayService>();
+            await delayService.DelayTask();
         }
 
         public void Shutdown()
@@ -211,6 +210,6 @@ namespace MainCore.Services
             }
         }
 
-        public record ContextData(AccountId AccountId, string TaskName, IChromeBrowser Browser);
+        public record ContextData(string TaskName, IChromeBrowser Browser);
     }
 }

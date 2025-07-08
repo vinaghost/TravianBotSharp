@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Behaviors
+﻿namespace MainCore.Behaviors
 {
     public sealed class CommandLoggingBehavior<TRequest, TResponse>
         : Behavior<TRequest, TResponse>
@@ -33,11 +31,11 @@ namespace MainCore.Behaviors
 
                 if (dict.Count == 0)
                 {
-                    _logger.Information("Execute {name}", name);
+                    _logger.Information("Execute {Name}", name);
                 }
                 else
                 {
-                    _logger.Information("Execute {name} {@dict}", name, dict);
+                    _logger.Information("Execute {Name} {@Dict}", name, dict);
                 }
             }
 

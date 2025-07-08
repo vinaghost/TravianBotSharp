@@ -16,7 +16,10 @@
         VillageId VillageId { get; }
     }
 
-    public interface IAccountVillageConstraint : IAccountConstraint, IVillageConstraint;
+    public interface IAccountVillageConstraint : IAccountConstraint, IVillageConstraint
+    {
+        void Deconstruct(out AccountId accountId, out VillageId villageId);
+    }
 
     public record AccountVillageConstraint(AccountId AccountId, VillageId VillageId) : IAccountVillageConstraint;
 }

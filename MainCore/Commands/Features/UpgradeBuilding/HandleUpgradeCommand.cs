@@ -1,11 +1,9 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features.UpgradeBuilding
+﻿namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
     public static partial class HandleUpgradeCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand;
+        public sealed record Command(VillageId VillageId, NormalBuildPlan Plan) : IVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -14,7 +12,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             CancellationToken cancellationToken
         )
         {
-            var (accountId, villageId, plan) = command;
+            var (villageId, plan) = command;
 
             Result result;
 
@@ -47,16 +45,29 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return !context.IsEmptySite(villageId, plan.Location);
         }
 
+        private static List<BuildingEnums> UnskippableBuildings = new()
+        {
+            BuildingEnums.Residence,
+            BuildingEnums.Palace,
+            BuildingEnums.CommandCenter,
+        };
+
         private static bool IsSpecialUpgradeable(
             this AppDbContext context,
             VillageId villageId,
             NormalBuildPlan plan
         )
         {
+            if (UnskippableBuildings.Contains(plan.Type)) return false;
+
             if (plan.Type.IsResourceField())
             {
-                var dto = context.GetBuilding(villageId, plan.Location);
-                if (dto.Level == 0) return false;
+                var getBuildingSpec = new GetBuildingSpec(villageId, plan.Location);
+                var level = context.Buildings
+                    .WithSpecification(getBuildingSpec)
+                    .Select(x => x.Level)
+                    .FirstOrDefault();
+                if (level == 0) return false;
             }
             return true;
         }
@@ -75,8 +86,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             CancellationToken cancellationToken
         )
         {
-            var html = browser.Html;
-            var button = UpgradeParser.GetSpecialUpgradeButton(html);
+            var button = UpgradeParser.GetSpecialUpgradeButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("Watch ads upgrade");
 
             var result = await browser.Click(By.XPath(button.XPath));
@@ -113,8 +123,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var result = await browser.Wait(videoFeatureShown, cancellationToken);
             if (result.IsFailed) return result;
 
-            var html = browser.Html;
-            var videoFeature = html.GetElementbyId("videoFeature");
+            var videoFeature = browser.Html.GetElementbyId("videoFeature");
             if (videoFeature.HasClass("infoScreen"))
             {
                 var checkbox = videoFeature.Descendants("div").FirstOrDefault(x => x.HasClass("checkbox"));
@@ -130,8 +139,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             await Task.Delay(Random.Shared.Next(20_000, 25_000), CancellationToken.None);
 
-            html = browser.Html;
-            var node = html.GetElementbyId("videoFeature");
+            var node = browser.Html.GetElementbyId("videoFeature");
             if (node is null) return Retry.ButtonNotFound($"play ads");
 
             result = await browser.Click(By.XPath(node.XPath));
@@ -163,14 +171,13 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             await Task.Delay(Random.Shared.Next(5_000, 10_000), CancellationToken.None);
 
-            html = browser.Html;
-            var dontShowThisAgain = html.GetElementbyId("dontShowThisAgain");
+            var dontShowThisAgain = browser.Html.GetElementbyId("dontShowThisAgain");
             if (dontShowThisAgain is not null)
             {
                 result = await browser.Click(By.XPath(dontShowThisAgain.XPath));
                 if (result.IsFailed) return result;
 
-                var okButton = html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
+                var okButton = browser.Html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
                 if (okButton is null) return Retry.ButtonNotFound("ok");
                 result = await browser.Click(By.XPath(okButton.XPath));
                 if (result.IsFailed) return result;
@@ -183,9 +190,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             this IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var html = browser.Html;
-
-            var button = UpgradeParser.GetUpgradeButton(html);
+            var button = UpgradeParser.GetUpgradeButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("upgrade");
 
             var result = await browser.Click(By.XPath(button.XPath));
@@ -203,9 +208,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             CancellationToken cancellationToken
         )
         {
-            var html = browser.Html;
-
-            var button = UpgradeParser.GetConstructButton(html, building);
+            var button = UpgradeParser.GetConstructButton(browser.Html, building);
             if (button is null) return Retry.ButtonNotFound("construct");
 
             var result = await browser.Click(By.XPath(button.XPath));

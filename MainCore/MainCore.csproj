@@ -9,6 +9,8 @@
     <SelfContained>true</SelfContained>
 
     <AssemblyVersion>1975.4.30</AssemblyVersion>
+
+    <RunAnalyzersDuringBuild>True</RunAnalyzersDuringBuild>
   </PropertyGroup>
   <!--<PropertyGroup>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
@@ -24,37 +26,43 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Ardalis.Specification.EntityFrameworkCore" Version="9.2.0" />
     <PackageReference Include="CP.Extensions.Hosting.SingleInstance" Version="2.1.13" />
     <PackageReference Include="FluentValidation" Version="12.0.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
-    <PackageReference Include="FluentResults" Version="3.16.0" />
+    <PackageReference Include="FluentResults" Version="4.0.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
     <PackageReference Include="Humanizer.Core" Version="2.14.1" />
-    <PackageReference Include="Immediate.Handlers" Version="2.1.0" />
+    <PackageReference Include="Immediate.Handlers" Version="2.2.0" />
     <PackageReference Include="Injectio" Version="5.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
-    <PackageReference Include="Polly" Version="8.5.2" />
-    <PackageReference Include="ReactiveUI" Version="20.2.45" />
-    <PackageReference Include="ReactiveUI.SourceGenerators" Version="2.1.27">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.6" />
+    <PackageReference Include="Polly" Version="8.6.1" />
+    <PackageReference Include="ReactiveUI" Version="20.4.1" />
+    <PackageReference Include="ReactiveUI.SourceGenerators" Version="2.3.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Riok.Mapperly" Version="4.2.1" />
-    <PackageReference Include="Selenium.Support" Version="4.33.0" />
-    <PackageReference Include="Selenium.WebDriver" Version="4.33.0" />
+    <PackageReference Include="Selenium.Support" Version="4.34.0" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.34.0" />
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Expressions" Version="5.0.0" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.Map" Version="2.0.0" />
-    <PackageReference Include="Splat" Version="15.3.1" />
-    <PackageReference Include="Splat.Drawing" Version="15.3.1" />
-    <PackageReference Include="Splat.Microsoft.Extensions.DependencyInjection" Version="15.3.1" />
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.12.0.118525">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Splat" Version="15.4.1" />
+    <PackageReference Include="Splat.Drawing" Version="15.4.1" />
+    <PackageReference Include="Splat.Microsoft.Extensions.DependencyInjection" Version="15.4.1" />
     <PackageReference Include="StronglyTypedId" Version="1.0.0-beta06" PrivateAssets="all" ExcludeAssets="runtime" />
   </ItemGroup>
   
   <ItemGroup>
+    <Using Include="Ardalis.Specification.EntityFrameworkCore" />
     <Using Include="FluentResults" />
     <Using Include="FluentValidation" />
     <Using Include="HtmlAgilityPack" />
@@ -71,13 +79,14 @@
     <Using Include="MainCore.DTO" />
     <Using Include="MainCore.Entities" />
     <Using Include="MainCore.Services" />
+    <Using Include="MainCore.Specifications" />    
+    <Using Include="MainCore.Constraints" />    
     <Using Include="MainCore.Infrasturecture.Persistence" />
     <Using Include="MainCore.Parsers" />
     <Using Include="MainCore.Commands.Navigate" />
     <Using Include="MainCore.Commands.Update" />
     <Using Include="MainCore.Commands.Misc" />
-    <Using Include="MainCore.Notifications.Message" />
-    <Using Include="MainCore.Queries" />
+    <Using Include="MainCore.Notifications" />
     <Using Include="MainCore.Tasks" />
     <Using Include="MainCore.Models" />
     <Using Include="MainCore.Errors" />

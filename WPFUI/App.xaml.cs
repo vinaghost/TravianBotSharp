@@ -32,6 +32,7 @@ namespace WPFUI
             {
                 RxApp.DefaultExceptionHandler = sp.GetRequiredService<ObservableExceptionHandler>();
                 SetupDialogService(sp);
+                sp.GetRequiredService<IRxQueue>().Setup();
             });
 
             host.RunAsync();
