@@ -1,6 +1,5 @@
 ﻿using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using Serilog.Events;
 using Serilog.Templates;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -23,12 +22,10 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private string _endpointAddress = "";
 
-        public DebugViewModel(LogSink logSink, ITaskManager taskManager)
+        public DebugViewModel(LogSink logSink, ITaskManager taskManager, IRxQueue rxQueue)
         {
             _logSink = logSink;
-            logSink.LogEmitted += LogEmitted;
             _taskManager = taskManager;
-            taskManager.TaskUpdated += TaskListRefresh;
 
             LoadTaskCommand.Subscribe(items =>
             {
@@ -38,20 +35,35 @@ namespace MainCore.UI.ViewModels.Tabs
 
             LoadLogCommand.BindTo(this, vm => vm.Logs);
             LoadEndpointAddressCommand.BindTo(this, vm => vm.EndpointAddress);
+
+            rxQueue.RegisterCommand<LogEmitted>(LogEmittedCommand);
+            rxQueue.RegisterCommand<TasksModified>(TasksModifiedCommand);
         }
 
-        private void LogEmitted(AccountId accountId, LogEvent logEvent)
+        [ReactiveCommand]
+        private async Task LogEmitted(LogEmitted notification)
         {
             if (!IsActive) return;
+            var (accountId, logEvent) = notification;
             if (accountId != AccountId) return;
-            LoadLogCommand.Execute(accountId).Subscribe();
+
+            using var sw = new StringWriter(new StringBuilder());
+            _template.Format(logEvent, sw);
+            sw.Write(Logs);
+
+            await Observable.Start(() =>
+            {
+                Logs = sw.ToString();
+            }, RxApp.MainThreadScheduler);
         }
 
-        private void TaskListRefresh(AccountId accountId)
+        [ReactiveCommand]
+        private async Task TasksModified(TasksModified notification)
         {
             if (!IsActive) return;
+            var accountId = notification.AccountId;
             if (accountId != AccountId) return;
-            LoadTaskCommand.Execute(accountId).Subscribe();
+            await LoadTaskCommand.Execute(accountId);
         }
 
         protected override async Task Load(AccountId accountId)

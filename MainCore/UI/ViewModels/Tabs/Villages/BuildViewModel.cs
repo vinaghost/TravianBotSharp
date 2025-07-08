@@ -419,9 +419,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var deleteJobByVillageIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByVillageIdCommand.Handler>();
-            await deleteJobByVillageIdCommand.HandleAsync(new(VillageId));
-
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            context.Jobs
+                .Where(x => x.VillageId == VillageId.Value)
+                .ExecuteDelete();
             await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
@@ -455,8 +456,23 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var fixJobsCommand = scope.ServiceProvider.GetRequiredService<FixJobsCommand.Handler>();
             var fixedJobs = await fixJobsCommand.HandleAsync(new(VillageId, jobs, shuffle));
-            var importCommand = scope.ServiceProvider.GetRequiredService<ImportCommand.Handler>();
-            await importCommand.HandleAsync(new(VillageId, fixedJobs));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var count = context.Jobs
+                .Where(x => x.VillageId == VillageId.Value)
+                .Count();
+
+            var additionJobs = fixedJobs
+                .Select((job, index) => new Job()
+                {
+                    Position = count + index,
+                    VillageId = VillageId.Value,
+                    Type = job.Type,
+                    Content = job.Content,
+                })
+                .ToList();
+
+            context.AddRange(additionJobs);
+            context.SaveChanges();
             await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
@@ -473,8 +489,16 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             if (string.IsNullOrEmpty(path)) return;
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var exportCommand = scope.ServiceProvider.GetRequiredService<ExportCommand.Handler>();
-            await exportCommand.HandleAsync(new(VillageId, path));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var jobs = context.Jobs
+                .Where(x => x.VillageId == VillageId.Value)
+                .OrderBy(x => x.Position)
+                .ToDto()
+                .ToList();
+            jobs.ForEach(job => job.Id = JobId.Empty);
+            var jsonString = JsonSerializer.Serialize(jobs);
+            await File.WriteAllTextAsync(path, jsonString);
+
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Job list exported"));
         }
 

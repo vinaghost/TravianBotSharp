@@ -31,7 +31,6 @@ namespace MainCore.UI.ViewModels.UserControls
             _rxQueue = rxQueue;
             _logger = logger.ForContext<MainLayoutViewModel>();
 
-            taskManager.StatusUpdated += LoadStatus;
             _taskManager = taskManager;
 
             _canExecute = this.WhenAnyValue(x => x.Accounts.IsEnable);
@@ -70,6 +69,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 .BindTo(Accounts, x => x.IsEnable);
 
             rxQueue.RegisterCommand<AccountsModified>(AccountModifiedCommand);
+            rxQueue.RegisterCommand<StatusModified>(StatusModifiedCommand);
         }
 
         public async Task Load()
@@ -82,6 +82,22 @@ namespace MainCore.UI.ViewModels.UserControls
         private async Task AccountModified(AccountsModified notification)
         {
             await LoadAccountCommand.Execute();
+        }
+
+        [ReactiveCommand]
+        private async Task StatusModified(StatusModified notification)
+        {
+            if (Accounts.SelectedItem is null) return;
+            var (accountId, status) = notification;
+
+            var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
+            if (account is null) return;
+
+            await Observable.Start(() =>
+            {
+                account.Color = status.GetColor();
+                SetPauseText(status);
+            }, RxApp.MainThreadScheduler);
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
@@ -267,15 +283,6 @@ namespace MainCore.UI.ViewModels.UserControls
             }
         }
 
-        public void LoadStatus(AccountId accountId)
-        {
-            if (Accounts.SelectedItem is null) return;
-            var status = GetStatus(accountId);
-            GetAccountCommand.Execute(accountId).WhereNotNull().Subscribe(account => account.Color = status.GetColor());
-            if (accountId.Value != Accounts.SelectedItem.Id) return;
-            GetStatusCommand.Execute(accountId).Subscribe();
-        }
-
         [ReactiveCommand]
         private StatusEnums GetStatus(AccountId accountId)
         {
@@ -304,13 +311,6 @@ namespace MainCore.UI.ViewModels.UserControls
                  })
                  .ToList();
             return items;
-        }
-
-        [ReactiveCommand]
-        private ListBoxItem? GetAccount(AccountId accountId)
-        {
-            var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
-            return account;
         }
 
         [ReactiveCommand]

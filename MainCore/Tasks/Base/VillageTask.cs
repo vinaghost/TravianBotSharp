@@ -8,6 +8,9 @@
 
         public void SetVillageName(AppDbContext context)
         {
+            if (VillageName != "Unknown village")
+                return;
+
             var getVillageNameSpec = new GetVillageNameSpec(VillageId);
             VillageName = context.Villages
                 .WithSpecification(getVillageNameSpec)
