@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.UI.AccountSettingViewModel;
-using MainCore.Commands.UI.FarmingViewModel;
+﻿using MainCore.Commands.UI.FarmingViewModel;
 using MainCore.Commands.UI.Misc;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
@@ -27,7 +26,7 @@ namespace MainCore.UI.ViewModels.Tabs
             { SplatColor.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager)
+        public FarmingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager, IRxQueue rxQueue)
         {
             _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;
@@ -57,13 +56,16 @@ namespace MainCore.UI.ViewModels.Tabs
                     var color = selectedItem.Color;
                     ActiveText = _activeTexts[color];
                 });
+
+            rxQueue.RegisterCommand<FarmsModified>(FarmsModifiedCommand);
         }
 
-        public async Task FarmListRefresh(AccountId accountId)
+        [ReactiveCommand]
+        public async Task FarmsModified(FarmsModified notification)
         {
             if (!IsActive) return;
-            if (accountId != AccountId) return;
-            await LoadFarmListCommand.Execute(accountId);
+            if (notification.AccountId != AccountId) return;
+            await LoadFarmListCommand.Execute(notification.AccountId);
         }
 
         protected override async Task Load(AccountId accountId)
@@ -141,20 +143,30 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private async Task<Dictionary<AccountSettingEnums, int>> LoadSetting(AccountId accountId)
+        private Dictionary<AccountSettingEnums, int> LoadSetting(AccountId accountId)
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
-            var items = await getSettingQuery.HandleAsync(new(accountId));
-            return items;
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var settings = context.AccountsSetting
+              .Where(x => x.AccountId == AccountId.Value)
+              .ToDictionary(x => x.Setting, x => x.Value);
+            return settings;
         }
 
         [ReactiveCommand]
-        private async Task<List<ListBoxItem>> LoadFarmList(AccountId accountId)
+        private List<ListBoxItem> LoadFarmList(AccountId accountId)
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getFarmListItemsQuery = scope.ServiceProvider.GetRequiredService<GetFarmListItemsQuery.Handler>();
-            var items = await getFarmListItemsQuery.HandleAsync(new(accountId));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var items = context.FarmLists
+                 .Where(x => x.AccountId == accountId.Value)
+                 .Select(x => new ListBoxItem()
+                 {
+                     Id = x.Id,
+                     Color = x.IsActive ? SplatColor.Green : SplatColor.Red,
+                     Content = x.Name,
+                 })
+                 .ToList();
             return items;
         }
 

@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.MainLayoutViewModel
+﻿namespace MainCore.Commands.UI.MainLayoutViewModel
 {
     [Handler]
     public static partial class LogoutCommand
@@ -9,14 +7,13 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            IChromeBrowser browser, ITaskManager taskManager,
-            CancellationToken cancellationToken
+            IChromeBrowser browser,
+            ITaskManager taskManager
             )
         {
             var accountId = command.AccountId;
             taskManager.SetStatus(accountId, StatusEnums.Stopping);
             await taskManager.StopCurrentTask(accountId);
-
 
             await browser.Close();
 

@@ -25,8 +25,6 @@ namespace MainCore.Test
 
         [Theory]
         [InlineData(typeof(ICommand), "Command", true)]
-        [InlineData(typeof(IQuery), "Query", true)]
-        [InlineData(typeof(INotification), "Notification", true)]
         [InlineData(typeof(ITask), "Task", false)]
         public void RequestShouldHaveCorrectName(System.Type interfaceType, string nameSuffix, bool shouldBeRecord)
         {

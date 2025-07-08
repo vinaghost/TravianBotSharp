@@ -1,5 +1,4 @@
-﻿using MainCore.Constraints;
-using Serilog.Context;
+﻿using Serilog.Context;
 
 namespace MainCore.Behaviors
 {
@@ -7,12 +6,10 @@ namespace MainCore.Behaviors
        : Behavior<TRequest, TResponse>
            where TRequest : IAccountConstraint
     {
-        private readonly ILogger _logger;
         private readonly IDataService _dataService;
 
-        public AccountDataLoggingBehavior(ILogger logger, IDataService dataService)
+        public AccountDataLoggingBehavior(IDataService dataService)
         {
-            _logger = logger;
             _dataService = dataService;
         }
 

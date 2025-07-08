@@ -1,5 +1,4 @@
 ﻿using MainCore.Commands.UI.Misc;
-using MainCore.Commands.UI.Villages.VillageSettingViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
@@ -93,19 +92,23 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             if (string.IsNullOrEmpty(path)) return;
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
-            var settings = getSettingQuery.HandleAsync(new(VillageId));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var settings = context.VillagesSetting
+               .Where(x => x.VillageId == VillageId.Value)
+               .ToDictionary(x => x.Setting, x => x.Value);
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString);
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings exported"));
         }
 
         [ReactiveCommand]
-        private async Task<Dictionary<VillageSettingEnums, int>> LoadSetting(VillageId villageId)
+        private Dictionary<VillageSettingEnums, int> LoadSetting(VillageId villageId)
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
-            var settings = await getSettingQuery.HandleAsync(new(villageId));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var settings = context.VillagesSetting
+               .Where(x => x.VillageId == VillageId.Value)
+               .ToDictionary(x => x.Setting, x => x.Value);
             return settings;
         }
     }

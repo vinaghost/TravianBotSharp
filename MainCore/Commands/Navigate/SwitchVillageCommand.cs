@@ -1,11 +1,9 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Navigate
+﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
     public static partial class SwitchVillageCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command(VillageId VillageId) : IVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
@@ -13,15 +11,12 @@ namespace MainCore.Commands.Navigate
            CancellationToken cancellationToken
            )
         {
-            var (accountId, villageId) = command;
+            var villageId = command.VillageId;
 
-            var html = browser.Html;
-            var node = VillagePanelParser.GetVillageNode(html, villageId);
+            var node = VillagePanelParser.GetVillageNode(browser.Html, villageId);
             if (node is null) return Skip.VillageNotFound;
 
             if (VillagePanelParser.IsActive(node)) return Result.Ok();
-
-            var current = VillagePanelParser.GetCurrentVillageId(html);
 
             bool villageChanged(IWebDriver driver)
             {

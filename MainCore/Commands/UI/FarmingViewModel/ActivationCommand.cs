@@ -1,10 +1,6 @@
-﻿using MainCore.Constraints;
-using MainCore.Notifications.Behaviors;
-
-namespace MainCore.Commands.UI.FarmingViewModel
+﻿namespace MainCore.Commands.UI.FarmingViewModel
 {
     [Handler]
-    [Behaviors(typeof(FarmListUpdatedBehavior<,>))]
     public static partial class ActivationCommand
     {
         public sealed record Command(AccountId AccountId, FarmId FarmId) : IAccountCommand;
@@ -12,7 +8,7 @@ namespace MainCore.Commands.UI.FarmingViewModel
         private static async ValueTask HandleAsync(
             Command command,
             AppDbContext context,
-            CancellationToken cancellationToken
+            IRxQueue rxQueue
             )
         {
             await Task.CompletedTask;
@@ -21,6 +17,8 @@ namespace MainCore.Commands.UI.FarmingViewModel
             context.FarmLists
                .Where(x => x.Id == farmId.Value)
                .ExecuteUpdate(x => x.SetProperty(x => x.IsActive, x => !x.IsActive));
+
+            rxQueue.Enqueue(new FarmsModified(accountId));
         }
     }
 }
