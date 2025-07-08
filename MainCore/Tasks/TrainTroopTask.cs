@@ -1,7 +1,6 @@
 ﻿using MainCore.Commands.Features.TrainTroop;
 using MainCore.Commands.NextExecute;
 using MainCore.Commands.UI.Misc;
-using MainCore.Errors.TrainTroop;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -41,6 +40,8 @@ namespace MainCore.Tasks
 
             foreach (var building in buildings)
             {
+                if (cancellationToken.IsCancellationRequested) return Cancel.Error;
+
                 result = await toTrainTroopPageCommand.HandleAsync(new(task.VillageId, building), cancellationToken);
                 if (result.IsFailed)
                 {

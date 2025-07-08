@@ -1,4 +1,4 @@
-﻿namespace MainCore.Errors.TrainTroop
+﻿namespace MainCore.Errors
 {
     public class MissingResource : Error
     {

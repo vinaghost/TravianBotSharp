@@ -1,4 +1,4 @@
-﻿using MainCore.Errors.TrainTroop;
+﻿#pragma warning disable S1172
 
 namespace MainCore.Commands.Features.TrainTroop
 {
