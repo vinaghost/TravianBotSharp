@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.UI.FarmingViewModel;
-using MainCore.Commands.UI.Misc;
+﻿using MainCore.Commands.UI.Misc;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
@@ -137,8 +136,13 @@ namespace MainCore.UI.ViewModels.Tabs
             if (selectedFarmList is null) return;
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var activationCommand = scope.ServiceProvider.GetRequiredService<ActivationCommand.Handler>();
-            await activationCommand.HandleAsync(new(AccountId, new FarmId(selectedFarmList.Id)));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            context.FarmLists
+               .Where(x => x.Id == selectedFarmList.Id)
+               .ExecuteUpdate(x => x.SetProperty(x => x.IsActive, x => !x.IsActive));
+
+            await FarmsModifiedCommand.Execute(new FarmsModified(AccountId));
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Activated farm list"));
         }
 
