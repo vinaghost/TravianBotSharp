@@ -27,31 +27,40 @@ namespace MainCore.Tasks
 
         private static async ValueTask<Result> HandleAsync(
             Task task,
-            TrainTroopCommand.Handler trainTroopCommand,
             GetTrainTroopBuildingCommand.Handler getTrainTroopBuildingQuery,
+            ToTrainTroopPageCommand.Handler toTrainTroopPageCommand,
+            TrainTroopCommand.Handler trainTroopCommand,
             SaveVillageSettingCommand.Handler saveVillageSettingCommand,
             NextExecuteTrainTroopTaskCommand.Handler nextExecuteTrainTroopTaskCommand,
+            ILogger logger,
             CancellationToken cancellationToken)
         {
             Result result;
             var buildings = await getTrainTroopBuildingQuery.HandleAsync(new(task.VillageId), cancellationToken);
-
             var settings = new Dictionary<VillageSettingEnums, int>();
 
             foreach (var building in buildings)
             {
-                result = await trainTroopCommand.HandleAsync(new(task.VillageId, building), cancellationToken);
-                if (!result.IsFailed) continue;
-
-                if (result.HasError<MissingBuilding>())
+                result = await toTrainTroopPageCommand.HandleAsync(new(task.VillageId, building), cancellationToken);
+                if (result.IsFailed)
                 {
-                    settings.Add(TrainTroopCommand.BuildingSettings[building], 0);
-                    continue;
+                    if (result.HasError<MissingBuilding>())
+                    {
+                        logger.Warning("Disable train troop on this building.", building);
+                        settings.Add(TrainTroopCommand.TroopSettings[building], 0);
+                        continue;
+                    }
+                    return result;
                 }
 
-                if (result.HasError<MissingResource>())
+                result = await trainTroopCommand.HandleAsync(new(task.VillageId, building), cancellationToken);
+                if (result.IsFailed)
                 {
-                    break;
+                    if (result.HasError<MissingResource>())
+                    {
+                        break;
+                    }
+                    return result;
                 }
             }
 

@@ -2,10 +2,10 @@
 {
     public class MissingResource : Error
     {
-        private MissingResource(BuildingEnums building) : base($"Dont have enough resource to train troop in {building}")
+        private MissingResource(TroopEnums troop) : base($"Dont have enough resource to train {troop}")
         {
         }
 
-        public static MissingResource Error(BuildingEnums building) => new(building);
+        public static MissingResource Error(TroopEnums troop) => new(troop);
     }
 }

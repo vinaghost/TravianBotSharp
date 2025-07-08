@@ -9,48 +9,38 @@ namespace MainCore.Commands.Features.TrainTroop
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
+            AppDbContext context,
             IChromeBrowser browser,
-            ISettingService settingService,
-            ToDorfCommand.Handler toDorfCommand,
-            UpdateBuildingCommand.Handler updateBuildingCommand,
-            ToBuildingCommand.Handler toBuildingCommand,
+            ILogger logger,
             CancellationToken cancellationToken)
         {
             var (villageId, building) = command;
-
-            Result result;
-            result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
-            if (result.IsFailed) return result;
-
-            var (_, isFailed, response, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
-            var buildingLocation = response.Buildings
-                .Where(x => x.Type == building)
-                .Select(x => x.Location)
-                .FirstOrDefault();
-
-            if (buildingLocation == default)
+            var troop = (TroopEnums)context.ByName(villageId, TroopSettings[building]);
+            var maxAmount = TrainTroopParser.GetMaxAmount(browser.Html, troop);
+            if (maxAmount == 0)
             {
-                return MissingBuilding.Error(building);
+                return MissingResource.Error(troop);
             }
 
-            result = await toBuildingCommand.HandleAsync(new(buildingLocation), cancellationToken);
+            var (minSetting, maxSetting) = AmountSettings[building];
+            var amount = context.ByName(villageId, minSetting, maxSetting);
+            if (amount > maxAmount)
+            {
+                var trainWhenLowResource = context.BooleanByName(villageId, VillageSettingEnums.TrainWhenLowResource);
+                if (!trainWhenLowResource)
+                {
+                    return MissingResource.Error(troop);
+                }
+            }
+
+            var result = await TrainTroop(browser, troop, amount);
             if (result.IsFailed) return result;
 
-            var troopSetting = BuildingSettings[building];
-            var troop = (TroopEnums)settingService.ByName(villageId, troopSetting);
-
-            (_, isFailed, var amount, errors) = GetAmount(settingService, browser, villageId, building, troop);
-            if (isFailed) return Result.Fail(errors);
-
-            result = await TrainTroop(browser, troop, amount);
-            if (result.IsFailed) return result;
-
+            logger.Information("Troop training for {Troop} with amount {Amount} is done.", troop, amount);
             return Result.Ok();
         }
 
-        public static Dictionary<BuildingEnums, VillageSettingEnums> BuildingSettings { get; } = new()
+        public static Dictionary<BuildingEnums, VillageSettingEnums> TroopSettings { get; } = new()
         {
             {BuildingEnums.Barracks, VillageSettingEnums.BarrackTroop },
             {BuildingEnums.Stable, VillageSettingEnums.StableTroop },
@@ -67,37 +57,6 @@ namespace MainCore.Commands.Features.TrainTroop
             {BuildingEnums.GreatStable, (VillageSettingEnums.GreatStableAmountMin,VillageSettingEnums.GreatStableAmountMax ) },
             {BuildingEnums.Workshop, (VillageSettingEnums.WorkshopAmountMin,VillageSettingEnums.WorkshopAmountMax ) },
         };
-
-        private static Result<long> GetAmount(
-            ISettingService settingService,
-            IChromeBrowser browser,
-            VillageId villageId,
-            BuildingEnums building,
-            TroopEnums troop)
-        {
-            var maxAmount = TrainTroopParser.GetMaxAmount(browser.Html, troop);
-
-            if (maxAmount == 0)
-            {
-                return MissingResource.Error(building);
-            }
-
-            var (minSetting, maxSetting) = AmountSettings[building];
-            var amount = settingService.ByName(villageId, minSetting, maxSetting);
-            if (amount < maxAmount)
-            {
-                return amount;
-            }
-
-            var trainWhenLowResource = settingService.BooleanByName(villageId, VillageSettingEnums.TrainWhenLowResource);
-            if (!trainWhenLowResource)
-            {
-                return MissingResource.Error(building);
-            }
-
-            amount = maxAmount;
-            return amount;
-        }
 
         private static async ValueTask<Result> TrainTroop(
             IChromeBrowser browser,

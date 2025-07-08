@@ -14,7 +14,7 @@
 
             var settings = context.VillagesSetting
                 .Where(x => x.VillageId == villageId.Value)
-                .Where(x => TrainTroopCommand.BuildingSettings.Values.Contains(x.Setting))
+                .Where(x => TrainTroopCommand.TroopSettings.Values.Contains(x.Setting))
                 .Where(x => x.Value != 0)
                 .Select(x => x.Setting)
                 .ToList();
