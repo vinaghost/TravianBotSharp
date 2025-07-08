@@ -154,11 +154,19 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private async Task<List<ListBoxItem>> LoadFarmList(AccountId accountId)
+        private List<ListBoxItem> LoadFarmList(AccountId accountId)
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getFarmListItemsQuery = scope.ServiceProvider.GetRequiredService<GetFarmListItemsQuery.Handler>();
-            var items = await getFarmListItemsQuery.HandleAsync(new(accountId));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var items = context.FarmLists
+                 .Where(x => x.AccountId == accountId.Value)
+                 .Select(x => new ListBoxItem()
+                 {
+                     Id = x.Id,
+                     Color = x.IsActive ? SplatColor.Green : SplatColor.Red,
+                     Content = x.Name,
+                 })
+                 .ToList();
             return items;
         }
 

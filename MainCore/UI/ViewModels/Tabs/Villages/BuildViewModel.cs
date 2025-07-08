@@ -1,9 +1,11 @@
-﻿using MainCore.Commands.UI.Villages.BuildViewModel;
+﻿using Humanizer;
+using MainCore.Commands.UI.Villages.BuildViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
@@ -88,28 +90,111 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private async Task<List<ListBoxItem>> LoadBuilding(VillageId villageId)
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getLayoutBuildingItemsQuery = scope.ServiceProvider.GetRequiredService<GetLayoutBuildingItemsQuery.Handler>();
-            var items = await getLayoutBuildingItemsQuery.HandleAsync(new(villageId));
+            var getLayoutBuildingsQuery = scope.ServiceProvider.GetRequiredService<GetLayoutBuildingsCommand.Handler>();
+            var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId));
+            static ListBoxItem ToListBoxItem(BuildingItem building)
+            {
+                const string arrow = " -> ";
+                var sb = new StringBuilder();
+                sb.Append(building.CurrentLevel);
+                if (building.QueueLevel != 0)
+                {
+                    var content = $"{arrow}({building.QueueLevel})";
+                    sb.Append(content);
+                }
+                if (building.JobLevel != 0 && building.JobLevel > building.CurrentLevel)
+                {
+                    var content = $"{arrow}[{building.JobLevel}]";
+                    sb.Append(content);
+                }
+
+                var item = new ListBoxItem()
+                {
+                    Id = building.Id.Value,
+                    Content = $"[{building.Location}] {building.Type.Humanize()} | lvl {sb}",
+                    Color = building.Type.GetColor(),
+                };
+                return item;
+            }
+            var items = buildings
+                .Select(ToListBoxItem)
+                .ToList();
             return items;
         }
 
         [ReactiveCommand]
-        private async Task<List<ListBoxItem>> LoadQueue(VillageId villageId)
+        private List<ListBoxItem> LoadQueue(VillageId villageId)
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getQueueBuildingItemsQuery = scope.ServiceProvider.GetRequiredService<GetQueueBuildingItemsQuery.Handler>();
-            var items = await getQueueBuildingItemsQuery.HandleAsync(new(villageId));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var items = context.QueueBuildings
+                 .Where(x => x.VillageId == villageId.Value)
+                 .AsEnumerable()
+                 .Select(x => new ListBoxItem()
+                 {
+                     Id = x.Id,
+                     Content = $"{x.Type.Humanize()} to level {x.Level} complete at {x.CompleteTime}",
+                 })
+                 .ToList();
+
+            var tribe = (TribeEnums)context.VillagesSetting
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Setting == VillageSettingEnums.Tribe)
+                .Select(x => x.Value)
+                .FirstOrDefault();
+
+            var count = 2;
+            if (tribe == TribeEnums.Romans) count = 3;
+            items.AddRange(Enumerable.Range(0, Math.Max(count - items.Count, 0)).Select((x) => new ListBoxItem() { Id = x - 5 }));
             return items;
         }
 
         [ReactiveCommand]
-        private async Task<List<ListBoxItem>> LoadJob(VillageId villageId)
+        private List<ListBoxItem> LoadJob(VillageId villageId)
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getJobItemsQuery = scope.ServiceProvider.GetRequiredService<GetJobItemsQuery.Handler>();
-            var jobs = await getJobItemsQuery.HandleAsync(new(villageId));
-            return jobs;
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var items = context.Jobs
+                .Where(x => x.VillageId == villageId.Value)
+                .OrderBy(x => x.Position)
+                .ToDto()
+                .AsEnumerable()
+                .Select(x => new ListBoxItem()
+                {
+                    Id = x.Id.Value,
+                    Content = x.ToString(),
+                })
+                .ToList();
+
+            return items;
         }
+
+        private static readonly List<BuildingEnums> MultipleBuildings =
+        [
+            BuildingEnums.Warehouse,
+            BuildingEnums.Granary,
+            BuildingEnums.Trapper,
+            BuildingEnums.Cranny,
+        ];
+
+        private static readonly List<BuildingEnums> IgnoreBuildings =
+        [
+            BuildingEnums.Site,
+            BuildingEnums.Blacksmith,
+            BuildingEnums.CityWall,
+            BuildingEnums.EarthWall,
+            BuildingEnums.Palisade,
+            BuildingEnums.WW,
+            BuildingEnums.StoneWall,
+            BuildingEnums.MakeshiftWall,
+            BuildingEnums.Unknown,
+        ];
+
+        private static readonly List<BuildingEnums> AvailableBuildings = Enum.GetValues(typeof(BuildingEnums))
+            .Cast<BuildingEnums>()
+            .Where(x => !IgnoreBuildings.Contains(x))
+            .ToList();
 
         [ReactiveCommand]
         private async Task<List<BuildingEnums>> LoadBuildNormal(ListBoxItem item)
@@ -117,9 +202,23 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             if (item is null) return [];
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getNormalBuildingsQuery = scope.ServiceProvider.GetRequiredService<GetNormalBuildingsQuery.Handler>();
-            var items = await getNormalBuildingsQuery.HandleAsync(new(VillageId, new BuildingId(item.Id)));
-            return items;
+            var getLayoutBuildingsQuery = scope.ServiceProvider.GetRequiredService<GetLayoutBuildingsCommand.Handler>();
+            var buildingItems = await getLayoutBuildingsQuery.HandleAsync(new(VillageId));
+
+            var type = buildingItems
+                .Where(x => x.Id == new BuildingId(item.Id))
+                .Select(x => x.Type)
+                .FirstOrDefault();
+
+            if (type != BuildingEnums.Site) return [type];
+
+            var buildings = buildingItems
+                .Select(x => x.Type)
+                .Where(x => !MultipleBuildings.Contains(x))
+                .Distinct()
+                .ToList();
+
+            return AvailableBuildings.Where(x => !buildings.Contains(x)).ToList();
         }
 
         [ReactiveCommand]

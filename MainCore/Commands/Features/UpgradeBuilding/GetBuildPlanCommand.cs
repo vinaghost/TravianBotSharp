@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.UI.Villages.BuildViewModel;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
@@ -38,7 +37,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
                 if (job.Type == JobTypeEnums.ResourceBuild)
                 {
-                    logger.Information("{Content}", job.GetContent());
+                    logger.Information("{Content}", job);
 
                     var layoutBuildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId, true));
                     var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content)!;

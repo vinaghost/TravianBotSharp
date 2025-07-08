@@ -284,11 +284,25 @@ namespace MainCore.UI.ViewModels.UserControls
         }
 
         [ReactiveCommand]
-        private async Task<List<ListBoxItem>> LoadAccount()
+        private List<ListBoxItem> LoadAccount()
         {
             using var scope = _serviceScopeFactory.CreateScope();
-            var getAccountItemsQuery = scope.ServiceProvider.GetRequiredService<GetAccountItemsQuery.Handler>();
-            var items = await getAccountItemsQuery.HandleAsync(new());
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
+            var items = context.Accounts
+                 .AsEnumerable()
+                 .Select(x =>
+                 {
+                     var serverUrl = new Uri(x.Server);
+                     var status = taskManager.GetStatus(new(x.Id));
+                     return new ListBoxItem()
+                     {
+                         Id = x.Id,
+                         Color = status.GetColor(),
+                         Content = $"{x.Username}{Environment.NewLine}({serverUrl.Host})"
+                     };
+                 })
+                 .ToList();
             return items;
         }
 

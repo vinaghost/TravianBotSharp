@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.UI.VillageViewModel;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
@@ -105,11 +104,20 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private async Task<List<ListBoxItem>> LoadVillage(AccountId accountId)
+        private List<ListBoxItem> LoadVillage(AccountId accountId)
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getVillageItemsQuery = scope.ServiceProvider.GetRequiredService<GetVillageItemsQuery.Handler>();
-            return await getVillageItemsQuery.HandleAsync(new(accountId));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var items = context.Villages
+                .Where(x => x.AccountId == accountId.Value)
+                .OrderBy(x => x.Name)
+                .Select(x => new ListBoxItem()
+                {
+                    Id = x.Id,
+                    Content = $"{x.Name}{Environment.NewLine}({x.X}|{x.Y})",
+                })
+                .ToList();
+            return items;
         }
     }
 }
