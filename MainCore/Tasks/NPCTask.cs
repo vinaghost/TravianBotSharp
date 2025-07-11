@@ -54,6 +54,7 @@ namespace MainCore.Tasks
                     task.ExecuteAt = DateTime.Now.AddHours(5);
                     return new Skip();
                 }
+                return result;
             }
             return Result.Ok();
         }

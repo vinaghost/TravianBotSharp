@@ -154,6 +154,7 @@
                 var elements = driver.FindElements(By.XPath(button.XPath));
                 return elements.Count > 0 && elements[0].Enabled;
             }, cancellationToken);
+            if (result.IsFailed) return result;
 
             var button = NpcResourceParser.GetDistributeButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("distribute");
@@ -177,6 +178,7 @@
                 var elements = driver.FindElements(By.XPath(button.XPath));
                 return elements.Count > 0 && elements[0].Enabled;
             }, cancellationToken);
+            if (result.IsFailed) return result;
 
             var button = NpcResourceParser.GetRedeemButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("redeem");
