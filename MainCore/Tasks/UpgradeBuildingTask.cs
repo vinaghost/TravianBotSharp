@@ -66,11 +66,11 @@ namespace MainCore.Tasks
                     {
                         return new Stop().CausedBy(storageLimitErrors);
                     }
-                    if (result.HasError<ResourceMissing>(out var resourceMissingErrors))
+                    if (result.HasError<MissingResource>(out var MissingResourceErrors))
                     {
                         var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
                         task.ExecuteAt = DateTime.Now.Add(time);
-                        return new Skip().CausedBy(resourceMissingErrors);
+                        return new Skip().CausedBy(MissingResourceErrors);
                     }
 
                     return result;

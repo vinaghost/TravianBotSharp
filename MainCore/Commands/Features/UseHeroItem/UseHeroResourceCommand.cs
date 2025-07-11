@@ -72,7 +72,7 @@
                 var amount = item?.Amount ?? 0;
                 if (amount < requiredResource[i])
                 {
-                    errors.Add(ResourceMissing.Error($"{type}", amount, requiredResource[i]));
+                    errors.Add(MissingResource.Error($"{type}", amount, requiredResource[i]));
                 }
             }
 
