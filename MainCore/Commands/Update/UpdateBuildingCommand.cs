@@ -1,13 +1,9 @@
-﻿using MainCore.Constraints;
-using MainCore.Notifications.Behaviors;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
     [Handler]
-    [Behaviors(typeof(BuildingUpdatedBehavior<,>))]
     public static partial class UpdateBuildingCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command(VillageId VillageId) : IVillageCommand;
 
         public sealed record Response(List<BuildingDto> Buildings, List<QueueBuilding> QueueBuildings);
 
@@ -15,22 +11,23 @@ namespace MainCore.Commands.Update
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
-            CancellationToken cancellationToken)
+            IRxQueue rxQueue
+            )
         {
             await Task.CompletedTask;
-            var (accountId, villageId) = command;
+            var villageId = command.VillageId;
 
-            var html = browser.Html;
-
-            var dtoBuilding = GetBuildings(browser.CurrentUrl, html).ToList();
+            var dtoBuilding = GetBuildings(browser.CurrentUrl, browser.Html).ToList();
             if (dtoBuilding.Count == 0) return context.GetResponse(villageId);
 
-            var dtoQueueBuilding = BuildingLayoutParser.GetQueueBuilding(html).ToList();
+            var dtoQueueBuilding = BuildingLayoutParser.GetQueueBuilding(browser.Html).ToList();
 
             var result = IsValidQueueBuilding(dtoQueueBuilding);
             if (result.IsFailed) return result;
 
             context.UpdateToDatabase(villageId, dtoBuilding, dtoQueueBuilding);
+
+            rxQueue.Enqueue(new BuildingsModified(villageId));
             return context.GetResponse(villageId);
         }
 
@@ -191,7 +188,7 @@ namespace MainCore.Commands.Update
                             }
                         }
                         queueBuilding.Location = building.Location;
-                        if (underConstruction.Where(x => x.Type == queueBuilding.Type).Count() > 1)
+                        if (underConstruction.Count(x => x.Type == queueBuilding.Type) > 1)
                         {
                             underConstruction.Remove(building);
                         }

@@ -8,7 +8,7 @@ namespace MainCore.Tasks
     {
         public sealed class Task : VillageTask
         {
-            public Task(AccountId accountId, VillageId villageId, string villageName) : base(accountId, villageId, villageName)
+            public Task(AccountId accountId, VillageId villageId) : base(accountId, villageId)
             {
             }
 
@@ -47,7 +47,7 @@ namespace MainCore.Tasks
 
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
 
-                result = await toBuildPageCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
+                result = await toBuildPageCommand.HandleAsync(new(task.VillageId, plan), cancellationToken);
                 if (result.IsFailed) return result;
 
                 result = await handleResourceCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
@@ -58,7 +58,7 @@ namespace MainCore.Tasks
                         var message = string.Join(Environment.NewLine, freeCropErrors.Select(x => x.Message));
                         logger.Warning("{Error}", message);
 
-                        await addCroplandCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                        await addCroplandCommand.HandleAsync(new(task.VillageId), cancellationToken);
                         continue;
                     }
 
@@ -66,22 +66,22 @@ namespace MainCore.Tasks
                     {
                         return new Stop().CausedBy(storageLimitErrors);
                     }
-                    if (result.HasError<ResourceMissing>(out var resourceMissingErrors))
+                    if (result.HasError<MissingResource>(out var MissingResourceErrors))
                     {
                         var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
                         task.ExecuteAt = DateTime.Now.Add(time);
-                        return new Skip().CausedBy(resourceMissingErrors);
+                        return new Skip().CausedBy(MissingResourceErrors);
                     }
 
                     return result;
                 }
 
-                result = await handleUpgradeCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
+                result = await handleUpgradeCommand.HandleAsync(new(task.VillageId, plan), cancellationToken);
                 if (result.IsFailed) return result;
 
                 logger.Information("Upgrade for {Type} at location {Location} completed successfully.", plan.Type, plan.Location);
 
-                (_, isFailed, _, errors) = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                (_, isFailed, _, errors) = await updateBuildingCommand.HandleAsync(new(task.VillageId), cancellationToken);
                 if (isFailed) return result;
             }
         }

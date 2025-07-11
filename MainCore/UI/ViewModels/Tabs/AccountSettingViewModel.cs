@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.UI.AccountSettingViewModel;
-using MainCore.Commands.UI.Misc;
+﻿using MainCore.Commands.UI.Misc;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
@@ -24,13 +23,6 @@ namespace MainCore.UI.ViewModels.Tabs
             _serviceScopeFactory = serviceScopeFactory;
 
             LoadSettingsCommand.Subscribe(AccountSettingInput.Set);
-        }
-
-        public async Task SettingRefresh(AccountId accountId)
-        {
-            if (!IsActive) return;
-            if (accountId != AccountId) return;
-            await LoadSettingsCommand.Execute(accountId);
         }
 
         protected override async Task Load(AccountId accountId)
@@ -93,8 +85,10 @@ namespace MainCore.UI.ViewModels.Tabs
             if (string.IsNullOrEmpty(path)) return;
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
-            var settings = getSettingQuery.HandleAsync(new(AccountId));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var settings = context.AccountsSetting
+              .Where(x => x.AccountId == AccountId.Value)
+              .ToDictionary(x => x.Setting, x => x.Value);
 
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString);
@@ -102,11 +96,13 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private async Task<Dictionary<AccountSettingEnums, int>> LoadSettings(AccountId accountId)
+        private Dictionary<AccountSettingEnums, int> LoadSettings(AccountId accountId)
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getSettingQuery = scope.ServiceProvider.GetRequiredService<GetSettingQuery.Handler>();
-            var settings = await getSettingQuery.HandleAsync(new(accountId));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var settings = context.AccountsSetting
+              .Where(x => x.AccountId == AccountId.Value)
+              .ToDictionary(x => x.Setting, x => x.Value);
             return settings;
         }
     }

@@ -1,19 +1,19 @@
 ﻿using MainCore.Commands.Features.UseHeroItem;
-using MainCore.Constraints;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
     public static partial class HandleResourceCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand
+        {
+            public void Deconstruct(out AccountId accountId, out VillageId villageId) => (accountId, villageId) = (AccountId, VillageId);
+        }
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
             UpdateStorageCommand.Handler updateStorageCommand,
             UseHeroResourceCommand.Handler useHeroResourceCommand,
-            ToHeroInventoryCommand.Handler toHeroInventoryCommand,
-            UpdateInventoryCommand.Handler updateInventoryCommand,
             ISettingService settingService,
             IChromeBrowser browser,
             ILogger logger,
@@ -33,20 +33,15 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             var useHeroResource = settingService.BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
 
-            if (!useHeroResource && result.HasError<ResourceMissing>(out var resourceMissingErrors)) return result;
+            if (!useHeroResource && result.HasError<MissingResource>(out var MissingResourceErrors)) return Result.Fail(MissingResourceErrors);
 
             logger.Information("Don't have enough resource. Use resource in hero invetory to upgrade building");
             var missingResource = storage.GetMissingResource(requiredResource);
 
             var url = browser.CurrentUrl;
 
-            result = await toHeroInventoryCommand.HandleAsync(new(accountId), cancellationToken);
-            if (result.IsFailed) return result;
-
-            result = await updateInventoryCommand.HandleAsync(new(accountId), cancellationToken);
-            if (result.IsFailed) return result;
-
             result = await useHeroResourceCommand.HandleAsync(new(accountId, missingResource), cancellationToken);
+            if (result.IsFailed) return result;
 
             await browser.Navigate(url, cancellationToken);
 

@@ -98,11 +98,15 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private async Task<AccountDto> LoadAccount(AccountId accountId)
+        private AccountDto LoadAccount(AccountId accountId)
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getAcccountQuery = scope.ServiceProvider.GetRequiredService<GetAcccountQuery.Handler>();
-            var account = await getAcccountQuery.HandleAsync(new(AccountId));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var account = context.Accounts
+               .Where(x => x.Id == accountId.Value)
+               .Include(x => x.Accesses)
+               .ToDto()
+               .First();
             return account;
         }
 

@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Behaviors
+﻿namespace MainCore.Behaviors
 {
     public sealed class TaskNameLoggingBehavior<TRequest, TResponse>
         : Behavior<TRequest, TResponse>

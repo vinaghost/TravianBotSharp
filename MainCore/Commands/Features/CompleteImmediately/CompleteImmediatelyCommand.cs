@@ -1,26 +1,22 @@
-﻿using MainCore.Constraints;
+﻿#pragma warning disable S1172
 
 namespace MainCore.Commands.Features.CompleteImmediately
 {
     [Handler]
     public static partial class CompleteImmediatelyCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            AppDbContext context,
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var (accountId, villageId) = command;
-
-            var html = browser.Html;
-            var oldQueueCount = CompleteImmediatelyParser.CountQueueBuilding(html);
+            var oldQueueCount = CompleteImmediatelyParser.CountQueueBuilding(browser.Html);
 
             if (oldQueueCount == 0) return Result.Ok();
 
-            var completeNowButton = CompleteImmediatelyParser.GetCompleteButton(html);
+            var completeNowButton = CompleteImmediatelyParser.GetCompleteButton(browser.Html);
             if (completeNowButton is null) return Retry.ButtonNotFound("complete now");
 
             var result = await browser.Click(By.XPath(completeNowButton.XPath));
@@ -36,10 +32,8 @@ namespace MainCore.Commands.Features.CompleteImmediately
             result = await browser.Wait(ConfirmShown, cancellationToken);
             if (result.IsFailed) return result;
 
-            html = browser.Html;
-            var confirmButton = CompleteImmediatelyParser.GetConfirmButton(html);
+            var confirmButton = CompleteImmediatelyParser.GetConfirmButton(browser.Html);
             if (confirmButton is null) return Retry.ButtonNotFound("confirm complete now");
-
 
             result = await browser.Click(By.XPath(confirmButton.XPath));
             if (result.IsFailed) return result;

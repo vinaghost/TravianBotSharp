@@ -14,6 +14,14 @@ namespace MainCore.Tasks
             }
 
             protected override string TaskName => "Start adventure";
+
+            public override bool CanStart(AppDbContext context)
+            {
+                var settingEnable = context.BooleanByName(AccountId, AccountSettingEnums.EnableAutoStartAdventure);
+                if (!settingEnable) return false;
+
+                return true;
+            }
         }
 
         private static async ValueTask<Result> HandleAsync(
@@ -24,9 +32,9 @@ namespace MainCore.Tasks
             CancellationToken cancellationToken)
         {
             Result result;
-            result = await toAdventurePageCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            result = await toAdventurePageCommand.HandleAsync(new(), cancellationToken);
             if (result.IsFailed) return result;
-            result = await exploreAdventureCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            result = await exploreAdventureCommand.HandleAsync(new(), cancellationToken);
             if (result.IsFailed) return result;
 
             await nextExecuteStartAdventureTaskCommand.HandleAsync(task, cancellationToken);

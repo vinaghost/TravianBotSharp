@@ -1,6 +1,7 @@
 ﻿#nullable disable
 
-using MainCore.Commands.UI.Villages.BuildViewModel;
+using Humanizer;
+using System.Text.Json;
 
 namespace MainCore.DTO
 {
@@ -37,5 +38,24 @@ namespace MainCore.DTO
         private static int ToInt(this JobId jobId) => jobId.Value;
 
         private static JobId ToJobId(this int value) => new(value);
+
+        public static string GetContent(this JobDto job)
+        {
+            switch (job.Type)
+            {
+                case JobTypeEnums.NormalBuild:
+                    {
+                        var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
+                        return $"Build {plan.Type.Humanize()} to level {plan.Level} at location {plan.Location}";
+                    }
+                case JobTypeEnums.ResourceBuild:
+                    {
+                        var plan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content)!;
+                        return $"Build {plan.Plan.Humanize()} to level {plan.Level}";
+                    }
+                default:
+                    return job.Content;
+            }
+        }
     }
 }
