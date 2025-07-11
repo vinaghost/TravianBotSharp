@@ -47,7 +47,14 @@ namespace MainCore.Tasks
             result = await toNpcResourcePageCommand.HandleAsync(new(task.VillageId), cancellationToken);
             if (result.IsFailed) return result;
             result = await npcResourceCommand.HandleAsync(new(task.VillageId), cancellationToken);
-            if (result.IsFailed) return result;
+            if (result.IsFailed)
+            {
+                if (result.HasError<StorageLimit>())
+                {
+                    task.ExecuteAt = DateTime.Now.AddHours(5);
+                    return new Skip();
+                }
+            }
             return Result.Ok();
         }
     }
