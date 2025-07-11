@@ -20,6 +20,23 @@
             return exchangeResourceButton;
         }
 
+        public static HtmlNode? GetDistributeButton(HtmlDocument doc)
+        {
+            var div = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("exchangeResources"));
+            if (div is null) return null;
+            var p = div
+                .Descendants("p")
+                .FirstOrDefault(x => x.Id == "submitText");
+            if (p is null) return null;
+
+            var distributeButton = p
+                .Descendants("button")
+                .FirstOrDefault(x => x.HasClass("textButtonV1") && x.HasClass("gold"));
+            return distributeButton;
+        }
+
         public static HtmlNode GetRedeemButton(HtmlDocument doc)
         {
             var button = doc.GetElementbyId("npc_market_button");

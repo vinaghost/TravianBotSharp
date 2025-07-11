@@ -4,10 +4,6 @@ namespace MainCore.Services
 {
     public interface ITaskManager
     {
-        event Action<AccountId> StatusUpdated;
-
-        event Action<AccountId> TaskUpdated;
-
         void Add<T>(T task, bool first = false) where T : AccountTask;
 
         void AddOrUpdate<T>(T task, bool first = false) where T : AccountTask;

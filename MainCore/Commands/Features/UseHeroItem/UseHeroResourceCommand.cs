@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features.UseHeroItem
+﻿namespace MainCore.Commands.Features.UseHeroItem
 {
     [Handler]
     public static partial class UseHeroResourceCommand
@@ -17,21 +15,28 @@ namespace MainCore.Commands.Features.UseHeroItem
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
-            ILogger logger,
-            DelayClickCommand.Handler delayClickCommand,
-            GetHeroItemsQuery.Handler getHeroItemsQuery,
+            ToHeroInventoryCommand.Handler toHeroInventoryCommand,
+            UpdateInventoryCommand.Handler updateInventoryCommand,
+            UseHeroItemCommand.Handler useHeroItemCommand,
             CancellationToken cancellationToken)
         {
             var (accountId, resource) = command;
 
-            var resourceItems = await getHeroItemsQuery.HandleAsync(new(accountId, ResourceItemTypes), cancellationToken);
-
-            resource = resource.Select(RoundUpTo100).ToArray();
-            var result = IsEnoughResource(resourceItems, resource);
+            var result = await toHeroInventoryCommand.HandleAsync(new(), cancellationToken);
             if (result.IsFailed) return result;
 
-            var items = new Dictionary<HeroItemEnums, long>
+            var items = await updateInventoryCommand.HandleAsync(new(accountId), cancellationToken);
+            var resourceItems = items
+             .Where(x => ResourceItemTypes.Contains(x.Type))
+             .OrderBy(x => x.Type)
+             .ToList();
+
+            result = IsEnoughResource(resourceItems, resource);
+            if (result.IsFailed) return result;
+
+            resource = resource.Select(RoundUpTo100).ToArray();
+
+            var itemsToUse = new Dictionary<HeroItemEnums, long>
             {
                 { HeroItemEnums.Wood, resource[0] },
                 { HeroItemEnums.Clay, resource[1] },
@@ -39,93 +44,11 @@ namespace MainCore.Commands.Features.UseHeroItem
                 { HeroItemEnums.Crop, resource[3] },
             };
 
-            foreach (var (item, amount) in items)
+            foreach (var (item, amount) in itemsToUse)
             {
                 if (amount == 0) continue;
-
-                logger.Information($"Use {amount} {item} from hero inventory");
-
-                result = await ClickItem(item, browser, cancellationToken);
-                if (result.IsFailed) return result;
-
-                await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
-
-                result = await EnterAmount(amount, browser, cancellationToken);
-                if (result.IsFailed) return result;
-
-                await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
-
-                result = await Confirm(browser, cancellationToken);
-                if (result.IsFailed) return result;
-
-                await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+                await useHeroItemCommand.HandleAsync(new(item, amount), cancellationToken);
             }
-
-            return Result.Ok();
-        }
-
-        private static async Task<Result> ClickItem(
-            HeroItemEnums item,
-            IChromeBrowser browser,
-            CancellationToken cancellationToken)
-        {
-            var html = browser.Html;
-            var node = InventoryParser.GetItemSlot(html, item);
-            if (node is null) return Retry.NotFound($"{item}", "item");
-
-            static bool loadingCompleted(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                return InventoryParser.IsInventoryLoaded(doc);
-            }
-
-            Result result;
-            result = await browser.Click(By.XPath(node.XPath));
-            if (result.IsFailed) return result;
-
-            result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);
-            if (result.IsFailed) return result;
-
-            return Result.Ok();
-        }
-
-        private static async Task<Result> EnterAmount(
-            long amount,
-            IChromeBrowser browser,
-            CancellationToken cancellationToken)
-        {
-            var html = browser.Html;
-            var node = InventoryParser.GetAmountBox(html);
-            if (node is null) return Retry.TextboxNotFound("amount");
-
-            Result result;
-            result = await browser.Input(By.XPath(node.XPath), amount.ToString());
-            if (result.IsFailed) return result;
-            return Result.Ok();
-        }
-
-        private static async Task<Result> Confirm(
-            IChromeBrowser browser,
-            CancellationToken cancellationToken)
-        {
-            var html = browser.Html;
-            var node = InventoryParser.GetConfirmButton(html);
-            if (node is null) return Retry.ButtonNotFound("confirm");
-
-            static bool loadingCompleted(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                return InventoryParser.IsInventoryLoaded(doc);
-            }
-
-            Result result;
-            result = await browser.Click(By.XPath(node.XPath));
-            if (result.IsFailed) return result;
-
-            result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);
-            if (result.IsFailed) return result;
 
             return Result.Ok();
         }
@@ -138,8 +61,8 @@ namespace MainCore.Commands.Features.UseHeroItem
         }
 
         private static Result IsEnoughResource(
-            List<HeroItem> items,
-            long[] requiredResource)
+           List<HeroItemDto> items,
+           long[] requiredResource)
         {
             var errors = new List<Error>();
             for (var i = 0; i < 4; i++)
@@ -149,7 +72,7 @@ namespace MainCore.Commands.Features.UseHeroItem
                 var amount = item?.Amount ?? 0;
                 if (amount < requiredResource[i])
                 {
-                    errors.Add(ResourceMissing.Error($"{type}", amount, requiredResource[i]));
+                    errors.Add(MissingResource.Error($"{type}", amount, requiredResource[i]));
                 }
             }
 

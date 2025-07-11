@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Features
+﻿namespace MainCore.Commands.Features
 {
     [Handler]
     public static partial class SleepCommand

@@ -1,14 +1,12 @@
 ﻿namespace MainCore.Commands.NextExecute
 {
     [Handler]
-
     public static partial class NextExecuteSleepTaskCommand
     {
         private static async ValueTask HandleAsync(
             SleepTask.Task task,
-            ILogger logger,
-            ISettingService settingService,
-            CancellationToken cancellationToken)
+            ISettingService settingService
+            )
         {
             await Task.CompletedTask;
             var workTime = settingService.ByName(
