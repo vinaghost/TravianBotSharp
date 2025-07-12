@@ -16,20 +16,25 @@
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            ISettingService settingService,
+            AppDbContext context,
             CancellationToken cancellationToken)
         {
             var villageId = command.VillageId;
 
+            if (!CanStart(browser, context, villageId))
+            {
+                return Result.Ok();
+            }
+
             var result = await OpenNPCDialog(browser, cancellationToken);
             if (result.IsFailed) return result;
 
-            var settings = settingService.ByName(villageId, SettingNames);
+            var settings = context.ByName(villageId, SettingNames);
             var ratio = GetRatio(settings);
             var values = GetValues(browser, ratio);
 
             var warehouse = StorageParser.GetWarehouseCapacity(browser.Html);
-            var overflowNPC = settingService.BooleanByName(villageId, VillageSettingEnums.AutoNPCOverflow);
+            var overflowNPC = context.BooleanByName(villageId, VillageSettingEnums.AutoNPCOverflow);
             for (var i = 0; i < 3; i++)
             {
                 if (values[i] > warehouse)
@@ -60,6 +65,18 @@
             result = await Redeem(browser, cancellationToken);
             if (result.IsFailed) return result;
 
+            result = await browser.Wait(driver =>
+            {
+                var doc = new HtmlDocument();
+                doc.LoadHtml(driver.PageSource);
+                return !NpcResourceParser.IsNpcDialog(doc);
+            }, cancellationToken);
+            if (result.IsFailed) return result;
+
+            await Task.Delay(5000);
+            result = await browser.WaitPageLoaded(cancellationToken);
+            if (result.IsFailed) return result;
+
             browser.Logger.Information("After NPC:");
             LogResource(browser);
 
@@ -72,7 +89,29 @@
             var clay = StorageParser.GetClay(browser.Html);
             var iron = StorageParser.GetIron(browser.Html);
             var crop = StorageParser.GetCrop(browser.Html);
-            browser.Logger.Information("Wood: {Wood}, Clay: {Clay}, Iron: {Iron}, Crop: {Crop}", wood, clay, iron, crop);
+
+            var warehouse = StorageParser.GetWarehouseCapacity(browser.Html);
+            var granary = StorageParser.GetGranaryCapacity(browser.Html);
+
+            browser.Logger.Information("[{Warehouse}]: {Wood} - {Clay} - {Iron} | [{Granary}]: {Crop}", warehouse, wood, clay, iron, granary, crop);
+        }
+
+        private static bool CanStart(IChromeBrowser browser, AppDbContext context, VillageId villageId)
+        {
+            var crop = StorageParser.GetCrop(browser.Html);
+            var granary = StorageParser.GetGranaryCapacity(browser.Html);
+
+            var granaryPercent = (int)(crop * 100f / granary);
+
+            var autoNPCGranaryPercent = context.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
+            if (granaryPercent < autoNPCGranaryPercent)
+            {
+                browser.Logger.Information("NPC resources not available. Granary percent is too low: {GranaryPercent} < {AutoNPCGranaryPercent}",
+                    granaryPercent, autoNPCGranaryPercent);
+                return false;
+            }
+
+            return true;
         }
 
         private static async Task<Result> OpenNPCDialog(IChromeBrowser browser, CancellationToken cancellationToken)
