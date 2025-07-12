@@ -20,22 +20,22 @@
             var result = Result.Ok();
             if (storage.Wood < requiredResource[0])
             {
-                result.WithError(ResourceMissing.Wood(storage.Wood, requiredResource[0]));
+                result.WithError(MissingResource.Wood(storage.Wood, requiredResource[0]));
             }
 
             if (storage.Clay < requiredResource[1])
             {
-                result.WithError(ResourceMissing.Clay(storage.Clay, requiredResource[1]));
+                result.WithError(MissingResource.Clay(storage.Clay, requiredResource[1]));
             }
 
             if (storage.Iron < requiredResource[2])
             {
-                result.WithError(ResourceMissing.Iron(storage.Iron, requiredResource[2]));
+                result.WithError(MissingResource.Iron(storage.Iron, requiredResource[2]));
             }
 
             if (storage.Crop < requiredResource[3])
             {
-                result.WithError(ResourceMissing.Crop(storage.Crop, requiredResource[3]));
+                result.WithError(MissingResource.Crop(storage.Crop, requiredResource[3]));
             }
 
             if (requiredResource.Length == 5 && storage.FreeCrop < requiredResource[4])

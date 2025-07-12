@@ -1,17 +1,18 @@
-﻿using MainCore.Commands.UI.DebugViewModel;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using Microsoft.Extensions.DependencyInjection;
-using Serilog.Events;
+using Serilog.Templates;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Text;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
     [RegisterSingleton<DebugViewModel>]
     public partial class DebugViewModel : AccountTabViewModelBase
     {
-        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
+        private readonly LogSink _logSink;
+        private readonly ITaskManager _taskManager;
+        private static readonly ExpressionTemplate _template = new("{@t:HH:mm:ss} [{@l:u3}] {@m}\n{@x}");
 
         public ObservableCollection<TaskItem> Tasks { get; } = [];
 
@@ -21,11 +22,10 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private string _endpointAddress = "";
 
-        public DebugViewModel(LogSink logSink, ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory)
+        public DebugViewModel(LogSink logSink, ITaskManager taskManager, IRxQueue rxQueue)
         {
-            _serviceScopeFactory = serviceScopeFactory;
-            logSink.LogEmitted += LogEmitted;
-            taskManager.TaskUpdated += TaskListRefresh;
+            _logSink = logSink;
+            _taskManager = taskManager;
 
             LoadTaskCommand.Subscribe(items =>
             {
@@ -35,20 +35,35 @@ namespace MainCore.UI.ViewModels.Tabs
 
             LoadLogCommand.BindTo(this, vm => vm.Logs);
             LoadEndpointAddressCommand.BindTo(this, vm => vm.EndpointAddress);
+
+            rxQueue.RegisterCommand<LogEmitted>(LogEmittedCommand);
+            rxQueue.RegisterCommand<TasksModified>(TasksModifiedCommand);
         }
 
-        private void LogEmitted(AccountId accountId, LogEvent logEvent)
+        [ReactiveCommand]
+        private async Task LogEmitted(LogEmitted notification)
         {
             if (!IsActive) return;
+            var (accountId, logEvent) = notification;
             if (accountId != AccountId) return;
-            LoadLogCommand.Execute(accountId).Subscribe();
+
+            using var sw = new StringWriter(new StringBuilder());
+            _template.Format(logEvent, sw);
+            sw.Write(Logs);
+
+            await Observable.Start(() =>
+            {
+                Logs = sw.ToString();
+            }, RxApp.MainThreadScheduler);
         }
 
-        private void TaskListRefresh(AccountId accountId)
+        [ReactiveCommand]
+        private async Task TasksModified(TasksModified notification)
         {
             if (!IsActive) return;
+            var accountId = notification.AccountId;
             if (accountId != AccountId) return;
-            LoadTaskCommand.Execute(accountId).Subscribe();
+            await LoadTaskCommand.Execute(accountId);
         }
 
         protected override async Task Load(AccountId accountId)
@@ -59,30 +74,32 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private async Task<List<TaskItem>> LoadTask(AccountId accountId)
+        private List<TaskItem> LoadTask(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getTaskItemsQuery = scope.ServiceProvider.GetRequiredService<GetTaskItemsQuery.Handler>();
-            var tasks = await getTaskItemsQuery.HandleAsync(new(accountId), CancellationToken.None);
+            var tasks = _taskManager
+               .GetTaskList(accountId)
+               .Select(x => new TaskItem(x))
+               .ToList();
             return tasks;
         }
 
         [ReactiveCommand]
-        private async Task<string> LoadLog(AccountId accountId)
+        private string LoadLog(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getLogQuery = scope.ServiceProvider.GetRequiredService<GetLogQuery.Handler>();
-            var log = await getLogQuery.HandleAsync(new(accountId), CancellationToken.None);
-            return log;
+            var logs = _logSink.GetLogs(accountId);
+            using var sw = new StringWriter(new StringBuilder());
+
+            foreach (var log in logs)
+            {
+                _template.Format(log, sw);
+            }
+            return sw.ToString();
         }
 
         [ReactiveCommand]
-        private async Task<string> LoadEndpointAddress(AccountId accountId)
+        private string LoadEndpointAddress(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getEndpointAdressQuery = scope.ServiceProvider.GetRequiredService<GetEndpointAdressQuery.Handler>();
-            var address = await getEndpointAdressQuery.HandleAsync(new(accountId), CancellationToken.None);
-            return address;
+            return "Address endpoint is disabled";
         }
 
         [ReactiveCommand]

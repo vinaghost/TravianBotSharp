@@ -15,20 +15,22 @@ namespace MainCore.UI.ViewModels.UserControls
         private readonly ITaskManager _taskManager;
         private readonly ILogger _logger;
 
+        private readonly IRxQueue _rxQueue;
+
         private readonly AccountTabStore _accountTabStore;
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
         private IObservable<bool> _canExecute;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory, ILogger logger)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory, ILogger logger, IRxQueue rxQueue)
         {
             _accountTabStore = accountTabStore;
             _dialogService = dialogService;
             _serviceScopeFactory = serviceScopeFactory;
+            _rxQueue = rxQueue;
             _logger = logger.ForContext<MainLayoutViewModel>();
 
-            taskManager.StatusUpdated += LoadStatus;
             _taskManager = taskManager;
 
             _canExecute = this.WhenAnyValue(x => x.Accounts.IsEnable);
@@ -65,12 +67,37 @@ namespace MainCore.UI.ViewModels.UserControls
                     RestartCommand.IsExecuting.Select(x => !x)
                 )
                 .BindTo(Accounts, x => x.IsEnable);
+
+            rxQueue.RegisterCommand<AccountsModified>(AccountModifiedCommand);
+            rxQueue.RegisterCommand<StatusModified>(StatusModifiedCommand);
         }
 
         public async Task Load()
         {
             await LoadVersionCommand.Execute();
             await LoadAccountCommand.Execute();
+        }
+
+        [ReactiveCommand]
+        private async Task AccountModified(AccountsModified notification)
+        {
+            await LoadAccountCommand.Execute();
+        }
+
+        [ReactiveCommand]
+        private async Task StatusModified(StatusModified notification)
+        {
+            if (Accounts.SelectedItem is null) return;
+            var (accountId, status) = notification;
+
+            var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
+            if (account is null) return;
+
+            await Observable.Start(() =>
+            {
+                account.Color = status.GetColor();
+                SetPauseText(status);
+            }, RxApp.MainThreadScheduler);
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
@@ -142,7 +169,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            var getAccessQuery = scope.ServiceProvider.GetRequiredService<GetValidAccessQuery.Handler>();
+            var getAccessQuery = scope.ServiceProvider.GetRequiredService<GetValidAccessCommand.Handler>();
             var result = await getAccessQuery.HandleAsync(new(accountId));
             if (result.IsFailed)
             {
@@ -250,22 +277,10 @@ namespace MainCore.UI.ViewModels.UserControls
                 case StatusEnums.Paused:
                     _taskManager.SetStatus(accountId, StatusEnums.Starting);
                     _taskManager.Clear(accountId);
-                    using (var scope = _serviceScopeFactory.CreateScope(accountId))
-                    {
-                        await scope.ServiceProvider.GetRequiredService<AccountInit.Handler>().HandleAsync(new(accountId));
-                    }
+                    _rxQueue.Enqueue(new AccountInit(accountId));
                     _taskManager.SetStatus(accountId, StatusEnums.Online);
                     return;
             }
-        }
-
-        public void LoadStatus(AccountId accountId)
-        {
-            if (Accounts.SelectedItem is null) return;
-            var status = GetStatus(accountId);
-            GetAccountCommand.Execute(accountId).WhereNotNull().Subscribe(account => account.Color = status.GetColor());
-            if (accountId.Value != Accounts.SelectedItem.Id) return;
-            GetStatusCommand.Execute(accountId).Subscribe();
         }
 
         [ReactiveCommand]
@@ -276,19 +291,26 @@ namespace MainCore.UI.ViewModels.UserControls
         }
 
         [ReactiveCommand]
-        private async Task<List<ListBoxItem>> LoadAccount()
+        private List<ListBoxItem> LoadAccount()
         {
             using var scope = _serviceScopeFactory.CreateScope();
-            var getAccountItemsQuery = scope.ServiceProvider.GetRequiredService<GetAccountItemsQuery.Handler>();
-            var items = await getAccountItemsQuery.HandleAsync(new());
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
+            var items = context.Accounts
+                 .AsEnumerable()
+                 .Select(x =>
+                 {
+                     var serverUrl = new Uri(x.Server);
+                     var status = taskManager.GetStatus(new(x.Id));
+                     return new ListBoxItem()
+                     {
+                         Id = x.Id,
+                         Color = status.GetColor(),
+                         Content = $"{x.Username}{Environment.NewLine}({serverUrl.Host})"
+                     };
+                 })
+                 .ToList();
             return items;
-        }
-
-        [ReactiveCommand]
-        private ListBoxItem? GetAccount(AccountId accountId)
-        {
-            var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
-            return account;
         }
 
         [ReactiveCommand]

@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Misc
+﻿namespace MainCore.Commands.Misc
 {
     [Handler]
     public static partial class OpenBrowserCommand

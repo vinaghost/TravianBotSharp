@@ -38,7 +38,7 @@ namespace MainCore.Services
             if (!Directory.Exists(extenstionDir))
             {
                 Directory.CreateDirectory(extenstionDir);
-                _logger.Information("Create directory {extenstionDir} for extension files.", extenstionDir);
+                _logger.Information("Create directory {ExtenstionDir} for extension files.", extenstionDir);
             }
 
             var asmb = Assembly.GetExecutingAssembly();
@@ -56,12 +56,12 @@ namespace MainCore.Services
                     using Stream input = asmb.GetManifestResourceStream(extensionName)!;
                     using Stream output = File.Create(path);
                     input.CopyTo(output);
-                    _logger.Information("Copy default extension file {extensionName} to {path}.", extensionName, path);
+                    _logger.Information("Copy default extension file {ExtensionName} to {Path}.", extensionName, path);
                 }
             }
 
             _extensionsPath = list.ToArray();
-            _logger.Information("Loaded {count} extension files.", _extensionsPath.Length);
+            _logger.Information("Loaded {Count} extension files.", _extensionsPath.Length);
         }
     }
 }

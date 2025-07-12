@@ -31,8 +31,6 @@
 
         public static partial IQueryable<BuildingDto> ToDto(this IQueryable<Building> entities);
 
-        private static int ToInt(this BuildingId buildingId) => buildingId.Value;
-
         private static BuildingId ToBuildingId(this int value) => new(value);
     }
 }

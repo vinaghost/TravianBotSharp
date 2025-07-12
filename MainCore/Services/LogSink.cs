@@ -11,7 +11,12 @@ namespace MainCore.Services
     {
         private Dictionary<AccountId, LinkedList<LogEvent>> Logs { get; } = [];
 
-        public event Action<AccountId, LogEvent> LogEmitted = delegate { };
+        private readonly IRxQueue _rxQueue;
+
+        public LogSink(IRxQueue rxQueue)
+        {
+            _rxQueue = rxQueue;
+        }
 
         public LinkedList<LogEvent> GetLogs(AccountId accountId)
         {
@@ -41,7 +46,7 @@ namespace MainCore.Services
                 logs.RemoveLast();
             }
 
-            LogEmitted.Invoke(accountId, logEvent);
+            _rxQueue.Enqueue(new LogEmitted(accountId, logEvent));
         }
     }
 

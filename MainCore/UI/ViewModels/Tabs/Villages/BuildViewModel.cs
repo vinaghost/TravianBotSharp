@@ -1,9 +1,11 @@
-﻿using MainCore.Commands.UI.Villages.BuildViewModel;
+﻿using Humanizer;
+using MainCore.Commands.UI.Villages.BuildViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
@@ -24,7 +26,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(IDialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager)
+        public BuildViewModel(IDialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager, IRxQueue rxQueue)
         {
             _dialogService = dialogService;
             _normalBuildInputValidator = normalBuildInputValidator;
@@ -54,28 +56,27 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                         break;
                 }
             });
+
+            rxQueue.RegisterCommand<BuildingsModified>(BuildingsModifiedCommand);
+            rxQueue.RegisterCommand<JobsModified>(JobsModifiedCommand);
         }
 
-        public async Task QueueRefresh(VillageId villageId)
+        [ReactiveCommand]
+        public async Task BuildingsModified(BuildingsModified notification)
         {
             if (!IsActive) return;
-            if (villageId != VillageId) return;
-            await LoadQueueCommand.Execute(villageId);
+            if (notification.VillageId != VillageId) return;
+            await LoadQueueCommand.Execute(notification.VillageId);
+            await LoadBuildingCommand.Execute(notification.VillageId);
         }
 
-        public async Task BuildingListRefresh(VillageId villageId)
+        [ReactiveCommand]
+        public async Task JobsModified(JobsModified notification)
         {
             if (!IsActive) return;
-            if (villageId != VillageId) return;
-            await LoadBuildingCommand.Execute(villageId);
-        }
-
-        public async Task JobListRefresh(VillageId villageId)
-        {
-            if (!IsActive) return;
-            if (villageId != VillageId) return;
-            await LoadJobCommand.Execute(villageId);
-            await LoadBuildingCommand.Execute(villageId);
+            if (notification.VillageId != VillageId) return;
+            await LoadJobCommand.Execute(notification.VillageId);
+            await LoadBuildingCommand.Execute(notification.VillageId);
         }
 
         protected override async Task Load(VillageId villageId)
@@ -89,28 +90,111 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private async Task<List<ListBoxItem>> LoadBuilding(VillageId villageId)
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getLayoutBuildingItemsQuery = scope.ServiceProvider.GetRequiredService<GetLayoutBuildingItemsQuery.Handler>();
-            var items = await getLayoutBuildingItemsQuery.HandleAsync(new(villageId));
+            var getLayoutBuildingsQuery = scope.ServiceProvider.GetRequiredService<GetLayoutBuildingsCommand.Handler>();
+            var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId));
+            static ListBoxItem ToListBoxItem(BuildingItem building)
+            {
+                const string arrow = " -> ";
+                var sb = new StringBuilder();
+                sb.Append(building.CurrentLevel);
+                if (building.QueueLevel != 0)
+                {
+                    var content = $"{arrow}({building.QueueLevel})";
+                    sb.Append(content);
+                }
+                if (building.JobLevel != 0 && building.JobLevel > building.CurrentLevel)
+                {
+                    var content = $"{arrow}[{building.JobLevel}]";
+                    sb.Append(content);
+                }
+
+                var item = new ListBoxItem()
+                {
+                    Id = building.Id.Value,
+                    Content = $"[{building.Location}] {building.Type.Humanize()} | lvl {sb}",
+                    Color = building.Type.GetColor(),
+                };
+                return item;
+            }
+            var items = buildings
+                .Select(ToListBoxItem)
+                .ToList();
             return items;
         }
 
         [ReactiveCommand]
-        private async Task<List<ListBoxItem>> LoadQueue(VillageId villageId)
+        private List<ListBoxItem> LoadQueue(VillageId villageId)
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getQueueBuildingItemsQuery = scope.ServiceProvider.GetRequiredService<GetQueueBuildingItemsQuery.Handler>();
-            var items = await getQueueBuildingItemsQuery.HandleAsync(new(villageId));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var items = context.QueueBuildings
+                 .Where(x => x.VillageId == villageId.Value)
+                 .AsEnumerable()
+                 .Select(x => new ListBoxItem()
+                 {
+                     Id = x.Id,
+                     Content = $"{x.Type.Humanize()} to level {x.Level} complete at {x.CompleteTime}",
+                 })
+                 .ToList();
+
+            var tribe = (TribeEnums)context.VillagesSetting
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Setting == VillageSettingEnums.Tribe)
+                .Select(x => x.Value)
+                .FirstOrDefault();
+
+            var count = 2;
+            if (tribe == TribeEnums.Romans) count = 3;
+            items.AddRange(Enumerable.Range(0, Math.Max(count - items.Count, 0)).Select((x) => new ListBoxItem() { Id = x - 5 }));
             return items;
         }
 
         [ReactiveCommand]
-        private async Task<List<ListBoxItem>> LoadJob(VillageId villageId)
+        private List<ListBoxItem> LoadJob(VillageId villageId)
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getJobItemsQuery = scope.ServiceProvider.GetRequiredService<GetJobItemsQuery.Handler>();
-            var jobs = await getJobItemsQuery.HandleAsync(new(villageId));
-            return jobs;
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var items = context.Jobs
+                .Where(x => x.VillageId == villageId.Value)
+                .OrderBy(x => x.Position)
+                .ToDto()
+                .AsEnumerable()
+                .Select(x => new ListBoxItem()
+                {
+                    Id = x.Id.Value,
+                    Content = x.ToString(),
+                })
+                .ToList();
+
+            return items;
         }
+
+        private static readonly List<BuildingEnums> MultipleBuildings =
+        [
+            BuildingEnums.Warehouse,
+            BuildingEnums.Granary,
+            BuildingEnums.Trapper,
+            BuildingEnums.Cranny,
+        ];
+
+        private static readonly List<BuildingEnums> IgnoreBuildings =
+        [
+            BuildingEnums.Site,
+            BuildingEnums.Blacksmith,
+            BuildingEnums.CityWall,
+            BuildingEnums.EarthWall,
+            BuildingEnums.Palisade,
+            BuildingEnums.WW,
+            BuildingEnums.StoneWall,
+            BuildingEnums.MakeshiftWall,
+            BuildingEnums.Unknown,
+        ];
+
+        private static readonly List<BuildingEnums> AvailableBuildings = Enum.GetValues(typeof(BuildingEnums))
+            .Cast<BuildingEnums>()
+            .Where(x => !IgnoreBuildings.Contains(x))
+            .ToList();
 
         [ReactiveCommand]
         private async Task<List<BuildingEnums>> LoadBuildNormal(ListBoxItem item)
@@ -118,9 +202,23 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             if (item is null) return [];
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getNormalBuildingsQuery = scope.ServiceProvider.GetRequiredService<GetNormalBuildingsQuery.Handler>();
-            var items = await getNormalBuildingsQuery.HandleAsync(new(VillageId, new BuildingId(item.Id)));
-            return items;
+            var getLayoutBuildingsQuery = scope.ServiceProvider.GetRequiredService<GetLayoutBuildingsCommand.Handler>();
+            var buildingItems = await getLayoutBuildingsQuery.HandleAsync(new(VillageId));
+
+            var type = buildingItems
+                .Where(x => x.Id == new BuildingId(item.Id))
+                .Select(x => x.Type)
+                .FirstOrDefault();
+
+            if (type != BuildingEnums.Site) return [type];
+
+            var buildings = buildingItems
+                .Select(x => x.Type)
+                .Where(x => !MultipleBuildings.Contains(x))
+                .Distinct()
+                .ToList();
+
+            return AvailableBuildings.Where(x => !buildings.Contains(x)).ToList();
         }
 
         [ReactiveCommand]
@@ -149,8 +247,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 await _dialogService.MessageBox.Handle(new MessageBoxData("Error", buildResult.ToString()));
                 return;
             }
-            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
-            await jobUpdated.HandleAsync(new(AccountId, VillageId));
+
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
         [ReactiveCommand]
@@ -166,8 +264,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var upgradeCommand = scope.ServiceProvider.GetRequiredService<UpgradeCommand.Handler>();
             await upgradeCommand.HandleAsync(new(VillageId, location, false));
-            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
-            await jobUpdated.HandleAsync(new(AccountId, VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
         [ReactiveCommand]
@@ -183,8 +280,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var upgradeCommand = scope.ServiceProvider.GetRequiredService<UpgradeCommand.Handler>();
             await upgradeCommand.HandleAsync(new(VillageId, location, true));
-            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
-            await jobUpdated.HandleAsync(new(AccountId, VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
         [ReactiveCommand]
@@ -206,8 +302,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var resourceBuildCommand = scope.ServiceProvider.GetRequiredService<ResourceBuildCommand.Handler>();
             await resourceBuildCommand.HandleAsync(new(VillageId, ResourceBuildInput.ToPlan()));
-            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
-            await jobUpdated.HandleAsync(new(AccountId, VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
         [ReactiveCommand]
@@ -227,11 +322,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
-            var newIndex = await swapCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Up));
+            var newIndex = await swapCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Up));
             Jobs.SelectedIndex = newIndex;
 
-            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
-            await jobUpdated.HandleAsync(new(AccountId, VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
         [ReactiveCommand]
@@ -250,10 +344,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
-            var newIndex = await swapCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Down));
+            var newIndex = await swapCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Down));
             Jobs.SelectedIndex = newIndex;
-            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
-            await jobUpdated.HandleAsync(new(AccountId, VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
         [ReactiveCommand]
@@ -272,11 +365,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
-            var newIndex = await moveCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Top));
+            var newIndex = await moveCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Top));
             Jobs.SelectedIndex = newIndex;
 
-            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
-            await jobUpdated.HandleAsync(new(AccountId, VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
         [ReactiveCommand]
@@ -295,10 +387,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
-            var newIndex = await moveCommand.HandleAsync(new(VillageId, new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Bottom));
+            var newIndex = await moveCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Bottom));
             Jobs.SelectedIndex = newIndex;
-            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
-            await jobUpdated.HandleAsync(new(AccountId, VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
         [ReactiveCommand]
@@ -314,9 +405,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var deleteJobByIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByIdCommand.Handler>();
-            await deleteJobByIdCommand.HandleAsync(new(VillageId, new JobId(jobId)));
-            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
-            await jobUpdated.HandleAsync(new(AccountId, VillageId));
+            await deleteJobByIdCommand.HandleAsync(new(new JobId(jobId)));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
         [ReactiveCommand]
@@ -329,11 +419,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var deleteJobByVillageIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByVillageIdCommand.Handler>();
-            await deleteJobByVillageIdCommand.HandleAsync(new(VillageId));
-
-            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
-            await jobUpdated.HandleAsync(new(AccountId, VillageId));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            context.Jobs
+                .Where(x => x.VillageId == VillageId.Value)
+                .ExecuteDelete();
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
         [ReactiveCommand]
@@ -366,10 +456,24 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var fixJobsCommand = scope.ServiceProvider.GetRequiredService<FixJobsCommand.Handler>();
             var fixedJobs = await fixJobsCommand.HandleAsync(new(VillageId, jobs, shuffle));
-            var importCommand = scope.ServiceProvider.GetRequiredService<ImportCommand.Handler>();
-            await importCommand.HandleAsync(new(VillageId, fixedJobs));
-            var jobUpdated = scope.ServiceProvider.GetRequiredService<JobUpdated.Handler>();
-            await jobUpdated.HandleAsync(new(AccountId, VillageId));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var count = context.Jobs
+                .Where(x => x.VillageId == VillageId.Value)
+                .Count();
+
+            var additionJobs = fixedJobs
+                .Select((job, index) => new Job()
+                {
+                    Position = count + index,
+                    VillageId = VillageId.Value,
+                    Type = job.Type,
+                    Content = job.Content,
+                })
+                .ToList();
+
+            context.AddRange(additionJobs);
+            context.SaveChanges();
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
         [ReactiveCommand]
@@ -385,8 +489,16 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             if (string.IsNullOrEmpty(path)) return;
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var exportCommand = scope.ServiceProvider.GetRequiredService<ExportCommand.Handler>();
-            await exportCommand.HandleAsync(new(VillageId, path));
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var jobs = context.Jobs
+                .Where(x => x.VillageId == VillageId.Value)
+                .OrderBy(x => x.Position)
+                .ToDto()
+                .ToList();
+            jobs.ForEach(job => job.Id = JobId.Empty);
+            var jsonString = JsonSerializer.Serialize(jobs);
+            await File.WriteAllTextAsync(path, jsonString);
+
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Job list exported"));
         }
 
