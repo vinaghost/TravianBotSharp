@@ -37,7 +37,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadAccountCommand.Execute();
+            await LoadAccountCommand.Execute(accountId);
         }
 
         [ReactiveCommand]
@@ -94,14 +94,15 @@ namespace MainCore.UI.ViewModels.Tabs
             await _waitingOverlayViewModel.Hide();
             await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Edited account"));
 
-            await LoadAccountCommand.Execute();
+            await LoadAccountCommand.Execute(AccountId);
         }
 
         [ReactiveCommand]
         private AccountDto LoadAccount(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
             var account = context.Accounts
                .Where(x => x.Id == accountId.Value)
                .Include(x => x.Accesses)
