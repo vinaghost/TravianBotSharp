@@ -32,7 +32,7 @@ namespace MainCore.Tasks
             var useStartAllButton = settingService.BooleanByName(task.AccountId, AccountSettingEnums.UseStartAllButton);
             if (useStartAllButton)
             {
-                result = await startAllFarmListCommand.HandleAsync(new(task.AccountId), cancellationToken);
+                result = await startAllFarmListCommand.HandleAsync(new(), cancellationToken);
                 if (result.IsFailed) return result;
             }
             else
@@ -41,7 +41,7 @@ namespace MainCore.Tasks
                 if (result.IsFailed) return result;
             }
 
-            await nextExecuteStartFarmListTaskCommand.HandleAsync(task, cancellationToken);
+            await nextExecuteStartFarmListTaskCommand.HandleAsync(new(task), cancellationToken);
 
             return Result.Ok();
         }

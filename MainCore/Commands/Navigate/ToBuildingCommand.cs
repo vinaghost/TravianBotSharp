@@ -1,12 +1,11 @@
-﻿using MainCore.Constraints;
-using System.Web;
+﻿using System.Web;
 
 namespace MainCore.Commands.Navigate
 {
     [Handler]
     public static partial class ToBuildingCommand
     {
-        public sealed record Command(AccountId AccountId, int Location) : IAccountCommand;
+        public sealed record Command(int Location) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
@@ -14,10 +13,9 @@ namespace MainCore.Commands.Navigate
            CancellationToken cancellationToken
            )
         {
-            var (accountId, location) = command;
+            var location = command.Location;
 
-            var html = browser.Html;
-            var node = GetBuilding(html, location);
+            var node = GetBuilding(browser.Html, location);
             if (node is null) return Retry.NotFound($"{location}", "nodeBuilding");
 
             Result result;

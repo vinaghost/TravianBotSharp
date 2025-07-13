@@ -1,22 +1,22 @@
 ﻿namespace MainCore.Commands.NextExecute
 {
     [Handler]
-
     public static partial class NextExecuteSleepTaskCommand
     {
+        public sealed record Command(SleepTask.Task Task) : ICommand;
+
         private static async ValueTask HandleAsync(
-            SleepTask.Task task,
-            ILogger logger,
-            ISettingService settingService,
-            CancellationToken cancellationToken)
+            Command command,
+            ISettingService settingService
+            )
         {
             await Task.CompletedTask;
             var workTime = settingService.ByName(
-                task.AccountId,
+                command.Task.AccountId,
                 AccountSettingEnums.WorkTimeMin,
                 AccountSettingEnums.WorkTimeMax,
                 60);
-            task.ExecuteAt = DateTime.Now.AddSeconds(workTime);
+            command.Task.ExecuteAt = DateTime.Now.AddSeconds(workTime);
         }
     }
 }

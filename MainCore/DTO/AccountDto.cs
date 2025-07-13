@@ -24,13 +24,9 @@ namespace MainCore.DTO
 
         public static partial IQueryable<AccountDto> ToDto(this IQueryable<Account> entities);
 
-        private static int ToInt(this AccessId accessId) => accessId.Value;
-
         private static int ToInt(this AccountId accountId) => accountId.Value;
 
         private static AccountId ToAccountId(this int id) => new AccountId(id);
-
-        private static AccessId ToAccessId(this int value) => new(value);
 
         private static Access ToAccessEntity(this AccessDto dto) => dto.ToEntity();
 

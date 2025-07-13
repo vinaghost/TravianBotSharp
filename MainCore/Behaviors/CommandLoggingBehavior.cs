@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Behaviors
+﻿namespace MainCore.Behaviors
 {
     public sealed class CommandLoggingBehavior<TRequest, TResponse>
         : Behavior<TRequest, TResponse>
@@ -13,10 +11,17 @@ namespace MainCore.Behaviors
             _logger = logger;
         }
 
+        private static readonly string[] ExcludedCommandNames = new[]
+        {
+            "Update",
+            "Delay",
+            "NextExecute"
+        };
+
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
             var name = request.GetType().FullName;
-            if (!string.IsNullOrEmpty(name) && !name.Contains("Update") && !name.Contains("Delay"))
+            if (!string.IsNullOrEmpty(name) && !ExcludedCommandNames.Any(name.Contains))
             {
                 name = name
                     .Replace("MainCore.", "")
@@ -33,11 +38,11 @@ namespace MainCore.Behaviors
 
                 if (dict.Count == 0)
                 {
-                    _logger.Information("Execute {name}", name);
+                    _logger.Information("Execute {Name}", name);
                 }
                 else
                 {
-                    _logger.Information("Execute {name} {@dict}", name, dict);
+                    _logger.Information("Execute {Name} {@Dict}", name, dict);
                 }
             }
 

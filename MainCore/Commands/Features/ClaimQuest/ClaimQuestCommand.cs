@@ -1,48 +1,49 @@
-﻿using MainCore.Constraints;
+﻿#pragma warning disable S1172
 
 namespace MainCore.Commands.Features.ClaimQuest
 {
     [Handler]
     public static partial class ClaimQuestCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            SwitchTabCommand.Handler switchTabCommand, DelayClickCommand.Handler delayClickCommand,
+            IDelayService delayService,
+            SwitchTabCommand.Handler switchTabCommand,
             CancellationToken cancellationToken)
         {
-            var (accountId, villageId) = command;
-
-            HtmlDocument html;
             Result result;
 
             do
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                html = browser.Html;
-                var quest = QuestParser.GetQuestCollectButton(html);
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return Cancel.Error;
+                }
+                var quest = QuestParser.GetQuestCollectButton(browser.Html);
 
                 if (quest is null)
                 {
-                    result = await switchTabCommand.HandleAsync(new(accountId, 1), cancellationToken);
+                    result = await switchTabCommand.HandleAsync(new(1), cancellationToken);
                     if (result.IsFailed) return result;
 
-                    await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+                    await delayService.DelayClick(cancellationToken);
 
                     quest = QuestParser.GetQuestCollectButton(browser.Html);
                     if (quest is null) return Result.Ok();
 
                     result = await browser.Click(By.XPath(quest.XPath));
+                    if (result.IsFailed) return result;
                     continue;
                 }
 
                 result = await browser.Click(By.XPath(quest.XPath));
                 if (result.IsFailed) return result;
-                await delayClickCommand.HandleAsync(new(accountId), cancellationToken);
+                await delayService.DelayClick(cancellationToken);
             }
-            while (QuestParser.IsQuestClaimable(html));
+            while (QuestParser.IsQuestClaimable(browser.Html));
 
             return Result.Ok();
         }

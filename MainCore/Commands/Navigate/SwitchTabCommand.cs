@@ -1,11 +1,9 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Navigate
+﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
     public static partial class SwitchTabCommand
     {
-        public sealed record Command(AccountId AccountId, int TabIndex) : IAccountCommand;
+        public sealed record Command(int TabIndex) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
@@ -13,12 +11,11 @@ namespace MainCore.Commands.Navigate
            CancellationToken cancellationToken
            )
         {
-            var (accountId, tabIndex) = command;
+            var tabIndex = command.TabIndex;
 
-            var html = browser.Html;
-            var count = BuildingTabParser.CountTab(html);
+            var count = BuildingTabParser.CountTab(browser.Html);
             if (tabIndex > count) return Retry.OutOfIndexTab(tabIndex, count);
-            var tab = BuildingTabParser.GetTab(html, tabIndex);
+            var tab = BuildingTabParser.GetTab(browser.Html, tabIndex);
             if (tab is null) return Retry.NotFound($"{tabIndex}", "tab");
             if (BuildingTabParser.IsTabActive(tab)) return Result.Ok();
 
