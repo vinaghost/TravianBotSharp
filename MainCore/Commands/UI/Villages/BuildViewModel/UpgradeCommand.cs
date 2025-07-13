@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.UI.Villages.BuildViewModel
+﻿namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
     [Handler]
     public static partial class UpgradeCommand
@@ -9,8 +7,8 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
 
         private static async ValueTask HandleAsync(
             Command command,
-            AddJobCommand.Handler addJobCommand, GetLayoutBuildingsQuery.Handler getLayoutBuildingsQuery,
-            CancellationToken cancellationToken
+            AddJobCommand.Handler addJobCommand,
+            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery
             )
         {
             var (villageId, location, isMaxLevel) = command;

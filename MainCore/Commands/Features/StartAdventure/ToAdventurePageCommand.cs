@@ -1,21 +1,18 @@
-﻿using MainCore.Constraints;
+﻿#pragma warning disable S1172
 
 namespace MainCore.Commands.Features.StartAdventure
 {
     [Handler]
     public static partial class ToAdventurePageCommand
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand;
+        public sealed record Command : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-
-            var html = browser.Html;
-
-            var adventure = AdventureParser.GetHeroAdventureButton(html);
+            var adventure = AdventureParser.GetHeroAdventureButton(browser.Html);
             if (adventure is null) return Retry.ButtonNotFound("hero adventure");
 
             static bool TableShow(IWebDriver driver)

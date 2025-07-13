@@ -1,6 +1,4 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
     [Handler]
     public static partial class UpdateAccountInfoCommand
@@ -10,13 +8,12 @@ namespace MainCore.Commands.Update
         private static async ValueTask HandleAsync(
             Command command,
             IChromeBrowser browser,
-            AppDbContext context,
-            CancellationToken cancellationToken)
+            AppDbContext context
+            )
         {
             await Task.CompletedTask;
-            var html = browser.Html;
 
-            var dto = Get(html);
+            var dto = Get(browser.Html);
             context.UpdateToDatabase(command.AccountId, dto);
         }
 

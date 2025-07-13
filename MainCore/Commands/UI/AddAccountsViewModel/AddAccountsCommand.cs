@@ -1,18 +1,15 @@
-﻿using MainCore.Constraints;
-using MainCore.Notifications.Behaviors;
-
-namespace MainCore.Commands.UI.AddAccountsViewModel
+﻿namespace MainCore.Commands.UI.AddAccountsViewModel
 {
     [Handler]
-    [Behaviors(typeof(AccountListUpdatedBehavior<,>))]
     public static partial class AddAccountsCommand
     {
         public sealed record Command(List<AccountDto> Dtos) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            AppDbContext context, IUseragentManager useragentManager,
-            CancellationToken cancellationToken
+            AppDbContext context,
+            IUseragentManager useragentManager,
+            IRxQueue rxQueue
             )
         {
             await Task.CompletedTask;
@@ -53,6 +50,9 @@ namespace MainCore.Commands.UI.AddAccountsViewModel
 
             context.AddRange(accounts);
             context.SaveChanges();
+
+            rxQueue.Enqueue(new AccountsModified());
+
             return Result.Ok();
         }
     }

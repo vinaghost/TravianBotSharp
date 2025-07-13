@@ -1,4 +1,6 @@
-﻿using MainCore.Commands.Features.ClaimQuest;
+﻿#pragma warning disable S1172
+
+using MainCore.Commands.Features.ClaimQuest;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -8,11 +10,19 @@ namespace MainCore.Tasks
     {
         public sealed class Task : VillageTask
         {
-            public Task(AccountId accountId, VillageId villageId, string villageName) : base(accountId, villageId, villageName)
+            public Task(AccountId accountId, VillageId villageId) : base(accountId, villageId)
             {
             }
 
             protected override string TaskName => "Claim quest";
+
+            public override bool CanStart(AppDbContext context)
+            {
+                var settingEnable = context.BooleanByName(VillageId, VillageSettingEnums.AutoClaimQuestEnable);
+                if (!settingEnable) return false;
+
+                return true;
+            }
         }
 
         private static async ValueTask<Result> HandleAsync(
@@ -22,9 +32,9 @@ namespace MainCore.Tasks
             CancellationToken cancellationToken)
         {
             Result result;
-            result = await toQuestPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            result = await toQuestPageCommand.HandleAsync(new(), cancellationToken);
             if (result.IsFailed) return result;
-            result = await claimQuestCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            result = await claimQuestCommand.HandleAsync(new(), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }

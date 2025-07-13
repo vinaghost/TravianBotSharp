@@ -86,7 +86,7 @@ jobs:
         run: dotnet restore --locked-mode
       
       - name: Publish
-        run: dotnet publish WPFUI -c Release --no-restore --self-contained -p:PublishSingleFile=true -p:AssemblyVersion=${{needs.version.outputs.version}}
+        run: dotnet publish WPFUI -c Release --no-restore --self-contained -p:PublishSingleFile=true -p:AssemblyVersion=${{needs.version.outputs.version}} -p:RunAnalyzersDuringBuild=True
       
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4.3.3

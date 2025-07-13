@@ -27,22 +27,22 @@ namespace MainCore.Behaviors
             var accountId = request.AccountId;
             var villageId = request.VillageId;
 
-            var (_, isFailed, errors) = await _switchVillageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            var (_, isFailed, errors) = await _switchVillageCommand.HandleAsync(new(villageId), cancellationToken);
             if (isFailed) return (TResponse)Result.Fail(errors);
 
             await _updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
 
-            (_, isFailed, _, errors) = await _updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            (_, isFailed, _, errors) = await _updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
             if (isFailed) return (TResponse)Result.Fail(errors);
 
             var response = await Next(request, cancellationToken);
 
             if (response.IsFailed && !response.HasError<Skip>()) return response;
 
-            (_, isFailed, errors) = await _toDorfCommand.HandleAsync(new(accountId, 0), cancellationToken);
+            (_, isFailed, errors) = await _toDorfCommand.HandleAsync(new(0), cancellationToken);
             if (isFailed) return (TResponse)Result.Fail(errors);
 
-            (_, isFailed, _, errors) = await _updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            (_, isFailed, _, errors) = await _updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
             if (isFailed) return (TResponse)Result.Fail(errors);
 
             await _updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
