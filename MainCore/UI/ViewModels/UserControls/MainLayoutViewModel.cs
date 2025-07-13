@@ -3,6 +3,7 @@ using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reactive.Concurrency;
 using System.Reflection;
 
 namespace MainCore.UI.ViewModels.UserControls
@@ -85,7 +86,7 @@ namespace MainCore.UI.ViewModels.UserControls
         }
 
         [ReactiveCommand]
-        private async Task StatusModified(StatusModified notification)
+        private void StatusModified(StatusModified notification)
         {
             if (Accounts.SelectedItem is null) return;
             var (accountId, status) = notification;
@@ -93,11 +94,11 @@ namespace MainCore.UI.ViewModels.UserControls
             var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
             if (account is null) return;
 
-            await Observable.Start(() =>
+            RxApp.MainThreadScheduler.Schedule(() =>
             {
                 account.Color = status.GetColor();
                 SetPauseText(status);
-            }, RxApp.MainThreadScheduler);
+            });
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
@@ -276,6 +277,7 @@ namespace MainCore.UI.ViewModels.UserControls
 
                 case StatusEnums.Paused:
                     _taskManager.SetStatus(accountId, StatusEnums.Starting);
+                    await Task.Delay(300);
                     _taskManager.Clear(accountId);
                     _rxQueue.Enqueue(new AccountInit(accountId));
                     _taskManager.SetStatus(accountId, StatusEnums.Online);
