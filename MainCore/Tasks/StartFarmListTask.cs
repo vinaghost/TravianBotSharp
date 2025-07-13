@@ -41,7 +41,7 @@ namespace MainCore.Tasks
                 if (result.IsFailed) return result;
             }
 
-            await nextExecuteStartFarmListTaskCommand.HandleAsync(task, cancellationToken);
+            await nextExecuteStartFarmListTaskCommand.HandleAsync(new(task), cancellationToken);
 
             return Result.Ok();
         }

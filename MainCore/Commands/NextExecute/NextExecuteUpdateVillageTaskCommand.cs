@@ -3,18 +3,20 @@
     [Handler]
     public static partial class NextExecuteUpdateVillageTaskCommand
     {
+        public sealed record Command(UpdateVillageTask.Task Task) : ICommand;
+
         private static async ValueTask HandleAsync(
-            UpdateVillageTask.Task task,
+            Command command,
             ISettingService settingService
             )
         {
             await Task.CompletedTask;
             var seconds = settingService.ByName(
-                task.VillageId,
+                command.Task.VillageId,
                 VillageSettingEnums.AutoRefreshMin,
                 VillageSettingEnums.AutoRefreshMax,
                 60);
-            task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
+            command.Task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
         }
     }
 }

@@ -11,10 +11,17 @@
             _logger = logger;
         }
 
+        private static readonly string[] ExcludedCommandNames = new[]
+        {
+            "Update",
+            "Delay",
+            "NextExecute"
+        };
+
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
             var name = request.GetType().FullName;
-            if (!string.IsNullOrEmpty(name) && !name.Contains("Update") && !name.Contains("Delay"))
+            if (!string.IsNullOrEmpty(name) && !ExcludedCommandNames.Any(name.Contains))
             {
                 name = name
                     .Replace("MainCore.", "")

@@ -3,20 +3,22 @@ namespace MainCore.Commands.NextExecute
     [Handler]
     public static partial class NextExecuteTrainTroopTaskCommand
     {
+        public sealed record Command(TrainTroopTask.Task Task) : ICommand;
+
         private static async ValueTask HandleAsync(
-            TrainTroopTask.Task task,
+            Command command,
             ISettingService settingService
             )
         {
             await Task.CompletedTask;
             var seconds = settingService.ByName(
-                task.VillageId,
+                command.Task.VillageId,
                 VillageSettingEnums.TrainTroopRepeatTimeMin,
                 VillageSettingEnums.TrainTroopRepeatTimeMax,
                 60
             );
 
-            task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
+            command.Task.ExecuteAt = DateTime.Now.AddSeconds(seconds);
         }
     }
 }

@@ -62,7 +62,7 @@ namespace MainCore.Tasks
                 if (isFailed) return Result.Fail(errors);
             }
 
-            await nextExecuteUpdateVillageTaskCommand.HandleAsync(task, cancellationToken);
+            await nextExecuteUpdateVillageTaskCommand.HandleAsync(new(task), cancellationToken);
             return Result.Ok();
         }
     }

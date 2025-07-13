@@ -66,7 +66,7 @@ namespace MainCore.Tasks
             }
 
             await saveVillageSettingCommand.HandleAsync(new(task.AccountId, task.VillageId, settings), cancellationToken);
-            await nextExecuteTrainTroopTaskCommand.HandleAsync(task, cancellationToken);
+            await nextExecuteTrainTroopTaskCommand.HandleAsync(new(task), cancellationToken);
             return Result.Ok();
         }
     }

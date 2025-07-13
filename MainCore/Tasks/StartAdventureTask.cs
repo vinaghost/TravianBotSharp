@@ -37,7 +37,7 @@ namespace MainCore.Tasks
             result = await exploreAdventureCommand.HandleAsync(new(), cancellationToken);
             if (result.IsFailed) return result;
 
-            await nextExecuteStartAdventureTaskCommand.HandleAsync(task, cancellationToken);
+            await nextExecuteStartAdventureTaskCommand.HandleAsync(new(task), cancellationToken);
             return Result.Ok();
         }
     }
