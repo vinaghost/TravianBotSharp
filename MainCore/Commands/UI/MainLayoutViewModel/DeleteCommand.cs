@@ -1,10 +1,6 @@
-﻿using MainCore.Constraints;
-using MainCore.Notifications.Behaviors;
-
-namespace MainCore.Commands.UI.MainLayoutViewModel
+﻿namespace MainCore.Commands.UI.MainLayoutViewModel
 {
     [Handler]
-    [Behaviors(typeof(AccountListUpdatedBehavior<,>))]
     public static partial class DeleteCommand
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
@@ -12,7 +8,7 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
         private static async ValueTask<Result> HandleAsync(
             Command command,
             AppDbContext context,
-            CancellationToken cancellationToken
+            IRxQueue rxQueue
             )
         {
             await Task.CompletedTask;
@@ -21,6 +17,9 @@ namespace MainCore.Commands.UI.MainLayoutViewModel
             context.Accounts
                 .Where(x => x.Id == accountId.Value)
                 .ExecuteDelete();
+
+            rxQueue.Enqueue(new AccountsModified());
+
             return Result.Ok();
         }
     }

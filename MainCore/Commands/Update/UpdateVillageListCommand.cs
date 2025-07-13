@@ -1,10 +1,6 @@
-﻿using MainCore.Constraints;
-using MainCore.Notifications.Behaviors;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
     [Handler]
-    [Behaviors(typeof(VillageListUpdatedBehavior<,>))]
     public static partial class UpdateVillageListCommand
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
@@ -13,15 +9,33 @@ namespace MainCore.Commands.Update
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
-            CancellationToken cancellationToken)
+            IRxQueue rxQueue,
+            ITaskManager taskManager)
         {
             await Task.CompletedTask;
-            var html = browser.Html;
+            var accountId = command.AccountId;
 
-            var dtos = VillagePanelParser.Get(html);
+            var dtos = VillagePanelParser.Get(browser.Html);
             if (!dtos.Any()) return;
 
-            context.UpdateToDatabase(command.AccountId, dtos.ToList());
+            context.UpdateToDatabase(accountId, dtos.ToList());
+
+            rxQueue.Enqueue(new VillagesModified(accountId));
+
+            var settingEnable = context.BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
+            if (!settingEnable) return;
+
+            var missingBuildingVillagesSpec = new MissingBuildingVillagesSpec(accountId);
+
+            var villages = context.Villages
+                .WithSpecification(missingBuildingVillagesSpec)
+                .ToList();
+
+            foreach (var village in villages)
+            {
+                if (taskManager.IsExist<UpdateBuildingTask.Task>(accountId, village)) continue;
+                taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(accountId, village));
+            }
         }
 
         private static void UpdateToDatabase(this AppDbContext context, AccountId accountId, List<VillageDto> dtos)

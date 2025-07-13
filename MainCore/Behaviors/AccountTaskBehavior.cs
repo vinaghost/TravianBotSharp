@@ -9,20 +9,18 @@ namespace MainCore.Behaviors
     {
         private readonly ITaskManager _taskManager;
         private readonly IChromeBrowser _browser;
-        private readonly ILogger _logger;
 
         private readonly UpdateAccountInfoCommand.Handler _updateAccountInfoCommand;
         private readonly UpdateVillageListCommand.Handler _updateVillageListCommand;
         private readonly UpdateAdventureCommand.Handler _updateAdventureCommand;
 
-        public AccountTaskBehavior(IChromeBrowser browser, ITaskManager taskManager, UpdateAccountInfoCommand.Handler updateAccountInfoCommand, UpdateVillageListCommand.Handler updateVillageListCommand, UpdateAdventureCommand.Handler updateAdventureCommand, ILogger logger)
+        public AccountTaskBehavior(IChromeBrowser browser, ITaskManager taskManager, UpdateAccountInfoCommand.Handler updateAccountInfoCommand, UpdateVillageListCommand.Handler updateVillageListCommand, UpdateAdventureCommand.Handler updateAdventureCommand)
         {
             _browser = browser;
             _taskManager = taskManager;
             _updateAccountInfoCommand = updateAccountInfoCommand;
             _updateVillageListCommand = updateVillageListCommand;
             _updateAdventureCommand = updateAdventureCommand;
-            _logger = logger;
         }
 
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)

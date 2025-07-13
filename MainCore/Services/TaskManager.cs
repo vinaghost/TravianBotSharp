@@ -7,9 +7,12 @@ namespace MainCore.Services
     {
         private readonly Dictionary<AccountId, TaskQueue> _queues = new();
 
-        public event Action<AccountId> StatusUpdated = delegate { };
+        private readonly IRxQueue _rxQueue;
 
-        public event Action<AccountId> TaskUpdated = delegate { };
+        public TaskManager(IRxQueue rxQueue)
+        {
+            _rxQueue = rxQueue;
+        }
 
         public BaseTask? GetCurrentTask(AccountId accountId)
         {
@@ -87,6 +90,10 @@ namespace MainCore.Services
             }
 
             tasks.Add(task);
+            if (task is VillageTask villageTask)
+            {
+                _rxQueue.Enqueue(new VillageTaskAdded(villageTask));
+            }
             ReOrder(task.AccountId, tasks);
         }
 
@@ -152,14 +159,14 @@ namespace MainCore.Services
             var tasks = GetTaskList(accountId);
             if (tasks.Count == 0) return;
             tasks.Clear();
-            TaskUpdated.Invoke(accountId);
+            _rxQueue.Enqueue(new TasksModified(accountId));
         }
 
         private void ReOrder(AccountId accountId, List<BaseTask> tasks)
         {
             if (tasks.Count <= 1) return;
             tasks.Sort((x, y) => DateTime.Compare(x.ExecuteAt, y.ExecuteAt));
-            TaskUpdated.Invoke(accountId);
+            _rxQueue.Enqueue(new TasksModified(accountId));
         }
 
         public List<BaseTask> GetTaskList(AccountId accountId)
@@ -178,7 +185,7 @@ namespace MainCore.Services
         {
             var queue = GetTaskQueue(accountId);
             queue.Status = status;
-            StatusUpdated.Invoke(accountId);
+            _rxQueue.Enqueue(new StatusModified(accountId, status));
         }
 
         private CancellationTokenSource? GetCancellationTokenSource(AccountId accountId)
@@ -213,6 +220,6 @@ namespace MainCore.Services
         public bool IsExecuting { get; set; } = false;
         public StatusEnums Status { get; set; } = StatusEnums.Offline;
         public CancellationTokenSource? CancellationTokenSource { get; set; }
-        public List<BaseTask> Tasks = [];
+        public List<BaseTask> Tasks { get; } = [];
     }
 }

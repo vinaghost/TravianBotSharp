@@ -1,11 +1,9 @@
-﻿using MainCore.Constraints;
-
-namespace MainCore.Commands.Navigate
+﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
     public static partial class ToDorfCommand
     {
-        public sealed record Command(AccountId AccountId, int Dorf) : IAccountCommand;
+        public sealed record Command(int Dorf) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
@@ -13,7 +11,7 @@ namespace MainCore.Commands.Navigate
            CancellationToken cancellationToken
            )
         {
-            var (accountId, dorf) = command;
+            var dorf = command.Dorf;
 
             var currentUrl = browser.CurrentUrl;
             var currentDorf = GetCurrentDorf(currentUrl);
@@ -28,9 +26,7 @@ namespace MainCore.Commands.Navigate
                 return Result.Ok();
             }
 
-            var html = browser.Html;
-
-            var button = NavigationBarParser.GetDorfButton(html, dorf);
+            var button = NavigationBarParser.GetDorfButton(browser.Html, dorf);
             if (button is null) return Retry.ButtonNotFound($"dorf{dorf}");
 
             Result result;
