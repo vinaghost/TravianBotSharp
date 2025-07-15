@@ -8,12 +8,19 @@
         private static async ValueTask HandleAsync(
            Command command,
            IChromeBrowser browser,
+           AppDbContext context,
            ITaskManager taskManager
            )
         {
             await Task.CompletedTask;
             if (!AdventureParser.CanStartAdventure(browser.Html)) return;
-            taskManager.Add(new StartAdventureTask.Task(command.AccountId));
+            var startAdventureTask = new StartAdventureTask.Task(command.AccountId);
+            if (!startAdventureTask.CanStart(context) || taskManager.IsExist<StartAdventureTask.Task>(command.AccountId))
+            {
+                return;
+            }
+
+            taskManager.Add(startAdventureTask);
         }
     }
 }
