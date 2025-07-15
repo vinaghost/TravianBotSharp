@@ -77,6 +77,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             if (notification.VillageId != VillageId) return;
             await LoadJobCommand.Execute(notification.VillageId);
             await LoadBuildingCommand.Execute(notification.VillageId);
+
+            _taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(AccountId, notification.VillageId));
         }
 
         protected override async Task Load(VillageId villageId)
