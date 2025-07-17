@@ -2,7 +2,7 @@
 
 namespace MainCore.UI.Models.Output
 {
-    public class TaskItem
+    public partial class TaskItem : ReactiveObject
     {
         public TaskItem(BaseTask task)
         {
@@ -11,8 +11,20 @@ namespace MainCore.UI.Models.Output
             Stage = task.Stage;
         }
 
-        public string Task { get; set; }
-        public DateTime ExecuteAt { get; set; }
-        public StageEnums Stage { get; set; }
+        [Reactive]
+        private string _task = "";
+
+        [Reactive]
+        private DateTime _executeAt = DateTime.MinValue;
+
+        [Reactive]
+        private StageEnums _stage = StageEnums.Waiting;
+
+        public void CopyFrom(TaskItem taskItem)
+        {
+            Task = taskItem.Task;
+            ExecuteAt = taskItem.ExecuteAt;
+            Stage = taskItem.Stage;
+        }
     }
 }

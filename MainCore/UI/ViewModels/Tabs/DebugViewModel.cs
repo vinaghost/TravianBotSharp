@@ -1,5 +1,6 @@
 ﻿using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
+using Serilog.Events;
 using Serilog.Templates;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -15,6 +16,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private static readonly ExpressionTemplate _template = new("{@t:HH:mm:ss} [{@l:u3}] {@m}\n{@x}");
 
         public ObservableCollection<TaskItem> Tasks { get; } = [];
+        private LinkedList<LogEvent> _logEvents = [];
 
         [Reactive]
         private string _logs = "";
@@ -29,41 +31,82 @@ namespace MainCore.UI.ViewModels.Tabs
 
             LoadTaskCommand.Subscribe(items =>
             {
-                Tasks.Clear();
-                items.ForEach(Tasks.Add);
+                if (Tasks.Count == 0)
+                {
+                    foreach (var input in items)
+                    {
+                        Tasks.Add(input);
+                    }
+                    return;
+                }
+
+                if (items.Count == 0)
+                {
+                    Tasks.Clear();
+                    return;
+                }
+
+                for (var i = 0; i < items.Count; i++)
+                {
+                    var item = items[i];
+                    if (i > Tasks.Count - 1)
+                    {
+                        Tasks.Add(item);
+                        continue;
+                    }
+
+                    Tasks[i].CopyFrom(item);
+                }
+
+                while (Tasks.Count > items.Count)
+                {
+                    Tasks.RemoveAt(Tasks.Count - 1);
+                }
             });
 
             LoadLogCommand.BindTo(this, vm => vm.Logs);
+            ReloadLogCommand.BindTo(this, vm => vm.Logs);
             LoadEndpointAddressCommand.BindTo(this, vm => vm.EndpointAddress);
 
-            rxQueue.RegisterCommand<LogEmitted>(LogEmittedCommand);
-            rxQueue.RegisterCommand<TasksModified>(TasksModifiedCommand);
+            rxQueue.GetObservable<LogEmitted>()
+                .InvokeCommand(LogEmittedCommand);
+
+            rxQueue.GetObservable<TasksModified>()
+                .InvokeCommand(TasksModifiedCommand);
+
+            LogEmittedCommand
+                .Where(x => x)
+                .Select(_ => Unit.Default)
+                .Throttle(TimeSpan.FromMilliseconds(100), RxApp.TaskpoolScheduler)
+                .ObserveOn(RxApp.TaskpoolScheduler)
+                .InvokeCommand(ReloadLogCommand);
+
+            TasksModifiedCommand
+                .Where(x => x)
+                .Select(_ => AccountId)
+                .Throttle(TimeSpan.FromMilliseconds(100), RxApp.TaskpoolScheduler)
+                .ObserveOn(RxApp.TaskpoolScheduler)
+                .InvokeCommand(LoadTaskCommand);
         }
 
         [ReactiveCommand]
-        private async Task LogEmitted(LogEmitted notification)
+        private bool LogEmitted(LogEmitted notification)
         {
-            if (!IsActive) return;
+            if (!IsActive) return false;
             var (accountId, logEvent) = notification;
-            if (accountId != AccountId) return;
+            if (accountId != AccountId) return false;
 
-            using var sw = new StringWriter(new StringBuilder());
-            _template.Format(logEvent, sw);
-            sw.Write(Logs);
-
-            await Observable.Start(() =>
-            {
-                Logs = sw.ToString();
-            }, RxApp.MainThreadScheduler);
+            _logEvents.AddFirst(logEvent);
+            return true;
         }
 
         [ReactiveCommand]
-        private async Task TasksModified(TasksModified notification)
+        private bool TasksModified(TasksModified notification)
         {
-            if (!IsActive) return;
+            if (!IsActive) return false;
             var accountId = notification.AccountId;
-            if (accountId != AccountId) return;
-            await LoadTaskCommand.Execute(accountId);
+            if (accountId != AccountId) return false;
+            return true;
         }
 
         protected override async Task Load(AccountId accountId)
@@ -90,6 +133,18 @@ namespace MainCore.UI.ViewModels.Tabs
             using var sw = new StringWriter(new StringBuilder());
 
             foreach (var log in logs)
+            {
+                _template.Format(log, sw);
+                _logEvents.AddFirst(log);
+            }
+            return sw.ToString();
+        }
+
+        [ReactiveCommand]
+        private string ReloadLog()
+        {
+            using var sw = new StringWriter(new StringBuilder());
+            foreach (var log in _logEvents)
             {
                 _template.Format(log, sw);
             }

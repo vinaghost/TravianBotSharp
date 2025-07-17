@@ -164,9 +164,9 @@ namespace MainCore.Services
 
         private void ReOrder(AccountId accountId, List<BaseTask> tasks)
         {
+            _rxQueue.Enqueue(new TasksModified(accountId));
             if (tasks.Count <= 1) return;
             tasks.Sort((x, y) => DateTime.Compare(x.ExecuteAt, y.ExecuteAt));
-            _rxQueue.Enqueue(new TasksModified(accountId));
         }
 
         public List<BaseTask> GetTaskList(AccountId accountId)
