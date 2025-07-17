@@ -175,7 +175,11 @@ namespace MainCore.UI.ViewModels.UserControls
             }
 
             var loginCommand = scope.ServiceProvider.GetRequiredService<LoginCommand.Handler>();
-            await loginCommand.HandleAsync(new(accountId, result.Value));
+
+            await Observable.StartAsync(async () =>
+            {
+                await loginCommand.HandleAsync(new(accountId, result.Value));
+            }, RxApp.TaskpoolScheduler);
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute))]

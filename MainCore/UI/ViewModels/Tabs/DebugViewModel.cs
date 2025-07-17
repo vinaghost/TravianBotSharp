@@ -131,7 +131,7 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             var logs = _logSink.GetLogs(accountId);
             using var sw = new StringWriter(new StringBuilder());
-
+            _logEvents.Clear();
             foreach (var log in logs)
             {
                 _template.Format(log, sw);
