@@ -213,7 +213,10 @@ namespace MainCore.UI.ViewModels.UserControls
 
             using var scope = _serviceScopeFactory.CreateScope(accountId);
             var logoutCommand = scope.ServiceProvider.GetRequiredService<LogoutCommand.Handler>();
-            await logoutCommand.HandleAsync(new(accountId));
+            await Observable.StartAsync(async () =>
+            {
+                await logoutCommand.HandleAsync(new(accountId));
+            }, RxApp.TaskpoolScheduler);
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
@@ -235,7 +238,11 @@ namespace MainCore.UI.ViewModels.UserControls
                     break;
 
                 case StatusEnums.Online:
-                    await _taskManager.StopCurrentTask(accountId);
+                    await Observable.StartAsync(async () =>
+                    {
+                        await _taskManager.StopCurrentTask(accountId);
+                    }, RxApp.TaskpoolScheduler);
+
                     break;
 
                 case StatusEnums.Offline:
