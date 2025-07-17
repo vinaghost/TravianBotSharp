@@ -91,7 +91,12 @@ namespace MainCore.Services
 
         public void RegisterCommand<T>(ReactiveCommand<T, Unit> command) where T : INotification
         {
-            _connectableObservable.OfType<T>().InvokeCommand(command);
+            GetObservable<T>().InvokeCommand(command);
+        }
+
+        public IObservable<T> GetObservable<T>() where T : INotification
+        {
+            return _connectableObservable.OfType<T>();
         }
     }
 }

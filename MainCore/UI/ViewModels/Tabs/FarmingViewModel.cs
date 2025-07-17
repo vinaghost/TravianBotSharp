@@ -56,15 +56,23 @@ namespace MainCore.UI.ViewModels.Tabs
                     ActiveText = _activeTexts[color];
                 });
 
-            rxQueue.RegisterCommand<FarmsModified>(FarmsModifiedCommand);
+            rxQueue.GetObservable<FarmsModified>()
+                .InvokeCommand(FarmsModifiedCommand);
+
+            FarmsModifiedCommand
+                .Where(x => x)
+                .Select(_ => AccountId)
+                .Throttle(TimeSpan.FromMilliseconds(1000), RxApp.TaskpoolScheduler)
+                .ObserveOn(RxApp.TaskpoolScheduler)
+                .InvokeCommand(LoadFarmListCommand);
         }
 
         [ReactiveCommand]
-        public async Task FarmsModified(FarmsModified notification)
+        public bool FarmsModified(FarmsModified notification)
         {
-            if (!IsActive) return;
-            if (notification.AccountId != AccountId) return;
-            await LoadFarmListCommand.Execute(notification.AccountId);
+            if (!IsActive) return false;
+            if (notification.AccountId != AccountId) return false;
+            return true;
         }
 
         protected override async Task Load(AccountId accountId)
