@@ -69,19 +69,15 @@ namespace MainCore.UI.ViewModels.UserControls
                 )
                 .BindTo(Accounts, x => x.IsEnable);
 
-            rxQueue.RegisterCommand<AccountsModified>(AccountModifiedCommand);
             rxQueue.RegisterCommand<StatusModified>(StatusModifiedCommand);
+
+            rxQueue.GetObservable<AccountsModified>()
+               .InvokeCommand(LoadAccountCommand);
         }
 
         public async Task Load()
         {
             await LoadVersionCommand.Execute();
-            await LoadAccountCommand.Execute();
-        }
-
-        [ReactiveCommand]
-        private async Task AccountModified(AccountsModified notification)
-        {
             await LoadAccountCommand.Execute();
         }
 
