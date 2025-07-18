@@ -36,15 +36,23 @@ namespace MainCore.UI.ViewModels.Tabs
 
             LoadVillageCommand.Subscribe(Villages.Load);
 
-            rxQueue.RegisterCommand(VillagesModifiedCommand);
+            rxQueue.GetObservable<VillagesModified>()
+                .InvokeCommand(VillagesModifiedCommand);
+
+            VillagesModifiedCommand
+                .Where(x => x)
+                .Select(_ => AccountId)
+                .Throttle(TimeSpan.FromMilliseconds(1000), RxApp.TaskpoolScheduler)
+                .ObserveOn(RxApp.TaskpoolScheduler)
+                .InvokeCommand(LoadVillageCommand);
         }
 
         [ReactiveCommand]
-        public async Task VillagesModified(VillagesModified notification)
+        public bool VillagesModified(VillagesModified notification)
         {
-            if (!IsActive) return;
-            if (notification.AccountId != AccountId) return;
-            await LoadVillageCommand.Execute(notification.AccountId);
+            if (!IsActive) return false;
+            if (notification.AccountId != AccountId) return false;
+            return true;
         }
 
         protected override async Task Load(AccountId accountId)

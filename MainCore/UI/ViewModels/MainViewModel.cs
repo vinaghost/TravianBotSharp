@@ -27,30 +27,29 @@ namespace MainCore.UI.ViewModels
             {
                 await _waitingOverlayViewModel.ChangeMessage("installing chrome driver");
                 var chromeDriverInstaller = scope.ServiceProvider.GetRequiredService<IChromeDriverInstaller>();
-                await Task.Run(chromeDriverInstaller.Install);
-
-                await _waitingOverlayViewModel.ChangeMessage("installing chrome extension");
-                var chromeManager = scope.ServiceProvider.GetRequiredService<IChromeManager>();
-                await Task.Run(chromeManager.LoadExtension);
-
-                await _waitingOverlayViewModel.ChangeMessage("loading chrome useragent");
                 var useragentManager = scope.ServiceProvider.GetRequiredService<IUseragentManager>();
-                await Task.Run(useragentManager.Load);
 
-                await _waitingOverlayViewModel.ChangeMessage("loading database");
-
+                var installChromeDriver = Observable.StartAsync(chromeDriverInstaller.Install, RxApp.TaskpoolScheduler);
+                var loadUseragent = Observable.StartAsync(useragentManager.Load, RxApp.TaskpoolScheduler);
+                var chromeManager = scope.ServiceProvider.GetRequiredService<IChromeManager>();
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var notExist = await context.Database.EnsureCreatedAsync();
-
-                if (!notExist)
+                var installExtension = Observable.Start(chromeManager.LoadExtension, RxApp.TaskpoolScheduler);
+                var loadDatabase = Observable.StartAsync(async () =>
                 {
-                    await Task.Run(context.FillAccountSettings);
-                    await Task.Run(context.FillVillageSettings);
+                    var notExist = await context.Database.EnsureCreatedAsync();
 
-                    await Task.Run(context.QueueBuildings
-                        .Where(x => x.Level == -1)
-                        .ExecuteDelete);
-                }
+                    if (!notExist)
+                    {
+                        context.FillAccountSettings();
+                        context.FillVillageSettings();
+
+                        context.QueueBuildings
+                            .Where(x => x.Level == -1)
+                            .ExecuteDelete();
+                    }
+                }, RxApp.TaskpoolScheduler);
+
+                await Observable.Merge(installExtension, loadDatabase, installChromeDriver, loadUseragent);
 
                 await _waitingOverlayViewModel.ChangeMessage("loading program layout");
                 MainLayoutViewModel = scope.ServiceProvider.GetRequiredService<MainLayoutViewModel>();

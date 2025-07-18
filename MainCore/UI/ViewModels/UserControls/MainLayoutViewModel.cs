@@ -69,19 +69,15 @@ namespace MainCore.UI.ViewModels.UserControls
                 )
                 .BindTo(Accounts, x => x.IsEnable);
 
-            rxQueue.RegisterCommand<AccountsModified>(AccountModifiedCommand);
             rxQueue.RegisterCommand<StatusModified>(StatusModifiedCommand);
+
+            rxQueue.GetObservable<AccountsModified>()
+               .InvokeCommand(LoadAccountCommand);
         }
 
         public async Task Load()
         {
             await LoadVersionCommand.Execute();
-            await LoadAccountCommand.Execute();
-        }
-
-        [ReactiveCommand]
-        private async Task AccountModified(AccountsModified notification)
-        {
             await LoadAccountCommand.Execute();
         }
 
@@ -179,7 +175,11 @@ namespace MainCore.UI.ViewModels.UserControls
             }
 
             var loginCommand = scope.ServiceProvider.GetRequiredService<LoginCommand.Handler>();
-            await loginCommand.HandleAsync(new(accountId, result.Value));
+
+            await Observable.StartAsync(async () =>
+            {
+                await loginCommand.HandleAsync(new(accountId, result.Value));
+            }, RxApp.TaskpoolScheduler);
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
@@ -213,7 +213,10 @@ namespace MainCore.UI.ViewModels.UserControls
 
             using var scope = _serviceScopeFactory.CreateScope(accountId);
             var logoutCommand = scope.ServiceProvider.GetRequiredService<LogoutCommand.Handler>();
-            await logoutCommand.HandleAsync(new(accountId));
+            await Observable.StartAsync(async () =>
+            {
+                await logoutCommand.HandleAsync(new(accountId));
+            }, RxApp.TaskpoolScheduler);
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
@@ -235,7 +238,11 @@ namespace MainCore.UI.ViewModels.UserControls
                     break;
 
                 case StatusEnums.Online:
-                    await _taskManager.StopCurrentTask(accountId);
+                    await Observable.StartAsync(async () =>
+                    {
+                        await _taskManager.StopCurrentTask(accountId);
+                    }, RxApp.TaskpoolScheduler);
+
                     break;
 
                 case StatusEnums.Offline:

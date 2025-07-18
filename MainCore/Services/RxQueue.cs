@@ -36,11 +36,14 @@ namespace MainCore.Services
             using var scope = _serviceScopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
+
             taskManager.Add(new LoginTask.Task(accountId), first: true);
+
             var workTime = context.ByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
             var sleepTask = new SleepTask.Task(accountId);
             sleepTask.ExecuteAt = DateTime.Now.AddMinutes(workTime);
             taskManager.AddOrUpdate<SleepTask.Task>(sleepTask);
+
             var startAdventureTask = new StartAdventureTask.Task(accountId);
             if (startAdventureTask.CanStart(context) && !taskManager.IsExist<StartAdventureTask.Task>(accountId))
             {
@@ -91,7 +94,12 @@ namespace MainCore.Services
 
         public void RegisterCommand<T>(ReactiveCommand<T, Unit> command) where T : INotification
         {
-            _connectableObservable.OfType<T>().InvokeCommand(command);
+            GetObservable<T>().InvokeCommand(command);
+        }
+
+        public IObservable<T> GetObservable<T>() where T : INotification
+        {
+            return _connectableObservable.OfType<T>();
         }
     }
 }
