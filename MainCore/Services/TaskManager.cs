@@ -45,6 +45,7 @@ namespace MainCore.Services
             }
             else
             {
+                oldTask.ExecuteAt = task.ExecuteAt;
                 Update(oldTask, first);
             }
         }
@@ -108,16 +109,7 @@ namespace MainCore.Services
                 {
                     task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
                 }
-                else
-                {
-                    task.ExecuteAt = DateTime.Now;
-                }
             }
-            else
-            {
-                task.ExecuteAt = DateTime.Now;
-            }
-
             ReOrder(task.AccountId, tasks);
         }
 
