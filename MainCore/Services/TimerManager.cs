@@ -14,15 +14,17 @@ namespace MainCore.Services
         private bool _isShutdown = false;
 
         private readonly ITaskManager _taskManager;
+        private readonly IRxQueue _rxQueue;
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
 
         private static ResiliencePropertyKey<ContextData> contextDataKey = new(nameof(ContextData));
         private readonly ResiliencePipeline<Result> _pipeline;
 
-        public TimerManager(ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory)
+        public TimerManager(ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory, IRxQueue rxQueue)
         {
             _taskManager = taskManager;
             _serviceScopeFactory = serviceScopeFactory;
+            _rxQueue = rxQueue;
 
             Func<OnRetryArguments<Result>, ValueTask> OnRetry = async static args =>
             {
@@ -83,6 +85,8 @@ namespace MainCore.Services
             taskQueue.CancellationTokenSource = cts;
 
             task.Stage = StageEnums.Executing;
+            _rxQueue.Enqueue(new TasksModified(accountId));
+
             var cacheExecuteTime = task.ExecuteAt;
 
             using var scope = _serviceScopeFactory.CreateScope(accountId);
@@ -107,6 +111,8 @@ namespace MainCore.Services
             ///===========================================================///
 
             task.Stage = StageEnums.Waiting;
+            _rxQueue.Enqueue(new TasksModified(accountId));
+
             taskQueue.IsExecuting = false;
 
             cts.Dispose();

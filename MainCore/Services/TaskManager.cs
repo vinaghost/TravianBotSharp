@@ -45,6 +45,7 @@ namespace MainCore.Services
             }
             else
             {
+                oldTask.ExecuteAt = task.ExecuteAt;
                 Update(oldTask, first);
             }
         }
@@ -108,16 +109,7 @@ namespace MainCore.Services
                 {
                     task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
                 }
-                else
-                {
-                    task.ExecuteAt = DateTime.Now;
-                }
             }
-            else
-            {
-                task.ExecuteAt = DateTime.Now;
-            }
-
             ReOrder(task.AccountId, tasks);
         }
 
@@ -164,9 +156,9 @@ namespace MainCore.Services
 
         private void ReOrder(AccountId accountId, List<BaseTask> tasks)
         {
+            _rxQueue.Enqueue(new TasksModified(accountId));
             if (tasks.Count <= 1) return;
             tasks.Sort((x, y) => DateTime.Compare(x.ExecuteAt, y.ExecuteAt));
-            _rxQueue.Enqueue(new TasksModified(accountId));
         }
 
         public List<BaseTask> GetTaskList(AccountId accountId)
