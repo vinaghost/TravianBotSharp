@@ -72,6 +72,7 @@ namespace MainCore.UI.ViewModels.UserControls
             rxQueue.RegisterCommand<StatusModified>(StatusModifiedCommand);
 
             rxQueue.GetObservable<AccountsModified>()
+                .Select(x => Unit.Default)
                .InvokeCommand(LoadAccountCommand);
         }
 
