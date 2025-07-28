@@ -5,7 +5,7 @@
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        private static async ValueTask<List<HeroItemDto>> HandleAsync(
+        private static async ValueTask HandleAsync(
             Command command,
             IChromeBrowser browser,
             AppDbContext context
