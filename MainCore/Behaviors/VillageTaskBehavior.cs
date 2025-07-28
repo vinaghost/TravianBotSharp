@@ -32,7 +32,7 @@ namespace MainCore.Behaviors
 
             await _updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
 
-            (_, isFailed, _, errors) = await _updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+            (_, isFailed, errors) = await _updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
             if (isFailed) return (TResponse)Result.Fail(errors);
 
             var response = await Next(request, cancellationToken);
@@ -42,7 +42,7 @@ namespace MainCore.Behaviors
             (_, isFailed, errors) = await _toDorfCommand.HandleAsync(new(0), cancellationToken);
             if (isFailed) return (TResponse)Result.Fail(errors);
 
-            (_, isFailed, _, errors) = await _updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+            (_, isFailed, errors) = await _updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
             if (isFailed) return (TResponse)Result.Fail(errors);
 
             await _updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);

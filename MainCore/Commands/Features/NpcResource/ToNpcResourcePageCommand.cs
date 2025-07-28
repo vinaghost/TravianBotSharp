@@ -9,7 +9,7 @@
             Command command,
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
-            ToBuildingCommand.Handler toBuildingCommand,
+            ToBuildingByTypeCommand.Handler toBuildingCommand,
             SwitchTabCommand.Handler switchTabCommand,
             CancellationToken cancellationToken)
         {
@@ -18,20 +18,10 @@
             var result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
             if (result.IsFailed) return result;
 
-            var (_, isFailed, response, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+            var (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
-            var marketLocation = response.Buildings
-                .Where(x => x.Type == BuildingEnums.Marketplace)
-                .Select(x => x.Location)
-                .FirstOrDefault();
-
-            if (marketLocation == default)
-            {
-                return MissingBuilding.Error(BuildingEnums.Marketplace);
-            }
-
-            result = await toBuildingCommand.HandleAsync(new(marketLocation), cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(BuildingEnums.Marketplace), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await switchTabCommand.HandleAsync(new(0), cancellationToken);

@@ -11,8 +11,14 @@
            CancellationToken cancellationToken
            )
         {
-            var tabIndex = command.TabIndex;
+            return await SwitchTab(browser, command.TabIndex, cancellationToken);
+        }
 
+        public static async ValueTask<Result> SwitchTab(
+            IChromeBrowser browser,
+            int tabIndex,
+            CancellationToken cancellationToken)
+        {
             var count = BuildingTabParser.CountTab(browser.Html);
             if (tabIndex > count) return Retry.OutOfIndexTab(tabIndex, count);
             var tab = BuildingTabParser.GetTab(browser.Html, tabIndex);

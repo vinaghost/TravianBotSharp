@@ -15,6 +15,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
             DeleteJobByIdCommand.Handler deleteJobByIdCommand,
             AddJobCommand.Handler addJobCommand,
+            ValidateJobCompleteCommand.Handler validateJobCompleteCommand,
             ILogger logger,
             IRxQueue rxQueue,
             CancellationToken cancellationToken
@@ -29,7 +30,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 var result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
                 if (result.IsFailed) return result;
 
-                var (_, isFailed, updateBuildingValue, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+                var (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
                 if (isFailed) return Result.Fail(errors);
 
                 (_, isFailed, var job, errors) = await getJobQuery.HandleAsync(new(accountId, villageId), cancellationToken);
@@ -60,11 +61,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 result = await toDorfCommand.HandleAsync(new(dorf), cancellationToken);
                 if (result.IsFailed) return result;
 
-                (_, isFailed, updateBuildingValue, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+                (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
                 if (isFailed) return Result.Fail(errors);
 
-                var (buildings, queueBuildings) = updateBuildingValue;
-                if (IsJobComplete(job, buildings, queueBuildings))
+                if (await validateJobCompleteCommand.HandleAsync(new ValidateJobCompleteCommand.Command(villageId, job), cancellationToken))
                 {
                     await deleteJobByIdCommand.HandleAsync(new(job.Id), cancellationToken);
                     rxQueue.Enqueue(new JobsModified(villageId));

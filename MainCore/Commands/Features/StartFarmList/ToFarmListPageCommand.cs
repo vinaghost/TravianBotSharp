@@ -11,7 +11,7 @@
             SwitchVillageCommand.Handler switchVillageCommand,
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
-            ToBuildingCommand.Handler toBuildingCommand,
+            ToBuildingByLocationCommand.Handler toBuildingCommand,
             SwitchTabCommand.Handler switchTabCommand,
             IDelayService delayService,
             CancellationToken cancellationToken)
@@ -26,7 +26,7 @@
             result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
             if (result.IsFailed) return result;
 
-            var (_, isFailed, _, errors) = await updateBuildingCommand.HandleAsync(new(rallypointVillageId), cancellationToken);
+            var (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(rallypointVillageId), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
             result = await toBuildingCommand.HandleAsync(new(39), cancellationToken);

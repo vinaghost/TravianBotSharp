@@ -81,8 +81,8 @@ namespace MainCore.Tasks
 
                 logger.Information("Upgrade for {Type} at location {Location} completed successfully.", plan.Type, plan.Location);
 
-                (_, isFailed, _, errors) = await updateBuildingCommand.HandleAsync(new(task.VillageId), cancellationToken);
-                if (isFailed) return result;
+                (_, isFailed, var _errors) = await updateBuildingCommand.HandleAsync(new(task.VillageId), cancellationToken);
+                if (isFailed) return Result.Fail(_errors);
             }
         }
     }
