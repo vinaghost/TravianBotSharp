@@ -18,8 +18,8 @@
             var result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
             if (result.IsFailed) return result;
 
-            var (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
+            result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+            if (result.IsFailed) return result;
 
             result = await toBuildingCommand.HandleAsync(new(BuildingEnums.Marketplace), cancellationToken);
             if (result.IsFailed) return result;

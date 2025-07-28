@@ -27,15 +27,14 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             var requiredResource = GetRequiredResource(browser, plan.Type);
 
-            Result result = await validateEnoughResourceCommand.HandleAsync(new(villageId, requiredResource), cancellationToken);
+            var result = await validateEnoughResourceCommand.HandleAsync(new(villageId, requiredResource), cancellationToken);
             if (!result.IsFailed) return Result.Ok();
 
             if (result.HasError<LackOfFreeCrop>()) return result;
             if (result.HasError<StorageLimit>()) return result;
 
             var useHeroResource = settingService.BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
-
-            if (!useHeroResource && result.HasError<MissingResource>(out var MissingResourceErrors)) return Result.Fail(MissingResourceErrors);
+            if (!useHeroResource) return result;
 
             logger.Information("Don't have enough resource. Use resource in hero invetory to upgrade building");
             var missingResource = await getMissingResourceCommand.HandleAsync(new(villageId, requiredResource), cancellationToken);
