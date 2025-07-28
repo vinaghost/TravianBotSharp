@@ -15,7 +15,6 @@
 
             var dtos = GetItems(browser.Html).ToList();
             context.Update(command.AccountId, dtos);
-            return dtos;
         }
 
         private static IEnumerable<HeroItemDto> GetItems(HtmlDocument doc)

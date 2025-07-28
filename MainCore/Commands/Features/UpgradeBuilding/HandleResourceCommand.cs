@@ -14,6 +14,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             Command command,
             UpdateStorageCommand.Handler updateStorageCommand,
             UseHeroResourceCommand.Handler useHeroResourceCommand,
+            ValidateEnoughResourceCommand.Handler validateEnoughResourceCommand,
+            GetMissingResourceCommand.Handler getMissingResourceCommand,
             ISettingService settingService,
             IChromeBrowser browser,
             ILogger logger,
@@ -21,11 +23,11 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         {
             var (accountId, villageId, plan) = command;
 
-            var storage = await updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            await updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
 
             var requiredResource = GetRequiredResource(browser, plan.Type);
 
-            Result result = storage.IsResourceEnough(requiredResource);
+            Result result = await validateEnoughResourceCommand.HandleAsync(new(villageId, requiredResource), cancellationToken);
             if (!result.IsFailed) return Result.Ok();
 
             if (result.HasError<LackOfFreeCrop>()) return result;
@@ -36,13 +38,12 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (!useHeroResource && result.HasError<MissingResource>(out var MissingResourceErrors)) return Result.Fail(MissingResourceErrors);
 
             logger.Information("Don't have enough resource. Use resource in hero invetory to upgrade building");
-            var missingResource = storage.GetMissingResource(requiredResource);
+            var missingResource = await getMissingResourceCommand.HandleAsync(new(villageId, requiredResource), cancellationToken);
 
             var url = browser.CurrentUrl;
 
             result = await useHeroResourceCommand.HandleAsync(new(accountId, missingResource), cancellationToken);
             await browser.Navigate(url, cancellationToken);
-
             if (result.IsFailed) return result;
 
             return Result.Ok();
