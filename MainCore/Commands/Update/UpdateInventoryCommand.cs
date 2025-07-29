@@ -5,7 +5,7 @@
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        private static async ValueTask<List<HeroItemDto>> HandleAsync(
+        private static async ValueTask HandleAsync(
             Command command,
             IChromeBrowser browser,
             AppDbContext context
@@ -15,7 +15,6 @@
 
             var dtos = GetItems(browser.Html).ToList();
             context.Update(command.AccountId, dtos);
-            return dtos;
         }
 
         private static IEnumerable<HeroItemDto> GetItems(HtmlDocument doc)

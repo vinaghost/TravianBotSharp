@@ -9,13 +9,35 @@
             Command command,
             IChromeBrowser browser,
             AppDbContext context,
+            ILogger logger,
             CancellationToken cancellationToken
         )
         {
             var (villageId, plan) = command;
 
-            Result result;
+            var queueBuilding = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.Location == plan.Location)
+                .FirstOrDefault();
 
+            if (queueBuilding is not null)
+            {
+                logger.Information("{Type} at location {Location} is in queue at level {Level}", queueBuilding.Type, queueBuilding.Location, queueBuilding.Level);
+            }
+            else
+            {
+                var building = context.Buildings
+               .Where(x => x.VillageId == villageId.Value)
+               .Where(x => x.Location == plan.Location)
+               .FirstOrDefault();
+
+                if (building is not null)
+                {
+                    logger.Information("{Type} at location {Location} is at level {Level}", building.Type, building.Location, building.Level);
+                }
+            }
+
+            Result result;
             if (context.IsUpgradeable(villageId, plan))
             {
                 var isSpecialUpgrade = context.BooleanByName(villageId, VillageSettingEnums.UseSpecialUpgrade);

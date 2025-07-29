@@ -5,20 +5,18 @@
     {
         public sealed record Command(VillageId VillageId) : IVillageCommand;
 
-        public sealed record Response(List<BuildingDto> Buildings, List<QueueBuilding> QueueBuildings);
-
-        private static async ValueTask<Result<Response>> HandleAsync(
-            Command command,
-            IChromeBrowser browser,
-            AppDbContext context,
-            IRxQueue rxQueue
-            )
+        private static async ValueTask<Result> HandleAsync(
+                 Command command,
+                 IChromeBrowser browser,
+                 AppDbContext context,
+                 IRxQueue rxQueue
+                 )
         {
             await Task.CompletedTask;
             var villageId = command.VillageId;
 
             var dtoBuilding = GetBuildings(browser.CurrentUrl, browser.Html).ToList();
-            if (dtoBuilding.Count == 0) return context.GetResponse(villageId);
+            if (dtoBuilding.Count == 0) return Result.Ok();
 
             var dtoQueueBuilding = BuildingLayoutParser.GetQueueBuilding(browser.Html).ToList();
 
@@ -28,21 +26,7 @@
             context.UpdateToDatabase(villageId, dtoBuilding, dtoQueueBuilding);
 
             rxQueue.Enqueue(new BuildingsModified(villageId));
-            return context.GetResponse(villageId);
-        }
-
-        private static Response GetResponse(this AppDbContext context, VillageId villageId)
-        {
-            var buildings = context.Buildings
-                .AsNoTracking()
-                .Where(x => x.VillageId == villageId.Value)
-                .ToDto()
-                .ToList();
-            var queueBuildings = context.QueueBuildings
-                .AsNoTracking()
-                .Where(x => x.VillageId == villageId.Value)
-                .ToList();
-            return new Response(buildings, queueBuildings);
+            return Result.Ok();
         }
 
         private static IEnumerable<BuildingDto> GetBuildings(string url, HtmlDocument html)
