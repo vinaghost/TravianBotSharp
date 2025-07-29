@@ -30,10 +30,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 var result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
                 if (result.IsFailed) return result;
 
-                var (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
-                if (isFailed) return Result.Fail(errors);
+                result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+                if (result.IsFailed) return result;
 
-                (_, isFailed, var job, errors) = await getJobQuery.HandleAsync(new(accountId, villageId), cancellationToken);
+                var (_, isFailed, job, errors) = await getJobQuery.HandleAsync(new(accountId, villageId), cancellationToken);
                 if (isFailed) return Result.Fail(errors);
 
                 if (job.Type == JobTypeEnums.ResourceBuild)
@@ -61,8 +61,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 result = await toDorfCommand.HandleAsync(new(dorf), cancellationToken);
                 if (result.IsFailed) return result;
 
-                (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
-                if (isFailed) return Result.Fail(errors);
+                result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+                if (result.IsFailed) return result;
 
                 if (await validateJobCompleteCommand.HandleAsync(new ValidateJobCompleteCommand.Command(villageId, job), cancellationToken))
                 {
