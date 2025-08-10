@@ -44,6 +44,7 @@ namespace MainCore.Tasks
             SaveVillageSettingCommand.Handler saveVillageSettingCommand,
             NpcResourceCommand.Handler npcResourceCommand,
             ILogger logger,
+            ITaskManager taskManager,
             CancellationToken cancellationToken)
         {
             Result result;
@@ -72,6 +73,9 @@ namespace MainCore.Tasks
                 }
                 return result;
             }
+
+            taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId));
+
             return Result.Ok();
         }
     }
