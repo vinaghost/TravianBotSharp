@@ -68,6 +68,14 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             if (notification.VillageId != VillageId) return;
             await LoadQueueCommand.Execute(notification.VillageId);
             await LoadBuildingCommand.Execute(notification.VillageId);
+
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var task = new CompleteImmediatelyTask.Task(AccountId, notification.VillageId);
+            if (task.CanStart(context) && !_taskManager.IsExist<CompleteImmediatelyTask.Task>(AccountId, notification.VillageId))
+            {
+                _taskManager.Add(task);
+            }
         }
 
         [ReactiveCommand]
