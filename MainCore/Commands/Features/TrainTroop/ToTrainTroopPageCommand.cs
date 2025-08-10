@@ -9,7 +9,7 @@
             Command command,
             ToDorfCommand.Handler toDorfCommand,
             UpdateBuildingCommand.Handler updateBuildingCommand,
-            ToBuildingCommand.Handler toBuildingCommand,
+            ToBuildingByTypeCommand.Handler toBuildingCommand,
             CancellationToken cancellationToken)
         {
             var (villageId, building) = command;
@@ -17,17 +17,10 @@
             var result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
             if (result.IsFailed) return result;
 
-            var (_, isFailed, response, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+            var (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
-            var buildingLocation = response.Buildings
-                .Where(x => x.Type == building)
-                .Select(x => x.Location)
-                .FirstOrDefault();
-
-            if (buildingLocation == default) return MissingBuilding.Error(building);
-
-            result = await toBuildingCommand.HandleAsync(new(buildingLocation), cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(building), cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

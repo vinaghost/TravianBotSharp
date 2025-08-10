@@ -5,7 +5,7 @@
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
-        private static async ValueTask<StorageDto> HandleAsync(
+        private static async ValueTask HandleAsync(
             Command command,
             AppDbContext context,
             IChromeBrowser browser,
@@ -23,7 +23,6 @@
             {
                 taskManager.Add(task);
             }
-            return dto;
         }
 
         private static StorageDto Get(HtmlDocument doc)

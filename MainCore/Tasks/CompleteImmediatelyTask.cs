@@ -61,7 +61,7 @@ namespace MainCore.Tasks
             result = await completeImmediatelyCommand.HandleAsync(new(), cancellationToken);
             if (result.IsFailed) return result;
 
-            taskManager.Add(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId));
+            taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId));
 
             return Result.Ok();
         }

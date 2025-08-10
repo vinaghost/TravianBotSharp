@@ -3,7 +3,7 @@
 namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public static partial class ToBuildingCommand
+    public static partial class ToBuildingByLocationCommand
     {
         public sealed record Command(int Location) : ICommand;
 
@@ -13,8 +13,14 @@ namespace MainCore.Commands.Navigate
            CancellationToken cancellationToken
            )
         {
-            var location = command.Location;
+            return await ToBuilding(command.Location, browser, cancellationToken);
+        }
 
+        public static async ValueTask<Result> ToBuilding(
+            int location,
+            IChromeBrowser browser,
+            CancellationToken cancellationToken)
+        {
             var node = GetBuilding(browser.Html, location);
             if (node is null) return Retry.NotFound($"{location}", "nodeBuilding");
 
@@ -62,26 +68,25 @@ namespace MainCore.Commands.Navigate
             return Result.Ok();
         }
 
-        private static HtmlNode GetBuilding(HtmlDocument doc, int location)
+        private static HtmlNode? GetBuilding(HtmlDocument doc, int location)
         {
             if (location < 19) return GetField(doc, location);
             return GetInfrastructure(doc, location);
         }
 
-        private static HtmlNode GetField(HtmlDocument doc, int location)
+        private static HtmlNode? GetField(HtmlDocument doc, int location)
         {
             var node = doc.DocumentNode
                    .Descendants("a")
-                   .First(x => x.HasClass($"buildingSlot{location}"));
+                   .FirstOrDefault(x => x.HasClass($"buildingSlot{location}"));
             return node;
         }
 
-        private static HtmlNode GetInfrastructure(HtmlDocument doc, int location)
+        private static HtmlNode? GetInfrastructure(HtmlDocument doc, int location)
         {
             var tmpLocation = location - 18;
             var div = doc.DocumentNode
                 .SelectSingleNode($"//*[@id='villageContent']/div[{tmpLocation}]");
-            if (div is null) throw new NullReferenceException($"Cannot find //*[@id='villageContent']/div[{tmpLocation}]");
             return div;
         }
     }

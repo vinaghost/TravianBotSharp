@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.Features.NpcResource;
+using MainCore.Commands.UI.Misc;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -40,12 +41,27 @@ namespace MainCore.Tasks
         private static async ValueTask<Result> HandleAsync(
             Task task,
             ToNpcResourcePageCommand.Handler toNpcResourcePageCommand,
+            SaveVillageSettingCommand.Handler saveVillageSettingCommand,
             NpcResourceCommand.Handler npcResourceCommand,
+            ILogger logger,
             CancellationToken cancellationToken)
         {
             Result result;
             result = await toNpcResourcePageCommand.HandleAsync(new(task.VillageId), cancellationToken);
-            if (result.IsFailed) return result;
+            if (result.IsFailed)
+            {
+                if (result.HasError<MissingBuilding>())
+                {
+                    var settings = new Dictionary<VillageSettingEnums, int>() {
+                        { VillageSettingEnums.AutoNPCEnable, 0 }
+                    };
+                    await saveVillageSettingCommand.HandleAsync(new(task.AccountId, task.VillageId, settings), cancellationToken);
+                    logger.Warning("Disable NPC for this village.");
+                    return new Skip();
+                }
+                return result;
+            }
+
             result = await npcResourceCommand.HandleAsync(new(task.VillageId), cancellationToken);
             if (result.IsFailed)
             {

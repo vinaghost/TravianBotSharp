@@ -39,10 +39,10 @@ namespace MainCore.Tasks
                     var nextExecuteErrors = errors.OfType<NextExecuteError>().OrderBy(x => x.NextExecute).ToList();
                     if (nextExecuteErrors.Count > 0)
                     {
-                        task.ExecuteAt = nextExecuteErrors[0].NextExecute;
+                        task.ExecuteAt = nextExecuteErrors.Select(x => x.NextExecute).Min();
                     }
 
-                    return new Skip().CausedBy(errors);
+                    return new Skip();
                 }
 
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
@@ -53,24 +53,21 @@ namespace MainCore.Tasks
                 result = await handleResourceCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
                 if (result.IsFailed)
                 {
-                    if (result.HasError<LackOfFreeCrop>(out var freeCropErrors))
+                    if (result.HasError<LackOfFreeCrop>())
                     {
-                        var message = string.Join(Environment.NewLine, freeCropErrors.Select(x => x.Message));
-                        logger.Warning("{Error}", message);
-
                         await addCroplandCommand.HandleAsync(new(task.VillageId), cancellationToken);
                         continue;
                     }
 
-                    if (result.HasError<StorageLimit>(out var storageLimitErrors))
+                    if (result.HasError<StorageLimit>())
                     {
-                        return new Stop().CausedBy(storageLimitErrors);
+                        return new Stop();
                     }
-                    if (result.HasError<MissingResource>(out var MissingResourceErrors))
+                    if (result.HasError<MissingResource>())
                     {
                         var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
                         task.ExecuteAt = DateTime.Now.Add(time);
-                        return new Skip().CausedBy(MissingResourceErrors);
+                        return new Skip();
                     }
 
                     return result;
@@ -81,8 +78,8 @@ namespace MainCore.Tasks
 
                 logger.Information("Upgrade for {Type} at location {Location} completed successfully.", plan.Type, plan.Location);
 
-                (_, isFailed, _, errors) = await updateBuildingCommand.HandleAsync(new(task.VillageId), cancellationToken);
-                if (isFailed) return result;
+                result = await updateBuildingCommand.HandleAsync(new(task.VillageId), cancellationToken);
+                if (result.IsFailed) return result;
             }
         }
     }
