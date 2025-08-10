@@ -20,6 +20,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
 
             var queueBuilding = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Location == plan.Location)
                 .OrderByDescending(x => x.Level)
                 .Select(x => x.Level)
@@ -28,6 +29,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (queueBuilding >= plan.Level) return true;
 
             var villageBuilding = context.Buildings
+                .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Location == plan.Location)
                 .Select(x => x.Level)
                 .FirstOrDefault();

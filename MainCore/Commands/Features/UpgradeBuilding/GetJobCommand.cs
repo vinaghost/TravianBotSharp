@@ -92,7 +92,10 @@ namespace MainCore.Commands.Misc
                 {
                     if (completeQueueBuilding.Location == -1) continue;
 
-                    var building = context.Buildings.FirstOrDefault(x => x.Location == completeQueueBuilding.Location);
+                    var building = context.Buildings
+                        .Where(x => x.VillageId == villageId.Value)
+                        .Where(x => x.Location == completeQueueBuilding.Location)
+                        .FirstOrDefault();
                     if (building is null) continue;
 
                     building.Level = completeQueueBuilding.Level;
