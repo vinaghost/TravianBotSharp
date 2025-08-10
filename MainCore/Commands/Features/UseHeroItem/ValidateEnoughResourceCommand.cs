@@ -23,6 +23,7 @@
             var (accountId, resource) = command;
 
             var resourceItems = context.HeroItems
+               .Where(x => x.AccountId == accountId.Value)
                .Where(x => ResourceItemTypes.Contains(x.Type))
                .OrderBy(x => x.Type)
                .ToList();
