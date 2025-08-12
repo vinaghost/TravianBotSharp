@@ -21,7 +21,7 @@
             result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await toBuildingCommand.HandleAsync(new(BuildingEnums.Marketplace), cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(villageId, BuildingEnums.Marketplace), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await switchTabCommand.HandleAsync(new(0), cancellationToken);
