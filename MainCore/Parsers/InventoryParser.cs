@@ -45,7 +45,7 @@
                 if (itemSlot.ChildNodes.Count < 2) continue;
                 var itemNode = itemSlot.ChildNodes[1];
                 var classes = itemNode.GetClasses();
-                if (classes.Count() != 2) continue;
+                if (classes.Count() < 2) continue;
 
                 var itemValue = classes.ElementAt(1);
 
