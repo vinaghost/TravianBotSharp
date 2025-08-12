@@ -3,7 +3,7 @@
     [Handler]
     public static partial class ToBuildingByTypeCommand
     {
-        public sealed record Command(VillageId VillageId, BuildingEnums Type) : ICommand;
+        public sealed record Command(VillageId VillageId, BuildingEnums Type) : IVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
