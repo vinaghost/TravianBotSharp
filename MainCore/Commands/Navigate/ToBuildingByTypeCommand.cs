@@ -3,7 +3,7 @@
     [Handler]
     public static partial class ToBuildingByTypeCommand
     {
-        public sealed record Command(VillageId VillageId, BuildingEnums Type) : ICommand;
+        public sealed record Command(BuildingEnums Type) : ICommand;
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
@@ -13,10 +13,9 @@
            )
         {
             var marketLocation = context.Buildings
-                .Where(x => x.VillageId == command.VillageId.Value)
-                .Where(x => x.Type == command.Type)
-                .Select(x => x.Location)
-                .FirstOrDefault();
+               .Where(x => x.Type == command.Type)
+               .Select(x => x.Location)
+               .FirstOrDefault();
 
             if (marketLocation == default)
             {

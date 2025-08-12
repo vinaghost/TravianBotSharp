@@ -20,7 +20,7 @@
             var (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
-            result = await toBuildingCommand.HandleAsync(new(villageId, building), cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(building), cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();
