@@ -128,24 +128,25 @@ namespace MainCore.Services
             return result;
         }
 
-        private async Task<Result<IWebElement>> GetElements(By by, CancellationToken cancellationToken)
+        private async Task<Result<IWebElement>> GetElement(By by, CancellationToken cancellationToken)
         {
-            if (Driver is null) return Result.Fail<IWebElement>("Driver is not initialized.");
-            void wait()
+            IWebElement wait()
             {
-                _wait.Until((driver) =>
+                var element = _wait.Until((driver) =>
                 {
                     var elements = driver.FindElements(by);
-                    if (elements.Count == 0) return false;
+                    if (elements.Count == 0) return null;
                     var element = elements[0];
-                    if (!element.Displayed || !element.Enabled) return false;
-                    return true;
+                    if (!element.Displayed || !element.Enabled) return null;
+                    return element;
                 }, cancellationToken);
+                return element;
             }
 
             try
             {
-                await Task.Run(wait, cancellationToken);
+                var element = await Task.Run(wait, cancellationToken);
+                return Result.Ok(element);
             }
             catch (OperationCanceledException)
             {
@@ -155,18 +156,12 @@ namespace MainCore.Services
             {
                 return Retry.BrowserTimeout(ex.Message);
             }
-
-            var elements = Driver.FindElements(by);
-            if (elements.Count == 0) return Retry.ElementNotFound(by);
-            var element = elements[0];
-            if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable(by);
-            return Result.Ok(element);
         }
 
         public async Task<Result> Click(By by, CancellationToken cancellationToken)
         {
             if (Driver is null) return Stop.DriverNotReady;
-            var (_, isFailed, element, errors) = await GetElements(by, cancellationToken);
+            var (_, isFailed, element, errors) = await GetElement(by, cancellationToken);
             if (isFailed) return Result.Fail(errors);
             await Task.Run(new Actions(Driver).Click(element).Perform);
             return Result.Ok();
@@ -174,7 +169,7 @@ namespace MainCore.Services
 
         public async Task<Result> Input(By by, string content, CancellationToken cancellationToken)
         {
-            var (_, isFailed, element, errors) = await GetElements(by, cancellationToken);
+            var (_, isFailed, element, errors) = await GetElement(by, cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
             void input()
