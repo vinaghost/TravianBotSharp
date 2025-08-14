@@ -38,7 +38,7 @@
             }
 
             Result result;
-            result = await browser.Click(By.XPath(tab.XPath));
+            result = await browser.Click(By.XPath(tab.XPath), cancellationToken);
             if (result.IsFailed) return result;
             result = await browser.Wait(tabActived, cancellationToken);
             if (result.IsFailed) return result;

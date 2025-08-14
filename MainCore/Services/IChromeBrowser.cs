@@ -5,17 +5,17 @@ namespace MainCore.Services
     public interface IChromeBrowser
     {
         string CurrentUrl { get; }
-        ChromeDriver Driver { get; }
+        ChromeDriver? Driver { get; }
         HtmlDocument Html { get; }
         ILogger Logger { get; set; }
 
-        Task<Result> Click(By by);
+        Task<Result> Click(By by, CancellationToken cancellationToken);
 
         Task Close();
 
         Task<Result> ExecuteJsScript(string javascript);
 
-        Task<Result> Input(By by, string content);
+        Task<Result> Input(By by, string content, CancellationToken cancellationToken);
 
         Task<Result> Navigate(string url, CancellationToken cancellationToken);
 
