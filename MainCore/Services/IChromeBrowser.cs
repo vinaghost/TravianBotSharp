@@ -5,7 +5,7 @@ namespace MainCore.Services
     public interface IChromeBrowser
     {
         string CurrentUrl { get; }
-        ChromeDriver Driver { get; }
+        ChromeDriver? Driver { get; }
         HtmlDocument Html { get; }
         ILogger Logger { get; set; }
 

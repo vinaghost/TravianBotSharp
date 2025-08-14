@@ -126,6 +126,8 @@
         )
         {
             var driver = browser.Driver;
+            if (driver is null) return Stop.DriverNotReady;
+
             var current = driver.CurrentWindowHandle;
             while (driver.WindowHandles.Count > 1)
             {
