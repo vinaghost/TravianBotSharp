@@ -34,12 +34,12 @@ namespace MainCore.Commands.Features.ClaimQuest
                     quest = QuestParser.GetQuestCollectButton(browser.Html);
                     if (quest is null) return Result.Ok();
 
-                    result = await browser.Click(By.XPath(quest.XPath));
+                    result = await browser.Click(By.XPath(quest.XPath), cancellationToken);
                     if (result.IsFailed) return result;
                     continue;
                 }
 
-                result = await browser.Click(By.XPath(quest.XPath));
+                result = await browser.Click(By.XPath(quest.XPath), cancellationToken);
                 if (result.IsFailed) return result;
                 await delayService.DelayClick(cancellationToken);
             }

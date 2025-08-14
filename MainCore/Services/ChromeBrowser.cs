@@ -126,22 +126,52 @@ namespace MainCore.Services
             return result;
         }
 
-        public async Task<Result> Click(By by)
+        private async Task<Result<IWebElement>> GetElements(By by, CancellationToken cancellationToken)
         {
-            var elements = Driver.FindElements(by);
-            if (elements.Count == 0) return Retry.ElementNotFound(by);
-            var element = elements[0];
-            if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable(by);
+            void wait()
+            {
+                _wait.Until((driver) =>
+                {
+                    var elements = driver.FindElements(by);
+                    if (elements.Count == 0) return false;
+                    var element = elements[0];
+                    if (!element.Displayed || !element.Enabled) return false;
+                    return true;
+                }, cancellationToken);
+            }
+
+            try
+            {
+                await Task.Run(wait, cancellationToken);
+
+                var elements = Driver.FindElements(by);
+                if (elements.Count == 0) return Retry.ElementNotFound(by);
+                var element = elements[0];
+                if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable(by);
+                return Result.Ok(element);
+            }
+            catch (OperationCanceledException)
+            {
+                return Cancel.Error;
+            }
+            catch (WebDriverTimeoutException ex)
+            {
+                return Retry.BrowserTimeout(ex.Message);
+            }
+        }
+
+        public async Task<Result> Click(By by, CancellationToken cancellationToken)
+        {
+            var (_, isFailed, element, errors) = await GetElements(by, cancellationToken);
+            if (isFailed) return Result.Fail(errors);
             await Task.Run(new Actions(Driver).Click(element).Perform);
             return Result.Ok();
         }
 
-        public async Task<Result> Input(By by, string content)
+        public async Task<Result> Input(By by, string content, CancellationToken cancellationToken)
         {
-            var elements = Driver.FindElements(by);
-            if (elements.Count == 0) return Retry.ElementNotFound(by);
-            var element = elements[0];
-            if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable(by);
+            var (_, isFailed, element, errors) = await GetElements(by, cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
             void input()
             {

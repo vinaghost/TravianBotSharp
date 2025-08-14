@@ -36,7 +36,7 @@ namespace MainCore.Commands.Navigate
                 else
                 {
                     var css = $"#villageContent > div.buildingSlot.a{location} > svg > path";
-                    result = await browser.Click(By.CssSelector(css));
+                    result = await browser.Click(By.CssSelector(css), cancellationToken);
                     if (result.IsFailed) return result;
                     result = await browser.WaitPageChanged("build.php", cancellationToken);
                     if (result.IsFailed) return result;
@@ -59,7 +59,7 @@ namespace MainCore.Commands.Navigate
                 }
                 else
                 {
-                    result = await browser.Click(By.XPath(node.XPath));
+                    result = await browser.Click(By.XPath(node.XPath), cancellationToken);
                     if (result.IsFailed) return result;
                 }
                 result = await browser.WaitPageChanged("build.php", cancellationToken);

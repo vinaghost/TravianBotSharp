@@ -27,7 +27,7 @@ namespace MainCore.Commands.Features.StartAdventure
                 return continueButton is not null;
             }
 
-            var result = await browser.Click(By.XPath(adventureButton.XPath));
+            var result = await browser.Click(By.XPath(adventureButton.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await browser.Wait(ContinueShow, cancellationToken);

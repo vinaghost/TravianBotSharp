@@ -19,7 +19,7 @@
             if (result.IsFailed) return result;
             await delayService.DelayClick(cancellationToken);
 
-            result = await EnterAmount(browser, amount);
+            result = await EnterAmount(browser, amount, cancellationToken);
             if (result.IsFailed) return result;
             await delayService.DelayClick(cancellationToken);
 
@@ -46,7 +46,7 @@
             }
 
             Result result;
-            result = await browser.Click(By.XPath(node.XPath));
+            result = await browser.Click(By.XPath(node.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);
@@ -56,14 +56,14 @@
 
         private static async Task<Result> EnterAmount(
             IChromeBrowser browser,
-            long amount
-            )
+            long amount,
+            CancellationToken cancellationToken)
         {
             var node = InventoryParser.GetAmountBox(browser.Html);
             if (node is null) return Retry.TextboxNotFound("amount");
 
             Result result;
-            result = await browser.Input(By.XPath(node.XPath), amount.ToString());
+            result = await browser.Input(By.XPath(node.XPath), amount.ToString(), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }
@@ -83,7 +83,7 @@
             }
 
             Result result;
-            result = await browser.Click(By.XPath(node.XPath));
+            result = await browser.Click(By.XPath(node.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);

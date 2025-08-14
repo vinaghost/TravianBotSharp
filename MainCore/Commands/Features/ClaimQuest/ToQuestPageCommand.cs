@@ -22,7 +22,7 @@ namespace MainCore.Commands.Features.ClaimQuest
                 return QuestParser.IsQuestPage(doc);
             }
 
-            var result = await browser.Click(By.XPath(adventure.XPath));
+            var result = await browser.Click(By.XPath(adventure.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await browser.WaitPageChanged("tasks", TableShow, cancellationToken);
