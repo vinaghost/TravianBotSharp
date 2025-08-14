@@ -28,7 +28,7 @@
             }
 
             Result result;
-            result = await browser.Click(By.XPath(node.XPath));
+            result = await browser.Click(By.XPath(node.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await browser.Wait(villageChanged, cancellationToken);

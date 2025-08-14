@@ -15,7 +15,7 @@ namespace MainCore.Commands.Features.UseHeroItem
             var avatar = InventoryParser.GetHeroAvatar(browser.Html);
             if (avatar is null) return Retry.ButtonNotFound("avatar hero");
 
-            var result = await browser.Click(By.XPath(avatar.XPath));
+            var result = await browser.Click(By.XPath(avatar.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             static bool TabActived(IWebDriver driver)
