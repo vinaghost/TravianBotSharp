@@ -9,19 +9,20 @@ namespace MainCore.Commands.Features.DisableContextualHelp
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser
+            IChromeBrowser browser,
+            CancellationToken cancellationToken
             )
         {
             var option = OptionParser.GetHideContextualHelpOption(browser.Html);
             if (option is null) return Retry.NotFound("hide contextual help", "option");
 
-            var result = await browser.Click(By.XPath(option.XPath));
+            var result = await browser.Click(By.XPath(option.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             var button = OptionParser.GetSubmitButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("submit");
 
-            result = await browser.Click(By.XPath(button.XPath));
+            result = await browser.Click(By.XPath(button.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

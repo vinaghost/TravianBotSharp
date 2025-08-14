@@ -19,7 +19,7 @@ namespace MainCore.Commands.Features.CompleteImmediately
             var completeNowButton = CompleteImmediatelyParser.GetCompleteButton(browser.Html);
             if (completeNowButton is null) return Retry.ButtonNotFound("complete now");
 
-            var result = await browser.Click(By.XPath(completeNowButton.XPath));
+            var result = await browser.Click(By.XPath(completeNowButton.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             static bool ConfirmShown(IWebDriver driver)
@@ -35,7 +35,7 @@ namespace MainCore.Commands.Features.CompleteImmediately
             var confirmButton = CompleteImmediatelyParser.GetConfirmButton(browser.Html);
             if (confirmButton is null) return Retry.ButtonNotFound("confirm complete now");
 
-            result = await browser.Click(By.XPath(confirmButton.XPath));
+            result = await browser.Click(By.XPath(confirmButton.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             static bool QueueDifferent(IWebDriver driver, int oldQueueCount)

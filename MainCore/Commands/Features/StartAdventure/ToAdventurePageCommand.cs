@@ -22,7 +22,7 @@ namespace MainCore.Commands.Features.StartAdventure
                 return AdventureParser.IsAdventurePage(doc);
             }
 
-            var result = await browser.Click(By.XPath(adventure.XPath));
+            var result = await browser.Click(By.XPath(adventure.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await browser.WaitPageChanged("adventures", TableShow, cancellationToken);

@@ -50,7 +50,7 @@
                 }
             }
 
-            result = await InputAmount(browser, values);
+            result = await InputAmount(browser, values, cancellationToken);
             if (result.IsFailed) return result;
 
             browser.Logger.Information("Current resource:");
@@ -126,7 +126,7 @@
                 return NpcResourceParser.IsNpcDialog(doc);
             }
 
-            var result = await browser.Click(By.XPath(button.XPath));
+            var result = await browser.Click(By.XPath(button.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await browser.Wait(DialogShown, cancellationToken);
@@ -135,13 +135,13 @@
             return Result.Ok();
         }
 
-        private static async Task<Result> InputAmount(IChromeBrowser browser, long[] values)
+        private static async Task<Result> InputAmount(IChromeBrowser browser, long[] values, CancellationToken cancellationToken)
         {
             var inputs = NpcResourceParser.GetInputs(browser.Html).ToArray();
 
             for (var i = 0; i < 4; i++)
             {
-                var result = await browser.Input(By.XPath(inputs[i].XPath), $"{values[i]}");
+                var result = await browser.Input(By.XPath(inputs[i].XPath), $"{values[i]}", cancellationToken);
                 if (result.IsFailed) return result;
             }
 
@@ -198,7 +198,7 @@
             var button = NpcResourceParser.GetDistributeButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("distribute");
 
-            result = await browser.Click(By.XPath(button.XPath));
+            result = await browser.Click(By.XPath(button.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();
@@ -222,7 +222,7 @@
             var button = NpcResourceParser.GetRedeemButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("redeem");
 
-            result = await browser.Click(By.XPath(button.XPath));
+            result = await browser.Click(By.XPath(button.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

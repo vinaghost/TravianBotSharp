@@ -9,13 +9,14 @@ namespace MainCore.Commands.Features.DisableContextualHelp
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser
+            IChromeBrowser browser,
+            CancellationToken cancellationToken
             )
         {
             var button = OptionParser.GetOptionButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("options");
 
-            var result = await browser.Click(By.XPath(button.XPath));
+            var result = await browser.Click(By.XPath(button.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();
