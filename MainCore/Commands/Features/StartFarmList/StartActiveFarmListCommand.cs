@@ -25,7 +25,7 @@
                 var startButton = FarmListParser.GetStartButton(browser.Html, farmList);
                 if (startButton is null) return Retry.ButtonNotFound($"Start farm {farmList}");
 
-                var result = await browser.Click(By.XPath(startButton.XPath));
+                var result = await browser.Click(By.XPath(startButton.XPath), cancellationToken);
                 if (result.IsFailed) return result;
 
                 await delayService.DelayClick(cancellationToken);

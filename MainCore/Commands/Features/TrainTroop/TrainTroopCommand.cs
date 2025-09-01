@@ -33,7 +33,7 @@ namespace MainCore.Commands.Features.TrainTroop
                 }
             }
 
-            var result = await TrainTroop(browser, troop, amount);
+            var result = await TrainTroop(browser, troop, amount, cancellationToken);
             if (result.IsFailed) return result;
 
             logger.Information("Troop training for {Troop} with amount {Amount} is done.", troop, amount);
@@ -61,19 +61,20 @@ namespace MainCore.Commands.Features.TrainTroop
         private static async ValueTask<Result> TrainTroop(
             IChromeBrowser browser,
             TroopEnums troop,
-            long amount)
+            long amount,
+            CancellationToken cancellationToken)
         {
             var inputBox = TrainTroopParser.GetInputBox(browser.Html, troop);
             if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
 
             Result result;
-            result = await browser.Input(By.XPath(inputBox.XPath), $"{amount}");
+            result = await browser.Input(By.XPath(inputBox.XPath), $"{amount}", cancellationToken);
             if (result.IsFailed) return result;
 
             var trainButton = TrainTroopParser.GetTrainButton(browser.Html);
             if (trainButton is null) return Retry.ButtonNotFound("train troop");
 
-            result = await browser.Click(By.XPath(trainButton.XPath));
+            result = await browser.Click(By.XPath(trainButton.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

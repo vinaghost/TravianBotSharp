@@ -30,7 +30,7 @@
             if (button is null) return Retry.ButtonNotFound($"dorf{dorf}");
 
             Result result;
-            result = await browser.Click(By.XPath(button.XPath));
+            result = await browser.Click(By.XPath(button.XPath), cancellationToken);
             if (result.IsFailed) return result;
             result = await browser.WaitPageChanged($"dorf{dorf}", cancellationToken);
             if (result.IsFailed) return result;

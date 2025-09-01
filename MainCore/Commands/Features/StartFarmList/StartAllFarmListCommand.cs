@@ -9,13 +9,14 @@ namespace MainCore.Commands.Features.StartFarmList
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser
+            IChromeBrowser browser,
+            CancellationToken cancellationToken
             )
         {
             var startAllButton = FarmListParser.GetStartAllButton(browser.Html);
             if (startAllButton is null) return Retry.ButtonNotFound("Start all farms");
 
-            var result = await browser.Click(By.XPath(startAllButton.XPath));
+            var result = await browser.Click(By.XPath(startAllButton.XPath), cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

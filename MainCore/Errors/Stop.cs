@@ -16,5 +16,7 @@
 
         public static Stop AllAccessNotWorking => new("All accesses not working");
         public static Stop LackOfAccess => new("Last access is reused, it may get MH's attention");
+
+        public static Stop DriverNotReady => new("Driver is not ready.");
     }
 }
