@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.UI.AddAccountsViewModel
+namespace MainCore.Commands.UI.AddAccountsViewModel
 {
     [Handler]
     public static partial class AddAccountsCommand

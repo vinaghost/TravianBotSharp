@@ -1,4 +1,4 @@
-﻿using MainCore.UI.ViewModels.Abstract;
+using MainCore.UI.ViewModels.Abstract;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.UserControls

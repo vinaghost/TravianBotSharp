@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Features;
+using MainCore.Commands.Features;
 using MainCore.Commands.Features.DisableContextualHelp;
 using MainCore.Tasks.Base;
 
@@ -18,7 +18,7 @@ namespace MainCore.Tasks
             ToOptionsPageCommand.Handler toOptionsPageCommand,
             DisableContextualHelpCommand.Handler disableContextualHelpCommand,
             ToDorfCommand.Handler toDorfCommand,
-            IChromeBrowser chromeBrowser,
+            IBrowser chromeBrowser,
             CancellationToken cancellationToken)
         {
             Result result;

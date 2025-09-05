@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Features.NpcResource;
+using MainCore.Commands.Features.NpcResource;
 using MainCore.Commands.UI.Misc;
 using MainCore.Tasks.Base;
 

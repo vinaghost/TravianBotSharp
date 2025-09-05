@@ -1,4 +1,4 @@
-﻿using MainCore.UI.ViewModels.Tabs.Villages;
+using MainCore.UI.ViewModels.Tabs.Villages;
 using ReactiveUI;
 
 namespace WPFUI.Views.Tabs.Villages

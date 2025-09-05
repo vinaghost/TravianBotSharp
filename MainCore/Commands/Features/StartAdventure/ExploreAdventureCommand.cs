@@ -1,4 +1,4 @@
-﻿#pragma warning disable S1172
+#pragma warning disable S1172
 
 namespace MainCore.Commands.Features.StartAdventure
 {
@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.StartAdventure
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
+            IBrowser browser,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -27,7 +27,7 @@ namespace MainCore.Commands.Features.StartAdventure
                 return continueButton is not null;
             }
 
-            var result = await browser.Click(By.XPath(adventureButton.XPath), cancellationToken);
+            var result = await browser.Click(By.XPath(adventureButton.XPath));
             if (result.IsFailed) return result;
 
             result = await browser.Wait(ContinueShow, cancellationToken);

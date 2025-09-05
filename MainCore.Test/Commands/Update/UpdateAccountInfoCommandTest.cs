@@ -1,4 +1,4 @@
-﻿using HtmlAgilityPack;
+using HtmlAgilityPack;
 using MainCore.Commands.Update;
 using MainCore.Entities;
 using MainCore.Enums;
@@ -17,7 +17,7 @@ namespace MainCore.Test.Commands.Update
             using var context = new FakeDbContextFactory().CreateDbContext(true);
             var html = new HtmlDocument();
             html.Load(PlusAccount);
-            var browser = Substitute.For<IChromeBrowser>();
+            var browser = Substitute.For<IBrowser>();
             browser.Html.Returns(html);
             var handleBehavior = new UpdateAccountInfoCommand.HandleBehavior(browser, context);
 
@@ -50,7 +50,7 @@ namespace MainCore.Test.Commands.Update
             context.SaveChanges();
             var html = new HtmlDocument();
             html.Load(PlusAccount);
-            var browser = Substitute.For<IChromeBrowser>();
+            var browser = Substitute.For<IBrowser>();
             browser.Html.Returns(html);
             var handleBehavior = new UpdateAccountInfoCommand.HandleBehavior(browser, context);
             var command = new UpdateAccountInfoCommand.Command(new AccountId(1));

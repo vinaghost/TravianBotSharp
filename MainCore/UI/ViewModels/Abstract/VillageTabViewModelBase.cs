@@ -1,4 +1,4 @@
-﻿using MainCore.UI.Stores;
+using MainCore.UI.Stores;
 
 namespace MainCore.UI.ViewModels.Abstract
 {

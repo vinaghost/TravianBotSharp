@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Update
+namespace MainCore.Commands.Update
 {
     [Handler]
     public static partial class UpdateStorageCommand
@@ -8,7 +8,7 @@
         private static async ValueTask HandleAsync(
             Command command,
             AppDbContext context,
-            IChromeBrowser browser,
+            IBrowser browser,
             ITaskManager taskManager
             )
         {

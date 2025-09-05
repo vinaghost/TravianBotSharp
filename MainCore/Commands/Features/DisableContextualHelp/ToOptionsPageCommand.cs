@@ -1,4 +1,4 @@
-﻿#pragma warning disable S1172
+#pragma warning disable S1172
 
 namespace MainCore.Commands.Features.DisableContextualHelp
 {
@@ -9,14 +9,13 @@ namespace MainCore.Commands.Features.DisableContextualHelp
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
-            CancellationToken cancellationToken
+            IBrowser browser
             )
         {
             var button = OptionParser.GetOptionButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("options");
 
-            var result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            var result = await browser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result;
 
             return Result.Ok();

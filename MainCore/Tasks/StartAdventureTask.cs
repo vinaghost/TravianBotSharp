@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Features.StartAdventure;
+using MainCore.Commands.Features.StartAdventure;
 using MainCore.Commands.NextExecute;
 using MainCore.Tasks.Base;
 

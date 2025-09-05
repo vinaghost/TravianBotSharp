@@ -1,4 +1,4 @@
-﻿using MainCore.UI.ViewModels.Abstract;
+using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.Tabs;
 
 namespace MainCore.UI.Stores

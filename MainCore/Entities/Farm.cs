@@ -1,4 +1,4 @@
-﻿using StronglyTypedIds;
+using StronglyTypedIds;
 
 #nullable disable
 

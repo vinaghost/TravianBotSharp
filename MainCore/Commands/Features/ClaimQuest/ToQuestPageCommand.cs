@@ -1,4 +1,4 @@
-﻿#pragma warning disable S1172
+#pragma warning disable S1172
 
 namespace MainCore.Commands.Features.ClaimQuest
 {
@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.ClaimQuest
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
+            IBrowser browser,
             CancellationToken cancellationToken)
         {
             var adventure = QuestParser.GetQuestMaster(browser.Html);
@@ -22,7 +22,7 @@ namespace MainCore.Commands.Features.ClaimQuest
                 return QuestParser.IsQuestPage(doc);
             }
 
-            var result = await browser.Click(By.XPath(adventure.XPath), cancellationToken);
+            var result = await browser.Click(By.XPath(adventure.XPath));
             if (result.IsFailed) return result;
 
             result = await browser.WaitPageChanged("tasks", TableShow, cancellationToken);

@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.UI.MainLayoutViewModel
+namespace MainCore.Commands.UI.MainLayoutViewModel
 {
     [Handler]
     public static partial class LoginCommand
@@ -17,7 +17,7 @@
         {
             var (accountId, access) = command;
 
-            logger.Information("Using connection {Proxy} to start chrome", access.Proxy);
+            logger.Information("Using connection {Proxy} to start browser", access.Proxy);
 
             try
             {

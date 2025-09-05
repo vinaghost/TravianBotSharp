@@ -1,4 +1,4 @@
-﻿
+
 namespace MainCore.UI.ViewModels.UserControls
 {
     public interface IWaitingOverlayViewModel

@@ -1,4 +1,4 @@
-﻿using FluentResults;
+using FluentResults;
 using Immediate.Handlers.Shared;
 using MainCore.Behaviors;
 using MainCore.Constraints;

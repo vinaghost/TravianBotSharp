@@ -1,4 +1,4 @@
-﻿namespace MainCore.Services
+namespace MainCore.Services
 {
     [RegisterScoped<ISettingService, SettingService>]
     public class SettingService : ISettingService

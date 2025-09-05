@@ -1,4 +1,4 @@
-﻿using Humanizer;
+using Humanizer;
 using MainCore.Commands.UI.Villages.BuildViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;

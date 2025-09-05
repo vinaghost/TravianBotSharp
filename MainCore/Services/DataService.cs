@@ -1,4 +1,4 @@
-﻿namespace MainCore.Services
+namespace MainCore.Services
 {
     [RegisterScoped<IDataService, DataService>]
     public sealed class DataService : IDataService

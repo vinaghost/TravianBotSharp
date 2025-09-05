@@ -1,4 +1,4 @@
-﻿using MainCore.Behaviors;
+using MainCore.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -55,15 +55,15 @@ namespace MainCore
                 services.AddMainCoreBehaviors();
                 services.AddMainCoreHandlers();
 
-                services.AddScoped<IChromeBrowser>(sp =>
+                services.AddScoped<IBrowser>(sp =>
                 {
                     var dataService = sp.GetRequiredService<IDataService>();
                     if (dataService.AccountId == AccountId.Empty) throw new InvalidOperationException("AccountId is empty");
-                    var chromeManager = sp.GetRequiredService<IChromeManager>();
+                    var browserManager = sp.GetRequiredService<IBrowserManager>();
                     var logger = Log
                         .ForContext("Account", dataService.AccountData)
                         .ForContext("AccountId", dataService.AccountId);
-                    var browser = chromeManager.Get(dataService.AccountId);
+                    var browser = browserManager.Get(dataService.AccountId);
                     browser.Logger = logger;
                     return browser;
                 });

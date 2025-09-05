@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Features.NpcResource
+namespace MainCore.Commands.Features.NpcResource
 {
     [Handler]
     public static partial class ToNpcResourcePageCommand

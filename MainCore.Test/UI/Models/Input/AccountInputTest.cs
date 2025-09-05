@@ -1,4 +1,4 @@
-﻿using MainCore.UI.Models.Input;
+using MainCore.UI.Models.Input;
 
 namespace MainCore.Test.UI.Models.Input
 {

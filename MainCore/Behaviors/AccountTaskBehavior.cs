@@ -1,4 +1,4 @@
-﻿using MainCore.Tasks.Base;
+using MainCore.Tasks.Base;
 
 namespace MainCore.Behaviors
 {
@@ -8,13 +8,13 @@ namespace MainCore.Behaviors
                 where TResponse : Result
     {
         private readonly ITaskManager _taskManager;
-        private readonly IChromeBrowser _browser;
+        private readonly IBrowser _browser;
 
         private readonly UpdateAccountInfoCommand.Handler _updateAccountInfoCommand;
         private readonly UpdateVillageListCommand.Handler _updateVillageListCommand;
         private readonly UpdateAdventureCommand.Handler _updateAdventureCommand;
 
-        public AccountTaskBehavior(IChromeBrowser browser, ITaskManager taskManager, UpdateAccountInfoCommand.Handler updateAccountInfoCommand, UpdateVillageListCommand.Handler updateVillageListCommand, UpdateAdventureCommand.Handler updateAdventureCommand)
+        public AccountTaskBehavior(IBrowser browser, ITaskManager taskManager, UpdateAccountInfoCommand.Handler updateAccountInfoCommand, UpdateVillageListCommand.Handler updateVillageListCommand, UpdateAdventureCommand.Handler updateAdventureCommand)
         {
             _browser = browser;
             _taskManager = taskManager;
@@ -30,7 +30,22 @@ namespace MainCore.Behaviors
             {
                 if (!LoginParser.IsLoginPage(_browser.Html))
                 {
-                    return (TResponse)Stop.NotTravianPage;
+                    // Sayfa kaybedildiğinde sayfayı yenile ve tekrar dene
+                    try
+                    {
+                        await _browser.Refresh(cancellationToken);
+                        await Task.Delay(2000, cancellationToken); // Sayfa yüklenmesi için bekle
+                        
+                        // Yeniden kontrol et
+                        if (!LoginParser.IsIngamePage(_browser.Html) && !LoginParser.IsLoginPage(_browser.Html))
+                        {
+                            return (TResponse)Stop.NotTravianPage;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        return (TResponse)Stop.NotTravianPage;
+                    }
                 }
 
                 if (request is not LoginTask.Task)

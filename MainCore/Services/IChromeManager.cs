@@ -1,8 +1,8 @@
-﻿namespace MainCore.Services
+namespace MainCore.Services
 {
     public interface IChromeManager
     {
-        IChromeBrowser Get(AccountId accountId);
+        IBrowser Get(AccountId accountId);
 
         void LoadExtension();
 

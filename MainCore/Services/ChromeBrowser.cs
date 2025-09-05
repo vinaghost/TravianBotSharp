@@ -1,11 +1,11 @@
-﻿using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System.IO.Compression;
 
 namespace MainCore.Services
 {
-    public sealed class ChromeBrowser : IChromeBrowser
+    public sealed class ChromeBrowser : IBrowser
     {
         private ChromeDriver? _driver;
         private readonly ChromeDriverService _chromeService;
@@ -22,7 +22,7 @@ namespace MainCore.Services
             _chromeService.HideCommandPromptWindow = true;
         }
 
-        public async Task Setup(ChromeSetting setting)
+        public async Task Setup(BrowserSetting setting)
         {
             var options = new ChromeOptions();
 
@@ -74,10 +74,11 @@ namespace MainCore.Services
             _driver = await Task.Run(() => new ChromeDriver(_chromeService, options, TimeSpan.FromMinutes(3)));
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(3);
-            _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3)); // watch ads
+            // 120 saniye timeout - job validation sorunlar� i�in optimize edildi
+            _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(120)); // building operations
         }
 
-        public ChromeDriver? Driver => _driver;
+        public IWebDriver Driver => _driver!;
 
         public HtmlDocument Html
         {
@@ -95,22 +96,21 @@ namespace MainCore.Services
             _chromeService.Dispose();
         }
 
-        public string CurrentUrl => Driver?.Url ?? "";
+        public string CurrentUrl => Driver.Url;
 
         public ILogger Logger { get; set; } = null!;
 
         public async Task<string> Screenshot()
         {
-            var screenshot = Driver?.GetScreenshot();
+            var screenshot = ((ITakesScreenshot)Driver).GetScreenshot();
             var fileName = Path.Combine(AppContext.BaseDirectory, "Screenshots", $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png");
             Directory.CreateDirectory(Path.GetDirectoryName(fileName)!);
-            await File.WriteAllBytesAsync(fileName, screenshot?.AsByteArray ?? Array.Empty<byte>(), CancellationToken.None);
+            await File.WriteAllBytesAsync(fileName, screenshot.AsByteArray, CancellationToken.None);
             return fileName;
         }
 
         public async Task<Result> Refresh(CancellationToken cancellationToken)
         {
-            if (Driver is null) return Stop.DriverNotReady;
             await Driver.Navigate().RefreshAsync();
             var result = await WaitPageLoaded(cancellationToken);
             return result;
@@ -122,55 +122,27 @@ namespace MainCore.Services
 
         public async Task<Result> Navigate(string url, CancellationToken cancellationToken)
         {
-            if (Driver is null) return Stop.DriverNotReady;
             await Driver.Navigate().GoToUrlAsync(url);
             var result = await Wait(driver => PageChanged(driver, url), cancellationToken);
             return result;
         }
 
-        private async Task<Result<IWebElement>> GetElement(By by, CancellationToken cancellationToken)
+        public async Task<Result> Click(By by)
         {
-            IWebElement wait()
-            {
-                var element = _wait.Until((driver) =>
-                {
-                    var elements = driver.FindElements(by);
-                    if (elements.Count == 0) return null;
-                    var element = elements[0];
-                    if (!element.Displayed || !element.Enabled) return null;
-                    return element;
-                }, cancellationToken);
-                return element;
-            }
-
-            try
-            {
-                var element = await Task.Run(wait, cancellationToken);
-                return Result.Ok(element);
-            }
-            catch (OperationCanceledException)
-            {
-                return Cancel.Error;
-            }
-            catch (WebDriverTimeoutException ex)
-            {
-                return Retry.BrowserTimeout(ex.Message);
-            }
-        }
-
-        public async Task<Result> Click(By by, CancellationToken cancellationToken)
-        {
-            if (Driver is null) return Stop.DriverNotReady;
-            var (_, isFailed, element, errors) = await GetElement(by, cancellationToken);
-            if (isFailed) return Result.Fail(errors);
+            var elements = Driver.FindElements(by);
+            if (elements.Count == 0) return Retry.ElementNotFound(by);
+            var element = elements[0];
+            if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable(by);
             await Task.Run(new Actions(Driver).Click(element).Perform);
             return Result.Ok();
         }
 
-        public async Task<Result> Input(By by, string content, CancellationToken cancellationToken)
+        public async Task<Result> Input(By by, string content)
         {
-            var (_, isFailed, element, errors) = await GetElement(by, cancellationToken);
-            if (isFailed) return Result.Fail(errors);
+            var elements = Driver.FindElements(by);
+            if (elements.Count == 0) return Retry.ElementNotFound(by);
+            var element = elements[0];
+            if (!element.Displayed || !element.Enabled) return Retry.ElementNotClickable(by);
 
             void input()
             {
@@ -185,10 +157,9 @@ namespace MainCore.Services
 
         public async Task<Result> ExecuteJsScript(string javascript)
         {
-            if (Driver is null) return Stop.DriverNotReady;
             await Task.CompletedTask;
             var js = Driver as IJavaScriptExecutor;
-            js.ExecuteScript(javascript);
+            js?.ExecuteScript(javascript);
             return Result.Ok();
         }
 

@@ -1,4 +1,4 @@
-﻿using MainCore.UI.ViewModels.Abstract;
+using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.UI.Models.Input

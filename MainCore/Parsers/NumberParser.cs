@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 
 namespace MainCore.Parsers
 {
@@ -27,8 +27,8 @@ namespace MainCore.Parsers
             var valueStrDecoded = WebUtility.HtmlDecode(value);
             if (string.IsNullOrEmpty(valueStrDecoded)) return "";
 
-            var valueStr = new string(valueStrDecoded.Where(c => char.IsDigit(c) || c == '-' || c == '−').ToArray());
-            valueStr = valueStr.Replace('−', '-');
+            var valueStr = new string(valueStrDecoded.Where(c => char.IsDigit(c) || c == '-' || c == '-').ToArray());
+            valueStr = valueStr.Replace('-', '-');
 
             if (string.IsNullOrEmpty(valueStr)) return "";
             return valueStr;

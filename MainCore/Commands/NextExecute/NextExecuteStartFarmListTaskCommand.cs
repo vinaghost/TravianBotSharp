@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.NextExecute
+namespace MainCore.Commands.NextExecute
 {
     [Handler]
     public static partial class NextExecuteStartFarmListTaskCommand

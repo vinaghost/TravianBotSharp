@@ -1,4 +1,4 @@
-﻿namespace MainCore.Parsers
+namespace MainCore.Parsers
 {
     public static class NavigationBarParser
     {
@@ -15,11 +15,33 @@
         private static HtmlNode? GetButton(HtmlDocument doc, int key)
         {
             var navigationBar = doc.GetElementbyId("navigation");
-            if (navigationBar is null) return null;
+            if (navigationBar is null) 
+            {
+                // Debug: Navigation bar bulunamadı
+                Console.WriteLine($"[DEBUG] NavigationBarParser: Navigation bar not found for key={key}");
+                return null;
+            }
 
-            var button = navigationBar
-                .Descendants("a")
-                .FirstOrDefault(x => x.GetAttributeValue("accesskey", 0) == key);
+            var buttons = navigationBar.Descendants("a").ToList();
+            Console.WriteLine($"[DEBUG] NavigationBarParser: Found {buttons.Count} buttons in navigation bar");
+            
+            foreach (var btn in buttons)
+            {
+                var accesskey = btn.GetAttributeValue("accesskey", 0);
+                var href = btn.GetAttributeValue("href", "");
+                Console.WriteLine($"[DEBUG] NavigationBarParser: Button accesskey={accesskey}, href={href}");
+            }
+
+            var button = buttons.FirstOrDefault(x => x.GetAttributeValue("accesskey", 0) == key);
+            if (button is null)
+            {
+                Console.WriteLine($"[DEBUG] NavigationBarParser: Button with accesskey={key} not found");
+            }
+            else
+            {
+                Console.WriteLine($"[DEBUG] NavigationBarParser: Button with accesskey={key} found");
+            }
+            
             return button;
         }
 

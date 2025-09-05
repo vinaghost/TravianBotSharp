@@ -1,4 +1,4 @@
-﻿using MainCore.Enums;
+using MainCore.Enums;
 
 namespace MainCore.Test.Parsers
 {

@@ -1,4 +1,4 @@
-﻿using System.Web;
+using System.Web;
 
 namespace MainCore.Commands.Navigate
 {
@@ -9,7 +9,7 @@ namespace MainCore.Commands.Navigate
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
-           IChromeBrowser browser,
+           IBrowser browser,
            CancellationToken cancellationToken
            )
         {
@@ -18,7 +18,7 @@ namespace MainCore.Commands.Navigate
 
         public static async ValueTask<Result> ToBuilding(
             int location,
-            IChromeBrowser browser,
+            IBrowser browser,
             CancellationToken cancellationToken)
         {
             var node = GetBuilding(browser.Html, location);
@@ -36,7 +36,7 @@ namespace MainCore.Commands.Navigate
                 else
                 {
                     var css = $"#villageContent > div.buildingSlot.a{location} > svg > path";
-                    result = await browser.Click(By.CssSelector(css), cancellationToken);
+                    result = await browser.Click(By.CssSelector(css));
                     if (result.IsFailed) return result;
                     result = await browser.WaitPageChanged("build.php", cancellationToken);
                     if (result.IsFailed) return result;
@@ -59,7 +59,7 @@ namespace MainCore.Commands.Navigate
                 }
                 else
                 {
-                    result = await browser.Click(By.XPath(node.XPath), cancellationToken);
+                    result = await browser.Click(By.XPath(node.XPath));
                     if (result.IsFailed) return result;
                 }
                 result = await browser.WaitPageChanged("build.php", cancellationToken);

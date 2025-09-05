@@ -1,4 +1,4 @@
-ï»¿namespace MainCore.Commands.Features.StartFarmList
+namespace MainCore.Commands.Features.StartFarmList
 {
     [Handler]
     public static partial class StartActiveFarmListCommand
@@ -7,7 +7,7 @@
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
+            IBrowser browser,
             IDelayService delayService,
             AppDbContext context,
             CancellationToken cancellationToken)
@@ -25,11 +25,15 @@
                 var startButton = FarmListParser.GetStartButton(browser.Html, farmList);
                 if (startButton is null) return Retry.ButtonNotFound($"Start farm {farmList}");
 
-                var result = await browser.Click(By.XPath(startButton.XPath), cancellationToken);
+                var result = await browser.Click(By.XPath(startButton.XPath));
                 if (result.IsFailed) return result;
 
                 await delayService.DelayClick(cancellationToken);
             }
+
+            // Tüm farm list attack'lar baþlatýldýktan sonra 7 saniye bekle
+            // Bu süre attack'larýn gönderilmesi ve sayfanýn stabilleþmesi için gerekli
+            await Task.Delay(7000, cancellationToken);
 
             return Result.Ok();
         }

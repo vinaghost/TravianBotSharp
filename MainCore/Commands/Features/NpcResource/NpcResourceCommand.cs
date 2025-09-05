@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Features.NpcResource
+namespace MainCore.Commands.Features.NpcResource
 {
     [Handler]
     public static partial class NpcResourceCommand
@@ -15,7 +15,7 @@
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
+            IBrowser browser,
             AppDbContext context,
             CancellationToken cancellationToken)
         {
@@ -50,7 +50,7 @@
                 }
             }
 
-            result = await InputAmount(browser, values, cancellationToken);
+            result = await InputAmount(browser, values);
             if (result.IsFailed) return result;
 
             browser.Logger.Information("Current resource:");
@@ -83,7 +83,7 @@
             return Result.Ok();
         }
 
-        private static void LogResource(IChromeBrowser browser)
+        private static void LogResource(IBrowser browser)
         {
             var wood = StorageParser.GetWood(browser.Html);
             var clay = StorageParser.GetClay(browser.Html);
@@ -96,7 +96,7 @@
             browser.Logger.Information("[{Warehouse}]: {Wood} - {Clay} - {Iron} | [{Granary}]: {Crop}", warehouse, wood, clay, iron, granary, crop);
         }
 
-        private static bool CanStart(IChromeBrowser browser, AppDbContext context, VillageId villageId)
+        private static bool CanStart(IBrowser browser, AppDbContext context, VillageId villageId)
         {
             var crop = StorageParser.GetCrop(browser.Html);
             var granary = StorageParser.GetGranaryCapacity(browser.Html);
@@ -114,7 +114,7 @@
             return true;
         }
 
-        private static async Task<Result> OpenNPCDialog(IChromeBrowser browser, CancellationToken cancellationToken)
+        private static async Task<Result> OpenNPCDialog(IBrowser browser, CancellationToken cancellationToken)
         {
             var button = NpcResourceParser.GetExchangeResourcesButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("Exchange resources");
@@ -126,7 +126,7 @@
                 return NpcResourceParser.IsNpcDialog(doc);
             }
 
-            var result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            var result = await browser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result;
 
             result = await browser.Wait(DialogShown, cancellationToken);
@@ -135,20 +135,20 @@
             return Result.Ok();
         }
 
-        private static async Task<Result> InputAmount(IChromeBrowser browser, long[] values, CancellationToken cancellationToken)
+        private static async Task<Result> InputAmount(IBrowser browser, long[] values)
         {
             var inputs = NpcResourceParser.GetInputs(browser.Html).ToArray();
 
             for (var i = 0; i < 4; i++)
             {
-                var result = await browser.Input(By.XPath(inputs[i].XPath), $"{values[i]}", cancellationToken);
+                var result = await browser.Input(By.XPath(inputs[i].XPath), $"{values[i]}");
                 if (result.IsFailed) return result;
             }
 
             return Result.Ok();
         }
 
-        private static long[] GetValues(IChromeBrowser browser, long[] ratio)
+        private static long[] GetValues(IBrowser browser, long[] ratio)
         {
             var sum = NpcResourceParser.GetSum(browser.Html);
             var sumRatio = ratio.Sum();
@@ -181,7 +181,7 @@
             return ratio;
         }
 
-        private static async Task<Result> Distribute(IChromeBrowser browser, CancellationToken cancellationToken)
+        private static async Task<Result> Distribute(IBrowser browser, CancellationToken cancellationToken)
         {
             var result = await browser.Wait(driver =>
             {
@@ -198,13 +198,13 @@
             var button = NpcResourceParser.GetDistributeButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("distribute");
 
-            result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            result = await browser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result;
 
             return Result.Ok();
         }
 
-        private static async Task<Result> Redeem(IChromeBrowser browser, CancellationToken cancellationToken)
+        private static async Task<Result> Redeem(IBrowser browser, CancellationToken cancellationToken)
         {
             var result = await browser.Wait(driver =>
             {
@@ -222,7 +222,7 @@
             var button = NpcResourceParser.GetRedeemButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("redeem");
 
-            result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            result = await browser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result;
 
             return Result.Ok();

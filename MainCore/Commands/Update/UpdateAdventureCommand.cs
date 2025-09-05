@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Update
+namespace MainCore.Commands.Update
 {
     [Handler]
     public static partial class UpdateAdventureCommand
@@ -7,7 +7,7 @@
 
         private static async ValueTask HandleAsync(
            Command command,
-           IChromeBrowser browser,
+           IBrowser browser,
            AppDbContext context,
            ITaskManager taskManager
            )

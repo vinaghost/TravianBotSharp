@@ -1,4 +1,4 @@
-﻿#pragma warning disable S1172
+#pragma warning disable S1172
 
 namespace MainCore.Commands.Features.CompleteImmediately
 {
@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.CompleteImmediately
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
+            IBrowser browser,
             CancellationToken cancellationToken)
         {
             var oldQueueCount = CompleteImmediatelyParser.CountQueueBuilding(browser.Html);
@@ -19,7 +19,7 @@ namespace MainCore.Commands.Features.CompleteImmediately
             var completeNowButton = CompleteImmediatelyParser.GetCompleteButton(browser.Html);
             if (completeNowButton is null) return Retry.ButtonNotFound("complete now");
 
-            var result = await browser.Click(By.XPath(completeNowButton.XPath), cancellationToken);
+            var result = await browser.Click(By.XPath(completeNowButton.XPath));
             if (result.IsFailed) return result;
 
             static bool ConfirmShown(IWebDriver driver)
@@ -35,7 +35,7 @@ namespace MainCore.Commands.Features.CompleteImmediately
             var confirmButton = CompleteImmediatelyParser.GetConfirmButton(browser.Html);
             if (confirmButton is null) return Retry.ButtonNotFound("confirm complete now");
 
-            result = await browser.Click(By.XPath(confirmButton.XPath), cancellationToken);
+            result = await browser.Click(By.XPath(confirmButton.XPath));
             if (result.IsFailed) return result;
 
             static bool QueueDifferent(IWebDriver driver, int oldQueueCount)

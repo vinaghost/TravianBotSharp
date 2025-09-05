@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Features
+namespace MainCore.Commands.Features
 {
     [Handler]
     public static partial class SleepCommand
@@ -7,7 +7,7 @@
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
+            IBrowser browser,
             ISettingService settingService,
             ILogger logger,
             CancellationToken cancellationToken)

@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Features.CompleteImmediately;
+using MainCore.Commands.Features.CompleteImmediately;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks

@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 
 using Humanizer;
 using System.Text.Json;

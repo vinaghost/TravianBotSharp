@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Features;
+using MainCore.Commands.Features;
 using MainCore.Commands.NextExecute;
 using MainCore.Tasks.Base;
 

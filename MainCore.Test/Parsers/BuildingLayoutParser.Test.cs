@@ -1,4 +1,4 @@
-﻿using MainCore.Enums;
+using MainCore.Enums;
 using Shouldly;
 
 namespace MainCore.Test.Parsers

@@ -1,4 +1,4 @@
-﻿using MainCore.UI.Models.Output;
+using MainCore.UI.Models.Output;
 using System.Diagnostics;
 using System.Reactive.Concurrency;
 

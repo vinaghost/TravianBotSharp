@@ -1,4 +1,4 @@
-﻿using MainCore.UI.ViewModels;
+using MainCore.UI.ViewModels;
 using MainCore.UI.ViewModels.UserControls;
 using ReactiveMarbles.Extensions.Hosting.Wpf;
 using ReactiveUI;
