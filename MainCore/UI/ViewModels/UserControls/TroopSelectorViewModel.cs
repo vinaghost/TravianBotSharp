@@ -1,4 +1,4 @@
-﻿using DynamicData;
+using DynamicData;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using System.Collections.ObjectModel;

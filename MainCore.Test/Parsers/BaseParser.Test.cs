@@ -1,4 +1,4 @@
-﻿using HtmlAgilityPack;
+using HtmlAgilityPack;
 
 namespace MainCore.Test.Parsers
 {

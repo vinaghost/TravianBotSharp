@@ -1,4 +1,4 @@
-﻿namespace MainCore.Notifications
+namespace MainCore.Notifications
 {
     public record AccountsModified : INotification;
 }

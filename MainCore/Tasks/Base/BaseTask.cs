@@ -1,4 +1,4 @@
-﻿namespace MainCore.Tasks.Base
+namespace MainCore.Tasks.Base
 {
     public abstract class BaseTask : ITask
     {

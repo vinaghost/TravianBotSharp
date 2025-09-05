@@ -1,4 +1,4 @@
-﻿using Splat;
+using Splat;
 using System;
 using System.Globalization;
 using System.Windows.Data;

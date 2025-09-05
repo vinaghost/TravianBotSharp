@@ -1,4 +1,4 @@
-﻿using DynamicData;
+using DynamicData;
 using System.Collections.ObjectModel;
 
 namespace MainCore.UI.Models.Input

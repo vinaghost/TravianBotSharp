@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.UI.AddAccountsViewModel;
+using MainCore.Commands.UI.AddAccountsViewModel;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;

@@ -1,4 +1,4 @@
-﻿using MainCore.Tasks.Base;
+using MainCore.Tasks.Base;
 
 namespace MainCore.Behaviors
 {

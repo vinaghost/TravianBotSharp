@@ -1,4 +1,4 @@
-﻿using MainCore.UI.ViewModels.Tabs;
+using MainCore.UI.ViewModels.Tabs;
 using ReactiveUI;
 using System.Reactive.Disposables;
 

@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.UI.EditAccountViewModel;
+using MainCore.Commands.UI.EditAccountViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;

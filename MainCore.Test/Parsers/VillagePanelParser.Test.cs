@@ -1,4 +1,4 @@
-﻿using MainCore.Entities;
+using MainCore.Entities;
 
 namespace MainCore.Test.Parsers
 {

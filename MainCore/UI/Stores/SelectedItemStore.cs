@@ -1,4 +1,4 @@
-﻿using MainCore.UI.Models.Output;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 
 namespace MainCore.UI.Stores

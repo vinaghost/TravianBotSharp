@@ -1,4 +1,4 @@
-﻿using MainCore;
+using MainCore;
 using MainCore.Services;
 using MainCore.UI;
 using Microsoft.Extensions.DependencyInjection;

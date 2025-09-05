@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Navigate
+namespace MainCore.Commands.Navigate
 {
     [Handler]
     public static partial class SwitchTabCommand
@@ -7,7 +7,7 @@
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
-           IChromeBrowser browser,
+           IBrowser browser,
            CancellationToken cancellationToken
            )
         {
@@ -15,7 +15,7 @@
         }
 
         public static async ValueTask<Result> SwitchTab(
-            IChromeBrowser browser,
+            IBrowser browser,
             int tabIndex,
             CancellationToken cancellationToken)
         {
@@ -38,7 +38,7 @@
             }
 
             Result result;
-            result = await browser.Click(By.XPath(tab.XPath), cancellationToken);
+            result = await browser.Click(By.XPath(tab.XPath));
             if (result.IsFailed) return result;
             result = await browser.Wait(tabActived, cancellationToken);
             if (result.IsFailed) return result;

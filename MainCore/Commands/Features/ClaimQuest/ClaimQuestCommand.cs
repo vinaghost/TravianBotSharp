@@ -1,4 +1,4 @@
-﻿#pragma warning disable S1172
+#pragma warning disable S1172
 
 namespace MainCore.Commands.Features.ClaimQuest
 {
@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.ClaimQuest
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
+            IBrowser browser,
             IDelayService delayService,
             SwitchTabCommand.Handler switchTabCommand,
             CancellationToken cancellationToken)
@@ -34,12 +34,12 @@ namespace MainCore.Commands.Features.ClaimQuest
                     quest = QuestParser.GetQuestCollectButton(browser.Html);
                     if (quest is null) return Result.Ok();
 
-                    result = await browser.Click(By.XPath(quest.XPath), cancellationToken);
+                    result = await browser.Click(By.XPath(quest.XPath));
                     if (result.IsFailed) return result;
                     continue;
                 }
 
-                result = await browser.Click(By.XPath(quest.XPath), cancellationToken);
+                result = await browser.Click(By.XPath(quest.XPath));
                 if (result.IsFailed) return result;
                 await delayService.DelayClick(cancellationToken);
             }

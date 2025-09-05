@@ -1,4 +1,4 @@
-ï»¿namespace MainCore.Commands.Features.UpgradeBuilding
+namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
     public static partial class HandleUpgradeCommand
@@ -7,7 +7,7 @@
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
+            IBrowser browser,
             AppDbContext context,
             ILogger logger,
             CancellationToken cancellationToken
@@ -104,14 +104,14 @@
         }
 
         private static async Task<Result> SpecialUpgrade(
-            this IChromeBrowser browser,
+            this IBrowser browser,
             CancellationToken cancellationToken
         )
         {
             var button = UpgradeParser.GetSpecialUpgradeButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("Watch ads upgrade");
 
-            var result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            var result = await browser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result;
 
             result = await browser.HandleAds(cancellationToken);
@@ -121,13 +121,11 @@
         }
 
         private static async Task<Result> HandleAds(
-            this IChromeBrowser browser,
+            this IBrowser browser,
             CancellationToken cancellationToken
         )
         {
             var driver = browser.Driver;
-            if (driver is null) return Stop.DriverNotReady;
-
             var current = driver.CurrentWindowHandle;
             while (driver.WindowHandles.Count > 1)
             {
@@ -152,12 +150,12 @@
             {
                 var checkbox = videoFeature.Descendants("div").FirstOrDefault(x => x.HasClass("checkbox"));
                 if (checkbox is null) return Retry.ButtonNotFound("Don't show watch ads confirm again");
-                result = await browser.Click(By.XPath(checkbox.XPath), cancellationToken);
+                result = await browser.Click(By.XPath(checkbox.XPath));
                 if (result.IsFailed) return result;
 
                 var watchButton = videoFeature.Descendants("button").FirstOrDefault(x => x.HasClass("green"));
                 if (watchButton is null) return Retry.ButtonNotFound("Watch ads");
-                result = await browser.Click(By.XPath(watchButton.XPath), cancellationToken);
+                result = await browser.Click(By.XPath(watchButton.XPath));
                 if (result.IsFailed) return result;
             }
 
@@ -166,7 +164,7 @@
             var node = browser.Html.GetElementbyId("videoFeature");
             if (node is null) return Retry.ButtonNotFound($"play ads");
 
-            result = await browser.Click(By.XPath(node.XPath), cancellationToken);
+            result = await browser.Click(By.XPath(node.XPath));
             if (result.IsFailed) return result;
 
             driver.SwitchTo().DefaultContent();
@@ -184,7 +182,7 @@
                 driver.Close();
                 driver.SwitchTo().Window(current);
 
-                result = await browser.Click(By.XPath(node.XPath), cancellationToken);
+                result = await browser.Click(By.XPath(node.XPath));
                 if (result.IsFailed) return result;
 
                 driver.SwitchTo().DefaultContent();
@@ -198,12 +196,12 @@
             var dontShowThisAgain = browser.Html.GetElementbyId("dontShowThisAgain");
             if (dontShowThisAgain is not null)
             {
-                result = await browser.Click(By.XPath(dontShowThisAgain.XPath), cancellationToken);
+                result = await browser.Click(By.XPath(dontShowThisAgain.XPath));
                 if (result.IsFailed) return result;
 
                 var okButton = browser.Html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
                 if (okButton is null) return Retry.ButtonNotFound("ok");
-                result = await browser.Click(By.XPath(okButton.XPath), cancellationToken);
+                result = await browser.Click(By.XPath(okButton.XPath));
                 if (result.IsFailed) return result;
             }
 
@@ -211,13 +209,13 @@
         }
 
         private static async Task<Result> Upgrade(
-            this IChromeBrowser browser,
+            this IBrowser browser,
             CancellationToken cancellationToken)
         {
             var button = UpgradeParser.GetUpgradeButton(browser.Html);
             if (button is null) return Retry.ButtonNotFound("upgrade");
 
-            var result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            var result = await browser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result;
 
             result = await browser.WaitPageChanged("dorf", cancellationToken);
@@ -227,15 +225,27 @@
         }
 
         private static async Task<Result> Construct(
-            this IChromeBrowser browser,
+            this IBrowser browser,
             BuildingEnums building,
             CancellationToken cancellationToken
         )
         {
             var button = UpgradeParser.GetConstructButton(browser.Html, building);
-            if (button is null) return Retry.ButtonNotFound("construct");
+            if (button is null) 
+            {
+                // Boþ arsalarda construct buton bulma sorunu için daha detaylý hata mesajý
+                var isEmptySite = browser.Html.DocumentNode
+                    .Descendants()
+                    .Any(x => x.HasClass("emptySlot") || x.InnerText.Contains("empty", StringComparison.InvariantCultureIgnoreCase));
+                
+                var errorMessage = isEmptySite 
+                    ? $"construct button for {building} on empty site" 
+                    : $"construct button for {building}";
+                    
+                return Retry.ButtonNotFound(errorMessage);
+            }
 
-            var result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            var result = await browser.Click(By.XPath(button.XPath));
             if (result.IsFailed) return result;
 
             result = await browser.WaitPageChanged("dorf", cancellationToken);

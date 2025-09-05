@@ -1,4 +1,4 @@
-﻿using MainCore.UI.ViewModels.Abstract;
+using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,15 +25,15 @@ namespace MainCore.UI.ViewModels
             await _waitingOverlayViewModel.Show();
             using (var scope = _serviceScopeFactory.CreateScope())
             {
-                await _waitingOverlayViewModel.ChangeMessage("installing chrome driver");
-                var chromeDriverInstaller = scope.ServiceProvider.GetRequiredService<IChromeDriverInstaller>();
+                await _waitingOverlayViewModel.ChangeMessage("installing browser driver");
+                var browserDriverInstaller = scope.ServiceProvider.GetRequiredService<IBrowserDriverInstaller>();
                 var useragentManager = scope.ServiceProvider.GetRequiredService<IUseragentManager>();
 
-                var installChromeDriver = Observable.StartAsync(chromeDriverInstaller.Install, RxApp.TaskpoolScheduler);
+                var installBrowserDriver = Observable.StartAsync(browserDriverInstaller.Install, RxApp.TaskpoolScheduler);
                 var loadUseragent = Observable.StartAsync(useragentManager.Load, RxApp.TaskpoolScheduler);
-                var chromeManager = scope.ServiceProvider.GetRequiredService<IChromeManager>();
+                var browserManager = scope.ServiceProvider.GetRequiredService<IBrowserManager>();
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var installExtension = Observable.Start(chromeManager.LoadExtension, RxApp.TaskpoolScheduler);
+                var installExtension = Observable.Start(browserManager.LoadExtension, RxApp.TaskpoolScheduler);
                 var loadDatabase = Observable.StartAsync(async () =>
                 {
                     var notExist = await context.Database.EnsureCreatedAsync();
@@ -49,7 +49,7 @@ namespace MainCore.UI.ViewModels
                     }
                 }, RxApp.TaskpoolScheduler);
 
-                await Observable.Merge(installExtension, loadDatabase, installChromeDriver, loadUseragent);
+                await Observable.Merge(installExtension, loadDatabase, installBrowserDriver, loadUseragent);
 
                 await _waitingOverlayViewModel.ChangeMessage("loading program layout");
                 MainLayoutViewModel = scope.ServiceProvider.GetRequiredService<MainLayoutViewModel>();
@@ -64,8 +64,8 @@ namespace MainCore.UI.ViewModels
         {
             using (var scope = _serviceScopeFactory.CreateScope())
             {
-                var chromeManager = scope.ServiceProvider.GetRequiredService<IChromeManager>();
-                await chromeManager.Shutdown();
+                var browserManager = scope.ServiceProvider.GetRequiredService<IBrowserManager>();
+                await browserManager.Shutdown();
 
                 var path = Path.Combine(AppContext.BaseDirectory, "Plugins");
                 if (Directory.Exists(path))

@@ -1,4 +1,4 @@
-﻿using DynamicData;
+using DynamicData;
 using Humanizer;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;

@@ -1,4 +1,4 @@
-﻿using MainCore.Enums;
+using MainCore.Enums;
 
 namespace MainCore.Test.Parsers
 {
@@ -24,6 +24,26 @@ namespace MainCore.Test.Parsers
         {
             _html.Load(file);
             var result = MainCore.Parsers.TrainTroopParser.GetInputBox(_html, troop);
+            result.ShouldNotBeNull();
+        }
+
+        [Theory]
+        [InlineData(BarrackPage, TroopEnums.Phalanx)]
+        [InlineData(StablePage, TroopEnums.Pathfinder)]
+        public void GetInputBoxAlternative(string file, TroopEnums troop)
+        {
+            _html.Load(file);
+            var result = MainCore.Parsers.TrainTroopParser.GetInputBoxAlternative(_html, troop);
+            result.ShouldNotBeNull();
+        }
+
+        [Theory]
+        [InlineData(BarrackPage, TroopEnums.Phalanx)]
+        [InlineData(StablePage, TroopEnums.Pathfinder)]
+        public void GetInputBoxNewStructure(string file, TroopEnums troop)
+        {
+            _html.Load(file);
+            var result = MainCore.Parsers.TrainTroopParser.GetInputBoxNewStructure(_html, troop);
             result.ShouldNotBeNull();
         }
 

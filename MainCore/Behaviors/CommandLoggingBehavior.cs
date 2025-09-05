@@ -1,4 +1,4 @@
-﻿namespace MainCore.Behaviors
+namespace MainCore.Behaviors
 {
     public sealed class CommandLoggingBehavior<TRequest, TResponse>
         : Behavior<TRequest, TResponse>

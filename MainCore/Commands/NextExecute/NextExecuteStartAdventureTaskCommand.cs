@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.NextExecute
+namespace MainCore.Commands.NextExecute
 {
     [Handler]
     public static partial class NextExecuteStartAdventureTaskCommand
@@ -7,7 +7,7 @@
 
         private static async ValueTask HandleAsync(
             Command command,
-            IChromeBrowser browser
+            IBrowser browser
             )
         {
             await Task.CompletedTask;

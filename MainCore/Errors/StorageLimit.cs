@@ -1,4 +1,4 @@
-﻿namespace MainCore.Errors
+namespace MainCore.Errors
 {
     public class StorageLimit : Error
     {

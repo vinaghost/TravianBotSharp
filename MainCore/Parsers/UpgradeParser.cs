@@ -1,4 +1,4 @@
-ï»¿namespace MainCore.Parsers
+namespace MainCore.Parsers
 {
     public static class UpgradeParser
     {
@@ -46,13 +46,53 @@
         {
             if (building.IsResourceField()) return GetUpgradeButton(doc);
 
+            // Önce spesifik bina kontrat alanýný arýyorum
             var contract_building = doc.GetElementbyId($"contract_building{(int)building}");
-            if (contract_building is null) return null;
+            if (contract_building is not null)
+            {
+                var button = contract_building
+                    .Descendants("button")
+                    .FirstOrDefault(x => x.HasClass("new"));
+                if (button is not null) return button;
+            }
 
-            var button = contract_building
-                .Descendants("button")
-                .FirstOrDefault(x => x.HasClass("new"));
-            return button;
+            // Spesifik bulamadýysam, genel contract alanýnda spesifik binayý arýyorum
+            var contract = doc.GetElementbyId("contract");
+            if (contract is not null)
+            {
+                // Bina ismini ve ID'sini kullanarak doðru butonu buluyorum
+                var buildingId = (int)building;
+                var buildingName = building.ToString().ToLower();
+                
+                // Önce onclick attribute'unda bina ID'si olan buton arýyorum
+                var specificButton = contract
+                    .Descendants("button")
+                    .FirstOrDefault(x => x.HasClass("new") && 
+                        (x.GetAttributeValue("onclick", "").Contains($"gid={buildingId}") ||
+                         x.GetAttributeValue("onclick", "").Contains($"gid%3D{buildingId}")));
+                
+                if (specificButton is not null) return specificButton;
+
+                // Alternatif olarak form action'ýnda bina ID'si olan buton arýyorum
+                var formButton = contract
+                    .Descendants("button")
+                    .Where(x => x.HasClass("new"))
+                    .FirstOrDefault(x => 
+                    {
+                        var form = x.Ancestors("form").FirstOrDefault();
+                        return form?.GetAttributeValue("action", "").Contains($"gid={buildingId}") == true;
+                    });
+
+                if (formButton is not null) return formButton;
+
+                // Son çare: genel "new" butonu (eski davranýþ)
+                var generalButton = contract
+                    .Descendants("button")
+                    .FirstOrDefault(x => x.HasClass("new"));
+                if (generalButton is not null) return generalButton;
+            }
+
+            return null;
         }
 
         public static HtmlNode? GetSpecialUpgradeButton(HtmlDocument doc)

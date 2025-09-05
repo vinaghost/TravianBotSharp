@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Misc
+namespace MainCore.Commands.Misc
 {
     [Handler]
     public static partial class OpenBrowserCommand
@@ -7,7 +7,7 @@
 
         private static async ValueTask HandleAsync(
             Command command,
-            IChromeBrowser browser, AppDbContext context,
+            IBrowser browser, AppDbContext context,
             CancellationToken cancellationToken
             )
         {
@@ -30,7 +30,7 @@
             var headlessChrome = context.BooleanByName(accountId, AccountSettingEnums.HeadlessChrome);
             var profilePath = Path.Combine(serverFolderName, accountFolderName);
 
-            var chromeSetting = new ChromeSetting()
+            var BrowserSetting = new BrowserSetting()
             {
                 UserAgent = access.Useragent,
                 ProfilePath = profilePath,
@@ -41,7 +41,7 @@
                 IsHeadless = headlessChrome,
             };
 
-            await browser.Setup(chromeSetting);
+            await browser.Setup(BrowserSetting);
             await browser.Navigate($"{account.Server}", cancellationToken);
 
             context.Accesses

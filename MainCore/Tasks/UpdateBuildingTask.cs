@@ -1,4 +1,4 @@
-﻿using MainCore.Tasks.Base;
+using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -16,7 +16,7 @@ namespace MainCore.Tasks
 
         private static async ValueTask<Result> HandleAsync(
             Task task,
-            IChromeBrowser browser,
+            IBrowser browser,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToDorfCommand.Handler toDorfCommand,
             CancellationToken cancellationToken)

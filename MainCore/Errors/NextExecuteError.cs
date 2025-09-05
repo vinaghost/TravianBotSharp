@@ -1,4 +1,4 @@
-﻿namespace MainCore.Errors
+namespace MainCore.Errors
 {
     public class NextExecuteError : Error
     {
@@ -13,5 +13,8 @@
 
         public static NextExecuteError PrerequisiteBuildingInQueue(BuildingEnums prerequisiteBuilding, int level, DateTime completeTime)
            => new($"{prerequisiteBuilding} level {level} is in queue") { NextExecute = completeTime };
+
+        public static NextExecuteError MissingResource(DateTime nextExecute)
+           => new("Missing resource for building") { NextExecute = nextExecute };
     }
 }

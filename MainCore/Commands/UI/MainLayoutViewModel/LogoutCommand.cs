@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.UI.MainLayoutViewModel
+namespace MainCore.Commands.UI.MainLayoutViewModel
 {
     [Handler]
     public static partial class LogoutCommand
@@ -7,7 +7,7 @@
 
         private static async ValueTask HandleAsync(
             Command command,
-            IChromeBrowser browser,
+            IBrowser browser,
             ITaskManager taskManager
             )
         {

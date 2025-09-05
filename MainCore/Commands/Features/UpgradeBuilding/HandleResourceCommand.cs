@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Features.UseHeroItem;
+using MainCore.Commands.Features.UseHeroItem;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
@@ -17,7 +17,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             ValidateEnoughResourceCommand.Handler validateEnoughResourceCommand,
             GetMissingResourceCommand.Handler getMissingResourceCommand,
             ISettingService settingService,
-            IChromeBrowser browser,
+            IBrowser browser,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -48,7 +48,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return Result.Ok();
         }
 
-        private static long[] GetRequiredResource(IChromeBrowser browser, BuildingEnums building)
+        private static long[] GetRequiredResource(IBrowser browser, BuildingEnums building)
         {
             var doc = browser.Html;
 

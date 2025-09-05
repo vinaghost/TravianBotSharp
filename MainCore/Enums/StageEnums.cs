@@ -1,4 +1,4 @@
-﻿namespace MainCore.Enums
+namespace MainCore.Enums
 {
     public enum StageEnums
     {

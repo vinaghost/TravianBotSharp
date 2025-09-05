@@ -1,4 +1,4 @@
-﻿namespace MainCore.Constraints
+namespace MainCore.Constraints
 {
     public interface ITask : IConstraint
     {

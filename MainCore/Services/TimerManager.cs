@@ -1,4 +1,4 @@
-﻿using Humanizer;
+using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Retry;
@@ -92,7 +92,7 @@ namespace MainCore.Services
             using var scope = _serviceScopeFactory.CreateScope(accountId);
 
             ///===========================================================///
-            var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
+            var browser = scope.ServiceProvider.GetRequiredService<IBrowser>();
             var logger = browser.Logger;
 
             var contextData = new ContextData(task.Description, browser);
@@ -216,6 +216,6 @@ namespace MainCore.Services
             }
         }
 
-        public record ContextData(string TaskName, IChromeBrowser Browser);
+        public record ContextData(string TaskName, IBrowser Browser);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Features.UseHeroItem
+namespace MainCore.Commands.Features.UseHeroItem
 {
     [Handler]
     public static partial class UseHeroItemCommand
@@ -7,7 +7,7 @@
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
+            IBrowser browser,
             ILogger logger,
             IDelayService delayService,
             CancellationToken cancellationToken)
@@ -19,7 +19,7 @@
             if (result.IsFailed) return result;
             await delayService.DelayClick(cancellationToken);
 
-            result = await EnterAmount(browser, amount, cancellationToken);
+            result = await EnterAmount(browser, amount);
             if (result.IsFailed) return result;
             await delayService.DelayClick(cancellationToken);
 
@@ -31,7 +31,7 @@
         }
 
         private static async Task<Result> ClickItem(
-            IChromeBrowser browser,
+            IBrowser browser,
             HeroItemEnums item,
             CancellationToken cancellationToken)
         {
@@ -46,7 +46,7 @@
             }
 
             Result result;
-            result = await browser.Click(By.XPath(node.XPath), cancellationToken);
+            result = await browser.Click(By.XPath(node.XPath));
             if (result.IsFailed) return result;
 
             result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);
@@ -55,21 +55,21 @@
         }
 
         private static async Task<Result> EnterAmount(
-            IChromeBrowser browser,
-            long amount,
-            CancellationToken cancellationToken)
+            IBrowser browser,
+            long amount
+            )
         {
             var node = InventoryParser.GetAmountBox(browser.Html);
             if (node is null) return Retry.TextboxNotFound("amount");
 
             Result result;
-            result = await browser.Input(By.XPath(node.XPath), amount.ToString(), cancellationToken);
+            result = await browser.Input(By.XPath(node.XPath), amount.ToString());
             if (result.IsFailed) return result;
             return Result.Ok();
         }
 
         private static async Task<Result> Confirm(
-            IChromeBrowser browser,
+            IBrowser browser,
             CancellationToken cancellationToken)
         {
             var node = InventoryParser.GetConfirmButton(browser.Html);
@@ -83,7 +83,7 @@
             }
 
             Result result;
-            result = await browser.Click(By.XPath(node.XPath), cancellationToken);
+            result = await browser.Click(By.XPath(node.XPath));
             if (result.IsFailed) return result;
 
             result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);

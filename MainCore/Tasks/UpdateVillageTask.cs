@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.NextExecute;
+using MainCore.Commands.NextExecute;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -25,7 +25,7 @@ namespace MainCore.Tasks
 
         private static async ValueTask<Result> HandleAsync(
             Task task,
-            IChromeBrowser browser,
+            IBrowser browser,
             UpdateBuildingCommand.Handler updateBuildingCommand,
             ToDorfCommand.Handler toDorfCommand,
             NextExecuteUpdateVillageTaskCommand.Handler nextExecuteUpdateVillageTaskCommand,

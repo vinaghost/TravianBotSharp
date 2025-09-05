@@ -1,4 +1,4 @@
-﻿using MainCore.Entities;
+using MainCore.Entities;
 using MainCore.Infrasturecture.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;

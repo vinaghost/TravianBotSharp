@@ -1,4 +1,4 @@
-﻿using MainCore.UI.Models.Output;
+using MainCore.UI.Models.Output;
 using System;
 using System.Globalization;
 using System.Windows;

@@ -1,4 +1,4 @@
-﻿namespace MainCore.UI.Models.Output
+namespace MainCore.UI.Models.Output
 {
     public class ComboBoxItem<T>
     {

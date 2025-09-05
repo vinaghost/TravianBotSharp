@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Features.TrainTroop;
+using MainCore.Commands.Features.TrainTroop;
 using MainCore.Commands.NextExecute;
 using MainCore.Commands.UI.Misc;
 using MainCore.Tasks.Base;

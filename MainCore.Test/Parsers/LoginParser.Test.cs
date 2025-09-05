@@ -1,4 +1,4 @@
-﻿namespace MainCore.Test.Parsers
+namespace MainCore.Test.Parsers
 {
     public class LoginParser : BaseParser
     {

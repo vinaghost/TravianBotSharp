@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Navigate
+namespace MainCore.Commands.Navigate
 {
     [Handler]
     public static partial class SwitchVillageCommand
@@ -7,14 +7,26 @@
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
-           IChromeBrowser browser,
+           IBrowser browser,
            CancellationToken cancellationToken
            )
         {
             var villageId = command.VillageId;
 
+            // Köy bulunamadığında sayfayı yenile ve tekrar dene
             var node = VillagePanelParser.GetVillageNode(browser.Html, villageId);
-            if (node is null) return Skip.VillageNotFound;
+            if (node is null)
+            {
+                // Sayfayı yenile ve tekrar dene
+                var refreshResult = await browser.Refresh(cancellationToken);
+                if (refreshResult.IsFailed) return refreshResult;
+
+                // Kısa bekleme - sayfa yüklenmesi için
+                await Task.Delay(1000, cancellationToken);
+
+                node = VillagePanelParser.GetVillageNode(browser.Html, villageId);
+                if (node is null) return Skip.VillageNotFound;
+            }
 
             if (VillagePanelParser.IsActive(node)) return Result.Ok();
 
@@ -28,7 +40,7 @@
             }
 
             Result result;
-            result = await browser.Click(By.XPath(node.XPath), cancellationToken);
+            result = await browser.Click(By.XPath(node.XPath));
             if (result.IsFailed) return result;
 
             result = await browser.Wait(villageChanged, cancellationToken);

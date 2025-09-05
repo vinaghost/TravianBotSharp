@@ -1,4 +1,4 @@
-ï»¿using MainCore.UI.Models.Output;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using Serilog.Events;
 using Serilog.Templates;
@@ -144,7 +144,9 @@ namespace MainCore.UI.ViewModels.Tabs
         private string ReloadLog()
         {
             using var sw = new StringWriter(new StringBuilder());
-            foreach (var log in _logEvents)
+            // Thread safety için snapshot alýyorum - collection'ýn o anki durumunu kopyalýyorum
+            var logSnapshot = _logEvents.ToArray();
+            foreach (var log in logSnapshot)
             {
                 _template.Format(log, sw);
             }

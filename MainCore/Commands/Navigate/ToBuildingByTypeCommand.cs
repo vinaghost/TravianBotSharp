@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Navigate
+namespace MainCore.Commands.Navigate
 {
     [Handler]
     public static partial class ToBuildingByTypeCommand
@@ -7,7 +7,7 @@
 
         private static async ValueTask<Result> HandleAsync(
            Command command,
-           IChromeBrowser browser,
+           IBrowser browser,
            AppDbContext context,
            CancellationToken cancellationToken
            )

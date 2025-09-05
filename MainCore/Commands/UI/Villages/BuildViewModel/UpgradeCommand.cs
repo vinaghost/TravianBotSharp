@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.UI.Villages.BuildViewModel
+namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
     [Handler]
     public static partial class UpgradeCommand

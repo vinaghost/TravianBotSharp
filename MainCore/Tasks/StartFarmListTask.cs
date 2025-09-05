@@ -1,4 +1,5 @@
-ï»¿using MainCore.Commands.Features.StartFarmList;
+using MainCore.Commands.Features.StartFarmList;
+using MainCore.Commands.Navigate;
 using MainCore.Commands.NextExecute;
 using MainCore.Tasks.Base;
 
@@ -22,6 +23,7 @@ namespace MainCore.Tasks
             ToFarmListPageCommand.Handler toFarmListPageCommand,
             StartAllFarmListCommand.Handler startAllFarmListCommand,
             StartActiveFarmListCommand.Handler startActiveFarmListCommand,
+            ToDorfCommand.Handler toDorfCommand,
             NextExecuteStartFarmListTaskCommand.Handler nextExecuteStartFarmListTaskCommand,
             CancellationToken cancellationToken)
         {
@@ -40,6 +42,10 @@ namespace MainCore.Tasks
                 result = await startActiveFarmListCommand.HandleAsync(new(task.AccountId), cancellationToken);
                 if (result.IsFailed) return result;
             }
+
+            // Farm list baþlatýldýktan sonra dorf sayfasýna geç - sayfayý temizle
+            result = await toDorfCommand.HandleAsync(new(0), cancellationToken);
+            if (result.IsFailed) return result;
 
             await nextExecuteStartFarmListTaskCommand.HandleAsync(new(task), cancellationToken);
 
