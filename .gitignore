@@ -8,7 +8,10 @@
 *.user
 *.userosscache
 *.sln.docstates
-
+*.cs text eol=lf
+*.csproj text eol=lf
+*.sln text eol=lf
+* text=auto
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
