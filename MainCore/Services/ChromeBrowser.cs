@@ -218,13 +218,20 @@ namespace MainCore.Services
         {
             return Wait(PageLoaded, cancellationToken);
         }
+		
+		public async Task<Result> WaitPageChanged(string part, CancellationToken cancellationToken)
+		{
+	    if (Driver is null) return Stop.DriverNotReady;
 
-        public Task<Result> WaitPageChanged(string part, CancellationToken cancellationToken)
-        {
-            return Wait(driver => PageChanged(driver, part), cancellationToken);
-        }
+ 	   var result = await Wait(driver => driver.Url.Contains(part), cancellationToken);
+	    if (result.IsFailed) return result;
 
-        public Task<Result> WaitPageChanged(string part, Predicate<IWebDriver> customCondition, CancellationToken cancellationToken)
+  		  result = await WaitPageLoaded(cancellationToken);
+  		  return result;
+	
+  		}
+    
+		public Task<Result> WaitPageChanged(string part, Predicate<IWebDriver> customCondition, CancellationToken cancellationToken)
         {
             return Wait(driver => PageChanged(driver, part) && customCondition(driver), cancellationToken);
         }
