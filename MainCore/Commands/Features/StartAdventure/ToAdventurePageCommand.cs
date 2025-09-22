@@ -12,8 +12,11 @@ namespace MainCore.Commands.Features.StartAdventure
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var adventure = AdventureParser.GetHeroAdventureButton(browser.Html);
-            if (adventure is null) return Retry.ButtonNotFound("hero adventure");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => AdventureParser.GetHeroAdventureButton(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
+
+            var result = await browser.Click(element, cancellationToken);
+            if (result.IsFailed) return result;
 
             static bool TableShow(IWebDriver driver)
             {
@@ -21,11 +24,7 @@ namespace MainCore.Commands.Features.StartAdventure
                 doc.LoadHtml(driver.PageSource);
                 return AdventureParser.IsAdventurePage(doc);
             }
-
-            var result = await browser.Click(By.XPath(adventure.XPath), cancellationToken);
-            if (result.IsFailed) return result;
-
-            result = await browser.WaitPageChanged("adventures", TableShow, cancellationToken);
+            result = await browser.Wait(TableShow, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();
