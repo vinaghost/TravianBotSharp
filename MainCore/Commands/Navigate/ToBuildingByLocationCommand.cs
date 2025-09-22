@@ -66,6 +66,10 @@ namespace MainCore.Commands.Navigate
                     if (result.IsFailed) return result;
                 }
             }
+
+            result = await browser.WaitPageChanged("build", cancellationToken);
+            if (result.IsFailed) return result;
+
             return Result.Ok();
         }
 

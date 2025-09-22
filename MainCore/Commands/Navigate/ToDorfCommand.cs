@@ -32,6 +32,10 @@
             Result result;
             result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
+
+            result = await browser.WaitPageChanged($"dorf{dorf}.php", cancellationToken);
+            if (result.IsFailed) return result;
+
             return Result.Ok();
         }
 

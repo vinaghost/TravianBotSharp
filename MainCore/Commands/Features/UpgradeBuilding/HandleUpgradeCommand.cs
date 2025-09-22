@@ -205,6 +205,9 @@
             }
             while (true);
 
+            result = await browser.WaitPageChanged("dorf", cancellationToken);
+            if (result.IsFailed) return result;
+
             await Task.Delay(Random.Shared.Next(5_000, 10_000), CancellationToken.None);
 
             var dontShowThisAgain = browser.Html.GetElementbyId("dontShowThisAgain");
@@ -235,6 +238,10 @@
 
             var result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
+
+            result = await browser.WaitPageChanged("dorf", cancellationToken);
+            if (result.IsFailed) return result;
+
             return Result.Ok();
         }
 
@@ -248,6 +255,9 @@
             if (isFailed) return Result.Fail(errors);
 
             var result = await browser.Click(element, cancellationToken);
+            if (result.IsFailed) return result;
+
+            result = await browser.WaitPageChanged("dorf", cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }

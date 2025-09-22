@@ -196,13 +196,8 @@ namespace MainCore.Services
         public async Task<Result> Click(IWebElement element, CancellationToken cancellationToken)
         {
             if (Driver is null) return Stop.DriverNotReady;
-            await Task.Run(new Actions(Driver).Click(element).Perform);
 
-            await Wait(driver =>
-            {
-                var logo = driver.FindElements(By.Id("logo"));
-                return logo.Count > 0 && logo[0].Displayed && logo[0].Enabled;
-            }, cancellationToken);
+            await Task.Run(new Actions(Driver).Click(element).Perform);
             return Result.Ok();
         }
 
@@ -225,6 +220,25 @@ namespace MainCore.Services
             await Task.CompletedTask;
             var js = Driver as IJavaScriptExecutor;
             js.ExecuteScript(javascript);
+            return Result.Ok();
+        }
+
+        public async Task<Result> WaitPageChanged(string url, CancellationToken cancellationToken)
+        {
+            var result = await Wait(driver =>
+            {
+                return driver.Url.Contains(url);
+            }, cancellationToken);
+
+            if (result.IsFailed) return result.WithError($"Failed to wait for URL change [{url}]");
+
+            result = await Wait(driver =>
+            {
+                var logo = driver.FindElements(By.Id("logo"));
+                return logo.Count > 0 && logo[0].Displayed && logo[0].Enabled;
+            }, cancellationToken);
+
+            if (result.IsFailed) return result.WithError("Failed to wait for logo to be displayed");
             return Result.Ok();
         }
 
