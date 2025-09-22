@@ -17,7 +17,9 @@ namespace MainCore.Services
         Task<Result> ExecuteJsScript(string javascript);
 
         Task<Result<IWebElement>> GetElement(Func<HtmlDocument, HtmlNode?> nodeGenerator, CancellationToken cancellationToken, [CallerArgumentExpression("nodeGenerator")] string? expression = null);
+
         Task<Result<IWebElement>> GetElement(By by, CancellationToken cancellationToken, [CallerArgumentExpression("by")] string? expression = null);
+
         Task<Result> Input(IWebElement element, string content, CancellationToken cancellationToken);
 
         Task<Result> Navigate(string url, CancellationToken cancellationToken);
@@ -30,6 +32,6 @@ namespace MainCore.Services
 
         Task Shutdown();
 
-        Task<Result> Wait(Predicate<IWebDriver> condition, CancellationToken cancellationToken);
+        Task<Result> Wait(Predicate<IWebDriver> condition, CancellationToken cancellationToken, [CallerArgumentExpression("condition")] string? expression = null);
     }
 }

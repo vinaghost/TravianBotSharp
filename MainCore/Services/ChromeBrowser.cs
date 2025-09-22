@@ -197,6 +197,12 @@ namespace MainCore.Services
         {
             if (Driver is null) return Stop.DriverNotReady;
             await Task.Run(new Actions(Driver).Click(element).Perform);
+
+            await Wait(driver =>
+            {
+                var logo = driver.FindElements(By.Id("logo"));
+                return logo.Count > 0 && logo[0].Displayed && logo[0].Enabled;
+            }, cancellationToken);
             return Result.Ok();
         }
 
@@ -222,7 +228,7 @@ namespace MainCore.Services
             return Result.Ok();
         }
 
-        public async Task<Result> Wait(Predicate<IWebDriver> condition, CancellationToken cancellationToken)
+        public async Task<Result> Wait(Predicate<IWebDriver> condition, CancellationToken cancellationToken, [CallerArgumentExpression("condition")] string? expression = null)
         {
             void wait()
             {
@@ -239,7 +245,9 @@ namespace MainCore.Services
             }
             catch (WebDriverTimeoutException ex)
             {
-                return Retry.BrowserTimeout(ex.Message);
+                if (expression is null)
+                    return Retry.BrowserTimeout(ex.Message);
+                return Retry.BrowserTimeout(ex.Message, expression);
             }
             return Result.Ok();
         }
