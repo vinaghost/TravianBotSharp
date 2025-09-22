@@ -19,6 +19,11 @@ namespace MainCore.Commands.Features.StartAdventure
             if (adventureButton is null) return Retry.ButtonNotFound("adventure");
             logger.Information("Start adventure {Adventure}", AdventureParser.GetAdventureInfo(adventureButton));
 
+            var (_, isFailed, element, errors) = await browser.GetElement(By.XPath(adventureButton.XPath), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
+
+            var result = await browser.Click(element, cancellationToken);
+            if (result.IsFailed) return result;
             static bool ContinueShow(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
@@ -26,10 +31,6 @@ namespace MainCore.Commands.Features.StartAdventure
                 var continueButton = AdventureParser.GetContinueButton(doc);
                 return continueButton is not null;
             }
-
-            var result = await browser.Click(By.XPath(adventureButton.XPath), cancellationToken);
-            if (result.IsFailed) return result;
-
             result = await browser.Wait(ContinueShow, cancellationToken);
             if (result.IsFailed) return result;
 

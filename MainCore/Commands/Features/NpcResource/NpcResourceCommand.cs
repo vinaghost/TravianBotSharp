@@ -74,8 +74,6 @@
             if (result.IsFailed) return result;
 
             await Task.Delay(5000);
-            result = await browser.WaitPageLoaded(cancellationToken);
-            if (result.IsFailed) return result;
 
             browser.Logger.Information("After NPC:");
             LogResource(browser);
@@ -116,8 +114,11 @@
 
         private static async Task<Result> OpenNPCDialog(IChromeBrowser browser, CancellationToken cancellationToken)
         {
-            var button = NpcResourceParser.GetExchangeResourcesButton(browser.Html);
-            if (button is null) return Retry.ButtonNotFound("Exchange resources");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => NpcResourceParser.GetExchangeResourcesButton(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
+
+            var result = await browser.Click(element, cancellationToken);
+            if (result.IsFailed) return result;
 
             static bool DialogShown(IWebDriver driver)
             {
@@ -125,9 +126,6 @@
                 doc.LoadHtml(driver.PageSource);
                 return NpcResourceParser.IsNpcDialog(doc);
             }
-
-            var result = await browser.Click(By.XPath(button.XPath), cancellationToken);
-            if (result.IsFailed) return result;
 
             result = await browser.Wait(DialogShown, cancellationToken);
             if (result.IsFailed) return result;
@@ -141,7 +139,10 @@
 
             for (var i = 0; i < 4; i++)
             {
-                var result = await browser.Input(By.XPath(inputs[i].XPath), $"{values[i]}", cancellationToken);
+                var (_, isFailed, element, errors) = await browser.GetElement(By.XPath(inputs[i].XPath), cancellationToken);
+                if (isFailed) return Result.Fail(errors);
+
+                var result = await browser.Input(element, $"{values[i]}", cancellationToken);
                 if (result.IsFailed) return result;
             }
 
@@ -183,22 +184,10 @@
 
         private static async Task<Result> Distribute(IChromeBrowser browser, CancellationToken cancellationToken)
         {
-            var result = await browser.Wait(driver =>
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                var button = NpcResourceParser.GetDistributeButton(browser.Html);
-                if (button is null) return false;
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => NpcResourceParser.GetDistributeButton(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-                var elements = driver.FindElements(By.XPath(button.XPath));
-                return elements.Count > 0 && elements[0].Enabled;
-            }, cancellationToken);
-            if (result.IsFailed) return result;
-
-            var button = NpcResourceParser.GetDistributeButton(browser.Html);
-            if (button is null) return Retry.ButtonNotFound("distribute");
-
-            result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            var result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();
@@ -206,23 +195,10 @@
 
         private static async Task<Result> Redeem(IChromeBrowser browser, CancellationToken cancellationToken)
         {
-            var result = await browser.Wait(driver =>
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                var button = NpcResourceParser.GetRedeemButton(doc);
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => NpcResourceParser.GetRedeemButton(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-                if (button is null) return false;
-
-                var elements = driver.FindElements(By.XPath(button.XPath));
-                return elements.Count > 0 && elements[0].Enabled;
-            }, cancellationToken);
-            if (result.IsFailed) return result;
-
-            var button = NpcResourceParser.GetRedeemButton(browser.Html);
-            if (button is null) return Retry.ButtonNotFound("redeem");
-
-            result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            var result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();
