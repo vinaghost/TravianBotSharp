@@ -64,11 +64,6 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         [ReactiveCommand]
         public async Task BuildingsModified(BuildingsModified notification)
         {
-            if (!IsActive) return;
-            if (notification.VillageId != VillageId) return;
-            await LoadQueueCommand.Execute(notification.VillageId);
-            await LoadBuildingCommand.Execute(notification.VillageId);
-
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var task = new CompleteImmediatelyTask.Task(AccountId, notification.VillageId);
@@ -76,17 +71,22 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             {
                 _taskManager.Add(task);
             }
+
+            if (!IsActive) return;
+            if (notification.VillageId != VillageId) return;
+            await LoadQueueCommand.Execute(notification.VillageId);
+            await LoadBuildingCommand.Execute(notification.VillageId);
         }
 
         [ReactiveCommand]
         public async Task JobsModified(JobsModified notification)
         {
+            _taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(AccountId, notification.VillageId));
+
             if (!IsActive) return;
             if (notification.VillageId != VillageId) return;
             await LoadJobCommand.Execute(notification.VillageId);
             await LoadBuildingCommand.Execute(notification.VillageId);
-
-            _taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(AccountId, notification.VillageId));
         }
 
         protected override async Task Load(VillageId villageId)

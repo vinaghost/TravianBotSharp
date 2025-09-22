@@ -25,6 +25,12 @@
             if (tab is null) return Retry.NotFound($"{tabIndex}", "tab");
             if (BuildingTabParser.IsTabActive(tab)) return Result.Ok();
 
+            var (_, isFailed, element, errors) = await browser.GetElement(By.XPath(tab.XPath), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
+            Result result;
+            result = await browser.Click(element, cancellationToken);
+            if (result.IsFailed) return result;
+
             bool tabActived(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
@@ -37,9 +43,6 @@
                 return true;
             }
 
-            Result result;
-            result = await browser.Click(By.XPath(tab.XPath), cancellationToken);
-            if (result.IsFailed) return result;
             result = await browser.Wait(tabActived, cancellationToken);
             if (result.IsFailed) return result;
 

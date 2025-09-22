@@ -13,10 +13,10 @@ namespace MainCore.Commands.Features.DisableContextualHelp
             CancellationToken cancellationToken
             )
         {
-            var button = OptionParser.GetOptionButton(browser.Html);
-            if (button is null) return Retry.ButtonNotFound("options");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => OptionParser.GetOptionButton(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-            var result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            var result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();
