@@ -24,7 +24,7 @@
 
             await delayService.DelayClick(cancellationToken);
 
-            result = await switchManagementTabCommand.HandleAsync(new(villageId, plan.Location), cancellationToken);
+            result = await switchManagementTabCommand.HandleAsync(new(villageId, plan), cancellationToken);
             if (result.IsFailed) return result;
 
             await delayService.DelayClick(cancellationToken);

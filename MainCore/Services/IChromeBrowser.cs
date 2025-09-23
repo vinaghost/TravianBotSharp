@@ -1,4 +1,5 @@
 ﻿using OpenQA.Selenium.Chrome;
+using System.Runtime.CompilerServices;
 
 namespace MainCore.Services
 {
@@ -9,13 +10,17 @@ namespace MainCore.Services
         HtmlDocument Html { get; }
         ILogger Logger { get; set; }
 
-        Task<Result> Click(By by, CancellationToken cancellationToken);
+        Task<Result> Click(IWebElement element, CancellationToken cancellationToken);
 
         Task Close();
 
         Task<Result> ExecuteJsScript(string javascript);
 
-        Task<Result> Input(By by, string content, CancellationToken cancellationToken);
+        Task<Result<IWebElement>> GetElement(Func<HtmlDocument, HtmlNode?> nodeGenerator, CancellationToken cancellationToken, [CallerArgumentExpression("nodeGenerator")] string? expression = null);
+
+        Task<Result<IWebElement>> GetElement(By by, CancellationToken cancellationToken, [CallerArgumentExpression("by")] string? expression = null);
+
+        Task<Result> Input(IWebElement element, string content, CancellationToken cancellationToken);
 
         Task<Result> Navigate(string url, CancellationToken cancellationToken);
 
@@ -27,12 +32,8 @@ namespace MainCore.Services
 
         Task Shutdown();
 
-        Task<Result> Wait(Predicate<IWebDriver> condition, CancellationToken cancellationToken);
+        Task<Result> Wait(Predicate<IWebDriver> condition, CancellationToken cancellationToken, [CallerArgumentExpression("condition")] string? expression = null);
 
-        Task<Result> WaitPageChanged(string part, CancellationToken cancellationToken);
-
-        Task<Result> WaitPageChanged(string part, Predicate<IWebDriver> customCondition, CancellationToken cancellationToken);
-
-        Task<Result> WaitPageLoaded(CancellationToken cancellationToken);
+        Task<Result> WaitPageChanged(string url, CancellationToken cancellationToken);
     }
 }

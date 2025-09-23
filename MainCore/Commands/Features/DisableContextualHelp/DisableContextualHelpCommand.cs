@@ -13,16 +13,16 @@ namespace MainCore.Commands.Features.DisableContextualHelp
             CancellationToken cancellationToken
             )
         {
-            var option = OptionParser.GetHideContextualHelpOption(browser.Html);
-            if (option is null) return Retry.NotFound("hide contextual help", "option");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => OptionParser.GetHideContextualHelpOption(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-            var result = await browser.Click(By.XPath(option.XPath), cancellationToken);
+            var result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
-            var button = OptionParser.GetSubmitButton(browser.Html);
-            if (button is null) return Retry.ButtonNotFound("submit");
+            (_, isFailed, element, errors) = await browser.GetElement(doc => OptionParser.GetSubmitButton(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-            result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

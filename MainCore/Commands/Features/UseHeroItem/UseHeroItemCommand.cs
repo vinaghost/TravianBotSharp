@@ -35,8 +35,12 @@
             HeroItemEnums item,
             CancellationToken cancellationToken)
         {
-            var node = InventoryParser.GetItemSlot(browser.Html, item);
-            if (node is null) return Retry.NotFound($"{item}", "item");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => InventoryParser.GetItemSlot(doc, item), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
+
+            Result result;
+            result = await browser.Click(element, cancellationToken);
+            if (result.IsFailed) return result;
 
             static bool loadingCompleted(IWebDriver driver)
             {
@@ -44,10 +48,6 @@
                 doc.LoadHtml(driver.PageSource);
                 return InventoryParser.IsInventoryLoaded(doc);
             }
-
-            Result result;
-            result = await browser.Click(By.XPath(node.XPath), cancellationToken);
-            if (result.IsFailed) return result;
 
             result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);
             if (result.IsFailed) return result;
@@ -59,11 +59,11 @@
             long amount,
             CancellationToken cancellationToken)
         {
-            var node = InventoryParser.GetAmountBox(browser.Html);
-            if (node is null) return Retry.TextboxNotFound("amount");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => InventoryParser.GetAmountBox(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
             Result result;
-            result = await browser.Input(By.XPath(node.XPath), amount.ToString(), cancellationToken);
+            result = await browser.Input(element, amount.ToString(), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }
@@ -72,8 +72,8 @@
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var node = InventoryParser.GetConfirmButton(browser.Html);
-            if (node is null) return Retry.ButtonNotFound("confirm");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => InventoryParser.GetConfirmButton(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
             static bool loadingCompleted(IWebDriver driver)
             {
@@ -83,7 +83,7 @@
             }
 
             Result result;
-            result = await browser.Click(By.XPath(node.XPath), cancellationToken);
+            result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
             result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);

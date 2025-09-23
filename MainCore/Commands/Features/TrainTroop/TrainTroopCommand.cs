@@ -64,17 +64,17 @@ namespace MainCore.Commands.Features.TrainTroop
             long amount,
             CancellationToken cancellationToken)
         {
-            var inputBox = TrainTroopParser.GetInputBox(browser.Html, troop);
-            if (inputBox is null) return Retry.TextboxNotFound("troop amount input");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => TrainTroopParser.GetInputBox(doc, troop), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
             Result result;
-            result = await browser.Input(By.XPath(inputBox.XPath), $"{amount}", cancellationToken);
+            result = await browser.Input(element, $"{amount}", cancellationToken);
             if (result.IsFailed) return result;
 
             var trainButton = TrainTroopParser.GetTrainButton(browser.Html);
             if (trainButton is null) return Retry.ButtonNotFound("train troop");
 
-            result = await browser.Click(By.XPath(trainButton.XPath), cancellationToken);
+            result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

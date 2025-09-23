@@ -26,14 +26,16 @@
                 return Result.Ok();
             }
 
-            var button = NavigationBarParser.GetDorfButton(browser.Html, dorf);
-            if (button is null) return Retry.ButtonNotFound($"dorf{dorf}");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => NavigationBarParser.GetDorfButton(doc, dorf), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
             Result result;
-            result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
-            result = await browser.WaitPageChanged($"dorf{dorf}", cancellationToken);
+
+            result = await browser.WaitPageChanged($"dorf{dorf}.php", cancellationToken);
             if (result.IsFailed) return result;
+
             return Result.Ok();
         }
 
