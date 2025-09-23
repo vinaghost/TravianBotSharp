@@ -8,6 +8,8 @@
 
         public static Retry BrowserTimeout(string message) => new(message);
 
+        public static Retry BrowserTimeout(string exception, string expression) => new($"{expression} failed. {exception}");
+
         public static Retry NotFound(string name, string type) => new($"Cannot find {type} [{name}] ");
 
         public static Retry TextboxNotFound(string name) => NotFound(name, "textbox");

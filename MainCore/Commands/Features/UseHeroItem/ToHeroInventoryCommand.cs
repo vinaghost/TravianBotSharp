@@ -12,10 +12,10 @@ namespace MainCore.Commands.Features.UseHeroItem
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var avatar = InventoryParser.GetHeroAvatar(browser.Html);
-            if (avatar is null) return Retry.ButtonNotFound("avatar hero");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => InventoryParser.GetHeroAvatar(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-            var result = await browser.Click(By.XPath(avatar.XPath), cancellationToken);
+            var result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
             static bool TabActived(IWebDriver driver)
@@ -24,7 +24,8 @@ namespace MainCore.Commands.Features.UseHeroItem
                 doc.LoadHtml(driver.PageSource);
                 return InventoryParser.IsInventoryPage(doc);
             }
-            result = await browser.WaitPageChanged("hero", TabActived, cancellationToken);
+
+            result = await browser.Wait(TabActived, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

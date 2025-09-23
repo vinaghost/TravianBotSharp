@@ -18,12 +18,15 @@ namespace MainCore.Tasks
             ToOptionsPageCommand.Handler toOptionsPageCommand,
             DisableContextualHelpCommand.Handler disableContextualHelpCommand,
             ToDorfCommand.Handler toDorfCommand,
+            IDelayService delayService,
             IChromeBrowser chromeBrowser,
             CancellationToken cancellationToken)
         {
             Result result;
             result = await loginCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
+
+            await delayService.DelayTask(cancellationToken);
 
             var contextualHelpEnable = OptionParser.IsContextualHelpEnable(chromeBrowser.Html);
             if (!contextualHelpEnable) return Result.Ok();

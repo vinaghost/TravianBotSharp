@@ -125,28 +125,5 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             };
             return normalBuildPlan;
         }
-
-        private static bool IsJobComplete(JobDto job, List<BuildingDto> buildings, List<QueueBuilding> queueBuildings)
-        {
-            if (job.Type == JobTypeEnums.ResourceBuild) return false;
-
-            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
-
-            var queueBuilding = queueBuildings
-                .Where(x => x.Location == plan.Location)
-                .OrderByDescending(x => x.Level)
-                .Select(x => x.Level)
-                .FirstOrDefault();
-
-            if (queueBuilding >= plan.Level) return true;
-
-            var villageBuilding = buildings
-                .Where(x => x.Location == plan.Location)
-                .Select(x => x.Level)
-                .FirstOrDefault();
-            if (villageBuilding >= plan.Level) return true;
-
-            return false;
-        }
     }
 }

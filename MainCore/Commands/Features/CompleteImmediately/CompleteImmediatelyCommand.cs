@@ -16,26 +16,16 @@ namespace MainCore.Commands.Features.CompleteImmediately
 
             if (oldQueueCount == 0) return Result.Ok();
 
-            var completeNowButton = CompleteImmediatelyParser.GetCompleteButton(browser.Html);
-            if (completeNowButton is null) return Retry.ButtonNotFound("complete now");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => CompleteImmediatelyParser.GetCompleteButton(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-            var result = await browser.Click(By.XPath(completeNowButton.XPath), cancellationToken);
+            var result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
-            static bool ConfirmShown(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                var confirmButton = CompleteImmediatelyParser.GetConfirmButton(doc);
-                return confirmButton is not null;
-            }
-            result = await browser.Wait(ConfirmShown, cancellationToken);
-            if (result.IsFailed) return result;
+            (_, isFailed, element, errors) = await browser.GetElement(doc => CompleteImmediatelyParser.GetConfirmButton(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-            var confirmButton = CompleteImmediatelyParser.GetConfirmButton(browser.Html);
-            if (confirmButton is null) return Retry.ButtonNotFound("confirm complete now");
-
-            result = await browser.Click(By.XPath(confirmButton.XPath), cancellationToken);
+            result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
             static bool QueueDifferent(IWebDriver driver, int oldQueueCount)

@@ -2,6 +2,7 @@
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System.IO.Compression;
+using System.Runtime.CompilerServices;
 
 namespace MainCore.Services
 {
@@ -112,25 +113,19 @@ namespace MainCore.Services
         {
             if (Driver is null) return Stop.DriverNotReady;
             await Driver.Navigate().RefreshAsync();
-            var result = await WaitPageLoaded(cancellationToken);
-            return result;
+            return Result.Ok();
         }
-
-        private static bool PageLoaded(IWebDriver driver) => ((IJavaScriptExecutor)driver).ExecuteScript("return document.readyState")?.Equals("complete") ?? false;
-
-        private static bool PageChanged(IWebDriver driver, string url_nested) => driver.Url.Contains(url_nested) && PageLoaded(driver);
 
         public async Task<Result> Navigate(string url, CancellationToken cancellationToken)
         {
             if (Driver is null) return Stop.DriverNotReady;
             await Driver.Navigate().GoToUrlAsync(url);
-            var result = await Wait(driver => PageChanged(driver, url), cancellationToken);
-            return result;
+            return Result.Ok();
         }
 
-        private async Task<Result<IWebElement>> GetElement(By by, CancellationToken cancellationToken)
+        public async Task<Result<IWebElement>> GetElement(By by, CancellationToken cancellationToken, [CallerArgumentExpression("by")] string? expression = null)
         {
-            IWebElement wait()
+            IWebElement getElement()
             {
                 var element = _wait.Until((driver) =>
                 {
@@ -145,7 +140,7 @@ namespace MainCore.Services
 
             try
             {
-                var element = await Task.Run(wait, cancellationToken);
+                var element = await Task.Run(getElement, cancellationToken);
                 return Result.Ok(element);
             }
             catch (OperationCanceledException)
@@ -154,24 +149,60 @@ namespace MainCore.Services
             }
             catch (WebDriverTimeoutException ex)
             {
-                return Retry.BrowserTimeout(ex.Message);
+                if (expression is null)
+                    return Retry.BrowserTimeout(ex.Message);
+                return Retry.BrowserTimeout(ex.Message, expression);
             }
         }
 
-        public async Task<Result> Click(By by, CancellationToken cancellationToken)
+        public async Task<Result<IWebElement>> GetElement(Func<HtmlDocument, HtmlNode?> nodeGenerator, CancellationToken cancellationToken, [CallerArgumentExpression("nodeGenerator")] string? expression = null)
+        {
+            IWebElement getElement()
+            {
+                var element = _wait.Until((driver) =>
+                {
+                    var htmlDoc = new HtmlDocument();
+                    htmlDoc.LoadHtml(driver.PageSource);
+
+                    var node = nodeGenerator(htmlDoc);
+                    if (node is null) return null;
+
+                    var elements = driver.FindElements(By.XPath(node.XPath));
+                    if (elements.Count == 0) return null;
+                    var element = elements[0];
+                    if (!element.Displayed || !element.Enabled) return null;
+                    return element;
+                }, cancellationToken);
+                return element;
+            }
+
+            try
+            {
+                var element = await Task.Run(getElement, cancellationToken);
+                return Result.Ok(element);
+            }
+            catch (OperationCanceledException)
+            {
+                return Cancel.Error;
+            }
+            catch (WebDriverTimeoutException ex)
+            {
+                if (expression is null)
+                    return Retry.BrowserTimeout(ex.Message);
+                return Retry.BrowserTimeout(ex.Message, expression);
+            }
+        }
+
+        public async Task<Result> Click(IWebElement element, CancellationToken cancellationToken)
         {
             if (Driver is null) return Stop.DriverNotReady;
-            var (_, isFailed, element, errors) = await GetElement(by, cancellationToken);
-            if (isFailed) return Result.Fail(errors);
+
             await Task.Run(new Actions(Driver).Click(element).Perform);
             return Result.Ok();
         }
 
-        public async Task<Result> Input(By by, string content, CancellationToken cancellationToken)
+        public async Task<Result> Input(IWebElement element, string content, CancellationToken cancellationToken)
         {
-            var (_, isFailed, element, errors) = await GetElement(by, cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
             void input()
             {
                 element.SendKeys(Keys.Home);
@@ -192,7 +223,22 @@ namespace MainCore.Services
             return Result.Ok();
         }
 
-        public async Task<Result> Wait(Predicate<IWebDriver> condition, CancellationToken cancellationToken)
+        public async Task<Result> WaitPageChanged(string url, CancellationToken cancellationToken)
+        {
+            var result = await Wait(driver => driver.Url.Contains(url), cancellationToken);
+            if (result.IsFailed) return result.WithError($"Failed to wait for URL change [{url}], current URL is [{CurrentUrl}]");
+
+            result = await Wait(driver =>
+            {
+                var logo = driver.FindElements(By.Id("logo"));
+                return logo.Count > 0 && logo[0].Displayed && logo[0].Enabled;
+            }, cancellationToken);
+
+            if (result.IsFailed) return result.WithError("Failed to wait for logo to be displayed");
+            return Result.Ok();
+        }
+
+        public async Task<Result> Wait(Predicate<IWebDriver> condition, CancellationToken cancellationToken, [CallerArgumentExpression("condition")] string? expression = null)
         {
             void wait()
             {
@@ -209,24 +255,11 @@ namespace MainCore.Services
             }
             catch (WebDriverTimeoutException ex)
             {
-                return Retry.BrowserTimeout(ex.Message);
+                if (expression is null)
+                    return Retry.BrowserTimeout(ex.Message);
+                return Retry.BrowserTimeout(ex.Message, expression);
             }
             return Result.Ok();
-        }
-
-        public Task<Result> WaitPageLoaded(CancellationToken cancellationToken)
-        {
-            return Wait(PageLoaded, cancellationToken);
-        }
-
-        public Task<Result> WaitPageChanged(string part, CancellationToken cancellationToken)
-        {
-            return Wait(driver => PageChanged(driver, part), cancellationToken);
-        }
-
-        public Task<Result> WaitPageChanged(string part, Predicate<IWebDriver> customCondition, CancellationToken cancellationToken)
-        {
-            return Wait(driver => PageChanged(driver, part) && customCondition(driver), cancellationToken);
         }
 
         public async Task Close()
