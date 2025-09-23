@@ -225,12 +225,8 @@ namespace MainCore.Services
 
         public async Task<Result> WaitPageChanged(string url, CancellationToken cancellationToken)
         {
-            var result = await Wait(driver =>
-            {
-                return driver.Url.Contains(url);
-            }, cancellationToken);
-
-            if (result.IsFailed) return result.WithError($"Failed to wait for URL change [{url}]");
+            var result = await Wait(driver => driver.Url.Contains(url), cancellationToken);
+            if (result.IsFailed) return result.WithError($"Failed to wait for URL change [{url}], current URL is [{CurrentUrl}]");
 
             result = await Wait(driver =>
             {
