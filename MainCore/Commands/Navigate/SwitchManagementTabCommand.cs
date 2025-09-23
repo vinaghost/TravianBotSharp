@@ -3,7 +3,7 @@
     [Handler]
     public static partial class SwitchManagementTabCommand
     {
-        public sealed record Command(VillageId VillageId, int Location) : IVillageCommand;
+        public sealed record Command(VillageId VillageId, NormalBuildPlan Plan) : IVillageCommand;
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
@@ -12,17 +12,17 @@
             CancellationToken cancellationToken
             )
         {
-            var (villageId, location) = command;
+            var (villageId, plan) = command;
             var building = context.Buildings
                 .Where(x => x.VillageId == villageId.Value)
-                .FirstOrDefault(x => x.Location == location);
+                .FirstOrDefault(x => x.Location == plan.Location);
 
             if (building is null) return Result.Ok();
 
             Result result;
             if (building.Type == BuildingEnums.Site)
             {
-                var tabIndex = building.Type.GetBuildingsCategory();
+                var tabIndex = plan.Type.GetBuildingsCategory();
 
                 result = await SwitchTabCommand.SwitchTab(browser, tabIndex, cancellationToken);
                 if (result.IsFailed) return result;
