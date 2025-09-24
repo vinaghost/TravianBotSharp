@@ -12,8 +12,11 @@ namespace MainCore.Commands.Features.ClaimQuest
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var adventure = QuestParser.GetQuestMaster(browser.Html);
-            if (adventure is null) return Retry.ButtonNotFound("quest master");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => QuestParser.GetQuestMaster(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
+
+            var result = await browser.Click(element, cancellationToken);
+            if (result.IsFailed) return result;
 
             static bool TableShow(IWebDriver driver)
             {
@@ -21,11 +24,7 @@ namespace MainCore.Commands.Features.ClaimQuest
                 doc.LoadHtml(driver.PageSource);
                 return QuestParser.IsQuestPage(doc);
             }
-
-            var result = await browser.Click(By.XPath(adventure.XPath), cancellationToken);
-            if (result.IsFailed) return result;
-
-            result = await browser.WaitPageChanged("tasks", TableShow, cancellationToken);
+            result = await browser.Wait(TableShow, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();
