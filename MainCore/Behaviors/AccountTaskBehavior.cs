@@ -30,7 +30,7 @@ namespace MainCore.Behaviors
             {
                 if (!LoginParser.IsLoginPage(_browser.Html))
                 {
-                    return (TResponse)Stop.NotTravianPage;
+                    return (TResponse)Stop.Error.WithError("Travian is not ingame nor login page. Please check browser");
                 }
 
                 if (request is not LoginTask.Task)

@@ -58,7 +58,7 @@ namespace MainCore.Tasks
                     };
                     await saveVillageSettingCommand.HandleAsync(new(task.AccountId, task.VillageId, settings), cancellationToken);
                     logger.Warning("Disable NPC for this village.");
-                    return Skip.Error;
+                    return Skip.Error.WithErrors(result.Errors);
                 }
                 return result;
             }
@@ -69,7 +69,7 @@ namespace MainCore.Tasks
                 if (result.HasError<StorageLimit>())
                 {
                     task.ExecuteAt = DateTime.Now.AddHours(5);
-                    return Skip.Error;
+                    return Skip.Error.WithErrors(result.Errors);
                 }
                 return result;
             }

@@ -2,7 +2,7 @@
 {
     public class Skip : Error
     {
-        private Skip() : base()
+        private Skip() : base("Bot skip this task")
         {
         }
 

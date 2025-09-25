@@ -48,14 +48,14 @@ namespace MainCore.Commands.Misc
             }
 
             var access = await GetValidAccess(accesses);
-            if (access is null) return Stop.AllAccessNotWorking;
+            if (access is null) return Stop.Error.WithError("All accesses not working");
 
             if (accesses.Count == 1) return access;
             if (ignoreSleepTime) return access;
 
             var minSleep = context.ByName(accountId, AccountSettingEnums.SleepTimeMin);
             var timeValid = DateTime.Now.AddMinutes(-minSleep);
-            if (access.LastUsed > timeValid) return Stop.LackOfAccess;
+            if (access.LastUsed > timeValid) return Stop.Error.WithError("Last access is reused, it may get MH's attention");
             return access;
         }
 

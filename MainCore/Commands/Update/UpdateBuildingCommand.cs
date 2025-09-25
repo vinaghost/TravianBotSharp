@@ -45,7 +45,7 @@
             foreach (var strType in dtos.Select(x => x.Type))
             {
                 var resultParse = Enum.TryParse(strType, false, out BuildingEnums _);
-                if (!resultParse) return Stop.EnglishRequired(strType);
+                if (!resultParse) return Stop.Error.WithError($"Cannot parse {strType}. Is language English ?");
             }
             return Result.Ok();
         }

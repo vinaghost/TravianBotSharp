@@ -66,7 +66,6 @@ namespace MainCore.Test.Behaviors
             new List<object[]>
             {
                 new object[] { Result.Fail(Cancel.Error), "Pause button is pressed" },
-                new object[] { Result.Fail(Stop.EnglishRequired("abcxyz")), "Cannot parse abcxyz. Is language English ?. Bot must stop" },
             };
     }
 }
