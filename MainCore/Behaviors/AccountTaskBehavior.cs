@@ -37,7 +37,7 @@ namespace MainCore.Behaviors
                 {
                     _taskManager.AddOrUpdate<LoginTask.Task>(new(accountId), first: true);
                     request.ExecuteAt = request.ExecuteAt.AddSeconds(1);
-                    return (TResponse)Skip.AccountLogout;
+                    return (TResponse)Skip.Error.WithError("Account is logout. Re-login now");
                 }
             }
 

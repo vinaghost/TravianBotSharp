@@ -42,7 +42,7 @@ namespace MainCore.Tasks
                         task.ExecuteAt = nextExecuteErrors.Select(x => x.NextExecute).Min();
                     }
 
-                    return new Skip();
+                    return Skip.Error;
                 }
 
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
@@ -67,7 +67,7 @@ namespace MainCore.Tasks
                     {
                         var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
                         task.ExecuteAt = DateTime.Now.Add(time);
-                        return new Skip();
+                        return Skip.Error;
                     }
 
                     return result;

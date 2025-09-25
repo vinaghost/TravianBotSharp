@@ -14,7 +14,7 @@
             var villageId = command.VillageId;
 
             var villageNode = VillagePanelParser.GetVillageNode(browser.Html, villageId);
-            if (villageNode is null) return Skip.VillageNotFound;
+            if (villageNode is null) return Skip.Error.WithError("Village not found");
 
             if (VillagePanelParser.IsActive(villageNode)) return Result.Ok();
 

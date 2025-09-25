@@ -18,7 +18,7 @@
                 .Where(x => x.IsActive)
                 .Select(x => new FarmId(x.Id))
                 .ToList();
-            if (farmLists.Count == 0) return Skip.NoActiveFarmlist;
+            if (farmLists.Count == 0) return Skip.Error.WithError("No farmlist is active");
 
             foreach (var farmList in farmLists)
             {

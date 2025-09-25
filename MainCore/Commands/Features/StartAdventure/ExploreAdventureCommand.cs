@@ -13,7 +13,7 @@ namespace MainCore.Commands.Features.StartAdventure
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            if (!AdventureParser.CanStartAdventure(browser.Html)) return Skip.NoAdventure;
+            if (!AdventureParser.CanStartAdventure(browser.Html)) return Skip.Error.WithError("No adventure available");
 
             var adventureButton = AdventureParser.GetAdventureButton(browser.Html);
             if (adventureButton is null) return Retry.Error.WithError($"Failed to find adventure button");
