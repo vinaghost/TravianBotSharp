@@ -20,13 +20,14 @@
             CancellationToken cancellationToken)
         {
             var count = BuildingTabParser.CountTab(browser.Html);
-            if (tabIndex > count) return Retry.OutOfIndexTab(tabIndex, count);
+            if (tabIndex >= count) return Retry.Error.WithError($"Found {count} tabs but need tab #{tabIndex + 1} active");
+
             var tab = BuildingTabParser.GetTab(browser.Html, tabIndex);
-            if (tab is null) return Retry.NotFound($"{tabIndex}", "tab");
             if (BuildingTabParser.IsTabActive(tab)) return Result.Ok();
 
             var (_, isFailed, element, errors) = await browser.GetElement(By.XPath(tab.XPath), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
+            if (isFailed) return Result.Fail(errors).WithError($"Failed to find tab element [{tab.XPath}]");
+
             Result result;
             result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
@@ -35,10 +36,7 @@
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                var count = BuildingTabParser.CountTab(doc);
-                if (tabIndex > count) return false;
                 var tab = BuildingTabParser.GetTab(doc, tabIndex);
-                if (tab is null) return false;
                 if (!BuildingTabParser.IsTabActive(tab)) return false;
                 return true;
             }

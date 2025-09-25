@@ -16,14 +16,16 @@ namespace MainCore.Commands.Features.StartAdventure
             if (!AdventureParser.CanStartAdventure(browser.Html)) return Skip.NoAdventure;
 
             var adventureButton = AdventureParser.GetAdventureButton(browser.Html);
-            if (adventureButton is null) return Retry.ButtonNotFound("adventure");
+            if (adventureButton is null) return Retry.Error.WithError($"Failed to find adventure button");
+
             logger.Information("Start adventure {Adventure}", AdventureParser.GetAdventureInfo(adventureButton));
 
             var (_, isFailed, element, errors) = await browser.GetElement(By.XPath(adventureButton.XPath), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
+            if (isFailed) return Result.Fail(errors).WithError($"Failed to find adventure button [{adventureButton.XPath}]");
 
             var result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
+
             static bool ContinueShow(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
@@ -33,7 +35,6 @@ namespace MainCore.Commands.Features.StartAdventure
             }
             result = await browser.Wait(ContinueShow, cancellationToken);
             if (result.IsFailed) return result;
-
             return Result.Ok();
         }
     }

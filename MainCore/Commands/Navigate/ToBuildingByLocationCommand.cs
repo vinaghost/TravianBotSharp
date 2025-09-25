@@ -22,7 +22,7 @@ namespace MainCore.Commands.Navigate
             CancellationToken cancellationToken)
         {
             var (_, isFailed, element, errors) = await browser.GetElement(doc => GetBuilding(doc, location), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
+            if (isFailed) return Result.Fail(errors).WithError($"Failed to find [building at #{location}]");
 
             var node = GetBuilding(browser.Html, location)!;
 
@@ -50,10 +50,10 @@ namespace MainCore.Commands.Navigate
                 if (location == 40) // wall
                 {
                     var path = node.Descendants("path").FirstOrDefault();
-                    if (path is null) return Retry.NotFound($"{location}", "wall bottom path");
+                    if (path is null) return Retry.Error.WithError("Failed to find [wall]");
 
                     var javascript = path.GetAttributeValue("onclick", "");
-                    if (string.IsNullOrEmpty(javascript)) return Retry.NotFound($"{location}", "JavaScriptExecutor onclick wall");
+                    if (string.IsNullOrEmpty(javascript)) return Retry.Error.WithError("Failed to find [wall's onclick event]");
 
                     var decodedJs = HttpUtility.HtmlDecode(javascript);
 

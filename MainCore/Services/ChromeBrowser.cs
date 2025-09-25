@@ -149,9 +149,9 @@ namespace MainCore.Services
             }
             catch (WebDriverTimeoutException ex)
             {
-                if (expression is null)
-                    return Retry.BrowserTimeout(ex.Message);
-                return Retry.BrowserTimeout(ex.Message, expression);
+                var error = Retry.Error.WithError(ex.Message);
+                if (expression is not null) return error.WithError(expression);
+                return error;
             }
         }
 
@@ -187,9 +187,9 @@ namespace MainCore.Services
             }
             catch (WebDriverTimeoutException ex)
             {
-                if (expression is null)
-                    return Retry.BrowserTimeout(ex.Message);
-                return Retry.BrowserTimeout(ex.Message, expression);
+                var error = Retry.Error.WithError(ex.Message);
+                if (expression is not null) return error.WithError(expression);
+                return error;
             }
         }
 
@@ -255,9 +255,9 @@ namespace MainCore.Services
             }
             catch (WebDriverTimeoutException ex)
             {
-                if (expression is null)
-                    return Retry.BrowserTimeout(ex.Message);
-                return Retry.BrowserTimeout(ex.Message, expression);
+                var error = Retry.Error.WithError(ex.Message);
+                if (expression is not null) return error.WithError(expression);
+                return error;
             }
             return Result.Ok();
         }

@@ -154,20 +154,15 @@
             var videoFeature = browser.Html.GetElementbyId("videoFeature");
             if (videoFeature.HasClass("infoScreen"))
             {
-                var checkbox = videoFeature.Descendants("div").FirstOrDefault(x => x.HasClass("checkbox"));
-                if (checkbox is null) return Retry.ButtonNotFound("Don't show watch ads confirm again");
-
-                (_, isFailed, element, errors) = await browser.GetElement(By.XPath(checkbox.XPath), cancellationToken);
-                if (isFailed) return Result.Fail(errors);
+                (_, isFailed, element, errors) = await browser.GetElement(doc => doc.GetElementbyId("videoFeature").Descendants("div").FirstOrDefault(x => x.HasClass("checkbox")), cancellationToken);
+                if (isFailed) return Result.Fail(errors).WithError("Failed to find [Don't show watch ads confirm again] checkbox");
 
                 result = await browser.Click(element, cancellationToken);
                 if (result.IsFailed) return result;
 
-                var watchButton = videoFeature.Descendants("button").FirstOrDefault(x => x.HasClass("green"));
-                if (watchButton is null) return Retry.ButtonNotFound("Watch ads");
+                (_, isFailed, element, errors) = await browser.GetElement(doc => doc.GetElementbyId("videoFeature").Descendants("button").FirstOrDefault(x => x.HasClass("green")), cancellationToken);
+                if (isFailed) return Result.Fail(errors).WithError("Failed to find [Watch ads] button");
 
-                (_, isFailed, element, errors) = await browser.GetElement(By.XPath(watchButton.XPath), cancellationToken);
-                if (isFailed) return Result.Fail(errors);
                 result = await browser.Click(element, cancellationToken);
                 if (result.IsFailed) return result;
             }
@@ -175,7 +170,7 @@
             await Task.Delay(Random.Shared.Next(20_000, 25_000), CancellationToken.None);
 
             (_, isFailed, element, errors) = await browser.GetElement(doc => doc.GetElementbyId("videoFeature"), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
+            if (isFailed) return Result.Fail(errors).WithError("Failed to find [Play ads video] button");
 
             result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
@@ -196,7 +191,7 @@
                 driver.SwitchTo().Window(current);
 
                 (_, isFailed, element, errors) = await browser.GetElement(doc => doc.GetElementbyId("videoFeature"), cancellationToken);
-                if (isFailed) return Result.Fail(errors);
+                if (isFailed) return Result.Fail(errors).WithError("Failed to find [Play ads video] button");
 
                 result = await browser.Click(element, cancellationToken);
                 if (result.IsFailed) return result;
@@ -213,14 +208,14 @@
             var dontShowThisAgain = browser.Html.GetElementbyId("dontShowThisAgain");
             if (dontShowThisAgain is not null)
             {
+                (_, isFailed, element, errors) = await browser.GetElement(By.XPath(dontShowThisAgain.XPath), cancellationToken);
+                if (isFailed) return Result.Fail(errors).WithError("Failed to find [Don't show this again] checkbox");
+
                 result = await browser.Click(element, cancellationToken);
                 if (result.IsFailed) return result;
 
-                var okButton = browser.Html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
-                if (okButton is null) return Retry.ButtonNotFound("ok");
-
-                (_, isFailed, element, errors) = await browser.GetElement(By.XPath(okButton.XPath), cancellationToken);
-                if (isFailed) return Result.Fail(errors);
+                (_, isFailed, element, errors) = await browser.GetElement(doc => doc.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk")), cancellationToken);
+                if (isFailed) return Result.Fail(errors).WithError("Failed to find [OK] button");
 
                 result = await browser.Click(element, cancellationToken);
                 if (result.IsFailed) return result;
