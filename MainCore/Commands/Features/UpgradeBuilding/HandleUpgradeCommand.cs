@@ -108,10 +108,10 @@
             CancellationToken cancellationToken
         )
         {
-            var button = UpgradeParser.GetSpecialUpgradeButton(browser.Html);
-            if (button is null) return Retry.ButtonNotFound("Watch ads upgrade");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => UpgradeParser.GetSpecialUpgradeButton(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-            var result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            var result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
             result = await browser.HandleAds(cancellationToken);
@@ -147,26 +147,32 @@
             var result = await browser.Wait(videoFeatureShown, cancellationToken);
             if (result.IsFailed) return result;
 
+            bool isFailed;
+            IWebElement element;
+            List<IError> errors;
+
             var videoFeature = browser.Html.GetElementbyId("videoFeature");
             if (videoFeature.HasClass("infoScreen"))
             {
-                var checkbox = videoFeature.Descendants("div").FirstOrDefault(x => x.HasClass("checkbox"));
-                if (checkbox is null) return Retry.ButtonNotFound("Don't show watch ads confirm again");
-                result = await browser.Click(By.XPath(checkbox.XPath), cancellationToken);
+                (_, isFailed, element, errors) = await browser.GetElement(doc => doc.GetElementbyId("videoFeature").Descendants("div").FirstOrDefault(x => x.HasClass("checkbox")), cancellationToken);
+                if (isFailed) return Result.Fail(errors).WithError("Failed to find [Don't show watch ads confirm again] checkbox");
+
+                result = await browser.Click(element, cancellationToken);
                 if (result.IsFailed) return result;
 
-                var watchButton = videoFeature.Descendants("button").FirstOrDefault(x => x.HasClass("green"));
-                if (watchButton is null) return Retry.ButtonNotFound("Watch ads");
-                result = await browser.Click(By.XPath(watchButton.XPath), cancellationToken);
+                (_, isFailed, element, errors) = await browser.GetElement(doc => doc.GetElementbyId("videoFeature").Descendants("button").FirstOrDefault(x => x.HasClass("green")), cancellationToken);
+                if (isFailed) return Result.Fail(errors).WithError("Failed to find [Watch ads] button");
+
+                result = await browser.Click(element, cancellationToken);
                 if (result.IsFailed) return result;
             }
 
             await Task.Delay(Random.Shared.Next(20_000, 25_000), CancellationToken.None);
 
-            var node = browser.Html.GetElementbyId("videoFeature");
-            if (node is null) return Retry.ButtonNotFound($"play ads");
+            (_, isFailed, element, errors) = await browser.GetElement(doc => doc.GetElementbyId("videoFeature"), cancellationToken);
+            if (isFailed) return Result.Fail(errors).WithError("Failed to find [Play ads video] button");
 
-            result = await browser.Click(By.XPath(node.XPath), cancellationToken);
+            result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
             driver.SwitchTo().DefaultContent();
@@ -184,12 +190,16 @@
                 driver.Close();
                 driver.SwitchTo().Window(current);
 
-                result = await browser.Click(By.XPath(node.XPath), cancellationToken);
+                (_, isFailed, element, errors) = await browser.GetElement(doc => doc.GetElementbyId("videoFeature"), cancellationToken);
+                if (isFailed) return Result.Fail(errors).WithError("Failed to find [Play ads video] button");
+
+                result = await browser.Click(element, cancellationToken);
                 if (result.IsFailed) return result;
 
                 driver.SwitchTo().DefaultContent();
             }
             while (true);
+
             result = await browser.WaitPageChanged("dorf", cancellationToken);
             if (result.IsFailed) return result;
 
@@ -198,12 +208,16 @@
             var dontShowThisAgain = browser.Html.GetElementbyId("dontShowThisAgain");
             if (dontShowThisAgain is not null)
             {
-                result = await browser.Click(By.XPath(dontShowThisAgain.XPath), cancellationToken);
+                (_, isFailed, element, errors) = await browser.GetElement(By.XPath(dontShowThisAgain.XPath), cancellationToken);
+                if (isFailed) return Result.Fail(errors).WithError("Failed to find [Don't show this again] checkbox");
+
+                result = await browser.Click(element, cancellationToken);
                 if (result.IsFailed) return result;
 
-                var okButton = browser.Html.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk"));
-                if (okButton is null) return Retry.ButtonNotFound("ok");
-                result = await browser.Click(By.XPath(okButton.XPath), cancellationToken);
+                (_, isFailed, element, errors) = await browser.GetElement(doc => doc.DocumentNode.Descendants("button").FirstOrDefault(x => x.HasClass("dialogButtonOk")), cancellationToken);
+                if (isFailed) return Result.Fail(errors).WithError("Failed to find [OK] button");
+
+                result = await browser.Click(element, cancellationToken);
                 if (result.IsFailed) return result;
             }
 
@@ -214,10 +228,10 @@
             this IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var button = UpgradeParser.GetUpgradeButton(browser.Html);
-            if (button is null) return Retry.ButtonNotFound("upgrade");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => UpgradeParser.GetUpgradeButton(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-            var result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            var result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
             result = await browser.WaitPageChanged("dorf", cancellationToken);
@@ -232,15 +246,14 @@
             CancellationToken cancellationToken
         )
         {
-            var button = UpgradeParser.GetConstructButton(browser.Html, building);
-            if (button is null) return Retry.ButtonNotFound("construct");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => UpgradeParser.GetConstructButton(doc, building), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-            var result = await browser.Click(By.XPath(button.XPath), cancellationToken);
+            var result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
             result = await browser.WaitPageChanged("dorf", cancellationToken);
             if (result.IsFailed) return result;
-
             return Result.Ok();
         }
     }
