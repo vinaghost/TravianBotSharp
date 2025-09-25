@@ -71,9 +71,6 @@ namespace MainCore.Commands.Features.TrainTroop
             result = await browser.Input(element, $"{amount}", cancellationToken);
             if (result.IsFailed) return result;
 
-            var trainButton = TrainTroopParser.GetTrainButton(browser.Html);
-            if (trainButton is null) return Retry.ButtonNotFound("train troop");
-
             (_, isFailed, element, errors) = await browser.GetElement(doc => TrainTroopParser.GetTrainButton(doc), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
