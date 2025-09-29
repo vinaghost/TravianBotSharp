@@ -18,7 +18,7 @@
         {
             var accountId = command.AccountId;
             var rallypointVillageId = await getHasRallypointVillageCommand.HandleAsync(new(accountId), cancellationToken);
-            if (rallypointVillageId == VillageId.Empty) return Skip.NoRallypoint;
+            if (rallypointVillageId == VillageId.Empty) return Skip.Error.WithError("No rallypoint found. Recheck & load village has rallypoint in Village>Build tab");
 
             var result = await switchVillageCommand.HandleAsync(new(rallypointVillageId), cancellationToken);
             if (result.IsFailed) return result;

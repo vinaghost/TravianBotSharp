@@ -42,7 +42,7 @@ namespace MainCore.Tasks
                         task.ExecuteAt = nextExecuteErrors.Select(x => x.NextExecute).Min();
                     }
 
-                    return new Skip();
+                    return Skip.Error.WithErrors(errors);
                 }
 
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
@@ -61,13 +61,13 @@ namespace MainCore.Tasks
 
                     if (result.HasError<StorageLimit>())
                     {
-                        return new Stop();
+                        return Stop.Error.WithErrors(result.Errors);
                     }
                     if (result.HasError<MissingResource>())
                     {
                         var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
                         task.ExecuteAt = DateTime.Now.Add(time);
-                        return new Skip();
+                        return Skip.Error.WithErrors(result.Errors);
                     }
 
                     return result;

@@ -13,10 +13,10 @@ namespace MainCore.Commands.Features.StartFarmList
             CancellationToken cancellationToken
             )
         {
-            var startAllButton = FarmListParser.GetStartAllButton(browser.Html);
-            if (startAllButton is null) return Retry.ButtonNotFound("Start all farms");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => FarmListParser.GetStartAllButton(doc), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
 
-            var result = await browser.Click(By.XPath(startAllButton.XPath), cancellationToken);
+            var result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

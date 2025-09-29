@@ -18,14 +18,14 @@
                 .Where(x => x.IsActive)
                 .Select(x => new FarmId(x.Id))
                 .ToList();
-            if (farmLists.Count == 0) return Skip.NoActiveFarmlist;
+            if (farmLists.Count == 0) return Skip.Error.WithError("No farmlist is active");
 
             foreach (var farmList in farmLists)
             {
-                var startButton = FarmListParser.GetStartButton(browser.Html, farmList);
-                if (startButton is null) return Retry.ButtonNotFound($"Start farm {farmList}");
+                var (_, isFailed, element, errors) = await browser.GetElement(doc => FarmListParser.GetStartButton(doc, farmList), cancellationToken);
+                if (isFailed) return Result.Fail(errors);
 
-                var result = await browser.Click(By.XPath(startButton.XPath), cancellationToken);
+                var result = await browser.Click(element, cancellationToken);
                 if (result.IsFailed) return result;
 
                 await delayService.DelayClick(cancellationToken);

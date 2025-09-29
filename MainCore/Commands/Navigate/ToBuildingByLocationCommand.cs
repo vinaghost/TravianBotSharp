@@ -21,8 +21,10 @@ namespace MainCore.Commands.Navigate
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var node = GetBuilding(browser.Html, location);
-            if (node is null) return Retry.NotFound($"{location}", "nodeBuilding");
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => GetBuilding(doc, location), cancellationToken);
+            if (isFailed) return Result.Fail(errors).WithError($"Failed to find [building at #{location}]");
+
+            var node = GetBuilding(browser.Html, location)!;
 
             Result result;
             if (location > 18 && node.HasClass("g0"))
@@ -36,9 +38,10 @@ namespace MainCore.Commands.Navigate
                 else
                 {
                     var css = $"#villageContent > div.buildingSlot.a{location} > svg > path";
-                    result = await browser.Click(By.CssSelector(css), cancellationToken);
-                    if (result.IsFailed) return result;
-                    result = await browser.WaitPageChanged("build.php", cancellationToken);
+                    (_, isFailed, element, errors) = await browser.GetElement(By.CssSelector(css), cancellationToken);
+                    if (isFailed) return Result.Fail(errors);
+
+                    result = await browser.Click(element, cancellationToken);
                     if (result.IsFailed) return result;
                 }
             }
@@ -47,10 +50,10 @@ namespace MainCore.Commands.Navigate
                 if (location == 40) // wall
                 {
                     var path = node.Descendants("path").FirstOrDefault();
-                    if (path is null) return Retry.NotFound($"{location}", "wall bottom path");
+                    if (path is null) return Retry.Error.WithError("Failed to find [wall]");
 
                     var javascript = path.GetAttributeValue("onclick", "");
-                    if (string.IsNullOrEmpty(javascript)) return Retry.NotFound($"{location}", "JavaScriptExecutor onclick wall");
+                    if (string.IsNullOrEmpty(javascript)) return Retry.Error.WithError("Failed to find [wall's onclick event]");
 
                     var decodedJs = HttpUtility.HtmlDecode(javascript);
 
@@ -59,12 +62,14 @@ namespace MainCore.Commands.Navigate
                 }
                 else
                 {
-                    result = await browser.Click(By.XPath(node.XPath), cancellationToken);
+                    result = await browser.Click(element, cancellationToken);
                     if (result.IsFailed) return result;
                 }
-                result = await browser.WaitPageChanged("build.php", cancellationToken);
-                if (result.IsFailed) return result;
             }
+
+            result = await browser.WaitPageChanged("build", cancellationToken);
+            if (result.IsFailed) return result;
+
             return Result.Ok();
         }
 

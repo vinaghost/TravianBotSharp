@@ -13,10 +13,16 @@
         {
             var villageId = command.VillageId;
 
-            var node = VillagePanelParser.GetVillageNode(browser.Html, villageId);
-            if (node is null) return Skip.VillageNotFound;
+            var villageNode = VillagePanelParser.GetVillageNode(browser.Html, villageId);
+            if (villageNode is null) return Skip.Error.WithError("Village not found");
 
-            if (VillagePanelParser.IsActive(node)) return Result.Ok();
+            if (VillagePanelParser.IsActive(villageNode)) return Result.Ok();
+
+            var (_, isFailed, element, errors) = await browser.GetElement(By.XPath(villageNode.XPath), cancellationToken);
+            if (isFailed) return Result.Fail(errors);
+            Result result;
+            result = await browser.Click(element, cancellationToken);
+            if (result.IsFailed) return result;
 
             bool villageChanged(IWebDriver driver)
             {
@@ -26,10 +32,6 @@
                 var villageNode = VillagePanelParser.GetVillageNode(doc, villageId);
                 return villageNode is not null && VillagePanelParser.IsActive(villageNode);
             }
-
-            Result result;
-            result = await browser.Click(By.XPath(node.XPath), cancellationToken);
-            if (result.IsFailed) return result;
 
             result = await browser.Wait(villageChanged, cancellationToken);
             if (result.IsFailed) return result;

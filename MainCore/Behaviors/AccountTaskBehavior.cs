@@ -30,14 +30,14 @@ namespace MainCore.Behaviors
             {
                 if (!LoginParser.IsLoginPage(_browser.Html))
                 {
-                    return (TResponse)Stop.NotTravianPage;
+                    return (TResponse)Stop.Error.WithError("Travian is not ingame nor login page. Please check browser");
                 }
 
                 if (request is not LoginTask.Task)
                 {
                     _taskManager.AddOrUpdate<LoginTask.Task>(new(accountId), first: true);
                     request.ExecuteAt = request.ExecuteAt.AddSeconds(1);
-                    return (TResponse)Skip.AccountLogout;
+                    return (TResponse)Skip.Error.WithError("Account is logout. Re-login now");
                 }
             }
 
