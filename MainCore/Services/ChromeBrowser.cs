@@ -1,4 +1,6 @@
-﻿using OpenQA.Selenium.Chrome;
+﻿using OpenQA.Selenium.BiDi;
+using OpenQA.Selenium.BiDi.WebExtension;
+using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System.IO.Compression;
@@ -15,6 +17,9 @@ namespace MainCore.Services
         private readonly string[] _extensionsPath;
         private readonly HtmlDocument _htmlDoc = new();
 
+        private BiDi? _bidi;
+        //private BrowsingContext? _context;
+
         public ChromeBrowser(string[] extensionsPath)
         {
             _extensionsPath = extensionsPath;
@@ -27,15 +32,9 @@ namespace MainCore.Services
         {
             var options = new ChromeOptions();
 
-            options.AddExtensions(_extensionsPath);
-
             if (!string.IsNullOrEmpty(setting.ProxyHost))
             {
-                if (!string.IsNullOrEmpty(setting.ProxyUsername) && !string.IsNullOrEmpty(setting.ProxyPassword))
-                {
-                    options.AddHttpProxy(setting.ProxyHost, setting.ProxyPort, setting.ProxyUsername, setting.ProxyPassword);
-                }
-                else
+                if (string.IsNullOrEmpty(setting.ProxyUsername) || string.IsNullOrEmpty(setting.ProxyPassword))
                 {
                     options.AddArgument($"--proxy-server={setting.ProxyHost}:{setting.ProxyPort}");
                 }
@@ -46,6 +45,9 @@ namespace MainCore.Services
             options.AddArguments("--no-default-browser-check", "--no-first-run", "--ash-no-nudges");
             options.AddArguments("--mute-audio", "--disable-gpu", "--disable-search-engine-choice-screen");
 
+            options.AddArgument("--enable-unsafe-extension-debugging");
+            options.AddArgument("--remote-debugging-pipe");
+
             options.AddExcludedArgument("enable-automation");
             options.AddAdditionalOption("useAutomationExtension", "undefined");
 
@@ -53,7 +55,6 @@ namespace MainCore.Services
             options.AddArgument("--disable-backgrounding-occluded-windows");
             options.AddArgument("--disable-features=CalculateNativeWinOcclusion");
             options.AddArgument("--disable-features=UserAgentClientHint");
-            options.AddArgument("--disable-features=DisableLoadExtensionCommandLineSwitch");
             options.AddArgument("--disable-blink-features=AutomationControlled");
 
             if (setting.IsHeadless)
@@ -71,11 +72,31 @@ namespace MainCore.Services
             pathUserData = Path.Combine(pathUserData, string.IsNullOrEmpty(setting.ProxyHost) ? "default" : setting.ProxyHost);
 
             options.AddArguments($"user-data-dir={pathUserData}");
+            options.UseWebSocketUrl = true;
 
             _driver = await Task.Run(() => new ChromeDriver(_chromeService, options, TimeSpan.FromMinutes(3)));
 
             _driver.Manage().Timeouts().PageLoad = TimeSpan.FromMinutes(3);
             _wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(3)); // watch ads
+
+            _bidi = await _driver.AsBiDiAsync();
+
+            foreach (var path in _extensionsPath)
+            {
+                var result = await _bidi.WebExtension.InstallAsync(new ExtensionPath(path));
+                Logger.Information("- Installed extension: {path}", Path.GetFileNameWithoutExtension(path));
+            }
+
+            if (!string.IsNullOrEmpty(setting.ProxyHost) && !string.IsNullOrEmpty(setting.ProxyUsername) && !string.IsNullOrEmpty(setting.ProxyPassword))
+            {
+                var path = ChromeOptionsExtensions.CreateHttpProxyExtension(
+                    setting.ProxyHost,
+                    setting.ProxyPort,
+                    setting.ProxyUsername,
+                    setting.ProxyPassword);
+                var result = await _bidi.WebExtension.InstallAsync(new ExtensionArchivePath(path));
+                Logger.Information("- Installed proxy auth extension: {path}", Path.GetFileNameWithoutExtension(path));
+            }
         }
 
         public ChromeDriver? Driver => _driver;
@@ -332,7 +353,7 @@ chrome.webRequest.onAuthRequired.addListener(
         /// <param name="port">Proxy port</param>
         /// <param name="userName">Proxy username</param>
         /// <param name="password">Proxy password</param>
-        public static void AddHttpProxy(this ChromeOptions options, string host, int port, string userName, string password)
+        public static string CreateHttpProxyExtension(string host, int port, string userName, string password)
         {
             var background_proxy_js = ReplaceTemplates(background_js, host, port, userName, password);
 
@@ -344,6 +365,7 @@ chrome.webRequest.onAuthRequired.addListener(
             var manifestPath = $"Plugins/manifest_{guid}.json";
             var backgroundPath = $"Plugins/background_{guid}.js";
             var archiveFilePath = $"Plugins/proxy_auth_plugin_{guid}.zip";
+            var extensionPath = $"Plugins/proxy_auth_plugin_{guid}";
 
             File.WriteAllText(manifestPath, manifest_json);
             File.WriteAllText(backgroundPath, background_proxy_js);
@@ -352,12 +374,14 @@ chrome.webRequest.onAuthRequired.addListener(
             {
                 zip.CreateEntryFromFile(manifestPath, "manifest.json");
                 zip.CreateEntryFromFile(backgroundPath, "background.js");
+
+                zip.ExtractToDirectory(extensionPath);
             }
 
             File.Delete(manifestPath);
             File.Delete(backgroundPath);
 
-            options.AddExtension(archiveFilePath);
+            return extensionPath;
         }
 
         private static string ReplaceTemplates(string str, string host, int port, string userName, string password)
