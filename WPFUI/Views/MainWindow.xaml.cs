@@ -4,7 +4,7 @@ using ReactiveMarbles.Extensions.Hosting.Wpf;
 using ReactiveUI;
 using System;
 using System.ComponentModel;
-using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Windows;
 
