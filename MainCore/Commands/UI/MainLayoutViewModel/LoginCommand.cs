@@ -24,8 +24,9 @@
                 taskManager.SetStatus(accountId, StatusEnums.Starting);
                 await openBrowserCommand.HandleAsync(new(accountId, access), cancellationToken);
             }
-            catch
+            catch (Exception ex)
             {
+                _ = ex;
                 taskManager.SetStatus(accountId, StatusEnums.Offline);
                 return;
             }
