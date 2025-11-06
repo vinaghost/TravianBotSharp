@@ -73,14 +73,6 @@
           "Microsoft.Extensions.Hosting": "9.0.9"
         }
       },
-      "CP.Extensions.Hosting.SingleInstance": {
-        "type": "Transitive",
-        "resolved": "2.2.2",
-        "contentHash": "uqCRjAE+4IU/Pdofin7VRrcKLY5HbOrHmjbx3N6KiVn7fVU8upeoeiIkP6Aj0vtuL3gaRE9wAGJyqrP1lv5dMg==",
-        "dependencies": {
-          "Microsoft.Extensions.Hosting": "9.0.9"
-        }
-      },
       "CP.Extensions.Hosting.Wpf": {
         "type": "Transitive",
         "resolved": "2.2.2",
@@ -759,7 +751,6 @@
         "type": "Project",
         "dependencies": {
           "Ardalis.Specification.EntityFrameworkCore": "[9.3.1, )",
-          "CP.Extensions.Hosting.SingleInstance": "[2.2.2, )",
           "FluentResults": "[4.0.0, )",
           "FluentValidation": "[12.1.0, )",
           "FluentValidation.DependencyInjectionExtensions": "[12.1.0, )",

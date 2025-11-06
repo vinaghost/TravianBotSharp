@@ -13,15 +13,6 @@
           "Microsoft.EntityFrameworkCore.Relational": "8.0.19"
         }
       },
-      "CP.Extensions.Hosting.SingleInstance": {
-        "type": "Direct",
-        "requested": "[2.2.2, )",
-        "resolved": "2.2.2",
-        "contentHash": "uqCRjAE+4IU/Pdofin7VRrcKLY5HbOrHmjbx3N6KiVn7fVU8upeoeiIkP6Aj0vtuL3gaRE9wAGJyqrP1lv5dMg==",
-        "dependencies": {
-          "Microsoft.Extensions.Hosting": "9.0.9"
-        }
-      },
       "FluentResults": {
         "type": "Direct",
         "requested": "[4.0.0, )",
