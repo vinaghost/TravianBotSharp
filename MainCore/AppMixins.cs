@@ -1,8 +1,6 @@
 ﻿using MainCore.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using ReactiveMarbles.Extensions.Hosting.AppServices;
 using Serilog;
 using Serilog.Events;
 using Serilog.Templates;
@@ -82,14 +80,6 @@ namespace MainCore
         {
             var hostBuilder = Host.CreateDefaultBuilder()
                 .ConfigureSplatForMicrosoftDependencyResolver()
-                .ConfigureSingleInstance(builder =>
-                {
-                    builder.MutexId = "{hcmmn304-1975-4a2d-afed-615d4a318283}";
-                    builder.WhenNotFirstInstance = (hostingEnvironment, logger) =>
-                    {
-                        logger.LogWarning("Application {0} already running.", hostingEnvironment.ApplicationName);
-                    };
-                })
                 .ConfigureLogging()
                 .ConfigureDbContext()
                 .ConfigureServices();
