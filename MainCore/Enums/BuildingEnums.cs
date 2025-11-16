@@ -260,6 +260,19 @@
             };
         }
 
+        public static bool IsResourceBonus(this BuildingEnums building)
+        {
+            return building switch
+            {
+                BuildingEnums.Sawmill => true,
+                BuildingEnums.Brickyard => true,
+                BuildingEnums.IronFoundry => true,
+                BuildingEnums.Bakery => true,
+                BuildingEnums.GrainMill => true,
+                _ => false,
+            };
+        }
+
         public static bool IsResourceField(this BuildingEnums building)
         {
             int buildingInt = (int)building;
