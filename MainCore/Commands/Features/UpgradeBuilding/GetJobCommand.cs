@@ -23,10 +23,7 @@ namespace MainCore.Commands.Misc
 
             if (queueBuildings.Count == 0)
             {
-                var job = buildJobs[0];
-                var result = IsJobValid(job, buildings, queueBuildings);
-                if (result.IsFailed) return result;
-                return job;
+                return buildJobs[0];
             }
 
             var plusActive = context.AccountsInfo
@@ -40,18 +37,13 @@ namespace MainCore.Commands.Misc
             {
                 if (plusActive)
                 {
-                    var job = buildJobs[0];
-                    var result = IsJobValid(job, buildings, queueBuildings);
-                    if (result.IsFailed) return result;
-                    return job;
+                    return buildJobs[0];
                 }
 
                 if (applyRomanQueueLogic)
                 {
                     var (_, isFailed, job, errors) = GetJobBasedOnRomanLogic(queueBuildings, buildJobs);
                     if (isFailed) return Result.Fail(errors);
-                    var result = IsJobValid(job, buildings, queueBuildings);
-                    if (result.IsFailed) return result;
                     return job;
                 }
                 return NextExecuteError.ConstructionQueueFull(queueBuildings[0].CompleteTime);
@@ -63,8 +55,6 @@ namespace MainCore.Commands.Misc
                 {
                     var (_, isFailed, job, errors) = GetJobBasedOnRomanLogic(queueBuildings, buildJobs);
                     if (isFailed) return Result.Fail(errors);
-                    var result = IsJobValid(job, buildings, queueBuildings);
-                    if (result.IsFailed) return result;
                     return job;
                 }
                 return NextExecuteError.ConstructionQueueFull(queueBuildings[0].CompleteTime);
@@ -197,58 +187,6 @@ namespace MainCore.Commands.Misc
             if (resourceBuildJob is null) return job;
             if (job.Position < resourceBuildJob.Position) return job;
             return resourceBuildJob;
-        }
-
-        private static Result IsJobValid(JobDto job, List<Building> buildings, List<QueueBuilding> queueBuildings)
-        {
-            if (job.Type == JobTypeEnums.ResourceBuild) return Result.Ok();
-
-            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
-            if (plan.Type.IsResourceField()) return Result.Ok();
-
-            var oldBuilding = buildings
-               .FirstOrDefault(x => x.Location == plan.Location);
-
-            if (oldBuilding is not null && oldBuilding.Type == plan.Type) return Result.Ok();
-
-            var errors = new List<IError>();
-            var prerequisiteBuildings = plan.Type.GetPrerequisiteBuildings();
-
-            foreach (var prerequisiteBuilding in prerequisiteBuildings)
-            {
-                var vaild = buildings
-                   .Any(x => x.Type == prerequisiteBuilding.Type && x.Level >= prerequisiteBuilding.Level);
-
-                if (!vaild)
-                {
-                    errors.Add(UpgradeBuildingError.PrerequisiteBuildingMissing(prerequisiteBuilding.Type, prerequisiteBuilding.Level));
-                    var queueBuilding = queueBuildings.Find(x => x.Type == prerequisiteBuilding.Type && x.Level == prerequisiteBuilding.Level);
-                    if (queueBuilding is not null)
-                    {
-                        errors.Add(NextExecuteError.PrerequisiteBuildingInQueue(prerequisiteBuilding.Type, prerequisiteBuilding.Level, queueBuilding.CompleteTime));
-                    }
-                }
-            }
-
-            if (!plan.Type.IsMultipleBuilding()) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
-
-            var firstBuilding = buildings
-                .Where(x => x.Type == plan.Type)
-                .OrderByDescending(x => x.Level)
-                .FirstOrDefault();
-
-            if (firstBuilding is null) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
-            if (firstBuilding.Location == plan.Location) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
-            if (firstBuilding.Level == firstBuilding.Type.GetMaxLevel()) return errors.Count == 0 ? Result.Ok() : Result.Fail(errors);
-
-            errors.Add(UpgradeBuildingError.PrerequisiteBuildingMissing(firstBuilding.Type, firstBuilding.Level));
-            var prerequisiteBuildingUndercontruction = queueBuildings.Find(x => x.Type == firstBuilding.Type && x.Level == firstBuilding.Level);
-            if (prerequisiteBuildingUndercontruction is not null)
-            {
-                errors.Add(NextExecuteError.PrerequisiteBuildingInQueue(firstBuilding.Type, firstBuilding.Level, prerequisiteBuildingUndercontruction.CompleteTime));
-            }
-
-            return Result.Fail(errors);
         }
     }
 }
