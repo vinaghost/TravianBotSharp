@@ -11,6 +11,7 @@
             UpdateInventoryCommand.Handler updateInventoryCommand,
             ValidateEnoughResourceCommand.Handler validateEnoughResourceCommand,
             UseHeroItemCommand.Handler useHeroItemCommand,
+            IDelayService delayService,
             CancellationToken cancellationToken)
         {
             var (accountId, resource) = command;
@@ -40,6 +41,7 @@
                 if (result.IsFailed) return result;
             }
 
+            await delayService.DelayClick(cancellationToken);
             return Result.Ok();
         }
 

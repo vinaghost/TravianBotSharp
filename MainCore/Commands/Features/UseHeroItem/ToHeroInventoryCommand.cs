@@ -10,6 +10,7 @@ namespace MainCore.Commands.Features.UseHeroItem
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
+            IDelayService delayService,
             CancellationToken cancellationToken)
         {
             var (_, isFailed, element, errors) = await browser.GetElement(doc => InventoryParser.GetHeroAvatar(doc), cancellationToken);
@@ -27,6 +28,8 @@ namespace MainCore.Commands.Features.UseHeroItem
 
             result = await browser.Wait(TabActived, cancellationToken);
             if (result.IsFailed) return result;
+
+            await delayService.DelayTask(cancellationToken);
 
             return Result.Ok();
         }
