@@ -22,7 +22,7 @@ namespace MainCore.Commands.Features.UseHeroItem
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                return InventoryParser.IsInventoryPage(doc);
+                return InventoryParser.IsInventoryPage(doc) && InventoryParser.IsInventoryLoaded(doc);
             }
 
             result = await browser.Wait(TabActived, cancellationToken);
