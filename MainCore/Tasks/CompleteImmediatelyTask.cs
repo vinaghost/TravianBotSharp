@@ -38,13 +38,11 @@ namespace MainCore.Tasks
                 var completeImmediatelyMinimumTime = context.ByName(VillageId, VillageSettingEnums.CompleteImmediatelyTime);
                 var requiredTime = DateTime.Now.AddMinutes(completeImmediatelyMinimumTime);
 
-                var firstQueueBuildingCompleteTime = queueBuildings
-                    .OrderBy(x => x.CompleteTime)
-                    .Select(x => x.CompleteTime)
-                    .FirstOrDefault();
+                var anyBuilding = queueBuildings
+                    .Where(x => x.CompleteTime > requiredTime)
+                    .Any();
 
-                if (requiredTime > firstQueueBuildingCompleteTime) return false;
-                return true;
+                return anyBuilding;
             }
         }
 
