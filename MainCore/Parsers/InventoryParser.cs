@@ -7,7 +7,7 @@
             var heroDiv = doc.GetElementbyId("heroV2");
             if (heroDiv is null) return false;
             var aNode = heroDiv.Descendants("a")
-                .FirstOrDefault(x => x.GetAttributeValue("data-tab", 0) == 1);
+                .FirstOrDefault(x => x.HasClass("tabItem"));
             if (aNode is null) return false;
             return aNode.HasClass("active");
         }
