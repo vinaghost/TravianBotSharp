@@ -46,9 +46,9 @@
                         Value = value,
                     });
                 }
+                context.Add(account);
             }
 
-            context.AddRange(accounts);
             context.SaveChanges();
 
             rxQueue.Enqueue(new AccountsModified());
