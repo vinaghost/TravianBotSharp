@@ -458,7 +458,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return;
             }
 
-            var confirm = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "TBS will remove resource field build job if its position doesn't match with current village."));
+            var confirm = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "Kentauras will remove resource field build job if its position doesn't match with current village."));
             if (!confirm) return;
 
             var shuffle = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "Do you want to random building location?"));

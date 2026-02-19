@@ -11,7 +11,7 @@
 
   <PropertyGroup>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    <AssemblyName>TravianBotSharp</AssemblyName>
+    <AssemblyName>Kentauras</AssemblyName>
     <SignAssembly>False</SignAssembly>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>

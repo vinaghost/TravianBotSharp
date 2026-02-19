@@ -125,7 +125,7 @@ namespace MainCore.Services
             if (match.Success)
             {
                 var target = match.Value;
-                var newTarget = "{tbs}"
+                var newTarget = "{kentauras}"
                     .PadRight(target.Length, ' ');
                 var newContent = content.Replace(target, newTarget);
 

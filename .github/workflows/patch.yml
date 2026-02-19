@@ -53,7 +53,7 @@ jobs:
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4.3.3
         with:
-          name: TBS-${{needs.version.outputs.version}}
+          name: Kentauras-${{needs.version.outputs.version}}
           path: WPFUI\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\
           if-no-files-found: error
                   
@@ -66,19 +66,19 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          path: TBS
+          path: Kentauras
       
       - name: Archive release
         run: |
-          cd TBS; zip -r "TBS-${{needs.version.outputs.version}}.zip" TBS-${{needs.version.outputs.version}}; cp -R "TBS-${{needs.version.outputs.version}}.zip" ../; cd ..
+          cd Kentauras; zip -r "Kentauras-${{needs.version.outputs.version}}.zip" Kentauras-${{needs.version.outputs.version}}; cp -R "Kentauras-${{needs.version.outputs.version}}.zip" ../; cd ..
       
       - name: Create release
         uses: ncipollo/release-action@v1.14.0
         with:
-          name: TBS-${{needs.version.outputs.version}}
+          name: Kentauras-${{needs.version.outputs.version}}
           tag: ${{needs.version.outputs.version}}
           commit: main
-          artifacts: "TBS-${{needs.version.outputs.version}}.zip"
+          artifacts: "Kentauras-${{needs.version.outputs.version}}.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
             Please join our Discord server for more information: [https://discord.gg/mBa4f2K](https://discord.gg/mBa4f2K)
@@ -99,8 +99,8 @@ jobs:
           title: New patch
           nodetail: true
           description: |
-            Version `TBS-${{needs.version.outputs.version}}`
-            Click [here](https://github.com/vinaghost/TravianBotSharp/releases/tag/${{needs.version.outputs.version}}) to download!
+            Version `Kentauras-${{needs.version.outputs.version}}`
+            Click [here](https://github.com/TheRealKeisari/Kentauras/releases/tag/${{needs.version.outputs.version}}) to download!
             
             **Changelog**:              
             ${{needs.version.outputs.changelog}}
@@ -111,4 +111,4 @@ jobs:
       - name: Delete artifact
         uses: geekyeggo/delete-artifact@v5
         with:
-          name: TBS
+          name: Kentauras

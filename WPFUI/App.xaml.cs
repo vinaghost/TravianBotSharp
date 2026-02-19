@@ -86,7 +86,7 @@ namespace WPFUI
             var svd = new Microsoft.Win32.SaveFileDialog
             {
                 InitialDirectory = AppContext.BaseDirectory,
-                Filter = "TBS files (*.tbs)|*.tbs|All files (*.*)|*.*",
+                Filter = "Kentauras files (*.kentauras)|*.kentauras|All files (*.*)|*.*",
             };
             if (svd.ShowDialog() != true) return "";
             return svd.FileName;
@@ -97,7 +97,7 @@ namespace WPFUI
             var ofd = new Microsoft.Win32.OpenFileDialog
             {
                 InitialDirectory = AppContext.BaseDirectory,
-                Filter = "TBS files (*.tbs)|*.tbs|All files (*.*)|*.*",
+                Filter = "Kentauras files (*.kentauras)|*.kentauras|All files (*.*)|*.*",
             };
             if (ofd.ShowDialog() != true) return "";
             return ofd.FileName;

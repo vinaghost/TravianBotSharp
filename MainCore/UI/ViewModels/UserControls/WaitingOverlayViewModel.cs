@@ -50,14 +50,14 @@ namespace MainCore.UI.ViewModels.UserControls
         [Reactive]
         private bool _shown;
 
-        private string _message = "TBS is initializing";
+        private string _message = "Kentauras is initializing";
 
         public string Message
         {
             get => _message;
             set
             {
-                var formattedValue = string.IsNullOrWhiteSpace(value) ? value : $"TBS is {value} ...";
+                var formattedValue = string.IsNullOrWhiteSpace(value) ? value : $"Kentauras is {value} ...";
                 this.RaiseAndSetIfChanged(ref _message, formattedValue);
             }
         }

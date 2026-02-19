@@ -1,11 +1,11 @@
-# TravianBotSharp (TBS)
+# Kentauras
 
 [![alt text][image]][hyperlink]
 
 [hyperlink]: https://discord.gg/mBa4f2K
 [image]:https://discordapp.com/api/guilds/740829801446637601/widget.png?style=banner4
 
-**TravianBotSharp** is a **free** Travian bot supports [Travian Official](https://www.travian.com).
+**Kentauras** is a **free** Travian bot supports [Travian Official](https://www.travian.com). Based on [TravianBotSharp](https://github.com/vinaghost/TravianBotSharp) by vinaghost.
 
 ## Main features
 
@@ -19,4 +19,4 @@
 
 ## Tech specification
 
-Currently, TBS only runs on Windows.
+Currently, Kentauras only runs on Windows.

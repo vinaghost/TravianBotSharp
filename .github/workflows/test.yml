@@ -62,7 +62,7 @@ jobs:
         with:
           tag: ${{ steps.semvers.outputs.patch }}
           tag_exists_error: false
-          message: TBS-${{ steps.semvers.outputs.patch }}
+          message: Kentauras-${{ steps.semvers.outputs.patch }}
   Build:
     runs-on: windows-latest
     needs: Version
@@ -91,7 +91,7 @@ jobs:
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4.3.3
         with:
-          name: TBS-${{needs.version.outputs.version}}
+          name: Kentauras-${{needs.version.outputs.version}}
           path: WPFUI\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\
           if-no-files-found: error
   Comment:
@@ -105,4 +105,4 @@ jobs:
         with:
           message: |
             Version of this build is ${{needs.version.outputs.version}}
-            Check download link [here](https://nightly.link/vinaghost/TravianBotSharp/actions/runs/${{ github.run_id }})
+            Check download link [here](https://nightly.link/TheRealKeisari/Kentauras/actions/runs/${{ github.run_id }})

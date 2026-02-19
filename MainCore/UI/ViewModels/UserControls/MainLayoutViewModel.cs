@@ -203,7 +203,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 case StatusEnums.Starting:
                 case StatusEnums.Pausing:
                 case StatusEnums.Stopping:
-                    await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", $"TBS is {status}. Please waiting"));
+                    await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", $"Kentauras is {status}. Please waiting"));
                     return;
 
                 case StatusEnums.Online:
