@@ -20,6 +20,7 @@ namespace WPFUI.Views.Tabs.Villages
     {
         private Point _dragStartPoint;
         private int _dragSourceIndex = -1;
+        private int _draggedJobId = -1;
 
         public BuildTab()
         {
@@ -67,6 +68,7 @@ namespace WPFUI.Views.Tabs.Villages
         {
             _dragStartPoint = e.GetPosition(JobsGrid);
             _dragSourceIndex = GetItemIndexAt(_dragStartPoint);
+            _draggedJobId = -1;
         }
 
         private void JobsGrid_MouseMove(object sender, MouseEventArgs e)
@@ -79,12 +81,43 @@ namespace WPFUI.Views.Tabs.Villages
                 || Math.Abs(currentPoint.Y - _dragStartPoint.Y) >= SystemParameters.MinimumVerticalDragDistance;
             if (!movedEnough) return;
 
-            DragDrop.DoDragDrop(JobsGrid, new DataObject(typeof(int), _dragSourceIndex), DragDropEffects.Move);
+            if (JobsGrid.Items[_dragSourceIndex] is not MainCore.UI.Models.Output.ListBoxItem sourceItem) return;
+            _draggedJobId = sourceItem.Id;
+            DragDrop.DoDragDrop(JobsGrid, new DataObject(typeof(int), _draggedJobId), DragDropEffects.Move);
+            _dragSourceIndex = -1;
+            _draggedJobId = -1;
         }
 
         private void JobsGrid_DragOver(object sender, DragEventArgs e)
         {
-            e.Effects = e.Data.GetDataPresent(typeof(int)) ? DragDropEffects.Move : DragDropEffects.None;
+            if (!e.Data.GetDataPresent(typeof(int)) || ViewModel is null)
+            {
+                e.Effects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+
+            var draggedJobId = (int)e.Data.GetData(typeof(int))!;
+            var insertionIndex = GetInsertionIndexAt(e.GetPosition(JobsGrid));
+            var currentIndex = FindJobIndex(draggedJobId);
+            if (insertionIndex < 0 || currentIndex < 0)
+            {
+                e.Effects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+
+            var moveIndex = insertionIndex > currentIndex
+                ? insertionIndex - 1
+                : insertionIndex;
+            moveIndex = Math.Clamp(moveIndex, 0, ViewModel.Jobs.Items.Count - 1);
+            if (moveIndex != currentIndex)
+            {
+                ViewModel.Jobs.Items.Move(currentIndex, moveIndex);
+                ViewModel.Jobs.SelectedIndex = moveIndex;
+            }
+
+            e.Effects = DragDropEffects.Move;
             e.Handled = true;
         }
 
@@ -93,16 +126,13 @@ namespace WPFUI.Views.Tabs.Villages
             if (!e.Data.GetDataPresent(typeof(int))) return;
             if (ViewModel is null) return;
 
-            var sourceIndex = (int)e.Data.GetData(typeof(int))!;
-            var targetIndex = GetItemIndexAt(e.GetPosition(JobsGrid));
-            if (targetIndex < 0)
-            {
-                if (JobsGrid.Items.Count == 0) return;
-                targetIndex = JobsGrid.Items.Count - 1;
-            }
+            var draggedJobId = (int)e.Data.GetData(typeof(int))!;
+            var targetIndex = FindJobIndex(draggedJobId);
+            if (targetIndex < 0) return;
 
-            await ViewModel.ReorderJobs(sourceIndex, targetIndex);
+            await ViewModel.ReorderJobById(draggedJobId, targetIndex);
             _dragSourceIndex = -1;
+            _draggedJobId = -1;
         }
 
         private int GetItemIndexAt(Point point)
@@ -115,6 +145,37 @@ namespace WPFUI.Views.Tabs.Villages
 
             if (element is not ListBoxItem item) return -1;
             return JobsGrid.ItemContainerGenerator.IndexFromContainer(item);
+        }
+
+        private int GetInsertionIndexAt(Point point)
+        {
+            if (JobsGrid.Items.Count == 0) return 0;
+
+            var element = JobsGrid.InputHitTest(point) as DependencyObject;
+            while (element is not null && element is not ListBoxItem)
+            {
+                element = VisualTreeHelper.GetParent(element);
+            }
+
+            if (element is not ListBoxItem item)
+            {
+                return JobsGrid.Items.Count;
+            }
+
+            var index = JobsGrid.ItemContainerGenerator.IndexFromContainer(item);
+            var top = item.TranslatePoint(new Point(0, 0), JobsGrid).Y;
+            var isBelowHalf = point.Y > top + item.ActualHeight / 2;
+            return isBelowHalf ? index + 1 : index;
+        }
+
+        private int FindJobIndex(int jobId)
+        {
+            if (ViewModel is null) return -1;
+            for (var i = 0; i < ViewModel.Jobs.Items.Count; i++)
+            {
+                if (ViewModel.Jobs.Items[i].Id == jobId) return i;
+            }
+            return -1;
         }
     }
 }
