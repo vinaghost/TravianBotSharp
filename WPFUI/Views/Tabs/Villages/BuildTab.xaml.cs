@@ -1,6 +1,11 @@
-﻿using MainCore.UI.ViewModels.Tabs.Villages;
+using MainCore.UI.ViewModels.Tabs.Villages;
 using ReactiveUI;
+using System;
 using System.Reactive.Disposables.Fluent;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 
 namespace WPFUI.Views.Tabs.Villages
 {
@@ -13,6 +18,9 @@ namespace WPFUI.Views.Tabs.Villages
     /// </summary>
     public partial class BuildTab : BuildTabBase
     {
+        private Point _dragStartPoint;
+        private int _dragSourceIndex = -1;
+
         public BuildTab()
         {
             InitializeComponent();
@@ -53,6 +61,60 @@ namespace WPFUI.Views.Tabs.Villages
                 this.Bind(ViewModel, vm => vm.ResourceBuildInput.SelectedPlan, v => v.ResType.SelectedItem).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.ResourceBuildInput.Level, v => v.ResourceLevel.Text).DisposeWith(d);
             });
+        }
+
+        private void JobsGrid_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _dragStartPoint = e.GetPosition(JobsGrid);
+            _dragSourceIndex = GetItemIndexAt(_dragStartPoint);
+        }
+
+        private void JobsGrid_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed) return;
+            if (_dragSourceIndex < 0) return;
+
+            var currentPoint = e.GetPosition(JobsGrid);
+            var movedEnough = Math.Abs(currentPoint.X - _dragStartPoint.X) >= SystemParameters.MinimumHorizontalDragDistance
+                || Math.Abs(currentPoint.Y - _dragStartPoint.Y) >= SystemParameters.MinimumVerticalDragDistance;
+            if (!movedEnough) return;
+
+            DragDrop.DoDragDrop(JobsGrid, new DataObject(typeof(int), _dragSourceIndex), DragDropEffects.Move);
+        }
+
+        private void JobsGrid_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = e.Data.GetDataPresent(typeof(int)) ? DragDropEffects.Move : DragDropEffects.None;
+            e.Handled = true;
+        }
+
+        private async void JobsGrid_Drop(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(typeof(int))) return;
+            if (ViewModel is null) return;
+
+            var sourceIndex = (int)e.Data.GetData(typeof(int))!;
+            var targetIndex = GetItemIndexAt(e.GetPosition(JobsGrid));
+            if (targetIndex < 0)
+            {
+                if (JobsGrid.Items.Count == 0) return;
+                targetIndex = JobsGrid.Items.Count - 1;
+            }
+
+            await ViewModel.ReorderJobs(sourceIndex, targetIndex);
+            _dragSourceIndex = -1;
+        }
+
+        private int GetItemIndexAt(Point point)
+        {
+            var element = JobsGrid.InputHitTest(point) as DependencyObject;
+            while (element is not null && element is not ListBoxItem)
+            {
+                element = VisualTreeHelper.GetParent(element);
+            }
+
+            if (element is not ListBoxItem item) return -1;
+            return JobsGrid.ItemContainerGenerator.IndexFromContainer(item);
         }
     }
 }
