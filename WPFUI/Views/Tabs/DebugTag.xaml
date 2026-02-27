@@ -24,8 +24,15 @@
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
-            <Button x:Name="ReportButton"           Grid.Row="0" Grid.Column="0" Content="Buy a Coffee for Vinaghost" Margin="10" />
-            <Button x:Name="LogButton"              Grid.Row="0" Grid.Column="1" Content="Open log folder"            Margin="10" />
+
+            <Grid Grid.Row="0" Grid.ColumnSpan="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <Button x:Name="ReportButton" Grid.Column="0" Content="Buy a Coffee for Vinaghost" Margin="10" />
+                <Button x:Name="LogButton" Grid.Column="1" Content="Open log folder" Margin="10" />
+            </Grid>
 
             <Label x:Name="TaskTableLabel"          Grid.Row="1" Grid.Column="0" Content="Task table"   HorizontalContentAlignment="Center" />
             <Label x:Name="LogTableLabel"           Grid.Row="1" Grid.Column="1" Content="Log messages"    HorizontalContentAlignment="Center" />
