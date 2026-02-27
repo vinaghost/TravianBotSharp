@@ -411,7 +411,6 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public async Task ReorderJobById(int jobId, int targetIndex)
         {
             if (targetIndex < 0 || targetIndex >= Jobs.Count) return;
-            if (Jobs[targetIndex].Id == jobId) return;
 
             if (!IsAccountPaused(AccountId))
             {
