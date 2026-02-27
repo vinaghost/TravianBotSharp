@@ -19,11 +19,11 @@
             if (result.IsFailed) return result;
             await delayService.DelayClick(cancellationToken);
 
-            result = await EnterAmount(browser, amount, cancellationToken);
+            result = await EnterAmount(browser, item, amount, cancellationToken);
             if (result.IsFailed) return result;
             await delayService.DelayClick(cancellationToken);
 
-            result = await Confirm(browser, cancellationToken);
+            result = await Confirm(browser, item, cancellationToken);
             if (result.IsFailed) return result;
             await delayService.DelayClick(cancellationToken);
 
@@ -42,24 +42,26 @@
             result = await browser.Click(element, cancellationToken);
             if (result.IsFailed) return result;
 
-            static bool loadingCompleted(IWebDriver driver)
+            bool itemDialogOpened(IWebDriver driver)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(driver.PageSource);
-                return InventoryParser.IsInventoryLoaded(doc);
+                return InventoryParser.GetAmountBox(doc, item) is not null
+                    || InventoryParser.GetConfirmButton(doc, item) is not null;
             }
 
-            result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);
+            result = await browser.Wait(driver => itemDialogOpened(driver), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }
 
         private static async Task<Result> EnterAmount(
             IChromeBrowser browser,
+            HeroItemEnums item,
             long amount,
             CancellationToken cancellationToken)
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => InventoryParser.GetAmountBox(doc), cancellationToken);
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => InventoryParser.GetAmountBox(doc, item), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
             Result result;
@@ -70,9 +72,10 @@
 
         private static async Task<Result> Confirm(
             IChromeBrowser browser,
+            HeroItemEnums item,
             CancellationToken cancellationToken)
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => InventoryParser.GetConfirmButton(doc), cancellationToken);
+            var (_, isFailed, element, errors) = await browser.GetElement(doc => InventoryParser.GetConfirmButton(doc, item), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
             static bool loadingCompleted(IWebDriver driver)

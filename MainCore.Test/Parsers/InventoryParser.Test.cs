@@ -6,7 +6,7 @@ namespace MainCore.Test.Parsers
     {
         private const string HeroInventory = "Parsers/Inventory/HeroInventory.html";
         private const string Buildings = "Parsers/Inventory/Buildings.html";
-        private const string AmountDialog = "Parsers/Inventory/AmountDialog.html";
+        private const string AmountDialogResourceTransfer = "Parsers/Inventory/AmountDialogResourceTransfer.html";
 
         [Theory]
         [InlineData(HeroInventory, true)]
@@ -48,20 +48,26 @@ namespace MainCore.Test.Parsers
             actual.ShouldNotBeNull();
         }
 
-        [Fact]
-        public void GetAmountBox()
+        [Theory]
+        [InlineData(HeroItemEnums.Wood, "lumber")]
+        [InlineData(HeroItemEnums.Clay, "clay")]
+        [InlineData(HeroItemEnums.Iron, "iron")]
+        [InlineData(HeroItemEnums.Crop, "crop")]
+        public void GetAmountBox_ResourceDialog_ByItem(HeroItemEnums item, string expectedName)
         {
-            _html.Load(AmountDialog);
-            var actual = MainCore.Parsers.InventoryParser.GetAmountBox(_html);
+            _html.Load(AmountDialogResourceTransfer);
+            var actual = MainCore.Parsers.InventoryParser.GetAmountBox(_html, item);
             actual.ShouldNotBeNull();
+            actual.GetAttributeValue("name", "").ShouldBe(expectedName);
         }
 
         [Fact]
-        public void GetConfirmButton()
+        public void GetConfirmButton_ResourceDialog_ShouldPickTransferAction()
         {
-            _html.Load(AmountDialog);
-            var actual = MainCore.Parsers.InventoryParser.GetConfirmButton(_html);
+            _html.Load(AmountDialogResourceTransfer);
+            var actual = MainCore.Parsers.InventoryParser.GetConfirmButton(_html, HeroItemEnums.Wood);
             actual.ShouldNotBeNull();
+            actual.GetAttributeValue("id", "").ShouldBe("transferBtn");
         }
     }
 }
