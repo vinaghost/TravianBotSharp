@@ -402,6 +402,32 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
+        public async Task ReorderJobs(int sourceIndex, int targetIndex)
+        {
+            if (sourceIndex < 0 || sourceIndex >= Jobs.Count) return;
+            await ReorderJobById(Jobs[sourceIndex].Id, targetIndex);
+        }
+
+        public async Task ReorderJobById(int jobId, int targetIndex)
+        {
+            if (targetIndex < 0 || targetIndex >= Jobs.Count) return;
+
+            if (!IsAccountPaused(AccountId))
+            {
+                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                await LoadJobCommand.Execute(VillageId);
+                return;
+            }
+
+            using var scope = _serviceScopeFactory.CreateScope(AccountId);
+            var reorderJobCommand = scope.ServiceProvider.GetRequiredService<ReorderJobCommand.Handler>();
+            var newIndex = await reorderJobCommand.HandleAsync(new(new JobId(jobId), targetIndex));
+            if (newIndex < 0) return;
+
+            Jobs.SelectedIndex = newIndex;
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+        }
+
         [ReactiveCommand]
         private async Task Delete()
         {

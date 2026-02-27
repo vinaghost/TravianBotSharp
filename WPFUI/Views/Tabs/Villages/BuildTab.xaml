@@ -111,7 +111,14 @@
                 <Button x:Name="ExportButton"       Grid.Column="1" Content="Export" Margin="5" />
             </Grid>
             <Border Grid.Row="1" Style="{DynamicResource Box}">
-                <ListBox x:Name="JobsGrid" SelectionMode="Single" ItemTemplate="{DynamicResource ListBoxColorItem}">
+                <ListBox x:Name="JobsGrid"
+                         SelectionMode="Single"
+                         ItemTemplate="{DynamicResource ListBoxColorItem}"
+                         AllowDrop="True"
+                         PreviewMouseLeftButtonDown="JobsGrid_PreviewMouseLeftButtonDown"
+                         MouseMove="JobsGrid_MouseMove"
+                         DragOver="JobsGrid_DragOver"
+                         Drop="JobsGrid_Drop">
                     <ListBox.ContextMenu>
                         <ContextMenu>
                             <MenuItem x:Name="TopButton" Header="Top">
