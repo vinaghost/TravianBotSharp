@@ -2,6 +2,7 @@
 using Polly;
 using Polly.Retry;
 using Timer = System.Timers.Timer;
+using MainCore.Tasks;
 
 namespace MainCore.Services
 {
@@ -117,6 +118,32 @@ namespace MainCore.Services
             cts.Dispose();
             taskQueue.CancellationTokenSource = null;
 
+            async Task RestartAccountAsync(string reason)
+            {
+                // take a screenshot for diagnostics
+                var filename = await browser.Screenshot();
+                logger.Information("Screenshot saved as {FileName}", filename);
+                logger.Warning("{Reason}", reason);
+
+                // detect whether StartFarmListTask was enabled for this account so we can
+                // re-enable it after the restart. We check before clearing the queue.
+                var hadStartFarm = _taskManager.IsExist<StartFarmListTask.Task>(accountId);
+
+                // replicate the UI Restart() logic: pause current task, clear queue, fire AccountInit
+                _taskManager.SetStatus(accountId, StatusEnums.Starting);
+                await Task.Delay(300);
+                _taskManager.Clear(accountId);
+                _rxQueue.Enqueue(new AccountInit(accountId));
+
+                // restore StartFarmListTask if it existed before restart
+                if (hadStartFarm)
+                {
+                    _taskManager.AddOrUpdate<StartFarmListTask.Task>(new(accountId));
+                }
+
+                _taskManager.SetStatus(accountId, StatusEnums.Online);
+            }
+
             if (poliResult.Exception is not null)
             {
                 var ex = poliResult.Exception;
@@ -127,13 +154,10 @@ namespace MainCore.Services
                 }
                 else
                 {
-                    var filename = await browser.Screenshot();
-                    logger.Information("Screenshot saved as {FileName}", filename);
-                    logger.Warning("There is something wrong. Bot is pausing. Last exception is");
+                    logger.Warning("There is something wrong. Last exception is");
                     logger.Error(ex, "{Message}", ex.Message);
+                    await RestartAccountAsync("Restarting after exception");
                 }
-
-                _taskManager.SetStatus(accountId, StatusEnums.Paused);
             }
 
             if (poliResult.Result is not null)
@@ -148,11 +172,12 @@ namespace MainCore.Services
                         logger.Warning("{Message}", message);
                     }
 
-                    if (result.HasError<Stop>() || result.HasError<Retry>())
+                    if (result.HasError<Stop>() || result.HasError<Retry>() || result.HasError<Cancel>())
                     {
-                        var filename = await browser.Screenshot();
-                        logger.Information(messageTemplate: "Screenshot saved as {FileName}", filename);
-                        _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                        // fatal-typed errors; instead of pausing, try to recover by
+                        // forcing a re-login and keeping the account online.
+                        logger.Warning("Fatal error detected ({Error}). restarting account", message);
+                        await RestartAccountAsync("Restarting after fatal error");
                     }
                     else if (result.HasError<Skip>())
                     {

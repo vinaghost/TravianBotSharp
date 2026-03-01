@@ -17,5 +17,10 @@
         SleepTimeMax,
         HeadlessChrome,
         EnableAutoStartAdventure,
+        WorkStartHour,
+        WorkEndHour,
+        WorkStartMinute,
+        WorkEndMinute,
+        SleepRandomMinute,
     }
 }

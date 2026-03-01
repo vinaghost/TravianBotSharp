@@ -39,9 +39,40 @@ namespace MainCore.Services
 
             taskManager.Add(new LoginTask.Task(accountId), first: true);
 
-            var workTime = context.ByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
+            var workStartHour = context.ByName(accountId, AccountSettingEnums.WorkStartHour);
+            if (workStartHour < 0 || workStartHour > 23) workStartHour = 6;
+            var workStartMinute = context.ByName(accountId, AccountSettingEnums.WorkStartMinute);
+            if (workStartMinute < 0 || workStartMinute > 59) workStartMinute = 0;
+            var workEndHour = context.ByName(accountId, AccountSettingEnums.WorkEndHour);
+            if (workEndHour < 0 || workEndHour > 23) workEndHour = 22;
+            var workEndMinute = context.ByName(accountId, AccountSettingEnums.WorkEndMinute);
+            if (workEndMinute < 0 || workEndMinute > 59) workEndMinute = 0;
+            var maxOffset = context.ByName(accountId, AccountSettingEnums.SleepRandomMinute);
+            if (maxOffset < 0) maxOffset = 0;
+            var random = new Random();
+            var randomMinute = maxOffset == 0 ? 0 : random.Next(0, maxOffset);
+
+            var now = DateTime.Now;
+            DateTime sleepExecuteAt;
+
+            var startToday = now.Date.AddHours(workStartHour).AddMinutes(workStartMinute);
+            var endToday = now.Date.AddHours(workEndHour).AddMinutes(workEndMinute);
+
+            if (now < startToday)
+            {
+                sleepExecuteAt = startToday.AddMinutes(randomMinute);
+            }
+            else if (now >= endToday)
+            {
+                sleepExecuteAt = startToday.AddDays(1).AddMinutes(randomMinute);
+            }
+            else
+            {
+                sleepExecuteAt = endToday.AddMinutes(randomMinute);
+            }
+
             var sleepTask = new SleepTask.Task(accountId);
-            sleepTask.ExecuteAt = DateTime.Now.AddMinutes(workTime);
+            sleepTask.ExecuteAt = sleepExecuteAt;
             taskManager.AddOrUpdate<SleepTask.Task>(sleepTask);
 
             var startAdventureTask = new StartAdventureTask.Task(accountId);

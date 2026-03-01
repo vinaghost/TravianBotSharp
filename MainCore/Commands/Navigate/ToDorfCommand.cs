@@ -26,6 +26,13 @@
                 return Result.Ok();
             }
 
+            // ensure the *current* page is fully rendered before looking for the button.
+            // `WaitPageChanged` takes a URL fragment but we only care about the logo being
+            // visible; passing an empty string makes the URL check no‑op and still waits
+            // for the logo, avoiding deadlocks when we're on a non-dorf page.
+            var waitResult = await browser.WaitPageChanged("", cancellationToken);
+            if (waitResult.IsFailed) return waitResult;
+
             var (_, isFailed, element, errors) = await browser.GetElement(doc => NavigationBarParser.GetDorfButton(doc, dorf), cancellationToken);
             if (isFailed) return Result.Fail(errors);
 
