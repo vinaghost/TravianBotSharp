@@ -21,6 +21,12 @@ namespace MainCore.Commands.Navigate
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
+            // before trying to locate a building link, make sure the page is stable
+            // (logo rendered). using an empty fragment avoids hanging if we're already
+            // on a non-dorf page such as a build screen.
+            var waitResult = await browser.WaitPageChanged("", cancellationToken);
+            if (waitResult.IsFailed) return waitResult;
+
             var (_, isFailed, element, errors) = await browser.GetElement(doc => GetBuilding(doc, location), cancellationToken);
             if (isFailed) return Result.Fail(errors).WithError($"Failed to find [building at #{location}]");
 
