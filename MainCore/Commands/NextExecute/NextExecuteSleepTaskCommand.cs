@@ -49,17 +49,17 @@
 
             if (now < startToday)
             {
-                // before work start, sleep until work start today
-                nextSleepTime = startToday.AddMinutes(randomMinute);
+                // before work start, wake exactly when work starts (jitter not applied)
+                nextSleepTime = startToday;
             }
             else if (now >= endToday)
             {
-                // after work end, sleep until work start tomorrow
-                nextSleepTime = startToday.AddDays(1).AddMinutes(randomMinute);
+                // after work end, wake at next day's start
+                nextSleepTime = startToday.AddDays(1);
             }
             else
             {
-                // during work hours, sleep until end of work today
+                // during work hours, sleep until end of work today (+optional jitter)
                 nextSleepTime = endToday.AddMinutes(randomMinute);
             }
 

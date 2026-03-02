@@ -24,8 +24,6 @@ namespace WPFUI.Views.Tabs
 
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.ClickDelay, v => v.ClickDelay.ViewModel).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.TaskDelay, v => v.TaskDelay.ViewModel).DisposeWith(d);
-                this.Bind(ViewModel, vm => vm.AccountSettingInput.WorkTime, v => v.WorkTime.ViewModel).DisposeWith(d);
-                this.Bind(ViewModel, vm => vm.AccountSettingInput.SleepTime, v => v.SleepTime.ViewModel).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.WorkStartHour, v => v.WorkStartHour.ViewModel).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.WorkStartMinute, v => v.WorkStartMinute.ViewModel).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.WorkEndHour, v => v.WorkEndHour.ViewModel).DisposeWith(d);

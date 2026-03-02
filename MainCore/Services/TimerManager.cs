@@ -3,6 +3,7 @@ using Polly;
 using Polly.Retry;
 using Timer = System.Timers.Timer;
 using MainCore.Tasks;
+using MainCore.Enums;
 
 namespace MainCore.Services
 {
@@ -78,7 +79,46 @@ namespace MainCore.Services
             if (tasks.Count == 0) return;
             var task = tasks[0];
 
+            // if it's not yet time, nothing to do
             if (task.ExecuteAt > DateTime.Now) return;
+
+            // enforce work–window: if we're outside the configured hours and this
+            // isn't the sleep task, bump its schedule to the next start time and
+            // leave everything else alone. the queue will be reordered and the
+            // loop will check again later, letting the SleepTask dictate when the
+            // bot actually wakes up.
+            var now = DateTime.Now;
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var workStartHour = db.ByName(accountId, AccountSettingEnums.WorkStartHour);
+            if (workStartHour < 0 || workStartHour > 23) workStartHour = 6;
+            var workStartMinute = db.ByName(accountId, AccountSettingEnums.WorkStartMinute);
+            if (workStartMinute < 0 || workStartMinute > 59) workStartMinute = 0;
+            var workEndHour = db.ByName(accountId, AccountSettingEnums.WorkEndHour);
+            if (workEndHour < 0 || workEndHour > 23) workEndHour = 22;
+            var workEndMinute = db.ByName(accountId, AccountSettingEnums.WorkEndMinute);
+            if (workEndMinute < 0 || workEndMinute > 59) workEndMinute = 0;
+
+            var startToday = now.Date.AddHours(workStartHour).AddMinutes(workStartMinute);
+            var endToday = now.Date.AddHours(workEndHour).AddMinutes(workEndMinute);
+            
+            // Detect overnight windows (e.g., 7:15 AM to 2:30 AM next day)
+            bool windowCrossesMidnight = endToday < startToday;
+            bool outsideWindow = windowCrossesMidnight 
+                ? (now >= endToday && now < startToday)  // Outside if between end and start
+                : (now < startToday || now >= endToday); // Outside if before start or at/after end
+            
+            DateTime nextStart = now < startToday ? startToday : startToday.AddDays(1);
+
+            if (outsideWindow &&
+                task.GetType() != typeof(SleepTask.Task) &&
+                task.GetType() != typeof(LoginTask.Task))
+            {
+                task.ExecuteAt = nextStart;
+                _taskManager.ReOrder(accountId);
+                return;
+            }
 
             taskQueue.IsExecuting = true;
             var cts = new CancellationTokenSource();
@@ -89,7 +129,7 @@ namespace MainCore.Services
 
             var cacheExecuteTime = task.ExecuteAt;
 
-            using var scope = _serviceScopeFactory.CreateScope(accountId);
+            // scope variable already declared above, reuse for execution logic
 
             ///===========================================================///
             var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();

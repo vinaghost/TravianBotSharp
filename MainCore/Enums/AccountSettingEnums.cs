@@ -11,8 +11,6 @@
         FarmIntervalMin,
         FarmIntervalMax,
         Tribe,
-        WorkTimeMin,
-        WorkTimeMax,
         SleepTimeMin,
         SleepTimeMax,
         HeadlessChrome,

@@ -57,17 +57,25 @@ namespace MainCore.Services
 
             var startToday = now.Date.AddHours(workStartHour).AddMinutes(workStartMinute);
             var endToday = now.Date.AddHours(workEndHour).AddMinutes(workEndMinute);
+            
+            // Detect overnight windows (e.g., 7:15 AM to 2:30 AM next day)
+            bool windowCrossesMidnight = endToday < startToday;
+            bool outsideWindow = windowCrossesMidnight 
+                ? (now >= endToday && now < startToday)  // Outside if between end and start
+                : (now < startToday || now >= endToday); // Outside if before start or at/after end
+            
+            DateTime nextStart = now < startToday ? startToday : startToday.AddDays(1);
+            // helper used below when scheduling regular tasks
+            DateTime WhenAllowed(DateTime original) => outsideWindow ? nextStart : original;
 
-            if (now < startToday)
+            if (outsideWindow)
             {
-                sleepExecuteAt = startToday.AddMinutes(randomMinute);
-            }
-            else if (now >= endToday)
-            {
-                sleepExecuteAt = startToday.AddDays(1).AddMinutes(randomMinute);
+                // We're outside the window; schedule sleep for next start time
+                sleepExecuteAt = nextStart;
             }
             else
             {
+                // We're inside the window; schedule sleep for end of window
                 sleepExecuteAt = endToday.AddMinutes(randomMinute);
             }
 
@@ -78,6 +86,7 @@ namespace MainCore.Services
             var startAdventureTask = new StartAdventureTask.Task(accountId);
             if (startAdventureTask.CanStart(context) && !taskManager.IsExist<StartAdventureTask.Task>(accountId))
             {
+                startAdventureTask.ExecuteAt = WhenAllowed(now);
                 taskManager.Add(startAdventureTask);
             }
             var villagesSpec = new VillagesSpec(accountId);
@@ -89,11 +98,13 @@ namespace MainCore.Services
                 var updateVillageTask = new UpdateVillageTask.Task(accountId, village);
                 if (updateVillageTask.CanStart(context) && !taskManager.IsExist<UpdateVillageTask.Task>(accountId, village))
                 {
+                    updateVillageTask.ExecuteAt = WhenAllowed(now);
                     taskManager.Add(updateVillageTask);
                 }
                 var trainTroopTask = new TrainTroopTask.Task(accountId, village);
                 if (trainTroopTask.CanStart(context) && !taskManager.IsExist<TrainTroopTask.Task>(accountId, village))
                 {
+                    trainTroopTask.ExecuteAt = WhenAllowed(now);
                     taskManager.Add(trainTroopTask);
                 }
             }
@@ -106,6 +117,7 @@ namespace MainCore.Services
                 var upgradeBuildingTask = new UpgradeBuildingTask.Task(accountId, village);
                 if (!taskManager.IsExist<UpgradeBuildingTask.Task>(accountId, village))
                 {
+                    upgradeBuildingTask.ExecuteAt = WhenAllowed(now);
                     taskManager.Add(upgradeBuildingTask);
                 }
             }

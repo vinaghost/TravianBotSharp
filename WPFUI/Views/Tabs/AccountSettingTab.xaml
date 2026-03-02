@@ -41,8 +41,6 @@
                 <Border Style="{DynamicResource Box}">
                     <StackPanel>
                         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Activity settings" VerticalAlignment="Center" FontWeight="Bold" />
-                        <uc:RangeInputUc x:Name="WorkTime" Text="Work time" Unit="minutes" />
-                        <uc:RangeInputUc x:Name="SleepTime" Text="Sleep time" Unit="minutes" />
                         <Separator Margin="0,10,0,10" />
                         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Work window (static daily schedule)" VerticalAlignment="Center" FontSize="11" Foreground="#FF666666" />
                         <StackPanel Orientation="Horizontal">
