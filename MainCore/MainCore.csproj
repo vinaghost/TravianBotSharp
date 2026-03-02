@@ -11,8 +11,6 @@
     <AssemblyVersion>2603.01.4.0</AssemblyVersion>
 
     <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
-
-    <OutputType>Library</OutputType>
   </PropertyGroup>
   <!--<PropertyGroup>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
