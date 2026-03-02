@@ -789,16 +789,16 @@
       },
       "Selenium.Support": {
         "type": "Transitive",
-        "resolved": "4.38.0",
-        "contentHash": "FBxJRTpXZePi/gbBAf7RzN147sd6vo/TEaxQzxd7NbSxJCbTI2zu0wLmwnv3mmJAWrFDwjknJq0mB6s0b94jIA==",
+        "resolved": "4.39.0",
+        "contentHash": "G27Hr8k9gGZ0lxdFqTnoJEwZ2l8nq+GFOs5AB9OqGXkHRznS13uDG7CFtMMgG9k4Dy06XTYJLrnENYTa/nVFhw==",
         "dependencies": {
-          "Selenium.WebDriver": "4.38.0"
+          "Selenium.WebDriver": "4.39.0"
         }
       },
       "Selenium.WebDriver": {
         "type": "Transitive",
-        "resolved": "4.38.0",
-        "contentHash": "3cYBndxLgPifEttQ1+k+KhKp2XBTdME3pUp4PC/eHb/hvHsefeT2WN2JJymzs+5mkqaXUp64FBnj2EG/Iyrh/A=="
+        "resolved": "4.39.0",
+        "contentHash": "LbiWOVW/PA/YVHKAXxMPLwwoupj3XLWKwjnGNkGFF0dG0rX2MJHDWgSf9WPSRWb9Msr3vTWFg0EsEAdNs68NiA=="
       },
       "Serilog": {
         "type": "Transitive",
@@ -1511,8 +1511,8 @@
           "Polly": "[8.6.4, )",
           "ReactiveUI": "[22.2.1, )",
           "Riok.Mapperly": "[4.3.0, )",
-          "Selenium.Support": "[4.38.0, )",
-          "Selenium.WebDriver": "[4.38.0, )",
+          "Selenium.Support": "[4.39.0, )",
+          "Selenium.WebDriver": "[4.39.0, )",
           "Serilog": "[4.3.0, )",
           "Serilog.Expressions": "[5.0.0, )",
           "Serilog.Extensions.Hosting": "[9.0.0, )",
@@ -1730,8 +1730,8 @@
       },
       "Selenium.WebDriver": {
         "type": "Transitive",
-        "resolved": "4.38.0",
-        "contentHash": "3cYBndxLgPifEttQ1+k+KhKp2XBTdME3pUp4PC/eHb/hvHsefeT2WN2JJymzs+5mkqaXUp64FBnj2EG/Iyrh/A=="
+        "resolved": "4.39.0",
+        "contentHash": "LbiWOVW/PA/YVHKAXxMPLwwoupj3XLWKwjnGNkGFF0dG0rX2MJHDWgSf9WPSRWb9Msr3vTWFg0EsEAdNs68NiA=="
       },
       "SQLitePCLRaw.lib.e_sqlite3": {
         "type": "Transitive",

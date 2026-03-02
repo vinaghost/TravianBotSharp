@@ -149,18 +149,18 @@
       },
       "Selenium.Support": {
         "type": "Direct",
-        "requested": "[4.38.0, )",
-        "resolved": "4.38.0",
-        "contentHash": "FBxJRTpXZePi/gbBAf7RzN147sd6vo/TEaxQzxd7NbSxJCbTI2zu0wLmwnv3mmJAWrFDwjknJq0mB6s0b94jIA==",
+        "requested": "[4.39.0, )",
+        "resolved": "4.39.0",
+        "contentHash": "G27Hr8k9gGZ0lxdFqTnoJEwZ2l8nq+GFOs5AB9OqGXkHRznS13uDG7CFtMMgG9k4Dy06XTYJLrnENYTa/nVFhw==",
         "dependencies": {
-          "Selenium.WebDriver": "4.38.0"
+          "Selenium.WebDriver": "4.39.0"
         }
       },
       "Selenium.WebDriver": {
         "type": "Direct",
-        "requested": "[4.38.0, )",
-        "resolved": "4.38.0",
-        "contentHash": "3cYBndxLgPifEttQ1+k+KhKp2XBTdME3pUp4PC/eHb/hvHsefeT2WN2JJymzs+5mkqaXUp64FBnj2EG/Iyrh/A=="
+        "requested": "[4.39.0, )",
+        "resolved": "4.39.0",
+        "contentHash": "LbiWOVW/PA/YVHKAXxMPLwwoupj3XLWKwjnGNkGFF0dG0rX2MJHDWgSf9WPSRWb9Msr3vTWFg0EsEAdNs68NiA=="
       },
       "Serilog": {
         "type": "Direct",
@@ -726,9 +726,9 @@
     "net8.0/win-x64": {
       "Selenium.WebDriver": {
         "type": "Direct",
-        "requested": "[4.38.0, )",
-        "resolved": "4.38.0",
-        "contentHash": "3cYBndxLgPifEttQ1+k+KhKp2XBTdME3pUp4PC/eHb/hvHsefeT2WN2JJymzs+5mkqaXUp64FBnj2EG/Iyrh/A=="
+        "requested": "[4.39.0, )",
+        "resolved": "4.39.0",
+        "contentHash": "LbiWOVW/PA/YVHKAXxMPLwwoupj3XLWKwjnGNkGFF0dG0rX2MJHDWgSf9WPSRWb9Msr3vTWFg0EsEAdNs68NiA=="
       },
       "SQLitePCLRaw.lib.e_sqlite3": {
         "type": "Transitive",
