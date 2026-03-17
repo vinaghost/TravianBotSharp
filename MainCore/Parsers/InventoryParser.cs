@@ -55,30 +55,47 @@
             return null;
         }
 
-        public static HtmlNode? GetAmountBox(HtmlDocument doc)
+        public static HtmlNode? GetAmountBox(HtmlDocument doc, string name)
         {
-            var dialogHeroItemConsumable = doc.GetElementbyId("consumableHeroItem");
-            if (dialogHeroItemConsumable is null) return null;
+            var dialog = GetResourceTransferDialog(doc);
+            if (dialog is null) return null;
 
-            var amountInput = dialogHeroItemConsumable
+            var amountInput = dialog
                 .Descendants("input")
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.GetAttributeValue("name", "") == name);
             return amountInput;
         }
 
         public static HtmlNode? GetConfirmButton(HtmlDocument doc)
         {
-            var dialog = doc.GetElementbyId("dialogContent");
+            var dialog = GetResourceTransferDialog(doc);
             if (dialog is null) return null;
 
-            var buttonWrapper = dialog
+            var actionButtonBox = dialog
                 .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("buttonsWrapper"));
-            if (buttonWrapper is null) return null;
+                .FirstOrDefault(x => x.HasClass("actionButton"));
+            if (actionButtonBox is null) return null;
 
-            var buttonTransfer = buttonWrapper.Descendants("button");
-            if (buttonTransfer.Count() < 2) return null;
-            return buttonTransfer.ElementAt(1);
+            var buttons = actionButtonBox.Descendants("button").ToList();
+            if (buttons.Count != 2) return null;
+            var button = buttons[1];
+            return button;
+        }
+
+        public static HtmlNode? GetResourceTransferDialog(HtmlDocument doc)
+        {
+            var dialog = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("resourceTransferDialog"));
+            return dialog;
+        }
+
+        public static HtmlNode? GetSuccessToast(HtmlDocument doc)
+        {
+            var toast = doc.DocumentNode
+                .Descendants("div")
+                .FirstOrDefault(x => x.HasClass("toast") && x.HasClass("toastSuccess"));
+            return toast;
         }
     }
 }
