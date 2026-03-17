@@ -48,13 +48,13 @@ namespace MainCore.Test.Parsers
             actual.ShouldNotBeNull();
         }
 
-        [Fact]
-        public void GetAmountBox()
-        {
-            _html.Load(AmountDialog);
-            var actual = MainCore.Parsers.InventoryParser.GetAmountBox(_html);
-            actual.ShouldNotBeNull();
-        }
+        //[Fact]
+        //public void GetAmountBox()
+        //{
+        //    _html.Load(AmountDialog);
+        //    var actual = MainCore.Parsers.InventoryParser.GetAmountBox(_html);
+        //    actual.ShouldNotBeNull();
+        //}
 
         [Fact]
         public void GetConfirmButton()

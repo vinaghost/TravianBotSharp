@@ -34,12 +34,8 @@
                 { HeroItemEnums.Crop, resource[3] },
             };
 
-            foreach (var (item, amount) in itemsToUse)
-            {
-                if (amount == 0) continue;
-                result = await useHeroItemCommand.HandleAsync(new(item, amount), cancellationToken);
-                if (result.IsFailed) return result;
-            }
+            result = await useHeroItemCommand.HandleAsync(new(itemsToUse), cancellationToken);
+            if (result.IsFailed) return result;
 
             await delayService.DelayClick(cancellationToken);
             return Result.Ok();
