@@ -1,4 +1,5 @@
 ﻿using MainCore.Behaviors;
+using MainCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -52,6 +53,7 @@ namespace MainCore
                 services.AddValidatorsFromAssembly(typeof(AppMixins).Assembly, ServiceLifetime.Singleton);
                 services.AddMainCoreBehaviors();
                 services.AddMainCoreHandlers();
+                services.AddSingleton(new CommandLoggingConfig());
 
                 services.AddScoped<IChromeBrowser>(sp =>
                 {
