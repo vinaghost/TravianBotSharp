@@ -70,6 +70,7 @@ jobs:
       
       - name: Archive release
         run: |
+          ls -R;
           cd TBS; zip -r "TBS-${{needs.version.outputs.version}}.zip" TBS-${{needs.version.outputs.version}}; cp -R "TBS-${{needs.version.outputs.version}}.zip" ../; cd ..
       
       - name: Create release
