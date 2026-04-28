@@ -322,6 +322,7 @@
             BuildingEnums.Palace => true,
             BuildingEnums.Marketplace => true,
             BuildingEnums.Treasury => true,
+            BuildingEnums.TownHall => true,
             _ => false,
         };
 
