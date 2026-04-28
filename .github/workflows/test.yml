@@ -14,10 +14,10 @@ jobs:
         NUGET_PACKAGES: "D:/.nuget/packages"
     steps:        
       - name: Checkout
-        uses: actions/checkout@v4.1.5
+        uses: actions/checkout@v6
         
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
           cache: true
@@ -41,13 +41,13 @@ jobs:
       version: ${{ steps.semvers.outputs.patch }}
     steps:
       - name: Checkout 
-        uses: actions/checkout@v4.1.5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0 
       
       - name: Get Previous tag
         id: previoustag
-        uses: WyriHaximus/github-action-get-previous-tag@v1.4.0  
+        uses: WyriHaximus/github-action-get-previous-tag@v2
         with:
           fallback: 1.0.0
       
@@ -73,10 +73,10 @@ jobs:
     
     steps:        
       - name: Checkout
-        uses: actions/checkout@v4.1.5
+        uses: actions/checkout@v6
         
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
           cache: true
@@ -89,7 +89,7 @@ jobs:
         run: dotnet publish WPFUI -c Release --no-restore --self-contained -p:PublishSingleFile=true -p:AssemblyVersion=${{needs.version.outputs.version}} -p:RunAnalyzersDuringBuild=True
       
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4.3.3
+        uses: actions/upload-artifact@v7
         with:
           name: TBS-${{needs.version.outputs.version}}
           path: WPFUI\bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\
@@ -101,7 +101,7 @@ jobs:
         pull-requests: write
     steps:
       - name: Comment PR
-        uses: thollander/actions-comment-pull-request@v2.5.0
+        uses: thollander/actions-comment-pull-request@v3
         with:
           message: |
             Version of this build is ${{needs.version.outputs.version}}
