@@ -17,7 +17,7 @@
             var currentDorf = GetCurrentDorf(currentUrl);
             if (dorf == 0)
             {
-                if (currentDorf == 0) dorf = 1;
+                if (currentDorf == 0) dorf = 2;
                 else dorf = currentDorf;
             }
 
