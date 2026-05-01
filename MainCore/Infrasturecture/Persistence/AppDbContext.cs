@@ -1,4 +1,4 @@
-﻿using StronglyTypedIds;
+using StronglyTypedIds;
 using System.Collections.Immutable;
 
 [assembly: StronglyTypedIdDefaults(backingType: StronglyTypedIdBackingType.Int, converters: StronglyTypedIdConverter.None)]
@@ -47,6 +47,7 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.WorkTimeMax, 720 },
             {AccountSettingEnums.HeadlessChrome, 0 },
             {AccountSettingEnums.EnableAutoStartAdventure, 0 },
+            {AccountSettingEnums.EnableAutoRestartOnFailure, 0 },
         }.ToImmutableDictionary();
 
         private List<AccountSettingEnums> GetMissingAccountSettings()
