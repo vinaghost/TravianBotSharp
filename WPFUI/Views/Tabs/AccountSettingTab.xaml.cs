@@ -1,4 +1,4 @@
-﻿using MainCore.UI.ViewModels.Tabs;
+using MainCore.UI.ViewModels.Tabs;
 using ReactiveUI;
 using System.Reactive.Disposables.Fluent;
 
@@ -30,6 +30,7 @@ namespace WPFUI.Views.Tabs
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.Tribe, v => v.Tribes.ViewModel).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.HeadlessChrome, v => v.HeadlessChrome.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.EnableAutoStartAdventure, v => v.EnableAutoStartAdventure.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.EnableAutoRestartOnFailure, v => v.EnableAutoRestartOnFailure.IsChecked).DisposeWith(d);
             });
         }
     }
