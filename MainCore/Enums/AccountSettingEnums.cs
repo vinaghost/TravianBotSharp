@@ -1,4 +1,4 @@
-﻿namespace MainCore.Enums
+namespace MainCore.Enums
 {
     public enum AccountSettingEnums
     {
@@ -17,5 +17,6 @@
         SleepTimeMax,
         HeadlessChrome,
         EnableAutoStartAdventure,
+        EnableAutoRestartOnFailure,
     }
 }
