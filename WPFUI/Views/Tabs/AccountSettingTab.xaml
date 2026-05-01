@@ -1,4 +1,4 @@
-﻿<v:AccountSettingTabBase
+<v:AccountSettingTabBase
     x:Class="WPFUI.Views.Tabs.AccountSettingTab"
     xmlns:v="clr-namespace:WPFUI.Views.Tabs"
     xmlns:uc="clr-namespace:WPFUI.Views.UserControls"
@@ -57,6 +57,7 @@
                         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Feature settings" VerticalAlignment="Center" FontWeight="Bold" />
                         <CheckBox x:Name="EnableAutoLoadVillage" Content="Enable auto load village's building" />
                         <CheckBox x:Name="EnableAutoStartAdventure" Content="Enable auto start adventure" />
+                        <CheckBox x:Name="EnableAutoRestartOnFailure" Content="Enable auto restart on failure" />
                     </StackPanel>
                 </Border>
                 <Border Style="{DynamicResource Box}">
