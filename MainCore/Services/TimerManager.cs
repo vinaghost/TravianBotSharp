@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Retry;
 using Timer = System.Timers.Timer;
@@ -152,7 +152,29 @@ namespace MainCore.Services
                     {
                         var filename = await browser.Screenshot();
                         logger.Information(messageTemplate: "Screenshot saved as {FileName}", filename);
-                        _taskManager.SetStatus(accountId, StatusEnums.Paused);
+
+                        if (result.HasError<Retry>() && !result.HasError<Stop>())
+                        {
+                            var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+                            var autoRestart = settingService.BooleanByName(accountId, AccountSettingEnums.EnableAutoRestartOnFailure);
+                            if (autoRestart)
+                            {
+                                logger.Information("Auto restart is enabled. Restarting bot");
+                                _taskManager.SetStatus(accountId, StatusEnums.Starting);
+                                await Task.Delay(300);
+                                _taskManager.Clear(accountId);
+                                _rxQueue.Enqueue(new AccountInit(accountId));
+                                _taskManager.SetStatus(accountId, StatusEnums.Online);
+                            }
+                            else
+                            {
+                                _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                            }
+                        }
+                        else
+                        {
+                            _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                        }
                     }
                     else if (result.HasError<Skip>())
                     {
