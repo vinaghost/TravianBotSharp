@@ -21,6 +21,7 @@ namespace MainCore.Tasks
             SleepCommand.Handler sleepCommand,
             GetValidAccessCommand.Handler getAccessQuery,
             OpenBrowserCommand.Handler openBrowserCommand,
+            ITaskManager taskManager,
             NextExecuteSleepTaskCommand.Handler nextExecuteSleepTaskCommand,
             CancellationToken cancellationToken)
         {
@@ -30,6 +31,10 @@ namespace MainCore.Tasks
             if (isFailed) return Result.Fail(errors);
 
             await openBrowserCommand.HandleAsync(new(task.AccountId, access), cancellationToken);
+
+            // ensure a fresh login task fires before any user activities
+            taskManager.Add(new LoginTask.Task(task.AccountId), first: true);
+
             await nextExecuteSleepTaskCommand.HandleAsync(new(task), cancellationToken);
             return Result.Ok();
         }

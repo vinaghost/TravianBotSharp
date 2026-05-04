@@ -28,6 +28,16 @@ namespace MainCore.UI.Models.Validators
             RuleFor(x => x.FarmInterval.Min)
                 .GreaterThanOrEqualTo(0)
                 .WithMessage("Minimum farm interval ({PropertyValue}) should be positive number");
+
+            RuleFor(x => x.WorkStartMinute.Minute)
+                .InclusiveBetween(0, 59)
+                .WithMessage("Start minute must be between 0 and 59");
+            RuleFor(x => x.WorkEndMinute.Minute)
+                .InclusiveBetween(0, 59)
+                .WithMessage("End minute must be between 0 and 59");
+            RuleFor(x => x.RandomMinute.Minute)
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Random offset must be non‑negative");
         }
     }
 }

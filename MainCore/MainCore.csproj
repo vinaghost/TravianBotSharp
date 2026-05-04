@@ -8,7 +8,7 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <SelfContained>true</SelfContained>
 
-    <AssemblyVersion>1975.4.30</AssemblyVersion>
+    <AssemblyVersion>2603.01.4.0</AssemblyVersion>
 
     <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
   </PropertyGroup>
@@ -23,6 +23,12 @@
     <!--<Compile Remove="$(GeneratedFolder)/**/*.cs" />
     <None Include="$(GeneratedFolder)/**/*.cs" />-->
 
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="Infrasturecture\ExtensionFiles\tampermonkey_stable.crx" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Infrasturecture\ExtensionFiles\tampermonkey_stable.crx" />
   </ItemGroup>
 
   <ItemGroup>

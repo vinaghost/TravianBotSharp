@@ -1,29 +1,28 @@
-﻿namespace MainCore.Behaviors
+﻿using MainCore.Infrastructure;
+
+namespace MainCore.Behaviors
 {
     public sealed class CommandLoggingBehavior<TRequest, TResponse>
         : Behavior<TRequest, TResponse>
         where TRequest : ICommand
     {
         private readonly ILogger _logger;
+        private readonly CommandLoggingConfig _config;
 
-        public CommandLoggingBehavior(ILogger logger)
+        public CommandLoggingBehavior(ILogger logger, CommandLoggingConfig config)
         {
             _logger = logger;
+            _config = config;
         }
-
-        private static readonly string[] ExcludedCommandNames = new[]
-        {
-            "Update",
-            "Delay",
-            "NextExecute"
-        };
 
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
-            var name = request.GetType().FullName;
-            if (!string.IsNullOrEmpty(name) && !ExcludedCommandNames.Any(name.Contains))
+            var commandFullName = request.GetType().FullName;
+            if (!string.IsNullOrEmpty(commandFullName) && _config.ShouldLog(commandFullName))
             {
-                name = name
+                var logLevel = _config.GetLogLevel(commandFullName);
+                
+                var simpleName = commandFullName
                     .Replace("MainCore.", "")
                     .Replace("+Command", "");
 
@@ -38,11 +37,11 @@
 
                 if (dict.Count == 0)
                 {
-                    _logger.Information("Execute {Name}", name);
+                    _logger.Write(logLevel, "Execute {Name}", simpleName);
                 }
                 else
                 {
-                    _logger.Information("Execute {Name} {@Dict}", name, dict);
+                    _logger.Write(logLevel, "Execute {Name} {@Dict}", simpleName, dict);
                 }
             }
 

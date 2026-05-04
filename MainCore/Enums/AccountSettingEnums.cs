@@ -11,11 +11,14 @@
         FarmIntervalMin,
         FarmIntervalMax,
         Tribe,
-        WorkTimeMin,
-        WorkTimeMax,
         SleepTimeMin,
         SleepTimeMax,
         HeadlessChrome,
         EnableAutoStartAdventure,
+        WorkStartHour,
+        WorkEndHour,
+        WorkStartMinute,
+        WorkEndMinute,
+        SleepRandomMinute,
     }
 }

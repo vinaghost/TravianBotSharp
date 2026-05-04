@@ -251,8 +251,18 @@ namespace MainCore.Services
 
             result = await Wait(driver =>
             {
-                var logo = driver.FindElements(By.Id("logo"));
-                return logo.Count > 0 && logo[0].Displayed && logo[0].Enabled;
+                var logos = driver.FindElements(By.Id("logo"));
+                if (logos.Count == 0) return false;
+                try
+                {
+                    var logo = logos[0];
+                    return logo.Displayed && logo.Enabled;
+                }
+                catch (OpenQA.Selenium.StaleElementReferenceException)
+                {
+                    // element went stale between find and property access; try again
+                    return false;
+                }
             }, cancellationToken);
 
             if (result.IsFailed) return result.WithError("Failed to wait for logo to be displayed");

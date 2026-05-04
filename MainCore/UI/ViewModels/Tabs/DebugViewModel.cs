@@ -144,7 +144,9 @@ namespace MainCore.UI.ViewModels.Tabs
         private string ReloadLog()
         {
             using var sw = new StringWriter(new StringBuilder());
-            foreach (var log in _logEvents)
+            // iterate over a snapshot to avoid concurrent modification when events
+            // are added from another thread via LogEmitted command
+            foreach (var log in _logEvents.ToList())
             {
                 _template.Format(log, sw);
             }

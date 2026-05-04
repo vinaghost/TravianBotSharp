@@ -43,10 +43,13 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.Tribe, 0 },
             {AccountSettingEnums.SleepTimeMin, 480 },
             {AccountSettingEnums.SleepTimeMax, 600 },
-            {AccountSettingEnums.WorkTimeMin, 600 },
-            {AccountSettingEnums.WorkTimeMax, 720 },
             {AccountSettingEnums.HeadlessChrome, 0 },
             {AccountSettingEnums.EnableAutoStartAdventure, 0 },
+            {AccountSettingEnums.WorkStartHour, 6 },
+            {AccountSettingEnums.WorkStartMinute, 0 },
+            {AccountSettingEnums.WorkEndHour, 22 },
+            {AccountSettingEnums.WorkEndMinute, 0 },
+            {AccountSettingEnums.SleepRandomMinute, 60 },
         }.ToImmutableDictionary();
 
         private List<AccountSettingEnums> GetMissingAccountSettings()

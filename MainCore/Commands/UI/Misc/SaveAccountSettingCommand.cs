@@ -17,11 +17,18 @@
 
             foreach (var setting in settings)
             {
-                context.AccountsSetting
-                    .Where(x => x.AccountId == accountId.Value)
-                    .Where(x => x.Setting == setting.Key)
-                    .ExecuteUpdate(x => x.SetProperty(x => x.Value, setting.Value));
+                var entity = context.AccountsSetting
+                    .FirstOrDefault(x => x.AccountId == accountId.Value && x.Setting == setting.Key);
+                if (entity == null)
+                {
+                    context.AccountsSetting.Add(new() { AccountId = accountId.Value, Setting = setting.Key, Value = setting.Value });
+                }
+                else
+                {
+                    entity.Value = setting.Value;
+                }
             }
+            await context.SaveChangesAsync();
 
             if (settings.ContainsKey(AccountSettingEnums.EnableAutoLoadVillageBuilding))
             {
