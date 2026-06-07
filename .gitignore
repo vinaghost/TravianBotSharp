@@ -379,3 +379,6 @@ Web/Server/
 Web/Shared/
 /TBS.db-shm
 /TBS.db-wal
+
+.understand-anything/intermediate/
+.understand-anything/diff-overlay.json

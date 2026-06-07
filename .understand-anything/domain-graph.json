@@ -1,0 +1,153 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "TravianBotSharp",
+    "description": "A Windows Travian automation bot with multi-account support, automated building, farming, quests, NPC, adventures, and troop management.",
+    "sourceKnowledgeGraph": "knowledge-graph.json",
+    "derivedAt": "2026-06-07T04:21:14.9376305Z"
+  },
+  "nodes": [
+    {
+      "id": "domain:travian-automation",
+      "type": "domain",
+      "name": "Travian Automation",
+      "summary": "End-to-end bot workflow that boots the desktop shell, initializes browser and persistence services, and runs Travian automation for multiple accounts and villages.",
+      "tags": ["domain", "automation", "travian"]
+    },
+    {
+      "id": "flow:startup-initialization",
+      "type": "flow",
+      "name": "Startup and Initialization",
+      "summary": "Launch the WPF app, build the host, wire dialogs, and initialize the shell and services.",
+      "tags": ["flow", "startup"],
+      "nodeIds": ["file:WPFUI/App.xaml.cs", "file:MainCore/AppMixins.cs", "file:WPFUI/Views/MainWindow.xaml.cs"]
+    },
+    {
+      "id": "flow:browser-state-prep",
+      "type": "flow",
+      "name": "Browser and State Preparation",
+      "summary": "Install browser prerequisites, hydrate the local database, and load the main layout before automation begins.",
+      "tags": ["flow", "state", "browser"],
+      "nodeIds": ["file:MainCore/UI/ViewModels/MainViewModel.cs", "file:MainCore/Services/ChromeManager.cs", "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs"]
+    },
+    {
+      "id": "flow:account-village-sync",
+      "type": "flow",
+      "name": "Account and Village Sync",
+      "summary": "Refresh account information and parse game pages to keep account, village, building, and resource state current.",
+      "tags": ["flow", "sync", "parsing"],
+      "nodeIds": ["file:MainCore/Commands/Update/UpdateAccountInfoCommand.cs", "file:MainCore/Parsers/BuildingTabParser.cs", "file:MainCore/Entities/Account.cs", "file:MainCore/Entities/Village.cs"]
+    },
+    {
+      "id": "flow:task-queue-execution",
+      "type": "flow",
+      "name": "Task Queue and Execution",
+      "summary": "Order, schedule, and execute account and village tasks using the queue manager and task hierarchy.",
+      "tags": ["flow", "tasks", "queue"],
+      "nodeIds": ["file:MainCore/Services/TaskManager.cs", "file:MainCore/Services/TimerManager.cs", "file:MainCore/Tasks/Base/BaseTask.cs", "file:MainCore/Tasks/Base/AccountTask.cs", "file:MainCore/Tasks/Base/VillageTask.cs"]
+    },
+    {
+      "id": "flow:monitoring-and-recovery",
+      "type": "flow",
+      "name": "Monitoring and Recovery",
+      "summary": "Publish task state changes, record errors, and keep the UI responsive while work is running.",
+      "tags": ["flow", "monitoring", "logging"],
+      "nodeIds": ["file:MainCore/Services/RxQueue.cs", "file:MainCore/Behaviors/ErrorLoggingBehavior.cs", "file:MainCore/Behaviors/TaskNameLoggingBehavior.cs", "file:MainCore/Behaviors/AccountTaskBehavior.cs", "file:MainCore/Behaviors/VillageTaskBehavior.cs"]
+    },
+    {
+      "id": "flow:shutdown-cleanup",
+      "type": "flow",
+      "name": "Shutdown and Cleanup",
+      "summary": "Close browser resources and clean up runtime artifacts when the shell exits.",
+      "tags": ["flow", "lifecycle", "cleanup"],
+      "nodeIds": ["file:WPFUI/Views/MainWindow.xaml.cs", "file:MainCore/UI/ViewModels/MainViewModel.cs", "file:MainCore/Services/ChromeBrowser.cs"]
+    },
+    {
+      "id": "step:boot-host",
+      "type": "step",
+      "name": "Boot the Host",
+      "summary": "Create the WPF application host, configure the locator, and attach the shell window.",
+      "tags": ["step", "startup"],
+      "nodeIds": ["file:WPFUI/App.xaml.cs", "file:MainCore/AppMixins.cs"]
+    },
+    {
+      "id": "step:prepare-ui-and-browser",
+      "type": "step",
+      "name": "Prepare UI and Browser",
+      "summary": "Load the main view model, install browser prerequisites, and hydrate the database before showing work content.",
+      "tags": ["step", "browser", "database"],
+      "nodeIds": ["file:MainCore/UI/ViewModels/MainViewModel.cs", "file:MainCore/Services/ChromeManager.cs", "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs"]
+    },
+    {
+      "id": "step:sync-account-state",
+      "type": "step",
+      "name": "Sync Account State",
+      "summary": "Refresh account and village data from the live Travian session and persist the results.",
+      "tags": ["step", "sync"],
+      "nodeIds": ["file:MainCore/Commands/Update/UpdateAccountInfoCommand.cs", "file:MainCore/Parsers/BuildingTabParser.cs", "file:MainCore/Entities/Account.cs", "file:MainCore/Entities/Village.cs"]
+    },
+    {
+      "id": "step:hydrate-persistence",
+      "type": "step",
+      "name": "Hydrate Persistence",
+      "summary": "Load accounts, villages, settings, jobs, and queue state from the local database.",
+      "tags": ["step", "persistence"],
+      "nodeIds": ["file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "file:MainCore/Entities/Job.cs", "file:MainCore/Entities/QueueBuilding.cs", "file:MainCore/Entities/Storage.cs"]
+    },
+    {
+      "id": "step:queue-tasks",
+      "type": "step",
+      "name": "Queue Tasks",
+      "summary": "Insert, reorder, and track account and village tasks according to timing and priority rules.",
+      "tags": ["step", "queue"],
+      "nodeIds": ["file:MainCore/Services/TaskManager.cs", "file:MainCore/Services/TimerManager.cs", "file:MainCore/Tasks/Base/BaseTask.cs"]
+    },
+    {
+      "id": "step:execute-automation",
+      "type": "step",
+      "name": "Execute Automation",
+      "summary": "Run build, farm, quest, troop, and resource tasks through the task hierarchy and browser layer.",
+      "tags": ["step", "automation"],
+      "nodeIds": ["file:MainCore/Tasks/Base/AccountTask.cs", "file:MainCore/Tasks/Base/VillageTask.cs", "file:MainCore/Services/ChromeBrowser.cs"]
+    },
+    {
+      "id": "step:observe-and-recover",
+      "type": "step",
+      "name": "Observe and Recover",
+      "summary": "Publish notifications, annotate logs, and recover from task errors without breaking the overall session.",
+      "tags": ["step", "monitoring", "recovery"],
+      "nodeIds": ["file:MainCore/Services/RxQueue.cs", "file:MainCore/Behaviors/ErrorLoggingBehavior.cs", "file:MainCore/Behaviors/TaskNameLoggingBehavior.cs"]
+    },
+    {
+      "id": "step:shutdown-cleanup",
+      "type": "step",
+      "name": "Shutdown Cleanup",
+      "summary": "Shut down Chrome, clear transient plugins, and dispose runtime helpers on exit.",
+      "tags": ["step", "cleanup"],
+      "nodeIds": ["file:MainCore/UI/ViewModels/MainViewModel.cs", "file:WPFUI/Views/MainWindow.xaml.cs", "file:MainCore/Services/ChromeBrowser.cs"]
+    }
+  ],
+  "edges": [
+    { "source": "domain:travian-automation", "target": "flow:startup-initialization", "type": "contains", "weight": 1 },
+    { "source": "domain:travian-automation", "target": "flow:browser-state-prep", "type": "contains", "weight": 1 },
+    { "source": "domain:travian-automation", "target": "flow:account-village-sync", "type": "contains", "weight": 1 },
+    { "source": "domain:travian-automation", "target": "flow:task-queue-execution", "type": "contains", "weight": 1 },
+    { "source": "domain:travian-automation", "target": "flow:monitoring-and-recovery", "type": "contains", "weight": 1 },
+    { "source": "domain:travian-automation", "target": "flow:shutdown-cleanup", "type": "contains", "weight": 1 },
+    { "source": "flow:startup-initialization", "target": "step:boot-host", "type": "contains", "weight": 1 },
+    { "source": "flow:browser-state-prep", "target": "step:prepare-ui-and-browser", "type": "contains", "weight": 1 },
+    { "source": "flow:browser-state-prep", "target": "step:hydrate-persistence", "type": "contains", "weight": 1 },
+    { "source": "flow:account-village-sync", "target": "step:sync-account-state", "type": "contains", "weight": 1 },
+    { "source": "flow:task-queue-execution", "target": "step:queue-tasks", "type": "contains", "weight": 1 },
+    { "source": "flow:task-queue-execution", "target": "step:execute-automation", "type": "contains", "weight": 1 },
+    { "source": "flow:monitoring-and-recovery", "target": "step:observe-and-recover", "type": "contains", "weight": 1 },
+    { "source": "flow:shutdown-cleanup", "target": "step:shutdown-cleanup", "type": "contains", "weight": 1 },
+    { "source": "step:boot-host", "target": "step:prepare-ui-and-browser", "type": "next", "weight": 0.5 },
+    { "source": "step:prepare-ui-and-browser", "target": "step:sync-account-state", "type": "next", "weight": 0.5 },
+    { "source": "step:sync-account-state", "target": "step:hydrate-persistence", "type": "next", "weight": 0.5 },
+    { "source": "step:hydrate-persistence", "target": "step:queue-tasks", "type": "next", "weight": 0.5 },
+    { "source": "step:queue-tasks", "target": "step:execute-automation", "type": "next", "weight": 0.5 },
+    { "source": "step:execute-automation", "target": "step:observe-and-recover", "type": "next", "weight": 0.5 },
+    { "source": "step:observe-and-recover", "target": "step:shutdown-cleanup", "type": "next", "weight": 0.5 }
+  ]
+}

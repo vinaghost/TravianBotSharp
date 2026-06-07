@@ -20,3 +20,7 @@
 ## Tech specification
 
 Currently, TBS only runs on Windows.
+
+## Onboarding
+
+For a guided walkthrough of the project structure and learning path, see [docs/ONBOARDING.md](docs/ONBOARDING.md).
