@@ -1,0 +1,14 @@
+# .understandignore — patterns for files/dirs to exclude from analysis
+# Syntax: same as .gitignore (globs, # comments, ! negation, trailing / for dirs)
+#
+# Suggested exclusions for this repo:
+# bin/
+# obj/
+# .vs/
+# logs/
+# *.user
+# *.suo
+# *.db
+# *.pdb
+# *.cache
+# *.tmp

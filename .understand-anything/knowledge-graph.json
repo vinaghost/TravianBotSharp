@@ -1,0 +1,558 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "TravianBotSharp",
+    "languages": ["C#", "XAML", "Markdown", "XML"],
+    "frameworks": [".NET 8", "WPF", "ReactiveUI", "Entity Framework Core", "Selenium", "Serilog"],
+    "description": "A Windows Travian automation bot with multi-account support, automated building, farming, quests, NPC, adventures, and troop management.",
+    "analyzedAt": "2026-06-07T04:21:14.9376305Z",
+    "gitCommitHash": "279009c459cb414ca97e7938d3ed10adb03f1ec9"
+  },
+  "nodes": [
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README",
+      "filePath": "README.md",
+      "summary": "Project overview, feature list, and Windows-only runtime note for TravianBotSharp.",
+      "tags": ["overview", "documentation"]
+    },
+    {
+      "id": "config:TravBotSharp.sln",
+      "type": "config",
+      "name": "TravBotSharp solution",
+      "filePath": "TravBotSharp.sln",
+      "summary": "Solution root that wires MainCore, WPFUI, and MainCore.Test together.",
+      "tags": ["solution", "workspace"]
+    },
+    {
+      "id": "config:MainCore/MainCore.csproj",
+      "type": "config",
+      "name": "MainCore project",
+      "filePath": "MainCore/MainCore.csproj",
+      "summary": "Core project manifest for the bot domain, services, behaviors, tasks, and persistence.",
+      "tags": ["project", "core"]
+    },
+    {
+      "id": "config:WPFUI/WPFUI.csproj",
+      "type": "config",
+      "name": "WPFUI project",
+      "filePath": "WPFUI/WPFUI.csproj",
+      "summary": "Desktop shell project manifest for the WPF host UI.",
+      "tags": ["project", "wpf"]
+    },
+    {
+      "id": "config:MainCore.Test/MainCore.Test.csproj",
+      "type": "config",
+      "name": "MainCore test project",
+      "filePath": "MainCore.Test/MainCore.Test.csproj",
+      "summary": "xUnit project manifest for parser, hosting, and architecture checks.",
+      "tags": ["project", "tests"]
+    },
+    {
+      "id": "file:WPFUI/App.xaml.cs",
+      "type": "file",
+      "name": "App.xaml.cs",
+      "filePath": "WPFUI/App.xaml.cs",
+      "summary": "WPF application bootstrap that builds the host, wires dialog handlers, and starts the shell.",
+      "tags": ["startup", "wpf", "host"]
+    },
+    {
+      "id": "file:WPFUI/Views/MainWindow.xaml.cs",
+      "type": "file",
+      "name": "MainWindow.xaml.cs",
+      "filePath": "WPFUI/Views/MainWindow.xaml.cs",
+      "summary": "Reactive WPF shell window that binds the main view model and manages load and unload flow.",
+      "tags": ["shell", "wpf", "ui"]
+    },
+    {
+      "id": "file:MainCore/AppMixins.cs",
+      "type": "file",
+      "name": "AppMixins.cs",
+      "filePath": "MainCore/AppMixins.cs",
+      "summary": "Composition root for host setup, logging, database registration, Splat integration, and behaviors.",
+      "tags": ["composition-root", "dependency-injection", "host"]
+    },
+    {
+      "id": "file:MainCore/UI/ViewModels/MainViewModel.cs",
+      "type": "file",
+      "name": "MainViewModel.cs",
+      "filePath": "MainCore/UI/ViewModels/MainViewModel.cs",
+      "summary": "Top-level UI view model that installs browser prerequisites, loads the database, and hydrates the layout.",
+      "tags": ["ui", "reactive", "orchestration"]
+    },
+    {
+      "id": "file:MainCore/Services/TaskManager.cs",
+      "type": "file",
+      "name": "TaskManager.cs",
+      "filePath": "MainCore/Services/TaskManager.cs",
+      "summary": "Queue manager that orders account and village tasks, tracks state, and emits task notifications.",
+      "tags": ["queue", "scheduler", "automation"]
+    },
+    {
+      "id": "file:MainCore/Services/RxQueue.cs",
+      "type": "file",
+      "name": "RxQueue.cs",
+      "filePath": "MainCore/Services/RxQueue.cs",
+      "summary": "Reactive event bus used to publish status and task change notifications.",
+      "tags": ["reactive", "events"]
+    },
+    {
+      "id": "file:MainCore/Services/DataService.cs",
+      "type": "file",
+      "name": "DataService.cs",
+      "filePath": "MainCore/Services/DataService.cs",
+      "summary": "Scoped data carrier for the active account context and logging metadata.",
+      "tags": ["state", "account", "scoped"]
+    },
+    {
+      "id": "file:MainCore/Services/TimerManager.cs",
+      "type": "file",
+      "name": "TimerManager.cs",
+      "filePath": "MainCore/Services/TimerManager.cs",
+      "summary": "Timing service that coordinates scheduled execution for automation tasks.",
+      "tags": ["scheduling", "automation"]
+    },
+    {
+      "id": "file:MainCore/Services/ChromeManager.cs",
+      "type": "file",
+      "name": "ChromeManager.cs",
+      "filePath": "MainCore/Services/ChromeManager.cs",
+      "summary": "Browser session manager for Chrome driver provisioning and browser lifecycle control.",
+      "tags": ["browser", "webdriver"]
+    },
+    {
+      "id": "file:MainCore/Services/ChromeBrowser.cs",
+      "type": "file",
+      "name": "ChromeBrowser.cs",
+      "filePath": "MainCore/Services/ChromeBrowser.cs",
+      "summary": "Selenium browser wrapper used by the bot to interact with Travian pages.",
+      "tags": ["browser", "webdriver"]
+    },
+    {
+      "id": "file:MainCore/Services/CustomServiceScopeFactory.cs",
+      "type": "file",
+      "name": "CustomServiceScopeFactory.cs",
+      "filePath": "MainCore/Services/CustomServiceScopeFactory.cs",
+      "summary": "Scoped service factory used to execute handler pipelines inside controlled dependency scopes.",
+      "tags": ["di", "scope"]
+    },
+    {
+      "id": "file:MainCore/Commands/Update/UpdateAccountInfoCommand.cs",
+      "type": "file",
+      "name": "UpdateAccountInfoCommand.cs",
+      "filePath": "MainCore/Commands/Update/UpdateAccountInfoCommand.cs",
+      "summary": "Command that refreshes account information from the live Travian session.",
+      "tags": ["command", "update"]
+    },
+    {
+      "id": "file:MainCore/Parsers/BuildingTabParser.cs",
+      "type": "file",
+      "name": "BuildingTabParser.cs",
+      "filePath": "MainCore/Parsers/BuildingTabParser.cs",
+      "summary": "HTML parser for the village building tab and related build state extraction.",
+      "tags": ["parser", "html", "travian"]
+    },
+    {
+      "id": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs",
+      "type": "file",
+      "name": "AppDbContext.cs",
+      "filePath": "MainCore/Infrasturecture/Persistence/AppDbContext.cs",
+      "summary": "Entity Framework Core context that stores account, village, building, job, and setting data.",
+      "tags": ["persistence", "ef-core", "sqlite"]
+    },
+    {
+      "id": "file:MainCore/Tasks/Base/BaseTask.cs",
+      "type": "file",
+      "name": "BaseTask.cs",
+      "filePath": "MainCore/Tasks/Base/BaseTask.cs",
+      "summary": "Abstract task base with scheduling state, identity, and start gating.",
+      "tags": ["task", "automation"]
+    },
+    {
+      "id": "file:MainCore/Tasks/Base/AccountTask.cs",
+      "type": "file",
+      "name": "AccountTask.cs",
+      "filePath": "MainCore/Tasks/Base/AccountTask.cs",
+      "summary": "Account-scoped task base that binds a task instance to one account.",
+      "tags": ["task", "account"]
+    },
+    {
+      "id": "file:MainCore/Tasks/Base/VillageTask.cs",
+      "type": "file",
+      "name": "VillageTask.cs",
+      "filePath": "MainCore/Tasks/Base/VillageTask.cs",
+      "summary": "Village-scoped task base that resolves village naming through persistence.",
+      "tags": ["task", "village"]
+    },
+    {
+      "id": "file:MainCore/Behaviors/ErrorLoggingBehavior.cs",
+      "type": "file",
+      "name": "ErrorLoggingBehavior.cs",
+      "filePath": "MainCore/Behaviors/ErrorLoggingBehavior.cs",
+      "summary": "Handler behavior that records failures and exception details.",
+      "tags": ["logging", "behavior"]
+    },
+    {
+      "id": "file:MainCore/Behaviors/TaskNameLoggingBehavior.cs",
+      "type": "file",
+      "name": "TaskNameLoggingBehavior.cs",
+      "filePath": "MainCore/Behaviors/TaskNameLoggingBehavior.cs",
+      "summary": "Behavior that annotates logs with task names for execution tracing.",
+      "tags": ["logging", "behavior"]
+    },
+    {
+      "id": "file:MainCore/Behaviors/AccountTaskBehavior.cs",
+      "type": "file",
+      "name": "AccountTaskBehavior.cs",
+      "filePath": "MainCore/Behaviors/AccountTaskBehavior.cs",
+      "summary": "Behavior that injects account context into account task execution.",
+      "tags": ["behavior", "account"]
+    },
+    {
+      "id": "file:MainCore/Behaviors/VillageTaskBehavior.cs",
+      "type": "file",
+      "name": "VillageTaskBehavior.cs",
+      "filePath": "MainCore/Behaviors/VillageTaskBehavior.cs",
+      "summary": "Behavior that injects village context and naming into village task execution.",
+      "tags": ["behavior", "village"]
+    },
+    {
+      "id": "file:MainCore/Entities/Account.cs",
+      "type": "file",
+      "name": "Account.cs",
+      "filePath": "MainCore/Entities/Account.cs",
+      "summary": "Account aggregate root persisted by the bot.",
+      "tags": ["domain", "entity"]
+    },
+    {
+      "id": "file:MainCore/Entities/AccountInfo.cs",
+      "type": "file",
+      "name": "AccountInfo.cs",
+      "filePath": "MainCore/Entities/AccountInfo.cs",
+      "summary": "Per-account profile and metadata stored with the account aggregate.",
+      "tags": ["domain", "entity"]
+    },
+    {
+      "id": "file:MainCore/Entities/Access.cs",
+      "type": "file",
+      "name": "Access.cs",
+      "filePath": "MainCore/Entities/Access.cs",
+      "summary": "Access credentials and login-related persistence for an account.",
+      "tags": ["domain", "entity"]
+    },
+    {
+      "id": "file:MainCore/Entities/Village.cs",
+      "type": "file",
+      "name": "Village.cs",
+      "filePath": "MainCore/Entities/Village.cs",
+      "summary": "Village aggregate root persisted for each Travian settlement.",
+      "tags": ["domain", "entity"]
+    },
+    {
+      "id": "file:MainCore/Entities/Building.cs",
+      "type": "file",
+      "name": "Building.cs",
+      "filePath": "MainCore/Entities/Building.cs",
+      "summary": "Persisted building state for village construction planning.",
+      "tags": ["domain", "entity"]
+    },
+    {
+      "id": "file:MainCore/Entities/Job.cs",
+      "type": "file",
+      "name": "Job.cs",
+      "filePath": "MainCore/Entities/Job.cs",
+      "summary": "Serialized build or automation job payload for a village.",
+      "tags": ["domain", "entity"]
+    },
+    {
+      "id": "file:MainCore/Entities/QueueBuilding.cs",
+      "type": "file",
+      "name": "QueueBuilding.cs",
+      "filePath": "MainCore/Entities/QueueBuilding.cs",
+      "summary": "Queued building entry used for construction ordering.",
+      "tags": ["domain", "entity"]
+    },
+    {
+      "id": "file:MainCore/Entities/Storage.cs",
+      "type": "file",
+      "name": "Storage.cs",
+      "filePath": "MainCore/Entities/Storage.cs",
+      "summary": "Resource storage snapshot for a village.",
+      "tags": ["domain", "entity"]
+    },
+    {
+      "id": "file:MainCore/Entities/AccountSetting.cs",
+      "type": "file",
+      "name": "AccountSetting.cs",
+      "filePath": "MainCore/Entities/AccountSetting.cs",
+      "summary": "Account-level configuration values persisted in the database.",
+      "tags": ["domain", "entity"]
+    },
+    {
+      "id": "file:MainCore/Entities/VillageSetting.cs",
+      "type": "file",
+      "name": "VillageSetting.cs",
+      "filePath": "MainCore/Entities/VillageSetting.cs",
+      "summary": "Village-level configuration values persisted in the database.",
+      "tags": ["domain", "entity"]
+    },
+    {
+      "id": "file:MainCore/Entities/Farm.cs",
+      "type": "file",
+      "name": "Farm.cs",
+      "filePath": "MainCore/Entities/Farm.cs",
+      "summary": "Farm list entry used for automated raids and farming loops.",
+      "tags": ["domain", "entity"]
+    },
+    {
+      "id": "file:MainCore/Entities/HeroItem.cs",
+      "type": "file",
+      "name": "HeroItem.cs",
+      "filePath": "MainCore/Entities/HeroItem.cs",
+      "summary": "Hero inventory item stored for resource and item automation.",
+      "tags": ["domain", "entity"]
+    },
+    {
+      "id": "file:MainCore.Test/ArchitectureTest.cs",
+      "type": "file",
+      "name": "ArchitectureTest.cs",
+      "filePath": "MainCore.Test/ArchitectureTest.cs",
+      "summary": "ArchUnitNet rules that enforce naming and dependency boundaries in MainCore.",
+      "tags": ["tests", "architecture"]
+    },
+    {
+      "id": "file:MainCore.Test/HostingTest.cs",
+      "type": "file",
+      "name": "HostingTest.cs",
+      "filePath": "MainCore.Test/HostingTest.cs",
+      "summary": "Host smoke test that validates the dependency injection graph builds successfully.",
+      "tags": ["tests", "hosting"]
+    },
+    {
+      "id": "file:MainCore.Test/Commands/Update/UpdateAccountInfoCommandTest.cs",
+      "type": "file",
+      "name": "UpdateAccountInfoCommandTest.cs",
+      "filePath": "MainCore.Test/Commands/Update/UpdateAccountInfoCommandTest.cs",
+      "summary": "Command test coverage for account information refresh behavior.",
+      "tags": ["tests", "command"]
+    },
+    {
+      "id": "file:MainCore.Test/Parsers/BuildingLayoutParser.Test.cs",
+      "type": "file",
+      "name": "BuildingLayoutParser.Test.cs",
+      "filePath": "MainCore.Test/Parsers/BuildingLayoutParser.Test.cs",
+      "summary": "Parser coverage for building layout extraction and related Travian markup.",
+      "tags": ["tests", "parser"]
+    }
+  ],
+  "edges": [
+    { "source": "document:README.md", "target": "file:WPFUI/App.xaml.cs", "type": "documents", "weight": 0.5 },
+    { "source": "document:README.md", "target": "file:MainCore/UI/ViewModels/MainViewModel.cs", "type": "documents", "weight": 0.5 },
+    { "source": "document:README.md", "target": "file:MainCore/Services/TaskManager.cs", "type": "documents", "weight": 0.5 },
+    { "source": "config:TravBotSharp.sln", "target": "config:MainCore/MainCore.csproj", "type": "contains", "weight": 1.0 },
+    { "source": "config:TravBotSharp.sln", "target": "config:WPFUI/WPFUI.csproj", "type": "contains", "weight": 1.0 },
+    { "source": "config:TravBotSharp.sln", "target": "config:MainCore.Test/MainCore.Test.csproj", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore/MainCore.csproj", "target": "file:MainCore/AppMixins.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore/MainCore.csproj", "target": "file:MainCore/UI/ViewModels/MainViewModel.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore/MainCore.csproj", "target": "file:MainCore/Services/TaskManager.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore/MainCore.csproj", "target": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore/MainCore.csproj", "target": "file:MainCore/Tasks/Base/BaseTask.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore/MainCore.csproj", "target": "file:MainCore/Commands/Update/UpdateAccountInfoCommand.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore/MainCore.csproj", "target": "file:MainCore/Parsers/BuildingTabParser.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore/MainCore.csproj", "target": "file:MainCore/Behaviors/ErrorLoggingBehavior.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore/MainCore.csproj", "target": "file:MainCore/Behaviors/TaskNameLoggingBehavior.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore/MainCore.csproj", "target": "file:MainCore/Behaviors/AccountTaskBehavior.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore/MainCore.csproj", "target": "file:MainCore/Behaviors/VillageTaskBehavior.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore/MainCore.csproj", "target": "file:MainCore/Entities/Account.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore/MainCore.csproj", "target": "file:MainCore/Entities/Village.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore/MainCore.csproj", "target": "file:MainCore/Entities/Job.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:WPFUI/WPFUI.csproj", "target": "file:WPFUI/App.xaml.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:WPFUI/WPFUI.csproj", "target": "file:WPFUI/Views/MainWindow.xaml.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore.Test/MainCore.Test.csproj", "target": "file:MainCore.Test/ArchitectureTest.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore.Test/MainCore.Test.csproj", "target": "file:MainCore.Test/HostingTest.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore.Test/MainCore.Test.csproj", "target": "file:MainCore.Test/Commands/Update/UpdateAccountInfoCommandTest.cs", "type": "contains", "weight": 1.0 },
+    { "source": "config:MainCore.Test/MainCore.Test.csproj", "target": "file:MainCore.Test/Parsers/BuildingLayoutParser.Test.cs", "type": "contains", "weight": 1.0 },
+    { "source": "file:WPFUI/App.xaml.cs", "target": "file:MainCore/AppMixins.cs", "type": "imports", "weight": 0.7 },
+    { "source": "file:WPFUI/App.xaml.cs", "target": "file:WPFUI/Views/MainWindow.xaml.cs", "type": "imports", "weight": 0.7 },
+    { "source": "file:WPFUI/Views/MainWindow.xaml.cs", "target": "file:MainCore/UI/ViewModels/MainViewModel.cs", "type": "imports", "weight": 0.7 },
+    { "source": "file:MainCore/AppMixins.cs", "target": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "type": "configures", "weight": 0.6 },
+    { "source": "file:MainCore/AppMixins.cs", "target": "file:MainCore/Services/TaskManager.cs", "type": "configures", "weight": 0.6 },
+    { "source": "file:MainCore/AppMixins.cs", "target": "file:MainCore/Services/RxQueue.cs", "type": "configures", "weight": 0.6 },
+    { "source": "file:MainCore/AppMixins.cs", "target": "file:MainCore/Services/DataService.cs", "type": "configures", "weight": 0.6 },
+    { "source": "file:MainCore/AppMixins.cs", "target": "file:MainCore/Services/ChromeManager.cs", "type": "configures", "weight": 0.6 },
+    { "source": "file:MainCore/AppMixins.cs", "target": "file:MainCore/Services/ChromeBrowser.cs", "type": "configures", "weight": 0.6 },
+    { "source": "file:MainCore/AppMixins.cs", "target": "file:MainCore/Services/CustomServiceScopeFactory.cs", "type": "configures", "weight": 0.6 },
+    { "source": "file:MainCore/AppMixins.cs", "target": "file:MainCore/Behaviors/ErrorLoggingBehavior.cs", "type": "configures", "weight": 0.6 },
+    { "source": "file:MainCore/AppMixins.cs", "target": "file:MainCore/Behaviors/TaskNameLoggingBehavior.cs", "type": "configures", "weight": 0.6 },
+    { "source": "file:MainCore/AppMixins.cs", "target": "file:MainCore/Behaviors/AccountTaskBehavior.cs", "type": "configures", "weight": 0.6 },
+    { "source": "file:MainCore/AppMixins.cs", "target": "file:MainCore/Behaviors/VillageTaskBehavior.cs", "type": "configures", "weight": 0.6 },
+    { "source": "file:MainCore/UI/ViewModels/MainViewModel.cs", "target": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "type": "depends_on", "weight": 0.6 },
+    { "source": "file:MainCore/UI/ViewModels/MainViewModel.cs", "target": "file:MainCore/Services/ChromeManager.cs", "type": "depends_on", "weight": 0.6 },
+    { "source": "file:MainCore/UI/ViewModels/MainViewModel.cs", "target": "file:MainCore/Services/DataService.cs", "type": "depends_on", "weight": 0.6 },
+    { "source": "file:MainCore/Services/TaskManager.cs", "target": "file:MainCore/Services/RxQueue.cs", "type": "depends_on", "weight": 0.6 },
+    { "source": "file:MainCore/Services/TaskManager.cs", "target": "file:MainCore/Tasks/Base/BaseTask.cs", "type": "depends_on", "weight": 0.6 },
+    { "source": "file:MainCore/Services/TaskManager.cs", "target": "file:MainCore/Tasks/Base/AccountTask.cs", "type": "depends_on", "weight": 0.6 },
+    { "source": "file:MainCore/Services/TaskManager.cs", "target": "file:MainCore/Tasks/Base/VillageTask.cs", "type": "depends_on", "weight": 0.6 },
+    { "source": "file:MainCore/Tasks/Base/BaseTask.cs", "target": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "type": "depends_on", "weight": 0.6 },
+    { "source": "file:MainCore/Tasks/Base/AccountTask.cs", "target": "file:MainCore/Tasks/Base/BaseTask.cs", "type": "inherits", "weight": 0.9 },
+    { "source": "file:MainCore/Tasks/Base/VillageTask.cs", "target": "file:MainCore/Tasks/Base/AccountTask.cs", "type": "inherits", "weight": 0.9 },
+    { "source": "file:MainCore/Tasks/Base/VillageTask.cs", "target": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "type": "depends_on", "weight": 0.6 },
+    { "source": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "target": "file:MainCore/Entities/Account.cs", "type": "defines_schema", "weight": 0.8 },
+    { "source": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "target": "file:MainCore/Entities/AccountInfo.cs", "type": "defines_schema", "weight": 0.8 },
+    { "source": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "target": "file:MainCore/Entities/Access.cs", "type": "defines_schema", "weight": 0.8 },
+    { "source": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "target": "file:MainCore/Entities/Village.cs", "type": "defines_schema", "weight": 0.8 },
+    { "source": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "target": "file:MainCore/Entities/Building.cs", "type": "defines_schema", "weight": 0.8 },
+    { "source": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "target": "file:MainCore/Entities/Job.cs", "type": "defines_schema", "weight": 0.8 },
+    { "source": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "target": "file:MainCore/Entities/QueueBuilding.cs", "type": "defines_schema", "weight": 0.8 },
+    { "source": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "target": "file:MainCore/Entities/Storage.cs", "type": "defines_schema", "weight": 0.8 },
+    { "source": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "target": "file:MainCore/Entities/AccountSetting.cs", "type": "defines_schema", "weight": 0.8 },
+    { "source": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "target": "file:MainCore/Entities/VillageSetting.cs", "type": "defines_schema", "weight": 0.8 },
+    { "source": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "target": "file:MainCore/Entities/Farm.cs", "type": "defines_schema", "weight": 0.8 },
+    { "source": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "target": "file:MainCore/Entities/HeroItem.cs", "type": "defines_schema", "weight": 0.8 },
+    { "source": "file:MainCore/Parsers/BuildingTabParser.cs", "target": "file:MainCore.Test/Parsers/BuildingLayoutParser.Test.cs", "type": "tested_by", "weight": 0.5 },
+    { "source": "file:MainCore/Commands/Update/UpdateAccountInfoCommand.cs", "target": "file:MainCore.Test/Commands/Update/UpdateAccountInfoCommandTest.cs", "type": "tested_by", "weight": 0.5 },
+    { "source": "file:MainCore.Test/HostingTest.cs", "target": "file:MainCore/AppMixins.cs", "type": "depends_on", "weight": 0.6 },
+    { "source": "file:MainCore.Test/ArchitectureTest.cs", "target": "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs", "type": "depends_on", "weight": 0.6 },
+    { "source": "file:MainCore.Test/ArchitectureTest.cs", "target": "file:MainCore/Tasks/Base/BaseTask.cs", "type": "depends_on", "weight": 0.6 },
+    { "source": "file:MainCore.Test/ArchitectureTest.cs", "target": "file:MainCore/Tasks/Base/AccountTask.cs", "type": "depends_on", "weight": 0.6 },
+    { "source": "file:MainCore.Test/ArchitectureTest.cs", "target": "file:MainCore/Tasks/Base/VillageTask.cs", "type": "depends_on", "weight": 0.6 }
+  ],
+  "layers": [
+    {
+      "id": "layer:project-overview",
+      "name": "Project Overview",
+      "description": "Repository and build metadata that explains what the bot is and how the solution is assembled.",
+      "nodeIds": [
+        "document:README.md",
+        "config:TravBotSharp.sln",
+        "config:MainCore/MainCore.csproj",
+        "config:WPFUI/WPFUI.csproj",
+        "config:MainCore.Test/MainCore.Test.csproj"
+      ]
+    },
+    {
+      "id": "layer:desktop-shell",
+      "name": "Desktop Shell",
+      "description": "WPF entry points and the top-level view model that start and coordinate the application UI.",
+      "nodeIds": [
+        "file:WPFUI/App.xaml.cs",
+        "file:WPFUI/Views/MainWindow.xaml.cs",
+        "file:MainCore/UI/ViewModels/MainViewModel.cs"
+      ]
+    },
+    {
+      "id": "layer:runtime-core",
+      "name": "Runtime Core",
+      "description": "Host configuration, scheduling, automation services, browser control, parsers, and commands that drive gameplay actions.",
+      "nodeIds": [
+        "file:MainCore/AppMixins.cs",
+        "file:MainCore/Services/TaskManager.cs",
+        "file:MainCore/Services/RxQueue.cs",
+        "file:MainCore/Services/DataService.cs",
+        "file:MainCore/Services/TimerManager.cs",
+        "file:MainCore/Services/ChromeManager.cs",
+        "file:MainCore/Services/ChromeBrowser.cs",
+        "file:MainCore/Services/CustomServiceScopeFactory.cs",
+        "file:MainCore/Commands/Update/UpdateAccountInfoCommand.cs",
+        "file:MainCore/Parsers/BuildingTabParser.cs"
+      ]
+    },
+    {
+      "id": "layer:domain-model",
+      "name": "Domain Model",
+      "description": "Persistent aggregates, task base classes, and behaviors that represent bot state and automation rules.",
+      "nodeIds": [
+        "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs",
+        "file:MainCore/Tasks/Base/BaseTask.cs",
+        "file:MainCore/Tasks/Base/AccountTask.cs",
+        "file:MainCore/Tasks/Base/VillageTask.cs",
+        "file:MainCore/Behaviors/ErrorLoggingBehavior.cs",
+        "file:MainCore/Behaviors/TaskNameLoggingBehavior.cs",
+        "file:MainCore/Behaviors/AccountTaskBehavior.cs",
+        "file:MainCore/Behaviors/VillageTaskBehavior.cs",
+        "file:MainCore/Entities/Account.cs",
+        "file:MainCore/Entities/AccountInfo.cs",
+        "file:MainCore/Entities/Access.cs",
+        "file:MainCore/Entities/Village.cs",
+        "file:MainCore/Entities/Building.cs",
+        "file:MainCore/Entities/Job.cs",
+        "file:MainCore/Entities/QueueBuilding.cs",
+        "file:MainCore/Entities/Storage.cs",
+        "file:MainCore/Entities/AccountSetting.cs",
+        "file:MainCore/Entities/VillageSetting.cs",
+        "file:MainCore/Entities/Farm.cs",
+        "file:MainCore/Entities/HeroItem.cs"
+      ]
+    },
+    {
+      "id": "layer:quality-checks",
+      "name": "Quality Checks",
+      "description": "Tests that verify host startup, architecture rules, and parser and command behavior.",
+      "nodeIds": [
+        "file:MainCore.Test/ArchitectureTest.cs",
+        "file:MainCore.Test/HostingTest.cs",
+        "file:MainCore.Test/Commands/Update/UpdateAccountInfoCommandTest.cs",
+        "file:MainCore.Test/Parsers/BuildingLayoutParser.Test.cs"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "order": 1,
+      "title": "Start with the Product Story",
+      "description": "Read the README and solution files first to understand the bot's purpose, supported features, and project boundaries.",
+      "nodeIds": [
+        "document:README.md",
+        "config:TravBotSharp.sln",
+        "config:MainCore/MainCore.csproj",
+        "config:WPFUI/WPFUI.csproj"
+      ]
+    },
+    {
+      "order": 2,
+      "title": "Follow the Startup Path",
+      "description": "Trace how the WPF host creates the service graph, opens the main window, and wires dialog handling.",
+      "nodeIds": [
+        "file:WPFUI/App.xaml.cs",
+        "file:MainCore/AppMixins.cs",
+        "file:WPFUI/Views/MainWindow.xaml.cs"
+      ]
+    },
+    {
+      "order": 3,
+      "title": "Inspect Runtime Orchestration",
+      "description": "Study the main view model and task manager to see how browser setup, database hydration, and task scheduling work together.",
+      "nodeIds": [
+        "file:MainCore/UI/ViewModels/MainViewModel.cs",
+        "file:MainCore/Services/TaskManager.cs",
+        "file:MainCore/Services/RxQueue.cs",
+        "file:MainCore/Services/ChromeManager.cs",
+        "file:MainCore/Infrasturecture/Persistence/AppDbContext.cs"
+      ]
+    },
+    {
+      "order": 4,
+      "title": "Trace the Domain and Persistence Model",
+      "description": "Look at the task base classes, behaviors, and entity model to understand how account and village state is represented.",
+      "nodeIds": [
+        "file:MainCore/Tasks/Base/BaseTask.cs",
+        "file:MainCore/Tasks/Base/AccountTask.cs",
+        "file:MainCore/Tasks/Base/VillageTask.cs",
+        "file:MainCore/Entities/Account.cs",
+        "file:MainCore/Entities/Village.cs",
+        "file:MainCore/Entities/Job.cs"
+      ]
+    },
+    {
+      "order": 5,
+      "title": "Finish with Verification",
+      "description": "Use the tests to see which invariants the repository already protects, especially host build validation and architecture rules.",
+      "nodeIds": [
+        "file:MainCore.Test/ArchitectureTest.cs",
+        "file:MainCore.Test/HostingTest.cs",
+        "file:MainCore.Test/Parsers/BuildingLayoutParser.Test.cs"
+      ]
+    }
+  ]
+}
