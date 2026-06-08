@@ -21,7 +21,7 @@ namespace MainCore.Services
         private BiDi? _bidi;
 
         private BrowsingContext? _context;
-        private Intercept? _authIntercept;
+        private Interception? _authIntercept;
 
         public ChromeBrowser(string[] extensionsPath)
         {
@@ -43,7 +43,8 @@ namespace MainCore.Services
             options.AddArgument($"--user-agent={setting.UserAgent}");
             options.AddArgument("--ignore-certificate-errors");
             options.AddArguments("--no-default-browser-check", "--no-first-run", "--ash-no-nudges");
-            options.AddArguments("--mute-audio", "--disable-gpu", "--disable-search-engine-choice-screen");
+            options.AddArguments("--mute-audio", "--disable-search-engine-choice-screen");
+            //options.AddArguments("--disable-gpu");
 
             options.AddArgument("--enable-unsafe-extension-debugging");
             options.AddArgument("--remote-debugging-pipe");
@@ -60,7 +61,6 @@ namespace MainCore.Services
             if (setting.IsHeadless)
             {
                 options.AddArgument("--headless=new");
-                options.AddArgument("--disable-dev-shm-usage");
             }
             else
             {
