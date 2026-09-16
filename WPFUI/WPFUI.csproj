@@ -24,10 +24,10 @@
     <Content Include="favicon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CP.Extensions.Hosting.ReactiveUI.Wpf" Version="2.2.2" />
-    <PackageReference Include="MaterialDesignThemes" Version="5.3.0" />
-    <PackageReference Include="ReactiveUI.Drawing" Version="22.2.1" />
-    <PackageReference Include="ReactiveUI.WPF" Version="22.2.1" />    
+    <PackageReference Include="CP.Extensions.Hosting.ReactiveUI.Wpf" Version="5.0.0" />
+    <PackageReference Include="MaterialDesignThemes" Version="5.3.2" />
+    <PackageReference Include="ReactiveUI.Drawing" Version="24.2.0" />
+    <PackageReference Include="ReactiveUI.WPF" Version="24.2.0" />    
   </ItemGroup>
 
   <ItemGroup>
