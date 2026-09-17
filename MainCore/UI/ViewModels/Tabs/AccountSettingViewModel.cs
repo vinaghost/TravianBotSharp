@@ -8,6 +8,8 @@ using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using ReactiveUI.Primitives;
+
     [RegisterSingleton<AccountSettingViewModel>]
     public partial class AccountSettingViewModel : AccountTabViewModelBase
     {

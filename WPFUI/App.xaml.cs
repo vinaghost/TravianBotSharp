@@ -15,7 +15,7 @@ using Splat.Microsoft.Extensions.DependencyInjection;
 using Splat.ModeDetection;
 using System;
 using System.Diagnostics;
-using System.Reactive;
+
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;

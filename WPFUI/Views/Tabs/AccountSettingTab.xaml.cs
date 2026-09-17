@@ -1,6 +1,5 @@
 ﻿using MainCore.UI.ViewModels.Tabs;
 using ReactiveUI;
-using System.Reactive.Disposables.Fluent;
 
 namespace WPFUI.Views.Tabs
 {
