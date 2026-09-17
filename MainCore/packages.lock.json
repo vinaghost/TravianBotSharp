@@ -110,6 +110,16 @@
           "Microsoft.Extensions.Options": "10.0.12"
         }
       },
+      "Patchright": {
+        "type": "Direct",
+        "requested": "[1.62.1, )",
+        "resolved": "1.62.1",
+        "contentHash": "G0Kx7Ehtvwel+zIsKOJ5ck0gBHA1L0ywpxs6v8Uc3CoDosk8b0zQQKCT8/YyidNSJI8x1I6e3WWKMgIllZGwag==",
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
+          "System.ComponentModel.Annotations": "5.0.0"
+        }
+      },
       "Polly": {
         "type": "Direct",
         "requested": "[8.8.0, )",
@@ -256,6 +266,11 @@
         "type": "Transitive",
         "resolved": "9.3.1",
         "contentHash": "GWrE6BA0smWFLbN+XPU2l5rDF9Uzelfbb3w35jJ0CGIat+p1ChbtLcbkvYRMEculBHOAo12omwAAOm3VFWkoJQ=="
+      },
+      "Microsoft.Bcl.AsyncInterfaces": {
+        "type": "Transitive",
+        "resolved": "6.0.0",
+        "contentHash": "UcSjPsst+DfAdJGVDsu346FX0ci0ah+lw3WRtn18NUwEqRt70HaOQ7lI72vy3+1LxtqI3T5GWwV39rQSrCzAeg=="
       },
       "Microsoft.Data.Sqlite.Core": {
         "type": "Transitive",
@@ -690,6 +705,11 @@
         "dependencies": {
           "SQLitePCLRaw.core": "2.1.12"
         }
+      },
+      "System.ComponentModel.Annotations": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "dMkqfy2el8A8/I76n2Hi1oBFEbG1SfxD2l5nhwXV3XjlnOmwxJlQbYpJH4W51odnU9sARCSAgv7S3CyAFMkpYg=="
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",

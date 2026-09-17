@@ -118,14 +118,6 @@
           "Microsoft.Extensions.Logging.Debug": "10.0.11"
         }
       },
-      "DynamicData": {
-        "type": "Transitive",
-        "resolved": "9.4.33",
-        "contentHash": "JpjbJOhwdZjmA0Y0USZH1jpJ8EHkzPNDKfEVuiaRVbtuPpheNSTbJ7ik1PkrLcDqnSu+uMP999FOHZAfoVndUA==",
-        "dependencies": {
-          "System.Reactive": "6.1.0"
-        }
-      },
       "FluentResults": {
         "type": "Transitive",
         "resolved": "4.0.0",
@@ -170,6 +162,11 @@
         "type": "Transitive",
         "resolved": "5.3.2",
         "contentHash": "ru09iYhsnGcTI/La30zuzSeg/DXwvdFgDfvG17XU+/+XkIY915YiQFStZlykui5vpWzMEtyADh2c2T7CodrGrg=="
+      },
+      "Microsoft.Bcl.AsyncInterfaces": {
+        "type": "Transitive",
+        "resolved": "6.0.0",
+        "contentHash": "UcSjPsst+DfAdJGVDsu346FX0ci0ah+lw3WRtn18NUwEqRt70HaOQ7lI72vy3+1LxtqI3T5GWwV39rQSrCzAeg=="
       },
       "Microsoft.Data.Sqlite.Core": {
         "type": "Transitive",
@@ -547,6 +544,15 @@
         "resolved": "1.1.77",
         "contentHash": "MCu674ZETgU18EbxfwIlRpUPJ02YbZenLsMCXTkpeA7KUBpXfFaOUDlEO+7UWu5AFnUoydg+aQENJkuaZPheMQ=="
       },
+      "Patchright": {
+        "type": "Transitive",
+        "resolved": "1.62.1",
+        "contentHash": "G0Kx7Ehtvwel+zIsKOJ5ck0gBHA1L0ywpxs6v8Uc3CoDosk8b0zQQKCT8/YyidNSJI8x1I6e3WWKMgIllZGwag==",
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
+          "System.ComponentModel.Annotations": "5.0.0"
+        }
+      },
       "Polly": {
         "type": "Transitive",
         "resolved": "8.8.0",
@@ -611,20 +617,6 @@
         "contentHash": "yX4T7XKbwYvUE2VLA6mgR8tHhC/tHSaNAEsHkQIeo2KdpoVo/vh5tmPNmVbJFcwJBHG27JIpzLDd48YNFTy/qA==",
         "dependencies": {
           "ReactiveUI.Primitives": "7.3.0"
-        }
-      },
-      "ReactiveUI.Routing": {
-        "type": "Transitive",
-        "resolved": "24.2.0",
-        "contentHash": "4xekKiKvJxu7MVT+kotqdjwogw72X8Li6UWlWNf8sMLE9oa8DISsE1GDo7JbUyeJNLOI/sGhjczpQIBWi4hFHw==",
-        "dependencies": {
-          "DynamicData": "9.4.33",
-          "ReactiveUI": "24.2.0",
-          "ReactiveUI.Disposables": "7.3.0",
-          "ReactiveUI.Primitives": "7.3.0",
-          "ReactiveUI.Primitives.Core": "7.3.0",
-          "Splat": "21.0.0",
-          "System.Reactive": "7.0.0"
         }
       },
       "Riok.Mapperly": {
@@ -777,10 +769,10 @@
           "SQLitePCLRaw.core": "2.1.12"
         }
       },
-      "System.Reactive": {
+      "System.ComponentModel.Annotations": {
         "type": "Transitive",
-        "resolved": "7.0.0",
-        "contentHash": "VYaSP2Kt+45GFnr3q7c/b4awT48VvueOJV4jPjdUXi5MxC9mSUy+HkJYtm8rGZ6fC3tNHG9gBu/YwNAR/FYqhg=="
+        "resolved": "5.0.0",
+        "contentHash": "dMkqfy2el8A8/I76n2Hi1oBFEbG1SfxD2l5nhwXV3XjlnOmwxJlQbYpJH4W51odnU9sARCSAgv7S3CyAFMkpYg=="
       },
       "maincore": {
         "type": "Project",
@@ -794,9 +786,9 @@
           "Immediate.Handlers": "[4.2.0, )",
           "Microsoft.EntityFrameworkCore.Sqlite": "[10.0.12, )",
           "Microsoft.Extensions.Hosting": "[10.0.12, )",
+          "Patchright": "[1.62.1, )",
           "Polly": "[8.8.0, )",
           "ReactiveUI": "[24.2.0, )",
-          "ReactiveUI.Routing": "[24.2.0, )",
           "Riok.Mapperly": "[4.3.1, )",
           "Selenium.Support": "[4.49.0, )",
           "Selenium.WebDriver": "[4.49.0, )",
