@@ -3,6 +3,7 @@ using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using Microsoft.Extensions.DependencyInjection;
+using ReactiveUI.Primitives.Extensions;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs
@@ -27,7 +28,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadSettingsCommand.Execute(accountId);
+            await LoadSettingsCommand.Execute(accountId).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -36,7 +37,7 @@ namespace MainCore.UI.ViewModels.Tabs
             var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
             if (!result.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                await _dialogService.SendMessage("Error", result.ToString());
                 return;
             }
 
@@ -44,13 +45,14 @@ namespace MainCore.UI.ViewModels.Tabs
             var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
             await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
 
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings saved."));
+            await _dialogService.SendMessage("Information", "Settings saved.");
         }
 
         [ReactiveCommand]
         private async Task Import()
         {
-            var path = await _dialogService.OpenFileDialog.Handle(Unit.Default);
+            var path = await _dialogService.OpenFileDialog();
+            if (string.IsNullOrEmpty(path)) return;
             Dictionary<AccountSettingEnums, int> settings;
             try
             {
@@ -59,7 +61,7 @@ namespace MainCore.UI.ViewModels.Tabs
             }
             catch
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Invalid file."));
+                await _dialogService.SendMessage("Warning", "Invalid file.");
                 return;
             }
 
@@ -67,7 +69,7 @@ namespace MainCore.UI.ViewModels.Tabs
             var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
             if (!result.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                await _dialogService.SendMessage("Error", result.ToString());
                 return;
             }
 
@@ -75,13 +77,13 @@ namespace MainCore.UI.ViewModels.Tabs
             var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
             await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
 
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings imported."));
+            await _dialogService.SendMessage("Information", "Settings imported.");
         }
 
         [ReactiveCommand]
         private async Task Export()
         {
-            var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
+            var path = await _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
@@ -92,7 +94,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString);
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings exported."));
+            await _dialogService.SendMessage("Information", "Settings exported.");
         }
 
         [ReactiveCommand]

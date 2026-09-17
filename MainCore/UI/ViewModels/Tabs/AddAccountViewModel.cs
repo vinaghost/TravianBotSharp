@@ -7,6 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Extensions;
+
     [RegisterSingleton<AddAccountViewModel>]
     public partial class AddAccountViewModel : TabViewModelBase
     {
@@ -47,7 +50,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             if (!result.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                await _dialogService.SendMessage("Error", result.ToString());
                 return;
             }
 
@@ -68,7 +71,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             if (!result.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                await _dialogService.SendMessage("Error", result.ToString());
                 return;
             }
 
@@ -89,7 +92,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             if (!validateResult.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", validateResult.ToString()));
+                await _dialogService.SendMessage("Error", validateResult.ToString());
                 return false;
             }
 
@@ -102,11 +105,11 @@ namespace MainCore.UI.ViewModels.Tabs
 
             if (isFailed)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", string.Join(Environment.NewLine, errors.Select(failure => failure.Message.ToString()))));
+                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, errors.Select(failure => failure.Message.ToString())));
                 return false;
             }
 
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added account"));
+            await _dialogService.SendMessage("Information", "Added account");
             return true;
         }
 

@@ -18,7 +18,7 @@
             return optionButton;
         }
 
-        public static HtmlNode GetHideContextualHelpOption(HtmlDocument doc)
+        public static HtmlNode? GetHideContextualHelpOption(HtmlDocument doc)
         {
             var node = doc.GetElementbyId("hideContextualHelp");
             return node;

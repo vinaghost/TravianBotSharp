@@ -1,15 +1,16 @@
 ﻿using MainCore.UI.ViewModels;
 using MainCore.UI.ViewModels.UserControls;
 using ReactiveMarbles.Extensions.Hosting.Wpf;
-using ReactiveUI;
 using System;
 using System.ComponentModel;
-using System.Reactive.Disposables.Fluent;
-using System.Reactive.Linq;
 using System.Windows;
 
 namespace WPFUI.Views
 {
+    using ReactiveUI;
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Extensions;
+
     public class MainWindowBase : ReactiveWindow<MainViewModel>
     {
     }
@@ -42,7 +43,7 @@ namespace WPFUI.Views
         {
             if (_isLoaded) return;
             _isLoaded = false;
-            await ViewModel.LoadCommand.Execute();
+            await ViewModel.LoadCommand.Execute().ToHotTask();
             _isLoaded = true;
         }
 
@@ -59,7 +60,7 @@ namespace WPFUI.Views
             if (_isClosing) return;
             _isClosing = true;
 
-            await ViewModel.UnloadCommand.Execute();
+            await ViewModel.UnloadCommand.Execute().ToHotTask();
 
             _canClose = true;
             Close();

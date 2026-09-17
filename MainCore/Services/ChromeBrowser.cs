@@ -18,7 +18,7 @@ namespace MainCore.Services
         private readonly string[] _extensionsPath;
         private readonly HtmlDocument _htmlDoc = new();
 
-        private BiDi? _bidi;
+        private IBiDi? _bidi;
 
         private BrowsingContext? _context;
         private Intercept? _authIntercept;
@@ -86,16 +86,16 @@ namespace MainCore.Services
             foreach (var path in _extensionsPath)
             {
                 var result = await _bidi.WebExtension.InstallAsync(new ExtensionPath(path));
-                Logger.Information("- Installed extension: {path}", Path.GetFileNameWithoutExtension(path));
+                Logger.Information("- Installed extension: {Path}", Path.GetFileNameWithoutExtension(path));
             }
 
             if (!string.IsNullOrEmpty(setting.ProxyHost) && !string.IsNullOrEmpty(setting.ProxyUsername) && !string.IsNullOrEmpty(setting.ProxyPassword))
             {
-                _authIntercept = await _bidi.Network.InterceptAuthAsync(async auth =>
-                {
-                    Logger.Information("- Providing proxy auth credentials", auth.Request.Url);
-                    await auth.ContinueAsync(new AuthCredentials(setting.ProxyUsername, setting.ProxyPassword), new ContinueWithAuthCredentialsOptions());
-                });
+                //_authIntercept = await _bidi.Network.InterceptAuthAsync(async auth =>
+                //{
+                //    Logger.Information("- Providing proxy auth credentials for {Url}", auth.Request.Url);
+                //    await auth.ContinueAsync(new AuthCredentials(setting.ProxyUsername, setting.ProxyPassword), new ContinueWithAuthCredentialsOptions());
+                //});
             }
         }
 

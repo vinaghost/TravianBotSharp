@@ -2,7 +2,7 @@
 {
     public static class UpgradeParser
     {
-        private static HtmlNode GetContractNode(HtmlDocument doc, BuildingEnums building)
+        private static HtmlNode? GetContractNode(HtmlDocument doc, BuildingEnums building)
         {
             var node = doc.GetElementbyId($"contract_building{(int)building}"); // building
             node ??= doc.GetElementbyId("contract"); // site

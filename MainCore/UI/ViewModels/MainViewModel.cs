@@ -1,6 +1,8 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using Microsoft.Extensions.DependencyInjection;
+using ReactiveUI.Primitives.Extensions;
+using ReactiveUI.Primitives.Signals;
 
 namespace MainCore.UI.ViewModels
 {
@@ -29,12 +31,12 @@ namespace MainCore.UI.ViewModels
                 var chromeDriverInstaller = scope.ServiceProvider.GetRequiredService<IChromeDriverInstaller>();
                 var useragentManager = scope.ServiceProvider.GetRequiredService<IUseragentManager>();
 
-                var installChromeDriver = Observable.StartAsync(chromeDriverInstaller.Install, RxApp.TaskpoolScheduler);
-                var loadUseragent = Observable.StartAsync(useragentManager.Load, RxApp.TaskpoolScheduler);
+                var installChromeDriver = Signal.Start(chromeDriverInstaller.Install, RxSchedulers.TaskpoolScheduler);
+                var loadUseragent = Signal.Start(useragentManager.Load, RxSchedulers.TaskpoolScheduler);
                 var chromeManager = scope.ServiceProvider.GetRequiredService<IChromeManager>();
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var installExtension = Observable.Start(chromeManager.LoadExtension, RxApp.TaskpoolScheduler);
-                var loadDatabase = Observable.StartAsync(async () =>
+                var installExtension = Signal.Start(() => Task.Run(chromeManager.LoadExtension), RxSchedulers.TaskpoolScheduler);
+                var loadDatabase = Signal.Start(async () =>
                 {
                     var notExist = await context.Database.EnsureCreatedAsync();
 
@@ -47,9 +49,9 @@ namespace MainCore.UI.ViewModels
                             .Where(x => x.Level == -1)
                             .ExecuteDelete();
                     }
-                }, RxApp.TaskpoolScheduler);
+                }, RxSchedulers.TaskpoolScheduler);
 
-                await Observable.Merge(installExtension, loadDatabase, installChromeDriver, loadUseragent);
+                await Signal.Merge(installExtension, loadDatabase, installChromeDriver, loadUseragent).ToHotTask();
 
                 await _waitingOverlayViewModel.ChangeMessage("loading program layout");
                 MainLayoutViewModel = scope.ServiceProvider.GetRequiredService<MainLayoutViewModel>();

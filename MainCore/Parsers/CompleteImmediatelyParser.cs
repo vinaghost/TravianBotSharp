@@ -8,7 +8,9 @@
                 .Descendants("div")
                 .FirstOrDefault(x => x.HasClass("finishNow"));
             if (finishButton is null) return 0;
-            var nodes = finishButton.ParentNode
+            var parent = finishButton.ParentNode;
+            if (parent is null) return 0;
+            var nodes = parent
                 .Descendants("li");
             return nodes.Count();
         }

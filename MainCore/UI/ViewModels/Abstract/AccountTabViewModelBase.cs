@@ -2,6 +2,8 @@
 
 namespace MainCore.UI.ViewModels.Abstract
 {
+    using ReactiveUI.Primitives;
+
     public abstract partial class AccountTabViewModelBase : TabViewModelBase
     {
         protected readonly SelectedItemStore _selectedItemStore;
@@ -20,7 +22,7 @@ namespace MainCore.UI.ViewModels.Abstract
             _accountIdHelper = accountIdObservable.ToProperty(this, vm => vm.AccountId);
 
             accountIdObservable
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(AccountChangedCommand);
         }
 

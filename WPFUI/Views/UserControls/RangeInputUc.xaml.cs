@@ -5,6 +5,8 @@ using System.Windows;
 
 namespace WPFUI.Views.UserControls
 {
+    using ReactiveUI.Primitives;
+
     public class RangeInputUcBase : ReactiveUserControl<RangeInputViewModel>
     {
     }

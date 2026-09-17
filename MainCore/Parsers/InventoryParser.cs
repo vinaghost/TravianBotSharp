@@ -12,7 +12,7 @@
             return aNode.HasClass("active");
         }
 
-        public static HtmlNode GetHeroAvatar(HtmlDocument doc)
+        public static HtmlNode? GetHeroAvatar(HtmlDocument doc)
         {
             return doc.GetElementbyId("heroImageButton");
         }

@@ -1,21 +1,23 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System.Reactive.Concurrency;
-using System.Reactive.Subjects;
 
 namespace MainCore.Services
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Concurrency;
+    using ReactiveUI.Primitives.Signals;
+
     [RegisterSingleton<IRxQueue, RxQueue>]
     public class RxQueue : IRxQueue
     {
-        private readonly Subject<INotification> _notifications = new Subject<INotification>();
-        private readonly IConnectableObservable<INotification> _connectableObservable;
+        private readonly Signal<INotification> _notifications = new Signal<INotification>();
+        private readonly ConnectableSignal<INotification> _connectableObservable;
 
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
 
         public RxQueue(ICustomServiceScopeFactory serviceScopeFactory)
         {
             _serviceScopeFactory = serviceScopeFactory;
-            _connectableObservable = _notifications.ObserveOn(Scheduler.Default).Publish();
+            _connectableObservable = _notifications.ObserveOn(Sequencer.Default).Publish();
             _connectableObservable.Connect();
         }
 
@@ -92,7 +94,7 @@ namespace MainCore.Services
             _connectableObservable.OfType<T>().Subscribe(handleAction);
         }
 
-        public void RegisterCommand<T>(ReactiveCommand<T, Unit> command) where T : INotification
+        public void RegisterCommand<T>(ReactiveCommand<T, RxVoid> command) where T : INotification
         {
             GetObservable<T>().InvokeCommand(command);
         }

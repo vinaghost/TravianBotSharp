@@ -50,7 +50,6 @@ namespace MainCore
             {
                 services.AddMainCore();
                 services.AddValidatorsFromAssembly(typeof(AppMixins).Assembly, ServiceLifetime.Singleton);
-                services.AddMainCoreBehaviors();
                 services.AddMainCoreHandlers();
 
                 services.AddScoped<IChromeBrowser>(sp =>
@@ -67,19 +66,9 @@ namespace MainCore
                 });
             });
 
-        private static IHostBuilder ConfigureSplatForMicrosoftDependencyResolver(this IHostBuilder hostBuilder) =>
-            hostBuilder.ConfigureServices((serviceCollection) =>
-            {
-                serviceCollection.UseMicrosoftDependencyResolver();
-                var resolver = Locator.CurrentMutable;
-                resolver.InitializeSplat();
-                resolver.InitializeReactiveUI();
-            });
-
         public static IHostBuilder GetHostBuilder()
         {
             var hostBuilder = Host.CreateDefaultBuilder()
-                .ConfigureSplatForMicrosoftDependencyResolver()
                 .ConfigureLogging()
                 .ConfigureDbContext()
                 .ConfigureServices();

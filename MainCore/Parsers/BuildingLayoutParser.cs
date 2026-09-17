@@ -125,7 +125,9 @@
             {
                 var finishButton = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("finishNow"));
                 if (finishButton is null) return [];
-                return finishButton.ParentNode.Descendants("li");
+                var parent = finishButton.ParentNode;
+                if (parent is null) return [];
+                return parent.Descendants("li");
             }
 
             static string GetBuildingType(HtmlNode node)

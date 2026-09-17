@@ -7,6 +7,9 @@ using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Extensions;
+
     [RegisterSingleton<VillageSettingViewModel>]
     public partial class VillageSettingViewModel : VillageTabViewModelBase
     {
@@ -29,12 +32,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsActive) return;
             if (villageId != VillageId) return;
-            await LoadSettingCommand.Execute(villageId);
+            await LoadSettingCommand.Execute(villageId).ToHotTask();
         }
 
         protected override async Task Load(VillageId villageId)
         {
-            await LoadSettingCommand.Execute(villageId);
+            await LoadSettingCommand.Execute(villageId).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -43,7 +46,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var result = await _villageSettingInputValidator.ValidateAsync(VillageSettingInput);
             if (!result.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                await _dialogService.SendMessage("Error", result.ToString());
                 return;
             }
 
@@ -51,13 +54,13 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var saveVillageSettingCommand = scope.ServiceProvider.GetRequiredService<SaveVillageSettingCommand.Handler>();
             await saveVillageSettingCommand.HandleAsync(new(AccountId, VillageId, VillageSettingInput.Get()));
 
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings saved."));
+            await _dialogService.SendMessage("Information", "Settings saved.");
         }
 
         [ReactiveCommand]
         private async Task Import()
         {
-            var path = await _dialogService.OpenFileDialog.Handle(Unit.Default);
+            var path = await _dialogService.OpenFileDialog();
             Dictionary<VillageSettingEnums, int> settings;
             try
             {
@@ -66,7 +69,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
             catch
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Invalid file."));
+                await _dialogService.SendMessage("Warning", "Invalid file.");
                 return;
             }
 
@@ -74,7 +77,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var result = await _villageSettingInputValidator.ValidateAsync(VillageSettingInput);
             if (!result.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                await _dialogService.SendMessage("Error", result.ToString());
                 return;
             }
 
@@ -82,13 +85,13 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var saveVillageSettingCommand = scope.ServiceProvider.GetRequiredService<SaveVillageSettingCommand.Handler>();
             await saveVillageSettingCommand.HandleAsync(new(AccountId, VillageId, VillageSettingInput.Get()));
 
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings imported"));
+            await _dialogService.SendMessage("Information", "Settings imported");
         }
 
         [ReactiveCommand]
         private async Task Export()
         {
-            var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
+            var path = await _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
@@ -98,7 +101,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                .ToDictionary(x => x.Setting, x => x.Value);
             var jsonString = JsonSerializer.Serialize(settings);
             await File.WriteAllTextAsync(path, jsonString);
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Settings exported"));
+            await _dialogService.SendMessage("Information", "Settings exported");
         }
 
         [ReactiveCommand]

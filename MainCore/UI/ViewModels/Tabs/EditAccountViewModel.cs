@@ -7,6 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Extensions;
+
     [RegisterSingleton<EditAccountViewModel>]
     public partial class EditAccountViewModel : AccountTabViewModelBase
     {
@@ -37,7 +40,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadAccountCommand.Execute(accountId);
+            await LoadAccountCommand.Execute(accountId).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -47,7 +50,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             if (!result.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                await _dialogService.SendMessage("Error", result.ToString());
                 return;
             }
 
@@ -62,7 +65,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             if (!result.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                await _dialogService.SendMessage("Error", result.ToString());
                 return;
             }
 
@@ -83,7 +86,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             if (!results.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", results.ToString()));
+                await _dialogService.SendMessage("Error", results.ToString());
                 return;
             }
             await _waitingOverlayViewModel.Show("editing account");
@@ -92,9 +95,9 @@ namespace MainCore.UI.ViewModels.Tabs
             var updateAccountCommand = scope.ServiceProvider.GetRequiredService<UpdateAccountCommand.Handler>();
             await updateAccountCommand.HandleAsync(new(AccountInput.ToDto()));
             await _waitingOverlayViewModel.Hide();
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Edited account"));
+            await _dialogService.SendMessage("Information", "Edited account");
 
-            await LoadAccountCommand.Execute(AccountId);
+            await LoadAccountCommand.Execute(AccountId).ToHotTask();
         }
 
         [ReactiveCommand]

@@ -118,6 +118,14 @@
           "Microsoft.Extensions.Logging.Debug": "10.0.11"
         }
       },
+      "DynamicData": {
+        "type": "Transitive",
+        "resolved": "9.4.33",
+        "contentHash": "JpjbJOhwdZjmA0Y0USZH1jpJ8EHkzPNDKfEVuiaRVbtuPpheNSTbJ7ik1PkrLcDqnSu+uMP999FOHZAfoVndUA==",
+        "dependencies": {
+          "System.Reactive": "6.1.0"
+        }
+      },
       "FluentResults": {
         "type": "Transitive",
         "resolved": "4.0.0",
@@ -605,6 +613,20 @@
           "ReactiveUI.Primitives": "7.3.0"
         }
       },
+      "ReactiveUI.Routing": {
+        "type": "Transitive",
+        "resolved": "24.2.0",
+        "contentHash": "4xekKiKvJxu7MVT+kotqdjwogw72X8Li6UWlWNf8sMLE9oa8DISsE1GDo7JbUyeJNLOI/sGhjczpQIBWi4hFHw==",
+        "dependencies": {
+          "DynamicData": "9.4.33",
+          "ReactiveUI": "24.2.0",
+          "ReactiveUI.Disposables": "7.3.0",
+          "ReactiveUI.Primitives": "7.3.0",
+          "ReactiveUI.Primitives.Core": "7.3.0",
+          "Splat": "21.0.0",
+          "System.Reactive": "7.0.0"
+        }
+      },
       "Riok.Mapperly": {
         "type": "Transitive",
         "resolved": "4.3.1",
@@ -774,6 +796,7 @@
           "Microsoft.Extensions.Hosting": "[10.0.12, )",
           "Polly": "[8.8.0, )",
           "ReactiveUI": "[24.2.0, )",
+          "ReactiveUI.Routing": "[24.2.0, )",
           "Riok.Mapperly": "[4.3.1, )",
           "Selenium.Support": "[4.49.0, )",
           "Selenium.WebDriver": "[4.49.0, )",
@@ -784,8 +807,7 @@
           "Serilog.Sinks.Map": "[2.0.0, )",
           "Splat": "[21.0.0, )",
           "Splat.Drawing": "[21.0.0, )",
-          "Splat.Microsoft.Extensions.DependencyInjection": "[21.0.0, )",
-          "System.Reactive": "[7.0.0, )"
+          "Splat.Microsoft.Extensions.DependencyInjection": "[21.0.0, )"
         }
       }
     },

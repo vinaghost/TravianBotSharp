@@ -37,7 +37,7 @@
             return distributeButton;
         }
 
-        public static HtmlNode GetRedeemButton(HtmlDocument doc)
+        public static HtmlNode? GetRedeemButton(HtmlDocument doc)
         {
             var button = doc.GetElementbyId("npc_market_button");
             return button;

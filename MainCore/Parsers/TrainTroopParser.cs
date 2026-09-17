@@ -29,7 +29,7 @@
             return a.InnerText.ParseInt();
         }
 
-        public static HtmlNode GetTrainButton(HtmlDocument doc)
+        public static HtmlNode? GetTrainButton(HtmlDocument doc)
         {
             return doc.GetElementbyId("s1");
         }

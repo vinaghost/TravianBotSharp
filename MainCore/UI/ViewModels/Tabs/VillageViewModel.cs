@@ -6,6 +6,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Extensions;
+
     [RegisterSingleton<VillageViewModel>]
     public partial class VillageViewModel : AccountTabViewModelBase
     {
@@ -42,8 +45,8 @@ namespace MainCore.UI.ViewModels.Tabs
             VillagesModifiedCommand
                 .Where(x => x)
                 .Select(_ => AccountId)
-                .Throttle(TimeSpan.FromMilliseconds(1000), RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .Throttle(TimeSpan.FromMilliseconds(1000), RxSchedulers.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(LoadVillageCommand);
         }
 
@@ -57,7 +60,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadVillageCommand.Execute(accountId);
+            await LoadVillageCommand.Execute(accountId).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -65,14 +68,14 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (Villages.SelectedItem is null)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No village selected"));
+                await _dialogService.SendMessage("Warning", "No village selected");
                 return;
             }
 
             var villageId = new VillageId(Villages.SelectedItem.Id);
             _taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, villageId));
 
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
+            await _dialogService.SendMessage("Information", $"Added update task");
         }
 
         [ReactiveCommand]
@@ -91,7 +94,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 _taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village));
             }
 
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
+            await _dialogService.SendMessage("Information", $"Added update task");
         }
 
         [ReactiveCommand]
@@ -108,7 +111,7 @@ namespace MainCore.UI.ViewModels.Tabs
             {
                 _taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village));
             }
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
+            await _dialogService.SendMessage("Information", $"Added update task");
         }
 
         [ReactiveCommand]

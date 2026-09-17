@@ -41,6 +41,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
     <PackageReference Include="Polly" Version="8.8.0" />
     <PackageReference Include="ReactiveUI" Version="24.2.0" />
+    <PackageReference Include="ReactiveUI.Routing" Version="24.2.0" />
     <PackageReference Include="ReactiveUI.SourceGenerators" Version="3.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -75,8 +76,6 @@
     <Using Include="ReactiveUI" />
     <Using Include="ReactiveUI.SourceGenerators" />
     <Using Include="Splat" />
-    <Using Include="System.Reactive" />
-    <Using Include="System.Reactive.Linq" />
     <Using Include="Riok.Mapperly.Abstractions" />
     <Using Include="MainCore.DTO" />
     <Using Include="MainCore.Entities" />

@@ -4,6 +4,8 @@ using System.Reactive.Disposables.Fluent;
 
 namespace WPFUI.Views.Tabs
 {
+    using ReactiveUI.Primitives;
+
     public class EditAccountTabBase : ReactiveUserControl<EditAccountViewModel>
     {
     }

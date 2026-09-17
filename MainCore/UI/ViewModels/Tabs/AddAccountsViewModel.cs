@@ -7,6 +7,9 @@ using System.Collections.ObjectModel;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Extensions;
+
     [RegisterSingleton<AddAccountsViewModel>]
     public partial class AddAccountsViewModel : TabViewModelBase
     {
@@ -25,7 +28,7 @@ namespace MainCore.UI.ViewModels.Tabs
             _serviceScopeFactory = serviceScopeFactory;
 
             this.WhenAnyValue(x => x.Input)
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(ParseCommand);
 
             ParseCommand.Subscribe(UpdateTable);
@@ -58,10 +61,10 @@ namespace MainCore.UI.ViewModels.Tabs
 
             if (resultInput.IsFailed)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", resultInput.Errors[0].Message));
+                await _dialogService.SendMessage("Error", resultInput.Errors[0].Message);
                 return;
             }
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added accounts"));
+            await _dialogService.SendMessage("Information", $"Added accounts");
             await _waitingOverlayViewModel.Hide();
         }
 

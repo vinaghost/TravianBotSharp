@@ -4,6 +4,8 @@ using System.Reactive.Disposables.Fluent;
 
 namespace WPFUI.Views.Tabs.Villages
 {
+    using ReactiveUI.Primitives;
+
     public class VillageSettingTabBase : ReactiveUserControl<VillageSettingViewModel>
     {
     }

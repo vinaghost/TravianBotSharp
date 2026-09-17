@@ -152,15 +152,15 @@
             List<IError> errors;
 
             var videoFeature = browser.Html.GetElementbyId("videoFeature");
-            if (videoFeature.HasClass("infoScreen"))
+            if (videoFeature is not null && videoFeature.HasClass("infoScreen"))
             {
-                (_, isFailed, element, errors) = await browser.GetElement(doc => doc.GetElementbyId("videoFeature").Descendants("div").FirstOrDefault(x => x.HasClass("checkbox")), cancellationToken);
+                (_, isFailed, element, errors) = await browser.GetElement(doc => doc.GetElementbyId("videoFeature")?.Descendants("div").FirstOrDefault(x => x.HasClass("checkbox")), cancellationToken);
                 if (isFailed) return Result.Fail(errors).WithError("Failed to find [Don't show watch ads confirm again] checkbox");
 
                 result = await browser.Click(element, cancellationToken);
                 if (result.IsFailed) return result;
 
-                (_, isFailed, element, errors) = await browser.GetElement(doc => doc.GetElementbyId("videoFeature").Descendants("button").FirstOrDefault(x => x.HasClass("green")), cancellationToken);
+                (_, isFailed, element, errors) = await browser.GetElement(doc => doc.GetElementbyId("videoFeature")?.Descendants("button").FirstOrDefault(x => x.HasClass("green")), cancellationToken);
                 if (isFailed) return Result.Fail(errors).WithError("Failed to find [Watch ads] button");
 
                 result = await browser.Click(element, cancellationToken);

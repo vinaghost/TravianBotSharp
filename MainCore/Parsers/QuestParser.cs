@@ -2,7 +2,7 @@
 {
     public static class QuestParser
     {
-        public static HtmlNode GetQuestMaster(HtmlDocument doc)
+        public static HtmlNode? GetQuestMaster(HtmlDocument doc)
         {
             var questmasterButton = doc.GetElementbyId("questmasterButton");
             return questmasterButton;

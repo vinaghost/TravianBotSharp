@@ -5,11 +5,15 @@ using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using Microsoft.Extensions.DependencyInjection;
+using ReactiveUI.Primitives.Extensions;
 using System.Text;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Extensions;
+
     [RegisterSingleton<BuildViewModel>]
     public partial class BuildViewModel : VillageTabViewModelBase
     {
@@ -35,7 +39,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             _taskManager = taskManager;
 
             this.WhenAnyValue(vm => vm.Buildings.SelectedItem)
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .WhereNotNull()
                 .InvokeCommand(LoadBuildNormalCommand);
 
@@ -74,8 +78,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             if (!IsActive) return;
             if (notification.VillageId != VillageId) return;
-            await LoadQueueCommand.Execute(notification.VillageId);
-            await LoadBuildingCommand.Execute(notification.VillageId);
+            await LoadQueueCommand.Execute(notification.VillageId).ToHotTask();
+            await LoadBuildingCommand.Execute(notification.VillageId).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -85,15 +89,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             if (!IsActive) return;
             if (notification.VillageId != VillageId) return;
-            await LoadJobCommand.Execute(notification.VillageId);
-            await LoadBuildingCommand.Execute(notification.VillageId);
+            await LoadJobCommand.Execute(notification.VillageId).ToHotTask();
+            await LoadBuildingCommand.Execute(notification.VillageId).ToHotTask();
         }
 
         protected override async Task Load(VillageId villageId)
         {
-            await LoadJobCommand.Execute(villageId);
-            await LoadBuildingCommand.Execute(villageId);
-            await LoadQueueCommand.Execute(villageId);
+            await LoadJobCommand.Execute(villageId).ToHotTask();
+            await LoadBuildingCommand.Execute(villageId).ToHotTask();
+            await LoadQueueCommand.Execute(villageId).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -236,14 +240,14 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsAccountPaused(AccountId))
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                await _dialogService.SendMessage("Warning", "Please pause account before modifing building queue");
                 return;
             }
 
             var result = await _normalBuildInputValidator.ValidateAsync(NormalBuildInput);
             if (!result.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                await _dialogService.SendMessage("Error", result.ToString());
                 return;
             }
 
@@ -254,11 +258,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var buildResult = await normalBuildCommand.HandleAsync(new(VillageId, NormalBuildInput.ToPlan(location)));
             if (buildResult.IsFailed)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", buildResult.ToString()));
+                await _dialogService.SendMessage("Error", buildResult.ToString());
                 return;
             }
 
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -266,7 +270,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsAccountPaused(AccountId))
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                await _dialogService.SendMessage("Warning", "Please pause account before modifing building queue");
                 return;
             }
             var location = Buildings.SelectedIndex + 1;
@@ -274,7 +278,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var upgradeCommand = scope.ServiceProvider.GetRequiredService<UpgradeCommand.Handler>();
             await upgradeCommand.HandleAsync(new(VillageId, location, false));
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -282,7 +286,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsAccountPaused(AccountId))
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                await _dialogService.SendMessage("Warning", "Please pause account before modifing building queue");
                 return;
             }
             var location = Buildings.SelectedIndex + 1;
@@ -290,7 +294,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var upgradeCommand = scope.ServiceProvider.GetRequiredService<UpgradeCommand.Handler>();
             await upgradeCommand.HandleAsync(new(VillageId, location, true));
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -298,21 +302,21 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsAccountPaused(AccountId))
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                await _dialogService.SendMessage("Warning", "Please pause account before modifing building queue");
                 return;
             }
 
             var result = await _resourceBuildInputValidator.ValidateAsync(ResourceBuildInput);
             if (!result.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                await _dialogService.SendMessage("Error", result.ToString());
                 return;
             }
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var resourceBuildCommand = scope.ServiceProvider.GetRequiredService<ResourceBuildCommand.Handler>();
             await resourceBuildCommand.HandleAsync(new(VillageId, ResourceBuildInput.ToPlan()));
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -320,13 +324,13 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsAccountPaused(AccountId))
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                await _dialogService.SendMessage("Warning", "Please pause account before modifing building queue");
                 return;
             }
 
             if (Jobs.SelectedItem is null)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
+                await _dialogService.SendMessage("Warning", "Please select before moving");
                 return;
             }
 
@@ -335,7 +339,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var newIndex = await swapCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Up));
             Jobs.SelectedIndex = newIndex;
 
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -343,12 +347,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsAccountPaused(AccountId))
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                await _dialogService.SendMessage("Warning", "Please pause account before modifing building queue");
                 return;
             }
             if (Jobs.SelectedItem is null)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
+                await _dialogService.SendMessage("Warning", "Please select before moving");
                 return;
             }
 
@@ -356,7 +360,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
             var newIndex = await swapCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Down));
             Jobs.SelectedIndex = newIndex;
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -364,12 +368,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsAccountPaused(AccountId))
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                await _dialogService.SendMessage("Warning", "Please pause account before modifing building queue");
                 return;
             }
             if (Jobs.SelectedItem is null)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
+                await _dialogService.SendMessage("Warning", "Please select before moving");
                 return;
             }
 
@@ -378,7 +382,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var newIndex = await moveCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Top));
             Jobs.SelectedIndex = newIndex;
 
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -386,12 +390,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsAccountPaused(AccountId))
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                await _dialogService.SendMessage("Warning", "Please pause account before modifing building queue");
                 return;
             }
             if (Jobs.SelectedItem is null)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
+                await _dialogService.SendMessage("Warning", "Please select before moving");
                 return;
             }
 
@@ -399,7 +403,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
             var newIndex = await moveCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Bottom));
             Jobs.SelectedIndex = newIndex;
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -407,7 +411,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsAccountPaused(AccountId))
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                await _dialogService.SendMessage("Warning", "Please pause account before modifing building queue");
                 return;
             }
             if (Jobs.SelectedItem is null) return;
@@ -416,7 +420,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var deleteJobByIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByIdCommand.Handler>();
             await deleteJobByIdCommand.HandleAsync(new(new JobId(jobId)));
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -424,7 +428,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsAccountPaused(AccountId))
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                await _dialogService.SendMessage("Warning", "Please pause account before modifing building queue");
                 return;
             }
 
@@ -433,7 +437,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             context.Jobs
                 .Where(x => x.VillageId == VillageId.Value)
                 .ExecuteDelete();
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -441,10 +445,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsAccountPaused(AccountId))
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                await _dialogService.SendMessage("Warning", "Please pause account before modifing building queue");
                 return;
             }
-            var path = await _dialogService.OpenFileDialog.Handle(Unit.Default);
+            var path = await _dialogService.OpenFileDialog();
             if (string.IsNullOrEmpty(path)) return;
             List<JobDto> jobs;
             try
@@ -454,14 +458,14 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
             catch
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Invalid file."));
+                await _dialogService.SendMessage("Warning", "Invalid file.");
                 return;
             }
 
-            var confirm = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "TBS will remove resource field build job if its position doesn't match with current village."));
+            var confirm = await _dialogService.SendConfirm("Warning", "TBS will remove resource field build job if its position doesn't match with current village.");
             if (!confirm) return;
 
-            var shuffle = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "Do you want to random building location?"));
+            var shuffle = await _dialogService.SendConfirm("Warning", "Do you want to random building location?");
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var fixJobsCommand = scope.ServiceProvider.GetRequiredService<FixJobsCommand.Handler>();
@@ -483,7 +487,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             context.AddRange(additionJobs);
             context.SaveChanges();
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
         [ReactiveCommand]
@@ -491,11 +495,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (!IsAccountPaused(AccountId))
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
+                await _dialogService.SendMessage("Warning", "Please pause account before modifing building queue");
                 return;
             }
 
-            var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
+            var path = await _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
@@ -509,7 +513,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var jsonString = JsonSerializer.Serialize(jobs);
             await File.WriteAllTextAsync(path, jsonString);
 
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Job list exported"));
+            await _dialogService.SendMessage("Information", "Job list exported");
         }
 
         private bool IsAccountPaused(AccountId accountId)

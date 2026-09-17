@@ -8,6 +8,9 @@ using System.Text;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Extensions;
+
     [RegisterSingleton<DebugViewModel>]
     public partial class DebugViewModel : AccountTabViewModelBase
     {
@@ -76,16 +79,16 @@ namespace MainCore.UI.ViewModels.Tabs
 
             LogEmittedCommand
                 .Where(x => x)
-                .Select(_ => Unit.Default)
-                .Throttle(TimeSpan.FromMilliseconds(100), RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .Select(_ => RxVoid.Default)
+                .Throttle(TimeSpan.FromMilliseconds(100), RxSchedulers.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(ReloadLogCommand);
 
             TasksModifiedCommand
                 .Where(x => x)
                 .Select(_ => AccountId)
-                .Throttle(TimeSpan.FromMilliseconds(100), RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .Throttle(TimeSpan.FromMilliseconds(100), RxSchedulers.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(LoadTaskCommand);
         }
 
@@ -111,9 +114,9 @@ namespace MainCore.UI.ViewModels.Tabs
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadTaskCommand.Execute(accountId);
-            await LoadLogCommand.Execute(accountId);
-            await LoadEndpointAddressCommand.Execute(accountId);
+            await LoadTaskCommand.Execute(accountId).ToHotTask();
+            await LoadLogCommand.Execute(accountId).ToHotTask();
+            await LoadEndpointAddressCommand.Execute(accountId).ToHotTask();
         }
 
         [ReactiveCommand]

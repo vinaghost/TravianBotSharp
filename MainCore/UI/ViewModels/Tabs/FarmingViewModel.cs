@@ -7,6 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Extensions;
+
     [RegisterSingleton<FarmingViewModel>]
     public partial class FarmingViewModel : AccountTabViewModelBase
     {
@@ -62,8 +65,8 @@ namespace MainCore.UI.ViewModels.Tabs
             FarmsModifiedCommand
                 .Where(x => x)
                 .Select(_ => AccountId)
-                .Throttle(TimeSpan.FromMilliseconds(1000), RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .Throttle(TimeSpan.FromMilliseconds(1000), RxSchedulers.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(LoadFarmListCommand);
         }
 
@@ -77,15 +80,15 @@ namespace MainCore.UI.ViewModels.Tabs
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadFarmListCommand.Execute(accountId);
-            await LoadSettingCommand.Execute(accountId);
+            await LoadFarmListCommand.Execute(accountId).ToHotTask();
+            await LoadSettingCommand.Execute(accountId).ToHotTask();
         }
 
         [ReactiveCommand]
         private async Task UpdateFarmList()
         {
             _taskManager.AddOrUpdate<UpdateFarmListTask.Task>(new(AccountId));
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added update farm list task"));
+            await _dialogService.SendMessage("Information", "Added update farm list task");
         }
 
         [ReactiveCommand]
@@ -100,19 +103,19 @@ namespace MainCore.UI.ViewModels.Tabs
                 var count = CountActive(AccountId);
                 if (count == 0)
                 {
-                    await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "There is no active farm or use start all button is disable"));
+                    await _dialogService.SendMessage("Information", "There is no active farm or use start all button is disable");
                     return;
                 }
             }
             _taskManager.AddOrUpdate<StartFarmListTask.Task>(new(AccountId));
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Added start farm list task"));
+            await _dialogService.SendMessage("Information", "Added start farm list task");
         }
 
         [ReactiveCommand]
         private async Task Stop()
         {
             _taskManager.Remove<StartFarmListTask.Task>(AccountId);
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Removed start farm list task"));
+            await _dialogService.SendMessage("Information", "Removed start farm list task");
         }
 
         [ReactiveCommand]
@@ -121,14 +124,14 @@ namespace MainCore.UI.ViewModels.Tabs
             var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
             if (!result.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                await _dialogService.SendMessage("Error", result.ToString());
                 return;
             }
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
             await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Saved"));
+            await _dialogService.SendMessage("Information", "Saved");
         }
 
         [ReactiveCommand]
@@ -136,7 +139,7 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             if (FarmLists.SelectedItem is null)
             {
-                await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "No farm list selected"));
+                await _dialogService.SendMessage("Warning", "No farm list selected");
                 return;
             }
 
@@ -150,8 +153,8 @@ namespace MainCore.UI.ViewModels.Tabs
                .Where(x => x.Id == selectedFarmList.Id)
                .ExecuteUpdate(x => x.SetProperty(x => x.IsActive, x => !x.IsActive));
 
-            await FarmsModifiedCommand.Execute(new FarmsModified(AccountId));
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Activated farm list"));
+            await FarmsModifiedCommand.Execute(new FarmsModified(AccountId)).ToHotTask();
+            await _dialogService.SendMessage("Information", "Activated farm list");
         }
 
         [ReactiveCommand]
@@ -192,8 +195,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             var count = context.FarmLists
                 .Where(x => x.AccountId == accountId.Value)
-                .Where(x => x.IsActive)
-                .Count();
+                .Count(x => x.IsActive);
             return count;
         }
     }

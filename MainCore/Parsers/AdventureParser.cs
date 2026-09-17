@@ -5,6 +5,7 @@
         public static TimeSpan GetAdventureDuration(HtmlDocument doc)
         {
             var heroAdventure = doc.GetElementbyId("heroAdventure");
+            if (heroAdventure is null) return TimeSpan.Zero;
             var timer = heroAdventure
                 .Descendants("span")
                 .FirstOrDefault(x => x.HasClass("timer"));
@@ -80,7 +81,8 @@
         public static string GetAdventureInfo(HtmlNode node)
         {
             // adventureTableBodyRow/td/buton
-            var trNode = node.ParentNode.ParentNode;
+            var trNode = node?.ParentNode?.ParentNode;
+            if (trNode is null) return "unknown";
             var difficult = GetAdventureDifficult(trNode);
             var coordinates = GetAdventureCoordinates(trNode);
 
@@ -92,6 +94,7 @@
             var tdList = node.Descendants("td").ToArray();
             if (tdList.Length < 3) return "unknown";
             var iconDifficulty = tdList[3].FirstChild;
+            if (iconDifficulty is null) return "unknown";
             return iconDifficulty.GetAttributeValue("alt", "unknown");
         }
 
