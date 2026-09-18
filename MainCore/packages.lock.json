@@ -157,21 +157,6 @@
         "resolved": "4.3.1",
         "contentHash": "oSE+OVLHyiojrws0QVbQaAT2YKsYbyHqJXPdV7EhGseR/dYgeWS2x1T5qY5I4E+RJkJqMSG+FyZOq4SljWgJWQ=="
       },
-      "Selenium.Support": {
-        "type": "Direct",
-        "requested": "[4.49.0, )",
-        "resolved": "4.49.0",
-        "contentHash": "NOU5gXJ0MudmeZ6ZfQHMhqHb+qHPptxa5eQD8DJMxHn9fUTWBp/73xrwHhTBtAMfe2uczuYJn2isTmGsMd3t5A==",
-        "dependencies": {
-          "Selenium.WebDriver": "4.49.0"
-        }
-      },
-      "Selenium.WebDriver": {
-        "type": "Direct",
-        "requested": "[4.49.0, )",
-        "resolved": "4.49.0",
-        "contentHash": "WsqfFJ4mvOeUoI0mD1208tc9SgmjI0c90RdpWXqnosksCwo0+dQWf/3LqeewDDAVzpbIbtfhEetdpBhjDpkdzg=="
-      },
       "Serilog": {
         "type": "Direct",
         "requested": "[4.4.0, )",
@@ -718,12 +703,6 @@
       }
     },
     "net10.0/win-x64": {
-      "Selenium.WebDriver": {
-        "type": "Direct",
-        "requested": "[4.49.0, )",
-        "resolved": "4.49.0",
-        "contentHash": "WsqfFJ4mvOeUoI0mD1208tc9SgmjI0c90RdpWXqnosksCwo0+dQWf/3LqeewDDAVzpbIbtfhEetdpBhjDpkdzg=="
-      },
       "SQLitePCLRaw.lib.e_sqlite3": {
         "type": "Transitive",
         "resolved": "2.1.12",
