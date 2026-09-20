@@ -2,80 +2,45 @@
 {
     public static class UpgradeParser
     {
-        private static HtmlNode? GetContractNode(HtmlDocument doc, BuildingEnums building)
+        private static ILocator GetContractNode(IPage page, BuildingEnums building)
         {
-            var node = doc.GetElementbyId($"contract_building{(int)building}"); // building
-            node ??= doc.GetElementbyId("contract"); // site
+            var node = page.Locator($"#contract_building{(int)building}"); // site
+            node ??= page.Locator("#contract"); // building
             return node;
         }
 
-        public static List<HtmlNode> GetRequiredResource(HtmlDocument doc, BuildingEnums building)
+        public static ILocator GetRequiredResource(IPage page, BuildingEnums building)
         {
-            var node = GetContractNode(doc, building);
-
-            if (node is null) return [];
-            var resourceWrapper = node.Descendants("div")
-                .FirstOrDefault(x => x.HasClass("resourceWrapper"));
-            if (resourceWrapper is null) return [];
-
-            var resources = resourceWrapper.Descendants("div")
-                .Where(x => x.HasClass("resource"))
-                .ToList();
-
-            if (resources.Count != 5) return [];
-            return resources;
+            var nodes = GetContractNode(page, building)
+                .Locator("div.resourceWrapper div.resource");
+            return nodes;
         }
 
-        public static TimeSpan GetTimeWhenEnoughResource(HtmlDocument doc, BuildingEnums building)
+        public static async Task<TimeSpan> GetTimeWhenEnoughResource(IPage page, BuildingEnums building)
         {
-            var node = GetContractNode(doc, building);
-
-            if (node is null) return TimeSpan.Zero;
-
-            var errorMessage = node.Descendants("div")
-                .FirstOrDefault(x => x.HasClass("errorMessage"));
-            if (errorMessage is null) return TimeSpan.Zero;
-            var timer = errorMessage.Descendants("span")
-                .FirstOrDefault(x => x.HasClass("timer"));
-            if (timer is null) return TimeSpan.Zero;
-            var time = timer.GetAttributeValue("value", 0);
-            return TimeSpan.FromSeconds(time);
+            var node = GetContractNode(page, building)
+                .Locator("div.errorMessage span.timer");
+            var timeValue = await node.GetAttributeAsync("value");
+            return TimeSpan.FromSeconds(int.Parse(timeValue ?? "0"));
         }
 
-        public static HtmlNode? GetConstructButton(HtmlDocument doc, BuildingEnums building)
+        public static ILocator GetConstructButton(IPage page, BuildingEnums building)
         {
-            if (building.IsResourceField()) return GetUpgradeButton(doc);
+            if (building.IsResourceField()) return GetUpgradeButton(page);
 
-            var contract_building = doc.GetElementbyId($"contract_building{(int)building}");
-            if (contract_building is null) return null;
-
-            var button = contract_building
-                .Descendants("button")
-                .FirstOrDefault(x => x.HasClass("new"));
+            var button = page.Locator($"#contract_building{(int)building} button.new");
             return button;
         }
 
-        public static HtmlNode? GetSpecialUpgradeButton(HtmlDocument doc)
+        public static ILocator GetSpecialUpgradeButton(IPage page)
         {
-            var upgradeButtonsContainer = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("upgradeButtonsContainer"));
-            if (upgradeButtonsContainer is null) return null;
-
-            var button = upgradeButtonsContainer
-                .Descendants("button")
-                .FirstOrDefault(x => x.HasClass("videoFeatureButton") && x.HasClass("green"));
+            var button = page.Locator("div.upgradeButtonsContainer button.videoFeatureButton.green");
             return button;
         }
 
-        public static HtmlNode? GetUpgradeButton(HtmlDocument doc)
+        public static ILocator GetUpgradeButton(IPage page)
         {
-            var upgradeButtonsContainer = doc.DocumentNode.Descendants("div")
-               .FirstOrDefault(x => x.HasClass("upgradeButtonsContainer"));
-            if (upgradeButtonsContainer is null) return null;
-
-            var button = upgradeButtonsContainer.Descendants("button")
-                .FirstOrDefault(x => x.HasClass("build"));
+            var button = page.Locator("div.upgradeButtonsContainer button.build");
             return button;
         }
     }

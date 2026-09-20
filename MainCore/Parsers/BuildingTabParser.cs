@@ -1,43 +1,18 @@
-﻿namespace MainCore.Parsers
+﻿using Microsoft.Playwright;
+
+namespace MainCore.Parsers
 {
     public static class BuildingTabParser
     {
-        public static HtmlNode? GetNavigationBar(HtmlDocument doc)
+        public static ILocator GetTabs(IPage page)
         {
-            var navigationBar = doc.DocumentNode
-             .Descendants("div")
-             .FirstOrDefault(x => x.HasClass("contentNavi") && x.HasClass("subNavi"));
-            if (navigationBar is null) return null;
-            return navigationBar;
-        }
-
-        private static IEnumerable<HtmlNode> GetTabs(HtmlDocument doc)
-        {
-            var navigationBar = GetNavigationBar(doc);
-            if (navigationBar is null) return [];
-            var tabs = navigationBar
-                .Descendants("a")
-                .Where(x => x.HasClass("tabItem"));
+            var tabs = page.Locator(".contentNavi.subNavi a.tabItem");
             return tabs;
         }
 
-        public static int CountTab(HtmlDocument doc)
+        public static async Task<bool> IsTabActive(ILocator tab)
         {
-            var count = GetTabs(doc)
-                .Count();
-            return count;
-        }
-
-        public static HtmlNode GetTab(HtmlDocument doc, int index)
-        {
-            var tab = GetTabs(doc)
-                .ElementAt(index);
-            return tab;
-        }
-
-        public static bool IsTabActive(HtmlNode node)
-        {
-            return node.HasClass("active");
+            return await tab.EvaluateAsync<bool>("node => node.classList.contains('active')");
         }
     }
 }

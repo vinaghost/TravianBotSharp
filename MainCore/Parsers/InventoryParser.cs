@@ -1,100 +1,55 @@
-﻿namespace MainCore.Parsers
+﻿using Microsoft.Playwright;
+
+namespace MainCore.Parsers
 {
     public static class InventoryParser
     {
-        public static bool IsInventoryPage(HtmlDocument doc)
+        public static ILocator GetInventoryPage(IPage page)
         {
-            var heroDiv = doc.GetElementbyId("heroV2");
-            if (heroDiv is null) return false;
-            var aNode = heroDiv.Descendants("a")
-                .FirstOrDefault(x => x.HasClass("tabItem"));
-            if (aNode is null) return false;
-            return aNode.HasClass("active");
+            var inventory = page.Locator("#heroV2 .inventoryPageWrapper .inventoryWrapper");
+            return inventory;
         }
 
-        public static HtmlNode? GetHeroAvatar(HtmlDocument doc)
+        public static async Task<bool> IsInventoryPageLoaded(IPage page)
         {
-            return doc.GetElementbyId("heroImageButton");
+            var inventoryPageWrapper = page.Locator("#heroV2 .inventoryPageWrapper");
+            var count = await inventoryPageWrapper.CountAsync();
+            var loading = await inventoryPageWrapper.EvaluateAsync<bool>("node => node.classList.contains('loading')");
+            return count > 0 && !loading;
         }
 
-        public static bool IsInventoryLoaded(HtmlDocument doc)
+        public static ILocator GetHeroAvatar(IPage page)
         {
-            var inventoryPageWrapper = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("inventoryPageWrapper"));
-            if (inventoryPageWrapper is null) return false;
-            return !inventoryPageWrapper.HasClass("loading");
+            return page.Locator("#heroImageButton");
         }
 
-        public static HtmlNode? GetItemSlot(HtmlDocument doc, HeroItemEnums type)
+        public static ILocator GetItemSlot(IPage page, HeroItemEnums type)
         {
-            var heroItemsDiv = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("heroItems"));
-
-            if (heroItemsDiv is null) return null;
-
-            var heroItemDivs = heroItemsDiv
-                .Descendants("div")
-                .Where(x => x.HasClass("heroItem") && !x.HasClass("empty"));
-
-            if (!heroItemDivs.Any()) return null;
-
-            foreach (var itemSlot in heroItemDivs)
-            {
-                if (itemSlot.ChildNodes.Count < 2) continue;
-                var itemNode = itemSlot.ChildNodes[1];
-                var classes = itemNode.GetClasses();
-                if (classes.Count() < 2) continue;
-
-                var itemValue = classes.ElementAt(1);
-
-                if (itemValue.ParseInt() == (int)type) return itemSlot;
-            }
-
-            return null;
+            var item = page.Locator($"div.heroItems div.heroItem:not(.empty):has(.item{(int)type})");
+            return item;
         }
 
-        public static HtmlNode? GetAmountBox(HtmlDocument doc, string name)
+        public static ILocator GetAmountBox(IPage page, string name)
         {
-            var dialog = GetResourceTransferDialog(doc);
-            if (dialog is null) return null;
-
-            var amountInput = dialog
-                .Descendants("input")
-                .FirstOrDefault(x => x.GetAttributeValue("name", "") == name);
-            return amountInput;
+            var box = page.Locator($"div.resourceTransferDialog .resourceRow input[name='{name}']");
+            return box;
         }
 
-        public static HtmlNode? GetConfirmButton(HtmlDocument doc)
+        public static ILocator GetConfirmButton(IPage page)
         {
-            var dialog = GetResourceTransferDialog(doc);
-            if (dialog is null) return null;
-
-            var actionButtonBox = dialog
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("actionButton"));
-            if (actionButtonBox is null) return null;
-
-            var buttons = actionButtonBox.Descendants("button").ToList();
-            if (buttons.Count != 2) return null;
-            var button = buttons[1];
+            var button = page.Locator("div.resourceTransferDialog .actionButton button:nth-of-type(2)");
             return button;
         }
 
-        public static HtmlNode? GetResourceTransferDialog(HtmlDocument doc)
+        public static ILocator GetResourceTransferDialog(IPage page)
         {
-            var dialog = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("resourceTransferDialog"));
+            var dialog = page.Locator("div.resourceTransferDialog");
             return dialog;
         }
 
-        public static HtmlNode? GetSuccessToast(HtmlDocument doc)
+        public static ILocator GetSuccessToast(IPage page)
         {
-            var toast = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("toast") && x.HasClass("toastSuccess"));
+            var toast = page.Locator("div.toast.toastSuccess");
             return toast;
         }
     }

@@ -4,49 +4,35 @@ namespace MainCore.Parsers
 {
     public static class StorageParser
     {
-        private static long GetResource(HtmlDocument doc, string id)
+        private static async Task<long> GetResource(IPage page, string id)
         {
-            var node = doc.GetElementbyId(id);
-            if (node is null) return -1;
-            return node.InnerText.ParseLong();
+            var valueNode = page.Locator($"#{id}");
+            var valueStrFixed = WebUtility.HtmlDecode(await valueNode.InnerTextAsync());
+            return valueStrFixed.ParseLong();
         }
 
-        public static long GetWood(HtmlDocument doc) => GetResource(doc, "l1");
+        public static Task<long> GetWood(IPage page) => GetResource(page, "l1");
 
-        public static long GetClay(HtmlDocument doc) => GetResource(doc, "l2");
+        public static Task<long> GetClay(IPage page) => GetResource(page, "l2");
 
-        public static long GetIron(HtmlDocument doc) => GetResource(doc, "l3");
+        public static Task<long> GetIron(IPage page) => GetResource(page, "l3");
 
-        public static long GetCrop(HtmlDocument doc) => GetResource(doc, "l4");
+        public static Task<long> GetCrop(IPage page) => GetResource(page, "l4");
 
-        public static long GetFreeCrop(HtmlDocument doc) => GetResource(doc, "stockBarFreeCrop");
+        public static Task<long> GetFreeCrop(IPage page) => GetResource(page, "stockBarFreeCrop");
 
-        public static long GetWarehouseCapacity(HtmlDocument doc)
+        public static async Task<long> GetWarehouseCapacity(IPage page)
         {
-            var stockBarNode = doc.GetElementbyId("stockBar");
-            if (stockBarNode is null) return -1;
-            var warehouseNode = stockBarNode.Descendants("div").FirstOrDefault(x => x.HasClass("warehouse"));
-            if (warehouseNode is null) return -1;
-            var capacityNode = warehouseNode.Descendants("div").FirstOrDefault(x => x.HasClass("capacity"));
-            if (capacityNode is null) return -1;
-            var valueNode = capacityNode.Descendants("div").FirstOrDefault(x => x.HasClass("value"));
-            if (valueNode is null) return -1;
-            return valueNode.InnerText.ParseLong();
+            var valueNode = page.Locator("#stockBar div.warehouse div.capacity div.value");
+            var valueStrFixed = WebUtility.HtmlDecode(await valueNode.InnerTextAsync());
+            return valueStrFixed.ParseLong();
         }
 
-        public static long GetGranaryCapacity(HtmlDocument doc)
+        public static async Task<long> GetGranaryCapacity(IPage page)
         {
-            var stockBarNode = doc.GetElementbyId("stockBar");
-            if (stockBarNode is null) return -1;
-            var granaryNode = stockBarNode.Descendants("div").FirstOrDefault(x => x.HasClass("granary"));
-            if (granaryNode is null) return -1;
-            var capacityNode = granaryNode.Descendants("div").FirstOrDefault(x => x.HasClass("capacity"));
-            if (capacityNode is null) return -1;
-            var valueNode = capacityNode.Descendants("div").FirstOrDefault(x => x.HasClass("value"));
-            if (valueNode is null) return -1;
-            var valueStrFixed = WebUtility.HtmlDecode(valueNode.InnerText);
-            if (string.IsNullOrEmpty(valueStrFixed)) return -1;
-            return valueNode.InnerText.ParseLong();
+            var valueNode = page.Locator("#stockBar div.granary div.capacity div.value");
+            var valueStrFixed = WebUtility.HtmlDecode(await valueNode.InnerTextAsync());
+            return valueStrFixed.ParseLong();
         }
     }
 }

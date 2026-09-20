@@ -1,30 +1,26 @@
-﻿namespace MainCore.Parsers
+﻿using Microsoft.Playwright;
+
+namespace MainCore.Parsers
 {
     public static class NavigationBarParser
     {
-        public static HtmlNode? GetDorfButton(HtmlDocument doc, int dorf)
+        public static ILocator GetDorfButton(IPage page, int dorf)
         {
             return dorf switch
             {
-                1 => GetResourceButton(doc),
-                2 => GetBuildingButton(doc),
-                _ => null,
+                1 => GetResourceButton(page),
+                _ => GetBuildingButton(page),
             };
         }
 
-        private static HtmlNode? GetButton(HtmlDocument doc, int key)
+        private static ILocator GetButton(IPage page, int key)
         {
-            var navigationBar = doc.GetElementbyId("navigation");
-            if (navigationBar is null) return null;
-
-            var button = navigationBar
-                .Descendants("a")
-                .FirstOrDefault(x => x.GetAttributeValue("accesskey", 0) == key);
+            var button = page.Locator($"#navigation a[accesskey='{key}']");
             return button;
         }
 
-        private static HtmlNode? GetResourceButton(HtmlDocument doc) => GetButton(doc, 1);
+        private static ILocator GetResourceButton(IPage page) => GetButton(page, 1);
 
-        private static HtmlNode? GetBuildingButton(HtmlDocument doc) => GetButton(doc, 2);
+        private static ILocator GetBuildingButton(IPage page) => GetButton(page, 2);
     }
 }

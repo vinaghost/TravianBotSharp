@@ -1,65 +1,40 @@
-﻿namespace MainCore.Parsers
+﻿using Microsoft.Playwright;
+
+namespace MainCore.Parsers
 {
     public static class FarmListParser
     {
-        public static IEnumerable<HtmlNode> GetFarmNodes(HtmlDocument doc)
+        public static async Task<List<FarmDto>> GetFarmInfo(IPage page)
         {
-            var farmListTable = doc.GetElementbyId("rallyPointFarmList");
-            if (farmListTable is null) return [];
+            var farmListHeaders = page.Locator("#rallyPointFarmList div.farmListHeader");
+            var farmListHeaderCount = await farmListHeaders.CountAsync();
 
-            var farmlistNodes = farmListTable
-                .Descendants("div")
-                .Where(x => x.HasClass("farmListHeader"));
-            return farmlistNodes;
-        }
-
-        public static FarmId GetId(HtmlNode node)
-        {
-            var farmlistDiv = node
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("dragAndDrop"));
-
-            if (farmlistDiv is null) return default;
-
-            var id = farmlistDiv.GetAttributeValue("data-list", "0");
-            return new FarmId(id.ParseInt());
-        }
-
-        public static string GetName(HtmlNode node)
-        {
-            var farmlistName = node
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("name"));
-            if (farmlistName is null) return "";
-            return farmlistName.InnerText.Trim();
-        }
-
-        public static HtmlNode? GetStartButton(HtmlDocument doc, FarmId raidId)
-        {
-            var nodes = GetFarmNodes(doc);
-            foreach (var node in nodes)
+            var extractedFarms = new List<FarmDto>();
+            for (var i = 0; i < farmListHeaderCount; i++)
             {
-                var id = GetId(node);
-                if (id != raidId) continue;
+                var farmListHeader = farmListHeaders.Nth(i);
+                var farmId = await farmListHeader.Locator("div.dragAndDrop").GetAttributeAsync("data-list") is string farmIdStr && int.TryParse(farmIdStr, out int id) ? id : -1;
+                var name = await farmListHeader.Locator("div.farmListName div.name").InnerTextAsync();
 
-                var startNode = node
-                    .Descendants("button")
-                    .FirstOrDefault(x => x.HasClass("startFarmList"));
-                if (startNode is null) continue;
-                return startNode;
+                extractedFarms.Add(new FarmDto
+                {
+                    Id = new FarmId(farmId),
+                    Name = name.Trim()
+                });
             }
-            return null;
+            return extractedFarms;
         }
 
-        public static HtmlNode? GetStartAllButton(HtmlDocument doc)
+        public static ILocator GetStartButton(IPage page, FarmId raidId)
         {
-            var farmlistTable = doc.GetElementbyId("rallyPointFarmList");
-            if (farmlistTable is null) return null;
-            var startAllFarmListButton = farmlistTable
-                .Descendants("button")
-                .FirstOrDefault(x => x.HasClass("startAllFarmLists"));
+            var button = page.Locator($"#rallyPointFarmList div.farmListHeader:has(div[data-list='{raidId.Value}']) button.startFarmList");
+            return button;
+        }
 
-            return startAllFarmListButton;
+        public static ILocator GetStartAllButton(IPage page)
+        {
+            var button = page.Locator("#rallyPointFarmList button.startAllFarmLists");
+            return button;
         }
     }
 }

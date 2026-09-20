@@ -2,41 +2,27 @@
 {
     public static class QuestParser
     {
-        public static HtmlNode? GetQuestMaster(HtmlDocument doc)
+        public static ILocator GetQuestMaster(IPage page)
         {
-            var questmasterButton = doc.GetElementbyId("questmasterButton");
-            return questmasterButton;
+            var button = page.Locator("#questmasterButton");
+            return button;
         }
 
-        public static bool IsQuestClaimable(HtmlDocument doc)
+        public static ILocator IsQuestClaimable(IPage page)
         {
-            var questmasterButton = GetQuestMaster(doc);
-            if (questmasterButton is null) return false;
-            var newQuestSpeechBubble = questmasterButton
-                .Descendants("div")
-                .Any(x => x.HasClass("newQuestSpeechBubble"));
-            return newQuestSpeechBubble;
+            var speechBubble = page.Locator("#questmasterButton div.newQuestSpeechBubble");
+            return speechBubble;
         }
 
-        public static HtmlNode? GetQuestCollectButton(HtmlDocument doc)
+        public static ILocator GetQuestCollectButton(IPage page)
         {
-            var taskOverviewTable = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("taskOverview"));
-
-            if (taskOverviewTable is null) return null;
-
-            var collectButton = taskOverviewTable
-                .Descendants("button")
-                .FirstOrDefault(x => x.HasClass("collect") && !x.HasClass("disabled"));
-            return collectButton;
+            var buttons = page.Locator("div.tasks.tasksVillage div.taskOverview button.collect:not(.disabled)");
+            return buttons;
         }
 
-        public static bool IsQuestPage(HtmlDocument doc)
+        public static ILocator IsQuestPage(IPage page)
         {
-            var table = doc.DocumentNode
-                .Descendants("div")
-                .Any(x => x.HasClass("tasks") && x.HasClass("tasksVillage"));
+            var table = page.Locator("div.tasks.tasksVillage div.taskOverview");
             return table;
         }
     }

@@ -1,59 +1,26 @@
-﻿namespace MainCore.Parsers
+﻿using System.Net;
+
+namespace MainCore.Parsers
 {
     public static class TrainTroopParser
     {
-        public static HtmlNode? GetInputBox(HtmlDocument doc, TroopEnums troop)
+        public static ILocator GetInputBox(IPage page, TroopEnums troop)
         {
-            var node = GetNode(doc, troop);
-            if (node is null) return null;
-            var cta = node.Descendants("div")
-                .FirstOrDefault(x => x.HasClass("cta"));
-            if (cta is null) return null;
-
-            var input = cta.Descendants("input")
-                .FirstOrDefault(x => x.HasClass("text"));
-            return input;
+            var node = page.Locator($"div.troop:not(.empty):has(img.unit.u{(int)troop}) div.cta input.text");
+            return node;
         }
 
-        public static int GetMaxAmount(HtmlDocument doc, TroopEnums troop)
+        public static async Task<int> GetMaxAmount(IPage page, TroopEnums troop)
         {
-            var node = GetNode(doc, troop);
-            if (node is null) return 0;
-            var cta = node.Descendants("div")
-                .FirstOrDefault(x => x.HasClass("cta"));
-            if (cta is null) return 0;
-            var a = cta.Descendants("a")
-                .FirstOrDefault();
-            if (a is null) return 0;
-
-            return a.InnerText.ParseInt();
+            var node = page.Locator($"div.troop:not(.empty):has(img.unit.u{(int)troop}) div.cta a");
+            var valueStrFixed = WebUtility.HtmlDecode(await node.InnerTextAsync());
+            return valueStrFixed.ParseInt();
         }
 
-        public static HtmlNode? GetTrainButton(HtmlDocument doc)
+        public static ILocator GetTrainButton(IPage page)
         {
-            return doc.GetElementbyId("s1");
-        }
-
-        private static HtmlNode? GetNode(HtmlDocument doc, TroopEnums troop)
-        {
-            var nodes = doc.DocumentNode.Descendants("div")
-               .Where(x => x.HasClass("troop"))
-               .Where(x => !x.HasClass("empty"))
-               .AsEnumerable();
-
-            foreach (var node in nodes)
-            {
-                var img = node.Descendants("img")
-                .FirstOrDefault(x => x.HasClass("unit"));
-                if (img is null) continue;
-                var classes = img.GetClasses();
-                var type = classes
-                    .Where(x => x.StartsWith('u'))
-                    .FirstOrDefault(x => !x.Equals("unit"));
-                if (type is null) continue;
-                if (type.ParseInt() == (int)troop) return node;
-            }
-            return null;
+            var node = page.Locator("#s1");
+            return node;
         }
     }
 }

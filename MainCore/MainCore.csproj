@@ -91,6 +91,7 @@
     <Using Include="MainCore.Errors" />
     <Using Include="MainCore.Enums" />
     <Using Include="MainCore.Common.Extensions" />
+    <Using Include="Microsoft.Playwright" />
     <Using Alias="ILogger" Include="Serilog.ILogger" />
   </ItemGroup>
 </Project>

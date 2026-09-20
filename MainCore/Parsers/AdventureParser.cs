@@ -1,108 +1,72 @@
-﻿namespace MainCore.Parsers
+﻿using Microsoft.Playwright;
+using System.Globalization;
+
+namespace MainCore.Parsers
 {
     public static class AdventureParser
     {
-        public static TimeSpan GetAdventureDuration(HtmlDocument doc)
+        public static async Task<TimeSpan> GetAdventureDuration(IPage page)
         {
-            var heroAdventure = doc.GetElementbyId("heroAdventure");
-            if (heroAdventure is null) return TimeSpan.Zero;
-            var timer = heroAdventure
-                .Descendants("span")
-                .FirstOrDefault(x => x.HasClass("timer"));
-            if (timer is null) return TimeSpan.Zero;
-
-            var seconds = timer.GetAttributeValue("value", 0);
-            return TimeSpan.FromSeconds(seconds);
+            var timer = page.Locator("#heroAdventure span.timer").First;
+            var seconds = await timer.GetAttributeAsync("value");
+            if (string.IsNullOrEmpty(seconds)) return TimeSpan.Zero;
+            return TimeSpan.FromSeconds(double.Parse(seconds));
         }
 
-        public static bool IsAdventurePage(HtmlDocument doc)
+        public static async Task<bool> IsAdventurePage(IPage page)
         {
-            var table = doc.DocumentNode
-                .Descendants("table")
-                .Any(x => x.HasClass("adventureList"));
-            return table;
+            var heroAdventure = page.Locator("#heroAdventure").First;
+            var isVisible = await heroAdventure.IsVisibleAsync();
+            return isVisible;
         }
 
-        public static HtmlNode? GetHeroAdventureButton(HtmlDocument doc)
+        public static ILocator GetHeroAdventureButton(IPage page)
         {
-            var adventureButton = doc.DocumentNode
-                .Descendants("a")
-                .FirstOrDefault(x => x.HasClass("adventure") && x.HasClass("round"));
+            var adventureButton = page.Locator("a.adventure.round");
             return adventureButton;
         }
 
-        public static bool CanStartAdventure(HtmlDocument doc)
+        public static async Task<bool> CanStartAdventure(IPage page)
         {
-            var heroStatus = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("heroStatus"));
-            if (heroStatus is null) return false;
-            var heroHome = heroStatus.Descendants("i")
-                .Any(x => x.HasClass("heroHome"));
-            if (!heroHome) return false;
+            var heroHome = page.Locator("div.heroStatus i.heroHome").First;
+            var isHeroHomeVisible = await heroHome.IsVisibleAsync();
+            if (!isHeroHomeVisible) return false;
 
-            var adventureButton = GetHeroAdventureButton(doc);
-            if (adventureButton is null) return false;
-
-            var adventureAvailabe = adventureButton.Descendants("div")
-                .Any(x => x.HasClass("content"));
+            var adventureButton = GetHeroAdventureButton(page);
+            var adventureAvailabe = await adventureButton.Locator("div.content").First.IsVisibleAsync();
             return adventureAvailabe;
         }
 
-        public static HtmlNode? GetAdventureButton(HtmlDocument doc)
+        public record struct AdventureInfo(string Difficult, TimeSpan Duration, ILocator Button);
+
+        public static async Task<List<AdventureInfo>> GetAdventureInfo(IPage page)
         {
-            var adventureTable = doc.GetElementbyId("heroAdventure");
-            if (adventureTable is null) return null;
+            var rows = page.Locator("#heroAdventure tbody tr");
+            int rowCount = await rows.CountAsync();
 
-            var adventureTableBody = adventureTable
-                .Descendants("tbody")
-                .FirstOrDefault();
-            if (adventureTableBody is null) return null;
+            var adventureInfoList = new List<AdventureInfo>();
+            for (int i = 0; i < rowCount; i++)
+            {
+                var row = rows.Nth(i);
 
-            var adventureTableBodyRow = adventureTableBody
-                .Descendants("tr")
-                .FirstOrDefault();
-            if (adventureTableBodyRow is null) return null;
+                string? difficultyClass = await row.Locator("td.difficulty i").GetAttributeAsync("class");
+                string difficulty = !string.IsNullOrEmpty(difficultyClass)
+                    ? difficultyClass.Replace("difficulty_", "")
+                    : "unknown";
 
-            var startAdventureButton = adventureTableBodyRow
-                .Descendants("button")
-                .FirstOrDefault();
-            return startAdventureButton;
+                string durationText = await row.Locator("td.duration .duration").InnerTextAsync();
+                TimeSpan duration = TimeSpan.Parse(durationText, CultureInfo.InvariantCulture);
+
+                ILocator buttonLocator = row.Locator("td.button button");
+                adventureInfoList.Add(new AdventureInfo(difficulty, duration, buttonLocator));
+            }
+            return adventureInfoList;
         }
 
-        public static HtmlNode? GetContinueButton(HtmlDocument doc)
+        public static ILocator GetContinueButton(IPage page)
         {
-            var continueButton = doc.DocumentNode
-                .Descendants("button")
-                .FirstOrDefault(x => x.HasClass("continue"));
+            var continueButton = page.Locator("button.continue");
             return continueButton;
-        }
-
-        public static string GetAdventureInfo(HtmlNode node)
-        {
-            // adventureTableBodyRow/td/buton
-            var trNode = node?.ParentNode?.ParentNode;
-            if (trNode is null) return "unknown";
-            var difficult = GetAdventureDifficult(trNode);
-            var coordinates = GetAdventureCoordinates(trNode);
-
-            return $"{difficult} - {coordinates}";
-        }
-
-        private static string GetAdventureDifficult(HtmlNode node)
-        {
-            var tdList = node.Descendants("td").ToArray();
-            if (tdList.Length < 3) return "unknown";
-            var iconDifficulty = tdList[3].FirstChild;
-            if (iconDifficulty is null) return "unknown";
-            return iconDifficulty.GetAttributeValue("alt", "unknown");
-        }
-
-        private static string GetAdventureCoordinates(HtmlNode node)
-        {
-            var tdList = node.Descendants("td").ToArray();
-            if (tdList.Length < 2) return "[~|~]";
-            return tdList[1].InnerText;
         }
     }
 }

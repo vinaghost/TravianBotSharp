@@ -1,45 +1,31 @@
-﻿namespace MainCore.Parsers
+﻿using Microsoft.Playwright;
+
+namespace MainCore.Parsers
 {
     public static class LoginParser
     {
-        public static HtmlNode? GetLoginButton(HtmlDocument doc)
+        public static ILocator GetLoginButton(IPage page)
         {
-            var loginScene = doc.GetElementbyId("loginScene");
-            if (loginScene is null) return null;
-
-            var loginButton = loginScene
-                .Descendants("button")
-                .FirstOrDefault(x => x.HasClass("green"));
-
-            return loginButton;
+            var button = page.Locator("#loginScene button.green");
+            return button;
         }
 
-        public static HtmlNode? GetUsernameInput(HtmlDocument doc)
+        public static ILocator GetUsernameInput(IPage page)
         {
-            var usernameInput = doc.DocumentNode
-                .Descendants("input")
-                .FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("name"));
+            var usernameInput = page.Locator("input[name='name']");
             return usernameInput;
         }
 
-        public static HtmlNode? GetPasswordInput(HtmlDocument doc)
+        public static ILocator GetPasswordInput(IPage page)
         {
-            var passwordInput = doc.DocumentNode
-                .Descendants("input")
-                .FirstOrDefault(x => x.GetAttributeValue("name", "").Equals("password"));
+            var passwordInput = page.Locator("input[name='password']");
             return passwordInput;
         }
 
-        public static bool IsIngamePage(HtmlDocument doc)
+        public static ILocator GetServerTime(IPage page)
         {
-            var serverTime = doc.GetElementbyId("servertime");
-            return serverTime is not null;
-        }
-
-        public static bool IsLoginPage(HtmlDocument doc)
-        {
-            var loginButton = GetLoginButton(doc);
-            return loginButton is not null;
+            var serverTime = page.Locator("#servertime");
+            return serverTime;
         }
     }
 }

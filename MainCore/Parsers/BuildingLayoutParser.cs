@@ -1,173 +1,73 @@
-﻿namespace MainCore.Parsers
+﻿using Microsoft.Playwright;
+using System.Text.RegularExpressions;
+
+namespace MainCore.Parsers
 {
-    public static class BuildingLayoutParser
+    public static partial class BuildingLayoutParser
     {
-        public static IEnumerable<BuildingDto> GetFields(HtmlDocument doc)
+        public static async Task<List<BuildingDto>> GetFields(IPage page)
         {
-            static IEnumerable<HtmlNode> GetNodes(HtmlDocument doc)
+            var fields = page.Locator("#resourceFieldContainer a.level");
+            var fieldCount = await fields.CountAsync();
+            var extractedData = new List<BuildingDto>();
+            for (var i = 0; i < fieldCount; i++)
             {
-                var resourceFieldContainerNode = doc.GetElementbyId("resourceFieldContainer");
-                if (resourceFieldContainerNode is null) return [];
-
-                var nodes = resourceFieldContainerNode
-                    .ChildNodes
-                    .Where(x => x.HasClass("level"));
-                return nodes;
-            }
-
-            static int GetId(HtmlNode node)
-            {
-                var classess = node.GetClasses();
-                var buildingSlot = classess.FirstOrDefault(x => x.StartsWith("buildingSlot"));
-                if (buildingSlot is null) return -1;
-                return buildingSlot.ParseInt();
-            }
-
-            static BuildingEnums GetBuildingType(HtmlNode node)
-            {
-                var classess = node.GetClasses();
-                var gid = classess.FirstOrDefault(x => x.StartsWith("gid"));
-                if (gid is null) return BuildingEnums.Unknown;
-                return (BuildingEnums)gid.ParseInt();
-            }
-
-            static int GetLevel(HtmlNode node)
-            {
-                var classess = node.GetClasses();
-                var level = classess.FirstOrDefault(x => x.StartsWith("level") && !x.Equals("level"));
-                if (level is null) return -1;
-                return level.ParseInt();
-            }
-
-            static bool IsUnderConstruction(HtmlNode node)
-            {
-                return node.GetClasses().Contains("underConstruction");
-            }
-
-            foreach (var node in GetNodes(doc))
-            {
-                var location = GetId(node);
-                var level = GetLevel(node);
-                var type = GetBuildingType(node);
-                var isUnderConstruction = IsUnderConstruction(node);
-                yield return new BuildingDto()
+                var field = fields.Nth(i);
+                string classAttr = await field.GetAttributeAsync("class") ?? "";
+                var slotMatch = BuildingSlotExtractor().Match(classAttr);
+                var gidMatch = BuildingTypeExtractor().Match(classAttr);
+                var levelMatch = LevelExtractor().Match(classAttr);
+                bool isUnderConstruction = classAttr.Contains("underConstruction");
+                extractedData.Add(new BuildingDto
                 {
-                    Location = location,
-                    Level = level,
-                    Type = type,
-                    IsUnderConstruction = isUnderConstruction,
-                };
+                    Location = slotMatch.Success ? int.Parse(slotMatch.Groups[1].Value) : -1,
+                    Type = gidMatch.Success ? (BuildingEnums)int.Parse(gidMatch.Groups[1].Value) : BuildingEnums.Unknown,
+                    Level = levelMatch.Success ? int.Parse(levelMatch.Groups[1].Value) : -2,
+                    IsUnderConstruction = isUnderConstruction
+                });
             }
+            return extractedData;
         }
 
-        public static IEnumerable<BuildingDto> GetInfrastructures(HtmlDocument doc)
+        public static async Task<List<BuildingDto>> GetInfrastructures(IPage page)
         {
-            static IEnumerable<HtmlNode> GetNodes(HtmlDocument doc)
-            {
-                var villageContentNode = doc.GetElementbyId("villageContent");
-                if (villageContentNode is null) return [];
-                var list = villageContentNode.Descendants("div").Where(x => x.HasClass("buildingSlot"));
-                if (list.Count() == 23) // level 1 wall and above has 2 part
-                {
-                    return list.SkipLast(1);
-                }
+            var buildings = page.Locator("#villageContent .buildingSlot");
+            var buildingCount = await buildings.CountAsync();
+            var extractedData = new List<BuildingDto>();
 
-                return list;
-            }
-
-            static int GetId(HtmlNode node)
+            for (var i = 0; i < buildingCount; i++)
             {
-                return node.GetAttributeValue<int>("data-aid", -1);
-            }
+                if (i == 22) continue;
+                var building = buildings.Nth(i);
+                int location = await building.GetAttributeAsync("data-aid") is string locStr && int.TryParse(locStr, out int loc) ? loc : -1;
+                int level = await building.Locator("a").GetAttributeAsync("data-level") is string levelStr && int.TryParse(levelStr, out int l) ? l : -1;
+                bool isUnderConstruction = await building.Locator("a").EvaluateAsync<bool>("node => node.classList.contains('underConstruction')");
 
-            static BuildingEnums GetBuildingType(HtmlNode node)
-            {
-                return (BuildingEnums)node.GetAttributeValue<int>("data-gid", -1);
-            }
-
-            static int GetLevel(HtmlNode node)
-            {
-                var aNode = node.Descendants("a").FirstOrDefault();
-                if (aNode is null) return -1;
-                return aNode.GetAttributeValue<int>("data-level", -1);
-            }
-
-            static bool IsUnderConstruction(HtmlNode node)
-            {
-                return node.Descendants("a").Any(x => x.HasClass("underConstruction"));
-            }
-
-            foreach (var node in GetNodes(doc))
-            {
-                var location = GetId(node);
-                var level = GetLevel(node);
                 var type = location switch
                 {
                     26 => BuildingEnums.MainBuilding,
                     39 => BuildingEnums.RallyPoint,
-                    _ => GetBuildingType(node)
+                    _ => (BuildingEnums)(await building.GetAttributeAsync("data-gid") is string typeStr && int.TryParse(typeStr, out int t) ? t : -1)
                 };
-                var isUnderConstruction = IsUnderConstruction(node);
 
-                yield return new BuildingDto()
+                extractedData.Add(new BuildingDto
                 {
                     Location = location,
-                    Level = level,
-                    Type = type,
-                    IsUnderConstruction = isUnderConstruction,
-                };
-            }
-        }
-
-        public static IEnumerable<QueueBuildingDto> GetQueueBuilding(HtmlDocument doc)
-        {
-            static IEnumerable<HtmlNode> GetNodes(HtmlDocument doc)
-            {
-                var finishButton = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("finishNow"));
-                if (finishButton is null) return [];
-                var parent = finishButton.ParentNode;
-                if (parent is null) return [];
-                return parent.Descendants("li");
-            }
-
-            static string GetBuildingType(HtmlNode node)
-            {
-                var nodeName = node.Descendants("div").FirstOrDefault(x => x.HasClass("name"));
-                if (nodeName is null) return "";
-
-                return new string(nodeName.ChildNodes[0].InnerText.Where(c => char.IsLetter(c) || char.IsDigit(c)).ToArray());
-            }
-
-            static int GetLevel(HtmlNode node)
-            {
-                var nodeLevel = node.Descendants("span").FirstOrDefault(x => x.HasClass("lvl"));
-                if (nodeLevel is null) return 0;
-
-                return nodeLevel.InnerText.ParseInt();
-            }
-
-            static TimeSpan GetDuration(HtmlNode node)
-            {
-                var nodeTimer = node.Descendants().FirstOrDefault(x => x.HasClass("timer"));
-                if (nodeTimer is null) return TimeSpan.Zero;
-                int sec = nodeTimer.GetAttributeValue("value", 0);
-                return TimeSpan.FromSeconds(sec);
-            }
-
-            var nodes = GetNodes(doc);
-            foreach (var node in nodes)
-            {
-                var type = GetBuildingType(node);
-                var level = GetLevel(node);
-                var duration = GetDuration(node);
-                yield return new QueueBuildingDto()
-                {
                     Type = type,
                     Level = level,
-                    CompleteTime = DateTime.Now.Add(duration),
-                    Location = -1,
-                };
+                    IsUnderConstruction = isUnderConstruction
+                });
             }
+            return extractedData;
         }
+
+        [GeneratedRegex(@"buildingSlot(\d+)")]
+        private static partial Regex BuildingSlotExtractor();
+
+        [GeneratedRegex(@"gid(\d+)")]
+        private static partial Regex BuildingTypeExtractor();
+
+        [GeneratedRegex(@"\blevel(\d+)")]
+        private static partial Regex LevelExtractor();
     }
 }

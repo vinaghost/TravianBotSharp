@@ -1,43 +1,50 @@
-﻿namespace MainCore.Parsers
+﻿using Microsoft.Playwright;
+
+namespace MainCore.Parsers
 {
     public static class CompleteImmediatelyParser
     {
-        public static int CountQueueBuilding(HtmlDocument doc)
+        public static async Task<List<QueueBuildingDto>> GetQueueBuilding(IPage page)
         {
-            var finishButton = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("finishNow"));
-            if (finishButton is null) return 0;
-            var parent = finishButton.ParentNode;
-            if (parent is null) return 0;
-            var nodes = parent
-                .Descendants("li");
-            return nodes.Count();
+            var buildings = page.Locator(".buildingList li");
+            var buildingCount = await buildings.CountAsync();
+            var extractedData = new List<QueueBuildingDto>();
+
+            for (var i = 0; i < buildingCount; i++)
+            {
+                var building = buildings.Nth(i);
+                string type = await building.Locator(".name").InnerTextAsync();
+                int level = await building.Locator(".lvl").InnerTextAsync() is string levelStr && int.TryParse(levelStr, out int l) ? l : 0;
+                int durationSeconds = await building.Locator(".timer").GetAttributeAsync("value") is string durationStr && int.TryParse(durationStr, out int d) ? d : 0;
+                extractedData.Add(new QueueBuildingDto
+                {
+                    Type = type,
+                    Level = level,
+                    CompleteTime = DateTime.Now.AddSeconds(durationSeconds),
+                    Location = -1
+                });
+            }
+
+            return extractedData;
         }
 
-        public static HtmlNode? GetCompleteButton(HtmlDocument doc)
+        public static async Task<int> CountQueueBuilding(IPage page)
         {
-            var finishDiv = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("finishNow"));
-
-            if (finishDiv is null) return null;
-
-            var finishButton = finishDiv
-                .Descendants("button")
-                .FirstOrDefault();
-            return finishButton;
+            var buildings = page.Locator(".buildingList li");
+            var buildingCount = await buildings.CountAsync();
+            return buildingCount;
         }
 
-        public static HtmlNode? GetConfirmButton(HtmlDocument doc)
+        public static ILocator GetCompleteButton(IPage page)
         {
-            var finishDialog = doc.GetElementbyId("finishNowDialog");
-            if (finishDialog is null) return null;
+            var button = page.Locator(".buildingList .finishNow button");
+            return button;
+        }
 
-            var confirmFinishbutton = finishDialog
-                .Descendants("button")
-                .FirstOrDefault();
-            return confirmFinishbutton;
+        public static ILocator GetConfirmButton(IPage page)
+        {
+            var button = page.Locator("#finishNowDialog button");
+            return button;
         }
     }
 }

@@ -1,30 +1,30 @@
-﻿namespace MainCore.Parsers
+﻿using Microsoft.Playwright;
+
+namespace MainCore.Parsers
 {
     public static class InfoParser
     {
-        public static int GetGold(HtmlDocument doc)
+        public static async Task<int> GetGold(IPage page)
         {
-            var goldNode = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("ajaxReplaceableGoldAmount"));
-            if (goldNode is null) return -1;
-            return goldNode.InnerText.ParseInt();
+            var goldNode = page.Locator("div.ajaxReplaceableGoldAmount");
+            var gold = await goldNode.InnerTextAsync();
+            return gold.ParseInt();
         }
 
-        public static int GetSilver(HtmlDocument doc)
+        public static async Task<int> GetSilver(IPage page)
         {
-            var silverNode = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("ajaxReplaceableSilverAmount"));
-            if (silverNode is null) return -1;
-            return silverNode.InnerText.ParseInt();
+            var silverNode = page.Locator("div.ajaxReplaceableSilverAmount");
+            var silver = await silverNode.InnerTextAsync();
+            return silver.ParseInt();
         }
 
-        public static bool HasPlusAccount(HtmlDocument doc)
+        public static async Task<bool> HasPlusAccount(IPage page)
         {
-            var boxLink = doc.GetElementbyId("sidebarBoxLinklist");
-            if (boxLink is null) return false;
-            var editButton = boxLink.Descendants("a").FirstOrDefault(x => x.HasClass("edit") && x.HasClass("round"));
-            if (editButton is null) return false;
+            var editButton = page.Locator("#sidebarBoxLinklist a.edit.round");
+            var classAttr = await editButton.GetAttributeAsync("class") ?? "";
 
-            if (editButton.HasClass("green")) return true;
-            if (editButton.HasClass("gold")) return false;
+            if (classAttr.Contains("green")) return true;
+            if (classAttr.Contains("gold")) return false;
             return false;
         }
     }
