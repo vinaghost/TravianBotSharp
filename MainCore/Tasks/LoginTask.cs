@@ -28,6 +28,16 @@ namespace MainCore.Tasks
 
             await delayService.DelayTask(cancellationToken);
 
+            var cmpwrapper = chromeBrowser.CurrentPage.Locator("div#cmpwrapper");
+            if (await cmpwrapper.CountAsync() > 0)
+            {
+                var acceptButton = cmpwrapper.Locator(".cmpboxbtn.cmpboxbtnyes.cmptxt_btn_yes");
+                if (await acceptButton.CountAsync() > 0)
+                {
+                    await acceptButton.ClickAsync();
+                }
+            }
+
             var contextualHelpEnable = await OptionParser.IsContextualHelpEnable(chromeBrowser.CurrentPage);
             if (!contextualHelpEnable) return Result.Ok();
 
