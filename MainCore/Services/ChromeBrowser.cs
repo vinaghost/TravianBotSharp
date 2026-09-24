@@ -1,5 +1,6 @@
 ﻿using Microsoft.Playwright;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace MainCore.Services
 {
@@ -182,7 +183,7 @@ namespace MainCore.Services
 
             try
             {
-                await _mainPage.WaitForURLAsync(url);
+                await _mainPage.WaitForURLAsync(new Regex(url, RegexOptions.IgnoreCase));
                 await _mainPage.Locator("#logo").WaitForAsync();
                 return Result.Ok();
             }
