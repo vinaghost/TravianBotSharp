@@ -43,6 +43,10 @@ namespace MainCore
                 services.AddDbContext<AppDbContext>(options => options
                     .EnableSensitiveDataLogging(hostContext.HostingEnvironment.IsDevelopment())
                     .UseSqlite(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
+
+                services.AddPooledDbContextFactory<AppDbContext>(options => options
+                    .EnableSensitiveDataLogging(hostContext.HostingEnvironment.IsDevelopment())
+                    .UseSqlite(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
             });
 
         public static IHostBuilder ConfigureServices(this IHostBuilder hostBuilder) =>
