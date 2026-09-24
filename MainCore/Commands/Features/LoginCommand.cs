@@ -11,28 +11,22 @@
             AppDbContext context,
             CancellationToken cancellationToken)
         {
-            if (LoginParser.IsIngamePage(browser.Html)) return Result.Ok();
+            if (await LoginParser.IsIngamePage(browser.CurrentPage)) return Result.Ok();
 
             var (username, password) = GetLoginInfo(command.AccountId, context);
 
             Result result;
 
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => LoginParser.GetUsernameInput(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-            result = await browser.Input(element, username, cancellationToken);
+            result = await browser.Input(LoginParser.GetUsernameInput(browser.CurrentPage), username);
             if (result.IsFailed) return result;
 
-            (_, isFailed, element, errors) = await browser.GetElement(doc => LoginParser.GetPasswordInput(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-            result = await browser.Input(element, password, cancellationToken);
+            result = await browser.Input(LoginParser.GetPasswordInput(browser.CurrentPage), password);
             if (result.IsFailed) return result;
 
-            (_, isFailed, element, errors) = await browser.GetElement(doc => LoginParser.GetLoginButton(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-            result = await browser.Click(element, cancellationToken);
+            result = await browser.Click(LoginParser.GetLoginButton(browser.CurrentPage));
             if (result.IsFailed) return result;
 
-            result = await browser.WaitPageChanged("dorf", cancellationToken);
+            result = await browser.WaitPageChanged("dorf");
             if (result.IsFailed) return result;
 
             return Result.Ok();

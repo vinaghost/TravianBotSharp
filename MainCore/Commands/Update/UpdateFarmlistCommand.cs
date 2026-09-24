@@ -12,9 +12,7 @@
             IRxQueue rxQueue
             )
         {
-            await Task.CompletedTask;
-
-            var dtos = Get(browser.Html);
+            var dtos = await FarmListParser.GetFarmInfo(browser.CurrentPage);
             context.UpdateToDatabase(command.AccountId, dtos);
             rxQueue.Enqueue(new FarmsModified(command.AccountId));
             return Result.Ok();
@@ -43,21 +41,6 @@
             }
 
             context.SaveChanges();
-        }
-
-        private static IEnumerable<FarmDto> Get(HtmlDocument doc)
-        {
-            var nodes = FarmListParser.GetFarmNodes(doc);
-            foreach (var node in nodes)
-            {
-                var id = FarmListParser.GetId(node);
-                var name = FarmListParser.GetName(node);
-                yield return new()
-                {
-                    Id = id,
-                    Name = name,
-                };
-            }
         }
     }
 }

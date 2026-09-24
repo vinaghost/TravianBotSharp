@@ -11,17 +11,15 @@
             AppDbContext context
             )
         {
-            await Task.CompletedTask;
-
-            var dto = Get(browser.Html);
+            var dto = await Get(browser.CurrentPage);
             context.UpdateToDatabase(command.AccountId, dto);
         }
 
-        private static AccountInfoDto Get(HtmlDocument doc)
+        private static async Task<AccountInfoDto> Get(IPage page)
         {
-            var gold = InfoParser.GetGold(doc);
-            var silver = InfoParser.GetSilver(doc);
-            var hasPlusAccount = InfoParser.HasPlusAccount(doc);
+            var gold = await InfoParser.GetGold(page);
+            var silver = await InfoParser.GetSilver(page);
+            var hasPlusAccount = await InfoParser.HasPlusAccount(page);
 
             return new AccountInfoDto
             {

@@ -26,14 +26,11 @@
                 return Result.Ok();
             }
 
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => NavigationBarParser.GetDorfButton(doc, dorf), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
             Result result;
-            result = await browser.Click(element, cancellationToken);
+            result = await browser.Click(NavigationBarParser.GetDorfButton(browser.CurrentPage, dorf));
             if (result.IsFailed) return result;
 
-            result = await browser.WaitPageChanged($"dorf{dorf}.php", cancellationToken);
+            result = await browser.WaitPageChanged($"dorf{dorf}.php");
             if (result.IsFailed) return result;
 
             return Result.Ok();

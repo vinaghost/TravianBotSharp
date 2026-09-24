@@ -12,13 +12,12 @@
                  IRxQueue rxQueue
                  )
         {
-            await Task.CompletedTask;
             var villageId = command.VillageId;
 
-            var dtoBuilding = GetBuildings(browser.CurrentUrl, browser.Html).ToList();
+            var dtoBuilding = await GetBuildings(browser.CurrentUrl, browser.CurrentPage);
             if (dtoBuilding.Count == 0) return Result.Ok();
 
-            var dtoQueueBuilding = BuildingLayoutParser.GetQueueBuilding(browser.Html).ToList();
+            var dtoQueueBuilding = await BuildingLayoutParser.GetQueueBuilding(browser.CurrentPage);
 
             var result = IsValidQueueBuilding(dtoQueueBuilding);
             if (result.IsFailed) return result;
@@ -29,13 +28,13 @@
             return Result.Ok();
         }
 
-        private static IEnumerable<BuildingDto> GetBuildings(string url, HtmlDocument html)
+        private static async Task<List<BuildingDto>> GetBuildings(string url, IPage page)
         {
             if (url.Contains("dorf1"))
-                return BuildingLayoutParser.GetFields(html);
+                return await BuildingLayoutParser.GetFields(page);
 
             if (url.Contains("dorf2"))
-                return BuildingLayoutParser.GetInfrastructures(html);
+                return await BuildingLayoutParser.GetInfrastructures(page);
 
             return [];
         }

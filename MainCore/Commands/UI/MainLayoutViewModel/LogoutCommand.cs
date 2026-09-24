@@ -15,7 +15,7 @@
             taskManager.SetStatus(accountId, StatusEnums.Stopping);
             await taskManager.StopCurrentTask(accountId);
 
-            await browser.Close();
+            await browser.Shutdown();
 
             taskManager.SetStatus(accountId, StatusEnums.Offline);
         }

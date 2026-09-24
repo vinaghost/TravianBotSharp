@@ -28,7 +28,7 @@ namespace MainCore.Tasks
 
             await delayService.DelayTask(cancellationToken);
 
-            var contextualHelpEnable = OptionParser.IsContextualHelpEnable(chromeBrowser.Html);
+            var contextualHelpEnable = await OptionParser.IsContextualHelpEnable(chromeBrowser.CurrentPage);
             if (!contextualHelpEnable) return Result.Ok();
 
             result = await toOptionsPageCommand.HandleAsync(new(), cancellationToken);

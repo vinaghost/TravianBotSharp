@@ -8,10 +8,10 @@
             return button;
         }
 
-        public static ILocator IsQuestClaimable(IPage page)
+        public static async Task<bool> IsQuestClaimable(IPage page)
         {
             var speechBubble = page.Locator("#questmasterButton div.newQuestSpeechBubble");
-            return speechBubble;
+            return await speechBubble.CountAsync() > 0;
         }
 
         public static ILocator GetQuestCollectButton(IPage page)
@@ -20,10 +20,11 @@
             return buttons;
         }
 
-        public static ILocator IsQuestPage(IPage page)
+        public static async Task<bool> IsQuestPage(IPage page)
         {
             var table = page.Locator("div.tasks.tasksVillage div.taskOverview");
-            return table;
+            var count = await table.CountAsync();
+            return count > 0;
         }
     }
 }

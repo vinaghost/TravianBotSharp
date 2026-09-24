@@ -1,6 +1,6 @@
 namespace MainCore.Test.Parsers
 {
-    public class AdventureParser : BaseParser
+    public class AdventureParser(PlaywrightFixture fixture) : BaseParser(fixture)
     {
         private const string AdventuresPage = "Parsers/Adventures/AdventuresPage.html";
         private const string AdventuresPageEmpty = "Parsers/Adventures/AdventuresPageEmpty.html";

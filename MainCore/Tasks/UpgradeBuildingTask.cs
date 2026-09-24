@@ -65,7 +65,7 @@ namespace MainCore.Tasks
                     }
                     if (result.HasError<MissingResource>())
                     {
-                        var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
+                        var time = await UpgradeParser.GetTimeWhenEnoughResource(browser.CurrentPage, plan.Type);
                         task.ExecuteAt = DateTime.Now.Add(time);
                         return Skip.Error.WithErrors(result.Errors);
                     }

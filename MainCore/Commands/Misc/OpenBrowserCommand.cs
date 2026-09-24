@@ -42,7 +42,7 @@
             };
 
             await browser.Setup(chromeSetting);
-            await browser.Navigate($"{account.Server}", cancellationToken);
+            await browser.Navigate($"{account.Server}");
 
             context.Accesses
                .Where(x => x.Id == access.Id.Value)

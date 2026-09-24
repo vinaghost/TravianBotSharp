@@ -13,20 +13,13 @@ namespace MainCore.Commands.Features.UseHeroItem
             IDelayService delayService,
             CancellationToken cancellationToken)
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => InventoryParser.GetHeroAvatar(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
-            var result = await browser.Click(element, cancellationToken);
+            var result = await browser.Click(InventoryParser.GetHeroAvatar(browser.CurrentPage));
             if (result.IsFailed) return result;
 
-            static bool TabActived(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                return InventoryParser.IsInventoryPage(doc) && InventoryParser.IsInventoryLoaded(doc);
-            }
+            result = await browser.Wait(InventoryParser.GetInventoryPageWrapper(browser.CurrentPage));
+            if (result.IsFailed) return result;
 
-            result = await browser.Wait(TabActived, cancellationToken);
+            result = await browser.Wait(InventoryParser.GetInventoryPageWrapper(browser.CurrentPage), condition: "node => node.classList.contains('loading')");
             if (result.IsFailed) return result;
 
             await delayService.DelayTask(cancellationToken);

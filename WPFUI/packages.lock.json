@@ -140,11 +140,6 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "2.1.0"
         }
       },
-      "HtmlAgilityPack": {
-        "type": "Transitive",
-        "resolved": "1.13.0",
-        "contentHash": "nWZtz9WjSbq6V7TjjYBCmW+D8+BrWs15O6MlPxh55SH4zmenkWHXwu6gYeIarHL3KoHgDyZzTdOM50EdTnR8Xw=="
-      },
       "Humanizer.Core": {
         "type": "Transitive",
         "resolved": "3.0.10",
@@ -546,8 +541,8 @@
       },
       "Patchright": {
         "type": "Transitive",
-        "resolved": "1.62.1",
-        "contentHash": "G0Kx7Ehtvwel+zIsKOJ5ck0gBHA1L0ywpxs6v8Uc3CoDosk8b0zQQKCT8/YyidNSJI8x1I6e3WWKMgIllZGwag==",
+        "resolved": "1.63.0",
+        "contentHash": "I283/ZzDARf0vnCZtJinZS9oDXIdLpYaUu6IOH1Rbi/ku1N8NTwPN9WzamQcg4kwbKi6+tRXZadl6OOA1wIGYA==",
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
           "System.ComponentModel.Annotations": "5.0.0"
@@ -623,19 +618,6 @@
         "type": "Transitive",
         "resolved": "4.3.1",
         "contentHash": "oSE+OVLHyiojrws0QVbQaAT2YKsYbyHqJXPdV7EhGseR/dYgeWS2x1T5qY5I4E+RJkJqMSG+FyZOq4SljWgJWQ=="
-      },
-      "Selenium.Support": {
-        "type": "Transitive",
-        "resolved": "4.49.0",
-        "contentHash": "NOU5gXJ0MudmeZ6ZfQHMhqHb+qHPptxa5eQD8DJMxHn9fUTWBp/73xrwHhTBtAMfe2uczuYJn2isTmGsMd3t5A==",
-        "dependencies": {
-          "Selenium.WebDriver": "4.49.0"
-        }
-      },
-      "Selenium.WebDriver": {
-        "type": "Transitive",
-        "resolved": "4.49.0",
-        "contentHash": "WsqfFJ4mvOeUoI0mD1208tc9SgmjI0c90RdpWXqnosksCwo0+dQWf/3LqeewDDAVzpbIbtfhEetdpBhjDpkdzg=="
       },
       "Serilog": {
         "type": "Transitive",
@@ -781,17 +763,14 @@
           "FluentResults": "[4.0.0, )",
           "FluentValidation": "[12.1.1, )",
           "FluentValidation.DependencyInjectionExtensions": "[12.1.1, )",
-          "HtmlAgilityPack": "[1.13.0, )",
           "Humanizer.Core": "[3.0.10, )",
           "Immediate.Handlers": "[4.2.0, )",
           "Microsoft.EntityFrameworkCore.Sqlite": "[10.0.12, )",
           "Microsoft.Extensions.Hosting": "[10.0.12, )",
-          "Patchright": "[1.62.1, )",
+          "Patchright": "[1.63.0, )",
           "Polly": "[8.8.0, )",
           "ReactiveUI": "[24.2.0, )",
           "Riok.Mapperly": "[4.3.1, )",
-          "Selenium.Support": "[4.49.0, )",
-          "Selenium.WebDriver": "[4.49.0, )",
           "Serilog": "[4.4.0, )",
           "Serilog.Expressions": "[5.0.0, )",
           "Serilog.Extensions.Hosting": "[10.0.0, )",
@@ -804,11 +783,6 @@
       }
     },
     "net10.0-windows10.0.19041/win-x64": {
-      "Selenium.WebDriver": {
-        "type": "Transitive",
-        "resolved": "4.49.0",
-        "contentHash": "WsqfFJ4mvOeUoI0mD1208tc9SgmjI0c90RdpWXqnosksCwo0+dQWf/3LqeewDDAVzpbIbtfhEetdpBhjDpkdzg=="
-      },
       "SQLitePCLRaw.lib.e_sqlite3": {
         "type": "Transitive",
         "resolved": "2.1.12",

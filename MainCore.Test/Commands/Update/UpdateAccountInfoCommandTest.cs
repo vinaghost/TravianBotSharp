@@ -3,11 +3,32 @@ using MainCore.Commands.Update;
 using MainCore.Entities;
 using MainCore.Enums;
 using MainCore.Services;
+using Microsoft.Playwright;
 
 namespace MainCore.Test.Commands.Update
 {
-    public class UpdateAccountInfoCommandTest
+    public class UpdateAccountInfoCommandTest : IClassFixture<PlaywrightFixture>, IAsyncLifetime
     {
+        private readonly PlaywrightFixture _fixture;
+        private IBrowserContext _context = null!;
+        protected IPage Page { get; private set; } = null!;
+
+        public UpdateAccountInfoCommandTest(PlaywrightFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
+        public async ValueTask InitializeAsync()
+        {
+            _context = await _fixture.Browser.NewContextAsync();
+            Page = await _context.NewPageAsync();
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await _context.CloseAsync();
+        }
+
         private const string PlusAccount = "Parsers/Info/PlusAccount.html";
 
         [Fact]
@@ -15,10 +36,10 @@ namespace MainCore.Test.Commands.Update
         {
             // Arrange
             using var context = new FakeDbContextFactory().CreateDbContext(true);
-            var html = new HtmlDocument();
-            html.Load(PlusAccount);
+            string htmlContent = await File.ReadAllTextAsync(PlusAccount, TestContext.Current.CancellationToken);
+            await Page.SetContentAsync(htmlContent);
             var browser = Substitute.For<IChromeBrowser>();
-            browser.Html.Returns(html);
+            browser.CurrentPage.Returns(Page);
             var handleBehavior = new UpdateAccountInfoCommand.HandleBehavior(browser, context);
 
             var command = new UpdateAccountInfoCommand.Command(new AccountId(1));
@@ -48,10 +69,10 @@ namespace MainCore.Test.Commands.Update
                 Tribe = TribeEnums.Any,
             });
             context.SaveChanges();
-            var html = new HtmlDocument();
-            html.Load(PlusAccount);
+            string htmlContent = await File.ReadAllTextAsync(PlusAccount, TestContext.Current.CancellationToken);
             var browser = Substitute.For<IChromeBrowser>();
-            browser.Html.Returns(html);
+            browser.CurrentPage.Returns(Page);
+
             var handleBehavior = new UpdateAccountInfoCommand.HandleBehavior(browser, context);
             var command = new UpdateAccountInfoCommand.Command(new AccountId(1));
 

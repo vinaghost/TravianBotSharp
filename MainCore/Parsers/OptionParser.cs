@@ -2,10 +2,10 @@
 {
     public static class OptionParser
     {
-        public static ILocator IsContextualHelpEnable(IPage page)
+        public static async Task<bool> IsContextualHelpEnable(IPage page)
         {
             var node = page.Locator("#contextualHelp");
-            return node;
+            return await node.CountAsync() > 0;
         }
 
         public static ILocator GetOptionButton(IPage page)

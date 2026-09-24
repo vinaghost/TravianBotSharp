@@ -12,8 +12,7 @@
            ITaskManager taskManager
            )
         {
-            await Task.CompletedTask;
-            if (!AdventureParser.CanStartAdventure(browser.Html)) return;
+            if (!(await AdventureParser.CanStartAdventure(browser.CurrentPage))) return;
             var startAdventureTask = new StartAdventureTask.Task(command.AccountId);
             if (!startAdventureTask.CanStart(context) || taskManager.IsExist<StartAdventureTask.Task>(command.AccountId))
             {

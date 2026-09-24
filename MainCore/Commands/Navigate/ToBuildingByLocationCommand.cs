@@ -21,78 +21,60 @@ namespace MainCore.Commands.Navigate
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => GetBuilding(doc, location), cancellationToken);
-            if (isFailed) return Result.Fail(errors).WithError($"Failed to find [building at #{location}]");
-
-            var node = GetBuilding(browser.Html, location)!;
-
-            Result result;
-            if (location > 18 && node.HasClass("g0"))
-            {
-                if (location == 40) // wall
-                {
-                    var currentUrl = new Uri(browser.CurrentUrl);
-                    var host = currentUrl.GetLeftPart(UriPartial.Authority);
-                    await browser.Navigate($"{host}/build.php?id={location}", cancellationToken);
-                }
-                else
-                {
-                    var css = $"#villageContent > div.buildingSlot.a{location} > svg > path";
-                    (_, isFailed, element, errors) = await browser.GetElement(By.CssSelector(css), cancellationToken);
-                    if (isFailed) return Result.Fail(errors);
-
-                    result = await browser.Click(element, cancellationToken);
-                    if (result.IsFailed) return result;
-                }
-            }
-            else
-            {
-                if (location == 40) // wall
-                {
-                    var path = node.Descendants("path").FirstOrDefault();
-                    if (path is null) return Retry.Error.WithError("Failed to find [wall]");
-
-                    var javascript = path.GetAttributeValue("onclick", "");
-                    if (string.IsNullOrEmpty(javascript)) return Retry.Error.WithError("Failed to find [wall's onclick event]");
-
-                    var decodedJs = HttpUtility.HtmlDecode(javascript);
-
-                    result = await browser.ExecuteJsScript(decodedJs);
-                    if (result.IsFailed) return result;
-                }
-                else
-                {
-                    result = await browser.Click(element, cancellationToken);
-                    if (result.IsFailed) return result;
-                }
-            }
-
-            result = await browser.WaitPageChanged("build", cancellationToken);
+            var building = BuildingLayoutParser.GetBuilding(browser.CurrentPage, location);
+            var image = building.Locator("svg path");
+            var result = await browser.Click(image);
             if (result.IsFailed) return result;
 
+            result = await browser.WaitPageChanged("build");
+            if (result.IsFailed) return result;
             return Result.Ok();
-        }
 
-        private static HtmlNode? GetBuilding(HtmlDocument doc, int location)
-        {
-            if (location < 19) return GetField(doc, location);
-            return GetInfrastructure(doc, location);
-        }
+            //var (_, isFailed, element, errors) = await browser.GetElement(doc => GetBuilding(doc, location), cancellationToken);
+            //if (isFailed) return Result.Fail(errors).WithError($"Failed to find [building at #{location}]");
 
-        private static HtmlNode? GetField(HtmlDocument doc, int location)
-        {
-            var node = doc.DocumentNode
-                   .Descendants("a")
-                   .FirstOrDefault(x => x.HasClass($"buildingSlot{location}"));
-            return node;
-        }
+            //var node = GetBuilding(browser.Html, location)!;
 
-        private static HtmlNode? GetInfrastructure(HtmlDocument doc, int location)
-        {
-            var tmpLocation = location - 18;
-            var div = doc.DocumentNode
-                .SelectSingleNode($"//*[@id='villageContent']/div[{tmpLocation}]");
-            return div;
+            //Result result;
+            //if (location > 18 && node.HasClass("g0"))
+            //{
+            //    if (location == 40) // wall
+            //    {
+            //        var currentUrl = new Uri(browser.CurrentUrl);
+            //        var host = currentUrl.GetLeftPart(UriPartial.Authority);
+            //        await browser.Navigate($"{host}/build.php?id={location}", cancellationToken);
+            //    }
+            //    else
+            //    {
+            //        var css = $"#villageContent > div.buildingSlot.a{location} > svg > path";
+            //        (_, isFailed, element, errors) = await browser.GetElement(By.CssSelector(css), cancellationToken);
+            //        if (isFailed) return Result.Fail(errors);
+
+            //        result = await browser.Click(element, cancellationToken);
+            //        if (result.IsFailed) return result;
+            //    }
+            //}
+            //else
+            //{
+            //    if (location == 40) // wall
+            //    {
+            //        var path = node.Descendants("path").FirstOrDefault();
+            //        if (path is null) return Retry.Error.WithError("Failed to find [wall]");
+
+            //        var javascript = path.GetAttributeValue("onclick", "");
+            //        if (string.IsNullOrEmpty(javascript)) return Retry.Error.WithError("Failed to find [wall's onclick event]");
+
+            //        var decodedJs = HttpUtility.HtmlDecode(javascript);
+
+            //        result = await browser.ExecuteJsScript(decodedJs);
+            //        if (result.IsFailed) return result;
+            //    }
+            //    else
+            //    {
+            //        result = await browser.Click(element, cancellationToken);
+            //        if (result.IsFailed) return result;
+            //    }
+            //}
         }
     }
 }

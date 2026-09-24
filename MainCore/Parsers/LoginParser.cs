@@ -4,6 +4,20 @@ namespace MainCore.Parsers
 {
     public static class LoginParser
     {
+        public static async Task<bool> IsLoginPage(IPage page)
+        {
+            var loginScene = GetLoginButton(page);
+            var count = await loginScene.CountAsync();
+            return count > 0;
+        }
+
+        public static async Task<bool> IsIngamePage(IPage page)
+        {
+            var serverTime = GetServerTime(page);
+            var count = await serverTime.CountAsync();
+            return count > 0;
+        }
+
         public static ILocator GetLoginButton(IPage page)
         {
             var button = page.Locator("#loginScene button.green");

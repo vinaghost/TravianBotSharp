@@ -11,7 +11,7 @@
             )
         {
             await Task.CompletedTask;
-            var adventureDuration = AdventureParser.GetAdventureDuration(browser.Html);
+            var adventureDuration = await AdventureParser.GetAdventureDuration(browser.CurrentPage);
             command.Task.ExecuteAt = DateTime.Now.Add(adventureDuration * 2);
         }
     }

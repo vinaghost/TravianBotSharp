@@ -16,7 +16,7 @@ namespace MainCore.Commands.Features.TrainTroop
         {
             var (villageId, building) = command;
             var troop = (TroopEnums)context.ByName(villageId, TroopSettings[building]);
-            var maxAmount = TrainTroopParser.GetMaxAmount(browser.Html, troop);
+            var maxAmount = await TrainTroopParser.GetMaxAmount(browser.CurrentPage, troop);
             if (maxAmount == 0)
             {
                 return MissingResource.Error(troop);
@@ -64,17 +64,11 @@ namespace MainCore.Commands.Features.TrainTroop
             long amount,
             CancellationToken cancellationToken)
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => TrainTroopParser.GetInputBox(doc, troop), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
             Result result;
-            result = await browser.Input(element, $"{amount}", cancellationToken);
+            result = await browser.Input(TrainTroopParser.GetInputBox(browser.CurrentPage, troop), $"{amount}");
             if (result.IsFailed) return result;
 
-            (_, isFailed, element, errors) = await browser.GetElement(doc => TrainTroopParser.GetTrainButton(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
-            result = await browser.Click(element, cancellationToken);
+            result = await browser.Click(TrainTroopParser.GetTrainButton(browser.CurrentPage));
             if (result.IsFailed) return result;
 
             return Result.Ok();

@@ -12,10 +12,9 @@
             ITaskManager taskManager
             )
         {
-            await Task.CompletedTask;
             var (accountId, villageId) = command;
 
-            var dto = Get(browser.Html);
+            var dto = await Get(browser.CurrentPage);
             context.UpdateStorage(villageId, dto);
 
             var task = new NpcTask.Task(accountId, villageId);
@@ -25,17 +24,17 @@
             }
         }
 
-        private static StorageDto Get(HtmlDocument doc)
+        private static async Task<StorageDto> Get(IPage page)
         {
             var storage = new StorageDto()
             {
-                Wood = StorageParser.GetWood(doc),
-                Clay = StorageParser.GetClay(doc),
-                Iron = StorageParser.GetIron(doc),
-                Crop = StorageParser.GetCrop(doc),
-                FreeCrop = StorageParser.GetFreeCrop(doc),
-                Warehouse = StorageParser.GetWarehouseCapacity(doc),
-                Granary = StorageParser.GetGranaryCapacity(doc)
+                Wood = await StorageParser.GetWood(page),
+                Clay = await StorageParser.GetClay(page),
+                Iron = await StorageParser.GetIron(page),
+                Crop = await StorageParser.GetCrop(page),
+                FreeCrop = await StorageParser.GetFreeCrop(page),
+                Warehouse = await StorageParser.GetWarehouseCapacity(page),
+                Granary = await StorageParser.GetGranaryCapacity(page)
             };
             return storage;
         }

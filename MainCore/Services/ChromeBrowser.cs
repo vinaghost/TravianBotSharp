@@ -1,4 +1,5 @@
 ﻿using Microsoft.Playwright;
+using System.Runtime.CompilerServices;
 
 namespace MainCore.Services
 {
@@ -7,7 +8,12 @@ namespace MainCore.Services
         private IPlaywright? _playwright;
         private IBrowserContext? _browser;
         private IPage? _mainPage;
-        private readonly HtmlDocument _htmlDoc = new();
+
+        public IPage CurrentPage => _mainPage ?? throw new InvalidOperationException("Main page is not initialized.");
+
+        public string CurrentUrl => _mainPage?.Url ?? "";
+
+        public ILogger Logger { get; set; } = null!;
 
         public async Task Setup(ChromeSetting setting)
         {
@@ -52,12 +58,6 @@ namespace MainCore.Services
             return pathUserData;
         }
 
-        public async Task<HtmlDocument> GetHtml()
-        {
-            if (_mainPage is not null) _htmlDoc.LoadHtml(await _mainPage.ContentAsync());
-            return _htmlDoc;
-        }
-
         public async Task Shutdown()
         {
             if (_mainPage is not null)
@@ -70,10 +70,6 @@ namespace MainCore.Services
             }
             _playwright?.Dispose();
         }
-
-        public string CurrentUrl => _mainPage?.Url ?? "";
-
-        public ILogger Logger { get; set; } = null!;
 
         public async Task<string> Screenshot()
         {
@@ -106,22 +102,43 @@ namespace MainCore.Services
         public async Task<Result> Navigate(string url)
         {
             if (_mainPage is null) return Stop.DriverNotReady;
-            await _mainPage.GotoAsync(url);
-            return Result.Ok();
+            try
+            {
+                await _mainPage.GotoAsync(url);
+                return Result.Ok();
+            }
+            catch (TimeoutException ex)
+            {
+                return Retry.Error.WithError($"Navigating to URL [{url}] timed out. Details: {ex.Message}");
+            }
         }
 
-        public async Task<Result> Click(ILocator locator)
+        public async Task<Result> Click(ILocator locator, [CallerArgumentExpression(nameof(locator))] string? expression = null)
         {
             if (_mainPage is null) return Stop.DriverNotReady;
-            await locator.ClickAsync();
-            return Result.Ok();
+            try
+            {
+                await locator.ClickAsync();
+                return Result.Ok();
+            }
+            catch (TimeoutException ex)
+            {
+                return Retry.Error.WithError($"Clicking locator [{expression}] timed out. Details: {ex.Message}");
+            }
         }
 
-        public async Task<Result> Input(ILocator locator, string content)
+        public async Task<Result> Input(ILocator locator, string content, [CallerArgumentExpression(nameof(locator))] string? expression = null)
         {
             if (_mainPage is null) return Stop.DriverNotReady;
-            await locator.FillAsync(content);
-            return Result.Ok();
+            try
+            {
+                await locator.FillAsync(content);
+                return Result.Ok();
+            }
+            catch (TimeoutException ex)
+            {
+                return Retry.Error.WithError($"Inputting into locator [{expression}] timed out. Details: {ex.Message}");
+            }
         }
 
         public async Task<Result> ExecuteJsScript(string javascript)
@@ -129,6 +146,34 @@ namespace MainCore.Services
             if (_mainPage is null) return Stop.DriverNotReady;
             await _mainPage.EvaluateAsync(javascript);
             return Result.Ok();
+        }
+
+        public async Task<Result> Wait(ILocator locator, [CallerArgumentExpression(nameof(locator))] string? expression = null)
+        {
+            if (_mainPage is null) return Stop.DriverNotReady;
+            try
+            {
+                await locator.WaitForAsync();
+                return Result.Ok();
+            }
+            catch (TimeoutException ex)
+            {
+                return Retry.Error.WithError($"Waiting for locator [{expression}] timed out. Details: {ex.Message}");
+            }
+        }
+
+        public async Task<Result> Wait(ILocator locator, string condition, [CallerArgumentExpression(nameof(locator))] string? expression = null)
+        {
+            if (_mainPage is null) return Stop.DriverNotReady;
+            try
+            {
+                await locator.WaitForFunctionAsync(condition);
+                return Result.Ok();
+            }
+            catch (TimeoutException ex)
+            {
+                return Retry.Error.WithError($"Waiting for locator [{expression}] timed out. Details: {ex.Message}");
+            }
         }
 
         public async Task<Result> WaitPageChanged(string url)
@@ -139,13 +184,13 @@ namespace MainCore.Services
             {
                 await _mainPage.WaitForURLAsync(url);
                 await _mainPage.Locator("#logo").WaitForAsync();
+                return Result.Ok();
             }
             catch (TimeoutException ex)
             {
                 string actualUrl = _mainPage.Url;
                 return Retry.Error.WithError($"Navigation or page load failed. Expected URL: [{url}]. Current URL: [{actualUrl}]. Details: {ex.Message}");
             }
-            return Result.Ok();
         }
     }
 }

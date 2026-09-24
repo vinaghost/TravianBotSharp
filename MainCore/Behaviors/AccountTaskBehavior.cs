@@ -26,9 +26,10 @@ namespace MainCore.Behaviors
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
-            if (!LoginParser.IsIngamePage(_browser.Html))
+
+            if (!(await LoginParser.IsIngamePage(_browser.CurrentPage)))
             {
-                if (!LoginParser.IsLoginPage(_browser.Html))
+                if (!(await LoginParser.IsLoginPage(_browser.CurrentPage)))
                 {
                     return (TResponse)Stop.Error.WithError("Travian is not ingame nor login page. Please check browser");
                 }
@@ -41,7 +42,7 @@ namespace MainCore.Behaviors
                 }
             }
 
-            if (LoginParser.IsIngamePage(_browser.Html))
+            if (await LoginParser.IsIngamePage(_browser.CurrentPage))
             {
                 await _updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
                 await _updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
@@ -49,7 +50,7 @@ namespace MainCore.Behaviors
 
             var response = await Next(request, cancellationToken);
 
-            if (LoginParser.IsIngamePage(_browser.Html))
+            if (await LoginParser.IsIngamePage(_browser.CurrentPage))
             {
                 await _updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
                 await _updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);

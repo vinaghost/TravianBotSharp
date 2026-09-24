@@ -30,7 +30,6 @@
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="FluentResults" Version="4.0.0" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.13.0" />
     <PackageReference Include="Humanizer.Core" Version="3.0.10" />
     <PackageReference Include="Immediate.Handlers" Version="4.2.0" />
     <PackageReference Include="Injectio" Version="6.2.0">
@@ -39,7 +38,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
-    <PackageReference Include="Patchright" Version="1.62.1" />
+    <PackageReference Include="Patchright" Version="1.63.0" />
     <PackageReference Include="Polly" Version="8.8.0" />
     <PackageReference Include="ReactiveUI" Version="24.2.0" />
     <PackageReference Include="ReactiveUI.SourceGenerators" Version="3.2.0">
@@ -66,11 +65,9 @@
     <Using Include="Ardalis.Specification.EntityFrameworkCore" />
     <Using Include="FluentResults" />
     <Using Include="FluentValidation" />
-    <Using Include="HtmlAgilityPack" />
     <Using Include="Immediate.Handlers.Shared" />
     <Using Include="Injectio.Attributes" />
     <Using Include="Microsoft.EntityFrameworkCore" />
-    <Using Include="OpenQA.Selenium" />
     <Using Include="ReactiveUI" />
     <Using Include="ReactiveUI.SourceGenerators" />
     <Using Include="Splat" />

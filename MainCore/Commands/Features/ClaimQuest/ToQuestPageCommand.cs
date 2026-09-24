@@ -9,22 +9,14 @@ namespace MainCore.Commands.Features.ClaimQuest
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
-            CancellationToken cancellationToken)
+            IChromeBrowser browser)
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => QuestParser.GetQuestMaster(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
+            var questMaster = QuestParser.GetQuestMaster(browser.CurrentPage);
 
-            var result = await browser.Click(element, cancellationToken);
+            var result = await browser.Click(questMaster);
             if (result.IsFailed) return result;
 
-            static bool TableShow(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                return QuestParser.IsQuestPage(doc);
-            }
-            result = await browser.Wait(TableShow, cancellationToken);
+            result = await browser.WaitPageChanged("tasks");
             if (result.IsFailed) return result;
 
             return Result.Ok();

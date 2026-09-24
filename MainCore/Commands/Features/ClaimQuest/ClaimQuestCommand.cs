@@ -22,36 +22,28 @@ namespace MainCore.Commands.Features.ClaimQuest
                 {
                     return Cancel.Error;
                 }
-                var quest = QuestParser.GetQuestCollectButton(browser.Html);
+                var quest = QuestParser.GetQuestCollectButton(browser.CurrentPage);
 
-                if (quest is null)
+                if (await quest.CountAsync() == 0)
                 {
                     result = await switchTabCommand.HandleAsync(new(1), cancellationToken);
                     if (result.IsFailed) return result;
 
                     await delayService.DelayClick(cancellationToken);
 
-                    quest = QuestParser.GetQuestCollectButton(browser.Html);
-                    if (quest is null) return Result.Ok();
-
-                    var (_, isFailed, element, errors) = await browser.GetElement(By.XPath(quest.XPath), cancellationToken);
-                    if (isFailed) return Result.Fail(errors);
-
-                    result = await browser.Click(element, cancellationToken);
+                    quest = QuestParser.GetQuestCollectButton(browser.CurrentPage);
+                    result = await browser.Click(quest);
                     if (result.IsFailed) return result;
                     continue;
                 }
                 else
                 {
-                    var (_, isFailed, element, errors) = await browser.GetElement(By.XPath(quest.XPath), cancellationToken);
-                    if (isFailed) return Result.Fail(errors);
-
-                    result = await browser.Click(element, cancellationToken);
+                    result = await browser.Click(quest);
                     if (result.IsFailed) return result;
                     await delayService.DelayClick(cancellationToken);
                 }
             }
-            while (QuestParser.IsQuestClaimable(browser.Html));
+            while (await QuestParser.IsQuestClaimable(browser.CurrentPage));
 
             return Result.Ok();
         }

@@ -12,7 +12,7 @@
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            await browser.Close();
+            await browser.Shutdown();
 
             var sleepTimeMinutes = settingService.ByName(command.AccountId, AccountSettingEnums.SleepTimeMin, AccountSettingEnums.SleepTimeMax);
             var sleepEnd = DateTime.Now.AddMinutes(sleepTimeMinutes);

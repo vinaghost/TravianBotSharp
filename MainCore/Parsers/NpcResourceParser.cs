@@ -4,7 +4,7 @@ namespace MainCore.Parsers
 {
     public static class NpcResourceParser
     {
-        public static ILocator IsNpcDialog(IPage page)
+        public static ILocator NpcDialog(IPage page)
         {
             var dialog = page.Locator(".exchangeResources #npc");
             return dialog;

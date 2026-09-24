@@ -13,7 +13,7 @@
            )
         {
             await Task.CompletedTask;
-            if (!QuestParser.IsQuestClaimable(browser.Html)) return;
+            if (!(await QuestParser.IsQuestClaimable(browser.CurrentPage))) return;
             var (accountId, villageId) = command;
             var claimQuestTask = new ClaimQuestTask.Task(accountId, villageId);
             if (!claimQuestTask.CanStart(context) || taskManager.IsExist<ClaimQuestTask.Task>(accountId))

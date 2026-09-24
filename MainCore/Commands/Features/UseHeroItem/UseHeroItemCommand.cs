@@ -17,7 +17,7 @@
             foreach (var (item, amount) in itemToUse)
             {
                 if (amount <= 0) continue;
-                result = await ClickItem(browser, item, cancellationToken);
+                result = await ClickItem(browser, item);
                 if (result.IsFailed) return result;
                 await delayService.DelayClick(cancellationToken);
                 break;
@@ -26,11 +26,11 @@
             {
                 if (amount <= 0) continue;
                 logger.Information("Use {Amount} {Item} from hero inventory", amount, item);
-                result = await EnterAmount(browser, item, amount, cancellationToken);
+                result = await EnterAmount(browser, item, amount);
                 if (result.IsFailed) return result;
                 await delayService.DelayClick(cancellationToken);
             }
-            result = await Confirm(browser, cancellationToken);
+            result = await Confirm(browser);
             if (result.IsFailed) return result;
             await delayService.DelayClick(cancellationToken);
 
@@ -39,24 +39,13 @@
 
         private static async Task<Result> ClickItem(
             IChromeBrowser browser,
-            HeroItemEnums item,
-            CancellationToken cancellationToken)
+            HeroItemEnums item)
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => InventoryParser.GetItemSlot(doc, item), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
             Result result;
-            result = await browser.Click(element, cancellationToken);
+            result = await browser.Click(InventoryParser.GetItemSlot(browser.CurrentPage, item));
             if (result.IsFailed) return result;
 
-            static bool loadingCompleted(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                return InventoryParser.GetResourceTransferDialog(doc) is not null;
-            }
-
-            result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);
+            result = await browser.Wait(InventoryParser.GetResourceTransferDialog(browser.CurrentPage));
             if (result.IsFailed) return result;
             return Result.Ok();
         }
@@ -72,37 +61,21 @@
         private static async Task<Result> EnterAmount(
             IChromeBrowser browser,
             HeroItemEnums item,
-            long amount,
-            CancellationToken cancellationToken)
+            long amount)
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => InventoryParser.GetAmountBox(doc, _itemInputName[item]), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
             Result result;
-            result = await browser.Input(element, amount.ToString(), cancellationToken);
+            result = await browser.Input(InventoryParser.GetAmountBox(browser.CurrentPage, _itemInputName[item]), amount.ToString());
             if (result.IsFailed) return result;
             return Result.Ok();
         }
 
-        private static async Task<Result> Confirm(
-            IChromeBrowser browser,
-            CancellationToken cancellationToken)
+        private static async Task<Result> Confirm(IChromeBrowser browser)
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => InventoryParser.GetConfirmButton(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
-            static bool loadingCompleted(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                return InventoryParser.GetSuccessToast(doc) is not null;
-            }
-
             Result result;
-            result = await browser.Click(element, cancellationToken);
+            result = await browser.Click(InventoryParser.GetConfirmButton(browser.CurrentPage));
             if (result.IsFailed) return result;
 
-            result = await browser.Wait(driver => loadingCompleted(driver), cancellationToken);
+            result = await browser.Wait(InventoryParser.GetSuccessToast(browser.CurrentPage));
             if (result.IsFailed) return result;
 
             return Result.Ok();

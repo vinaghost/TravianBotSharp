@@ -7,17 +7,16 @@ namespace MainCore.Parsers
     {
         public static async Task<TimeSpan> GetAdventureDuration(IPage page)
         {
-            var timer = page.Locator("#heroAdventure span.timer").First;
+            var timer = page.Locator("#heroAdventure span.timer");
             var seconds = await timer.GetAttributeAsync("value");
             if (string.IsNullOrEmpty(seconds)) return TimeSpan.Zero;
             return TimeSpan.FromSeconds(double.Parse(seconds));
         }
 
-        public static async Task<bool> IsAdventurePage(IPage page)
+        public static ILocator GetAdventurePage(IPage page)
         {
-            var heroAdventure = page.Locator("#heroAdventure").First;
-            var isVisible = await heroAdventure.IsVisibleAsync();
-            return isVisible;
+            var heroAdventure = page.Locator("#heroAdventure");
+            return heroAdventure;
         }
 
         public static ILocator GetHeroAdventureButton(IPage page)
@@ -28,12 +27,12 @@ namespace MainCore.Parsers
 
         public static async Task<bool> CanStartAdventure(IPage page)
         {
-            var heroHome = page.Locator("div.heroStatus i.heroHome").First;
+            var heroHome = page.Locator("div.heroStatus i.heroHome");
             var isHeroHomeVisible = await heroHome.IsVisibleAsync();
             if (!isHeroHomeVisible) return false;
 
             var adventureButton = GetHeroAdventureButton(page);
-            var adventureAvailabe = await adventureButton.Locator("div.content").First.IsVisibleAsync();
+            var adventureAvailabe = await adventureButton.Locator("div.content").IsVisibleAsync();
             return adventureAvailabe;
         }
 

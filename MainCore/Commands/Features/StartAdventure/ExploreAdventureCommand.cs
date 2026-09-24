@@ -13,27 +13,19 @@ namespace MainCore.Commands.Features.StartAdventure
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            if (!AdventureParser.CanStartAdventure(browser.Html)) return Skip.Error.WithError("No adventure available");
+            if (!(await AdventureParser.CanStartAdventure(browser.CurrentPage))) return Skip.Error.WithError("No adventure available");
 
-            var adventureButton = AdventureParser.GetAdventureButton(browser.Html);
-            if (adventureButton is null) return Retry.Error.WithError($"Failed to find adventure button");
+            var adventures = await AdventureParser.GetAdventureInfo(browser.CurrentPage);
+            if (adventures.Count == 0) return Skip.Error.WithError("No adventure available");
 
-            logger.Information("Start adventure {Adventure}", AdventureParser.GetAdventureInfo(adventureButton));
+            var adventure = adventures[0];
 
-            var (_, isFailed, element, errors) = await browser.GetElement(By.XPath(adventureButton.XPath), cancellationToken);
-            if (isFailed) return Result.Fail(errors).WithError($"Failed to find adventure button [{adventureButton.XPath}]");
+            logger.Information("Start {Difficult} adventure takes {Duration} ", adventure.Difficult, adventure.Duration);
 
-            var result = await browser.Click(element, cancellationToken);
+            var result = await browser.Click(adventure.Button);
             if (result.IsFailed) return result;
 
-            static bool ContinueShow(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                var continueButton = AdventureParser.GetContinueButton(doc);
-                return continueButton is not null;
-            }
-            result = await browser.Wait(ContinueShow, cancellationToken);
+            result = await browser.Wait(AdventureParser.GetContinueButton(browser.CurrentPage));
             if (result.IsFailed) return result;
             return Result.Ok();
         }

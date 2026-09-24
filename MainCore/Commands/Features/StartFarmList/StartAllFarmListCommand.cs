@@ -9,14 +9,10 @@ namespace MainCore.Commands.Features.StartFarmList
 
         private static async ValueTask<Result> HandleAsync(
             Command command,
-            IChromeBrowser browser,
-            CancellationToken cancellationToken
+            IChromeBrowser browser
             )
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => FarmListParser.GetStartAllButton(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
-            var result = await browser.Click(element, cancellationToken);
+            var result = await browser.Click(FarmListParser.GetStartAllButton(browser.CurrentPage));
             if (result.IsFailed) return result;
 
             return Result.Ok();

@@ -22,10 +22,7 @@
 
             foreach (var farmList in farmLists)
             {
-                var (_, isFailed, element, errors) = await browser.GetElement(doc => FarmListParser.GetStartButton(doc, farmList), cancellationToken);
-                if (isFailed) return Result.Fail(errors);
-
-                var result = await browser.Click(element, cancellationToken);
+                var result = await browser.Click(FarmListParser.GetStartButton(browser.CurrentPage, farmList));
                 if (result.IsFailed) return result;
 
                 await delayService.DelayClick(cancellationToken);

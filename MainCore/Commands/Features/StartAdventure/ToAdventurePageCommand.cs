@@ -12,19 +12,12 @@ namespace MainCore.Commands.Features.StartAdventure
             IChromeBrowser browser,
             CancellationToken cancellationToken)
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => AdventureParser.GetHeroAdventureButton(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
-            var result = await browser.Click(element, cancellationToken);
+            var result = await browser.Click(AdventureParser.GetHeroAdventureButton(browser.CurrentPage));
+            if (result.IsFailed) return result;
+            result = await browser.WaitPageChanged("hero/adventures");
             if (result.IsFailed) return result;
 
-            static bool TableShow(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                return AdventureParser.IsAdventurePage(doc);
-            }
-            result = await browser.Wait(TableShow, cancellationToken);
+            result = await browser.Wait(AdventureParser.GetAdventurePage(browser.CurrentPage));
             if (result.IsFailed) return result;
 
             return Result.Ok();

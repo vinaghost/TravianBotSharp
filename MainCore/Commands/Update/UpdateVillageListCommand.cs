@@ -15,10 +15,10 @@
             await Task.CompletedTask;
             var accountId = command.AccountId;
 
-            var dtos = VillagePanelParser.Get(browser.Html);
-            if (!dtos.Any()) return;
+            var dtos = await VillagePanelParser.Get(browser.CurrentPage);
+            if (dtos.Count == 0) return;
 
-            context.UpdateToDatabase(accountId, dtos.ToList());
+            context.UpdateToDatabase(accountId, dtos);
 
             rxQueue.Enqueue(new VillagesModified(accountId));
 

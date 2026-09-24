@@ -25,7 +25,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             await updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
 
-            var requiredResource = GetRequiredResource(browser, plan.Type);
+            var requiredResource = await GetRequiredResource(browser, plan.Type);
 
             var result = await validateEnoughResourceCommand.HandleAsync(new(villageId, requiredResource), cancellationToken);
             if (!result.IsFailed) return Result.Ok();
@@ -42,23 +42,23 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var url = browser.CurrentUrl;
 
             result = await useHeroResourceCommand.HandleAsync(new(accountId, missingResource), cancellationToken);
-            await browser.Navigate(url, cancellationToken);
+            await browser.Navigate(url);
             if (result.IsFailed) return result;
 
             return Result.Ok();
         }
 
-        private static long[] GetRequiredResource(IChromeBrowser browser, BuildingEnums building)
+        private static async Task<long[]> GetRequiredResource(IChromeBrowser browser, BuildingEnums building)
         {
-            var doc = browser.Html;
-
-            var resources = UpgradeParser.GetRequiredResource(doc, building);
-            if (resources is null || resources.Count != 5) return new long[5];
+            var resources = UpgradeParser.GetRequiredResource(browser.CurrentPage, building);
+            var count = await resources.CountAsync();
+            if (count != 5) return new long[5];
 
             var resourceBuilding = new long[5];
-            for (var i = 0; i < 5; i++)
+            for (var i = 0; i < count; i++)
             {
-                resourceBuilding[i] = resources[i].InnerText.ParseLong();
+                var resource = resources.Nth(i);
+                resourceBuilding[i] = (await resource.InnerTextAsync()).ParseLong();
             }
 
             return resourceBuilding;

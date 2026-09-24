@@ -1,10 +1,35 @@
 ﻿using Microsoft.Playwright;
 using System.Text.RegularExpressions;
+using System.Xml;
 
 namespace MainCore.Parsers
 {
     public static partial class BuildingLayoutParser
     {
+        public static ILocator GetBuilding(IPage page, int location)
+        {
+            if (location < 19) return GetField(page, location);
+            return GetInfrastructure(page, location);
+        }
+
+        private static ILocator GetField(IPage page, int location)
+        {
+            var node = page.Locator($".village1 a.buildingSlot{location}");
+            return node;
+        }
+
+        private static ILocator GetInfrastructure(IPage page, int location)
+        {
+            if (location == 40) // wall
+            {
+                var node = page.Locator("#villageContent > div.buildingSlot.a40.top");
+                return node;
+            }
+
+            var div = page.Locator($".village2 div.buildingSlot.a{location}");
+            return div;
+        }
+
         public static async Task<List<BuildingDto>> GetFields(IPage page)
         {
             var fields = page.Locator("#resourceFieldContainer a.level");
@@ -59,6 +84,37 @@ namespace MainCore.Parsers
                 });
             }
             return extractedData;
+        }
+
+        public static async Task<List<QueueBuildingDto>> GetQueueBuilding(IPage page)
+        {
+            var buildings = page.Locator(".buildingList li");
+            var buildingCount = await buildings.CountAsync();
+            var extractedData = new List<QueueBuildingDto>();
+
+            for (var i = 0; i < buildingCount; i++)
+            {
+                var building = buildings.Nth(i);
+                string type = await building.Locator(".name").InnerTextAsync();
+                int level = await building.Locator(".lvl").InnerTextAsync() is string levelStr && int.TryParse(levelStr, out int l) ? l : 0;
+                int durationSeconds = await building.Locator(".timer").GetAttributeAsync("value") is string durationStr && int.TryParse(durationStr, out int d) ? d : 0;
+                extractedData.Add(new QueueBuildingDto
+                {
+                    Type = type,
+                    Level = level,
+                    CompleteTime = DateTime.Now.AddSeconds(durationSeconds),
+                    Location = -1
+                });
+            }
+
+            return extractedData;
+        }
+
+        public static async Task<int> CountQueueBuilding(IPage page)
+        {
+            var buildings = page.Locator(".buildingList li");
+            var buildingCount = await buildings.CountAsync();
+            return buildingCount;
         }
 
         [GeneratedRegex(@"buildingSlot(\d+)")]

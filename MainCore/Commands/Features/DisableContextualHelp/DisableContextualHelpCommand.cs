@@ -13,16 +13,10 @@ namespace MainCore.Commands.Features.DisableContextualHelp
             CancellationToken cancellationToken
             )
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => OptionParser.GetHideContextualHelpOption(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
-            var result = await browser.Click(element, cancellationToken);
+            var result = await browser.Click(OptionParser.GetHideContextualHelpOption(browser.CurrentPage));
             if (result.IsFailed) return result;
 
-            (_, isFailed, element, errors) = await browser.GetElement(doc => OptionParser.GetSubmitButton(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
-            result = await browser.Click(element, cancellationToken);
+            result = await browser.Click(OptionParser.GetSubmitButton(browser.CurrentPage));
             if (result.IsFailed) return result;
 
             return Result.Ok();

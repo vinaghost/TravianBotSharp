@@ -21,19 +21,19 @@
         {
             var villageId = command.VillageId;
 
-            if (!CanStart(browser, context, villageId))
+            if (!await CanStart(browser, context, villageId))
             {
                 return Result.Ok();
             }
 
-            var result = await OpenNPCDialog(browser, cancellationToken);
+            var result = await OpenNPCDialog(browser);
             if (result.IsFailed) return result;
 
             var settings = context.ByName(villageId, SettingNames);
             var ratio = GetRatio(settings);
-            var values = GetValues(browser, ratio);
+            var values = await GetValues(browser, ratio);
 
-            var warehouse = StorageParser.GetWarehouseCapacity(browser.Html);
+            var warehouse = await StorageParser.GetWarehouseCapacity(browser.CurrentPage);
             var overflowNPC = context.BooleanByName(villageId, VillageSettingEnums.AutoNPCOverflow);
             for (var i = 0; i < 3; i++)
             {
@@ -50,54 +50,46 @@
                 }
             }
 
-            result = await InputAmount(browser, values, cancellationToken);
+            result = await InputAmount(browser, values);
             if (result.IsFailed) return result;
 
             browser.Logger.Information("Current resource:");
-            LogResource(browser);
+            await LogResource(browser);
 
             if (overflowNPC)
             {
-                result = await Distribute(browser, cancellationToken);
+                result = await Distribute(browser);
                 if (result.IsFailed) return result;
             }
 
-            result = await Redeem(browser, cancellationToken);
-            if (result.IsFailed) return result;
-
-            result = await browser.Wait(driver =>
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                return !NpcResourceParser.IsNpcDialog(doc);
-            }, cancellationToken);
+            result = await Redeem(browser);
             if (result.IsFailed) return result;
 
             await Task.Delay(5000);
 
             browser.Logger.Information("After NPC:");
-            LogResource(browser);
+            await LogResource(browser);
 
             return Result.Ok();
         }
 
-        private static void LogResource(IChromeBrowser browser)
+        private static async Task LogResource(IChromeBrowser browser)
         {
-            var wood = StorageParser.GetWood(browser.Html);
-            var clay = StorageParser.GetClay(browser.Html);
-            var iron = StorageParser.GetIron(browser.Html);
-            var crop = StorageParser.GetCrop(browser.Html);
+            var wood = await StorageParser.GetWood(browser.CurrentPage);
+            var clay = await StorageParser.GetClay(browser.CurrentPage);
+            var iron = await StorageParser.GetIron(browser.CurrentPage);
+            var crop = await StorageParser.GetCrop(browser.CurrentPage);
 
-            var warehouse = StorageParser.GetWarehouseCapacity(browser.Html);
-            var granary = StorageParser.GetGranaryCapacity(browser.Html);
+            var warehouse = await StorageParser.GetWarehouseCapacity(browser.CurrentPage);
+            var granary = await StorageParser.GetGranaryCapacity(browser.CurrentPage);
 
             browser.Logger.Information("[{Warehouse}]: {Wood} - {Clay} - {Iron} | [{Granary}]: {Crop}", warehouse, wood, clay, iron, granary, crop);
         }
 
-        private static bool CanStart(IChromeBrowser browser, AppDbContext context, VillageId villageId)
+        private static async Task<bool> CanStart(IChromeBrowser browser, AppDbContext context, VillageId villageId)
         {
-            var crop = StorageParser.GetCrop(browser.Html);
-            var granary = StorageParser.GetGranaryCapacity(browser.Html);
+            var crop = await StorageParser.GetCrop(browser.CurrentPage);
+            var granary = await StorageParser.GetGranaryCapacity(browser.CurrentPage);
 
             var granaryPercent = (int)(crop * 100f / granary);
 
@@ -112,46 +104,41 @@
             return true;
         }
 
-        private static async Task<Result> OpenNPCDialog(IChromeBrowser browser, CancellationToken cancellationToken)
+        private static async Task<Result> OpenNPCDialog(IChromeBrowser browser)
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => NpcResourceParser.GetExchangeResourcesButton(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
-            var result = await browser.Click(element, cancellationToken);
+            var result = await browser.Click(NpcResourceParser.GetExchangeResourcesButton(browser.CurrentPage));
             if (result.IsFailed) return result;
 
-            static bool DialogShown(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                return NpcResourceParser.IsNpcDialog(doc);
-            }
-
-            result = await browser.Wait(DialogShown, cancellationToken);
+            result = await browser.Wait(NpcResourceParser.NpcDialog(browser.CurrentPage));
             if (result.IsFailed) return result;
 
             return Result.Ok();
         }
 
-        private static async Task<Result> InputAmount(IChromeBrowser browser, long[] values, CancellationToken cancellationToken)
+        private static async Task<Result> InputAmount(IChromeBrowser browser, long[] values)
         {
-            var inputs = NpcResourceParser.GetInputs(browser.Html).ToArray();
+            var inputs = NpcResourceParser.GetInputs(browser.CurrentPage);
+
+            var inputCount = await inputs.CountAsync();
+
+            if (inputCount != 4)
+            {
+                return Stop.Error.WithError($"Expected 4 input elements, but found {inputCount}.");
+            }
 
             for (var i = 0; i < 4; i++)
             {
-                var (_, isFailed, element, errors) = await browser.GetElement(By.XPath(inputs[i].XPath), cancellationToken);
-                if (isFailed) return Result.Fail(errors);
-
-                var result = await browser.Input(element, $"{values[i]}", cancellationToken);
+                var inputElement = inputs.Nth(i);
+                var result = await browser.Input(inputElement, $"{values[i]}");
                 if (result.IsFailed) return result;
             }
 
             return Result.Ok();
         }
 
-        private static long[] GetValues(IChromeBrowser browser, long[] ratio)
+        private static async Task<long[]> GetValues(IChromeBrowser browser, long[] ratio)
         {
-            var sum = NpcResourceParser.GetSum(browser.Html);
+            var sum = await NpcResourceParser.GetSum(browser.CurrentPage);
             var sumRatio = ratio.Sum();
             var values = new long[4];
             for (var i = 0; i < 4; i++)
@@ -182,23 +169,17 @@
             return ratio;
         }
 
-        private static async Task<Result> Distribute(IChromeBrowser browser, CancellationToken cancellationToken)
+        private static async Task<Result> Distribute(IChromeBrowser browser)
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => NpcResourceParser.GetDistributeButton(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
-            var result = await browser.Click(element, cancellationToken);
+            var result = await browser.Click(NpcResourceParser.GetDistributeButton(browser.CurrentPage));
             if (result.IsFailed) return result;
 
             return Result.Ok();
         }
 
-        private static async Task<Result> Redeem(IChromeBrowser browser, CancellationToken cancellationToken)
+        private static async Task<Result> Redeem(IChromeBrowser browser)
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => NpcResourceParser.GetRedeemButton(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
-            var result = await browser.Click(element, cancellationToken);
+            var result = await browser.Click(NpcResourceParser.GetRedeemButton(browser.CurrentPage));
             if (result.IsFailed) return result;
 
             return Result.Ok();

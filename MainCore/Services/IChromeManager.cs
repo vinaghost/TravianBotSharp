@@ -4,8 +4,6 @@
     {
         IChromeBrowser Get(AccountId accountId);
 
-        void LoadExtension();
-
         Task Shutdown();
     }
 }
