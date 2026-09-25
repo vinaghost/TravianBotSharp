@@ -5,11 +5,12 @@ using MainCore.Tasks.Base;
 namespace MainCore.Tasks
 {
     [Handler]
-    public sealed partial class SleepTask(IDbContextFactory<AppDbContext> contextFactory,
-                                          IChromeBrowser browser,
-                                          ILogger logger,
-                                          GetValidAccessCommand.Handler getAccessQuery,
-                                          OpenBrowserCommand.Handler openBrowserCommand)
+    public sealed partial class SleepTask(
+        IDbContextFactory<AppDbContext> contextFactory,
+        IChromeBrowser browser,
+        ILogger logger,
+        GetValidAccessCommand.Handler getAccessQuery,
+        OpenBrowserCommand.Handler openBrowserCommand)
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {

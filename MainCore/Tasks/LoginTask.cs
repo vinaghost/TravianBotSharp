@@ -4,10 +4,11 @@ using MainCore.Tasks.Base;
 namespace MainCore.Tasks
 {
     [Handler]
-    public sealed partial class LoginTask(IDelayService delayService,
-                                          IChromeBrowser browser,
-                                          IDbContextFactory<AppDbContext> contextFactory,
-                                          ToDorfCommand.Handler toDorfCommand)
+    public sealed partial class LoginTask(
+        IDelayService delayService,
+        IChromeBrowser browser,
+        IDbContextFactory<AppDbContext> contextFactory,
+        ToDorfCommand.Handler toDorfCommand)
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {
