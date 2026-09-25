@@ -7,7 +7,7 @@ namespace MainCore.Parsers
     {
         public static async Task<TimeSpan> GetAdventureDuration(IPage page)
         {
-            var timer = page.Locator("#heroAdventure span.timer");
+            var timer = page.Locator("#heroAdventure span.timerReact");
             var seconds = await timer.GetAttributeAsync("value");
             if (string.IsNullOrEmpty(seconds)) return TimeSpan.Zero;
             return TimeSpan.FromSeconds(double.Parse(seconds));
@@ -27,13 +27,12 @@ namespace MainCore.Parsers
 
         public static async Task<bool> CanStartAdventure(IPage page)
         {
-            var heroHome = page.Locator("div.heroStatus i.heroHome");
-            var isHeroHomeVisible = await heroHome.IsVisibleAsync();
-            if (!isHeroHomeVisible) return false;
+            var heroHome = page.Locator("div.heroStatus a i.heroHome");
+            if (await heroHome.CountAsync() == 0) return false;
 
             var adventureButton = GetHeroAdventureButton(page);
-            var adventureAvailabe = await adventureButton.Locator("div.content").IsVisibleAsync();
-            return adventureAvailabe;
+            var adventureAvailabe = adventureButton.Locator("div.content");
+            return await adventureAvailabe.CountAsync() > 0;
         }
 
         public record struct AdventureInfo(string Difficult, TimeSpan Duration, ILocator Button);
