@@ -1,25 +1,23 @@
-﻿using MainCore.Commands.Features.CompleteImmediately;
-using MainCore.Tasks.Base;
+﻿using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
-    public static partial class CompleteImmediatelyTask
+    public sealed partial class CompleteImmediatelyTask(
+        ToDorfCommand.Handler toDorfCommand,
+        IChromeBrowser browser,
+        ITaskManager taskManager)
     {
-        public sealed class Task : VillageTask
+        public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            public Task(AccountId accountId, VillageId villageId) : base(accountId, villageId)
-            {
-            }
-
             protected override string TaskName => "Complete immediately";
 
-            private static List<BuildingEnums> UnskippableBuildings = new()
-            {
+            private static readonly List<BuildingEnums> UnskippableBuildings =
+            [
                 BuildingEnums.Residence,
                 BuildingEnums.Palace,
                 BuildingEnums.CommandCenter,
-            };
+            ];
 
             public override bool CanStart(AppDbContext context)
             {
@@ -39,28 +37,40 @@ namespace MainCore.Tasks
                 var requiredTime = DateTime.Now.AddMinutes(completeImmediatelyMinimumTime);
 
                 var anyBuilding = queueBuildings
-                    .Where(x => x.CompleteTime > requiredTime)
-                    .Any();
+                    .Any(x => x.CompleteTime > requiredTime);
 
                 return anyBuilding;
             }
         }
 
-        private static async ValueTask<Result> HandleAsync(
+        private async ValueTask<Result> HandleAsync(
             Task task,
-            ToDorfCommand.Handler toDorfCommand,
-            CompleteImmediatelyCommand.Handler completeImmediatelyCommand,
-            ITaskManager taskManager,
             CancellationToken cancellationToken)
         {
             Result result;
             result = await toDorfCommand.HandleAsync(new(0), cancellationToken);
             if (result.IsFailed) return result;
-            result = await completeImmediatelyCommand.HandleAsync(new(), cancellationToken);
+
+            result = await InstantUpgrade();
             if (result.IsFailed) return result;
 
             taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId));
 
+            return Result.Ok();
+        }
+
+        private async ValueTask<Result> InstantUpgrade()
+        {
+            var oldQueueCount = await BuildingLayoutParser.CountQueueBuilding(browser.CurrentPage);
+            if (oldQueueCount == 0) return Result.Ok();
+
+            var completeButton = CompleteImmediatelyParser.GetCompleteButton(browser.CurrentPage);
+            var result = await browser.Click(completeButton);
+            if (result.IsFailed) return result;
+
+            var confirmButton = CompleteImmediatelyParser.GetConfirmButton(browser.CurrentPage);
+            result = await browser.Click(confirmButton);
+            if (result.IsFailed) return result;
             return Result.Ok();
         }
     }
