@@ -6,7 +6,7 @@ namespace MainCore.Tasks
     [Handler]
     public sealed partial class LoginTask(IDelayService delayService,
                                           IChromeBrowser browser,
-                                          LoginCommand.Handler loginCommand,
+                                          IDbContextFactory<AppDbContext> contextFactory,
                                           ToDorfCommand.Handler toDorfCommand)
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
@@ -14,21 +14,39 @@ namespace MainCore.Tasks
             protected override string TaskName => "Login";
         }
 
-        private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
+        private async ValueTask<Result> HandleAsync(Task task)
         {
-            Result result;
-            result = await loginCommand.HandleAsync(new(task.AccountId), cancellationToken);
-            if (result.IsFailed) return result;
-
-            await delayService.DelayTask(cancellationToken);
-
             await AccecptCookieConsent();
+
+            Result result;
+            result = await Login(task.AccountId);
+            if (result.IsFailed) return result;
 
             result = await DisableContextualHelp();
             if (result.IsFailed) return result;
+            return Result.Ok();
+        }
 
-            result = await toDorfCommand.HandleAsync(new(0), cancellationToken);
+        private async ValueTask<Result> Login(AccountId accountId)
+        {
+            if (await LoginParser.IsIngamePage(browser.CurrentPage)) return Result.Ok();
+
+            var (username, password) = GetLoginInfo(accountId);
+
+            Result result;
+
+            result = await browser.Input(LoginParser.GetUsernameInput(browser.CurrentPage), username);
             if (result.IsFailed) return result;
+
+            result = await browser.Input(LoginParser.GetPasswordInput(browser.CurrentPage), password);
+            if (result.IsFailed) return result;
+
+            result = await browser.Click(LoginParser.GetLoginButton(browser.CurrentPage));
+            if (result.IsFailed) return result;
+
+            result = await browser.WaitPageChanged("dorf");
+            if (result.IsFailed) return result;
+
             return Result.Ok();
         }
 
@@ -48,8 +66,10 @@ namespace MainCore.Tasks
             await acceptButton.ClickAsync();
         }
 
-        private async Task<Result> DisableContextualHelp()
+        private async ValueTask<Result> DisableContextualHelp()
         {
+            await delayService.DelayTask();
+
             var contextualHelpEnable = await OptionParser.IsContextualHelpEnable(browser.CurrentPage);
             if (!contextualHelpEnable) return Result.Ok();
 
@@ -61,7 +81,24 @@ namespace MainCore.Tasks
 
             result = await browser.Click(OptionParser.GetSubmitButton(browser.CurrentPage));
             if (result.IsFailed) return result;
+
+            result = await toDorfCommand.HandleAsync(new(0));
+            if (result.IsFailed) return result;
             return Result.Ok();
+        }
+
+        private (string username, string password) GetLoginInfo(AccountId accountId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var data = context.Accesses
+                .Where(x => x.AccountId == accountId.Value)
+                .OrderByDescending(x => x.LastUsed)
+                .Select(x => new { x.Username, x.Password })
+                .FirstOrDefault();
+
+            if (data is null) return ("", "");
+
+            return (data.Username, data.Password);
         }
     }
 }
