@@ -13,9 +13,9 @@ namespace MainCore.Parsers
             return TimeSpan.FromSeconds(double.Parse(seconds));
         }
 
-        public static ILocator GetAdventurePage(IPage page)
+        public static ILocator GetAdventureDurationSection(IPage page)
         {
-            var heroAdventure = page.Locator("#heroAdventure");
+            var heroAdventure = page.Locator("#heroAdventure div.videoFeatureBonusBox.adventureDuration");
             return heroAdventure;
         }
 

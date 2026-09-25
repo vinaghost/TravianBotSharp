@@ -1,11 +1,11 @@
-﻿using MainCore.Commands.NextExecute;
-using MainCore.Tasks.Base;
+﻿using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
-    public sealed partial class StartAdventureTask(IChromeBrowser browser,
-                                                   ILogger logger)
+    public sealed partial class StartAdventureTask(
+        IChromeBrowser browser,
+        ILogger logger)
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {
@@ -61,7 +61,7 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result;
             result = await browser.WaitPageChanged("hero/adventures");
             if (result.IsFailed) return result;
-            result = await browser.Wait(AdventureParser.GetAdventurePage(browser.CurrentPage));
+            result = await browser.Wait(AdventureParser.GetAdventureDurationSection(browser.CurrentPage));
             if (result.IsFailed) return result;
             return Result.Ok();
         }
