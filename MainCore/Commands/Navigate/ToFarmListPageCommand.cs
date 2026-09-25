@@ -1,23 +1,23 @@
-﻿namespace MainCore.Commands.Features.StartFarmList
+﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public static partial class ToFarmListPageCommand
+    public sealed partial class ToFarmListPageCommand(
+        IDbContextFactory<AppDbContext> contextFactory,
+        SwitchVillageCommand.Handler switchVillageCommand,
+        ToDorfCommand.Handler toDorfCommand,
+        UpdateBuildingCommand.Handler updateBuildingCommand,
+        ToBuildingByLocationCommand.Handler toBuildingCommand,
+        SwitchTabCommand.Handler switchTabCommand,
+        IDelayService delayService)
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        private static async ValueTask<Result> HandleAsync(
+        private async ValueTask<Result> HandleAsync(
             Command command,
-            GetHasRallypointVillageCommand.Handler getHasRallypointVillageCommand,
-            SwitchVillageCommand.Handler switchVillageCommand,
-            ToDorfCommand.Handler toDorfCommand,
-            UpdateBuildingCommand.Handler updateBuildingCommand,
-            ToBuildingByLocationCommand.Handler toBuildingCommand,
-            SwitchTabCommand.Handler switchTabCommand,
-            IDelayService delayService,
             CancellationToken cancellationToken)
         {
             var accountId = command.AccountId;
-            var rallypointVillageId = await getHasRallypointVillageCommand.HandleAsync(new(accountId), cancellationToken);
+            var rallypointVillageId = GetHasRallypointVillage(accountId);
             if (rallypointVillageId == VillageId.Empty) return Skip.Error.WithError("No rallypoint found. Recheck & load village has rallypoint in Village>Build tab");
 
             var result = await switchVillageCommand.HandleAsync(new(rallypointVillageId), cancellationToken);
@@ -39,6 +39,18 @@
 
             await delayService.DelayClick(cancellationToken);
             return Result.Ok();
+        }
+
+        private VillageId GetHasRallypointVillage(AccountId accountId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var hasRallypointVillageId = context.Villages
+               .Where(x => x.AccountId == accountId.Value)
+               .Where(x => x.Buildings.Any(x => x.Type == BuildingEnums.RallyPoint && x.Level > 0))
+               .OrderByDescending(x => x.IsActive)
+               .Select(x => new VillageId(x.Id))
+               .FirstOrDefault();
+            return hasRallypointVillageId;
         }
     }
 }

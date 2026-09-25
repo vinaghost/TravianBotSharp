@@ -1,49 +1,79 @@
-﻿using MainCore.Commands.Features.StartFarmList;
-using MainCore.Commands.NextExecute;
-using MainCore.Tasks.Base;
+﻿using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
-    public static partial class StartFarmListTask
+    public sealed partial class StartFarmListTask(
+        IDbContextFactory<AppDbContext> contextFactory,
+        IChromeBrowser browser,
+        IDelayService delayService,
+        ToFarmListPageCommand.Handler toFarmListPageCommand
+        )
     {
-        public sealed class Task : AccountTask
+        public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {
-            public Task(AccountId accountId) : base(accountId)
-            {
-            }
-
             protected override string TaskName => "Start farm list";
         }
 
-        private static async ValueTask<Result> HandleAsync(
+        private async ValueTask<Result> HandleAsync(
             Task task,
-            ISettingService settingService,
-            ToFarmListPageCommand.Handler toFarmListPageCommand,
-            StartAllFarmListCommand.Handler startAllFarmListCommand,
-            StartActiveFarmListCommand.Handler startActiveFarmListCommand,
-            NextExecuteStartFarmListTaskCommand.Handler nextExecuteStartFarmListTaskCommand,
             CancellationToken cancellationToken)
         {
             Result result;
             result = await toFarmListPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
 
-            var useStartAllButton = settingService.BooleanByName(task.AccountId, AccountSettingEnums.UseStartAllButton);
-            if (useStartAllButton)
+            if (UseStartAllButton(task.AccountId))
             {
-                result = await startAllFarmListCommand.HandleAsync(new(), cancellationToken);
+                result = await browser.Click(FarmListParser.GetStartAllButton(browser.CurrentPage));
                 if (result.IsFailed) return result;
             }
             else
             {
-                result = await startActiveFarmListCommand.HandleAsync(new(task.AccountId), cancellationToken);
-                if (result.IsFailed) return result;
+                var farmLists = GetActiveFarms(task.AccountId);
+                if (farmLists.Count == 0) return Skip.Error.WithError("No farmlist is active");
+
+                foreach (var farmList in farmLists)
+                {
+                    result = await browser.Click(FarmListParser.GetStartButton(browser.CurrentPage, farmList));
+                    if (result.IsFailed) return result;
+
+                    await delayService.DelayClick(cancellationToken);
+                }
             }
 
-            await nextExecuteStartFarmListTaskCommand.HandleAsync(new(task), cancellationToken);
-
+            task.ExecuteAt = GetNextExecuteTime(task.AccountId);
             return Result.Ok();
+        }
+
+        private bool UseStartAllButton(AccountId accountId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var useStartAllButton = context.BooleanByName(accountId, AccountSettingEnums.UseStartAllButton);
+            return useStartAllButton;
+        }
+
+        private DateTime GetNextExecuteTime(AccountId accountId)
+        {
+            using var context = contextFactory.CreateDbContext();
+
+            var seconds = context.ByName(
+                accountId,
+                AccountSettingEnums.FarmIntervalMin,
+                AccountSettingEnums.FarmIntervalMax);
+            var nextExecute = DateTime.Now.AddSeconds(seconds);
+            return nextExecute;
+        }
+
+        private List<FarmId> GetActiveFarms(AccountId accountId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var farmLists = context.FarmLists
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => x.IsActive)
+                .Select(x => new FarmId(x.Id))
+                .ToList();
+            return farmLists;
         }
     }
 }
