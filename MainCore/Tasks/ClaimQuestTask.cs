@@ -1,19 +1,15 @@
-﻿#pragma warning disable S1172
-
-using MainCore.Commands.Features.ClaimQuest;
-using MainCore.Tasks.Base;
+﻿using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
-    public static partial class ClaimQuestTask
+    public sealed partial class ClaimQuestTask(
+        IChromeBrowser browser,
+        IDelayService delayService,
+        SwitchTabCommand.Handler switchTabCommand)
     {
-        public sealed class Task : VillageTask
+        public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            public Task(AccountId accountId, VillageId villageId) : base(accountId, villageId)
-            {
-            }
-
             protected override string TaskName => "Claim quest";
 
             public override bool CanStart(AppDbContext context)
@@ -25,17 +21,67 @@ namespace MainCore.Tasks
             }
         }
 
-        private static async ValueTask<Result> HandleAsync(
+        private async ValueTask<Result> HandleAsync(
+#pragma warning disable S1172 // Unused method parameters should be removed
+#pragma warning disable IDE0060 // Remove unused parameter
             Task task,
-            ToQuestPageCommand.Handler toQuestPageCommand,
-            ClaimQuestCommand.Handler claimQuestCommand,
+#pragma warning restore IDE0060 // Remove unused parameter
+#pragma warning restore S1172 // Unused method parameters should be removed
             CancellationToken cancellationToken)
         {
             Result result;
-            result = await toQuestPageCommand.HandleAsync(new(), cancellationToken);
+            result = await ToQuestPage();
             if (result.IsFailed) return result;
-            result = await claimQuestCommand.HandleAsync(new(), cancellationToken);
+            result = await ClaimQuest(cancellationToken);
             if (result.IsFailed) return result;
+            return Result.Ok();
+        }
+
+        private async ValueTask<Result> ToQuestPage()
+        {
+            var questMaster = QuestParser.GetQuestMaster(browser.CurrentPage);
+
+            var result = await browser.Click(questMaster);
+            if (result.IsFailed) return result;
+
+            result = await browser.WaitPageChanged("tasks");
+            if (result.IsFailed) return result;
+            return Result.Ok();
+        }
+
+        private async ValueTask<Result> ClaimQuest(CancellationToken cancellationToken)
+        {
+            Result result;
+
+            do
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return Cancel.Error;
+                }
+                var quest = QuestParser.GetQuestCollectButton(browser.CurrentPage);
+
+                if (await quest.CountAsync() == 0)
+                {
+                    result = await switchTabCommand.HandleAsync(new(1), cancellationToken);
+                    if (result.IsFailed) return result;
+
+                    await delayService.DelayClick(cancellationToken);
+
+                    quest = QuestParser.GetQuestCollectButton(browser.CurrentPage);
+                    result = await browser.Click(quest);
+                    if (result.IsFailed) return result;
+                    continue;
+                }
+                else
+                {
+                    result = await browser.Click(quest);
+                    if (result.IsFailed) return result;
+                    await delayService.DelayClick(cancellationToken);
+                }
+            }
+            while (await QuestParser.IsQuestClaimable(browser.CurrentPage));
+
             return Result.Ok();
         }
     }
