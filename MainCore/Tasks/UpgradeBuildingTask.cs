@@ -6,12 +6,8 @@ namespace MainCore.Tasks
     [Handler]
     public static partial class UpgradeBuildingTask
     {
-        public sealed class Task : VillageTask
+        public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            public Task(AccountId accountId, VillageId villageId) : base(accountId, villageId)
-            {
-            }
-
             protected override string TaskName => "Upgrade building";
         }
 
