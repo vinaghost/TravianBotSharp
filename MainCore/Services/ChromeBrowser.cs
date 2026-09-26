@@ -38,7 +38,9 @@ namespace MainCore.Services
                     "--ash-no-nudges",
                     "--mute-audio",
                     "--disable-gpu",
-                    "--disable-search-engine-choice-screen"
+                    "--disable-search-engine-choice-screen",
+                    "--webrtc-ip-handling-policy=disable_non_proxied_udp",
+                    "--force-webrtc-ip-handling-policy",
                 ],
             });
 
