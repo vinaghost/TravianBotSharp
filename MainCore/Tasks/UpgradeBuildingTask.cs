@@ -10,7 +10,6 @@ namespace MainCore.Tasks
         GetBuildPlanCommand.Handler getBuildPlanCommand,
         ToBuildPageCommand.Handler toBuildPageCommand,
         HandleResourceCommand.Handler handleResourceCommand,
-        AddCroplandCommand.Handler addCroplandCommand,
         HandleUpgradeCommand.Handler handleUpgradeCommand,
         UpdateBuildingCommand.Handler updateBuildingCommand)
     {
@@ -48,10 +47,7 @@ namespace MainCore.Tasks
                 if (result.IsFailed)
                 {
                     if (result.HasError<LackOfFreeCrop>())
-                    {
-                        await addCroplandCommand.HandleAsync(new(task.VillageId), cancellationToken);
                         continue;
-                    }
 
                     if (result.HasError<StorageLimit>())
                     {

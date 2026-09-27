@@ -32,6 +32,10 @@
             result = await browser.Wait(InventoryParser.GetSuccessToast(browser.CurrentPage));
             if (result.IsFailed) return result;
 
+            result = await browser.WaitPageChanged($"&reload=auto");
+            if (result.IsFailed) return result;
+
+            await delayService.DelayClick(cancellationToken);
             return Result.Ok();
         }
 
