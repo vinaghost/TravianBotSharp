@@ -26,7 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ardalis.Specification.EntityFrameworkCore" Version="9.3.1" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="FluentResults" Version="4.0.0" />
@@ -62,20 +61,19 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Using Include="Ardalis.Specification.EntityFrameworkCore" />
     <Using Include="FluentResults" />
     <Using Include="FluentValidation" />
     <Using Include="Immediate.Handlers.Shared" />
     <Using Include="Injectio.Attributes" />
     <Using Include="Microsoft.EntityFrameworkCore" />
+    <Using Include="Microsoft.Playwright" />
     <Using Include="ReactiveUI" />
     <Using Include="ReactiveUI.SourceGenerators" />
-    <Using Include="Splat" />
     <Using Include="Riok.Mapperly.Abstractions" />
+    <Using Include="Splat" />
     <Using Include="MainCore.DTO" />
     <Using Include="MainCore.Entities" />
     <Using Include="MainCore.Services" />
-    <Using Include="MainCore.Specifications" />    
     <Using Include="MainCore.Constraints" />    
     <Using Include="MainCore.Infrasturecture.Persistence" />
     <Using Include="MainCore.Parsers" />
@@ -88,7 +86,6 @@
     <Using Include="MainCore.Errors" />
     <Using Include="MainCore.Enums" />
     <Using Include="MainCore.Common.Extensions" />
-    <Using Include="Microsoft.Playwright" />
     <Using Alias="ILogger" Include="Serilog.ILogger" />
   </ItemGroup>
 </Project>

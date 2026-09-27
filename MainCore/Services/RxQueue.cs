@@ -51,9 +51,9 @@ namespace MainCore.Services
             {
                 taskManager.Add(startAdventureTask);
             }
-            var villagesSpec = new VillagesSpec(accountId);
             var villages = context.Villages
-                .WithSpecification(villagesSpec)
+                .Where(x => x.AccountId == accountId.Value)
+                .Select(x => new VillageId(x.Id))
                 .ToList();
             foreach (var village in villages)
             {
@@ -68,9 +68,10 @@ namespace MainCore.Services
                     taskManager.Add(trainTroopTask);
                 }
             }
-            var hasBuildJobVillagesSpec = new HasBuildJobVillagesSpec(accountId);
             var hasBuildJobVillages = context.Villages
-                .WithSpecification(hasBuildJobVillagesSpec)
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => x.Jobs.Any(x => _jobTypes.Contains(x.Type)))
+                .Select(x => new VillageId(x.Id))
                 .ToList();
             foreach (var village in hasBuildJobVillages)
             {
@@ -81,6 +82,11 @@ namespace MainCore.Services
                 }
             }
         }
+
+        private static readonly List<JobTypeEnums> _jobTypes = new() {
+            JobTypeEnums.NormalBuild,
+            JobTypeEnums.ResourceBuild
+        };
 
         private void VillageTaskAddedHandler(VillageTaskAdded notification)
         {

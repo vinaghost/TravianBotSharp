@@ -83,10 +83,11 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var missingBuildingVillagesSpec = new MissingBuildingVillagesSpec(AccountId);
 
             var villages = context.Villages
-                .WithSpecification(missingBuildingVillagesSpec)
+                .Where(x => x.AccountId == AccountId.Value)
+                .Where(x => x.Buildings.Count < 40)
+                .Select(x => new VillageId(x.Id))
                 .ToList();
 
             foreach (var village in villages)
@@ -103,9 +104,9 @@ namespace MainCore.UI.ViewModels.Tabs
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            var villagesSpec = new VillagesSpec(AccountId);
             var villages = context.Villages
-                .WithSpecification(villagesSpec)
+                .Where(x => x.AccountId == AccountId.Value)
+                .Select(x => new VillageId(x.Id))
                 .ToList();
             foreach (var village in villages)
             {

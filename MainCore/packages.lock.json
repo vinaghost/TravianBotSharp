@@ -2,17 +2,6 @@
   "version": 1,
   "dependencies": {
     "net10.0": {
-      "Ardalis.Specification.EntityFrameworkCore": {
-        "type": "Direct",
-        "requested": "[9.3.1, )",
-        "resolved": "9.3.1",
-        "contentHash": "QbOo4E6HWdKXZ9QUrqcgiGN4EKtzt0kzGzqr2zc32q5QESzBrceJ3GX1ymWVdCCOzJO1+GPm+/a/5ovSkfrLoQ==",
-        "dependencies": {
-          "Ardalis.Specification": "9.3.1",
-          "Microsoft.EntityFrameworkCore": "9.0.8",
-          "Microsoft.EntityFrameworkCore.Relational": "9.0.8"
-        }
-      },
       "FluentResults": {
         "type": "Direct",
         "requested": "[4.0.0, )",
@@ -240,11 +229,6 @@
         "requested": "[1.0.0-beta06, )",
         "resolved": "1.0.0-beta06",
         "contentHash": "f8ujS/QA3Yhy6ULozBgNfmdX3mhWtHrjHa6TdXFTWDWMfym8MJX1aOTTyiFhUezwUvG2MDD/PXfAWuy4Hm0oeA=="
-      },
-      "Ardalis.Specification": {
-        "type": "Transitive",
-        "resolved": "9.3.1",
-        "contentHash": "GWrE6BA0smWFLbN+XPU2l5rDF9Uzelfbb3w35jJ0CGIat+p1ChbtLcbkvYRMEculBHOAo12omwAAOm3VFWkoJQ=="
       },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",

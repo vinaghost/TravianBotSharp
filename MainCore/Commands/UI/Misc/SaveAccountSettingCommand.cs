@@ -27,9 +27,10 @@
             {
                 if (settings[AccountSettingEnums.EnableAutoLoadVillageBuilding] == 1)
                 {
-                    var villagesSpec = new MissingBuildingVillagesSpec(accountId);
                     var villages = context.Villages
-                        .WithSpecification(villagesSpec)
+                        .Where(x => x.AccountId == accountId.Value)
+                        .Where(x => x.Buildings.Count < 40)
+                        .Select(x => new VillageId(x.Id))
                         .ToList();
 
                     foreach (var village in villages)
@@ -43,9 +44,9 @@
                 }
                 else
                 {
-                    var villagesSpec = new VillagesSpec(accountId);
                     var villages = context.Villages
-                        .WithSpecification(villagesSpec)
+                        .Where(x => x.AccountId == accountId.Value)
+                        .Select(x => new VillageId(x.Id))
                         .ToList();
                     foreach (var village in villages)
                     {

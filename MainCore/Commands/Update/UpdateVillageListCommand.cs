@@ -25,10 +25,10 @@
             var settingEnable = context.BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             if (!settingEnable) return;
 
-            var missingBuildingVillagesSpec = new MissingBuildingVillagesSpec(accountId);
-
             var villages = context.Villages
-                .WithSpecification(missingBuildingVillagesSpec)
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => x.Buildings.Count < 40)
+                .Select(x => new VillageId(x.Id))
                 .ToList();
 
             foreach (var village in villages)
