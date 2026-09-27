@@ -1,16 +1,15 @@
 ﻿namespace MainCore.Commands.Misc
 {
     [Handler]
-    public static partial class DeleteJobByIdCommand
+    public sealed partial class DeleteJobByIdCommand(IDbContextFactory<AppDbContext> contextFactory)
     {
         public sealed record Command(JobId JobId) : ICommand;
 
-        private static async ValueTask HandleAsync(
-            Command command,
-            AppDbContext context
-            )
+        private async ValueTask HandleAsync(Command command)
         {
             await Task.CompletedTask;
+
+            using var context = contextFactory.CreateDbContext();
             var jobId = command.JobId;
 
             var job = context.Jobs

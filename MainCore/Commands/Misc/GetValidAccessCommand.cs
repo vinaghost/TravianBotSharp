@@ -3,49 +3,24 @@
 namespace MainCore.Commands.Misc
 {
     [Handler]
-    public static partial class GetValidAccessCommand
+    public sealed partial class GetValidAccessCommand(
+        ILogger logger,
+        IDbContextFactory<AppDbContext> contextFactory)
     {
         public sealed record Command(AccountId AccountId, bool IgnoreSleepTime = false) : IAccountCommand;
 
-        private static async ValueTask<Result<AccessDto>> HandleAsync(
-            Command command,
-            ILogger logger,
-            AppDbContext context
-            )
+        private async ValueTask<Result<AccessDto>> HandleAsync(
+            Command command)
         {
             var (accountId, ignoreSleepTime) = command;
+
+            using var context = contextFactory.CreateDbContext();
 
             var accesses = context.Accesses
                .Where(x => x.AccountId == accountId.Value)
                .OrderBy(x => x.LastUsed) // get oldest one
                .ToDto()
                .ToList();
-
-            async Task<AccessDto?> GetValidAccess(List<AccessDto> proxies)
-            {
-                foreach (var proxy in proxies)
-                {
-                    var client = GetHttpClient(proxy);
-                    logger.Information("Checking proxy {Proxy}, last used {LastUsed}", proxy.Proxy, proxy.LastUsed);
-                    try
-                    {
-                        var response = await client.GetAsync(TRAVIAN_PAGE);
-                        if (response.IsSuccessStatusCode)
-                        {
-                            logger.Information("Access {Proxy} is good", proxy.Proxy);
-                            return proxy;
-                        }
-
-                        logger.Warning("Access {Proxy} is not working, status code: {StatusCode}", proxy.Proxy, response.StatusCode);
-                        continue;
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Error(ex, "{Message}", ex.Message);
-                    }
-                }
-                return null;
-            }
 
             var access = await GetValidAccess(accesses);
             if (access is null) return Stop.Error.WithError("All accesses not working");
@@ -57,6 +32,32 @@ namespace MainCore.Commands.Misc
             var timeValid = DateTime.Now.AddMinutes(-minSleep);
             if (access.LastUsed > timeValid) return Stop.Error.WithError("Last access is reused, it may get MH's attention");
             return access;
+        }
+
+        private async Task<AccessDto?> GetValidAccess(List<AccessDto> proxies)
+        {
+            foreach (var proxy in proxies)
+            {
+                var client = GetHttpClient(proxy);
+                logger.Information("Checking proxy {Proxy}, last used {LastUsed}", proxy.Proxy, proxy.LastUsed);
+                try
+                {
+                    var response = await client.GetAsync(TRAVIAN_PAGE);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        logger.Information("Access {Proxy} is good", proxy.Proxy);
+                        return proxy;
+                    }
+
+                    logger.Warning("Access {Proxy} is not working, status code: {StatusCode}", proxy.Proxy, response.StatusCode);
+                    continue;
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "{Message}", ex.Message);
+                }
+            }
+            return null;
         }
 
         private static readonly NetworkCredential _networkCredential = new();

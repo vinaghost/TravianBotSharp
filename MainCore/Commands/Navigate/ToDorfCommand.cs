@@ -1,15 +1,11 @@
 ﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public static partial class ToDorfCommand
+    public sealed partial class ToDorfCommand(IChromeBrowser browser)
     {
         public sealed record Command(int Dorf) : ICommand;
 
-        private static async ValueTask<Result> HandleAsync(
-           Command command,
-           IChromeBrowser browser,
-           CancellationToken cancellationToken
-           )
+        private async ValueTask<Result> HandleAsync(Command command)
         {
             var dorf = command.Dorf;
 

@@ -1,15 +1,11 @@
 ﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public static partial class SwitchVillageCommand
+    public sealed partial class SwitchVillageCommand(IChromeBrowser browser)
     {
         public sealed record Command(VillageId VillageId) : IVillageCommand;
 
-        private static async ValueTask<Result> HandleAsync(
-           Command command,
-           IChromeBrowser browser,
-           CancellationToken cancellationToken
-           )
+        private async ValueTask<Result> HandleAsync(Command command)
         {
             var villageId = command.VillageId;
 
