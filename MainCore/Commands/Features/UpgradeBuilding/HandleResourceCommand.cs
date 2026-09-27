@@ -34,10 +34,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             logger.Information("Don't have enough resource. Use resource in hero invetory to upgrade building");
             var missingResource = await getMissingResourceCommand.HandleAsync(new(villageId, requiredResource), cancellationToken);
 
-            var url = browser.CurrentUrl;
-
-            result = await useHeroResourceCommand.HandleAsync(new(accountId, missingResource), cancellationToken);
-            await browser.Navigate(url);
+            result = await useHeroResourceCommand.HandleAsync(new(plan.Type, missingResource), cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();

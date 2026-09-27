@@ -71,12 +71,15 @@ namespace MainCore.Parsers
             for (var i = 0; i < buildingCount; i++)
             {
                 var building = buildings.Nth(i);
-                string type = await building.Locator(".name").InnerTextAsync();
+                string type = await building.Locator(".name").EvaluateAsync<string>(
+                     "el => el.childNodes[0].textContent.trim()"
+                );
+
                 int level = await building.Locator(".lvl").InnerTextAsync() is string levelStr && int.TryParse(levelStr, out int l) ? l : 0;
                 int durationSeconds = await building.Locator(".timer").GetAttributeAsync("value") is string durationStr && int.TryParse(durationStr, out int d) ? d : 0;
                 extractedData.Add(new QueueBuildingDto
                 {
-                    Type = type,
+                    Type = type.Replace(" ", ""),
                     Level = level,
                     CompleteTime = DateTime.Now.AddSeconds(durationSeconds),
                     Location = -1

@@ -14,7 +14,7 @@
             }
         }
 
-        public static async ValueTask<ILocator> GetRequiredResource(IPage page, BuildingEnums building)
+        public static async Task<ILocator> GetRequiredResource(IPage page, BuildingEnums building)
         {
             var panel = await GetPanel(page, building);
             var nodes = panel.Locator("#contract div.resourceWrapper div.resource");
@@ -27,6 +27,13 @@
             var node = panel.Locator("#contract div.errorMessage span.timer");
             var timeValue = await node.GetAttributeAsync("value");
             return TimeSpan.FromSeconds(int.Parse(timeValue ?? "0"));
+        }
+
+        public static async Task<ILocator> GetFillUpButton(IPage page, BuildingEnums building)
+        {
+            var panel = await GetPanel(page, building);
+            var node = panel.Locator("#contract .resourceWrapper .resource.transfer.fillUp");
+            return node.First;
         }
 
         public static async Task<ILocator> GetNormalButton(IPage page, BuildingEnums building)

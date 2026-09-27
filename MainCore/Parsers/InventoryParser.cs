@@ -106,6 +106,12 @@ namespace MainCore.Parsers
             return button;
         }
 
+        public static ILocator GetResourceConfirmButton(IPage page)
+        {
+            var button = page.Locator("div.resourceTransferDialog .actionButton button");
+            return button;
+        }
+
         public static ILocator GetResourceTransferDialog(IPage page)
         {
             var dialog = page.Locator("div.resourceTransferDialog");
