@@ -41,12 +41,6 @@ namespace MainCore.Commands.Navigate
 
         private static ILocator GetInfrastructure(IPage page, int location)
         {
-            if (location == 40) // wall
-            {
-                var node = page.Locator(".village2 div.buildingSlot.a40.top svg path");
-                return node;
-            }
-
             var div = page.Locator($".village2 div.buildingSlot.a{location} svg path");
             return div.First;
         }

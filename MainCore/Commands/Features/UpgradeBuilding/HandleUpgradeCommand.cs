@@ -1,24 +1,50 @@
-﻿namespace MainCore.Commands.Features.UpgradeBuilding
+﻿using Polly;
+
+namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
-    public static partial class HandleUpgradeCommand
+    public sealed partial class HandleUpgradeCommand(
+        IChromeBrowser browser,
+        IDbContextFactory<AppDbContext> contextFactory,
+        ILogger logger)
     {
         public sealed record Command(VillageId VillageId, NormalBuildPlan Plan) : IVillageCommand;
 
-        private static async ValueTask<Result> HandleAsync(
-            Command command,
-            IChromeBrowser browser,
-            AppDbContext context,
-            ILogger logger,
-            CancellationToken cancellationToken
-        )
+        private async ValueTask<Result> HandleAsync(Command command)
         {
             var (villageId, plan) = command;
 
+            LogBuildingInfo(villageId, plan);
+
+            Result result;
+            if (CanUseSpecialUpgrade(villageId) && !UnskippableBuildings.Contains(plan.Type))
+            {
+                result = await SpecialUpgrade(plan.Type);
+                if (result.IsFailed) return result;
+            }
+            else
+            {
+                result = await Upgrade(plan.Type);
+                if (result.IsFailed) return result;
+            }
+
+            return Result.Ok();
+        }
+
+        private static readonly List<BuildingEnums> UnskippableBuildings =
+        [
+            BuildingEnums.Residence,
+            BuildingEnums.Palace,
+            BuildingEnums.CommandCenter,
+        ];
+
+        private void LogBuildingInfo(VillageId villageId, NormalBuildPlan plan)
+        {
+            using var context = contextFactory.CreateDbContext();
+
             var queueBuilding = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Location == plan.Location)
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.Location == plan.Location);
 
             if (queueBuilding is not null)
             {
@@ -27,98 +53,35 @@
             else
             {
                 var building = context.Buildings
-               .Where(x => x.VillageId == villageId.Value)
-               .Where(x => x.Location == plan.Location)
-               .FirstOrDefault();
+                   .Where(x => x.VillageId == villageId.Value)
+                   .FirstOrDefault(x => x.Location == plan.Location);
 
                 if (building is not null)
                 {
                     logger.Information("{Type} at location {Location} is at level {Level}", building.Type, building.Location, building.Level);
                 }
             }
+        }
 
-            Result result;
-            if (context.IsUpgradeable(villageId, plan))
-            {
-                var isSpecialUpgrade = context.BooleanByName(villageId, VillageSettingEnums.UseSpecialUpgrade);
-                var isSpecialUpgradeable = context.IsSpecialUpgradeable(villageId, plan);
-                if (isSpecialUpgrade && isSpecialUpgradeable)
-                {
-                    result = await browser.SpecialUpgrade();
-                    if (result.IsFailed) return result;
-                }
-                else
-                {
-                    result = await browser.Upgrade();
-                    if (result.IsFailed) return result;
-                }
-            }
-            else
-            {
-                result = await browser.Construct(plan.Type);
-                if (result.IsFailed) return result;
-            }
+        private bool CanUseSpecialUpgrade(VillageId villageId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var useSpecialUpgrade = context.BooleanByName(villageId, VillageSettingEnums.UseSpecialUpgrade);
+            return useSpecialUpgrade;
+        }
 
+        private async Task<Result> SpecialUpgrade(BuildingEnums building)
+        {
+            var button = await UpgradeParser.GetSpecialButton(browser.CurrentPage, building);
+            var result = await browser.Click(button);
+            if (result.IsFailed) return result;
+
+            result = await HandleAds();
+            if (result.IsFailed) return result;
             return Result.Ok();
         }
 
-        private static bool IsUpgradeable(this AppDbContext context, VillageId villageId, NormalBuildPlan plan)
-        {
-            return !context.IsEmptySite(villageId, plan.Location);
-        }
-
-        private static List<BuildingEnums> UnskippableBuildings = new()
-        {
-            BuildingEnums.Residence,
-            BuildingEnums.Palace,
-            BuildingEnums.CommandCenter,
-        };
-
-        private static bool IsSpecialUpgradeable(
-            this AppDbContext context,
-            VillageId villageId,
-            NormalBuildPlan plan
-        )
-        {
-            if (UnskippableBuildings.Contains(plan.Type)) return false;
-
-            if (plan.Type.IsResourceField())
-            {
-                var getBuildingSpec = new GetBuildingSpec(villageId, plan.Location);
-                var level = context.Buildings
-                    .WithSpecification(getBuildingSpec)
-                    .Select(x => x.Level)
-                    .FirstOrDefault();
-                if (level == 0) return false;
-            }
-            return true;
-        }
-
-        private static bool IsEmptySite(this AppDbContext context, VillageId villageId, int location)
-        {
-            return context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Location == location)
-                .Where(x => x.Type == BuildingEnums.Site || x.Level == -1)
-                .Any();
-        }
-
-        private static async Task<Result> SpecialUpgrade(
-            this IChromeBrowser browser
-        )
-        {
-            var result = await browser.Click(UpgradeParser.GetSpecialUpgradeButton(browser.CurrentPage));
-            if (result.IsFailed) return result;
-
-            result = await browser.HandleAds();
-            if (result.IsFailed) return result;
-
-            return Result.Ok();
-        }
-
-        private static async Task<Result> HandleAds(
-            this IChromeBrowser browser
-        )
+        private async Task<Result> HandleAds()
         {
             var page = browser.CurrentPage;
             var videoFeature = page.Locator("#videoFeature");
@@ -157,28 +120,15 @@
             return Result.Ok();
         }
 
-        private static async Task<Result> Upgrade(
-            this IChromeBrowser browser)
+        private async Task<Result> Upgrade(BuildingEnums building)
         {
-            var result = await browser.Click(UpgradeParser.GetUpgradeButton(browser.CurrentPage));
+            var button = await UpgradeParser.GetNormalButton(browser.CurrentPage, building);
+            var result = await browser.Click(button);
             if (result.IsFailed) return result;
 
             result = await browser.WaitPageChanged("dorf");
             if (result.IsFailed) return result;
 
-            return Result.Ok();
-        }
-
-        private static async Task<Result> Construct(
-            this IChromeBrowser browser,
-            BuildingEnums building
-        )
-        {
-            var result = await browser.Click(UpgradeParser.GetConstructButton(browser.CurrentPage, building));
-            if (result.IsFailed) return result;
-
-            result = await browser.WaitPageChanged("dorf");
-            if (result.IsFailed) return result;
             return Result.Ok();
         }
     }

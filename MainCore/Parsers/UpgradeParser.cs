@@ -2,46 +2,62 @@
 {
     public static class UpgradeParser
     {
-        private static ILocator GetContractNode(IPage page, BuildingEnums building)
+        public static async Task<ILocator> GetPanel(IPage page, BuildingEnums building)
         {
-            var node = page.Locator($"#contract_building{(int)building}"); // site
-            node ??= page.Locator("#contract"); // building
-            return node;
+            if (await IsEmptySite(page))
+            {
+                return page.Locator($"#contract_building{(int)building} div.upgradeBuilding");
+            }
+            else
+            {
+                return page.Locator("div.upgradeBuilding");
+            }
         }
 
-        public static ILocator GetRequiredResource(IPage page, BuildingEnums building)
+        public static async ValueTask<ILocator> GetRequiredResource(IPage page, BuildingEnums building)
         {
-            var nodes = GetContractNode(page, building)
-                .Locator("div.resourceWrapper div.resource");
+            var panel = await GetPanel(page, building);
+            var nodes = panel.Locator("#contract div.resourceWrapper div.resource");
             return nodes;
         }
 
         public static async Task<TimeSpan> GetTimeWhenEnoughResource(IPage page, BuildingEnums building)
         {
-            var node = GetContractNode(page, building)
-                .Locator("div.errorMessage span.timer");
+            var panel = await GetPanel(page, building);
+            var node = panel.Locator("#contract div.errorMessage span.timer");
             var timeValue = await node.GetAttributeAsync("value");
             return TimeSpan.FromSeconds(int.Parse(timeValue ?? "0"));
         }
 
-        public static ILocator GetConstructButton(IPage page, BuildingEnums building)
+        public static async Task<ILocator> GetNormalButton(IPage page, BuildingEnums building)
         {
-            if (building.IsResourceField()) return GetUpgradeButton(page);
-
-            var button = page.Locator($"#contract_building{(int)building} button.new");
-            return button;
+            if (await IsEmptySite(page))
+            {
+                return page.Locator($"#contract_building{(int)building} div.upgradeButtonsContainer .section1 button.new");
+            }
+            else
+            {
+                return page.Locator("div.upgradeButtonsContainer .section1 button.build");
+            }
         }
 
-        public static ILocator GetSpecialUpgradeButton(IPage page)
+        public static async Task<ILocator> GetSpecialButton(IPage page, BuildingEnums building)
         {
-            var button = page.Locator("div.upgradeButtonsContainer button.videoFeatureButton.green");
-            return button;
+            if (await IsEmptySite(page))
+            {
+                return page.Locator($"#contract_building{(int)building} div.upgradeButtonsContainer .section2 button.videoFeatureButton");
+            }
+            else
+            {
+                return page.Locator("div.upgradeButtonsContainer .section2 button.videoFeatureButton");
+            }
         }
 
-        public static ILocator GetUpgradeButton(IPage page)
+        private static async Task<bool> IsEmptySite(IPage page)
         {
-            var button = page.Locator("div.upgradeButtonsContainer button.build");
-            return button;
+            var parentPanel = page.Locator("#build");
+            var classes = await parentPanel.GetAttributeAsync("class");
+            return classes is not null && classes.Contains("gid0");
         }
     }
 }

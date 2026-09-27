@@ -45,9 +45,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private static async Task<long[]> GetRequiredResource(IChromeBrowser browser, BuildingEnums building)
         {
-            var resources = UpgradeParser.GetRequiredResource(browser.CurrentPage, building);
+            var resources = await UpgradeParser.GetRequiredResource(browser.CurrentPage, building);
             var count = await resources.CountAsync();
-            if (count != 5) return new long[5];
+
+            if (count != 5) throw new InvalidOperationException($"Expected 5 elements, but found {count} when fetching required resources.");
 
             var resourceBuilding = new long[5];
             for (var i = 0; i < count; i++)
