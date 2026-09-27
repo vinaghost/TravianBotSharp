@@ -1,4 +1,5 @@
 ﻿using MainCore.UI.Models.Input;
+using System.Text.Json;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
@@ -24,8 +25,13 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
                 if (result.IsFailed) return result;
                 plan.ValidateLocation(buildings);
             }
-
-            await addJobCommand.HandleAsync(new(villageId, plan.ToJob()));
+            var job = new JobDto()
+            {
+                Position = 0,
+                Type = JobTypeEnums.NormalBuild,
+                Content = JsonSerializer.Serialize(plan),
+            };
+            await addJobCommand.HandleAsync(new(villageId, job));
             return Result.Ok();
         }
 

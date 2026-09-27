@@ -3,78 +3,52 @@
 namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public static partial class ToBuildingByLocationCommand
+    public sealed partial class ToBuildingByLocationCommand(IChromeBrowser browser)
     {
         public sealed record Command(int Location) : ICommand;
 
-        private static async ValueTask<Result> HandleAsync(
-           Command command,
-           IChromeBrowser browser,
-           CancellationToken cancellationToken
-           )
+        private async ValueTask<Result> HandleAsync(Command command)
         {
-            return await ToBuilding(command.Location, browser, cancellationToken);
-        }
+            var location = command.Location;
+            Result result;
+            if (location < 19)
+            {
+                var field = GetField(browser.CurrentPage, location);
+                result = await browser.Click(field);
+                if (result.IsFailed) return result;
+            }
+            else
+            {
+                var building = GetInfrastructure(browser.CurrentPage, location);
 
-        public static async ValueTask<Result> ToBuilding(
-            int location,
-            IChromeBrowser browser,
-            CancellationToken cancellationToken)
-        {
-            var building = BuildingLayoutParser.GetBuilding(browser.CurrentPage, location);
-            var image = building.Locator("svg path");
-            var result = await browser.Click(image);
-            if (result.IsFailed) return result;
+                var javascript = await building.GetAttributeAsync("onclick");
+                var decodedJs = HttpUtility.HtmlDecode(javascript ?? "");
+
+                result = await browser.ExecuteJsScript(decodedJs);
+                if (result.IsFailed) return result;
+            }
 
             result = await browser.WaitPageChanged("build");
             if (result.IsFailed) return result;
             return Result.Ok();
+        }
 
-            //var (_, isFailed, element, errors) = await browser.GetElement(doc => GetBuilding(doc, location), cancellationToken);
-            //if (isFailed) return Result.Fail(errors).WithError($"Failed to find [building at #{location}]");
+        private static ILocator GetField(IPage page, int location)
+        {
+            var node = page.Locator($".village1 a.buildingSlot{location}");
+            return node;
+        }
 
-            //var node = GetBuilding(browser.Html, location)!;
+        private static ILocator GetInfrastructure(IPage page, int location)
+        {
+            if (location == 40) // wall
+            {
+                var node = page.Locator(".village2 div.buildingSlot.a40.top svg path");
+                return node;
+            }
 
-            //Result result;
-            //if (location > 18 && node.HasClass("g0"))
-            //{
-            //    if (location == 40) // wall
-            //    {
-            //        var currentUrl = new Uri(browser.CurrentUrl);
-            //        var host = currentUrl.GetLeftPart(UriPartial.Authority);
-            //        await browser.Navigate($"{host}/build.php?id={location}", cancellationToken);
-            //    }
-            //    else
-            //    {
-            //        var css = $"#villageContent > div.buildingSlot.a{location} > svg > path";
-            //        (_, isFailed, element, errors) = await browser.GetElement(By.CssSelector(css), cancellationToken);
-            //        if (isFailed) return Result.Fail(errors);
-
-            //        result = await browser.Click(element, cancellationToken);
-            //        if (result.IsFailed) return result;
-            //    }
-            //}
-            //else
-            //{
-            //    if (location == 40) // wall
-            //    {
-            //        var path = node.Descendants("path").FirstOrDefault();
-            //        if (path is null) return Retry.Error.WithError("Failed to find [wall]");
-
-            //        var javascript = path.GetAttributeValue("onclick", "");
-            //        if (string.IsNullOrEmpty(javascript)) return Retry.Error.WithError("Failed to find [wall's onclick event]");
-
-            //        var decodedJs = HttpUtility.HtmlDecode(javascript);
-
-            //        result = await browser.ExecuteJsScript(decodedJs);
-            //        if (result.IsFailed) return result;
-            //    }
-            //    else
-            //    {
-            //        result = await browser.Click(element, cancellationToken);
-            //        if (result.IsFailed) return result;
-            //    }
-            //}
+            var div = page.Locator($".village2 div.buildingSlot.a{location} svg path");
+            return div.First;
         }
     }
 }

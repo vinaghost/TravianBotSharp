@@ -3,17 +3,16 @@
 namespace MainCore.Commands.Misc
 {
     [Handler]
-    public static partial class GetLayoutBuildingsCommand
+    public sealed partial class GetLayoutBuildingsCommand(IDbContextFactory<AppDbContext> contextFactory)
     {
         public sealed record Command(VillageId VillageId, bool IgnoreJobBuilding = false) : IVillageCommand;
 
-        private static async ValueTask<List<BuildingItem>> HandleAsync(
-            Command command,
-            AppDbContext context
-            )
+        private async ValueTask<List<BuildingItem>> HandleAsync(Command command)
         {
             await Task.CompletedTask;
+
             var (villageId, ignoreJobBuilding) = command;
+            using var context = contextFactory.CreateDbContext();
 
             var villageBuildings = context.Buildings
                 .AsNoTracking()

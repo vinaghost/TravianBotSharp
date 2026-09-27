@@ -3,35 +3,27 @@
 namespace MainCore.Commands.Misc
 {
     [Handler]
-    public static partial class GetJobCommand
+    public sealed partial class GetJobCommand(IDbContextFactory<AppDbContext> contextFactory)
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
-        private static async ValueTask<Result<JobDto>> HandleAsync(
-            Command command,
-            AppDbContext context
-            )
+        private async ValueTask<Result<JobDto>> HandleAsync(Command command)
         {
             await Task.CompletedTask;
 
             var (accountId, villageId) = command;
 
-            var buildJobs = context.GetBuildJobs(villageId);
+            var buildJobs = GetBuildJobs(villageId);
             if (buildJobs.Count == 0) return UpgradeBuildingError.BuildingJobQueueEmpty;
 
-            var (buildings, queueBuildings) = context.GetBuildings(villageId);
+            var queueBuildings = GetQueueBuildings(villageId);
 
             if (queueBuildings.Count == 0)
             {
                 return buildJobs[0];
             }
 
-            var plusActive = context.AccountsInfo
-                .Where(x => x.AccountId == accountId.Value)
-                .Select(x => x.HasPlusAccount)
-                .FirstOrDefault();
-
-            var applyRomanQueueLogic = context.BooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
+            var (plusActive, applyRomanQueueLogic) = GetVillageSettings(accountId, villageId);
 
             if (queueBuildings.Count == 1)
             {
@@ -68,8 +60,9 @@ namespace MainCore.Commands.Misc
             return UpgradeBuildingError.BuildingJobQueueBroken;
         }
 
-        private static (List<Building>, List<QueueBuilding>) GetBuildings(this AppDbContext context, VillageId villageId)
+        private List<QueueBuilding> GetQueueBuildings(VillageId villageId)
         {
+            using var context = contextFactory.CreateDbContext();
             var completeQueueBuildings = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.CompleteTime < DateTime.Now)
@@ -84,8 +77,7 @@ namespace MainCore.Commands.Misc
 
                     var building = context.Buildings
                         .Where(x => x.VillageId == villageId.Value)
-                        .Where(x => x.Location == completeQueueBuilding.Location)
-                        .FirstOrDefault();
+                        .FirstOrDefault(x => x.Location == completeQueueBuilding.Location);
                     if (building is null) continue;
 
                     building.Level = completeQueueBuilding.Level;
@@ -94,22 +86,18 @@ namespace MainCore.Commands.Misc
                 context.SaveChanges();
             }
 
-            var buildings = context.Buildings
-                .AsNoTracking()
-                .Where(x => x.VillageId == villageId.Value)
-                .ToList();
-
             var queueBuildings = context.QueueBuildings
                 .AsNoTracking()
                 .Where(x => x.VillageId == villageId.Value)
                 .OrderBy(x => x.CompleteTime)
                 .ToList();
 
-            return (buildings, queueBuildings);
+            return queueBuildings;
         }
 
-        private static List<JobDto> GetBuildJobs(this AppDbContext context, VillageId villageId)
+        private List<JobDto> GetBuildJobs(VillageId villageId)
         {
+            using var context = contextFactory.CreateDbContext();
             var jobs = context.Jobs
                 .AsNoTracking()
                 .Where(x => x.VillageId == villageId.Value)
@@ -120,7 +108,18 @@ namespace MainCore.Commands.Misc
             return jobs;
         }
 
-        private static List<JobTypeEnums> BuildJobTypes = [
+        private (bool plusActive, bool applyRomanQueueLogic) GetVillageSettings(AccountId accountId, VillageId villageId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var plusActive = context.AccountsInfo
+                .Where(x => x.AccountId == accountId.Value)
+                .Select(x => x.HasPlusAccount)
+                .FirstOrDefault();
+            var applyRomanQueueLogic = context.BooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
+            return (plusActive, applyRomanQueueLogic);
+        }
+
+        private static readonly List<JobTypeEnums> BuildJobTypes = [
             JobTypeEnums.NormalBuild,
             JobTypeEnums.ResourceBuild
         ];

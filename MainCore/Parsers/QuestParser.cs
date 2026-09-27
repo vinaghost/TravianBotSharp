@@ -16,13 +16,13 @@
 
         public static ILocator GetQuestCollectButton(IPage page)
         {
-            var buttons = page.Locator("div.tasks.tasksVillage div.taskOverview button.collect:not(.disabled)");
+            var buttons = page.Locator("div.taskOverview button.collect:not(.disabled)");
             return buttons;
         }
 
         public static async Task<bool> IsQuestPage(IPage page)
         {
-            var table = page.Locator("div.tasks.tasksVillage div.taskOverview");
+            var table = page.Locator("div.taskOverview");
             var count = await table.CountAsync();
             return count > 0;
         }

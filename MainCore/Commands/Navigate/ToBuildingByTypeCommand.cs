@@ -1,29 +1,27 @@
 ﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public static partial class ToBuildingByTypeCommand
+    public sealed partial class ToBuildingByTypeCommand(
+        IDbContextFactory<AppDbContext> contextFactory,
+        ToBuildingByLocationCommand.Handler toBuildingByLocationCommand)
     {
         public sealed record Command(VillageId VillageId, BuildingEnums Type) : IVillageCommand;
 
-        private static async ValueTask<Result> HandleAsync(
-           Command command,
-           IChromeBrowser browser,
-           AppDbContext context,
-           CancellationToken cancellationToken
-           )
+        private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {
-            var marketLocation = context.Buildings
+            using var context = contextFactory.CreateDbContext();
+            var location = context.Buildings
                 .Where(x => x.VillageId == command.VillageId.Value)
                 .Where(x => x.Type == command.Type)
                 .Select(x => x.Location)
                 .FirstOrDefault();
 
-            if (marketLocation == default)
+            if (location == default)
             {
                 return MissingBuilding.Error(command.Type);
             }
 
-            return await ToBuildingByLocationCommand.ToBuilding(marketLocation, browser, cancellationToken);
+            return await toBuildingByLocationCommand.HandleAsync(new(location), cancellationToken);
         }
     }
 }

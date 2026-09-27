@@ -8,9 +8,10 @@ namespace MainCore.Parsers
         public static async Task<TimeSpan> GetAdventureDuration(IPage page)
         {
             var timer = page.Locator("#heroAdventure span.timerReact");
-            var seconds = await timer.GetAttributeAsync("value");
-            if (string.IsNullOrEmpty(seconds)) return TimeSpan.Zero;
-            return TimeSpan.FromSeconds(double.Parse(seconds));
+            var text = await timer.InnerTextAsync();
+            if (string.IsNullOrEmpty(text)) return TimeSpan.Zero;
+            var duration = TimeSpan.Parse(text, CultureInfo.InvariantCulture);
+            return duration;
         }
 
         public static ILocator GetAdventureDurationSection(IPage page)

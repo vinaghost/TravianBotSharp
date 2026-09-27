@@ -3,23 +3,18 @@
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
-    public static partial class HandleResourceCommand
+    public sealed partial class HandleResourceCommand(
+        UpdateStorageCommand.Handler updateStorageCommand,
+        UseHeroResourceCommand.Handler useHeroResourceCommand,
+        ValidateEnoughResourceCommand.Handler validateEnoughResourceCommand,
+        GetMissingResourceCommand.Handler getMissingResourceCommand,
+        ISettingService settingService,
+        IChromeBrowser browser,
+        ILogger logger)
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand
-        {
-            public void Deconstruct(out AccountId accountId, out VillageId villageId) => (accountId, villageId) = (AccountId, VillageId);
-        }
+        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand;
 
-        private static async ValueTask<Result> HandleAsync(
-            Command command,
-            UpdateStorageCommand.Handler updateStorageCommand,
-            UseHeroResourceCommand.Handler useHeroResourceCommand,
-            ValidateEnoughResourceCommand.Handler validateEnoughResourceCommand,
-            GetMissingResourceCommand.Handler getMissingResourceCommand,
-            ISettingService settingService,
-            IChromeBrowser browser,
-            ILogger logger,
-            CancellationToken cancellationToken)
+        private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {
             var (accountId, villageId, plan) = command;
 

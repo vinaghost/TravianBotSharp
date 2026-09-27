@@ -6,30 +6,6 @@ namespace MainCore.Parsers
 {
     public static partial class BuildingLayoutParser
     {
-        public static ILocator GetBuilding(IPage page, int location)
-        {
-            if (location < 19) return GetField(page, location);
-            return GetInfrastructure(page, location);
-        }
-
-        private static ILocator GetField(IPage page, int location)
-        {
-            var node = page.Locator($".village1 a.buildingSlot{location}");
-            return node;
-        }
-
-        private static ILocator GetInfrastructure(IPage page, int location)
-        {
-            if (location == 40) // wall
-            {
-                var node = page.Locator("#villageContent > div.buildingSlot.a40.top");
-                return node;
-            }
-
-            var div = page.Locator($".village2 div.buildingSlot.a{location}");
-            return div;
-        }
-
         public static async Task<List<BuildingDto>> GetFields(IPage page)
         {
             var fields = page.Locator("#resourceFieldContainer a.level");

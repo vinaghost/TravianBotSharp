@@ -1,26 +1,14 @@
 ﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public static partial class SwitchTabCommand
+    public sealed partial class SwitchTabCommand(IChromeBrowser browser)
     {
         public sealed record Command(int TabIndex) : ICommand;
 
-        private static async ValueTask<Result> HandleAsync(
-           Command command,
-           IChromeBrowser browser,
-           CancellationToken cancellationToken
-           )
+        private async ValueTask<Result> HandleAsync(Command command)
         {
-            return await SwitchTab(browser, command.TabIndex, cancellationToken);
-        }
-
-        public static async ValueTask<Result> SwitchTab(
-            IChromeBrowser browser,
-            int tabIndex,
-            CancellationToken cancellationToken)
-        {
+            var tabIndex = command.TabIndex;
             var tabs = BuildingTabParser.GetTabs(browser.CurrentPage);
-
             var countTabs = await tabs.CountAsync();
             if (countTabs == 0) return Result.Ok();
 
@@ -35,7 +23,6 @@
 
             result = await browser.Wait(tab, condition: "node => node.classList.contains('active')");
             if (result.IsFailed) return result;
-
             return Result.Ok();
         }
     }

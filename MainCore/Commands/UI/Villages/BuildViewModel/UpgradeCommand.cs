@@ -1,4 +1,6 @@
-﻿namespace MainCore.Commands.UI.Villages.BuildViewModel
+﻿using System.Text.Json;
+
+namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
     [Handler]
     public static partial class UpgradeCommand
@@ -36,7 +38,14 @@
                 Level = level,
             };
 
-            await addJobCommand.HandleAsync(new(villageId, plan.ToJob()));
+            var job = new JobDto()
+            {
+                Position = 0,
+                Type = JobTypeEnums.NormalBuild,
+                Content = JsonSerializer.Serialize(plan),
+            };
+
+            await addJobCommand.HandleAsync(new(villageId, job));
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MainCore.UI.Models.Input;
+using System.Text.Json;
 
 namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
@@ -13,7 +14,14 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             )
         {
             var (villageId, plan) = command;
-            await addJobCommand.HandleAsync(new(villageId, plan.ToJob()));
+
+            var job = new JobDto()
+            {
+                Position = 0,
+                Type = JobTypeEnums.ResourceBuild,
+                Content = JsonSerializer.Serialize(plan),
+            };
+            await addJobCommand.HandleAsync(new(villageId, job));
         }
 
         public static ResourceBuildPlan ToPlan(this ResourceBuildInput input)

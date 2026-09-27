@@ -1,4 +1,6 @@
-﻿namespace MainCore.Commands.Features.UpgradeBuilding
+﻿using System.Text.Json;
+
+namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
     public static partial class AddCroplandCommand
@@ -27,7 +29,14 @@
                 Type = cropland.Type,
                 Level = cropland.Level + 1,
             };
-            await addJobCommand.HandleAsync(new(villageId, cropLandPlan.ToJob(), true), cancellationToken);
+            var cropLandJob = new JobDto()
+            {
+                Position = 0,
+                Type = JobTypeEnums.NormalBuild,
+                Content = JsonSerializer.Serialize(cropLandPlan),
+            };
+
+            await addJobCommand.HandleAsync(new(villageId, cropLandJob, true), cancellationToken);
             rxQueue.Enqueue(new JobsModified(villageId));
         }
     }

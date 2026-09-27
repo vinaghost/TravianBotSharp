@@ -66,19 +66,17 @@ namespace MainCore.Tasks
                     result = await switchTabCommand.HandleAsync(new(1), cancellationToken);
                     if (result.IsFailed) return result;
 
-                    await delayService.DelayClick(cancellationToken);
-
                     quest = QuestParser.GetQuestCollectButton(browser.CurrentPage);
-                    result = await browser.Click(quest);
-                    if (result.IsFailed) return result;
-                    continue;
                 }
-                else
+
+                if (await quest.CountAsync() == 0)
                 {
-                    result = await browser.Click(quest);
-                    if (result.IsFailed) return result;
-                    await delayService.DelayClick(cancellationToken);
+                    return Result.Ok();
                 }
+
+                result = await browser.Click(quest.First);
+                if (result.IsFailed) return result;
+                await delayService.DelayClick(cancellationToken);
             }
             while (await QuestParser.IsQuestClaimable(browser.CurrentPage));
 
