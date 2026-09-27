@@ -154,7 +154,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 return false;
             }
 
-            return true;
+            return false;
         }
 
         private Result CheckPrerequisite(VillageId villageId, NormalBuildPlan plan)
