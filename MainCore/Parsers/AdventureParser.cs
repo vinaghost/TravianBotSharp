@@ -22,18 +22,21 @@ namespace MainCore.Parsers
 
         public static ILocator GetHeroAdventureButton(IPage page)
         {
-            var adventureButton = page.Locator("a.adventure.round");
+            var adventureButton = page.Locator("a.adventure.round.attention");
             return adventureButton;
         }
 
         public static async Task<bool> CanStartAdventure(IPage page)
         {
-            var heroHome = page.Locator("div.heroStatus a i.heroHome");
+            var heroStatus = page.Locator("div.heroStatus a");
+            await heroStatus.WaitForAsync();
+
+            var heroHome = heroStatus.Locator("a i.heroHome");
             if (await heroHome.CountAsync() == 0) return false;
 
             var adventureButton = GetHeroAdventureButton(page);
-            var adventureAvailabe = adventureButton.Locator("div.content");
-            return await adventureAvailabe.CountAsync() > 0;
+            if (await adventureButton.CountAsync() == 0) return false;
+            return true;
         }
 
         public record struct AdventureInfo(string Difficult, TimeSpan Duration, ILocator Button);

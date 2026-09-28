@@ -1,19 +1,20 @@
 ﻿namespace MainCore.Commands.Update
 {
     [Handler]
-    public static partial class UpdateAdventureCommand
+    public sealed partial class UpdateAdventureCommand(
+        IChromeBrowser browser,
+        IDbContextFactory<AppDbContext> contextFactory,
+        ITaskManager taskManager)
     {
         public sealed record Command(AccountId AccountId) : IAccountConstraint;
 
-        private static async ValueTask HandleAsync(
-           Command command,
-           IChromeBrowser browser,
-           AppDbContext context,
-           ITaskManager taskManager
-           )
+        private async ValueTask HandleAsync(Command command)
         {
-            if (!(await AdventureParser.CanStartAdventure(browser.CurrentPage))) return;
+            var canStartAdventure = await AdventureParser.CanStartAdventure(browser.CurrentPage);
+            if (!canStartAdventure) return;
+
             var startAdventureTask = new StartAdventureTask.Task(command.AccountId);
+            using var context = contextFactory.CreateDbContext();
             if (!startAdventureTask.CanStart(context) || taskManager.IsExist<StartAdventureTask.Task>(command.AccountId))
             {
                 return;
