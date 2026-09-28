@@ -30,6 +30,8 @@ namespace MainCore.Tasks
             CancellationToken cancellationToken)
         {
             Result result;
+            var canClaimQuest = await QuestParser.IsQuestClaimable(browser.CurrentPage);
+            if (!canClaimQuest) return Result.Ok();
             result = await ToQuestPage();
             if (result.IsFailed) return result;
             result = await ClaimQuest(cancellationToken);
