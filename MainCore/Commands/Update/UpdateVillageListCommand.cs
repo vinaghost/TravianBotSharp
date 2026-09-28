@@ -1,16 +1,18 @@
-﻿namespace MainCore.Commands.Update
+﻿using Polly;
+
+namespace MainCore.Commands.Update
 {
     [Handler]
-    public static partial class UpdateVillageListCommand
+    public sealed partial class UpdateVillageListCommand(
+        IChromeBrowser browser,
+        IDbContextFactory<AppDbContext> contextFactory,
+        IRxQueue rxQueue,
+        ITaskManager taskManager)
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        private static async ValueTask HandleAsync(
-            Command command,
-            IChromeBrowser browser,
-            AppDbContext context,
-            IRxQueue rxQueue,
-            ITaskManager taskManager)
+        private async ValueTask HandleAsync(
+            Command command)
         {
             await Task.CompletedTask;
             var accountId = command.AccountId;
@@ -18,10 +20,14 @@
             var dtos = await VillagePanelParser.Get(browser.CurrentPage);
             if (dtos.Count == 0) return;
 
-            context.UpdateToDatabase(accountId, dtos);
-
+            UpdateToDatabase(accountId, dtos);
             rxQueue.Enqueue(new VillagesModified(accountId));
+            TriggerUpdateBuildingTask(accountId);
+        }
 
+        private void TriggerUpdateBuildingTask(AccountId accountId)
+        {
+            using var context = contextFactory.CreateDbContext();
             var settingEnable = context.BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             if (!settingEnable) return;
 
@@ -38,8 +44,9 @@
             }
         }
 
-        private static void UpdateToDatabase(this AppDbContext context, AccountId accountId, List<VillageDto> dtos)
+        private void UpdateToDatabase(AccountId accountId, List<VillageDto> dtos)
         {
+            using var context = contextFactory.CreateDbContext();
             var villages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();

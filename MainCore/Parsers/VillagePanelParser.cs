@@ -1,4 +1,6 @@
-﻿namespace MainCore.Parsers
+﻿using System.Text.Json;
+
+namespace MainCore.Parsers
 {
     public static class VillagePanelParser
     {
@@ -20,31 +22,51 @@
             return await locator.EvaluateAsync<bool>("node => node.classList.contains('active')");
         }
 
+        public record struct RawVillageDto(string? IdStr, string? Name, string? CoordinateX, string? CoordinateY, bool IsActive, bool IsUnderAttack);
+
         public static async Task<List<VillageDto>> Get(IPage page)
         {
-            var nodes = page.Locator("#sidebarBoxVillageList div.listEntry.village");
-            var nodeCount = await nodes.CountAsync();
+            var jsonResult = await page.EvaluateAsync<JsonElement>(@"() => {
+                const elements = document.querySelectorAll('#sidebarBoxVillageList div.listEntry.village');
+                const result = [];
+
+                elements.forEach(node => {
+                    const nameEl = node.querySelector('a span.name');
+                    const xEl = node.querySelector('span.coordinateX');
+                    const yEl = node.querySelector('span.coordinateY');
+
+                    result.push({
+                        IdStr: node.getAttribute('data-did') || '0',
+                        Name: nameEl ? (nameEl.innerText || nameEl.textContent).trim() : '',
+                        CoordinateX: xEl ? (xEl.innerText || xEl.textContent).trim() : '0',
+                        CoordinateY: yEl ? (yEl.innerText || yEl.textContent).trim() : '0',
+                        IsActive: node.classList.contains('active'),
+                        IsUnderAttack: node.classList.contains('attack')
+                    });
+                });
+                return result;
+            }");
+
+            var text = jsonResult.GetRawText();
+            var rawVillagesData = JsonSerializer.Deserialize<List<RawVillageDto>>(text) ?? throw new InvalidOperationException($"Failed to deserialize building data from the page. Content: {text}");
+
             var extractedVillages = new List<VillageDto>();
 
-            for (int i = 0; i < nodeCount; i++)
+            foreach (var raw in rawVillagesData)
             {
-                var node = nodes.Nth(i);
-                var id = await node.GetAttributeAsync("data-did");
-                var name = await node.Locator("a span.name").InnerTextAsync();
-                var x = await node.Locator("span.coordinateX").InnerTextAsync();
-                var y = await node.Locator("span.coordinateY").InnerTextAsync();
-                var isActive = await node.EvaluateAsync<bool>("node => node.classList.contains('active')");
-                var isUnderAttack = await node.EvaluateAsync<bool>("node => node.classList.contains('attack')");
+                int id = int.TryParse(raw.IdStr, out int parsedId) ? parsedId : 0;
+
                 extractedVillages.Add(new VillageDto
                 {
-                    Id = new VillageId(int.Parse(id ?? "0")),
-                    Name = name,
-                    X = x.ParseInt(),
-                    Y = y.ParseInt(),
-                    IsActive = isActive,
-                    IsUnderAttack = isUnderAttack,
+                    Id = new VillageId(id),
+                    Name = raw.Name ?? "",
+                    X = (raw.CoordinateX ?? "").ParseInt(),
+                    Y = (raw.CoordinateY ?? "").ParseInt(),
+                    IsActive = raw.IsActive,
+                    IsUnderAttack = raw.IsUnderAttack
                 });
             }
+
             return extractedVillages;
         }
     }
