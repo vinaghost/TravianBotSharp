@@ -1,25 +1,25 @@
 ﻿namespace MainCore.Commands.Update
 {
     [Handler]
-    public static partial class UpdateFarmlistCommand
+    public sealed partial class UpdateFarmlistCommand(
+        IChromeBrowser browser,
+        IDbContextFactory<AppDbContext> contextFactory,
+        IRxQueue rxQueue)
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        private static async ValueTask<Result> HandleAsync(
-            Command command,
-            IChromeBrowser browser,
-            AppDbContext context,
-            IRxQueue rxQueue
-            )
+        private async ValueTask<Result> HandleAsync(
+            Command command)
         {
             var dtos = await FarmListParser.GetFarmInfo(browser.CurrentPage);
-            context.UpdateToDatabase(command.AccountId, dtos);
+            UpdateToDatabase(command.AccountId, dtos);
             rxQueue.Enqueue(new FarmsModified(command.AccountId));
             return Result.Ok();
         }
 
-        private static void UpdateToDatabase(this AppDbContext context, AccountId accountId, IEnumerable<FarmDto> dtos)
+        private void UpdateToDatabase(AccountId accountId, IEnumerable<FarmDto> dtos)
         {
+            using var context = contextFactory.CreateDbContext();
             var farms = context.FarmLists
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();
