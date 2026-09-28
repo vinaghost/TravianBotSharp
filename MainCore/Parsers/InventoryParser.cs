@@ -1,5 +1,4 @@
-﻿using Microsoft.Playwright;
-using System.Text.RegularExpressions;
+﻿using System.Text.Json;
 
 namespace MainCore.Parsers
 {
@@ -25,32 +24,52 @@ namespace MainCore.Parsers
             return count > 0 && !loading;
         }
 
-        [GeneratedRegex(@"item(\d+)")]
-        private static partial Regex ItemExtractor();
+        public record struct RawHeroItemDto(string? ItemIdStr, string? DataTier, string? AmountText, bool HasCountSlot);
 
         public static async Task<List<HeroItemDto>> GetItems(IPage page)
         {
-            var cells = page.Locator($"div.heroItems div.heroItem:not(.empty)");
-            var count = await cells.CountAsync();
+            var jsonResult = await page.EvaluateAsync<JsonElement>(@"() => {
+                const cells = document.querySelectorAll('div.heroItems div.heroItem:not(.empty)');
+                const result = [];
+
+                // Matches the same pattern as [GeneratedRegex(@""item(\d+)"")]
+                const itemRegex = /item(\d+)/;
+
+                cells.forEach(cell => {
+                    const itemSlot = cell.querySelector('.item');
+                    const countSlot = cell.querySelector('.count');
+
+                    const classes = itemSlot ? (itemSlot.getAttribute('class') || '') : '';
+                    const itemMatch = classes.match(itemRegex);
+
+                    result.push({
+                        ItemIdStr: itemMatch ? itemMatch[1] : null,
+                        DataTier: cell.getAttribute('data-tier') || '',
+                        AmountText: countSlot ? countSlot.innerText.trim() : '',
+                        HasCountSlot: !!countSlot
+                    });
+                });
+                return result;
+            }");
+            var text = jsonResult.GetRawText();
+            var rawItemsData = JsonSerializer.Deserialize<List<RawHeroItemDto>>(text) ?? throw new InvalidOperationException($"Failed to deserialize farm data from the page. Content: {text}");
+
             var extractedItems = new List<HeroItemDto>();
 
-            for (var i = 0; i < count; i++)
+            foreach (var raw in rawItemsData)
             {
-                var cell = cells.Nth(i);
-
-                var itemSlot = cell.Locator(".item");
-                var classes = await itemSlot.GetAttributeAsync("class") ?? "";
-
-                var itemMatch = ItemExtractor().Match(classes);
-                var item = itemMatch.Success ? (HeroItemEnums)int.Parse(itemMatch.Groups[1].Value) : HeroItemEnums.None;
+                var item = int.TryParse(raw.ItemIdStr, out int itemId)
+                    ? (HeroItemEnums)itemId
+                    : HeroItemEnums.None;
 
                 if (item == HeroItemEnums.None) continue;
 
-                var dataTier = await cell.GetAttributeAsync("data-tier") ?? "";
+                string dataTier = raw.DataTier ?? "";
 
+                // Non-consumables always have an amount of 1
                 if (!dataTier.Contains("consumable"))
                 {
-                    extractedItems.Add(new HeroItemDto()
+                    extractedItems.Add(new HeroItemDto
                     {
                         Type = item,
                         Amount = 1,
@@ -58,12 +77,10 @@ namespace MainCore.Parsers
                     continue;
                 }
 
-                var countSlot = cell.Locator(".count");
-                var exists = await countSlot.CountAsync() > 0;
-
-                if (!exists)
+                // Consumables without a visible count badge also default to 1
+                if (!raw.HasCountSlot)
                 {
-                    extractedItems.Add(new HeroItemDto()
+                    extractedItems.Add(new HeroItemDto
                     {
                         Type = item,
                         Amount = 1,
@@ -71,15 +88,16 @@ namespace MainCore.Parsers
                     continue;
                 }
 
-                var amountText = await countSlot.InnerTextAsync();
-                var amount = amountText.ParseInt();
+                // Parse amount text (using standard int parsing or your .ParseInt() extension method)
+                int amount = int.TryParse(raw.AmountText, out int parsedAmt) ? parsedAmt : 0;
 
-                extractedItems.Add(new HeroItemDto()
+                extractedItems.Add(new HeroItemDto
                 {
                     Type = item,
                     Amount = amount > 0 ? amount : 1,
                 });
             }
+
             return extractedItems;
         }
 

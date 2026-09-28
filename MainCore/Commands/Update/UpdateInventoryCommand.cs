@@ -3,22 +3,21 @@
 namespace MainCore.Commands.Update
 {
     [Handler]
-    public static partial class UpdateInventoryCommand
+    public sealed partial class UpdateInventoryCommand(
+        IChromeBrowser browser,
+        IDbContextFactory<AppDbContext> contextFactory)
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        private static async ValueTask HandleAsync(
-            Command command,
-            IChromeBrowser browser,
-            AppDbContext context
-            )
+        private async ValueTask HandleAsync(Command command)
         {
             var dtos = await InventoryParser.GetItems(browser.CurrentPage);
-            context.Update(command.AccountId, dtos);
+            Update(command.AccountId, dtos);
         }
 
-        private static void Update(this AppDbContext context, AccountId accountId, List<HeroItemDto> dtos)
+        private void Update(AccountId accountId, List<HeroItemDto> dtos)
         {
+            using var context = contextFactory.CreateDbContext();
             var items = context.HeroItems
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();
