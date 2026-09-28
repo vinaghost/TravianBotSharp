@@ -1,31 +1,56 @@
-﻿using Microsoft.Playwright;
+﻿using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace MainCore.Parsers
 {
-    public static class InfoParser
+    public static partial class InfoParser
     {
-        public static async Task<int> GetGold(IPage page)
-        {
-            var goldNode = page.Locator("div.ajaxReplaceableGoldAmount");
-            var gold = await goldNode.InnerTextAsync();
-            return gold.ParseInt();
-        }
+        public record struct RawAccountInfoDto(string? GoldText, string? SilverText, string? PlusClassAttr, string? TribeClassAttr);
 
-        public static async Task<int> GetSilver(IPage page)
-        {
-            var silverNode = page.Locator("div.ajaxReplaceableSilverAmount");
-            var silver = await silverNode.InnerTextAsync();
-            return silver.ParseInt();
-        }
+        [GeneratedRegex(@"vid_(\d+)")]
+        private static partial Regex TribeExtractor();
 
-        public static async Task<bool> HasPlusAccount(IPage page)
+        public static async Task<AccountInfoDto> GetAccountInfo(IPage page)
         {
-            var editButton = page.Locator("#sidebarBoxLinklist a.edit.round");
-            var classAttr = await editButton.GetAttributeAsync("class") ?? "";
+            var jsonResult = await page.EvaluateAsync<JsonElement>(@"() => {
+                const goldEl = document.querySelector('div.ajaxReplaceableGoldAmount');
+                const silverEl = document.querySelector('div.ajaxReplaceableSilverAmount');
+                const editButton = document.querySelector('#sidebarBoxLinklist a.edit.round');
+                const questmasterBtn = document.querySelector('#questmasterButton');
 
-            if (classAttr.Contains("green")) return true;
-            if (classAttr.Contains("gold")) return false;
-            return false;
+                return {
+                    GoldText: goldEl ? (goldEl.innerText || goldEl.textContent).trim() : '0',
+                    SilverText: silverEl ? (silverEl.innerText || silverEl.textContent).trim() : '0',
+                    PlusClassAttr: editButton ? (editButton.getAttribute('class') || '') : '',
+                    TribeClassAttr: questmasterBtn ? (questmasterBtn.getAttribute('class') || '') : ''
+                };
+            }");
+
+            var raw = JsonSerializer.Deserialize<RawAccountInfoDto>(jsonResult.GetRawText());
+
+            int gold = (raw.GoldText ?? "").ParseInt();
+            int silver = (raw.SilverText ?? "").ParseInt();
+
+            string plusAttr = raw.PlusClassAttr ?? "";
+            bool hasPlus = plusAttr.Contains("green");
+
+            string tribeSrc = raw.TribeClassAttr ?? "";
+            var tribeMatch = TribeExtractor().Match(tribeSrc);
+            TribeEnums tribe = TribeEnums.Any;
+
+            if (tribeMatch.Success)
+            {
+                int tribeId = int.Parse(tribeMatch.Groups[1].Value);
+                tribe = (TribeEnums)tribeId;
+            }
+
+            return new AccountInfoDto
+            {
+                Gold = gold,
+                Silver = silver,
+                HasPlusAccount = hasPlus,
+                Tribe = tribe
+            };
         }
     }
 }
