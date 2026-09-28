@@ -140,12 +140,12 @@ namespace MainCore.Tasks
             var overflowNPC = context.BooleanByName(villageId, VillageSettingEnums.AutoNPCOverflow);
             if (overflowNPC) return Result.Ok();
 
-            var warehouse = await StorageParser.GetWarehouseCapacity(browser.CurrentPage);
+            var storage = await StorageParser.GetStorage(browser.CurrentPage);
             for (var i = 0; i < 3; i++)
             {
-                if (values[i] > warehouse)
+                if (values[i] > storage.Warehouse)
                 {
-                    return StorageLimit.Warehouse(warehouse, values[i]);
+                    return StorageLimit.Warehouse(storage.Warehouse, values[i]);
                 }
             }
 
@@ -154,23 +154,16 @@ namespace MainCore.Tasks
 
         private async ValueTask LogResource()
         {
-            var wood = await StorageParser.GetWood(browser.CurrentPage);
-            var clay = await StorageParser.GetClay(browser.CurrentPage);
-            var iron = await StorageParser.GetIron(browser.CurrentPage);
-            var crop = await StorageParser.GetCrop(browser.CurrentPage);
+            var storage = await StorageParser.GetStorage(browser.CurrentPage);
 
-            var warehouse = await StorageParser.GetWarehouseCapacity(browser.CurrentPage);
-            var granary = await StorageParser.GetGranaryCapacity(browser.CurrentPage);
-
-            logger.Information("[{Warehouse}]: {Wood} - {Clay} - {Iron} | [{Granary}]: {Crop}", warehouse, wood, clay, iron, granary, crop);
+            logger.Information("[{Warehouse}]: {Wood} - {Clay} - {Iron} | [{Granary}]: {Crop}", storage.Warehouse, storage.Wood, storage.Clay, storage.Iron, storage.Granary, storage.Crop);
         }
 
         private async ValueTask<bool> CanNPC(VillageId villageId)
         {
-            var crop = await StorageParser.GetCrop(browser.CurrentPage);
-            var granary = await StorageParser.GetGranaryCapacity(browser.CurrentPage);
+            var storage = await StorageParser.GetStorage(browser.CurrentPage);
 
-            var granaryPercent = (int)(crop * 100f / granary);
+            var granaryPercent = (int)(storage.Crop * 100f / storage.Granary);
 
             using var context = contextFactory.CreateDbContext();
             var autoNPCGranaryPercent = context.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
