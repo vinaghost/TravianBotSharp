@@ -17,13 +17,6 @@
     <GeneratedFolder>Generated</GeneratedFolder>
     <CompilerGeneratedFilesOutputPath>$(GeneratedFolder)</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>-->
-  <ItemGroup>
-    <EmbeddedResource Include="Infrasturecture\ExtensionFiles\**" />
-    
-    <!--<Compile Remove="$(GeneratedFolder)/**/*.cs" />
-    <None Include="$(GeneratedFolder)/**/*.cs" />-->
-
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="12.1.1" />
