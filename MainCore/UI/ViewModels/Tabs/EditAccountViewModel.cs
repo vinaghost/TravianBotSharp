@@ -20,22 +20,32 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly IValidator<AccountInput> _accountInputValidator;
         private readonly IDialogService _dialogService;
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
-        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IRxQueue _rxQueue;
 
-        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, ICustomServiceScopeFactory serviceScopeFactory)
+        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, IRxQueue rxQueue)
         {
             _accessInputValidator = accessInputValidator;
             _accountInputValidator = accountInputValidator;
             _dialogService = dialogService;
             _waitingOverlayViewModel = waitingOverlayViewModel;
-            _serviceScopeFactory = serviceScopeFactory;
 
+            _contextFactory = contextFactory;
+            _rxQueue = rxQueue;
+
+            Init();
+        }
+
+        public void Init()
+        {
             this.WhenAnyValue(vm => vm.SelectedAccess)
                 .WhereNotNull()
                 .Subscribe(x => x.CopyTo(AccessInput));
 
-            DeleteAccessCommand.Subscribe(x => SelectedAccess = null);
-            LoadAccountCommand.Subscribe(SetAccount);
+            DeleteAccessCommand.Subscribe(_ => SelectedAccess = null);
+
+            LoadAccountCommand.InvokeCommand(SetAccountCommand);
+            EditAccountCommand.InvokeCommand(LoadAccountCommand);
         }
 
         protected override async Task Load(AccountId accountId)
@@ -79,7 +89,7 @@ namespace MainCore.UI.ViewModels.Tabs
             AccountInput.Accesses.Remove(SelectedAccess);
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task EditAccount()
         {
             var results = await _accountInputValidator.ValidateAsync(AccountInput);
@@ -91,21 +101,17 @@ namespace MainCore.UI.ViewModels.Tabs
             }
             await _waitingOverlayViewModel.Show("editing account");
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var updateAccountCommand = scope.ServiceProvider.GetRequiredService<UpdateAccountCommand.Handler>();
-            await updateAccountCommand.HandleAsync(new(AccountInput.ToDto()));
+            UpdateDatabase(AccountInput.ToDto());
+            _rxQueue.Enqueue(new AccountsModified());
+
             await _waitingOverlayViewModel.Hide();
             await _dialogService.SendMessage("Information", "Edited account");
-
-            await LoadAccountCommand.Execute(AccountId).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private AccountDto LoadAccount(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope(accountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
+            using var context = _contextFactory.CreateDbContext();
             var account = context.Accounts
                .Where(x => x.Id == accountId.Value)
                .Include(x => x.Accesses)
@@ -114,6 +120,7 @@ namespace MainCore.UI.ViewModels.Tabs
             return account;
         }
 
+        [ReactiveCommand]
         private void SetAccount(AccountDto account)
         {
             AccountInput.Id = account.Id;
@@ -126,5 +133,20 @@ namespace MainCore.UI.ViewModels.Tabs
 
         [Reactive]
         private AccessInput? _selectedAccess;
+
+        private void UpdateDatabase(AccountDto dto)
+        {
+            var account = dto.ToEntity();
+
+            using var context = _contextFactory.CreateDbContext();
+            var existingAccessIds = dto.Accesses.Select(a => a.Id.Value).ToList();
+
+            context.Accesses
+                .Where(a => a.AccountId == account.Id && !existingAccessIds.Contains(a.Id))
+                .ExecuteDelete();
+
+            context.Update(account);
+            context.SaveChanges();
+        }
     }
 }
