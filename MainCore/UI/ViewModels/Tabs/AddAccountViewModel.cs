@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.UI.AddAccountViewModel;
-using MainCore.UI.Models.Input;
+﻿using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
@@ -7,8 +6,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using Humanizer;
     using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Concurrency;
+    using ReactiveUI.Primitives.Disposables;
     using ReactiveUI.Primitives.Extensions;
+    using ReactiveUI.Primitives.Signals;
 
     [RegisterSingleton<AddAccountViewModel>]
     public partial class AddAccountViewModel : TabViewModelBase
@@ -21,16 +24,23 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private readonly IDialogService _dialogService;
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IRxQueue _rxQueue;
 
-        public AddAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, IServiceScopeFactory serviceScopeFactory)
+        public AddAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, IRxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
         {
             _accessInputValidator = accessInputValidator;
             _dialogService = dialogService;
             _accountInputValidator = accountInputValidator;
             _waitingOverlayViewModel = waitingOverlayViewModel;
-            _serviceScopeFactory = serviceScopeFactory;
+            _rxQueue = rxQueue;
+            _contextFactory = contextFactory;
 
+            Init();
+        }
+
+        private void Init()
+        {
             this.WhenAnyValue(vm => vm.SelectedAccess)
                 .WhereNotNull()
                 .Subscribe(x => x.CopyTo(AccessInput));
@@ -96,18 +106,18 @@ namespace MainCore.UI.ViewModels.Tabs
                 return false;
             }
 
-            await _waitingOverlayViewModel.Show("adding account");
-
-            using var scope = _serviceScopeFactory.CreateScope();
-            var addAccountCommand = scope.ServiceProvider.GetRequiredService<AddAccountCommand.Handler>();
-            var (_, isFailed, errors) = await addAccountCommand.HandleAsync(new(AccountInput.ToDto()));
-            await _waitingOverlayViewModel.Hide();
-
-            if (isFailed)
+            if (IsDuplicated(AccountInput))
             {
-                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, errors.Select(failure => failure.Message.ToString())));
+                await _dialogService.SendMessage("Error", "Account is duplicated");
                 return false;
             }
+
+            await _waitingOverlayViewModel.Show("adding account");
+
+            await Signal.Start(() => UpdateDatabase(AccountInput.ToDto()), RxSchedulers.TaskpoolScheduler);
+            _rxQueue.Enqueue(new AccountsModified());
+
+            await _waitingOverlayViewModel.Hide();
 
             await _dialogService.SendMessage("Information", "Added account");
             return true;
@@ -115,5 +125,30 @@ namespace MainCore.UI.ViewModels.Tabs
 
         [Reactive]
         private AccessInput? _selectedAccess;
+
+        private bool IsDuplicated(AccountInput input)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return context.Accounts
+                .Any(x => x.Username == input.Username && x.Server == input.Server);
+        }
+
+        private void UpdateDatabase(AccountDto dto)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var account = dto.ToEntity();
+
+            account.Settings = [];
+            foreach (var (setting, value) in AppDbContext.AccountDefaultSettings)
+            {
+                account.Settings.Add(new AccountSetting
+                {
+                    Setting = setting,
+                    Value = value,
+                });
+            }
+            context.Add(account);
+            context.SaveChanges();
+        }
     }
 }
