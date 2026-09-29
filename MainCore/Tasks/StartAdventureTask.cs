@@ -22,12 +22,12 @@ namespace MainCore.Tasks
 
         private async ValueTask<Result> HandleAsync(Task task)
         {
+            var canStartAdventure = await AdventureParser.CanStartAdventure(browser.CurrentPage);
+            if (!canStartAdventure) return Skip.Error.WithError("No adventure available");
+
             Result result;
             result = await ToAdventurePage();
             if (result.IsFailed) return result;
-
-            var canStartAdventure = await AdventureParser.CanStartAdventure(browser.CurrentPage);
-            if (!canStartAdventure) return Skip.Error.WithError("No adventure available");
 
             result = await ExploreAdeventure();
             if (result.IsFailed) return result;

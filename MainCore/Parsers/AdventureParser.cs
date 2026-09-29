@@ -1,5 +1,7 @@
-﻿using Microsoft.Playwright;
+﻿using Microsoft.Extensions.Options;
+using Microsoft.Playwright;
 using System.Globalization;
+using System.Text.Json;
 
 namespace MainCore.Parsers
 {
@@ -31,7 +33,7 @@ namespace MainCore.Parsers
             var heroStatus = page.Locator("div.heroStatus a");
             await heroStatus.WaitForAsync();
 
-            var heroHome = heroStatus.Locator("a i.heroHome");
+            var heroHome = heroStatus.Locator("i.heroHome");
             if (await heroHome.CountAsync() == 0) return false;
 
             var adventureButton = GetHeroAdventureButton(page);
@@ -40,26 +42,45 @@ namespace MainCore.Parsers
         }
 
         public record struct AdventureInfo(string Difficult, TimeSpan Duration, ILocator Button);
+        public record struct RawAdventureDto(string? DifficultyClass, string? DurationText);
 
         public static async Task<List<AdventureInfo>> GetAdventureInfo(IPage page)
         {
+            var jsonResult = await page.EvaluateAsync<JsonElement>(@"() => {
+                const elements = document.querySelectorAll('#heroAdventure tbody tr');
+                const result = [];
+
+                elements.forEach(row => {
+                    const diffEl = row.querySelector('td.difficulty i');
+                    const durEl = row.querySelector('td.duration .duration');
+
+                    result.push({
+                        DifficultyClass: diffEl ? (diffEl.getAttribute('class') || '') : '',
+                        DurationText: durEl ? (durEl.innerText || durEl.textContent).trim() : ''
+                    });
+                });
+                return result;
+            }");
+            var text = jsonResult.GetRawText();
+            var rawAdventures = JsonSerializer.Deserialize<List<RawAdventureDto>>(text) ?? throw new InvalidOperationException("Failed to deserialize adventure data from the page. Content: {text}");
+
             var rows = page.Locator("#heroAdventure tbody tr");
-            int rowCount = await rows.CountAsync();
 
             var adventureInfoList = new List<AdventureInfo>();
-            for (int i = 0; i < rowCount; i++)
+            for (int i = 0; i < rawAdventures.Count; i++)
             {
-                var row = rows.Nth(i);
+                var raw = rawAdventures[i];
 
-                string? difficultyClass = await row.Locator("td.difficulty i").GetAttributeAsync("class");
-                string difficulty = !string.IsNullOrEmpty(difficultyClass)
-                    ? difficultyClass.Replace("difficulty_", "")
+                string diffClass = raw.DifficultyClass ?? "";
+                string difficulty = !string.IsNullOrEmpty(diffClass)
+                    ? diffClass.Replace("difficulty_", "")
                     : "unknown";
 
-                string durationText = await row.Locator("td.duration .duration").InnerTextAsync();
-                TimeSpan duration = TimeSpan.Parse(durationText, CultureInfo.InvariantCulture);
+                string durText = raw.DurationText ?? "00:00:00";
+                TimeSpan duration = TimeSpan.Parse(durText, CultureInfo.InvariantCulture);
 
-                ILocator buttonLocator = row.Locator("td.button button");
+                ILocator buttonLocator = rows.Nth(i).Locator("td.button button");
+
                 adventureInfoList.Add(new AdventureInfo(difficulty, duration, buttonLocator));
             }
             return adventureInfoList;
