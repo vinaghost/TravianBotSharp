@@ -9,7 +9,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     public sealed partial class HandleResourceCommand(
         UpdateStorageCommand.Handler updateStorageCommand,
         UseHeroResourceCommand.Handler useHeroResourceCommand,
-        GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
         AddJobCommand.Handler addJobCommand,
         IRxQueue rxQueue,
         IDbContextFactory<AppDbContext> contextFactory,
@@ -88,7 +87,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private async Task AddCropland(VillageId villageId, CancellationToken cancellationToken)
         {
-            var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId, true), cancellationToken);
+            using var context = contextFactory.CreateDbContext();
+            var buildings = context.GetLayoutBuildings(villageId, true);
 
             var cropland = buildings
                 .Where(x => x.Type == BuildingEnums.Cropland)

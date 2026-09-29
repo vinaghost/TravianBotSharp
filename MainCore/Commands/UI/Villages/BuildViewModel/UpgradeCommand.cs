@@ -3,19 +3,14 @@
 namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
     [Handler]
-    public static partial class UpgradeCommand
+    public sealed partial class UpgradeCommand(AddJobCommand.Handler addJobCommand, IDbContextFactory<AppDbContext> contextFactory)
     {
         public sealed record Command(VillageId VillageId, int Location, bool IsMaxLevel) : IVillageCommand;
 
-        private static async ValueTask HandleAsync(
-            Command command,
-            AddJobCommand.Handler addJobCommand,
-            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery
-            )
+        private async ValueTask HandleAsync(Command command)
         {
             var (villageId, location, isMaxLevel) = command;
-            var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId));
-            var building = buildings.Find(x => x.Location == location);
+            var building = GetBuilding(villageId, location);
 
             if (building is null) return;
             if (building.Type == BuildingEnums.Site) return;
@@ -46,6 +41,14 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             };
 
             await addJobCommand.HandleAsync(new(villageId, job));
+        }
+
+        private BuildingItem? GetBuilding(VillageId villageId, int location)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var buildings = context.GetLayoutBuildings(villageId);
+            var building = buildings.Find(x => x.Location == location);
+            return building;
         }
     }
 }

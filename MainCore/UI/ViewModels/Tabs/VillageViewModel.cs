@@ -15,19 +15,26 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly VillageTabStore _villageTabStore;
 
         private readonly IDialogService _dialogService;
-        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
         private readonly ITaskManager _taskManager;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IRxQueue _rxQueue;
         public ListBoxItemViewModel Villages { get; } = new();
 
         public VillageTabStore VillageTabStore => _villageTabStore;
 
-        public VillageViewModel(VillageTabStore villageTabStore, IDialogService dialogService, ICustomServiceScopeFactory serviceScopeFactory, IRxQueue rxQueue, ITaskManager taskManager)
+        public VillageViewModel(VillageTabStore villageTabStore, IDialogService dialogService, IRxQueue rxQueue, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
         {
             _villageTabStore = villageTabStore;
             _dialogService = dialogService;
-            _serviceScopeFactory = serviceScopeFactory;
+            _rxQueue = rxQueue;
             _taskManager = taskManager;
+            _contextFactory = contextFactory;
 
+            Init();
+        }
+
+        private void Init()
+        {
             var villageObservable = this.WhenAnyValue(x => x.Villages.SelectedItem);
             villageObservable.BindTo(_selectedItemStore, vm => vm.Village);
             villageObservable.Subscribe(x =>
@@ -39,7 +46,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             LoadVillageCommand.Subscribe(Villages.Load);
 
-            rxQueue.GetObservable<VillagesModified>()
+            _rxQueue.GetObservable<VillagesModified>()
                 .InvokeCommand(VillagesModifiedCommand);
 
             VillagesModifiedCommand
@@ -50,7 +57,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 .InvokeCommand(LoadVillageCommand);
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         public bool VillagesModified(VillagesModified notification)
         {
             if (!IsActive) return false;
@@ -63,7 +70,7 @@ namespace MainCore.UI.ViewModels.Tabs
             await LoadVillageCommand.Execute(accountId).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task LoadCurrent()
         {
             if (Villages.SelectedItem is null)
@@ -78,11 +85,10 @@ namespace MainCore.UI.ViewModels.Tabs
             await _dialogService.SendMessage("Information", $"Added update task");
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task LoadUnload()
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
 
             var villages = context.Villages
                 .Where(x => x.AccountId == AccountId.Value)
@@ -98,11 +104,10 @@ namespace MainCore.UI.ViewModels.Tabs
             await _dialogService.SendMessage("Information", $"Added update task");
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task LoadAll()
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
 
             var villages = context.Villages
                 .Where(x => x.AccountId == AccountId.Value)
@@ -115,11 +120,10 @@ namespace MainCore.UI.ViewModels.Tabs
             await _dialogService.SendMessage("Information", $"Added update task");
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private List<ListBoxItem> LoadVillage(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
             var items = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .OrderBy(x => x.Name)

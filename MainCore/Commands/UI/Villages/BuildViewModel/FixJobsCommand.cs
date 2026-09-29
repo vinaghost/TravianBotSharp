@@ -3,17 +3,15 @@
 namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
     [Handler]
-    public static partial class FixJobsCommand
+    public sealed partial class FixJobsCommand(IDbContextFactory<AppDbContext> contextFactory)
     {
         public sealed record Command(VillageId VillageId, List<JobDto> Jobs, bool Shuffle) : IVillageCommand;
 
-        private static async ValueTask<List<JobDto>> HandleAsync(
-            Command command,
-            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery
-            )
+        private async ValueTask<List<JobDto>> HandleAsync(Command command)
         {
             var (villageId, jobs, shuffle) = command;
-            var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId));
+            using var context = await contextFactory.CreateDbContextAsync();
+            var buildings = context.GetLayoutBuildings(villageId);
             var modifiedJobs = GetModifiedJobs(buildings, jobs, shuffle);
             return [.. modifiedJobs];
         }

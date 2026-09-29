@@ -21,6 +21,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private readonly ITaskManager _taskManager;
         private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
         private readonly IValidator<ResourceBuildInput> _resourceBuildInputValidator;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IRxQueue _rxQueue;
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
 
         public NormalBuildInput NormalBuildInput { get; } = new();
@@ -30,14 +32,21 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(IDialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager, IRxQueue rxQueue)
+        public BuildViewModel(IDialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager, IRxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
         {
             _dialogService = dialogService;
             _normalBuildInputValidator = normalBuildInputValidator;
             _resourceBuildInputValidator = resourceBuildInputValidator;
             _serviceScopeFactory = serviceScopeFactory;
             _taskManager = taskManager;
+            _rxQueue = rxQueue;
+            _contextFactory = contextFactory;
 
+            Init();
+        }
+
+        private void Init()
+        {
             this.WhenAnyValue(vm => vm.Buildings.SelectedItem)
                 .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .WhereNotNull()
@@ -61,15 +70,14 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 }
             });
 
-            rxQueue.RegisterCommand<BuildingsModified>(BuildingsModifiedCommand);
-            rxQueue.RegisterCommand<JobsModified>(JobsModifiedCommand);
+            _rxQueue.RegisterCommand(BuildingsModifiedCommand);
+            _rxQueue.RegisterCommand(JobsModifiedCommand);
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         public async Task BuildingsModified(BuildingsModified notification)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
             var task = new CompleteImmediatelyTask.Task(AccountId, notification.VillageId);
             if (task.CanStart(context) && !_taskManager.IsExist<CompleteImmediatelyTask.Task>(AccountId, notification.VillageId))
             {
@@ -82,7 +90,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await LoadBuildingCommand.Execute(notification.VillageId).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         public async Task JobsModified(JobsModified notification)
         {
             _taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(AccountId, notification.VillageId));
@@ -100,12 +108,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await LoadQueueCommand.Execute(villageId).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task<List<ListBoxItem>> LoadBuilding(VillageId villageId)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getLayoutBuildingsQuery = scope.ServiceProvider.GetRequiredService<GetLayoutBuildingsCommand.Handler>();
-            var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId));
+            using var context = _contextFactory.CreateDbContext();
+            var buildings = context.GetLayoutBuildings(villageId);
+
             static ListBoxItem ToListBoxItem(BuildingItem building)
             {
                 const string arrow = " -> ";
@@ -136,11 +144,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             return items;
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private List<ListBoxItem> LoadQueue(VillageId villageId)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
             var items = context.QueueBuildings
                  .Where(x => x.VillageId == villageId.Value)
                  .AsEnumerable()
@@ -163,11 +170,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             return items;
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private List<ListBoxItem> LoadJob(VillageId villageId)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
 
             var items = context.Jobs
                 .Where(x => x.VillageId == villageId.Value)
@@ -210,14 +216,13 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             .Where(x => !IgnoreBuildings.Contains(x))
             .ToList();
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task<List<BuildingEnums>> LoadBuildNormal(ListBoxItem item)
         {
             if (item is null) return [];
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getLayoutBuildingsQuery = scope.ServiceProvider.GetRequiredService<GetLayoutBuildingsCommand.Handler>();
-            var buildingItems = await getLayoutBuildingsQuery.HandleAsync(new(VillageId));
+            using var context = _contextFactory.CreateDbContext();
+            var buildingItems = context.GetLayoutBuildings(VillageId);
 
             var type = buildingItems
                 .Where(x => x.Id == new BuildingId(item.Id))
@@ -235,7 +240,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             return AvailableBuildings.Where(x => !buildings.Contains(x)).ToList();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task BuildNormal()
         {
             if (!IsAccountPaused(AccountId))
@@ -255,7 +260,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             using var scope = _serviceScopeFactory.CreateScope(AccountId);
             var normalBuildCommand = scope.ServiceProvider.GetRequiredService<NormalBuildCommand.Handler>();
-            var buildResult = await normalBuildCommand.HandleAsync(new(VillageId, NormalBuildInput.ToPlan(location)));
+
+            var (type, level) = NormalBuildInput.Get();
+            var plan = new NormalBuildPlan()
+            {
+                Location = location,
+                Type = type,
+                Level = level,
+            };
+            var buildResult = await normalBuildCommand.HandleAsync(new(VillageId, plan));
             if (buildResult.IsFailed)
             {
                 await _dialogService.SendMessage("Error", buildResult.ToString());
@@ -265,7 +278,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task UpgradeOneLevel()
         {
             if (!IsAccountPaused(AccountId))
@@ -281,7 +294,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task UpgradeMaxLevel()
         {
             if (!IsAccountPaused(AccountId))
@@ -297,7 +310,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task BuildResource()
         {
             if (!IsAccountPaused(AccountId))
@@ -319,7 +332,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Up()
         {
             if (!IsAccountPaused(AccountId))
@@ -342,7 +355,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Down()
         {
             if (!IsAccountPaused(AccountId))
@@ -363,7 +376,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Top()
         {
             if (!IsAccountPaused(AccountId))
@@ -385,7 +398,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Bottom()
         {
             if (!IsAccountPaused(AccountId))
@@ -406,7 +419,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Delete()
         {
             if (!IsAccountPaused(AccountId))
@@ -423,7 +436,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task DeleteAll()
         {
             if (!IsAccountPaused(AccountId))
@@ -440,7 +453,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Import()
         {
             if (!IsAccountPaused(AccountId))
@@ -490,7 +503,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Export()
         {
             if (!IsAccountPaused(AccountId))

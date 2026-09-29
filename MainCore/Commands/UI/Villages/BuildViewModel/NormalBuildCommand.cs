@@ -4,26 +4,24 @@ using System.Text.Json;
 namespace MainCore.Commands.UI.Villages.BuildViewModel
 {
     [Handler]
-    public static partial class NormalBuildCommand
+    public sealed partial class NormalBuildCommand(
+        AddJobCommand.Handler addJobCommand,
+        IDbContextFactory<AppDbContext> contextFactory)
     {
         public sealed record Command(VillageId VillageId, NormalBuildPlan plan) : IVillageCommand;
 
-        private static async ValueTask<Result> HandleAsync(
-            Command command,
-            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
-            AddJobCommand.Handler addJobCommand
-            )
+        private async ValueTask<Result> HandleAsync(Command command)
         {
             var (villageId, plan) = command;
 
-            var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId));
+            var buildings = GetBuildings(villageId);
             var building = buildings.Find(x => x.Location == plan.Location);
 
             if (building is null)
             {
-                var result = plan.CheckRequirements(buildings);
+                var result = CheckRequirements(plan, buildings);
                 if (result.IsFailed) return result;
-                plan.ValidateLocation(buildings);
+                ValidateLocation(plan, buildings);
             }
             var job = new JobDto()
             {
@@ -35,7 +33,13 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             return Result.Ok();
         }
 
-        private static Result CheckRequirements(this NormalBuildPlan plan, List<BuildingItem> buildings)
+        private List<BuildingItem> GetBuildings(VillageId villageId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            return context.GetLayoutBuildings(villageId);
+        }
+
+        private static Result CheckRequirements(NormalBuildPlan plan, List<BuildingItem> buildings)
         {
             var prerequisiteBuildings = plan.Type.GetPrerequisiteBuildings();
             if (prerequisiteBuildings.Count == 0) return Result.Ok();
@@ -50,7 +54,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             return Result.Ok();
         }
 
-        private static void ValidateLocation(this NormalBuildPlan plan, List<BuildingItem> buildings)
+        private static void ValidateLocation(NormalBuildPlan plan, List<BuildingItem> buildings)
         {
             if (plan.Type.IsWall())
             {
@@ -82,7 +86,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             plan.Location = building.Location;
         }
 
-        public static NormalBuildPlan ToPlan(this NormalBuildInput input, int location)
+        public static NormalBuildPlan ToPlan(NormalBuildInput input, int location)
         {
             var (type, level) = input.Get();
             return new NormalBuildPlan()

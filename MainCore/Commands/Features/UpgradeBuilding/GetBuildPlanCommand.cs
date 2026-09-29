@@ -9,7 +9,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         GetJobCommand.Handler getJobQuery,
         ToDorfCommand.Handler toDorfCommand,
         UpdateBuildingCommand.Handler updateBuildingCommand,
-        GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
         DeleteJobByIdCommand.Handler deleteJobByIdCommand,
         AddJobCommand.Handler addJobCommand,
         ILogger logger,
@@ -32,9 +31,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 {
                     logger.Information("{Content}", job);
 
-                    var layoutBuildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId, true), cancellationToken);
                     var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content)!;
-                    var normalBuildPlan = GetNormalBuildPlan(resourceBuildPlan, layoutBuildings);
+                    var normalBuildPlan = GetNormalBuildPlan(villageId, resourceBuildPlan);
                     if (normalBuildPlan is null)
                     {
                         await deleteJobByIdCommand.HandleAsync(new(job.Id), cancellationToken);
@@ -211,11 +209,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return Result.FailIfNotEmpty(errors);
         }
 
-        private static NormalBuildPlan? GetNormalBuildPlan(
-            ResourceBuildPlan plan,
-            List<BuildingItem> layoutBuildings
-        )
+        private NormalBuildPlan? GetNormalBuildPlan(VillageId villageId, ResourceBuildPlan plan)
         {
+            using var context = contextFactory.CreateDbContext();
+            var layoutBuildings = context.GetLayoutBuildings(villageId, true);
             List<BuildingItem> resourceFields;
 
             if (plan.Plan == ResourcePlanEnums.ExcludeCrop)
