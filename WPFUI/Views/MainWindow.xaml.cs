@@ -10,6 +10,7 @@ namespace WPFUI.Views
     using ReactiveUI;
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Extensions;
+    using ReactiveUI.Primitives.Signals;
 
     public class MainWindowBase : ReactiveWindow<MainViewModel>
     {
@@ -43,7 +44,7 @@ namespace WPFUI.Views
         {
             if (_isLoaded) return;
             _isLoaded = false;
-            await ViewModel.LoadCommand.Execute().ToHotTask();
+            await ViewModel.Load();
             _isLoaded = true;
         }
 
@@ -60,10 +61,11 @@ namespace WPFUI.Views
             if (_isClosing) return;
             _isClosing = true;
 
-            await ViewModel.UnloadCommand.Execute().ToHotTask();
+            await ViewModel.Unload();
 
             _canClose = true;
-            Close();
+
+            Signal.After(TimeSpan.FromMilliseconds(100), RxSchedulers.MainThreadScheduler).Subscribe(_ => Close());
         }
     }
 }
