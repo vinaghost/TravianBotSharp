@@ -16,6 +16,7 @@ namespace MainCore.Services
         public string CurrentUrl => _mainPage?.Url ?? "";
 
         public ILogger Logger { get; set; } = null!;
+        public IDelayService DelayService { get; set; } = null!;
 
         public async Task Setup(ChromeSetting setting)
         {
@@ -123,6 +124,7 @@ namespace MainCore.Services
             try
             {
                 await locator.ClickAsync();
+                await DelayService.DelayClick();
                 return Result.Ok();
             }
             catch (TimeoutException ex)
@@ -137,6 +139,7 @@ namespace MainCore.Services
             try
             {
                 await locator.FillAsync(content);
+                await DelayService.DelayClick();
                 return Result.Ok();
             }
             catch (TimeoutException ex)
@@ -149,6 +152,8 @@ namespace MainCore.Services
         {
             if (_mainPage is null) return Stop.DriverNotReady;
             await _mainPage.EvaluateAsync(javascript);
+            await DelayService.DelayClick();
+
             return Result.Ok();
         }
 

@@ -6,7 +6,6 @@ namespace MainCore.Tasks
     public sealed partial class StartFarmListTask(
         IDbContextFactory<AppDbContext> contextFactory,
         IChromeBrowser browser,
-        IDelayService delayService,
         ToFarmListPageCommand.Handler toFarmListPageCommand
         )
     {
@@ -37,8 +36,6 @@ namespace MainCore.Tasks
                 {
                     result = await browser.Click(FarmListParser.GetStartButton(browser.CurrentPage, farmList));
                     if (result.IsFailed) return result;
-
-                    await delayService.DelayClick(cancellationToken);
                 }
             }
 

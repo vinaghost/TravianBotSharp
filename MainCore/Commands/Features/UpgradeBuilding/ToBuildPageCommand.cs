@@ -5,8 +5,7 @@
         UpdateBuildingCommand.Handler updateBuildingCommand,
         ToBuildingByLocationCommand.Handler toBuildingCommand,
         SwitchTabCommand.Handler switchTabCommand,
-        IDbContextFactory<AppDbContext> contextFactory,
-        IDelayService delayService)
+        IDbContextFactory<AppDbContext> contextFactory)
     {
         public sealed record Command(VillageId VillageId, NormalBuildPlan Plan) : IVillageCommand;
 
@@ -21,12 +20,8 @@
             result = await toBuildingCommand.HandleAsync(new(plan.Location), cancellationToken);
             if (result.IsFailed) return result;
 
-            await delayService.DelayClick(cancellationToken);
-
             result = await SwitchManagementTab(villageId, plan, cancellationToken);
             if (result.IsFailed) return result;
-
-            await delayService.DelayClick(cancellationToken);
 
             return Result.Ok();
         }

@@ -1,22 +1,22 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections.Concurrent;
+using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Retry;
-using Timer = System.Timers.Timer;
 
 namespace MainCore.Services
 {
     [RegisterSingleton<ITimerManager, TimerManager>]
     public sealed class TimerManager : ITimerManager
     {
-        private readonly Dictionary<AccountId, Timer> _timers = [];
+        private readonly ConcurrentDictionary<AccountId, CancellationTokenSource> _loops = [];
 
-        private bool _isShutdown = false;
+        private volatile bool _isShutdown = false;
 
         private readonly ITaskManager _taskManager;
         private readonly IRxQueue _rxQueue;
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
 
-        private static ResiliencePropertyKey<ContextData> contextDataKey = new(nameof(ContextData));
+        private static readonly ResiliencePropertyKey<ContextData> contextDataKey = new(nameof(ContextData));
         private readonly ResiliencePipeline<Result> _pipeline;
 
         public TimerManager(ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory, IRxQueue rxQueue)
@@ -25,7 +25,7 @@ namespace MainCore.Services
             _serviceScopeFactory = serviceScopeFactory;
             _rxQueue = rxQueue;
 
-            Func<OnRetryArguments<Result>, ValueTask> OnRetry = async static args =>
+            static async ValueTask OnRetry(OnRetryArguments<Result> args)
             {
                 await Task.CompletedTask;
                 if (!args.Context.Properties.TryGetValue(contextDataKey, out var contextData)) return;
@@ -48,7 +48,7 @@ namespace MainCore.Services
                 }
 
                 browser.Logger.Warning("{TaskName} will retry after {RetryDelay} (#{AttemptNumber} times)", taskName, args.RetryDelay, args.AttemptNumber + 1);
-            };
+            }
 
             var retryOptions = new RetryStrategyOptions<Result>()
             {
@@ -192,27 +192,48 @@ namespace MainCore.Services
         public void Shutdown()
         {
             _isShutdown = true;
-            foreach (var timer in _timers.Values)
+
+            foreach (var accountId in _loops.Keys)
             {
-                timer.Dispose();
+                if (_loops.TryRemove(accountId, out var cancellationTokenSource))
+                {
+                    cancellationTokenSource.Cancel();
+                    cancellationTokenSource.Dispose();
+                }
             }
         }
 
         public void Start(AccountId accountId)
         {
-            if (!_timers.ContainsKey(accountId))
-            {
-                var timer = new Timer(100) { AutoReset = false };
-                timer.Elapsed += async (sender, e) =>
-                {
-                    if (_isShutdown) return;
-                    await Execute(accountId);
-                    timer.Start();
-                };
+            if (_isShutdown) return;
 
-                _timers.Add(accountId, timer);
-                timer.Start();
+            var cancellationTokenSource = new CancellationTokenSource();
+            if (!_loops.TryAdd(accountId, cancellationTokenSource))
+            {
+                cancellationTokenSource.Dispose();
+                return;
             }
+
+            _ = Task.Run(async () =>
+            {
+                while (!_isShutdown && !cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        await Execute(accountId);
+                        await Task.Delay(100, cancellationTokenSource.Token);
+                    }
+                    catch (OperationCanceledException) when (_isShutdown || cancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                }
+
+                if (_loops.TryRemove(accountId, out var ownedCancellationTokenSource))
+                {
+                    ownedCancellationTokenSource.Dispose();
+                }
+            }, cancellationTokenSource.Token);
         }
 
         public record ContextData(string TaskName, IChromeBrowser Browser);

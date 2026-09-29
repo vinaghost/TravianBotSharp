@@ -19,7 +19,6 @@
                 if (amount <= 0) continue;
                 result = await ClickItem(browser, item);
                 if (result.IsFailed) return result;
-                await delayService.DelayClick(cancellationToken);
                 break;
             }
             foreach (var (item, amount) in itemToUse)
@@ -28,11 +27,9 @@
                 logger.Information("Use {Amount} {Item} from hero inventory", amount, item);
                 result = await EnterAmount(browser, item, amount);
                 if (result.IsFailed) return result;
-                await delayService.DelayClick(cancellationToken);
             }
             result = await Confirm(browser);
             if (result.IsFailed) return result;
-            await delayService.DelayClick(cancellationToken);
 
             return Result.Ok();
         }

@@ -8,7 +8,6 @@
         private static async ValueTask<Result> HandleAsync(
             Command command,
             AppDbContext context,
-            IUseragentManager useragentManager,
             IRxQueue rxQueue
             )
         {
@@ -27,11 +26,6 @@
             }
             var accounts = dtos
                 .Select(x => x.ToEntity());
-
-            foreach (var access in accounts.SelectMany(x => x.Accesses).Where(access => string.IsNullOrEmpty(access.Useragent)))
-            {
-                access.Useragent = useragentManager.Get();
-            }
 
             foreach (var account in accounts)
             {

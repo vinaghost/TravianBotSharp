@@ -48,7 +48,7 @@ namespace MainCore.Parsers
             }");
 
             var text = jsonResult.GetRawText();
-            var rawVillagesData = JsonSerializer.Deserialize<List<RawVillageDto>>(text) ?? throw new InvalidOperationException($"Failed to deserialize building data from the page. Content: {text}");
+            var rawVillagesData = JsonSerializer.Deserialize<List<RawVillageDto>>(text) ?? throw new InvalidOperationException($"Failed to deserialize village data from the page. Content: {text}");
 
             var extractedVillages = new List<VillageDto>();
 

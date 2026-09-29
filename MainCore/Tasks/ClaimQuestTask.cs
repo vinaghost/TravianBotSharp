@@ -5,7 +5,6 @@ namespace MainCore.Tasks
     [Handler]
     public sealed partial class ClaimQuestTask(
         IChromeBrowser browser,
-        IDelayService delayService,
         SwitchTabCommand.Handler switchTabCommand)
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
@@ -78,7 +77,6 @@ namespace MainCore.Tasks
 
                 result = await browser.Click(quest.First);
                 if (result.IsFailed) return result;
-                await delayService.DelayClick(cancellationToken);
             }
             while (await QuestParser.IsQuestClaimable(browser.CurrentPage));
 

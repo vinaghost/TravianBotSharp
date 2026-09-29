@@ -56,7 +56,7 @@ namespace MainCore
                 services.AddValidatorsFromAssembly(typeof(AppMixins).Assembly, ServiceLifetime.Singleton);
                 services.AddMainCoreHandlers();
 
-                services.AddScoped<IChromeBrowser>(sp =>
+                services.AddScoped(sp =>
                 {
                     var dataService = sp.GetRequiredService<IDataService>();
                     if (dataService.AccountId == AccountId.Empty) throw new InvalidOperationException("AccountId is empty");
@@ -64,8 +64,12 @@ namespace MainCore
                     var logger = Log
                         .ForContext("Account", dataService.AccountData)
                         .ForContext("AccountId", dataService.AccountId);
+
+                    var delayService = sp.GetRequiredService<IDelayService>();
                     var browser = chromeManager.Get(dataService.AccountId);
                     browser.Logger = logger;
+                    browser.DelayService = delayService;
+
                     return browser;
                 });
             });

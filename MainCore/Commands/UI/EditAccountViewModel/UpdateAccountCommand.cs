@@ -8,7 +8,6 @@
         private static async ValueTask<Result> HandleAsync(
             Command command,
             AppDbContext context,
-            IUseragentManager useragentManager,
             IRxQueue rxQueue
             )
         {
@@ -16,10 +15,6 @@
             var dto = command.Dto;
 
             var account = dto.ToEntity();
-            foreach (var access in account.Accesses.Where(access => string.IsNullOrWhiteSpace(access.Useragent)))
-            {
-                access.Useragent = useragentManager.Get();
-            }
 
             // Remove accesses not present in the DTO
             var existingAccessIds = dto.Accesses.Select(a => a.Id.Value).ToList();

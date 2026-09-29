@@ -32,7 +32,6 @@ namespace MainCore.Parsers
                 const cells = document.querySelectorAll('div.heroItems div.heroItem:not(.empty)');
                 const result = [];
 
-                // Matches the same pattern as [GeneratedRegex(@""item(\d+)"")]
                 const itemRegex = /item(\d+)/;
 
                 cells.forEach(cell => {
@@ -52,7 +51,7 @@ namespace MainCore.Parsers
                 return result;
             }");
             var text = jsonResult.GetRawText();
-            var rawItemsData = JsonSerializer.Deserialize<List<RawHeroItemDto>>(text) ?? throw new InvalidOperationException($"Failed to deserialize farm data from the page. Content: {text}");
+            var rawItemsData = JsonSerializer.Deserialize<List<RawHeroItemDto>>(text) ?? throw new InvalidOperationException($"Failed to deserialize hero inventory data from the page. Content: {text}");
 
             var extractedItems = new List<HeroItemDto>();
 
@@ -99,6 +98,41 @@ namespace MainCore.Parsers
             }
 
             return extractedItems;
+        }
+
+        public static async Task<long[]> GetInventoryResources(IPage page)
+        {
+            var jsonResult = await page.EvaluateAsync<JsonElement>(@"() => {
+                const cells = document.querySelectorAll('div.heroItem');
+                const result = [];
+
+                function parseCount(text) {
+                if (!text) return 0;
+                const s = text.trim().toLowerCase();
+                if (s === '') return 0;
+
+                const suffixMatch = s.match(/^([\d,.]+)([km]?)$/i);
+                if (!suffixMatch) {
+                    // fallback: remove non-digits
+                    const digits = s.replace(/[^0-9.]/g, '');
+                    return digits ? Math.round(parseFloat(digits)) : 0;
+                }
+                let num = parseFloat(suffixMatch[1].replace(/,/g,''));
+                const suffix = suffixMatch[2];
+                if (suffix === 'k') num *= 1_000;
+                else if (suffix === 'm') num *= 1_000_000;
+                return Math.round(num);
+                }
+
+                cells.forEach(cell => {
+                const countSlot = cell.querySelector('.count');
+                result.push(countSlot ? parseCount(countSlot.innerText) : 0);
+                });
+                return result;
+            }");
+            var text = jsonResult.GetRawText();
+            var rawItemsData = JsonSerializer.Deserialize<long[]>(text) ?? throw new InvalidOperationException($"Failed to deserialize inventory resource from the page. Content: {text}");
+            return rawItemsData;
         }
 
         public static ILocator GetHeroAvatar(IPage page)

@@ -7,8 +7,7 @@
         ToDorfCommand.Handler toDorfCommand,
         UpdateBuildingCommand.Handler updateBuildingCommand,
         ToBuildingByLocationCommand.Handler toBuildingCommand,
-        SwitchTabCommand.Handler switchTabCommand,
-        IDelayService delayService)
+        SwitchTabCommand.Handler switchTabCommand)
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
@@ -32,12 +31,9 @@
             result = await toBuildingCommand.HandleAsync(new(39), cancellationToken);
             if (result.IsFailed) return result;
 
-            await delayService.DelayClick(cancellationToken);
-
             result = await switchTabCommand.HandleAsync(new(4), cancellationToken);
             if (result.IsFailed) return result;
 
-            await delayService.DelayClick(cancellationToken);
             return Result.Ok();
         }
 

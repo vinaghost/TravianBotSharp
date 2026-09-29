@@ -5,7 +5,6 @@ namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class LoginTask(
-        IDelayService delayService,
         IChromeBrowser browser,
         IDbContextFactory<AppDbContext> contextFactory,
         ToDorfCommand.Handler toDorfCommand)
@@ -69,8 +68,6 @@ namespace MainCore.Tasks
 
         private async ValueTask<Result> DisableContextualHelp()
         {
-            await delayService.DelayTask();
-
             var contextualHelpEnable = await OptionParser.IsContextualHelpEnable(browser.CurrentPage);
             if (!contextualHelpEnable) return Result.Ok();
 

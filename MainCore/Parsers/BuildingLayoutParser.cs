@@ -15,8 +15,6 @@ namespace MainCore.Parsers
                 const elements = document.querySelectorAll('#resourceFieldContainer a.level');
                 const result = [];
 
-                // Replace these regex patterns if they don't match your actual C# Extractors
-                // Example patterns assuming structure like: buildingSlotXX, gidXX, levelXX
                 const slotRegex = /buildingSlot(\d+)/;
                 const gidRegex = /gid(\d+)/;
                 const levelRegex = /\blevel(\d+)/;

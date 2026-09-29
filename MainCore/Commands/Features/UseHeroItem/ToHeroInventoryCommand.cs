@@ -22,8 +22,6 @@ namespace MainCore.Commands.Features.UseHeroItem
             result = await browser.Wait(InventoryParser.GetInventoryPageWrapper(browser.CurrentPage), condition: "node => node.classList.contains('loading')");
             if (result.IsFailed) return result;
 
-            await delayService.DelayTask(cancellationToken);
-
             return Result.Ok();
         }
     }
