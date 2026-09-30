@@ -1,18 +1,14 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace MainCore.Commands.Misc
+namespace MainCore.Infrasturecture.Extensions
 {
-    [Handler]
-    public sealed partial class AddJobCommand(IDbContextFactory<AppDbContext> contextFactory)
+    public static class AddJobExtension
     {
-        public sealed record Command(VillageId VillageId, JobDto Job, bool ToTop = false) : IVillageCommand;
-
-        private async ValueTask HandleAsync(Command command)
+        public static void AddJob(this AppDbContext context, VillageId villageId, JobDto job, bool toTop = false)
         {
-            await Task.CompletedTask;
-            var (villageId, job, top) = command;
-            using var context = contextFactory.CreateDbContext();
-            if (top)
+            if (toTop)
             {
                 context.Jobs
                    .Where(x => x.VillageId == villageId.Value)

@@ -1,5 +1,6 @@
 ﻿using Humanizer;
 using MainCore.Commands.Features.UseHeroItem;
+using MainCore.Infrasturecture.Extensions;
 using Polly;
 using System.Text.Json;
 
@@ -9,7 +10,6 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     public sealed partial class HandleResourceCommand(
         UpdateStorageCommand.Handler updateStorageCommand,
         UseHeroResourceCommand.Handler useHeroResourceCommand,
-        AddJobCommand.Handler addJobCommand,
         IRxQueue rxQueue,
         IDbContextFactory<AppDbContext> contextFactory,
         IChromeBrowser browser,
@@ -30,7 +30,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             if (result.HasError<LackOfFreeCrop>())
             {
-                await AddCropland(villageId, cancellationToken);
+                await AddCropland(villageId);
                 return result;
             }
 
@@ -85,7 +85,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return resource;
         }
 
-        private async Task AddCropland(VillageId villageId, CancellationToken cancellationToken)
+        private async Task AddCropland(VillageId villageId)
         {
             using var context = contextFactory.CreateDbContext();
             var buildings = context.GetLayoutBuildings(villageId, true);
@@ -108,7 +108,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 Content = JsonSerializer.Serialize(cropLandPlan),
             };
 
-            await addJobCommand.HandleAsync(new(villageId, cropLandJob, true), cancellationToken);
+            context.AddJob(villageId, cropLandJob, true);
             rxQueue.Enqueue(new JobsModified(villageId));
         }
 

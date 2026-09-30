@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using MainCore.Infrasturecture.Extensions;
+using System.Numerics;
 using System.Text.Json;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
@@ -6,11 +7,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     [Handler]
     public sealed partial class GetBuildPlanCommand(
         IDbContextFactory<AppDbContext> contextFactory,
-        GetJobCommand.Handler getJobQuery,
         ToDorfCommand.Handler toDorfCommand,
         UpdateBuildingCommand.Handler updateBuildingCommand,
-        DeleteJobByIdCommand.Handler deleteJobByIdCommand,
-        AddJobCommand.Handler addJobCommand,
         ILogger logger,
         IRxQueue rxQueue)
     {
@@ -24,7 +22,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-                var (_, isFailed, job, errors) = await getJobQuery.HandleAsync(new(accountId, villageId), cancellationToken);
+                var (_, isFailed, job, errors) = GetJob(accountId, villageId);
                 if (isFailed) return Result.Fail(errors);
 
                 if (job.Type == JobTypeEnums.ResourceBuild)
@@ -35,7 +33,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     var normalBuildPlan = GetNormalBuildPlan(villageId, resourceBuildPlan);
                     if (normalBuildPlan is null)
                     {
-                        await deleteJobByIdCommand.HandleAsync(new(job.Id), cancellationToken);
+                        using (var context = contextFactory.CreateDbContext())
+                        {
+                            context.DeleteJobById(job.Id);
+                        }
                     }
                     else
                     {
@@ -45,8 +46,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                             Type = JobTypeEnums.NormalBuild,
                             Content = JsonSerializer.Serialize(normalBuildPlan),
                         };
-
-                        await addJobCommand.HandleAsync(new(villageId, newJob, true), cancellationToken);
+                        using (var context = contextFactory.CreateDbContext())
+                        {
+                            context.AddJob(villageId, newJob, true);
+                        }
                     }
                     rxQueue.Enqueue(new JobsModified(villageId));
                     continue;
@@ -68,7 +71,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 var isComplete = IsBuildingComplete(villageId, plan);
                 if (isComplete)
                 {
-                    await deleteJobByIdCommand.HandleAsync(new(job.Id), cancellationToken);
+                    using (var context = contextFactory.CreateDbContext())
+                    {
+                        context.DeleteJobById(job.Id);
+                    }
                     rxQueue.Enqueue(new JobsModified(villageId));
                     continue;
                 }
@@ -78,6 +84,12 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
                 return plan;
             }
+        }
+
+        private Result<JobDto> GetJob(AccountId accountId, VillageId villageId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            return context.GetJob(accountId, villageId);
         }
 
         private async Task<Result> CheckBonusBuilding(VillageId villageId, CancellationToken cancellationToken)

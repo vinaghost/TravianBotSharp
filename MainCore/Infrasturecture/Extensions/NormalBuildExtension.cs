@@ -1,27 +1,23 @@
 ﻿using MainCore.UI.Models.Input;
+using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
 
-namespace MainCore.Commands.UI.Villages.BuildViewModel
+namespace MainCore.Infrasturecture.Extensions
 {
-    [Handler]
-    public sealed partial class NormalBuildCommand(
-        AddJobCommand.Handler addJobCommand,
-        IDbContextFactory<AppDbContext> contextFactory)
+    public static class NormalBuildExtension
     {
-        public sealed record Command(VillageId VillageId, NormalBuildPlan plan) : IVillageCommand;
-
-        private async ValueTask<Result> HandleAsync(Command command)
+        public static Result NormalBuild(this AppDbContext context, VillageId villageId, NormalBuildPlan plan)
         {
-            var (villageId, plan) = command;
-
-            var buildings = GetBuildings(villageId);
+            var buildings = context.GetLayoutBuildings(villageId);
             var building = buildings.Find(x => x.Location == plan.Location);
 
             if (building is null)
             {
                 var result = CheckRequirements(plan, buildings);
                 if (result.IsFailed) return result;
-                ValidateLocation(plan, buildings);
+                plan.ValidateLocation(buildings);
             }
             var job = new JobDto()
             {
@@ -29,14 +25,8 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
                 Type = JobTypeEnums.NormalBuild,
                 Content = JsonSerializer.Serialize(plan),
             };
-            await addJobCommand.HandleAsync(new(villageId, job));
+            context.AddJob(villageId, job);
             return Result.Ok();
-        }
-
-        private List<BuildingItem> GetBuildings(VillageId villageId)
-        {
-            using var context = contextFactory.CreateDbContext();
-            return context.GetLayoutBuildings(villageId);
         }
 
         private static Result CheckRequirements(NormalBuildPlan plan, List<BuildingItem> buildings)
@@ -54,7 +44,7 @@ namespace MainCore.Commands.UI.Villages.BuildViewModel
             return Result.Ok();
         }
 
-        private static void ValidateLocation(NormalBuildPlan plan, List<BuildingItem> buildings)
+        private static void ValidateLocation(this NormalBuildPlan plan, List<BuildingItem> buildings)
         {
             if (plan.Type.IsWall())
             {

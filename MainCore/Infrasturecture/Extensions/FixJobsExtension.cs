@@ -1,22 +1,21 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
 
-namespace MainCore.Commands.UI.Villages.BuildViewModel
+namespace MainCore.Infrasturecture.Extensions
 {
-    [Handler]
-    public sealed partial class FixJobsCommand(IDbContextFactory<AppDbContext> contextFactory)
+    public static class FixJobsExtension
     {
-        public sealed record Command(VillageId VillageId, List<JobDto> Jobs, bool Shuffle) : IVillageCommand;
-
-        private async ValueTask<List<JobDto>> HandleAsync(Command command)
+        public static List<JobDto> FixJobs(this AppDbContext context, VillageId villageId, List<JobDto> jobs, bool shuffle)
         {
-            var (villageId, jobs, shuffle) = command;
-            using var context = await contextFactory.CreateDbContextAsync();
             var buildings = context.GetLayoutBuildings(villageId);
             var modifiedJobs = GetModifiedJobs(buildings, jobs, shuffle);
             return [.. modifiedJobs];
         }
 
-        private static readonly List<int> _excludedLocations = new() { 26, 39, 40 }; //main building, rallypoint and wall
+        private static readonly List<int> _excludedLocations = [26, 39, 40]; //main building, rallypoint and wall
 
         private static readonly Dictionary<ResourcePlanEnums, List<BuildingEnums>> _fieldList = new()
         {

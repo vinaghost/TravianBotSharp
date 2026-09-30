@@ -1,29 +1,25 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.Json;
 
-namespace MainCore.Commands.Misc
+namespace MainCore.Infrasturecture.Extensions
 {
-    [Handler]
-    public sealed partial class GetJobCommand(IDbContextFactory<AppDbContext> contextFactory)
+    public static class GetJobExtension
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
-
-        private async ValueTask<Result<JobDto>> HandleAsync(Command command)
+        public static Result<JobDto> GetJob(this AppDbContext context, AccountId accountId, VillageId villageId)
         {
-            await Task.CompletedTask;
-
-            var (accountId, villageId) = command;
-
-            var buildJobs = GetBuildJobs(villageId);
+            var buildJobs = context.GetBuildJobs(villageId);
             if (buildJobs.Count == 0) return UpgradeBuildingError.BuildingJobQueueEmpty;
 
-            var queueBuildings = GetQueueBuildings(villageId);
+            var queueBuildings = context.GetQueueBuildings(villageId);
 
             if (queueBuildings.Count == 0)
             {
                 return buildJobs[0];
             }
 
-            var (plusActive, applyRomanQueueLogic) = GetVillageSettings(accountId, villageId);
+            var (plusActive, applyRomanQueueLogic) = context.GetVillageSettings(accountId, villageId);
 
             if (queueBuildings.Count == 1)
             {
@@ -60,9 +56,8 @@ namespace MainCore.Commands.Misc
             return UpgradeBuildingError.BuildingJobQueueBroken;
         }
 
-        private List<QueueBuilding> GetQueueBuildings(VillageId villageId)
+        private static List<QueueBuilding> GetQueueBuildings(this AppDbContext context, VillageId villageId)
         {
-            using var context = contextFactory.CreateDbContext();
             var completeQueueBuildings = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.CompleteTime < DateTime.Now)
@@ -95,9 +90,8 @@ namespace MainCore.Commands.Misc
             return queueBuildings;
         }
 
-        private List<JobDto> GetBuildJobs(VillageId villageId)
+        private static List<JobDto> GetBuildJobs(this AppDbContext context, VillageId villageId)
         {
-            using var context = contextFactory.CreateDbContext();
             var jobs = context.Jobs
                 .AsNoTracking()
                 .Where(x => x.VillageId == villageId.Value)
@@ -108,9 +102,8 @@ namespace MainCore.Commands.Misc
             return jobs;
         }
 
-        private (bool plusActive, bool applyRomanQueueLogic) GetVillageSettings(AccountId accountId, VillageId villageId)
+        private static (bool plusActive, bool applyRomanQueueLogic) GetVillageSettings(this AppDbContext context, AccountId accountId, VillageId villageId)
         {
-            using var context = contextFactory.CreateDbContext();
             var plusActive = context.AccountsInfo
                 .Where(x => x.AccountId == accountId.Value)
                 .Select(x => x.HasPlusAccount)

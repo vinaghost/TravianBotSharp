@@ -1,13 +1,12 @@
 ﻿using Humanizer;
-using MainCore.Commands.UI.Villages.BuildViewModel;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using Microsoft.Extensions.DependencyInjection;
-using ReactiveUI.Primitives.Extensions;
 using System.Text;
 using System.Text.Json;
+using MainCore.Infrasturecture.Extensions;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
@@ -258,8 +257,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             var location = Buildings.SelectedIndex + 1;
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var normalBuildCommand = scope.ServiceProvider.GetRequiredService<NormalBuildCommand.Handler>();
+            using var context = _contextFactory.CreateDbContext();
 
             var (type, level) = NormalBuildInput.Get();
             var plan = new NormalBuildPlan()
@@ -268,7 +266,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 Type = type,
                 Level = level,
             };
-            var buildResult = await normalBuildCommand.HandleAsync(new(VillageId, plan));
+
+            var buildResult = context.NormalBuild(VillageId, plan);
             if (buildResult.IsFailed)
             {
                 await _dialogService.SendMessage("Error", buildResult.ToString());
@@ -288,9 +287,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
             var location = Buildings.SelectedIndex + 1;
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var upgradeCommand = scope.ServiceProvider.GetRequiredService<UpgradeCommand.Handler>();
-            await upgradeCommand.HandleAsync(new(VillageId, location, false));
+            Upgrade(VillageId, location, false);
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
@@ -304,9 +301,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             }
             var location = Buildings.SelectedIndex + 1;
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var upgradeCommand = scope.ServiceProvider.GetRequiredService<UpgradeCommand.Handler>();
-            await upgradeCommand.HandleAsync(new(VillageId, location, true));
+            Upgrade(VillageId, location, true);
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
@@ -326,9 +321,21 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var resourceBuildCommand = scope.ServiceProvider.GetRequiredService<ResourceBuildCommand.Handler>();
-            await resourceBuildCommand.HandleAsync(new(VillageId, ResourceBuildInput.ToPlan()));
+            using var context = _contextFactory.CreateDbContext();
+            var (type, level) = ResourceBuildInput.Get();
+            var plan = new ResourceBuildPlan()
+            {
+                Plan = type,
+                Level = level,
+            };
+            var job = new JobDto()
+            {
+                Position = 0,
+                Type = JobTypeEnums.ResourceBuild,
+                Content = JsonSerializer.Serialize(plan),
+            };
+            context.AddJob(VillageId, job);
+
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
@@ -347,9 +354,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
-            var newIndex = await swapCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Up));
+            var newIndex = SwapJob(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Up);
             Jobs.SelectedIndex = newIndex;
 
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
@@ -369,9 +374,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
-            var newIndex = await swapCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Down));
+            var newIndex = SwapJob(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Down);
             Jobs.SelectedIndex = newIndex;
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
@@ -390,9 +393,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
-            var newIndex = await moveCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Top));
+            var newIndex = MoveJob(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Top);
             Jobs.SelectedIndex = newIndex;
 
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
@@ -412,9 +413,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
-            var newIndex = await moveCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Bottom));
+            var newIndex = MoveJob(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Bottom);
             Jobs.SelectedIndex = newIndex;
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
@@ -430,9 +429,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             if (Jobs.SelectedItem is null) return;
             var jobId = Jobs.SelectedItem.Id;
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var deleteJobByIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByIdCommand.Handler>();
-            await deleteJobByIdCommand.HandleAsync(new(new JobId(jobId)));
+            using var context = _contextFactory.CreateDbContext();
+            context.DeleteJobById(new JobId(jobId));
             await JobsModifiedCommand.Execute(new JobsModified(VillageId)).ToHotTask();
         }
 
@@ -480,13 +478,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             var shuffle = await _dialogService.SendConfirm("Warning", "Do you want to random building location?");
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var fixJobsCommand = scope.ServiceProvider.GetRequiredService<FixJobsCommand.Handler>();
-            var fixedJobs = await fixJobsCommand.HandleAsync(new(VillageId, jobs, shuffle));
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
+
+            var fixedJobs = context.FixJobs(VillageId, jobs, shuffle);
             var count = context.Jobs
-                .Where(x => x.VillageId == VillageId.Value)
-                .Count();
+                .Count(x => x.VillageId == VillageId.Value);
 
             var additionJobs = fixedJobs
                 .Select((job, index) => new Job()
@@ -537,6 +533,131 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return false;
             }
             return true;
+        }
+
+        private int SwapJob(JobId jobId, MoveEnums move)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var job = context.Jobs
+                .FirstOrDefault(x => x.Id == jobId.Value);
+
+            if (job is null) return -1;
+
+            var currentPosition = job.Position;
+            Job? targetJob;
+
+            switch (move)
+            {
+                case MoveEnums.Up:
+                    if (currentPosition == 0) return currentPosition;
+                    targetJob = context.Jobs
+                        .Where(x => x.VillageId == job.VillageId)
+                        .FirstOrDefault(x => x.Position == currentPosition - 1);
+                    break;
+
+                case MoveEnums.Down:
+                    var count = context.Jobs
+                        .Count(x => x.VillageId == job.VillageId);
+                    if (currentPosition == count - 1) return currentPosition;
+                    targetJob = context.Jobs
+                        .Where(x => x.VillageId == job.VillageId)
+                        .FirstOrDefault(x => x.Position == currentPosition + 1);
+                    break;
+
+                default:
+                    return currentPosition;
+            }
+            if (targetJob is null) return currentPosition;
+
+            (targetJob.Position, job.Position) = (job.Position, targetJob.Position);
+
+            context.Update(job);
+            context.Update(targetJob);
+            context.SaveChanges();
+
+            return job.Position;
+        }
+
+        private int MoveJob(JobId jobId, MoveEnums move)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var job = context.Jobs
+                    .FirstOrDefault(x => x.Id == jobId.Value);
+
+            if (job is null) return -1;
+
+            var currentPosition = job.Position;
+
+            switch (move)
+            {
+                case MoveEnums.Top:
+                    if (currentPosition == 0) return currentPosition;
+                    context.Jobs
+                        .Where(x => x.VillageId == job.VillageId)
+                        .Where(x => x.Position < currentPosition)
+                        .ExecuteUpdate(x => x.SetProperty(y => y.Position, y => y.Position + 1));
+
+                    job.Position = 0;
+                    break;
+
+                case MoveEnums.Bottom:
+                    var count = context.Jobs
+                        .Count(x => x.VillageId == job.VillageId);
+                    if (currentPosition == count - 1) return currentPosition;
+                    context.Jobs
+                        .Where(x => x.VillageId == job.VillageId)
+                        .Where(x => x.Position > currentPosition)
+                        .ExecuteUpdate(x => x.SetProperty(y => y.Position, y => y.Position - 1));
+
+                    job.Position = count - 1;
+                    break;
+
+                default:
+                    return currentPosition;
+            }
+
+            context.Update(job);
+            context.SaveChanges();
+
+            return job.Position;
+        }
+
+        private void Upgrade(VillageId villageId, int location, bool isMaxLevel)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var buildings = context.GetLayoutBuildings(villageId);
+            var building = buildings.Find(x => x.Location == location);
+
+            if (building is null) return;
+            if (building.Type == BuildingEnums.Site) return;
+
+            var level = 0;
+
+            if (isMaxLevel)
+            {
+                level = building.Type.GetMaxLevel();
+            }
+            else
+            {
+                level = building.Level + 1;
+            }
+
+            var plan = new NormalBuildPlan()
+            {
+                Location = location,
+                Type = building.Type,
+                Level = level,
+            };
+
+            var job = new JobDto()
+            {
+                Position = 0,
+                Type = JobTypeEnums.NormalBuild,
+                Content = JsonSerializer.Serialize(plan),
+            };
+
+            context.AddJob(villageId, job);
         }
     }
 }
