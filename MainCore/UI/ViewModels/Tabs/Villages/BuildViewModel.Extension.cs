@@ -127,15 +127,16 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             var prerequisiteBuildings = buildingType.GetPrerequisiteBuildings();
             if (prerequisiteBuildings.Count == 0) return Result.Ok();
+            IList<Error> errors = [];
             foreach (var prerequisiteBuilding in prerequisiteBuildings)
             {
                 var valid = buildings
                     .Where(x => x.Type == prerequisiteBuilding.Type)
                     .Any(x => x.Level >= prerequisiteBuilding.Level);
 
-                if (!valid) return Result.Fail($"Required {prerequisiteBuilding}");
+                if (!valid) errors.Add(new Error($"Required {prerequisiteBuilding}"));
             }
-            return Result.Ok();
+            return Result.FailIfNotEmpty(errors);
         }
 
         public static void FixLocation(this NormalBuildPlan plan, List<BuildingItem> buildings)

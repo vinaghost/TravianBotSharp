@@ -12,6 +12,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Extensions;
+    using ReactiveUI.Primitives.Signals;
 
     [RegisterSingleton<BuildViewModel>]
     public partial class BuildViewModel : VillageTabViewModelBase
@@ -55,20 +56,21 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             LoadBuildNormalCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(SetNormalBuildInput);
 
-            BuildNormalCommand.InvokeCommand(JobsModifiedCommand);
-            BuildResourceCommand.InvokeCommand(JobsModifiedCommand);
-            UpgradeOneLevelCommand.InvokeCommand(JobsModifiedCommand);
-            UpgradeMaxLevelCommand.InvokeCommand(JobsModifiedCommand);
+            var jobsChanged = Signal.Merge(
+                BuildNormalCommand.Select(_ => new JobsModified(VillageId)),
+                BuildResourceCommand.Select(_ => new JobsModified(VillageId)),
+                UpgradeOneLevelCommand.Select(_ => new JobsModified(VillageId)),
+                UpgradeMaxLevelCommand.Select(_ => new JobsModified(VillageId)),
+                UpCommand.Select(_ => new JobsModified(VillageId)),
+                DownCommand.Select(_ => new JobsModified(VillageId)),
+                TopCommand.Select(_ => new JobsModified(VillageId)),
+                BottomCommand.Select(_ => new JobsModified(VillageId)),
+                DeleteCommand.Select(_ => new JobsModified(VillageId)),
+                DeleteAllCommand.Select(_ => new JobsModified(VillageId)),
+                ImportCommand.Select(_ => new JobsModified(VillageId))
+            );
 
-            UpCommand.InvokeCommand(JobsModifiedCommand);
-            DownCommand.InvokeCommand(JobsModifiedCommand);
-            TopCommand.InvokeCommand(JobsModifiedCommand);
-            BottomCommand.InvokeCommand(JobsModifiedCommand);
-
-            DeleteCommand.InvokeCommand(JobsModifiedCommand);
-            DeleteAllCommand.InvokeCommand(JobsModifiedCommand);
-
-            ImportCommand.InvokeCommand(JobsModifiedCommand);
+            jobsChanged.InvokeCommand(JobsModifiedCommand);
 
             _rxQueue.RegisterCommand(BuildingsModifiedCommand);
             _rxQueue.RegisterCommand(JobsModifiedCommand);
@@ -285,12 +287,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var buildings = context.GetLayoutBuildings(VillageId);
             var building = buildings.Find(x => x.Location == plan.Location);
 
-            if (building is null)
+            if (building is null || building.Type == BuildingEnums.Site)
             {
                 var checkResult = plan.Type.CheckRequirements(buildings);
-                if (!checkResult.IsFailed)
+                if (checkResult.IsFailed)
                 {
-                    await _dialogService.SendMessage("Error", checkResult.ToString());
+                    await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, checkResult.Errors.Select(x => x.Message)));
                     return;
                 }
                 plan.FixLocation(buildings);
