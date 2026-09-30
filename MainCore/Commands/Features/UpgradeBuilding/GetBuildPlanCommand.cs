@@ -31,25 +31,14 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
                     var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content)!;
                     var normalBuildPlan = GetNormalBuildPlan(villageId, resourceBuildPlan);
+                    using var context = contextFactory.CreateDbContext();
                     if (normalBuildPlan is null)
                     {
-                        using (var context = contextFactory.CreateDbContext())
-                        {
-                            context.DeleteJobById(job.Id);
-                        }
+                        context.DeleteJobById(job.Id);
                     }
                     else
                     {
-                        var newJob = new JobDto()
-                        {
-                            Position = 0,
-                            Type = JobTypeEnums.NormalBuild,
-                            Content = JsonSerializer.Serialize(normalBuildPlan),
-                        };
-                        using (var context = contextFactory.CreateDbContext())
-                        {
-                            context.AddJob(villageId, newJob, true);
-                        }
+                        context.AddJob(villageId, normalBuildPlan, true);
                     }
                     rxQueue.Enqueue(new JobsModified(villageId));
                     continue;

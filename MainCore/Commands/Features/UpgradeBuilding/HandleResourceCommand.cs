@@ -101,14 +101,8 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 Type = cropland.Type,
                 Level = cropland.Level + 1,
             };
-            var cropLandJob = new JobDto()
-            {
-                Position = 0,
-                Type = JobTypeEnums.NormalBuild,
-                Content = JsonSerializer.Serialize(cropLandPlan),
-            };
 
-            context.AddJob(villageId, cropLandJob, true);
+            context.AddJob(villageId, cropLandPlan, true);
             rxQueue.Enqueue(new JobsModified(villageId));
         }
 

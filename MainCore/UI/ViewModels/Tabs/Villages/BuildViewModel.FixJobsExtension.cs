@@ -1,10 +1,11 @@
-﻿using System;
+﻿using MainCore.Infrasturecture.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 
-namespace MainCore.Infrasturecture.Extensions
+namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     public static class FixJobsExtension
     {
@@ -44,7 +45,7 @@ namespace MainCore.Infrasturecture.Extensions
                             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
 
                             Modify(buildings, plan, changedLocations, shuffle);
-                            job.Content = GetContent(plan);
+                            job.Content = JsonSerializer.Serialize(plan);
 
                             if (IsValidPlan(buildings, plan)) yield return job;
                             continue;
@@ -59,11 +60,6 @@ namespace MainCore.Infrasturecture.Extensions
                         continue;
                 }
             }
-        }
-
-        private static string GetContent(NormalBuildPlan plan)
-        {
-            return JsonSerializer.Serialize(plan);
         }
 
         private static bool IsValidPlan(List<BuildingItem> buildings, ResourceBuildPlan plan)
