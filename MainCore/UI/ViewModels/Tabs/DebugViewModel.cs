@@ -99,7 +99,7 @@ namespace MainCore.UI.ViewModels.Tabs
             var (accountId, logEvent) = notification;
             if (accountId != AccountId) return false;
 
-            _logEvents.AddFirst(logEvent);
+            _logEvents.AddLast(logEvent);
             return true;
         }
 
@@ -133,12 +133,16 @@ namespace MainCore.UI.ViewModels.Tabs
         private string LoadLog(AccountId accountId)
         {
             var logs = _logSink.GetLogs(accountId);
-            using var sw = new StringWriter(new StringBuilder());
             _logEvents.Clear();
             foreach (var log in logs)
             {
-                _template.Format(log, sw);
-                _logEvents.AddFirst(log);
+                _logEvents.AddLast(log);
+            }
+
+            using var sw = new StringWriter(new StringBuilder());
+            for (var node = _logEvents.Last; node != null; node = node.Previous)
+            {
+                _template.Format(node.Value, sw);
             }
             return sw.ToString();
         }
@@ -147,9 +151,9 @@ namespace MainCore.UI.ViewModels.Tabs
         private string ReloadLog()
         {
             using var sw = new StringWriter(new StringBuilder());
-            foreach (var log in _logEvents)
+            for (var node = _logEvents.Last; node != null; node = node.Previous)
             {
-                _template.Format(log, sw);
+                _template.Format(node.Value, sw);
             }
             return sw.ToString();
         }
