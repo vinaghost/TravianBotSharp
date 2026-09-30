@@ -46,7 +46,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var result = await _villageSettingInputValidator.ValidateAsync(VillageSettingInput);
             if (!result.IsValid)
             {
-                await _dialogService.SendMessage("Error", result.ToString());
+                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, result.Errors.Select(x => x.ErrorMessage)));
                 return;
             }
 
@@ -77,7 +77,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var result = await _villageSettingInputValidator.ValidateAsync(VillageSettingInput);
             if (!result.IsValid)
             {
-                await _dialogService.SendMessage("Error", result.ToString());
+                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, result.Errors.Select(x => x.ErrorMessage)));
                 return;
             }
 

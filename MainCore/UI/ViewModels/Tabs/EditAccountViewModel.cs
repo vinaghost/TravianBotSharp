@@ -59,7 +59,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             if (!result.IsValid)
             {
-                await _dialogService.SendMessage("Error", result.ToString());
+                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, result.Errors.Select(x => x.ErrorMessage)));
                 return;
             }
 
@@ -74,7 +74,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             if (!result.IsValid)
             {
-                await _dialogService.SendMessage("Error", result.ToString());
+                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, result.Errors.Select(x => x.ErrorMessage)));
                 return;
             }
 
@@ -95,7 +95,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             if (!results.IsValid)
             {
-                await _dialogService.SendMessage("Error", results.ToString());
+                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, results.Errors.Select(x => x.ErrorMessage)));
                 return;
             }
             await _waitingOverlayViewModel.Show("editing account");

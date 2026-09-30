@@ -60,7 +60,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             if (!result.IsValid)
             {
-                await _dialogService.SendMessage("Error", result.ToString());
+                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, result.Errors.Select(x => x.ErrorMessage)));
                 return;
             }
 
@@ -81,7 +81,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             if (!result.IsValid)
             {
-                await _dialogService.SendMessage("Error", result.ToString());
+                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, result.Errors.Select(x => x.ErrorMessage)));
                 return;
             }
 
@@ -98,11 +98,11 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task<bool> AddAccount()
         {
-            var validateResult = await _accountInputValidator.ValidateAsync(AccountInput);
+            var result = await _accountInputValidator.ValidateAsync(AccountInput);
 
-            if (!validateResult.IsValid)
+            if (!result.IsValid)
             {
-                await _dialogService.SendMessage("Error", validateResult.ToString());
+                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, result.Errors.Select(x => x.ErrorMessage)));
                 return false;
             }
 

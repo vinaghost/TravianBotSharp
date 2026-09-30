@@ -39,7 +39,7 @@ namespace MainCore.UI.ViewModels.Tabs
             var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
             if (!result.IsValid)
             {
-                await _dialogService.SendMessage("Error", result.ToString());
+                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, result.Errors.Select(x => x.ErrorMessage)));
                 return;
             }
 
@@ -71,7 +71,7 @@ namespace MainCore.UI.ViewModels.Tabs
             var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
             if (!result.IsValid)
             {
-                await _dialogService.SendMessage("Error", result.ToString());
+                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, result.Errors.Select(x => x.ErrorMessage)));
                 return;
             }
 
