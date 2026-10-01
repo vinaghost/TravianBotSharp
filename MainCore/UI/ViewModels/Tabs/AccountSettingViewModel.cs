@@ -1,14 +1,15 @@
-﻿using MainCore.Commands.UI.Misc;
-using MainCore.UI.Models.Input;
+﻿using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using Microsoft.Extensions.DependencyInjection;
-using ReactiveUI.Primitives.Extensions;
 using System.Text.Json;
+using MainCore.Infrasturecture.Extensions;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
     using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Signals;
+    using ReactiveUI.Primitives.Extensions;
 
     [RegisterSingleton<AccountSettingViewModel>]
     public partial class AccountSettingViewModel : AccountTabViewModelBase
@@ -17,15 +18,17 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private readonly IDialogService _dialogService;
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
-        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly ITaskManager _taskManager;
 
-        public AccountSettingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, ICustomServiceScopeFactory serviceScopeFactory)
+        public AccountSettingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, IDbContextFactory<AppDbContext> contextFactory, ITaskManager taskManager)
         {
             _dialogService = dialogService;
             _accountsettingInputValidator = accountsettingInputValidator;
-            _serviceScopeFactory = serviceScopeFactory;
+            _contextFactory = contextFactory;
+            _taskManager = taskManager;
 
-            LoadSettingsCommand.Subscribe(AccountSettingInput.Set);
+            LoadSettingsCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(AccountSettingInput.Set);
         }
 
         protected override async Task Load(AccountId accountId)
@@ -33,7 +36,7 @@ namespace MainCore.UI.ViewModels.Tabs
             await LoadSettingsCommand.Execute(accountId).ToHotTask();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Save()
         {
             var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
@@ -43,14 +46,14 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
-            await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
-
+            using var context = _contextFactory.CreateDbContext();
+            var settings = AccountSettingInput.Get();
+            context.SaveAccountSetting(AccountId, settings);
+            context.TriggerTask(_taskManager, AccountId, settings);
             await _dialogService.SendMessage("Information", "Settings saved.");
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Import()
         {
             var path = await _dialogService.OpenFileDialog();
@@ -66,30 +69,28 @@ namespace MainCore.UI.ViewModels.Tabs
                 await _dialogService.SendMessage("Warning", "Invalid file.");
                 return;
             }
+            await Signal.Start(() => AccountSettingInput.Set(settings)).ObserveOn(RxSchedulers.MainThreadScheduler);
 
-            AccountSettingInput.Set(settings);
             var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
             if (!result.IsValid)
             {
                 await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, result.Errors.Select(x => x.ErrorMessage)));
                 return;
             }
-
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var saveAccountSettingCommand = scope.ServiceProvider.GetRequiredService<SaveAccountSettingCommand.Handler>();
-            await saveAccountSettingCommand.HandleAsync(new(AccountId, AccountSettingInput.Get()));
-
+            using var context = _contextFactory.CreateDbContext();
+            context.SaveAccountSetting(AccountId, settings);
+            context.TriggerTask(_taskManager, AccountId, settings);
             await _dialogService.SendMessage("Information", "Settings imported.");
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Export()
         {
             var path = await _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
+
             var settings = context.AccountsSetting
               .Where(x => x.AccountId == AccountId.Value)
               .ToDictionary(x => x.Setting, x => x.Value);
@@ -99,11 +100,11 @@ namespace MainCore.UI.ViewModels.Tabs
             await _dialogService.SendMessage("Information", "Settings exported.");
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private Dictionary<AccountSettingEnums, int> LoadSettings(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
+
             var settings = context.AccountsSetting
               .Where(x => x.AccountId == AccountId.Value)
               .ToDictionary(x => x.Setting, x => x.Value);

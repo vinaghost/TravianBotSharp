@@ -1,11 +1,10 @@
-﻿using MainCore.Commands.UI.Misc;
+﻿using MainCore.Infrasturecture.Extensions;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class NpcTask(
-        SaveVillageSettingCommand.Handler saveVillageSettingCommand,
         ToDorfCommand.Handler toDorfCommand,
         UpdateBuildingCommand.Handler updateBuildingCommand,
         ToBuildingByTypeCommand.Handler toBuildingCommand,
@@ -45,7 +44,7 @@ namespace MainCore.Tasks
         private async ValueTask<Result> HandleAsync(Task task)
         {
             Result result;
-            result = await ToNpcResourcePage(task.AccountId, task.VillageId);
+            result = await ToNpcResourcePage(task.VillageId);
             if (result.IsFailed) return result;
 
             if (!await CanNPC(task.VillageId))
@@ -53,7 +52,7 @@ namespace MainCore.Tasks
                 return Result.Ok();
             }
 
-            result = await NPCResource(task.AccountId, task.VillageId);
+            result = await NPCResource(task.VillageId);
             if (result.IsFailed) return result;
 
             taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId));
@@ -61,7 +60,7 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        private async ValueTask<Result> ToNpcResourcePage(AccountId accountId, VillageId villageId)
+        private async ValueTask<Result> ToNpcResourcePage(VillageId villageId)
         {
             var result = await toDorfCommand.HandleAsync(new(2));
             if (result.IsFailed) return result;
@@ -74,7 +73,7 @@ namespace MainCore.Tasks
             {
                 if (result.HasError<MissingBuilding>())
                 {
-                    await TurnOffNPC(accountId, villageId);
+                    await TurnOffNPC(villageId);
                     return Skip.Error.WithErrors(result.Errors);
                 }
                 return result;
@@ -85,12 +84,13 @@ namespace MainCore.Tasks
             return Result.Ok();
         }
 
-        private async ValueTask TurnOffNPC(AccountId accountId, VillageId villageId)
+        private async ValueTask TurnOffNPC(VillageId villageId)
         {
             var settings = new Dictionary<VillageSettingEnums, int>() {
                         { VillageSettingEnums.AutoNPCEnable, 0 }
                     };
-            await saveVillageSettingCommand.HandleAsync(new(accountId, villageId, settings));
+            using var context = contextFactory.CreateDbContext();
+            context.SaveVillageSetting(villageId, settings);
             logger.Warning("Disable NPC for this village.");
         }
 
@@ -102,7 +102,7 @@ namespace MainCore.Tasks
             VillageSettingEnums.AutoNPCCrop,
         ];
 
-        private async ValueTask<Result> NPCResource(AccountId accountId, VillageId villageId)
+        private async ValueTask<Result> NPCResource(VillageId villageId)
         {
             var result = await OpenDialog();
             if (result.IsFailed) return result;
@@ -112,7 +112,7 @@ namespace MainCore.Tasks
             result = await CheckOverflow(villageId, values);
             if (result.IsFailed)
             {
-                await TurnOffNPC(accountId, villageId);
+                await TurnOffNPC(villageId);
                 return Skip.Error.WithErrors(result.Errors);
             }
 

@@ -13,7 +13,6 @@ namespace MainCore.UI.ViewModels.Tabs
     public partial class VillageViewModel : AccountTabViewModelBase
     {
         private readonly VillageTabStore _villageTabStore;
-
         private readonly IDialogService _dialogService;
         private readonly ITaskManager _taskManager;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
@@ -39,9 +38,14 @@ namespace MainCore.UI.ViewModels.Tabs
             villageObservable.BindTo(_selectedItemStore, vm => vm.Village);
             villageObservable.Subscribe(x =>
             {
-                var tabType = VillageTabType.Normal;
-                if (x is null) tabType = VillageTabType.NoVillage;
-                _villageTabStore.SetTabType(tabType);
+                if (x is null)
+                {
+                    _villageTabStore.SetTabType(VillageTabType.NoVillage);
+                }
+                else
+                {
+                    _villageTabStore.SetTabType(VillageTabType.Normal);
+                }
             });
 
             LoadVillageCommand.Subscribe(Villages.Load);

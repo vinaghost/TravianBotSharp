@@ -1,27 +1,14 @@
-﻿namespace MainCore.Commands.UI.Misc
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace MainCore.UI.ViewModels.Tabs
 {
-    [Handler]
-    public static partial class SaveAccountSettingCommand
+    public static class AccountSettingViewModelExtension
     {
-        public sealed record Command(AccountId AccountId, Dictionary<AccountSettingEnums, int> Settings) : IAccountCommand;
-
-        private static async ValueTask HandleAsync(
-            Command command,
-            AppDbContext context,
-            ITaskManager taskManager
-            )
+        public static void TriggerTask(this AppDbContext context, ITaskManager taskManager, AccountId accountId, Dictionary<AccountSettingEnums, int> settings)
         {
-            await Task.CompletedTask;
-            var (accountId, settings) = command;
             if (settings.Count == 0) return;
-
-            foreach (var setting in settings)
-            {
-                context.AccountsSetting
-                    .Where(x => x.AccountId == accountId.Value)
-                    .Where(x => x.Setting == setting.Key)
-                    .ExecuteUpdate(x => x.SetProperty(x => x.Value, setting.Value));
-            }
 
             if (settings.ContainsKey(AccountSettingEnums.EnableAutoLoadVillageBuilding))
             {

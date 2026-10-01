@@ -1,47 +1,13 @@
-﻿namespace MainCore.Commands.UI.Misc
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace MainCore.UI.ViewModels.Tabs.Villages
 {
-    [Handler]
-    public static partial class SaveVillageSettingCommand
+    public static class VillageSettingViewModelExtension
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, Dictionary<VillageSettingEnums, int> Settings) : IAccountVillageCommand
+        public static void TriggerTask(this AppDbContext context, ITaskManager taskManager, AccountId accountId, VillageId villageId, Dictionary<VillageSettingEnums, int> settings)
         {
-            public void Deconstruct(out AccountId accountId, out VillageId villageId) => (accountId, villageId) = (AccountId, VillageId);
-        }
-
-        private static async ValueTask HandleAsync(
-            Command command,
-            AppDbContext context,
-            ITaskManager taskManager
-            )
-        {
-            await Task.CompletedTask;
-            var (accountId, villageId, settings) = command;
-            if (settings.Count == 0) return;
-
-            foreach (var setting in settings)
-            {
-                context.VillagesSetting
-                    .Where(x => x.VillageId == villageId.Value)
-                    .Where(x => x.Setting == setting.Key)
-                    .ExecuteUpdate(x => x.SetProperty(x => x.Value, setting.Value));
-            }
-
-            if (settings.ContainsKey(VillageSettingEnums.Tribe))
-            {
-                var tribe = (TribeEnums)settings[VillageSettingEnums.Tribe];
-
-                var wallBuilding = context.Buildings
-                    .Where(x => x.VillageId == villageId.Value)
-                    .Where(x => x.Location == 40)
-                    .FirstOrDefault();
-                var wall = tribe.GetWall();
-                if (wallBuilding is not null && wallBuilding.Type != wall)
-                {
-                    wallBuilding.Type = wall;
-                    context.SaveChanges();
-                }
-            }
-
             if (settings.ContainsKey(VillageSettingEnums.CompleteImmediately))
             {
                 if (settings[VillageSettingEnums.CompleteImmediately] == 1)

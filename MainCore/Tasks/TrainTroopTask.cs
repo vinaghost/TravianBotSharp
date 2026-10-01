@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.UI.Misc;
+﻿using MainCore.Infrasturecture.Extensions;
 using MainCore.Tasks.Base;
 using Polly;
 
@@ -11,7 +11,6 @@ namespace MainCore.Tasks
         ToDorfCommand.Handler toDorfCommand,
         UpdateBuildingCommand.Handler updateBuildingCommand,
         ToBuildingByTypeCommand.Handler toBuildingCommand,
-        SaveVillageSettingCommand.Handler saveVillageSettingCommand,
         ILogger logger)
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
@@ -45,8 +44,8 @@ namespace MainCore.Tasks
                         settings.Add(TroopSettings[building], 0);
                         continue;
                     }
+                    SaveSetting(task, settings);
 
-                    await saveVillageSettingCommand.HandleAsync(new(task.AccountId, task.VillageId, settings), cancellationToken);
                     return result;
                 }
 
@@ -58,14 +57,23 @@ namespace MainCore.Tasks
                         break;
                     }
 
-                    await saveVillageSettingCommand.HandleAsync(new(task.AccountId, task.VillageId, settings), cancellationToken);
+                    SaveSetting(task, settings);
+
                     return result;
                 }
             }
 
-            await saveVillageSettingCommand.HandleAsync(new(task.AccountId, task.VillageId, settings), cancellationToken);
+            SaveSetting(task, settings);
+
             task.ExecuteAt = GetNextExecute(task.VillageId);
+
             return Result.Ok();
+        }
+
+        private void SaveSetting(Task task, Dictionary<VillageSettingEnums, int> settings)
+        {
+            using var context = contextFactory.CreateDbContext();
+            context.SaveVillageSetting(task.VillageId, settings);
         }
 
         private async ValueTask<Result> ToTrainTroopPage(VillageId villageId, BuildingEnums building, CancellationToken cancellationToken)
