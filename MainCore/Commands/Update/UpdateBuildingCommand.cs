@@ -17,10 +17,12 @@
 
             var dtoQueueBuilding = await BuildingLayoutParser.GetQueueBuilding(browser.CurrentPage);
 
+            var tribe = await BuildingLayoutParser.GetTribe(browser.CurrentPage);
+
             var result = IsValidQueueBuilding(dtoQueueBuilding);
             if (result.IsFailed) return result;
 
-            UpdateToDatabase(villageId, dtoBuilding, dtoQueueBuilding);
+            UpdateToDatabase(villageId, dtoBuilding, dtoQueueBuilding, tribe);
 
             rxQueue.Enqueue(new BuildingsModified(villageId));
             return Result.Ok();
@@ -47,7 +49,7 @@
             return Result.Ok();
         }
 
-        private void UpdateToDatabase(VillageId villageId, List<BuildingDto> buildingDtos, List<QueueBuildingDto> queueBuildingDtos)
+        private void UpdateToDatabase(VillageId villageId, List<BuildingDto> buildingDtos, List<QueueBuildingDto> queueBuildingDtos, TribeEnums tribe)
         {
             using var context = contextFactory.CreateDbContext();
             var dbBuildings = context.Buildings
@@ -182,6 +184,9 @@
                 }
             }
 
+            context.Villages
+                .Where(x => x.Id == villageId.Value)
+                .ExecuteUpdate(x => x.SetProperty(x => x.Tribe, tribe));
             context.SaveChanges();
         }
     }

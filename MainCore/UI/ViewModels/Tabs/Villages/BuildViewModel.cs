@@ -176,10 +176,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                  })
                  .ToList();
 
-            var tribe = (TribeEnums)context.VillagesSetting
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Setting == VillageSettingEnums.Tribe)
-                .Select(x => x.Value)
+            var tribe = context.Villages
+                .Where(x => x.Id == villageId.Value)
+                .Select(x => x.Tribe)
                 .FirstOrDefault();
 
             var count = 2;

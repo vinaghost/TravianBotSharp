@@ -14,6 +14,7 @@ namespace MainCore.Entities
 
         public bool IsActive { get; set; }
         public bool IsUnderAttack { get; set; }
+        public TribeEnums Tribe { get; set; }
 
         public int AccountId { get; set; }
         public ICollection<Building> Buildings { get; set; }

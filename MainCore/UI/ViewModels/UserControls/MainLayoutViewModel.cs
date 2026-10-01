@@ -167,12 +167,6 @@ namespace MainCore.UI.ViewModels.UserControls
             var accountId = new AccountId(Accounts.SelectedItem.Id);
 
             using var context = _contextFactory.CreateDbContext();
-            var tribe = (TribeEnums)context.ByName(accountId, AccountSettingEnums.Tribe);
-            if (tribe == TribeEnums.Any)
-            {
-                await _dialogService.SendMessage("Warning", "Choose tribe first");
-                return;
-            }
 
             if (_taskManager.GetStatus(accountId) != StatusEnums.Offline)
             {
