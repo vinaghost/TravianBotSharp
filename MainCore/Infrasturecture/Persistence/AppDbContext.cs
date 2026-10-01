@@ -1,8 +1,5 @@
-﻿using Humanizer;
-using Polly;
-using StronglyTypedIds;
+﻿using StronglyTypedIds;
 using System.Collections.Immutable;
-using System.Text.Json;
 
 [assembly: StronglyTypedIdDefaults(backingType: StronglyTypedIdBackingType.Int, converters: StronglyTypedIdConverter.None)]
 

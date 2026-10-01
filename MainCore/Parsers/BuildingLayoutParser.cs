@@ -1,7 +1,5 @@
-﻿using Microsoft.Playwright;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Xml;
 
 namespace MainCore.Parsers
 {

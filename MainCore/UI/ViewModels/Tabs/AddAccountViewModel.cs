@@ -1,16 +1,10 @@
 ﻿using MainCore.UI.Models.Input;
-using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    using Humanizer;
     using ReactiveUI.Primitives;
-    using ReactiveUI.Primitives.Concurrency;
-    using ReactiveUI.Primitives.Disposables;
-    using ReactiveUI.Primitives.Extensions;
     using ReactiveUI.Primitives.Signals;
 
     [RegisterSingleton<AddAccountViewModel>]

@@ -7,8 +7,8 @@ using System.Reflection;
 namespace MainCore.UI.ViewModels.UserControls
 {
     using ReactiveUI.Primitives;
-    using ReactiveUI.Primitives.Disposables;
     using ReactiveUI.Primitives.Concurrency;
+    using ReactiveUI.Primitives.Disposables;
     using ReactiveUI.Primitives.Extensions;
     using ReactiveUI.Primitives.Signals;
 

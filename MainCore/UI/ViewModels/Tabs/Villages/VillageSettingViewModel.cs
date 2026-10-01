@@ -1,8 +1,6 @@
-﻿using MainCore.UI.Models.Input;
-using MainCore.UI.Models.Output;
+﻿using MainCore.Infrasturecture.Extensions;
+using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
-using Microsoft.Extensions.DependencyInjection;
-using MainCore.Infrasturecture.Extensions;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages

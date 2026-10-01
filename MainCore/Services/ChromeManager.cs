@@ -1,6 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.IO.Compression;
-using System.Reflection;
 
 namespace MainCore.Services
 {

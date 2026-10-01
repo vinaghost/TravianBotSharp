@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MainCore.UI.ViewModels.Tabs
+﻿namespace MainCore.UI.ViewModels.Tabs
 {
     public static class AccountSettingViewModelExtension
     {

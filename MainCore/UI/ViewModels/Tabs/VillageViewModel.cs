@@ -2,7 +2,6 @@
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.Tabs
 {

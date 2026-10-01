@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using Microsoft.Playwright;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.Json;
 
 namespace MainCore.Parsers

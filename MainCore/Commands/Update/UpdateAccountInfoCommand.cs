@@ -1,6 +1,4 @@
-﻿using Humanizer;
-
-namespace MainCore.Commands.Update
+﻿namespace MainCore.Commands.Update
 {
     [Handler]
     public sealed partial class UpdateAccountInfoCommand(

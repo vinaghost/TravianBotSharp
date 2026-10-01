@@ -1,10 +1,5 @@
 ﻿using MainCore.Infrasturecture.Extensions;
-using Polly;
-using Serilog.Core;
-using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Text;
 
 namespace MainCore.UI.ViewModels.UserControls
 {

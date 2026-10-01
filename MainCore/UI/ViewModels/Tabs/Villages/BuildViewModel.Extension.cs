@@ -1,9 +1,4 @@
 ﻿using MainCore.Infrasturecture.Extensions;
-using Microsoft.EntityFrameworkCore.Internal;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {

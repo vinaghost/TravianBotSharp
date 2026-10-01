@@ -1,7 +1,5 @@
-﻿using MainCore.UI.Models.Output;
-using MainCore.UI.ViewModels.Abstract;
+﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 
 namespace MainCore.UI.ViewModels.Tabs

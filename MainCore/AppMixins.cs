@@ -4,7 +4,6 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 using Serilog.Templates;
-using Splat.Microsoft.Extensions.DependencyInjection;
 
 [assembly: Behaviors(
     typeof(AccountDataLoggingBehavior<,>),

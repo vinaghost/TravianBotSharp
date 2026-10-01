@@ -1,8 +1,6 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
-using ReactiveUI.Primitives.Extensions;
 using ReactiveUI.Primitives.Signals;
 using System.Diagnostics;
 using System.Runtime.InteropServices;

@@ -1,8 +1,4 @@
 ﻿using MainCore.Infrasturecture.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages

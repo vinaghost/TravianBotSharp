@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MainCore.Infrasturecture.Extensions
+﻿namespace MainCore.Infrasturecture.Extensions
 {
     public static class DeleteJobByIdExtension
     {

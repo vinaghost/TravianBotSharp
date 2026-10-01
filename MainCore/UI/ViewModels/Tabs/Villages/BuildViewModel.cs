@@ -1,12 +1,11 @@
 ﻿using Humanizer;
+using MainCore.Infrasturecture.Extensions;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using System.Text.Json;
-using MainCore.Infrasturecture.Extensions;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
