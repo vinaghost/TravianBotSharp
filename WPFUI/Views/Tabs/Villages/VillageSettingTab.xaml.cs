@@ -1,7 +1,6 @@
 ﻿using MainCore.UI.ViewModels.Tabs.Villages;
 using ReactiveUI;
 
-
 namespace WPFUI.Views.Tabs.Villages
 {
     using ReactiveUI.Primitives;
@@ -29,8 +28,6 @@ namespace WPFUI.Views.Tabs.Villages
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.UseSpecialUpgrade, v => v.UseSpecialUpgrade.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.CompleteImmediately, v => v.CompleteImmediately.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.CompleteImmediatelyTime, v => v.CompleteImmediatelyTime.Text).DisposeWith(d);
-
-                this.Bind(ViewModel, vm => vm.VillageSettingInput.Tribe, v => v.Tribes.ViewModel).DisposeWith(d);
 
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.TrainTroopEnable, v => v.TrainTroopEnable.IsChecked).DisposeWith(d);
                 this.Bind(ViewModel, vm => vm.VillageSettingInput.TrainWhenLowResource, v => v.TrainWhenLowResource.IsChecked).DisposeWith(d);

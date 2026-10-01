@@ -184,9 +184,10 @@
                 }
             }
 
-            context.Villages
+            context.VillagesSetting
                 .Where(x => x.Id == villageId.Value)
-                .ExecuteUpdate(x => x.SetProperty(x => x.Tribe, tribe));
+                .Where(x => x.Setting == VillageSettingEnums.Tribe)
+                .ExecuteUpdate(x => x.SetProperty(x => x.Value, (int)tribe));
             context.SaveChanges();
         }
     }
