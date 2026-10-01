@@ -71,6 +71,12 @@ namespace MainCore.Tasks
             var confirmButton = CompleteImmediatelyParser.GetConfirmButton(browser.CurrentPage);
             result = await browser.Click(confirmButton);
             if (result.IsFailed) return result;
+
+            result = await browser.WaitPageChanged("&reload=auto");
+            if (result.IsFailed) return result;
+
+            result = await browser.WaitPageChanged(@"^(?!.*reload=auto).*");
+            if (result.IsFailed) return result;
             return Result.Ok();
         }
     }
