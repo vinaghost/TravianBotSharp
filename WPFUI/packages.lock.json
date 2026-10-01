@@ -68,21 +68,6 @@
           "Splat": "21.0.0"
         }
       },
-      "Ardalis.Specification": {
-        "type": "Transitive",
-        "resolved": "9.3.1",
-        "contentHash": "GWrE6BA0smWFLbN+XPU2l5rDF9Uzelfbb3w35jJ0CGIat+p1ChbtLcbkvYRMEculBHOAo12omwAAOm3VFWkoJQ=="
-      },
-      "Ardalis.Specification.EntityFrameworkCore": {
-        "type": "Transitive",
-        "resolved": "9.3.1",
-        "contentHash": "QbOo4E6HWdKXZ9QUrqcgiGN4EKtzt0kzGzqr2zc32q5QESzBrceJ3GX1ymWVdCCOzJO1+GPm+/a/5ovSkfrLoQ==",
-        "dependencies": {
-          "Ardalis.Specification": "9.3.1",
-          "Microsoft.EntityFrameworkCore": "9.0.8",
-          "Microsoft.EntityFrameworkCore.Relational": "9.0.8"
-        }
-      },
       "CP.Extensions.Hosting.MainUIThread": {
         "type": "Transitive",
         "resolved": "5.0.0",
@@ -759,7 +744,6 @@
       "maincore": {
         "type": "Project",
         "dependencies": {
-          "Ardalis.Specification.EntityFrameworkCore": "[9.3.1, )",
           "FluentResults": "[4.0.0, )",
           "FluentValidation": "[12.1.1, )",
           "FluentValidation.DependencyInjectionExtensions": "[12.1.1, )",

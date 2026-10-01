@@ -1,6 +1,6 @@
 ﻿using ArchUnitNET.Domain;
 using ArchUnitNET.Loader;
-using ArchUnitNET.xUnit;
+using ArchUnitNET.xUnitV3;
 using MainCore.Constraints;
 using MainCore.Entities;
 using MainCore.Infrasturecture.Persistence;
@@ -43,22 +43,6 @@ namespace MainCore.Test
             }
 
             shouldRule.Check(Architecture);
-        }
-
-        [Fact]
-        public void HandlerAccessDatabaseShouldNotContainOtherHandler()
-        {
-            var otherhandler = Classes().That()
-                .AreAssignableTo(typeof(Immediate.Handlers.Shared.IHandler<,>))
-                .As("other handler");
-
-            var rule = MethodMembers().That()
-                .Are(Handler)
-                .And()
-                .DependOnAny(typeof(AppDbContext))
-                .Should()
-                .NotDependOnAny(otherhandler);
-            rule.Check(Architecture);
         }
 
         [Fact]

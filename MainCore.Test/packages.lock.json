@@ -10,9 +10,9 @@
       },
       "coverlet.collector": {
         "type": "Direct",
-        "requested": "[10.0.1, )",
-        "resolved": "10.0.1",
-        "contentHash": "27jXSV/0DbVqF5jDrAxuQFZ9oaz6gmG03p8ttxAFk+X0M4woFYj7MoWDLCna5EGLb0CE6OE7X6ZH3Wt5smTtaA=="
+        "requested": "[10.1.0, )",
+        "resolved": "10.1.0",
+        "contentHash": "SlYCIHnBYxINSUpR75SiM5JEmnx11pqT+Ac/C/fUqTTA0dLPl9eYzmFXKKuxmQhL3ZdTQl4PBD3YdAxAauaKLQ=="
       },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
@@ -26,12 +26,12 @@
       },
       "Microsoft.Playwright.Xunit.v3": {
         "type": "Direct",
-        "requested": "[1.62.0, )",
-        "resolved": "1.62.0",
-        "contentHash": "M77uY8cGRfHY6puj42PjN+f999QC+KNkjFHoPKiVGgAFPxg5euHsH3vElc31p/dVHWdgKQXZTUOSR+9o3uleGA==",
+        "requested": "[1.63.0, )",
+        "resolved": "1.63.0",
+        "contentHash": "BdQ46H89WweWf+BGlHL5ujPKR4NjQ2fk5SR/ISOthM45Uh7rSnF+Dh4N8M+VykeqZ609OhDAejlQ4QEn4rZMMQ==",
         "dependencies": {
-          "Microsoft.Playwright": "1.62.0",
-          "Microsoft.Playwright.TestAdapter": "1.62.0",
+          "Microsoft.Playwright": "1.63.0",
+          "Microsoft.Playwright.TestAdapter": "1.63.0",
           "xunit.v3.extensibility.core": "1.0.1"
         }
       },
@@ -52,14 +52,14 @@
       },
       "ReactiveUI.Testing": {
         "type": "Direct",
-        "requested": "[24.2.0, )",
-        "resolved": "24.2.0",
-        "contentHash": "TQ32f8VDkD3yzNrwTMGvQb5+u0SabxYQ/FUCfNijlGCMILwKwrsZYmWxz9fcQPEzSyI8H2ppCruy5jkebTi0zA==",
+        "requested": "[24.3.0, )",
+        "resolved": "24.3.0",
+        "contentHash": "uN5NcMpMbljPmxFpMOFUFh4mDbwqYy/wYwrjvYXhzd0jNDbZzKfngNN7q00SZXudxTjwODLNeNrVc4puM5tsAA==",
         "dependencies": {
-          "ReactiveUI": "24.2.0",
-          "ReactiveUI.Disposables": "7.3.0",
-          "ReactiveUI.Primitives": "7.3.0",
-          "ReactiveUI.Primitives.Core": "7.3.0",
+          "ReactiveUI": "24.3.0",
+          "ReactiveUI.Disposables": "8.2.0",
+          "ReactiveUI.Primitives": "8.2.0",
+          "ReactiveUI.Primitives.Core": "8.2.0",
           "Splat": "21.0.0"
         }
       },
@@ -96,14 +96,14 @@
           "System.ValueTuple": "4.6.2"
         }
       },
-      "TngTech.ArchUnitNET.xUnit": {
+      "TngTech.ArchUnitNET.xUnitV3": {
         "type": "Direct",
         "requested": "[0.13.4, )",
         "resolved": "0.13.4",
-        "contentHash": "I8BxopDSsnlf2ydgsPYfwLolZaG//8qdWc3JKl3K3vFKfWtP5e3snq/4OHTW1n1+qGA25HMHAmnX6YhnuCtxMg==",
+        "contentHash": "EZoUHDeA/p13h4fKztbFnkmXe8aKCRYjknXxyqex1G4+OZftlAmp0Tk6nS3Ktz7Ax/nDJmyEQrvzWjqMpLZO+g==",
         "dependencies": {
           "TngTech.ArchUnitNET": "0.13.4",
-          "xunit.assert": "2.4.1"
+          "xunit.v3.assert": "1.1.0"
         }
       },
       "xunit.runner.visualstudio": {
@@ -119,21 +119,6 @@
         "contentHash": "KpDYf6jFjYfOchuRJOAXPOpwN03hLE1AF4kWzCUSnhr8JZMiGH4BT1YidCcm6BE1H4E90GyJzuKoCwXbg9PXmA==",
         "dependencies": {
           "xunit.v3.mtp-v2": "[4.0.1]"
-        }
-      },
-      "Ardalis.Specification": {
-        "type": "Transitive",
-        "resolved": "9.3.1",
-        "contentHash": "GWrE6BA0smWFLbN+XPU2l5rDF9Uzelfbb3w35jJ0CGIat+p1ChbtLcbkvYRMEculBHOAo12omwAAOm3VFWkoJQ=="
-      },
-      "Ardalis.Specification.EntityFrameworkCore": {
-        "type": "Transitive",
-        "resolved": "9.3.1",
-        "contentHash": "QbOo4E6HWdKXZ9QUrqcgiGN4EKtzt0kzGzqr2zc32q5QESzBrceJ3GX1ymWVdCCOzJO1+GPm+/a/5ovSkfrLoQ==",
-        "dependencies": {
-          "Ardalis.Specification": "9.3.1",
-          "Microsoft.EntityFrameworkCore": "9.0.8",
-          "Microsoft.EntityFrameworkCore.Relational": "9.0.8"
         }
       },
       "Castle.Core": {
@@ -590,15 +575,10 @@
         "resolved": "10.0.12",
         "contentHash": "dYfCLR52UA+3DL7C4I/pvSaRPkNqxrUAQmbFL2u0zvYKKzqgrFCJl08Df+F1aYc8leu9JvpC9bsURUdpExcBXQ=="
       },
-      "Microsoft.NETCore.Platforms": {
-        "type": "Transitive",
-        "resolved": "1.1.0",
-        "contentHash": "kz0PEW2lhqygehI/d6XsPCQzD7ff7gUJaVGPVETX611eadGsA3A877GdSlU0LRVMCTH/+P3o2iDTak+S08V2+A=="
-      },
       "Microsoft.Playwright": {
         "type": "Transitive",
-        "resolved": "1.62.0",
-        "contentHash": "cos6dmHPcMpS6bXw2WEgoXb8KXwMhs3c5L0P/cUf2rdUpjVA3g3u+KiSpVp2VCzsXymRpy2tFHqm+Wnz7s5VhQ==",
+        "resolved": "1.63.0",
+        "contentHash": "O9F45Tt5vjauIo7mTTgQtahigL7cfRLvBMpErLJfdvgCnQ14yue5BmRASNnfNBWRBni4Mqp2YiD1eFGIO4nUUw==",
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
           "System.ComponentModel.Annotations": "5.0.0"
@@ -606,10 +586,10 @@
       },
       "Microsoft.Playwright.TestAdapter": {
         "type": "Transitive",
-        "resolved": "1.62.0",
-        "contentHash": "sfBf7a9fJwsrYuYPyF/JoTUSExKHaQvtBbckVnoYGOuf6UwMRzg2h4txlGCqM+JudytTis+LavyWW6C43iAZ+A==",
+        "resolved": "1.63.0",
+        "contentHash": "UnQJfSC7w/wWNBs5fIwHV8yUKBz4rTrpNRHRMWK5BxRHG++EE+TufKpjlPkZ1bm/BPaPi470NG1fHMFmWNKjOA==",
         "dependencies": {
-          "Microsoft.Playwright": "1.62.0",
+          "Microsoft.Playwright": "1.63.0",
           "Microsoft.TestPlatform.ObjectModel": "17.3.0"
         }
       },
@@ -666,14 +646,6 @@
         "resolved": "0.11.6",
         "contentHash": "f33RkDtZO8VlGXCtmQIviOtxgnUdym9xx/b1p9h91CRGOsJFxCFOFK1FDbVt1OCf1aWwYejUFa2MOQyFWTFjbA=="
       },
-      "NETStandard.Library": {
-        "type": "Transitive",
-        "resolved": "1.6.1",
-        "contentHash": "WcSp3+vP+yHNgS8EV5J7pZ9IRpeDuARBPN28by8zqff1wJQXm26PVU8L3/fYLBJVU7BtDyqNVWq2KlCVvSSR4A==",
-        "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.1.0"
-        }
-      },
       "Newtonsoft.Json": {
         "type": "Transitive",
         "resolved": "13.0.4",
@@ -703,47 +675,47 @@
       },
       "ReactiveUI": {
         "type": "Transitive",
-        "resolved": "24.2.0",
-        "contentHash": "V+5LXCIDrrEJS9BvmbpqlhmvF0F4F+ojF//P2h55Py1GVclx+fGonI6W40KgUsvkF7kbE/zxH9wQdVulmdthEg==",
+        "resolved": "24.3.0",
+        "contentHash": "6T4qRU6mNXIv9qkHKj+Cb70EIFJX1ixorvFGlQ6Iu9hCiXglEkPtGhPFj87OibDP9IC9jrIxwoPoCoVSYzsqcA==",
         "dependencies": {
-          "ReactiveUI.Core": "24.2.0",
-          "ReactiveUI.Disposables": "7.3.0",
-          "ReactiveUI.Primitives": "7.3.0",
-          "ReactiveUI.Primitives.Core": "7.3.0",
+          "ReactiveUI.Core": "24.3.0",
+          "ReactiveUI.Disposables": "8.2.0",
+          "ReactiveUI.Primitives": "8.2.0",
+          "ReactiveUI.Primitives.Core": "8.2.0",
           "Splat": "21.0.0"
         }
       },
       "ReactiveUI.Core": {
         "type": "Transitive",
-        "resolved": "24.2.0",
-        "contentHash": "1G2eUqAMNzES+a9QwJ4GgsGE0imvO69kRHlfWhv7N7IEidsTSYOrLvcHCnzW7x7hVCLfX95OuuiKAUz7qBvdCw==",
+        "resolved": "24.3.0",
+        "contentHash": "X/5UjiuePKymESn38Y1BzmEt7P9LQSOiyAm79Zkk4jdbpn/ixokJL1bvhxOlnwy4Mn5QbNA/ShWvRLwgtKc5SQ==",
         "dependencies": {
-          "ReactiveUI.Disposables": "7.3.0",
-          "ReactiveUI.Primitives": "7.3.0",
-          "ReactiveUI.Primitives.Core": "7.3.0",
+          "ReactiveUI.Disposables": "8.2.0",
+          "ReactiveUI.Primitives": "8.2.0",
+          "ReactiveUI.Primitives.Core": "8.2.0",
           "Splat": "21.0.0"
         }
       },
       "ReactiveUI.Disposables": {
         "type": "Transitive",
-        "resolved": "7.3.0",
-        "contentHash": "us0aF4pzNmHkUq3wklvd+aD7MKR2bRiAZuVQ+sZfAn6xj4Fj6KaDly9+7f6Bn44F8cvUWAcC5eDH0JvNeIzJwg=="
+        "resolved": "8.2.0",
+        "contentHash": "vpNi3q3oyIyQYLHcUfnmYeV4dBlrCoWFgaFuJXvI+yaKOq/sFcN+cZiuUzV+8Pl6cVnOYPoWPIx2WNzVI/WzcQ=="
       },
       "ReactiveUI.Primitives": {
         "type": "Transitive",
-        "resolved": "7.3.0",
-        "contentHash": "WA74/8G0FuJAfv9kzXlyiT/15J9PpFQQgQzOdWVEKBCO17NwCrDDrCsTMUCT1vU8QEH7vyq6wNK8RdHVM+Toyg==",
+        "resolved": "8.2.0",
+        "contentHash": "Hlog9ANgfh7tcHX0XXhojZPBXStCgqF7XCzcH+niN8eRLi+RE8CAUEf2ufrgLOOwQMTCKlUTy8wU2fvP5YjMqA==",
         "dependencies": {
-          "ReactiveUI.Disposables": "7.3.0",
-          "ReactiveUI.Primitives.Core": "7.3.0"
+          "ReactiveUI.Disposables": "8.2.0",
+          "ReactiveUI.Primitives.Core": "8.2.0"
         }
       },
       "ReactiveUI.Primitives.Core": {
         "type": "Transitive",
-        "resolved": "7.3.0",
-        "contentHash": "+uIARgwicX5Fk1yeRjGZKAeG9JCl8Id1pwocD2WyB273kF2rZOxVWoapBBHbh2+ml0si2ukfXb0AMPLIJ1gf8g==",
+        "resolved": "8.2.0",
+        "contentHash": "PNBtwHrBFoR8IE8aMMQMZZSH/pH4l8gFqs2fwRERObBlapQf82vT833BYlW28oT1aJKm7sXamEWgf7TR25DPiQ==",
         "dependencies": {
-          "ReactiveUI.Disposables": "7.3.0"
+          "ReactiveUI.Disposables": "8.2.0"
         }
       },
       "Riok.Mapperly": {
@@ -926,14 +898,6 @@
         "resolved": "2.1.0",
         "contentHash": "X7QXEcZQGz0G/HL4HUyK+aAvNa/IMGbOCnFIq4jD/Evktq12xANKwzOUr7b08vCmC1LXu/47qHWOdjm3KfaJ0A=="
       },
-      "xunit.assert": {
-        "type": "Transitive",
-        "resolved": "2.4.1",
-        "contentHash": "O/Oe0BS5RmSsM+LQOb041TzuPo5MdH2Rov+qXGS37X+KFG1Hxz7kopYklM5+1Y+tRGeXrOx5+Xne1RuqLFQoyQ==",
-        "dependencies": {
-          "NETStandard.Library": "1.6.1"
-        }
-      },
       "xunit.v3.assert": {
         "type": "Transitive",
         "resolved": "4.0.1",
@@ -1000,7 +964,6 @@
       "maincore": {
         "type": "Project",
         "dependencies": {
-          "Ardalis.Specification.EntityFrameworkCore": "[9.3.1, )",
           "FluentResults": "[4.0.0, )",
           "FluentValidation": "[12.1.1, )",
           "FluentValidation.DependencyInjectionExtensions": "[12.1.1, )",

@@ -1,7 +1,4 @@
 ﻿using Microsoft.Playwright;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MainCore.Test
 {
@@ -15,6 +12,7 @@ namespace MainCore.Test
             PlaywrightInstance = await Playwright.CreateAsync();
             Browser = await PlaywrightInstance.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
             {
+                Channel = "chrome",
                 Headless = true
             });
         }

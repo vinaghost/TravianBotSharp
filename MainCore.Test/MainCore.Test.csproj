@@ -16,29 +16,25 @@
     <ParallelizeTestCollections>true</ParallelizeTestCollections>
     <ParallelAlgorithm>aggressive</ParallelAlgorithm>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Include="Parsers\**\*.html" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Bogus" Version="35.6.5" />
-    <PackageReference Include="coverlet.collector" Version="10.0.1">
+    <PackageReference Include="coverlet.collector" Version="10.1.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
-    <PackageReference Include="Microsoft.Playwright.Xunit.v3" Version="1.62.0" />
+    <PackageReference Include="Microsoft.Playwright.Xunit.v3" Version="1.63.0" />
     <PackageReference Include="NSubstitute" Version="6.2.0" />
     <PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.17">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="ReactiveUI.Testing" Version="24.2.0" />
+    <PackageReference Include="ReactiveUI.Testing" Version="24.3.0" />
     <PackageReference Include="Serilog.Sinks.TestCorrelator" Version="4.0.2" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="TngTech.ArchUnitNET" Version="0.13.4" />
-    <PackageReference Include="TngTech.ArchUnitNET.xUnit" Version="0.13.4" />
+    <PackageReference Include="TngTech.ArchUnitNET.xUnitV3" Version="0.13.4" />
     <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -52,7 +48,6 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
-    <Using Include="Xunit.Abstractions" />
     <Using Include="Shouldly" />
     <Using Include="NSubstitute" />    
   </ItemGroup>
