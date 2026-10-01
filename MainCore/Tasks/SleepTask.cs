@@ -1,4 +1,5 @@
 ﻿using MainCore.Tasks.Base;
+using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Tasks
 {
@@ -7,7 +8,6 @@ namespace MainCore.Tasks
         IDbContextFactory<AppDbContext> contextFactory,
         IChromeBrowser browser,
         ILogger logger,
-        GetValidAccessCommand.Handler getAccessQuery,
         OpenBrowserCommand.Handler openBrowserCommand)
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
@@ -22,12 +22,18 @@ namespace MainCore.Tasks
             await browser.Shutdown();
             await Sleep(task.AccountId, cancellationToken);
 
-            var (_, isFailed, access, errors) = await getAccessQuery.HandleAsync(new(task.AccountId), cancellationToken);
+            var (_, isFailed, access, errors) = await GetAccess(task.AccountId);
             if (isFailed) return Result.Fail(errors);
             await openBrowserCommand.HandleAsync(new(task.AccountId, access), cancellationToken);
 
             task.ExecuteAt = GetNextExecuteTime(task.AccountId);
             return Result.Ok();
+        }
+
+        private async Task<Result<AccessDto>> GetAccess(AccountId accountId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            return await context.GetValidAccess(accountId);
         }
 
         private async Task<Result> Sleep(AccountId accountId, CancellationToken cancellationToken)

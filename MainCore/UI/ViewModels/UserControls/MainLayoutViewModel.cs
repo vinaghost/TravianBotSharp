@@ -1,5 +1,4 @@
-﻿using MainCore.Commands.UI.MainLayoutViewModel;
-using MainCore.UI.Models.Output;
+﻿using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,32 +16,43 @@ namespace MainCore.UI.ViewModels.UserControls
     public partial class MainLayoutViewModel : ViewModelBase
     {
         private readonly IDialogService _dialogService;
-        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
         private readonly ITaskManager _taskManager;
+        private readonly ITimerManager _timerManager;
         private readonly ILogger _logger;
-
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly SelectedItemStore _selectedItemStore;
         private readonly IRxQueue _rxQueue;
+        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
 
         private readonly AccountTabStore _accountTabStore;
+        private readonly IObservable<bool> _canExecute;
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
-        private IObservable<bool> _canExecute;
-
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory, ILogger logger, IRxQueue rxQueue)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, ILogger logger, IRxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, ITimerManager timerManager, ICustomServiceScopeFactory serviceScopeFactory)
         {
             _accountTabStore = accountTabStore;
-            _dialogService = dialogService;
             _serviceScopeFactory = serviceScopeFactory;
+            _dialogService = dialogService;
             _rxQueue = rxQueue;
             _logger = logger.ForContext<MainLayoutViewModel>();
 
             _taskManager = taskManager;
+            _timerManager = timerManager;
+            _contextFactory = contextFactory;
+            _selectedItemStore = selectedItemStore;
 
             _canExecute = this.WhenAnyValue(x => x.Accounts.IsEnable);
+            _versionHelper = LoadVersionCommand
+                .Do(version => _logger.Information("===============> Current version: {Version} <===============", version))
+                .ToProperty(this, x => x.Version);
+            Init();
+        }
 
+        private void Init()
+        {
             var accountObservable = this.WhenAnyValue(x => x.Accounts.SelectedItem);
-            accountObservable.BindTo(selectedItemStore, vm => vm.Account);
+            accountObservable.BindTo(_selectedItemStore, vm => vm.Account);
 
             accountObservable.Subscribe(x =>
             {
@@ -57,13 +67,10 @@ namespace MainCore.UI.ViewModels.UserControls
                 .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(GetStatusCommand);
 
-            _versionHelper = LoadVersionCommand
-                .Do(version => _logger.Information("===============> Current version: {Version} <===============", version))
-                .ToProperty(this, x => x.Version);
-
             LoadAccountCommand.Subscribe(Accounts.Load);
-
             GetStatusCommand.Subscribe(SetPauseText);
+
+            DeleteAccountCommand.InvokeCommand(LoadAccountCommand);
 
             Signal
                 .Merge(
@@ -74,9 +81,9 @@ namespace MainCore.UI.ViewModels.UserControls
                 )
                 .BindTo(Accounts, x => x.IsEnable);
 
-            rxQueue.RegisterCommand(StatusModifiedCommand);
+            _rxQueue.RegisterCommand(StatusModifiedCommand);
 
-            rxQueue.GetObservable<AccountsModified>()
+            _rxQueue.GetObservable<AccountsModified>()
                 .Select(x => RxVoid.Default)
                 .InvokeCommand(LoadAccountCommand);
         }
@@ -91,17 +98,18 @@ namespace MainCore.UI.ViewModels.UserControls
         private void StatusModified(StatusModified notification)
         {
             if (Accounts.SelectedItem is null) return;
+
             var (accountId, status) = notification;
 
             var account = Accounts.Items.FirstOrDefault(x => x.Id == accountId.Value);
             if (account is null) return;
+            account.Color = status.GetColor();
 
             RxSchedulers.MainThreadScheduler.Schedule(
-                state: (this, account, status),
+                state: (this, status),
                 action: static (sequencer, state) =>
                 {
-                    var (@this, account, status) = state;
-                    account.Color = status.GetColor();
+                    var (@this, status) = state;
                     @this.SetPauseText(status);
                     return EmptyDisposable.Instance;
                 });
@@ -121,7 +129,7 @@ namespace MainCore.UI.ViewModels.UserControls
             _accountTabStore.SetTabType(AccountTabType.AddAccounts);
         }
 
-        [ReactiveCommand(CanExecute = nameof(_canExecute))]
+        [ReactiveCommand(CanExecute = nameof(_canExecute), RunInBackground = true)]
         private async Task DeleteAccount()
         {
             if (Accounts.SelectedItem is null)
@@ -131,10 +139,7 @@ namespace MainCore.UI.ViewModels.UserControls
             }
 
             var accountId = new AccountId(Accounts.SelectedItem.Id);
-            using var scope = _serviceScopeFactory.CreateScope(accountId);
-
-            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
-            var status = taskManager.GetStatus(accountId);
+            var status = _taskManager.GetStatus(accountId);
             if (status != StatusEnums.Offline)
             {
                 await _dialogService.SendMessage("Warning", "Account should be offline");
@@ -144,11 +149,13 @@ namespace MainCore.UI.ViewModels.UserControls
             var result = await _dialogService.SendConfirm("Information", $"Are you sure want to delete \n {Accounts.SelectedItem.Content}");
             if (!result) return;
 
-            var deleteCommand = scope.ServiceProvider.GetRequiredService<DeleteCommand.Handler>();
-            await deleteCommand.HandleAsync(new(accountId));
+            using var context = _contextFactory.CreateDbContext();
+            context.Accounts
+                .Where(x => x.Id == accountId.Value)
+                .ExecuteDelete();
         }
 
-        [ReactiveCommand(CanExecute = nameof(_canExecute))]
+        [ReactiveCommand(CanExecute = nameof(_canExecute), RunInBackground = true)]
         private async Task Login()
         {
             if (Accounts.SelectedItem is null)
@@ -158,40 +165,49 @@ namespace MainCore.UI.ViewModels.UserControls
             }
 
             var accountId = new AccountId(Accounts.SelectedItem.Id);
-            using var scope = _serviceScopeFactory.CreateScope(accountId);
 
-            var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
-            var tribe = (TribeEnums)settingService.ByName(accountId, AccountSettingEnums.Tribe);
+            using var context = _contextFactory.CreateDbContext();
+            var tribe = (TribeEnums)context.ByName(accountId, AccountSettingEnums.Tribe);
             if (tribe == TribeEnums.Any)
             {
                 await _dialogService.SendMessage("Warning", "Choose tribe first");
                 return;
             }
 
-            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
-            if (taskManager.GetStatus(accountId) != StatusEnums.Offline)
+            if (_taskManager.GetStatus(accountId) != StatusEnums.Offline)
             {
                 await _dialogService.SendMessage("Warning", "Account should be offline");
                 return;
             }
 
-            var getAccessQuery = scope.ServiceProvider.GetRequiredService<GetValidAccessCommand.Handler>();
-            var result = await getAccessQuery.HandleAsync(new(accountId));
+            var result = await context.GetValidAccess(accountId);
             if (result.IsFailed)
             {
                 await _dialogService.SendMessage("Warning", string.Join(Environment.NewLine, result.Errors.Select(x => x.Message)));
                 return;
             }
 
-            var loginCommand = scope.ServiceProvider.GetRequiredService<LoginCommand.Handler>();
+            _taskManager.SetStatus(accountId, StatusEnums.Starting);
 
-            await Signal.Start(async () =>
+            try
             {
-                await loginCommand.HandleAsync(new(accountId, result.Value));
-            }, RxSchedulers.TaskpoolScheduler);
+                using var scope = _serviceScopeFactory.CreateScope(accountId);
+                var openBrowserCommand = scope.ServiceProvider.GetRequiredService<OpenBrowserCommand.Handler>();
+                await openBrowserCommand.HandleAsync(new(accountId, result.Value));
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.SendMessage("Error", $"Failed to open browser: {ex.Message}");
+                _taskManager.SetStatus(accountId, StatusEnums.Offline);
+                return;
+            }
+
+            _timerManager.Start(accountId);
+            _taskManager.SetStatus(accountId, StatusEnums.Online);
+            _rxQueue.Enqueue(new AccountInit(accountId));
         }
 
-        [ReactiveCommand(CanExecute = nameof(_canExecute))]
+        [ReactiveCommand(CanExecute = nameof(_canExecute), RunInBackground = true)]
         private async Task Logout()
         {
             if (Accounts.SelectedItem is null)
@@ -221,15 +237,15 @@ namespace MainCore.UI.ViewModels.UserControls
             }
 
             using var scope = _serviceScopeFactory.CreateScope(accountId);
-            var logoutCommand = scope.ServiceProvider.GetRequiredService<LogoutCommand.Handler>();
+            var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
 
-            await Signal.Start(async () =>
-            {
-                await logoutCommand.HandleAsync(new(accountId));
-            }, RxSchedulers.TaskpoolScheduler);
+            _taskManager.SetStatus(accountId, StatusEnums.Stopping);
+            await _taskManager.StopCurrentTask(accountId);
+            await browser.Shutdown();
+            _taskManager.SetStatus(accountId, StatusEnums.Offline);
         }
 
-        [ReactiveCommand(CanExecute = nameof(_canExecute))]
+        [ReactiveCommand(CanExecute = nameof(_canExecute), RunInBackground = true)]
         private async Task Pause()
         {
             if (Accounts.SelectedItem is null)
@@ -248,11 +264,7 @@ namespace MainCore.UI.ViewModels.UserControls
                     break;
 
                 case StatusEnums.Online:
-                    await Signal.Start(async () =>
-                    {
-                        await _taskManager.StopCurrentTask(accountId);
-                    }, RxSchedulers.TaskpoolScheduler);
-
+                    await _taskManager.StopCurrentTask(accountId);
                     break;
 
                 case StatusEnums.Offline:
@@ -267,7 +279,7 @@ namespace MainCore.UI.ViewModels.UserControls
             }
         }
 
-        [ReactiveCommand(CanExecute = nameof(_canExecute))]
+        [ReactiveCommand(CanExecute = nameof(_canExecute), RunInBackground = true)]
         private async Task Restart()
         {
             if (Accounts.SelectedItem is null)
@@ -302,25 +314,23 @@ namespace MainCore.UI.ViewModels.UserControls
             }
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private StatusEnums GetStatus(AccountId accountId)
         {
             if (accountId == AccountId.Empty) return StatusEnums.Starting;
             return _taskManager.GetStatus(accountId);
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private List<ListBoxItem> LoadAccount()
         {
-            using var scope = _serviceScopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
+            using var context = _contextFactory.CreateDbContext();
             var items = context.Accounts
                  .AsEnumerable()
                  .Select(x =>
                  {
                      var serverUrl = new Uri(x.Server);
-                     var status = taskManager.GetStatus(new(x.Id));
+                     var status = _taskManager.GetStatus(new(x.Id));
                      return new ListBoxItem()
                      {
                          Id = x.Id,
@@ -332,7 +342,7 @@ namespace MainCore.UI.ViewModels.UserControls
             return items;
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private static string LoadVersion()
         {
             var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version!;

@@ -1,28 +1,26 @@
-﻿using System.Net;
+﻿using MainCore.Infrasturecture.Extensions;
+using Polly;
+using Serilog.Core;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Text;
 
-namespace MainCore.Commands.Misc
+namespace MainCore.UI.ViewModels.UserControls
 {
-    [Handler]
-    public sealed partial class GetValidAccessCommand(
-        ILogger logger,
-        IDbContextFactory<AppDbContext> contextFactory)
+    public static class MainLayoutViewModelExtension
     {
-        public sealed record Command(AccountId AccountId, bool IgnoreSleepTime = false) : IAccountCommand;
-
-        private async ValueTask<Result<AccessDto>> HandleAsync(
-            Command command)
+        public static async Task<Result<AccessDto>> GetValidAccess(this AppDbContext context, AccountId accountId, bool ignoreSleepTime = false)
         {
-            var (accountId, ignoreSleepTime) = command;
-
-            using var context = contextFactory.CreateDbContext();
-
             var accesses = context.Accesses
-               .Where(x => x.AccountId == accountId.Value)
-               .OrderBy(x => x.LastUsed) // get oldest one
-               .ToDto()
-               .ToList();
+              .Where(x => x.AccountId == accountId.Value)
+              .OrderBy(x => x.LastUsed) // get oldest one
+              .ToDto()
+              .ToList();
 
-            var access = await GetValidAccess(accesses);
+            var logger = context.GetAccountLogger(accountId);
+
+            var access = await GetValidAccess(accesses, logger);
             if (access is null) return Stop.Error.WithError("All accesses not working");
 
             if (accesses.Count == 1) return access;
@@ -31,10 +29,12 @@ namespace MainCore.Commands.Misc
             var minSleep = context.ByName(accountId, AccountSettingEnums.SleepTimeMin);
             var timeValid = DateTime.Now.AddMinutes(-minSleep);
             if (access.LastUsed > timeValid) return Stop.Error.WithError("Last access is reused, it may get MH's attention");
+
+            logger.Information("Using connection {Proxy} to start chrome", access.Proxy);
             return access;
         }
 
-        private async Task<AccessDto?> GetValidAccess(List<AccessDto> proxies)
+        private async static Task<AccessDto?> GetValidAccess(List<AccessDto> proxies, ILogger logger)
         {
             foreach (var proxy in proxies)
             {
