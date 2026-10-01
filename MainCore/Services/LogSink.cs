@@ -39,11 +39,11 @@ namespace MainCore.Services
             var accountId = new AccountId(int.Parse(value!));
 
             var logs = GetLogs(accountId);
-            logs.AddFirst(logEvent);
+            logs.AddLast(logEvent);
             // keeps 200 message
             if (logs.Count > 200)
             {
-                logs.RemoveLast();
+                logs.RemoveFirst();
             }
 
             _rxQueue.Enqueue(new LogEmitted(accountId, logEvent));

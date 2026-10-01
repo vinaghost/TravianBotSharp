@@ -92,31 +92,17 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             var classess = await videoFeature.GetAttributeAsync("class") ?? "";
             if (classess.Contains("infoScreen"))
             {
-                var checkBoxDontShowAgain = page.Locator("#videoFeature div.checkbox");
+                var checkBoxDontShowAgain = page.Locator("#videoFeature label.checkbox input[name=\"preference\"]");
                 result = await browser.Click(checkBoxDontShowAgain);
                 if (result.IsFailed) return result;
 
-                var buttonWatchAds = page.Locator("#videoFeature button.green");
+                var buttonWatchAds = page.Locator("#videoFeature div.buttonWrapper button");
                 result = await browser.Click(buttonWatchAds);
                 if (result.IsFailed) return result;
             }
-
+            await Task.Delay(20_000);
             result = await browser.WaitPageChanged("dorf");
             if (result.IsFailed) return result;
-
-            await Task.Delay(Random.Shared.Next(5_000, 10_000), CancellationToken.None);
-
-            var dontShowThisAgain = page.Locator("#dontShowThisAgain");
-            if (await dontShowThisAgain.CountAsync() > 0)
-            {
-                result = await browser.Click(dontShowThisAgain);
-                if (result.IsFailed) return result;
-
-                var okButton = page.Locator("button.dialogButtonOk");
-                result = await browser.Click(okButton);
-                if (result.IsFailed) return result;
-            }
-
             return Result.Ok();
         }
 

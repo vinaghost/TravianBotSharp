@@ -78,6 +78,7 @@ namespace MainCore.Parsers
                 });
                 return result;
             }");
+
             var text = jsonResult.GetRawText();
             var rawBuildingsData = JsonSerializer.Deserialize<List<RawBuildingDto>>(text) ?? throw new InvalidOperationException($"Failed to deserialize building data from the page. Content: {text}");
 
@@ -143,7 +144,10 @@ namespace MainCore.Parsers
             foreach (var raw in rawQueueData)
             {
                 string cleanedType = (raw.TypeName ?? "").Replace(" ", "");
-                int level = int.TryParse(raw.LevelText, out int l) ? l : 0;
+
+                var levelMatch = LevelExtractor().Match(raw.LevelText ?? "");
+                int level = levelMatch.Success && int.TryParse(levelMatch.Value, out var l) ? l : 0;
+
                 int durationSeconds = int.TryParse(raw.DurationText, out int d) ? d : 0;
 
                 extractedData.Add(new QueueBuildingDto
@@ -179,5 +183,8 @@ namespace MainCore.Parsers
 
         [GeneratedRegex(@"vid_(\d+)")]
         private static partial Regex TribeExtractor();
+
+        [GeneratedRegex(@"\d+")]
+        private static partial Regex LevelExtractor();
     }
 }

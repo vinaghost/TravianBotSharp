@@ -192,6 +192,7 @@ namespace MainCore.Services
             try
             {
                 await _mainPage.WaitForURLAsync(new Regex(url, RegexOptions.IgnoreCase));
+                await _mainPage.WaitForLoadStateAsync();
                 await _mainPage.Locator("#logo").WaitForAsync();
                 return Result.Ok();
             }

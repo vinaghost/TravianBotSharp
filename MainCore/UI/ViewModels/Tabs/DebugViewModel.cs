@@ -67,9 +67,9 @@ namespace MainCore.UI.ViewModels.Tabs
                 }
             });
 
-            LoadLogCommand.BindTo(this, vm => vm.Logs);
-            ReloadLogCommand.BindTo(this, vm => vm.Logs);
-            LoadEndpointAddressCommand.BindTo(this, vm => vm.EndpointAddress);
+            LoadLogCommand.ObserveOn(RxSchedulers.MainThreadScheduler).BindTo(this, vm => vm.Logs);
+            ReloadLogCommand.ObserveOn(RxSchedulers.MainThreadScheduler).BindTo(this, vm => vm.Logs);
+            LoadEndpointAddressCommand.ObserveOn(RxSchedulers.MainThreadScheduler).BindTo(this, vm => vm.EndpointAddress);
 
             rxQueue.GetObservable<LogEmitted>()
                 .InvokeCommand(LogEmittedCommand);
