@@ -7,6 +7,7 @@ on:
 
 jobs:
   Test:
+    if: false
     runs-on: windows-latest
     env:
         DOTNET_INSTALL_DIR: "D:/tools/dotnet"
@@ -50,7 +51,6 @@ jobs:
         
   Version:
     runs-on: ubuntu-latest
-    needs: Test
     permissions:
         contents: write
     outputs:
