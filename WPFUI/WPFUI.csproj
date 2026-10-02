@@ -16,6 +16,10 @@
     <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <PlaywrightPlatform>win</PlaywrightPlatform>
+  </PropertyGroup>
+
   <ItemGroup>
     <Resource Include="Resources\**" />
   </ItemGroup>

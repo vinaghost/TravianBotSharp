@@ -12,6 +12,10 @@
 
     <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <PlaywrightPlatform>win</PlaywrightPlatform>
+  </PropertyGroup>
   <!--<PropertyGroup>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <GeneratedFolder>Generated</GeneratedFolder>
