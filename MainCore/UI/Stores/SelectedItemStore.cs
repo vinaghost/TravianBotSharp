@@ -3,6 +3,8 @@ using MainCore.UI.ViewModels.Abstract;
 
 namespace MainCore.UI.Stores
 {
+    using ReactiveUI.Primitives;
+
     [RegisterSingleton<SelectedItemStore>]
     public partial class SelectedItemStore : ViewModelBase
     {

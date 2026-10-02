@@ -1,10 +1,12 @@
 ﻿using MainCore.UI.ViewModels.UserControls;
 using ReactiveUI;
-using System.Reactive.Disposables.Fluent;
+
 using System.Windows;
 
 namespace WPFUI.Views.UserControls
 {
+    using ReactiveUI.Primitives;
+
     public class TroopSelectorUcBase : ReactiveUserControl<TroopSelectorViewModel>
     {
     }

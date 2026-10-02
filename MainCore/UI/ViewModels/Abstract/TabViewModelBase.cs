@@ -1,5 +1,7 @@
 ﻿namespace MainCore.UI.ViewModels.Abstract
 {
+    using ReactiveUI.Primitives;
+
     public abstract partial class TabViewModelBase : ViewModelBase
     {
         [Reactive]
@@ -8,7 +10,7 @@
         protected TabViewModelBase()
         {
             this.WhenAnyValue(x => x.IsActive)
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(ActivationCommand);
         }
 
