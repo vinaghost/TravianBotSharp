@@ -51,4 +51,8 @@
     <Using Include="Shouldly" />
     <Using Include="NSubstitute" />    
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="HtmlFiles\*.html" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
