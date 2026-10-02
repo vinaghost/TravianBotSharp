@@ -89,13 +89,17 @@ namespace MainCore.UI.ViewModels.UserControls
 
             if (string.IsNullOrEmpty(access.ProxyUsername))
             {
+#pragma warning disable S5332 // Clear-text protocols should not be used
                 _proxyWithoutAuth.Address = new Uri($"http://{access.ProxyHost}:{access.ProxyPort}");
+#pragma warning restore S5332 // Clear-text protocols should not be used
                 return _proxyWithoutAuthHttpClient;
             }
 
             _networkCredential.UserName = access.ProxyUsername;
             _networkCredential.Password = access.ProxyPassword;
+#pragma warning disable S5332 // Clear-text protocols should not be used
             _proxyWithAuth.Address = new Uri($"http://{access.ProxyHost}:{access.ProxyPort}");
+#pragma warning restore S5332 // Clear-text protocols should not be used
             return _proxyWithAuthHttpClient;
         }
     }

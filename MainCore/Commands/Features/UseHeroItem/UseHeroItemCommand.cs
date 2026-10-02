@@ -1,16 +1,11 @@
 ﻿namespace MainCore.Commands.Features.UseHeroItem
 {
     [Handler]
-    public static partial class UseHeroItemCommand
+    public sealed partial class UseHeroItemCommand(IChromeBrowser browser, ILogger logger)
     {
         public sealed record Command(Dictionary<HeroItemEnums, long> ItemToUse) : ICommand;
 
-        private static async ValueTask<Result> HandleAsync(
-            Command command,
-            IChromeBrowser browser,
-            ILogger logger,
-            IDelayService delayService,
-            CancellationToken cancellationToken)
+        private async ValueTask<Result> HandleAsync(Command command)
         {
             var itemToUse = command.ItemToUse;
             Result result;
