@@ -34,12 +34,6 @@
             <StackPanel>
                 <Border Style="{DynamicResource Box}">
                     <StackPanel>
-                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Account information" VerticalAlignment="Center" FontWeight="Bold" />
-                        <uc:TribeSelectorUc x:Name="Tribes" Text="Tribe" />
-                    </StackPanel>
-                </Border>
-                <Border Style="{DynamicResource Box}">
-                    <StackPanel>
                         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Activity settings" VerticalAlignment="Center" FontWeight="Bold" />
                         <uc:RangeInputUc x:Name="WorkTime" Text="Work time" Unit="minutes" />
                         <uc:RangeInputUc x:Name="SleepTime" Text="Sleep time" Unit="minutes" />

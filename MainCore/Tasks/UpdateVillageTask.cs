@@ -1,17 +1,16 @@
-﻿using MainCore.Commands.NextExecute;
-using MainCore.Tasks.Base;
+﻿using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
-    public static partial class UpdateVillageTask
+    public sealed partial class UpdateVillageTask(
+        IChromeBrowser browser,
+        UpdateBuildingCommand.Handler updateBuildingCommand,
+        ToDorfCommand.Handler toDorfCommand,
+        IDbContextFactory<AppDbContext> contextFactory)
     {
-        public sealed class Task : VillageTask
+        public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            public Task(AccountId accountId, VillageId villageId) : base(accountId, villageId)
-            {
-            }
-
             protected override string TaskName => "Update village";
 
             public override bool CanStart(AppDbContext context)
@@ -23,13 +22,7 @@ namespace MainCore.Tasks
             }
         }
 
-        private static async ValueTask<Result> HandleAsync(
-            Task task,
-            IChromeBrowser browser,
-            UpdateBuildingCommand.Handler updateBuildingCommand,
-            ToDorfCommand.Handler toDorfCommand,
-            NextExecuteUpdateVillageTaskCommand.Handler nextExecuteUpdateVillageTaskCommand,
-            CancellationToken cancellationToken)
+        private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
             var url = browser.CurrentUrl;
             Result result;
@@ -62,8 +55,20 @@ namespace MainCore.Tasks
                 if (isFailed) return Result.Fail(errors);
             }
 
-            await nextExecuteUpdateVillageTaskCommand.HandleAsync(new(task), cancellationToken);
+            task.ExecuteAt = GetNextExecuteTime(task.VillageId);
             return Result.Ok();
+        }
+
+        private DateTime GetNextExecuteTime(VillageId villageId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var seconds = context.ByName(
+                villageId,
+                VillageSettingEnums.AutoRefreshMin,
+                VillageSettingEnums.AutoRefreshMax,
+                60);
+            var nextExecute = DateTime.Now.AddSeconds(seconds);
+            return nextExecute;
         }
     }
 }

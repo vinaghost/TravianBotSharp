@@ -1,31 +1,38 @@
-﻿using MainCore.Commands.UI.AddAccountsViewModel;
-using MainCore.UI.Models.Output;
-using MainCore.UI.ViewModels.Abstract;
+﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Signals;
+
     [RegisterSingleton<AddAccountsViewModel>]
     public partial class AddAccountsViewModel : TabViewModelBase
     {
         private readonly IDialogService _dialogService;
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
-        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly IRxQueue _rxQueue;
         public ObservableCollection<AccountDetailDto> Accounts { get; } = [];
 
         [Reactive]
         private string _input = "";
 
-        public AddAccountsViewModel(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IServiceScopeFactory serviceScopeFactory)
+        public AddAccountsViewModel(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, IRxQueue rxQueue)
         {
             _dialogService = dialogService;
             _waitingOverlayViewModel = waitingOverlayViewModel;
-            _serviceScopeFactory = serviceScopeFactory;
+            _contextFactory = contextFactory;
+            _rxQueue = rxQueue;
 
+            Init();
+        }
+
+        private void Init()
+        {
             this.WhenAnyValue(x => x.Input)
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(ParseCommand);
 
             ParseCommand.Subscribe(UpdateTable);
@@ -48,21 +55,20 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task AddAccount()
         {
-            await _waitingOverlayViewModel.Show("adding accounts");
-
-            using var scope = _serviceScopeFactory.CreateScope();
-            var addAccountsCommand = scope.ServiceProvider.GetRequiredService<AddAccountsCommand.Handler>();
-            var resultInput = await addAccountsCommand.HandleAsync(new([.. Accounts.Select(x => x.ToDto())]));
-
-            await _waitingOverlayViewModel.Hide();
-
-            if (resultInput.IsFailed)
+            var dtos = FilterDuplicated([.. Accounts]);
+            if (dtos.Count == 0)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", resultInput.Errors[0].Message));
+                await _dialogService.SendMessage("Information", "All accounts are duplicated");
                 return;
             }
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added accounts"));
+
+            await _waitingOverlayViewModel.Show("adding accounts");
+            await Signal.Start(() => UpdateDatabase(dtos), RxSchedulers.TaskpoolScheduler);
+
+            _rxQueue.Enqueue(new AccountsModified());
             await _waitingOverlayViewModel.Hide();
+
+            await _dialogService.SendMessage("Information", $"Added accounts");
         }
 
         [ReactiveCommand]
@@ -114,6 +120,46 @@ namespace MainCore.UI.ViewModels.Tabs
                 7 => AccountDetailDto.Create(strAccount[1], serverUrl, strAccount[2], strAccount[3], int.Parse(strAccount[4]), strAccount[5], strAccount[6]),
                 _ => null,
             };
+        }
+
+        private List<AccountDto> FilterDuplicated(List<AccountDetailDto> dtos)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var existAccounts = context.Accounts
+                .Select(x => new
+                {
+                    x.Username,
+                    x.Server,
+                })
+                .ToList();
+
+            return [.. dtos
+                .Select(x => x.ToDto())
+                .Where(dto => !existAccounts.Exists(x => x.Username == dto.Username && x.Server == dto.Server))];
+        }
+
+        private void UpdateDatabase(List<AccountDto> dtos)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var accounts = dtos
+                .Select(x => x.ToEntity());
+
+            foreach (var account in accounts)
+            {
+                account.Settings = [];
+                foreach (var (setting, value) in AppDbContext.AccountDefaultSettings)
+                {
+                    account.Settings.Add(new AccountSetting
+                    {
+                        Setting = setting,
+                        Value = value,
+                    });
+                }
+                context.Add(account);
+            }
+
+            context.SaveChanges();
         }
     }
 }
