@@ -2,6 +2,8 @@
 
 namespace MainCore.UI.ViewModels.Abstract
 {
+    using ReactiveUI.Primitives;
+
     public abstract partial class VillageTabViewModelBase : TabViewModelBase
     {
         protected readonly SelectedItemStore _selectedItemStore;
@@ -29,7 +31,7 @@ namespace MainCore.UI.ViewModels.Abstract
             _villageIdHelper = villageIdObservable.ToProperty(this, vm => vm.VillageId);
 
             villageIdObservable
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(VillageChangedCommand);
         }
 
