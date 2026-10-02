@@ -6,10 +6,6 @@ namespace MainCore.UI.Models.Validators
     {
         public VillageSettingInputValidator()
         {
-            RuleFor(x => x.Tribe.SelectedItem.Tribe)
-                .NotEqual(TribeEnums.Any)
-                .WithMessage("Tribe should be specific");
-
             RuleFor(x => x.TrainTroopRepeatTime.Min)
                 .LessThanOrEqualTo(x => x.TrainTroopRepeatTime.Max)
                 .WithMessage("Minimum next train troop ({PropertyValue}) should be less than maximum next train troop ({ComparisonValue})");
