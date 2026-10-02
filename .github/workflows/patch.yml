@@ -72,6 +72,7 @@ jobs:
           name: TBS-${{needs.version.outputs.version}}
           path: WPFUI\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish\
           if-no-files-found: error
+          include-hidden-files: true
                   
   Release:
     runs-on: ubuntu-latest
