@@ -23,9 +23,22 @@
             if (result.IsFailed) return result;
 
             UpdateToDatabase(villageId, dtoBuilding, dtoQueueBuilding, tribe);
-
-            rxQueue.Enqueue(new BuildingsModified(villageId));
+            Trigger(villageId);
             return Result.Ok();
+        }
+
+        private void Trigger(VillageId villageId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var accountId = context.Villages
+                .Where(x => x.Id == villageId.Value)
+                .Select(x => new AccountId(x.AccountId))
+                .FirstOrDefault();
+
+            if (accountId != AccountId.Empty)
+            {
+                rxQueue.Enqueue(new BuildingsModified(accountId, villageId));
+            }
         }
 
         private static async Task<List<BuildingDto>> GetBuildings(string url, IPage page)

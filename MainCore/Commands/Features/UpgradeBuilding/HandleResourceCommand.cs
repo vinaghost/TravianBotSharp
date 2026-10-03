@@ -27,7 +27,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             if (result.HasError<LackOfFreeCrop>())
             {
-                await AddCropland(villageId);
+                await AddCropland(accountId, villageId);
                 return result;
             }
 
@@ -82,7 +82,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return resource;
         }
 
-        private async Task AddCropland(VillageId villageId)
+        private async Task AddCropland(AccountId accountId, VillageId villageId)
         {
             using var context = contextFactory.CreateDbContext();
             var buildings = context.GetLayoutBuildings(villageId, true);
@@ -100,7 +100,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             };
 
             context.AddJob(villageId, cropLandPlan, true);
-            rxQueue.Enqueue(new JobsModified(villageId));
+            rxQueue.Enqueue(new JobsModified(accountId, villageId));
         }
 
         private Result IsEnoughResource(VillageId villageId, long[] resource)

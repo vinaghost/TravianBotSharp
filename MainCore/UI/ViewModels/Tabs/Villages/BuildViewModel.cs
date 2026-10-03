@@ -55,17 +55,17 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             LoadBuildNormalCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(SetNormalBuildInput);
 
             var jobsChanged = Signal.Merge(
-                BuildNormalCommand.Select(_ => new JobsModified(VillageId)),
-                BuildResourceCommand.Select(_ => new JobsModified(VillageId)),
-                UpgradeOneLevelCommand.Select(_ => new JobsModified(VillageId)),
-                UpgradeMaxLevelCommand.Select(_ => new JobsModified(VillageId)),
-                UpCommand.Select(_ => new JobsModified(VillageId)),
-                DownCommand.Select(_ => new JobsModified(VillageId)),
-                TopCommand.Select(_ => new JobsModified(VillageId)),
-                BottomCommand.Select(_ => new JobsModified(VillageId)),
-                DeleteCommand.Select(_ => new JobsModified(VillageId)),
-                DeleteAllCommand.Select(_ => new JobsModified(VillageId)),
-                ImportCommand.Select(_ => new JobsModified(VillageId))
+                BuildNormalCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                BuildResourceCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                UpgradeOneLevelCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                UpgradeMaxLevelCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                UpCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                DownCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                TopCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                BottomCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                DeleteCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                DeleteAllCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                ImportCommand.Select(_ => new JobsModified(AccountId, VillageId))
             );
 
             jobsChanged.InvokeCommand(JobsModifiedCommand);
@@ -91,6 +91,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         [ReactiveCommand(RunInBackground = true)]
         public async Task BuildingsModified(BuildingsModified notification)
         {
+            if (notification.AccountId != AccountId) return;
+
             using var context = _contextFactory.CreateDbContext();
             var task = new CompleteImmediatelyTask.Task(AccountId, notification.VillageId);
             if (task.CanStart(context) && !_taskManager.IsExist<CompleteImmediatelyTask.Task>(AccountId, notification.VillageId))
@@ -108,6 +110,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         [ReactiveCommand(RunInBackground = true)]
         public async Task JobsModified(JobsModified notification)
         {
+            if (notification.AccountId != AccountId) return;
+
             _taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(AccountId, notification.VillageId));
 
             if (!IsActive) return;

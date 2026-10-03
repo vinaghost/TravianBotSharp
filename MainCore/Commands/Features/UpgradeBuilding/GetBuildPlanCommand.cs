@@ -39,7 +39,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     {
                         context.AddJob(villageId, normalBuildPlan, true);
                     }
-                    rxQueue.Enqueue(new JobsModified(villageId));
+                    rxQueue.Enqueue(new JobsModified(accountId, villageId));
                     continue;
                 }
 
@@ -63,7 +63,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     {
                         context.DeleteJobById(job.Id);
                     }
-                    rxQueue.Enqueue(new JobsModified(villageId));
+                    rxQueue.Enqueue(new JobsModified(accountId, villageId));
                     continue;
                 }
 
