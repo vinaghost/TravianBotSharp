@@ -52,7 +52,7 @@ namespace MainCore.UI.ViewModels.UserControls
         private void Init()
         {
             var accountObservable = this.WhenAnyValue(x => x.Accounts.SelectedItem);
-            accountObservable.BindTo(_selectedItemStore, vm => vm.Account);
+            accountObservable.Subscribe(_selectedItemStore.SetAccount);
 
             accountObservable.Subscribe(x =>
             {
@@ -67,7 +67,9 @@ namespace MainCore.UI.ViewModels.UserControls
                 .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(GetStatusCommand);
 
-            LoadAccountCommand.Subscribe(Accounts.Load);
+            LoadAccountCommand
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
+                .Subscribe(Accounts.Load);
             GetStatusCommand.Subscribe(SetPauseText);
 
             DeleteAccountCommand.InvokeCommand(LoadAccountCommand);

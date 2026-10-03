@@ -4,10 +4,13 @@ using MainCore.UI.ViewModels.Abstract;
 namespace MainCore.UI.Stores
 {
     using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Signals;
 
     [RegisterSingleton<SelectedItemStore>]
     public partial class SelectedItemStore : ViewModelBase
     {
+        private int? _lastAccountId;
+
         public SelectedItemStore()
         {
             var accountObservable = this.WhenAnyValue(vm => vm.Account);
@@ -26,6 +29,42 @@ namespace MainCore.UI.Stores
             _isVillageNotSelectedHelper = villageObservable
                 .Select(x => x is null)
                 .ToProperty(this, vm => vm.IsVillageNotSelected);
+
+            AccountChanges = accountObservable;
+            VillageChanges = villageObservable;
+            VillageInvalidated = villageObservable
+                .Where(x => x is null)
+                .Select(_ => RxVoid.Default);
+        }
+
+        public IObservable<ListBoxItem?> AccountChanges { get; }
+
+        public IObservable<ListBoxItem?> VillageChanges { get; }
+
+        public IObservable<RxVoid> VillageInvalidated { get; }
+
+        public void SetAccount(ListBoxItem? account)
+        {
+            var newAccountId = account?.Id;
+            if (_lastAccountId != newAccountId)
+            {
+                _lastAccountId = newAccountId;
+                Account = account;
+                ClearVillage();
+                return;
+            }
+
+            Account = account;
+        }
+
+        public void SetVillage(ListBoxItem? village)
+        {
+            Village = village;
+        }
+
+        public void ClearVillage()
+        {
+            Village = null;
         }
 
         [Reactive]

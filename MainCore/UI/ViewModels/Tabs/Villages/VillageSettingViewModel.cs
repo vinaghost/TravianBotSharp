@@ -35,9 +35,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await LoadSettingCommand.Execute(villageId);
         }
 
-        protected override async Task Load(VillageId villageId)
+        protected override async Task Load(AccountId accountId, VillageId villageId)
         {
             await LoadSettingCommand.Execute(villageId);
+        }
+
+        protected override Task OnContextInvalidated(AccountId accountId)
+        {
+            VillageSettingInput.Set([]);
+            return Task.CompletedTask;
         }
 
         [ReactiveCommand(RunInBackground = true)]

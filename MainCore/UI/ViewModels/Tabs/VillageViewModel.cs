@@ -1,4 +1,5 @@
 ﻿using MainCore.UI.Models.Output;
+using MainCore.UI.Services;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
@@ -6,12 +7,15 @@ using MainCore.UI.ViewModels.UserControls;
 namespace MainCore.UI.ViewModels.Tabs
 {
     using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Disposables;
     using ReactiveUI.Primitives.Extensions;
+    using ReactiveUI.Primitives.Concurrency;
 
     [RegisterSingleton<VillageViewModel>]
     public partial class VillageViewModel : AccountTabViewModelBase
     {
         private readonly VillageTabStore _villageTabStore;
+        private readonly VillageContextCoordinator _villageContextCoordinator;
         private readonly IDialogService _dialogService;
         private readonly ITaskManager _taskManager;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
@@ -20,9 +24,10 @@ namespace MainCore.UI.ViewModels.Tabs
 
         public VillageTabStore VillageTabStore => _villageTabStore;
 
-        public VillageViewModel(VillageTabStore villageTabStore, IDialogService dialogService, IRxQueue rxQueue, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
+        public VillageViewModel(VillageTabStore villageTabStore, VillageContextCoordinator villageContextCoordinator, IDialogService dialogService, IRxQueue rxQueue, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
         {
             _villageTabStore = villageTabStore;
+            _villageContextCoordinator = villageContextCoordinator;
             _dialogService = dialogService;
             _rxQueue = rxQueue;
             _taskManager = taskManager;
@@ -34,20 +39,11 @@ namespace MainCore.UI.ViewModels.Tabs
         private void Init()
         {
             var villageObservable = this.WhenAnyValue(x => x.Villages.SelectedItem);
-            villageObservable.BindTo(_selectedItemStore, vm => vm.Village);
-            villageObservable.Subscribe(x =>
-            {
-                if (x is null)
-                {
-                    _villageTabStore.SetTabType(VillageTabType.NoVillage);
-                }
-                else
-                {
-                    _villageTabStore.SetTabType(VillageTabType.Normal);
-                }
-            });
+            villageObservable.Subscribe(x => _villageContextCoordinator.SetVillageSelection(AccountId, x));
 
-            LoadVillageCommand.Subscribe(Villages.Load);
+            LoadVillageCommand
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
+                .Subscribe(Villages.Load);
 
             _rxQueue.GetObservable<VillagesModified>()
                 .InvokeCommand(VillagesModifiedCommand);
@@ -70,7 +66,17 @@ namespace MainCore.UI.ViewModels.Tabs
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadVillageCommand.Execute(accountId).ToHotTask();
+            var villages = await LoadVillageCommand.Execute(accountId).ToHotTask();
+            var selectedVillage = _villageContextCoordinator.ResolveAndApply(accountId, villages);
+
+            RxSchedulers.MainThreadScheduler.Schedule(
+                state: (this, selectedVillage),
+                action: static (sequencer, state) =>
+                {
+                    var (@this, selectedVillage) = state;
+                    @this.Villages.SelectedItem = selectedVillage;
+                    return EmptyDisposable.Instance;
+                });
         }
 
         [ReactiveCommand(RunInBackground = true)]

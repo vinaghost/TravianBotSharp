@@ -3,6 +3,9 @@ using MainCore.UI.ViewModels.Tabs.Villages;
 
 namespace MainCore.UI.Stores
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Extensions;
+
     [RegisterSingleton<VillageTabStore>]
     public partial class VillageTabStore : ViewModelBase
     {
@@ -20,12 +23,18 @@ namespace MainCore.UI.Stores
         private readonly BuildViewModel _buildViewModel;
         private readonly InfoViewModel _infoViewModel;
 
-        public VillageTabStore(NoVillageViewModel noVillageViewModel, InfoViewModel infoViewModel, BuildViewModel buildViewModel, VillageSettingViewModel villageSettingViewModel)
+        public VillageTabStore(NoVillageViewModel noVillageViewModel, InfoViewModel infoViewModel, BuildViewModel buildViewModel, VillageSettingViewModel villageSettingViewModel, SelectedItemStore selectedItemStore)
         {
             _noVillageViewModel = noVillageViewModel;
             _buildViewModel = buildViewModel;
             _infoViewModel = infoViewModel;
             _villageSettingViewModel = villageSettingViewModel;
+
+            selectedItemStore.VillageChanges.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(village =>
+            {
+                var tabType = village is null ? VillageTabType.NoVillage : VillageTabType.Normal;
+                SetTabType(tabType);
+            });
         }
 
         public void SetTabType(VillageTabType tabType)

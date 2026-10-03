@@ -118,11 +118,20 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await LoadBuildingCommand.Execute(notification.VillageId).ToHotTask();
         }
 
-        protected override async Task Load(VillageId villageId)
+        protected override async Task Load(AccountId accountId, VillageId villageId)
         {
             await LoadJobCommand.Execute(villageId).ToHotTask();
             await LoadBuildingCommand.Execute(villageId).ToHotTask();
             await LoadQueueCommand.Execute(villageId).ToHotTask();
+        }
+
+        protected override Task OnContextInvalidated(AccountId accountId)
+        {
+            Buildings.Load([]);
+            Jobs.Load([]);
+            Queue.Load([]);
+            NormalBuildInput.Clear();
+            return Task.CompletedTask;
         }
 
         [ReactiveCommand(RunInBackground = true)]
