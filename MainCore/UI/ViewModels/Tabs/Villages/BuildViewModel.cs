@@ -176,6 +176,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             using var context = _contextFactory.CreateDbContext();
             var items = context.QueueBuildings
                  .Where(x => x.VillageId == villageId.Value)
+                 .OrderBy(x => x.CompleteTime)
                  .AsEnumerable()
                  .Select(x => new ListBoxItem()
                  {
