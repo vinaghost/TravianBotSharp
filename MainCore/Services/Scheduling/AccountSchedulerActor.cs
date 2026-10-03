@@ -36,7 +36,7 @@ namespace MainCore.Services.Scheduling
 
             if (first)
             {
-                var firstTask = _queue.Tasks.FirstOrDefault();
+                var firstTask = _queue.Tasks.OrderBy(x => x.ExecuteAt).FirstOrDefault();
                 if (firstTask is not null)
                 {
                     oldTask.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
@@ -94,7 +94,7 @@ namespace MainCore.Services.Scheduling
         {
             if (first)
             {
-                var firstTask = _queue.Tasks.FirstOrDefault();
+                var firstTask = _queue.Tasks.OrderBy(x => x.ExecuteAt).FirstOrDefault();
                 if (firstTask is not null)
                 {
                     task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
