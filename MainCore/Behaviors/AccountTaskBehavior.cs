@@ -22,7 +22,11 @@ namespace MainCore.Behaviors
                 var isLoginPage = await LoginParser.IsLoginPage(browser.CurrentPage);
                 if (!isLoginPage)
                 {
-                    return (TResponse)Stop.Error.WithError("Travian is not ingame nor login page. Please check browser");
+                    var result = await browser.Wait(LoginParser.GetServerTime(browser.CurrentPage));
+                    if (result.IsFailed) return (TResponse)Stop.Error.WithError("Travian is not ingame nor login page. Please check browser");
+
+                    await updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
+                    await updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
                 }
 
                 if (request is not LoginTask.Task)
