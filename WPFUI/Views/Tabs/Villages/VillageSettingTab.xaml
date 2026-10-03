@@ -62,13 +62,6 @@
                         <uc:ResourceInputUc x:Name="AutoNPCRatio" Text="Ratio" />
                     </StackPanel>
                 </Border>
-
-                <Border Style="{DynamicResource Box}">
-                    <StackPanel>
-                        <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Village information" VerticalAlignment="Center" FontWeight="Bold" />
-                        <uc:TribeSelectorUc x:Name="Tribes" Text="Tribe" />
-                    </StackPanel>
-                </Border>
                 <Border Style="{DynamicResource Box}">
                     <StackPanel>
                         <TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Feature settings" VerticalAlignment="Center" FontWeight="Bold" />

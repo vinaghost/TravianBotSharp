@@ -4,28 +4,21 @@ using MainCore.Tasks.Base;
 namespace MainCore.Tasks
 {
     [Handler]
-    public static partial class UpgradeBuildingTask
+    public sealed partial class UpgradeBuildingTask(
+        ILogger logger,
+        IChromeBrowser browser,
+        GetBuildPlanCommand.Handler getBuildPlanCommand,
+        ToBuildPageCommand.Handler toBuildPageCommand,
+        HandleResourceCommand.Handler handleResourceCommand,
+        HandleUpgradeCommand.Handler handleUpgradeCommand,
+        UpdateBuildingCommand.Handler updateBuildingCommand)
     {
-        public sealed class Task : VillageTask
+        public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            public Task(AccountId accountId, VillageId villageId) : base(accountId, villageId)
-            {
-            }
-
             protected override string TaskName => "Upgrade building";
         }
 
-        private static async ValueTask<Result> HandleAsync(
-            Task task,
-            ILogger logger,
-            IChromeBrowser browser,
-            GetBuildPlanCommand.Handler getBuildPlanCommand,
-            ToBuildPageCommand.Handler toBuildPageCommand,
-            HandleResourceCommand.Handler handleResourceCommand,
-            AddCroplandCommand.Handler addCroplandCommand,
-            HandleUpgradeCommand.Handler handleUpgradeCommand,
-            UpdateBuildingCommand.Handler updateBuildingCommand,
-            CancellationToken cancellationToken)
+        private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
             Result result;
 
@@ -39,7 +32,7 @@ namespace MainCore.Tasks
                     var nextExecuteErrors = errors.OfType<NextExecuteError>().OrderBy(x => x.NextExecute).ToList();
                     if (nextExecuteErrors.Count > 0)
                     {
-                        task.ExecuteAt = nextExecuteErrors.Select(x => x.NextExecute).Min();
+                        task.ExecuteAt = nextExecuteErrors.Min(x => x.NextExecute);
                     }
 
                     return Skip.Error.WithErrors(errors);
@@ -54,10 +47,7 @@ namespace MainCore.Tasks
                 if (result.IsFailed)
                 {
                     if (result.HasError<LackOfFreeCrop>())
-                    {
-                        await addCroplandCommand.HandleAsync(new(task.VillageId), cancellationToken);
                         continue;
-                    }
 
                     if (result.HasError<StorageLimit>())
                     {
@@ -65,7 +55,7 @@ namespace MainCore.Tasks
                     }
                     if (result.HasError<MissingResource>())
                     {
-                        var time = UpgradeParser.GetTimeWhenEnoughResource(browser.Html, plan.Type);
+                        var time = await UpgradeParser.GetTimeWhenEnoughResource(browser.CurrentPage, plan.Type);
                         task.ExecuteAt = DateTime.Now.Add(time);
                         return Skip.Error.WithErrors(result.Errors);
                     }
