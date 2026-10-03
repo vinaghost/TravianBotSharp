@@ -26,8 +26,6 @@ namespace MainCore.Services.Scheduling
 
         void Remove<T>(AccountId accountId, VillageId villageId) where T : VillageTask;
 
-        void ReOrder(AccountId accountId);
-
         void SetStatus(AccountId accountId, StatusEnums status);
     }
 }

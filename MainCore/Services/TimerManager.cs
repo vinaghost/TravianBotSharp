@@ -73,7 +73,7 @@ namespace MainCore.Services
 
             var status = taskQueue.Status;
             if (status != StatusEnums.Online) return;
-            var tasks = taskQueue.Tasks;
+            var tasks = taskQueue.Tasks.OrderBy(x => x.ExecuteAt).ToList();
             if (tasks.Count == 0) return;
             var task = tasks[0];
 
@@ -162,7 +162,6 @@ namespace MainCore.Services
                         }
                         else
                         {
-                            _taskManager.ReOrder(accountId);
                             logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                         }
                     }
@@ -179,7 +178,6 @@ namespace MainCore.Services
                     }
                     else
                     {
-                        _taskManager.ReOrder(accountId);
                         logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     }
                 }

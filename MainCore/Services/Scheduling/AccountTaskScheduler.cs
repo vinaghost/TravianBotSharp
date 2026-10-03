@@ -51,12 +51,6 @@ namespace MainCore.Services.Scheduling
             actor.Remove<T>(villageId);
         }
 
-        public void ReOrder(AccountId accountId)
-        {
-            var actor = GetActor(accountId);
-            actor.ReOrder();
-        }
-
         public void Clear(AccountId accountId)
         {
             var actor = GetActor(accountId);

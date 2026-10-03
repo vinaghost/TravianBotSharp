@@ -35,14 +35,11 @@ namespace MainCore.Services.Scheduling
             }
 
             oldTask.ExecuteAt = task.ExecuteAt;
-            UpdateTask(oldTask, first);
         }
 
         public void Remove(BaseTask task)
         {
-            if (!_queue.Tasks.Remove(task)) return;
-
-            ReOrderInternal();
+            _queue.Tasks.Remove(task);
         }
 
         public void Remove<T>() where T : AccountTask
@@ -51,7 +48,6 @@ namespace MainCore.Services.Scheduling
             if (task is null) return;
 
             _queue.Tasks.Remove(task);
-            ReOrderInternal();
         }
 
         public void Remove<T>(VillageId villageId) where T : VillageTask
@@ -60,12 +56,6 @@ namespace MainCore.Services.Scheduling
             if (task is null) return;
 
             _queue.Tasks.Remove(task);
-            ReOrderInternal();
-        }
-
-        public void ReOrder()
-        {
-            ReOrderInternal();
         }
 
         public void Clear()
@@ -101,30 +91,6 @@ namespace MainCore.Services.Scheduling
             {
                 rxQueue.Enqueue(new VillageTaskAdded(villageTask));
             }
-
-            ReOrderInternal();
-        }
-
-        private void UpdateTask(AccountTask task, bool first)
-        {
-            if (first)
-            {
-                var firstTask = _queue.Tasks.FirstOrDefault();
-                if (firstTask is not null)
-                {
-                    task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
-                }
-            }
-
-            ReOrderInternal();
-        }
-
-        private void ReOrderInternal()
-        {
-            rxQueue.Enqueue(new TasksModified(accountId));
-            if (_queue.Tasks.Count <= 1) return;
-
-            _queue.Tasks.Sort((x, y) => DateTime.Compare(x.ExecuteAt, y.ExecuteAt));
         }
     }
 }

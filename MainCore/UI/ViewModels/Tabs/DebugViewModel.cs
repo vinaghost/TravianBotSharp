@@ -98,6 +98,7 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             var tasks = _taskManager
                .GetTaskList(accountId)
+               .OrderBy(x => x.ExecuteAt)
                .Select(x => new TaskItem(x))
                .ToList();
             return tasks;

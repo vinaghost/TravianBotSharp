@@ -15,8 +15,10 @@ namespace MainCore.Behaviors
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
-
+            var cacheExecuteAt = request.ExecuteAt;
             var isIngamePage = await LoginParser.IsIngamePage(browser.CurrentPage);
+            request.ExecuteAt = cacheExecuteAt;
+
             if (!isIngamePage)
             {
                 var isLoginPage = await LoginParser.IsLoginPage(browser.CurrentPage);
