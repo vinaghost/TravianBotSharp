@@ -8,6 +8,9 @@ using System.Text;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Signals;
+
     [RegisterSingleton<DebugViewModel>]
     public partial class DebugViewModel : AccountTabViewModelBase
     {
@@ -29,44 +32,18 @@ namespace MainCore.UI.ViewModels.Tabs
             _logSink = logSink;
             _taskManager = taskManager;
 
-            LoadTaskCommand.Subscribe(items =>
+            LoadTaskCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(items =>
             {
-                if (Tasks.Count == 0)
+                Tasks.Clear();
+                foreach (var input in items)
                 {
-                    foreach (var input in items)
-                    {
-                        Tasks.Add(input);
-                    }
-                    return;
-                }
-
-                if (items.Count == 0)
-                {
-                    Tasks.Clear();
-                    return;
-                }
-
-                for (var i = 0; i < items.Count; i++)
-                {
-                    var item = items[i];
-                    if (i > Tasks.Count - 1)
-                    {
-                        Tasks.Add(item);
-                        continue;
-                    }
-
-                    Tasks[i].CopyFrom(item);
-                }
-
-                while (Tasks.Count > items.Count)
-                {
-                    Tasks.RemoveAt(Tasks.Count - 1);
+                    Tasks.Add(input);
                 }
             });
 
-            LoadLogCommand.BindTo(this, vm => vm.Logs);
-            ReloadLogCommand.BindTo(this, vm => vm.Logs);
-            LoadEndpointAddressCommand.BindTo(this, vm => vm.EndpointAddress);
+            LoadLogCommand.ObserveOn(RxSchedulers.MainThreadScheduler).BindTo(this, vm => vm.Logs);
+            ReloadLogCommand.ObserveOn(RxSchedulers.MainThreadScheduler).BindTo(this, vm => vm.Logs);
+            LoadEndpointAddressCommand.ObserveOn(RxSchedulers.MainThreadScheduler).BindTo(this, vm => vm.EndpointAddress);
 
             rxQueue.GetObservable<LogEmitted>()
                 .InvokeCommand(LogEmittedCommand);
@@ -76,16 +53,16 @@ namespace MainCore.UI.ViewModels.Tabs
 
             LogEmittedCommand
                 .Where(x => x)
-                .Select(_ => Unit.Default)
-                .Throttle(TimeSpan.FromMilliseconds(100), RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .Select(_ => RxVoid.Default)
+                .Throttle(TimeSpan.FromMilliseconds(100), RxSchedulers.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(ReloadLogCommand);
 
             TasksModifiedCommand
                 .Where(x => x)
                 .Select(_ => AccountId)
-                .Throttle(TimeSpan.FromMilliseconds(100), RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .Throttle(TimeSpan.FromMilliseconds(100), RxSchedulers.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(LoadTaskCommand);
         }
 
@@ -96,7 +73,7 @@ namespace MainCore.UI.ViewModels.Tabs
             var (accountId, logEvent) = notification;
             if (accountId != AccountId) return false;
 
-            _logEvents.AddFirst(logEvent);
+            _logEvents.AddLast(logEvent);
             return true;
         }
 
@@ -130,12 +107,16 @@ namespace MainCore.UI.ViewModels.Tabs
         private string LoadLog(AccountId accountId)
         {
             var logs = _logSink.GetLogs(accountId);
-            using var sw = new StringWriter(new StringBuilder());
             _logEvents.Clear();
             foreach (var log in logs)
             {
-                _template.Format(log, sw);
-                _logEvents.AddFirst(log);
+                _logEvents.AddLast(log);
+            }
+
+            using var sw = new StringWriter(new StringBuilder());
+            for (var node = _logEvents.Last; node != null; node = node.Previous)
+            {
+                _template.Format(node.Value, sw);
             }
             return sw.ToString();
         }
@@ -144,9 +125,9 @@ namespace MainCore.UI.ViewModels.Tabs
         private string ReloadLog()
         {
             using var sw = new StringWriter(new StringBuilder());
-            foreach (var log in _logEvents)
+            for (var node = _logEvents.Last; node != null; node = node.Previous)
             {
-                _template.Format(log, sw);
+                _template.Format(node.Value, sw);
             }
             return sw.ToString();
         }
