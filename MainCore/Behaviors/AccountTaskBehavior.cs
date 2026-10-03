@@ -2,58 +2,56 @@
 
 namespace MainCore.Behaviors
 {
-    public sealed class AccountTaskBehavior<TRequest, TResponse>
+    public sealed class AccountTaskBehavior<TRequest, TResponse>(
+        IChromeBrowser browser,
+        ITaskManager taskManager,
+        UpdateAccountInfoCommand.Handler updateAccountInfoCommand,
+        UpdateVillageListCommand.Handler updateVillageListCommand,
+        UpdateAdventureCommand.Handler updateAdventureCommand)
             : Behavior<TRequest, TResponse>
                 where TRequest : AccountTask
                 where TResponse : Result
     {
-        private readonly ITaskManager _taskManager;
-        private readonly IChromeBrowser _browser;
-
-        private readonly UpdateAccountInfoCommand.Handler _updateAccountInfoCommand;
-        private readonly UpdateVillageListCommand.Handler _updateVillageListCommand;
-        private readonly UpdateAdventureCommand.Handler _updateAdventureCommand;
-
-        public AccountTaskBehavior(IChromeBrowser browser, ITaskManager taskManager, UpdateAccountInfoCommand.Handler updateAccountInfoCommand, UpdateVillageListCommand.Handler updateVillageListCommand, UpdateAdventureCommand.Handler updateAdventureCommand)
-        {
-            _browser = browser;
-            _taskManager = taskManager;
-            _updateAccountInfoCommand = updateAccountInfoCommand;
-            _updateVillageListCommand = updateVillageListCommand;
-            _updateAdventureCommand = updateAdventureCommand;
-        }
-
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
             var accountId = request.AccountId;
-            if (!LoginParser.IsIngamePage(_browser.Html))
+            var cacheExecuteAt = request.ExecuteAt;
+            var isIngamePage = await LoginParser.IsIngamePage(browser.CurrentPage);
+            request.ExecuteAt = cacheExecuteAt;
+
+            if (!isIngamePage)
             {
-                if (!LoginParser.IsLoginPage(_browser.Html))
+                var isLoginPage = await LoginParser.IsLoginPage(browser.CurrentPage);
+                if (!isLoginPage)
                 {
-                    return (TResponse)Stop.Error.WithError("Travian is not ingame nor login page. Please check browser");
+                    var result = await browser.Wait(LoginParser.GetServerTime(browser.CurrentPage));
+                    if (result.IsFailed) return (TResponse)Stop.Error.WithError("Travian is not ingame nor login page. Please check browser");
+
+                    await updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
+                    await updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
                 }
 
                 if (request is not LoginTask.Task)
                 {
-                    _taskManager.AddOrUpdate<LoginTask.Task>(new(accountId), first: true);
+                    taskManager.AddOrUpdate<LoginTask.Task>(new(accountId), first: true);
                     request.ExecuteAt = request.ExecuteAt.AddSeconds(1);
                     return (TResponse)Skip.Error.WithError("Account is logout. Re-login now");
                 }
             }
-
-            if (LoginParser.IsIngamePage(_browser.Html))
+            else
             {
-                await _updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
-                await _updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
+                await updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
+                await updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
             }
 
             var response = await Next(request, cancellationToken);
 
-            if (LoginParser.IsIngamePage(_browser.Html))
+            isIngamePage = await LoginParser.IsIngamePage(browser.CurrentPage);
+            if (isIngamePage)
             {
-                await _updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
-                await _updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
-                await _updateAdventureCommand.HandleAsync(new(accountId), cancellationToken);
+                await updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
+                await updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
+                await updateAdventureCommand.HandleAsync(new(accountId), cancellationToken);
             }
 
             return response;

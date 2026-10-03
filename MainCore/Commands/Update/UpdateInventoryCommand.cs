@@ -1,84 +1,21 @@
 ﻿namespace MainCore.Commands.Update
 {
     [Handler]
-    public static partial class UpdateInventoryCommand
+    public sealed partial class UpdateInventoryCommand(
+        IChromeBrowser browser,
+        IDbContextFactory<AppDbContext> contextFactory)
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        private static async ValueTask HandleAsync(
-            Command command,
-            IChromeBrowser browser,
-            AppDbContext context
-            )
+        private async ValueTask HandleAsync(Command command)
         {
-            await Task.CompletedTask;
-
-            var dtos = GetItems(browser.Html).ToList();
-            context.Update(command.AccountId, dtos);
+            var dtos = await InventoryParser.GetItems(browser.CurrentPage);
+            Update(command.AccountId, dtos);
         }
 
-        private static IEnumerable<HeroItemDto> GetItems(HtmlDocument doc)
+        private void Update(AccountId accountId, List<HeroItemDto> dtos)
         {
-            var heroItemsDiv = doc.DocumentNode.Descendants("div").FirstOrDefault(x => x.HasClass("heroItems"));
-            if (heroItemsDiv is null) yield break;
-            var heroItemDivs = heroItemsDiv.Descendants("div").Where(x => x.HasClass("heroItem") && !x.HasClass("empty"));
-            if (!heroItemDivs.Any()) yield break;
-
-            foreach (var itemSlot in heroItemDivs)
-            {
-                if (itemSlot.ChildNodes.Count < 2) continue;
-                var itemNode = itemSlot.ChildNodes[1];
-                var classes = itemNode.GetClasses();
-                if (classes.Count() < 2) continue;
-
-                var itemValue = classes.ElementAt(1);
-                if (itemValue is null) continue;
-
-                var item = (HeroItemEnums)itemValue.ParseInt();
-
-                if (item == HeroItemEnums.None) continue;
-
-                if (!itemSlot.GetAttributeValue("data-tier", "").Contains("consumable"))
-                {
-                    yield return new HeroItemDto()
-                    {
-                        Type = item,
-                        Amount = 1,
-                    };
-                    continue;
-                }
-
-                if (itemSlot.ChildNodes.Count < 3)
-                {
-                    yield return new HeroItemDto()
-                    {
-                        Type = item,
-                        Amount = 1,
-                    };
-                    continue;
-                }
-                var amountNode = itemSlot.ChildNodes[2];
-
-                var amount = amountNode.InnerText.ParseInt();
-                if (amount == 0)
-                {
-                    yield return new HeroItemDto()
-                    {
-                        Type = item,
-                        Amount = 1,
-                    };
-                    continue;
-                }
-                yield return new HeroItemDto()
-                {
-                    Type = item,
-                    Amount = amount,
-                };
-            }
-        }
-
-        private static void Update(this AppDbContext context, AccountId accountId, List<HeroItemDto> dtos)
-        {
+            using var context = contextFactory.CreateDbContext();
             var items = context.HeroItems
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();

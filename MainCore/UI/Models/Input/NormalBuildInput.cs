@@ -1,25 +1,30 @@
-﻿using DynamicData;
-using Humanizer;
+﻿using Humanizer;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using System.Collections.ObjectModel;
 
 namespace MainCore.UI.Models.Input
 {
+    using ReactiveUI.Primitives;
+
     public partial class NormalBuildInput : ViewModelBase
     {
         public NormalBuildInput()
         {
             this.WhenAnyValue(vm => vm.SelectedBuilding)
                 .WhereNotNull()
-                .Subscribe((x) => Level = x.Content.GetMaxLevel());
+                .Select(x => x.Content)
+                .Subscribe((x) => Level = x.GetMaxLevel());
         }
 
         public void Set(List<BuildingEnums> buildings, int level = -1)
         {
             Buildings.Clear();
             var comboboxItems = buildings.Select(x => new ComboBoxItem<BuildingEnums>(x, x.Humanize())).ToList();
-            Buildings.AddRange(comboboxItems);
+            foreach (var item in comboboxItems)
+            {
+                Buildings.Add(item);
+            }
 
             if (comboboxItems.Count > 0)
             {
