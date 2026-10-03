@@ -1,5 +1,4 @@
-﻿using DynamicData;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 
 namespace MainCore.UI.Models.Input
 {
@@ -18,7 +17,10 @@ namespace MainCore.UI.Models.Input
         public void SetAccesses(IEnumerable<AccessInput> accesses)
         {
             Accesses.Clear();
-            Accesses.AddRange(accesses);
+            foreach (var access in accesses)
+            {
+                Accesses.Add(access);
+            }
         }
 
         public void Clear()

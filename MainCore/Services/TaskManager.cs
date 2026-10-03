@@ -1,18 +1,16 @@
 ﻿using MainCore.Tasks.Base;
+using MainCore.Services.Scheduling;
+using System.Collections.Concurrent;
 
 namespace MainCore.Services
 {
     [RegisterSingleton<ITaskManager, TaskManager>]
-    public sealed class TaskManager : ITaskManager
+    public sealed class TaskManager(
+        IRxQueue rxQueue,
+        IDbContextFactory<AppDbContext> contextFactory,
+        ILogger logger) : ITaskManager
     {
-        private readonly Dictionary<AccountId, TaskQueue> _queues = new();
-
-        private readonly IRxQueue _rxQueue;
-
-        public TaskManager(IRxQueue rxQueue)
-        {
-            _rxQueue = rxQueue;
-        }
+        private readonly ConcurrentDictionary<AccountId, AccountSchedulerActor> _actors = [];
 
         public BaseTask? GetCurrentTask(AccountId accountId)
         {
@@ -38,29 +36,24 @@ namespace MainCore.Services
 
         public void AddOrUpdate<T>(T task, bool first = false) where T : AccountTask
         {
-            var oldTask = Get<T>(task.AccountId, task.Key);
-            if (oldTask is null)
+            if (!ValidateTaskOwnership(task))
             {
-                Add<T>(task, first);
+                return;
             }
-            else
-            {
-                oldTask.ExecuteAt = task.ExecuteAt;
-                Update(oldTask, first);
-            }
+
+            var actor = GetActor(task.AccountId);
+            actor.AddOrUpdate(task, first);
         }
 
         public void Add<T>(T task, bool first = false) where T : AccountTask
         {
-            AddTask(task, first);
-        }
+            if (!ValidateTaskOwnership(task))
+            {
+                return;
+            }
 
-        private T? Get<T>(AccountId accountId, string key) where T : BaseTask
-        {
-            var task = GetTaskList(accountId)
-                .OfType<T>()
-                .FirstOrDefault(x => x.Key == key);
-            return task;
+            var actor = GetActor(task.AccountId);
+            actor.Add(task, first);
         }
 
         public bool IsExist<T>(AccountId accountId) where T : BaseTask
@@ -77,133 +70,94 @@ namespace MainCore.Services
             return tasks.Any(x => x.Key == $"{accountId}-{villageId}");
         }
 
-        private void AddTask(AccountTask task, bool first)
-        {
-            var tasks = GetTaskList(task.AccountId);
-
-            if (first)
-            {
-                var firstTask = tasks.FirstOrDefault();
-                if (firstTask is not null && firstTask.ExecuteAt < task.ExecuteAt)
-                {
-                    task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
-                }
-            }
-
-            tasks.Add(task);
-            if (task is VillageTask villageTask)
-            {
-                _rxQueue.Enqueue(new VillageTaskAdded(villageTask));
-            }
-            ReOrder(task.AccountId, tasks);
-        }
-
-        private void Update(AccountTask task, bool first)
-        {
-            var tasks = GetTaskList(task.AccountId);
-
-            if (first)
-            {
-                var firstTask = tasks.FirstOrDefault();
-                if (firstTask is not null && firstTask.ExecuteAt < task.ExecuteAt)
-                {
-                    task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
-                }
-            }
-            ReOrder(task.AccountId, tasks);
-        }
-
         public void Remove(AccountId accountId, BaseTask task)
         {
-            var tasks = GetTaskList(accountId);
-            if (tasks.Remove(task))
-            {
-                ReOrder(accountId, tasks);
-            }
+            var actor = GetActor(accountId);
+            actor.Remove(task);
         }
 
         public void Remove<T>(AccountId accountId) where T : AccountTask
         {
-            var tasks = GetTaskList(accountId);
-            var task = tasks.OfType<T>().FirstOrDefault(x => x.AccountId == accountId);
-            if (task is null) return;
-            tasks.Remove(task);
-            ReOrder(accountId, tasks);
+            var actor = GetActor(accountId);
+            actor.Remove<T>();
         }
 
         public void Remove<T>(AccountId accountId, VillageId villageId) where T : VillageTask
         {
-            var tasks = GetTaskList(accountId);
-            var task = tasks.OfType<T>().FirstOrDefault(x => x.AccountId == accountId && x.VillageId == villageId);
-            if (task is null) return;
-            tasks.Remove(task);
-            ReOrder(accountId, tasks);
-        }
-
-        public void ReOrder(AccountId accountId)
-        {
-            var tasks = GetTaskList(accountId);
-            ReOrder(accountId, tasks);
+            var actor = GetActor(accountId);
+            actor.Remove<T>(villageId);
         }
 
         public void Clear(AccountId accountId)
         {
-            var tasks = GetTaskList(accountId);
-            if (tasks.Count == 0) return;
-            tasks.Clear();
-            _rxQueue.Enqueue(new TasksModified(accountId));
-        }
-
-        private void ReOrder(AccountId accountId, List<BaseTask> tasks)
-        {
-            _rxQueue.Enqueue(new TasksModified(accountId));
-            if (tasks.Count <= 1) return;
-            tasks.Sort((x, y) => DateTime.Compare(x.ExecuteAt, y.ExecuteAt));
+            var actor = GetActor(accountId);
+            actor.Clear();
         }
 
         public List<BaseTask> GetTaskList(AccountId accountId)
         {
-            var queue = GetTaskQueue(accountId);
-            return queue.Tasks;
+            var actor = GetActor(accountId);
+            return actor.GetTaskList();
         }
 
         public StatusEnums GetStatus(AccountId accountId)
         {
-            var queue = GetTaskQueue(accountId);
-            return queue.Status;
+            var actor = GetActor(accountId);
+            return actor.GetStatus();
         }
 
         public void SetStatus(AccountId accountId, StatusEnums status)
         {
-            var queue = GetTaskQueue(accountId);
-            queue.Status = status;
-            _rxQueue.Enqueue(new StatusModified(accountId, status));
+            var actor = GetActor(accountId);
+            actor.SetStatus(status);
         }
 
         private CancellationTokenSource? GetCancellationTokenSource(AccountId accountId)
         {
-            var queue = GetTaskQueue(accountId);
-            return queue.CancellationTokenSource;
+            var actor = GetActor(accountId);
+            return actor.GetCancellationTokenSource();
         }
 
         public bool IsExecuting(AccountId accountId)
         {
-            var queue = GetTaskQueue(accountId);
-            return queue.IsExecuting;
+            var actor = GetActor(accountId);
+            return actor.IsExecuting();
         }
 
         public TaskQueue GetTaskQueue(AccountId accountId)
         {
-            if (_queues.ContainsKey(accountId))
+            var actor = GetActor(accountId);
+            return actor.GetQueue();
+        }
+
+        private AccountSchedulerActor GetActor(AccountId accountId)
+        {
+            return _actors.GetOrAdd(accountId, static (id, state) => new AccountSchedulerActor(id, state), rxQueue);
+        }
+
+        private bool ValidateTaskOwnership(AccountTask task)
+        {
+            if (task.AccountId == AccountId.Empty)
             {
-                return _queues[accountId];
+                var reason = $"Rejected {task.GetType().Name}: AccountId is empty";
+                logger.Warning("{Reason}", reason);
+                return false;
             }
-            else
+
+            if (task is VillageTask villageTask)
             {
-                var queue = new TaskQueue();
-                _queues.Add(accountId, queue);
-                return queue;
+                using var context = contextFactory.CreateDbContext();
+                var villageBelongToAccount = context.Villages
+                    .Any(x => x.Id == villageTask.VillageId.Value && x.AccountId == task.AccountId.Value);
+
+                if (!villageBelongToAccount)
+                {
+                    var reason = $"Rejected {task.GetType().Name}: village {villageTask.VillageId.Value} does not belong to account {task.AccountId.Value}";
+                    logger.Warning("{Reason}", reason);
+                    return false;
+                }
             }
+            return true;
         }
     }
 

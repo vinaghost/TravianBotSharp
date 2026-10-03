@@ -1,41 +1,19 @@
 ﻿namespace MainCore.Commands.Update
 {
     [Handler]
-    public static partial class UpdateAccountInfoCommand
+    public sealed partial class UpdateAccountInfoCommand(
+        IChromeBrowser browser,
+        IDbContextFactory<AppDbContext> contextFactory)
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        private static async ValueTask HandleAsync(
-            Command command,
-            IChromeBrowser browser,
-            AppDbContext context
-            )
+        private async ValueTask HandleAsync(Command command)
         {
-            await Task.CompletedTask;
-
-            var dto = Get(browser.Html);
-            context.UpdateToDatabase(command.AccountId, dto);
-        }
-
-        private static AccountInfoDto Get(HtmlDocument doc)
-        {
-            var gold = InfoParser.GetGold(doc);
-            var silver = InfoParser.GetSilver(doc);
-            var hasPlusAccount = InfoParser.HasPlusAccount(doc);
-
-            return new AccountInfoDto
-            {
-                Gold = gold,
-                Silver = silver,
-                HasPlusAccount = hasPlusAccount,
-                Tribe = TribeEnums.Any,
-            };
-        }
-
-        private static void UpdateToDatabase(this AppDbContext context, AccountId accountId, AccountInfoDto dto)
-        {
+            var accountId = command.AccountId;
+            var dto = await InfoParser.GetAccountInfo(browser.CurrentPage);
+            using var context = contextFactory.CreateDbContext();
             var dbAccountInfo = context.AccountsInfo
-                .FirstOrDefault(x => x.AccountId == accountId.Value);
+               .FirstOrDefault(x => x.AccountId == accountId.Value);
 
             if (dbAccountInfo is null)
             {
