@@ -47,6 +47,10 @@ namespace MainCore.Tasks
 
             result = await browser.WaitPageChanged("tasks");
             if (result.IsFailed) return result;
+
+            var randomQuest = browser.CurrentPage.Locator("#tasks .taskOverview .task .taskImage");
+            result = await browser.Wait(randomQuest.First);
+            if (result.IsFailed) return result;
             return Result.Ok();
         }
 
