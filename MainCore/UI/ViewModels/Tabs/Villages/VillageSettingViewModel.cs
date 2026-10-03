@@ -40,10 +40,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await LoadSettingCommand.Execute(villageId);
         }
 
-        protected override Task OnContextInvalidated(AccountId accountId)
+        protected override async Task OnContextInvalidated(AccountId accountId)
         {
-            VillageSettingInput.Set([]);
-            return Task.CompletedTask;
+            await Signal.Start(() => VillageSettingInput.Set([]), RxSchedulers.MainThreadScheduler);
         }
 
         [ReactiveCommand(RunInBackground = true)]
