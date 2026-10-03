@@ -34,7 +34,22 @@ namespace MainCore.Services.Scheduling
                 return;
             }
 
-            oldTask.ExecuteAt = task.ExecuteAt;
+            if (first)
+            {
+                var firstTask = _queue.Tasks.FirstOrDefault();
+                if (firstTask is not null)
+                {
+                    oldTask.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
+                }
+                else
+                {
+                    oldTask.ExecuteAt = task.ExecuteAt;
+                }
+            }
+            else
+            {
+                oldTask.ExecuteAt = task.ExecuteAt;
+            }
         }
 
         public void Remove(BaseTask task)
