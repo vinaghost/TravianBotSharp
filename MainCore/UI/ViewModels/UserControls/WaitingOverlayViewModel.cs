@@ -1,5 +1,7 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
 using Microsoft.Extensions.DependencyInjection;
+using ReactiveUI.Primitives.Concurrency;
+using ReactiveUI.Primitives.Disposables;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
@@ -15,36 +17,49 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public async Task Show(string message)
         {
-            await Observable.Start(() =>
-            {
-                Message = message;
-                Shown = true;
-            }, RxApp.MainThreadScheduler);
+            RxSchedulers.MainThreadScheduler.Schedule(
+                state: (this, message),
+                action: static (sequencer, state) =>
+                {
+                    var (@this, msg) = state;
+                    @this.Message = msg;
+                    return EmptyDisposable.Instance;
+                });
         }
 
         public async Task Show()
         {
-            await Observable.Start(() =>
-            {
-                Shown = true;
-            }, RxApp.MainThreadScheduler);
+            RxSchedulers.MainThreadScheduler.Schedule(
+                state: this,
+                action: static (sequencer, @this) =>
+                {
+                    @this.Shown = true;
+                    return EmptyDisposable.Instance;
+                });
         }
 
         public async Task Hide()
         {
-            await Observable.Start(() =>
-            {
-                Shown = false;
-                Message = "is initializing";
-            }, RxApp.MainThreadScheduler);
+            RxSchedulers.MainThreadScheduler.Schedule(
+                state: this,
+                action: static (sequencer, @this) =>
+                {
+                    @this.Shown = false;
+                    @this.Message = "is initializing";
+                    return EmptyDisposable.Instance;
+                });
         }
 
         public async Task ChangeMessage(string message)
         {
-            await Observable.Start(() =>
-            {
-                Message = message;
-            }, RxApp.MainThreadScheduler);
+            RxSchedulers.MainThreadScheduler.Schedule(
+                state: (this, message),
+                action: static (sequencer, state) =>
+                {
+                    var (@this, msg) = state;
+                    @this.Message = msg;
+                    return EmptyDisposable.Instance;
+                });
         }
 
         [Reactive]
