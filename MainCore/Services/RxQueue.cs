@@ -1,9 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace MainCore.Services
+﻿namespace MainCore.Services
 {
     using ReactiveUI.Primitives;
-    using ReactiveUI.Primitives.Concurrency;
     using ReactiveUI.Primitives.Signals;
 
     [RegisterSingleton<IRxQueue, RxQueue>]
@@ -12,12 +9,15 @@ namespace MainCore.Services
         private readonly Signal<INotification> _notifications = new Signal<INotification>();
         private readonly ConnectableSignal<INotification> _connectableObservable;
 
-        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly ITaskManager _taskManager;
 
-        public RxQueue(ICustomServiceScopeFactory serviceScopeFactory)
+        public RxQueue(ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
         {
-            _serviceScopeFactory = serviceScopeFactory;
-            _connectableObservable = _notifications.ObserveOn(Sequencer.Default).Publish();
+            _taskManager = taskManager;
+            _contextFactory = contextFactory;
+
+            _connectableObservable = _notifications.ObserveOn(RxSchedulers.TaskpoolScheduler).Publish();
             _connectableObservable.Connect();
         }
 
@@ -35,21 +35,21 @@ namespace MainCore.Services
         private void AccountInitHandler(AccountInit notification)
         {
             var accountId = notification.AccountId;
-            using var scope = _serviceScopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
+            using var context = _contextFactory.CreateDbContext();
 
-            taskManager.Add(new LoginTask.Task(accountId), first: true);
+            _taskManager.Add(new LoginTask.Task(accountId), first: true);
 
             var workTime = context.ByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
-            var sleepTask = new SleepTask.Task(accountId);
-            sleepTask.ExecuteAt = DateTime.Now.AddMinutes(workTime);
-            taskManager.AddOrUpdate<SleepTask.Task>(sleepTask);
+            var sleepTask = new SleepTask.Task(accountId)
+            {
+                ExecuteAt = DateTime.Now.AddMinutes(workTime)
+            };
+            _taskManager.AddOrUpdate(sleepTask);
 
             var startAdventureTask = new StartAdventureTask.Task(accountId);
-            if (startAdventureTask.CanStart(context) && !taskManager.IsExist<StartAdventureTask.Task>(accountId))
+            if (startAdventureTask.CanStart(context) && !_taskManager.IsExist<StartAdventureTask.Task>(accountId))
             {
-                taskManager.Add(startAdventureTask);
+                _taskManager.Add(startAdventureTask);
             }
             var villages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
@@ -58,14 +58,14 @@ namespace MainCore.Services
             foreach (var village in villages)
             {
                 var updateVillageTask = new UpdateVillageTask.Task(accountId, village);
-                if (updateVillageTask.CanStart(context) && !taskManager.IsExist<UpdateVillageTask.Task>(accountId, village))
+                if (updateVillageTask.CanStart(context) && !_taskManager.IsExist<UpdateVillageTask.Task>(accountId, village))
                 {
-                    taskManager.Add(updateVillageTask);
+                    _taskManager.Add(updateVillageTask);
                 }
                 var trainTroopTask = new TrainTroopTask.Task(accountId, village);
-                if (trainTroopTask.CanStart(context) && !taskManager.IsExist<TrainTroopTask.Task>(accountId, village))
+                if (trainTroopTask.CanStart(context) && !_taskManager.IsExist<TrainTroopTask.Task>(accountId, village))
                 {
-                    taskManager.Add(trainTroopTask);
+                    _taskManager.Add(trainTroopTask);
                 }
             }
             var hasBuildJobVillages = context.Villages
@@ -73,12 +73,13 @@ namespace MainCore.Services
                 .Where(x => x.Jobs.Any(x => _jobTypes.Contains(x.Type)))
                 .Select(x => new VillageId(x.Id))
                 .ToList();
+
             foreach (var village in hasBuildJobVillages)
             {
                 var upgradeBuildingTask = new UpgradeBuildingTask.Task(accountId, village);
-                if (!taskManager.IsExist<UpgradeBuildingTask.Task>(accountId, village))
+                if (!_taskManager.IsExist<UpgradeBuildingTask.Task>(accountId, village))
                 {
-                    taskManager.Add(upgradeBuildingTask);
+                    _taskManager.Add(upgradeBuildingTask);
                 }
             }
         }
@@ -90,8 +91,7 @@ namespace MainCore.Services
 
         private void VillageTaskAddedHandler(VillageTaskAdded notification)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
             notification.Task.SetVillageName(context);
         }
 

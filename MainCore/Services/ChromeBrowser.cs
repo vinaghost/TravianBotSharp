@@ -192,7 +192,7 @@ namespace MainCore.Services
                 const int timeout = 180_000; // 3 minutes in milliseconds
                 await _mainPage.WaitForURLAsync(new Regex(url, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1)), new() { Timeout = timeout });
                 await _mainPage.WaitForLoadStateAsync();
-                await _mainPage.Locator("#logo").WaitForAsync(new() { Timeout = timeout });
+                await LoginParser.GetServerTime(_mainPage).WaitForAsync(new() { Timeout = timeout });
                 return Result.Ok();
             }
             catch (TimeoutException ex)
