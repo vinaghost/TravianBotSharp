@@ -128,13 +128,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await LoadQueueCommand.Execute(villageId);
         }
 
-        protected override Task OnContextInvalidated(AccountId accountId)
+        protected override async Task OnContextInvalidated(AccountId accountId)
         {
-            Buildings.Load([]);
-            Jobs.Load([]);
-            Queue.Load([]);
-            NormalBuildInput.Clear();
-            return Task.CompletedTask;
+            await Signal.Start(() =>
+            {
+                Buildings.Load([]);
+                Jobs.Load([]);
+                Queue.Load([]);
+                NormalBuildInput.Clear();
+            }, RxSchedulers.MainThreadScheduler);
         }
 
         [ReactiveCommand(RunInBackground = true)]
