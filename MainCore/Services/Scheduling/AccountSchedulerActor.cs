@@ -90,7 +90,7 @@ namespace MainCore.Services.Scheduling
             if (first)
             {
                 var firstTask = _queue.Tasks.FirstOrDefault();
-                if (firstTask is not null && firstTask.ExecuteAt < task.ExecuteAt)
+                if (firstTask is not null)
                 {
                     task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
                 }
@@ -110,7 +110,7 @@ namespace MainCore.Services.Scheduling
             if (first)
             {
                 var firstTask = _queue.Tasks.FirstOrDefault();
-                if (firstTask is not null && firstTask.ExecuteAt < task.ExecuteAt)
+                if (firstTask is not null)
                 {
                     task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
                 }
