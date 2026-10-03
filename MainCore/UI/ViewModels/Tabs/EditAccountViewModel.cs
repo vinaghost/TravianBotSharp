@@ -5,7 +5,7 @@ using MainCore.UI.ViewModels.UserControls;
 namespace MainCore.UI.ViewModels.Tabs
 {
     using ReactiveUI.Primitives;
-    using ReactiveUI.Primitives.Extensions;
+    using ReactiveUI.Primitives.Signals;
 
     [RegisterSingleton<EditAccountViewModel>]
     public partial class EditAccountViewModel : AccountTabViewModelBase
@@ -47,7 +47,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadAccountCommand.Execute(accountId).ToHotTask();
+            await LoadAccountCommand.Execute(accountId);
         }
 
         [ReactiveCommand]

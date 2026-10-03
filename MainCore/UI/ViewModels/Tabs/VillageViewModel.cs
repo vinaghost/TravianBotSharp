@@ -7,9 +7,10 @@ using MainCore.UI.ViewModels.UserControls;
 namespace MainCore.UI.ViewModels.Tabs
 {
     using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Concurrency;
     using ReactiveUI.Primitives.Disposables;
     using ReactiveUI.Primitives.Extensions;
-    using ReactiveUI.Primitives.Concurrency;
+    using ReactiveUI.Primitives.Signals;
 
     [RegisterSingleton<VillageViewModel>]
     public partial class VillageViewModel : AccountTabViewModelBase
@@ -66,7 +67,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         protected override async Task Load(AccountId accountId)
         {
-            var villages = await LoadVillageCommand.Execute(accountId).ToHotTask();
+            var villages = await LoadVillageCommand.Execute(accountId);
             var selectedVillage = _villageContextCoordinator.ResolveAndApply(accountId, villages);
 
             RxSchedulers.MainThreadScheduler.Schedule(

@@ -6,7 +6,6 @@ using System.Text.Json;
 namespace MainCore.UI.ViewModels.Tabs
 {
     using ReactiveUI.Primitives;
-    using ReactiveUI.Primitives.Extensions;
     using ReactiveUI.Primitives.Signals;
 
     [RegisterSingleton<AccountSettingViewModel>]
@@ -31,7 +30,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadSettingsCommand.Execute(accountId).ToHotTask();
+            await LoadSettingsCommand.Execute(accountId);
         }
 
         [ReactiveCommand(RunInBackground = true)]

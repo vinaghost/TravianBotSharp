@@ -9,7 +9,7 @@ using System.Text;
 namespace MainCore.UI.ViewModels.Tabs
 {
     using ReactiveUI.Primitives;
-    using ReactiveUI.Primitives.Extensions;
+    using ReactiveUI.Primitives.Signals;
 
     [RegisterSingleton<DebugViewModel>]
     public partial class DebugViewModel : AccountTabViewModelBase
@@ -32,38 +32,12 @@ namespace MainCore.UI.ViewModels.Tabs
             _logSink = logSink;
             _taskManager = taskManager;
 
-            LoadTaskCommand.Subscribe(items =>
+            LoadTaskCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(items =>
             {
-                if (Tasks.Count == 0)
+                Tasks.Clear();
+                foreach (var input in items)
                 {
-                    foreach (var input in items)
-                    {
-                        Tasks.Add(input);
-                    }
-                    return;
-                }
-
-                if (items.Count == 0)
-                {
-                    Tasks.Clear();
-                    return;
-                }
-
-                for (var i = 0; i < items.Count; i++)
-                {
-                    var item = items[i];
-                    if (i > Tasks.Count - 1)
-                    {
-                        Tasks.Add(item);
-                        continue;
-                    }
-
-                    Tasks[i].CopyFrom(item);
-                }
-
-                while (Tasks.Count > items.Count)
-                {
-                    Tasks.RemoveAt(Tasks.Count - 1);
+                    Tasks.Add(input);
                 }
             });
 
@@ -114,9 +88,9 @@ namespace MainCore.UI.ViewModels.Tabs
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadTaskCommand.Execute(accountId).ToHotTask();
-            await LoadLogCommand.Execute(accountId).ToHotTask();
-            await LoadEndpointAddressCommand.Execute(accountId).ToHotTask();
+            await LoadTaskCommand.Execute(accountId);
+            await LoadLogCommand.Execute(accountId);
+            await LoadEndpointAddressCommand.Execute(accountId);
         }
 
         [ReactiveCommand]

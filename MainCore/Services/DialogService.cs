@@ -1,6 +1,6 @@
 ﻿using MainCore.UI.Models.Output;
 using ReactiveUI.Primitives;
-using ReactiveUI.Primitives.Extensions;
+using ReactiveUI.Primitives.Signals;
 
 namespace MainCore.Services
 {
@@ -23,23 +23,23 @@ namespace MainCore.Services
         public async Task SendMessage(string title, string message)
         {
             var messageBoxData = new MessageBoxData(title, message);
-            await MessageBox.Handle(messageBoxData).ToHotTask();
+            await MessageBox.Handle(messageBoxData);
         }
 
         public async Task<bool> SendConfirm(string title, string message)
         {
             var messageBoxData = new MessageBoxData(title, message);
-            return await ConfirmBox.Handle(messageBoxData).ToHotTask();
+            return await ConfirmBox.Handle(messageBoxData);
         }
 
         public async Task<string> OpenFileDialog()
         {
-            return await FileOpenDialog.Handle(RxVoid.Default).ToHotTask();
+            return await FileOpenDialog.Handle(RxVoid.Default);
         }
 
         public async Task<string> SaveFileDialog()
         {
-            return await FileSaveDialog.Handle(RxVoid.Default).ToHotTask();
+            return await FileSaveDialog.Handle(RxVoid.Default);
         }
     }
 }

@@ -4,7 +4,6 @@ using MainCore.UI.ViewModels.Abstract;
 namespace MainCore.UI.Stores
 {
     using ReactiveUI.Primitives;
-    using ReactiveUI.Primitives.Signals;
 
     [RegisterSingleton<SelectedItemStore>]
     public partial class SelectedItemStore : ViewModelBase

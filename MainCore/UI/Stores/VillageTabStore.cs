@@ -4,7 +4,6 @@ using MainCore.UI.ViewModels.Tabs.Villages;
 namespace MainCore.UI.Stores
 {
     using ReactiveUI.Primitives;
-    using ReactiveUI.Primitives.Extensions;
 
     [RegisterSingleton<VillageTabStore>]
     public partial class VillageTabStore : ViewModelBase

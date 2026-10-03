@@ -9,7 +9,6 @@ namespace WPFUI.Views
 {
     using ReactiveUI;
     using ReactiveUI.Primitives;
-    using ReactiveUI.Primitives.Extensions;
     using ReactiveUI.Primitives.Signals;
 
     public class MainWindowBase : ReactiveWindow<MainViewModel>

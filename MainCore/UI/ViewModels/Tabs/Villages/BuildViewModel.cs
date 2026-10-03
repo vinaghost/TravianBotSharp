@@ -10,7 +10,6 @@ using System.Text.Json;
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     using ReactiveUI.Primitives;
-    using ReactiveUI.Primitives.Extensions;
     using ReactiveUI.Primitives.Signals;
 
     [RegisterSingleton<BuildViewModel>]
@@ -102,8 +101,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             if (!IsActive) return;
             if (notification.VillageId != VillageId) return;
 
-            await LoadQueueCommand.Execute(notification.VillageId).ToHotTask();
-            await LoadBuildingCommand.Execute(notification.VillageId).ToHotTask();
+            await LoadQueueCommand.Execute(notification.VillageId);
+            await LoadBuildingCommand.Execute(notification.VillageId);
         }
 
         [ReactiveCommand(RunInBackground = true)]
@@ -114,15 +113,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             if (!IsActive) return;
             if (notification.VillageId != VillageId) return;
 
-            await LoadJobCommand.Execute(notification.VillageId).ToHotTask();
-            await LoadBuildingCommand.Execute(notification.VillageId).ToHotTask();
+            await LoadJobCommand.Execute(notification.VillageId);
+            await LoadBuildingCommand.Execute(notification.VillageId);
         }
 
         protected override async Task Load(AccountId accountId, VillageId villageId)
         {
-            await LoadJobCommand.Execute(villageId).ToHotTask();
-            await LoadBuildingCommand.Execute(villageId).ToHotTask();
-            await LoadQueueCommand.Execute(villageId).ToHotTask();
+            await LoadJobCommand.Execute(villageId);
+            await LoadBuildingCommand.Execute(villageId);
+            await LoadQueueCommand.Execute(villageId);
         }
 
         protected override Task OnContextInvalidated(AccountId accountId)
