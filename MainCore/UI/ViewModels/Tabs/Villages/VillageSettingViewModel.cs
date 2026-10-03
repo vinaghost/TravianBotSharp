@@ -80,7 +80,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return;
             }
 
-            await Signal.Start(() => VillageSettingInput.Set(settings));
+            await Signal.Start(() => VillageSettingInput.Set(settings), RxSchedulers.MainThreadScheduler);
             var result = await _villageSettingInputValidator.ValidateAsync(VillageSettingInput);
             if (!result.IsValid)
             {

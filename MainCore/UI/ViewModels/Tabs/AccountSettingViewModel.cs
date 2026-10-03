@@ -66,7 +66,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 await _dialogService.SendMessage("Warning", "Invalid file.");
                 return;
             }
-            await Signal.Start(() => AccountSettingInput.Set(settings)).ObserveOn(RxSchedulers.MainThreadScheduler);
+            await Signal.Start(() => AccountSettingInput.Set(settings), RxSchedulers.MainThreadScheduler);
 
             var result = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
             if (!result.IsValid)
