@@ -1,51 +1,57 @@
 ﻿namespace MainCore.Commands.Features.UseHeroItem
 {
     [Handler]
-    public static partial class UseHeroResourceCommand
+    public sealed partial class UseHeroResourceCommand(IChromeBrowser browser)
     {
-        public sealed record Command(AccountId AccountId, long[] Resource) : IAccountCommand;
+        public sealed record Command(BuildingEnums Building, long[] Resource);
 
-        private static async ValueTask<Result> HandleAsync(
-            Command command,
-            ToHeroInventoryCommand.Handler toHeroInventoryCommand,
-            UpdateInventoryCommand.Handler updateInventoryCommand,
-            ValidateEnoughResourceCommand.Handler validateEnoughResourceCommand,
-            UseHeroItemCommand.Handler useHeroItemCommand,
-            IDelayService delayService,
-            CancellationToken cancellationToken)
+        private async ValueTask<Result> HandleAsync(Command command)
         {
-            var (accountId, resource) = command;
+            var (building, resource) = command;
 
-            var result = await toHeroInventoryCommand.HandleAsync(new(), cancellationToken);
+            Result result;
+            var fillUpButton = await UpgradeParser.GetFillUpButton(browser.CurrentPage, building);
+            result = await browser.Click(fillUpButton);
             if (result.IsFailed) return result;
 
-            await updateInventoryCommand.HandleAsync(new(accountId), cancellationToken);
-
-            resource = resource.Select(RoundUpTo100).ToArray();
-
-            result = await validateEnoughResourceCommand.HandleAsync(new(accountId, resource), cancellationToken);
+            result = await browser.Wait(InventoryParser.GetResourceTransferDialog(browser.CurrentPage));
             if (result.IsFailed) return result;
 
-            var itemsToUse = new Dictionary<HeroItemEnums, long>
-            {
-                { HeroItemEnums.Wood, resource[0] },
-                { HeroItemEnums.Clay, resource[1] },
-                { HeroItemEnums.Iron, resource[2] },
-                { HeroItemEnums.Crop, resource[3] },
-            };
-
-            result = await useHeroItemCommand.HandleAsync(new(itemsToUse), cancellationToken);
+            result = await IsEnoughResource(resource);
             if (result.IsFailed) return result;
 
-            await delayService.DelayClick(cancellationToken);
+            result = await browser.Click(InventoryParser.GetResourceConfirmButton(browser.CurrentPage));
+            if (result.IsFailed) return result;
+
+            result = await browser.WaitPageChanged("&reload=auto");
+            if (result.IsFailed) return result;
+
+            result = await browser.WaitPageChanged(@"^(?!.*reload=auto).*");
+            if (result.IsFailed) return result;
+
             return Result.Ok();
         }
 
-        private static long RoundUpTo100(long res)
+        private static readonly List<string> _itemInputName =
+        [
+            "lumber",
+            "clay",
+            "iron",
+            "crop",
+        ];
+
+        private async Task<Result> IsEnoughResource(long[] requiredResources)
         {
-            if (res == 0) return 0;
-            var remainder = res % 100;
-            return res + (100 - remainder);
+            var errors = new List<Error>();
+            var resources = await InventoryParser.GetInventoryResources(browser.CurrentPage);
+            for (var i = 0; i < 4; i++)
+            {
+                if (resources[i] < requiredResources[i])
+                {
+                    errors.Add(MissingResource.Error($"{_itemInputName[i]}", resources[i], requiredResources[i]));
+                }
+            }
+            return Result.FailIfNotEmpty(errors);
         }
     }
 }

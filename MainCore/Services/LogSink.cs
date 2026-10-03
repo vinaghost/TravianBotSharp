@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Serilog;
+﻿using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
@@ -39,11 +38,11 @@ namespace MainCore.Services
             var accountId = new AccountId(int.Parse(value!));
 
             var logs = GetLogs(accountId);
-            logs.AddFirst(logEvent);
+            logs.AddLast(logEvent);
             // keeps 200 message
             if (logs.Count > 200)
             {
-                logs.RemoveLast();
+                logs.RemoveFirst();
             }
 
             _rxQueue.Enqueue(new LogEmitted(accountId, logEvent));
