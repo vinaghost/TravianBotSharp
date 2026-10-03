@@ -17,16 +17,16 @@ namespace MainCore.Services.Scheduling
 
         public StatusEnums GetStatus() => _queue.Status;
 
-        public void Add(AccountTask task, bool first)
+        public void Add<T>(T task, bool first) where T : BaseTask
         {
             AddTask(task, first);
         }
 
-        public void AddOrUpdate(AccountTask task, bool first)
+        public void AddOrUpdate<T>(T task, bool first) where T : BaseTask
         {
             var oldTask = _queue.Tasks
-                .OfType<AccountTask>()
-                    .FirstOrDefault(x => x.Key == task.Key);
+                .OfType<T>()
+                .FirstOrDefault(x => x.Key == task.Key);
 
             if (oldTask is null)
             {
@@ -90,7 +90,7 @@ namespace MainCore.Services.Scheduling
             rxQueue.Enqueue(new StatusModified(accountId, status));
         }
 
-        private void AddTask(AccountTask task, bool first)
+        private void AddTask(BaseTask task, bool first)
         {
             if (first)
             {
