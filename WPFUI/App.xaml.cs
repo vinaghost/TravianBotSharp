@@ -1,11 +1,15 @@
-﻿using MainCore;
+﻿using Immediate.Handlers.Shared;
+using MainCore;
 using MainCore.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ReactiveMarbles.Extensions.Hosting.ReactiveUI;
 using ReactiveMarbles.Extensions.Hosting.Wpf;
+using ReactiveUI;
+using ReactiveUI.Builder;
 using ReactiveUI.Primitives;
 using Serilog;
+using Splat;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -29,6 +33,12 @@ namespace WPFUI
                 .ConfigureWpf(wpfBuilder => wpfBuilder
                     .UseCurrentApplication(this)
                     .UseWindow(typeof(MainWindow)));
+
+            using var locator = new ModernDependencyResolver();
+            locator.CreateReactiveUIBuilder()
+               .WithExceptionHandler(new LoggingExceptionObserver())
+               .WithCoreServices()
+               .BuildApp();
 
             var host = hostBuilder
                 .Build();
@@ -113,7 +123,7 @@ namespace WPFUI
                 Log
                     .ForContext<LoggingExceptionObserver>()
                     .Error(value, "Unhandled exception");
-                MessageBox.Show("Error", "There is something wrong. Please check logs/logs-Other.txt.");
+                MessageBox.Show("There is something wrong. Please check logs/logs-Other.txt.", "Error");
 
                 if (!Debugger.IsAttached) return;
                 Debugger.Break();
