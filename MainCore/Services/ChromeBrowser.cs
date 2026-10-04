@@ -63,15 +63,22 @@ namespace MainCore.Services
 
         public async Task Shutdown()
         {
-            if (_mainPage is not null)
+            try
             {
-                await _mainPage.CloseAsync();
+                if (_mainPage is not null)
+                {
+                    await _mainPage.CloseAsync();
+                }
+                if (_browser is not null)
+                {
+                    await _browser.CloseAsync();
+                }
+                _playwright?.Dispose();
             }
-            if (_browser is not null)
+            catch (Exception ex)
             {
-                await _browser.CloseAsync();
+                Logger.Error(ex, "Error during shutdown: {Message}", ex.Message);
             }
-            _playwright?.Dispose();
         }
 
         public async Task<string> Screenshot()
