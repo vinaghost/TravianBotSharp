@@ -87,6 +87,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 return;
             }
             using var context = _contextFactory.CreateDbContext();
+            settings.Remove(VillageSettingEnums.Tribe);
+
             context.SaveVillageSetting(VillageId, settings);
             context.TriggerTask(_taskManager, AccountId, VillageId, settings);
 

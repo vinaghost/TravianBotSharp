@@ -75,6 +75,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
             using var context = _contextFactory.CreateDbContext();
+            settings.Remove(AccountSettingEnums.Tribe);
             context.SaveAccountSetting(AccountId, settings);
             context.TriggerTask(_taskManager, AccountId, settings);
             await _dialogService.SendMessage("Information", "Settings imported.");
