@@ -1,5 +1,5 @@
-﻿using MainCore.Tasks.Base;
-using MainCore.Services.Scheduling;
+﻿using MainCore.Services.Scheduling;
+using MainCore.Tasks.Base;
 using System.Collections.Concurrent;
 
 namespace MainCore.Services

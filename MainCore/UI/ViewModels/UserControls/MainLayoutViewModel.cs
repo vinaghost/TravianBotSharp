@@ -23,16 +23,18 @@ namespace MainCore.UI.ViewModels.UserControls
         private readonly SelectedItemStore _selectedItemStore;
         private readonly IRxQueue _rxQueue;
         private readonly ICustomServiceScopeFactory _serviceScopeFactory;
+        private readonly IDefaultTemplatePathStore _defaultTemplatePathStore;
 
         private readonly AccountTabStore _accountTabStore;
         private readonly IObservable<bool> _canExecute;
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, ILogger logger, IRxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, ITimerManager timerManager, ICustomServiceScopeFactory serviceScopeFactory)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, ILogger logger, IRxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, ITimerManager timerManager, ICustomServiceScopeFactory serviceScopeFactory, IDefaultTemplatePathStore defaultTemplatePathStore)
         {
             _accountTabStore = accountTabStore;
             _serviceScopeFactory = serviceScopeFactory;
+            _defaultTemplatePathStore = defaultTemplatePathStore;
             _dialogService = dialogService;
             _rxQueue = rxQueue;
             _logger = logger.ForContext<MainLayoutViewModel>();
@@ -129,6 +131,36 @@ namespace MainCore.UI.ViewModels.UserControls
         {
             Accounts.SelectedItem = null;
             _accountTabStore.SetTabType(AccountTabType.AddAccounts);
+        }
+
+        [ReactiveCommand(CanExecute = nameof(_canExecute), RunInBackground = true)]
+        private async Task SetDefaultSettingsForNewAccount()
+        {
+            await SetOrClearDefaultTemplatePath(
+                x => x.AccountSettingsPath,
+                _defaultTemplatePathStore.SetAccountSettingsPath,
+                _defaultTemplatePathStore.ClearAccountSettingsPath,
+                "account settings");
+        }
+
+        [ReactiveCommand(CanExecute = nameof(_canExecute), RunInBackground = true)]
+        private async Task SetDefaultSettingsForNewVillage()
+        {
+            await SetOrClearDefaultTemplatePath(
+                x => x.VillageSettingsPath,
+                _defaultTemplatePathStore.SetVillageSettingsPath,
+                _defaultTemplatePathStore.ClearVillageSettingsPath,
+                "village settings");
+        }
+
+        [ReactiveCommand(CanExecute = nameof(_canExecute), RunInBackground = true)]
+        private async Task SetDefaultBuildingListForNewVillage()
+        {
+            await SetOrClearDefaultTemplatePath(
+                x => x.BuildingListPath,
+                _defaultTemplatePathStore.SetBuildingListPath,
+                _defaultTemplatePathStore.ClearBuildingListPath,
+                "building list");
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute), RunInBackground = true)]
@@ -344,6 +376,33 @@ namespace MainCore.UI.ViewModels.UserControls
             var versionAssembly = Assembly.GetExecutingAssembly().GetName().Version!;
             var version = new Version(versionAssembly.Major, versionAssembly.Minor, versionAssembly.Build);
             return $"{version}";
+        }
+
+        private async Task SetOrClearDefaultTemplatePath(Func<DefaultTemplatePaths, string> getPath, Action<string> setPath, Action clearPath, string displayName)
+        {
+            var currentPath = getPath(_defaultTemplatePathStore.Get());
+
+            if (!string.IsNullOrWhiteSpace(currentPath))
+            {
+                var confirm = await _dialogService.SendConfirm("Information", $"Current default {displayName}:{Environment.NewLine}{currentPath}{Environment.NewLine}{Environment.NewLine}Do you want to clear it?");
+                if (!confirm) return;
+
+                clearPath();
+                await _dialogService.SendMessage("Information", $"Default {displayName} cleared.");
+                return;
+            }
+
+            var path = await _dialogService.OpenFileDialog();
+            if (string.IsNullOrWhiteSpace(path)) return;
+
+            if (!File.Exists(path))
+            {
+                await _dialogService.SendMessage("Warning", "File not found.");
+                return;
+            }
+
+            setPath(path);
+            await _dialogService.SendMessage("Information", $"Default {displayName} set.");
         }
 
         private void SetPauseText(StatusEnums status)

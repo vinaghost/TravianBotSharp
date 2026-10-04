@@ -1,11 +1,9 @@
-﻿using Immediate.Handlers.Shared;
-using MainCore;
+﻿using MainCore;
 using MainCore.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ReactiveMarbles.Extensions.Hosting.ReactiveUI;
 using ReactiveMarbles.Extensions.Hosting.Wpf;
-using ReactiveUI;
 using ReactiveUI.Builder;
 using ReactiveUI.Primitives;
 using Serilog;

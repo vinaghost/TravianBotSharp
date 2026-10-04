@@ -1,6 +1,7 @@
 ﻿using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
+using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
@@ -20,8 +21,9 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IRxQueue _rxQueue;
+        private readonly IDefaultTemplatePathStore _defaultTemplatePathStore;
 
-        public AddAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, IRxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
+        public AddAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, IRxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, IDefaultTemplatePathStore defaultTemplatePathStore)
         {
             _accessInputValidator = accessInputValidator;
             _dialogService = dialogService;
@@ -29,6 +31,7 @@ namespace MainCore.UI.ViewModels.Tabs
             _waitingOverlayViewModel = waitingOverlayViewModel;
             _rxQueue = rxQueue;
             _contextFactory = contextFactory;
+            _defaultTemplatePathStore = defaultTemplatePathStore;
 
             Init();
         }
@@ -131,9 +134,10 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             using var context = _contextFactory.CreateDbContext();
             var account = dto.ToEntity();
+            var defaultSettings = LoadAccountDefaultSettings();
 
             account.Settings = [];
-            foreach (var (setting, value) in AppDbContext.AccountDefaultSettings)
+            foreach (var (setting, value) in defaultSettings)
             {
                 account.Settings.Add(new AccountSetting
                 {
@@ -143,6 +147,35 @@ namespace MainCore.UI.ViewModels.Tabs
             }
             context.Add(account);
             context.SaveChanges();
+        }
+
+        private Dictionary<AccountSettingEnums, int> LoadAccountDefaultSettings()
+        {
+            var settings = AppDbContext.AccountDefaultSettings
+                .ToDictionary(x => x.Key, x => x.Value);
+
+            var path = _defaultTemplatePathStore.Get().AccountSettingsPath;
+            if (string.IsNullOrWhiteSpace(path)) return settings;
+            if (!File.Exists(path)) return settings;
+
+            try
+            {
+                var jsonString = File.ReadAllText(path);
+                var importedSettings = JsonSerializer.Deserialize<Dictionary<AccountSettingEnums, int>>(jsonString);
+                if (importedSettings is null) return settings;
+
+                foreach (var (setting, value) in importedSettings)
+                {
+                    if (setting == AccountSettingEnums.Tribe) continue;
+                    settings[setting] = value;
+                }
+            }
+            catch
+            {
+                return settings;
+            }
+
+            return settings;
         }
     }
 }

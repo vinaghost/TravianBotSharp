@@ -1,6 +1,7 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using System.Collections.ObjectModel;
+using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
@@ -14,17 +15,19 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IRxQueue _rxQueue;
+        private readonly IDefaultTemplatePathStore _defaultTemplatePathStore;
         public ObservableCollection<AccountDetailDto> Accounts { get; } = [];
 
         [Reactive]
         private string _input = "";
 
-        public AddAccountsViewModel(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, IRxQueue rxQueue)
+        public AddAccountsViewModel(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, IRxQueue rxQueue, IDefaultTemplatePathStore defaultTemplatePathStore)
         {
             _dialogService = dialogService;
             _waitingOverlayViewModel = waitingOverlayViewModel;
             _contextFactory = contextFactory;
             _rxQueue = rxQueue;
+            _defaultTemplatePathStore = defaultTemplatePathStore;
 
             Init();
         }
@@ -141,6 +144,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private void UpdateDatabase(List<AccountDto> dtos)
         {
             using var context = _contextFactory.CreateDbContext();
+            var defaultSettings = LoadAccountDefaultSettings();
 
             var accounts = dtos
                 .Select(x => x.ToEntity());
@@ -148,7 +152,7 @@ namespace MainCore.UI.ViewModels.Tabs
             foreach (var account in accounts)
             {
                 account.Settings = [];
-                foreach (var (setting, value) in AppDbContext.AccountDefaultSettings)
+                foreach (var (setting, value) in defaultSettings)
                 {
                     account.Settings.Add(new AccountSetting
                     {
@@ -160,6 +164,35 @@ namespace MainCore.UI.ViewModels.Tabs
             }
 
             context.SaveChanges();
+        }
+
+        private Dictionary<AccountSettingEnums, int> LoadAccountDefaultSettings()
+        {
+            var settings = AppDbContext.AccountDefaultSettings
+                .ToDictionary(x => x.Key, x => x.Value);
+
+            var path = _defaultTemplatePathStore.Get().AccountSettingsPath;
+            if (string.IsNullOrWhiteSpace(path)) return settings;
+            if (!File.Exists(path)) return settings;
+
+            try
+            {
+                var jsonString = File.ReadAllText(path);
+                var importedSettings = JsonSerializer.Deserialize<Dictionary<AccountSettingEnums, int>>(jsonString);
+                if (importedSettings is null) return settings;
+
+                foreach (var (setting, value) in importedSettings)
+                {
+                    if (setting == AccountSettingEnums.Tribe) continue;
+                    settings[setting] = value;
+                }
+            }
+            catch
+            {
+                return settings;
+            }
+
+            return settings;
         }
     }
 }
