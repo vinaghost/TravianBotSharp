@@ -27,7 +27,6 @@ namespace MainCore.Services
 
             static async ValueTask OnRetry(OnRetryArguments<Result> args)
             {
-                await Task.CompletedTask;
                 if (!args.Context.Properties.TryGetValue(contextDataKey, out var contextData)) return;
 
                 var (taskName, browser) = contextData;
@@ -46,7 +45,7 @@ namespace MainCore.Services
                         browser.Logger.Warning("{Message}", message);
                     }
                 }
-
+                await browser.Refresh();
                 browser.Logger.Warning("{TaskName} will retry after {RetryDelay} (#{AttemptNumber} times)", taskName, args.RetryDelay, args.AttemptNumber + 1);
             }
 
