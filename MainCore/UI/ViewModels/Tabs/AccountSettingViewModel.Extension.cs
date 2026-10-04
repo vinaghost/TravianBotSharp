@@ -53,6 +53,22 @@
                     taskManager.Remove<StartAdventureTask.Task>(accountId);
                 }
             }
+
+            if (settings.ContainsKey(AccountSettingEnums.EnableAutoClaimDailyQuest))
+            {
+                if (settings[AccountSettingEnums.EnableAutoClaimDailyQuest] == 1)
+                {
+                    var task = new ClaimDailyQuestTask.Task(accountId);
+                    if (task.CanStart(context) && !taskManager.IsExist<ClaimDailyQuestTask.Task>(accountId))
+                    {
+                        taskManager.Add(task);
+                    }
+                }
+                else
+                {
+                    taskManager.Remove<ClaimDailyQuestTask.Task>(accountId);
+                }
+            }
         }
     }
 }

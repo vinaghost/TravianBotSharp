@@ -11,6 +11,11 @@
             };
         }
 
+        public static ILocator GetDailyQuestButton(IPage page)
+        {
+            return GetButton(page, 7);
+        }
+
         private static ILocator GetButton(IPage page, int key)
         {
             var button = page.Locator($"#navigation a[accesskey='{key}']");

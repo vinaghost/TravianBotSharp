@@ -105,6 +105,10 @@ namespace MainCore.Services
                     var upgradeBuildingTaskHandler = scope.GetHandler<UpgradeBuildingTask.Task>();
                     return await upgradeBuildingTaskHandler.HandleAsync(upgradeBuildingTask, cancellationToken);
 
+                case ClaimDailyQuestTask.Task claimDailyQuestTask:
+                    var claimDailyQuestTaskHandler = scope.GetHandler<ClaimDailyQuestTask.Task>();
+                    return await claimDailyQuestTaskHandler.HandleAsync(claimDailyQuestTask, cancellationToken);
+
                 default:
                     throw new NotImplementedException($"Task {task.GetType().Name} is not implemented");
             }
