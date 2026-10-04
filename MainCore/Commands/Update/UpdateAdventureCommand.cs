@@ -20,6 +20,7 @@
                 return;
             }
 
+            if (taskManager.IsExist<StartAdventureTask.Task>(command.AccountId)) return;
             taskManager.Add(startAdventureTask);
         }
     }

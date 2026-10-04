@@ -19,6 +19,7 @@
             {
                 return;
             }
+            if (taskManager.IsExist<ClaimQuestTask.Task>(accountId, villageId)) return;
             taskManager.Add(claimQuestTask);
         }
     }
