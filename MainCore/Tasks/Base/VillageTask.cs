@@ -11,9 +11,9 @@
             if (VillageName != "Unknown village")
                 return;
 
-            var getVillageNameSpec = new GetVillageNameSpec(VillageId);
             VillageName = context.Villages
-                .WithSpecification(getVillageNameSpec)
+                .Where(x => x.Id == VillageId.Value)
+                .Select(x => x.Name)
                 .FirstOrDefault() ?? "Unknown village";
         }
 
