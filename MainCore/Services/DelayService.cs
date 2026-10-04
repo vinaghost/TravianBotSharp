@@ -1,26 +1,22 @@
 ﻿namespace MainCore.Services
 {
     [RegisterScoped<IDelayService, DelayService>]
-    public class DelayService : IDelayService
+    public class DelayService(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory) : IDelayService
     {
-        private readonly AppDbContext _context;
-        private readonly IDataService _dataService;
-
-        public DelayService(AppDbContext context, IDataService dataService)
-        {
-            _context = context;
-            _dataService = dataService;
-        }
+        private readonly IDataService _dataService = dataService;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
 
         public async Task DelayClick(CancellationToken cancellationToken = default)
         {
-            var delay = _context.ByName(_dataService.AccountId, AccountSettingEnums.ClickDelayMin, AccountSettingEnums.ClickDelayMax);
+            using var context = _contextFactory.CreateDbContext();
+            var delay = context.ByName(_dataService.AccountId, AccountSettingEnums.ClickDelayMin, AccountSettingEnums.ClickDelayMax);
             await Task.Delay(delay, cancellationToken);
         }
 
         public async Task DelayTask(CancellationToken cancellationToken = default)
         {
-            var delay = _context.ByName(_dataService.AccountId, AccountSettingEnums.TaskDelayMin, AccountSettingEnums.TaskDelayMax);
+            using var context = _contextFactory.CreateDbContext();
+            var delay = context.ByName(_dataService.AccountId, AccountSettingEnums.TaskDelayMin, AccountSettingEnums.TaskDelayMax);
             await Task.Delay(delay, cancellationToken);
         }
     }
