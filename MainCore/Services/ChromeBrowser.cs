@@ -16,6 +16,9 @@ namespace MainCore.Services
         public ILogger Logger { get; set; } = null!;
         public IDelayService DelayService { get; set; } = null!;
 
+        public bool IsInitialized => _playwright is not null && _browser is not null && _mainPage is not null;
+        public bool IsHeadless { get; private set; }
+
         public async Task Setup(ChromeSetting setting)
         {
             _playwright = await Playwright.CreateAsync();
@@ -43,7 +46,7 @@ namespace MainCore.Services
                     "--force-webrtc-ip-handling-policy",
                 ],
             });
-
+            IsHeadless = setting.IsHeadless;
             _mainPage = await _browser.NewPageAsync();
 
             var firstPage = _browser.Pages.Count > 1 ? _browser.Pages[0] : null;

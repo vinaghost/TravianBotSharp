@@ -8,6 +8,8 @@ namespace MainCore.Services
         string CurrentUrl { get; }
         ILogger Logger { get; set; }
         IDelayService DelayService { get; set; }
+        bool IsInitialized { get; }
+        bool IsHeadless { get; }
 
         Task<Result> Click(ILocator locator, [CallerArgumentExpression(nameof(locator))] string? expression = null);
 

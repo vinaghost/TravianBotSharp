@@ -1,7 +1,6 @@
 ﻿using MainCore.UI.ViewModels.Tabs;
 using ReactiveUI;
 
-
 namespace WPFUI.Views.Tabs
 {
     using ReactiveUI.Primitives;
@@ -25,7 +24,7 @@ namespace WPFUI.Views.Tabs
 
                 this.BindCommand(ViewModel, vm => vm.LeftCommand, v => v.ReportButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.RightCommand, v => v.LogButton).DisposeWith(d);
-                this.Bind(ViewModel, vm => vm.EndpointAddress, v => v.DevToolsEndpointAddress.Text).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.BringToFrontCommand, v => v.BringToFrontButton).DisposeWith(d);
             });
         }
     }

@@ -16,6 +16,8 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         private readonly LogSink _logSink;
         private readonly ITaskManager _taskManager;
+        private readonly IChromeManager _chromeManager;
+        private readonly IDialogService _dialogService;
         private static readonly ExpressionTemplate _template = new("{@t:HH:mm:ss} [{@l:u3}] {@m}\n{@x}");
 
         public ObservableCollection<TaskItem> Tasks { get; } = [];
@@ -27,10 +29,12 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private string _endpointAddress = "";
 
-        public DebugViewModel(LogSink logSink, ITaskManager taskManager, IRxQueue rxQueue)
+        public DebugViewModel(LogSink logSink, ITaskManager taskManager, IRxQueue rxQueue, IChromeManager chromeManager, IDialogService dialogService)
         {
             _logSink = logSink;
             _taskManager = taskManager;
+            _chromeManager = chromeManager;
+            _dialogService = dialogService;
 
             LoadTaskCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(items =>
             {
@@ -66,7 +70,7 @@ namespace MainCore.UI.ViewModels.Tabs
                 .InvokeCommand(LoadTaskCommand);
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private bool LogEmitted(LogEmitted notification)
         {
             if (!IsActive) return false;
@@ -77,7 +81,7 @@ namespace MainCore.UI.ViewModels.Tabs
             return true;
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private bool TasksModified(TasksModified notification)
         {
             if (!IsActive) return false;
@@ -93,7 +97,7 @@ namespace MainCore.UI.ViewModels.Tabs
             await LoadEndpointAddressCommand.Execute(accountId);
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private List<TaskItem> LoadTask(AccountId accountId)
         {
             var tasks = _taskManager
@@ -104,7 +108,7 @@ namespace MainCore.UI.ViewModels.Tabs
             return tasks;
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private string LoadLog(AccountId accountId)
         {
             var logs = _logSink.GetLogs(accountId);
@@ -122,7 +126,7 @@ namespace MainCore.UI.ViewModels.Tabs
             return sw.ToString();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private string ReloadLog()
         {
             using var sw = new StringWriter(new StringBuilder());
@@ -133,13 +137,30 @@ namespace MainCore.UI.ViewModels.Tabs
             return sw.ToString();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
+        private async Task BringToFront()
+        {
+            var browser = _chromeManager.Get(AccountId);
+            if (!browser.IsInitialized || browser.CurrentPage.IsClosed)
+            {
+                await _dialogService.SendMessage("Warning", "Account is not login.");
+                return;
+            }
+            if (browser.IsHeadless)
+            {
+                await _dialogService.SendMessage("Warning", "Browser is headless.");
+                return;
+            }
+            await browser.CurrentPage.BringToFrontAsync();
+        }
+
+        [ReactiveCommand(RunInBackground = true)]
         private string LoadEndpointAddress(AccountId accountId)
         {
             return "Address endpoint is disabled";
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private void Left()
         {
             Process.Start(new ProcessStartInfo
@@ -149,7 +170,7 @@ namespace MainCore.UI.ViewModels.Tabs
             });
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private void Right()
         {
             Process.Start(new ProcessStartInfo
