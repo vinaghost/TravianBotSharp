@@ -1,25 +1,25 @@
 ﻿namespace MainCore.Commands.Update
 {
     [Handler]
-    public static partial class UpdateQuestCommand
+    public sealed partial class UpdateDailyQuestCommand(
+        IChromeBrowser browser,
+        IDbContextFactory<AppDbContext> contextFactory,
+        ITaskManager taskManager)
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        private static async ValueTask HandleAsync(
-            Command command,
-            IChromeBrowser browser,
-            AppDbContext context,
-            ITaskManager taskManager
-           )
+        private async ValueTask HandleAsync(Command command)
         {
             await Task.CompletedTask;
-            if (!QuestParser.IsQuestClaimable(browser.Html)) return;
-            var (accountId, villageId) = command;
-            var claimQuestTask = new ClaimQuestTask.Task(accountId, villageId);
-            if (!claimQuestTask.CanStart(context) || taskManager.IsExist<ClaimQuestTask.Task>(accountId))
+            if (!(await QuestParser.IsDailyQuestClaimable(browser.CurrentPage))) return;
+            var accountId = command.AccountId;
+            using var context = contextFactory.CreateDbContext();
+            var claimQuestTask = new ClaimDailyQuestTask.Task(accountId);
+            if (!claimQuestTask.CanStart(context) || taskManager.IsExist<ClaimDailyQuestTask.Task>(accountId))
             {
                 return;
             }
+            if (taskManager.IsExist<ClaimDailyQuestTask.Task>(accountId)) return;
             taskManager.Add(claimQuestTask);
         }
     }

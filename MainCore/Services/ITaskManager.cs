@@ -30,8 +30,6 @@ namespace MainCore.Services
 
         void Remove(AccountId accountId, BaseTask task);
 
-        void ReOrder(AccountId accountId);
-
         void SetStatus(AccountId accountId, StatusEnums status);
 
         Task StopCurrentTask(AccountId accountId);
