@@ -1,112 +1,73 @@
-﻿namespace MainCore.Parsers
+﻿using System.Text.Json;
+
+namespace MainCore.Parsers
 {
     public static class VillagePanelParser
     {
-        public static HtmlNode? GetVillageNode(HtmlDocument doc, VillageId villageId)
+        public static ILocator GetVillageNode(IPage page, VillageId villageId)
         {
-            var sidebarBoxVillagelist = doc.GetElementbyId("sidebarBoxVillagelist");
-            if (sidebarBoxVillagelist is null) return null;
-            var villages = sidebarBoxVillagelist
-                .Descendants("div")
-                .Where(x => x.HasClass("listEntry"))
-                .ToList();
-
-            var village = villages.FirstOrDefault(x => GetId(x) == villageId);
-            return village;
+            var node = page.Locator($"#sidebarBoxVillageList div.listEntry.village[data-did='{villageId}']");
+            return node;
         }
 
-        public static VillageId GetCurrentVillageId(HtmlDocument doc)
+        public static async Task<VillageId> GetCurrentVillageId(IPage page)
         {
-            var sidebarBoxVillagelist = doc.GetElementbyId("sidebarBoxVillagelist");
-            if (sidebarBoxVillagelist is null) return default;
-            var village = sidebarBoxVillagelist
-                .Descendants("div")
-                .Where(x => x.HasClass("listEntry"))
-                .Where(x => IsActive(x))
-                .Select(x => GetId(x))
-                .FirstOrDefault();
-            return village;
+            var node = page.Locator("#sidebarBoxVillageList div.listEntry.village.active");
+            var dataDid = await node.GetAttributeAsync("data-did");
+            return new VillageId(int.Parse(dataDid ?? "0"));
         }
 
-        public static bool IsActive(HtmlNode node)
+        public static async Task<bool> IsActive(ILocator locator)
         {
-            return node.HasClass("active");
+            return await locator.EvaluateAsync<bool>("node => node.classList.contains('active')");
         }
 
-        private static VillageId GetId(HtmlNode node)
-        {
-            var dataDid = node.GetAttributeValue("data-did", 0);
-            return new VillageId(dataDid);
-        }
+        public record struct RawVillageDto(string? IdStr, string? Name, string? CoordinateX, string? CoordinateY, bool Active, bool UnderAttack);
 
-        public static IEnumerable<VillageDto> Get(HtmlDocument doc)
+        public static async Task<List<VillageDto>> Get(IPage page)
         {
-            var nodes = GetVillages(doc);
-            foreach (var node in nodes)
+            var jsonResult = await page.EvaluateAsync<JsonElement>(@"() => {
+                const elements = document.querySelectorAll('#sidebarBoxVillageList div.listEntry.village');
+                const result = [];
+
+                elements.forEach(node => {
+                    const nameEl = node.querySelector('a span.name');
+                    const xEl = node.querySelector('span.coordinateX');
+                    const yEl = node.querySelector('span.coordinateY');
+
+                    result.push({
+                        IdStr: node.getAttribute('data-did') || '0',
+                        Name: nameEl ? (nameEl.innerText || nameEl.textContent).trim() : '',
+                        CoordinateX: xEl ? (xEl.innerText || xEl.textContent).trim() : '0',
+                        CoordinateY: yEl ? (yEl.innerText || yEl.textContent).trim() : '0',
+                        IsActive: node.classList.contains('active'),
+                        IsUnderAttack: node.classList.contains('attack')
+                    });
+                });
+                return result;
+            }");
+
+            var text = jsonResult.GetRawText();
+            var rawVillagesData = JsonSerializer.Deserialize<List<RawVillageDto>>(text) ?? throw new InvalidOperationException($"Failed to deserialize village data from the page. Content: {text}");
+
+            var extractedVillages = new List<VillageDto>();
+
+            foreach (var raw in rawVillagesData)
             {
-                var id = GetId(node);
-                var name = GetName(node);
-                var x = GetX(node);
-                var y = GetY(node);
-                var isActive = IsActive(node);
-                var isUnderAttack = IsUnderAttack(node);
-                yield return new()
+                int id = int.TryParse(raw.IdStr, out int parsedId) ? parsedId : 0;
+
+                extractedVillages.Add(new VillageDto
                 {
-                    Id = id,
-                    Name = name,
-                    X = x,
-                    Y = y,
-                    IsActive = isActive,
-                    IsUnderAttack = isUnderAttack,
-                };
+                    Id = new VillageId(id),
+                    Name = raw.Name ?? "",
+                    X = (raw.CoordinateX ?? "").ParseInt(),
+                    Y = (raw.CoordinateY ?? "").ParseInt(),
+                    IsActive = raw.Active,
+                    IsUnderAttack = raw.UnderAttack
+                });
             }
-        }
 
-        private static List<HtmlNode> GetVillages(HtmlDocument doc)
-        {
-            var sidebarBoxVillagelist = doc.GetElementbyId("sidebarBoxVillagelist");
-            if (sidebarBoxVillagelist is null) return [];
-            var villages = sidebarBoxVillagelist
-                .Descendants("div")
-                .Where(x => x.HasClass("listEntry") && x.HasClass("village"))
-                .ToList();
-            return villages;
-        }
-
-        private static bool IsUnderAttack(HtmlNode node)
-        {
-            return node.HasClass("attack");
-        }
-
-        private static string GetName(HtmlNode node)
-        {
-            var textNode = node
-                .Descendants("a")
-                .FirstOrDefault();
-            if (textNode is null) return "";
-            var nameNode = textNode
-                .Descendants("span")
-                .FirstOrDefault(x => x.HasClass("name"));
-            if (nameNode is null) return "";
-            return nameNode.InnerText;
-        }
-
-        private static int GetX(HtmlNode node)
-        {
-            var xNode = node
-                .Descendants("span")
-                .FirstOrDefault(x => x.HasClass("coordinateX"));
-            if (xNode is null) return 0;
-            return xNode.InnerText.ParseInt();
-        }
-
-        private static int GetY(HtmlNode node)
-        {
-            var yNode = node
-                .Descendants("span")
-                .FirstOrDefault(x => x.HasClass("coordinateY"));
-            if (yNode is null) return 0;
-            return yNode.InnerText.ParseInt();
+            return extractedVillages;
         }
     }
 }

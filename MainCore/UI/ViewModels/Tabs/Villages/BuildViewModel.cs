@@ -1,23 +1,26 @@
-﻿using Humanizer;
-using MainCore.Commands.UI.Villages.BuildViewModel;
+using Humanizer;
+using MainCore.Infrasturecture.Extensions;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Signals;
+
     [RegisterSingleton<BuildViewModel>]
     public partial class BuildViewModel : VillageTabViewModelBase
     {
-        private readonly IDialogService _dialogService;
-        private readonly ITaskManager _taskManager;
+        private readonly DialogService _dialogService;
+        private readonly TaskManager _taskManager;
         private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
         private readonly IValidator<ResourceBuildInput> _resourceBuildInputValidator;
-        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly RxQueue _rxQueue;
 
         public NormalBuildInput NormalBuildInput { get; } = new();
         public ResourceBuildInput ResourceBuildInput { get; } = new();
@@ -26,24 +29,51 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(IDialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, ICustomServiceScopeFactory serviceScopeFactory, ITaskManager taskManager, IRxQueue rxQueue)
+        public BuildViewModel(DialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
         {
             _dialogService = dialogService;
             _normalBuildInputValidator = normalBuildInputValidator;
             _resourceBuildInputValidator = resourceBuildInputValidator;
-            _serviceScopeFactory = serviceScopeFactory;
             _taskManager = taskManager;
+            _rxQueue = rxQueue;
+            _contextFactory = contextFactory;
 
+            Init();
+        }
+
+        private void Init()
+        {
             this.WhenAnyValue(vm => vm.Buildings.SelectedItem)
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .WhereNotNull()
                 .InvokeCommand(LoadBuildNormalCommand);
 
-            LoadBuildingCommand.Subscribe(Buildings.Load);
-            LoadJobCommand.Subscribe(Jobs.Load);
-            LoadQueueCommand.Subscribe(Queue.Load);
+            LoadBuildingCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(Buildings.Load);
+            LoadJobCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(Jobs.Load);
+            LoadQueueCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(Queue.Load);
 
-            LoadBuildNormalCommand.Subscribe(buildings =>
+            LoadBuildNormalCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(SetNormalBuildInput);
+
+            var jobsChanged = Signal.Merge(
+                BuildNormalCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                BuildResourceCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                UpgradeOneLevelCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                UpgradeMaxLevelCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                UpCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                DownCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                TopCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                BottomCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                DeleteCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                DeleteAllCommand.Select(_ => new JobsModified(AccountId, VillageId)),
+                ImportCommand.Select(_ => new JobsModified(AccountId, VillageId))
+            );
+
+            jobsChanged.InvokeCommand(JobsModifiedCommand);
+
+            _rxQueue.RegisterCommand(BuildingsModifiedCommand);
+            _rxQueue.RegisterCommand(JobsModifiedCommand);
+
+            void SetNormalBuildInput(List<BuildingEnums> buildings)
             {
                 switch (buildings.Count)
                 {
@@ -55,17 +85,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                         NormalBuildInput.Set(buildings, -1);
                         break;
                 }
-            });
-
-            rxQueue.RegisterCommand<BuildingsModified>(BuildingsModifiedCommand);
-            rxQueue.RegisterCommand<JobsModified>(JobsModifiedCommand);
+            }
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         public async Task BuildingsModified(BuildingsModified notification)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            if (notification.AccountId != AccountId) return;
+
+            using var context = _contextFactory.CreateDbContext();
             var task = new CompleteImmediatelyTask.Task(AccountId, notification.VillageId);
             if (task.CanStart(context) && !_taskManager.IsExist<CompleteImmediatelyTask.Task>(AccountId, notification.VillageId))
             {
@@ -74,34 +102,49 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             if (!IsActive) return;
             if (notification.VillageId != VillageId) return;
+
             await LoadQueueCommand.Execute(notification.VillageId);
             await LoadBuildingCommand.Execute(notification.VillageId);
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         public async Task JobsModified(JobsModified notification)
         {
+            if (notification.AccountId != AccountId) return;
+
             _taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(AccountId, notification.VillageId));
 
             if (!IsActive) return;
             if (notification.VillageId != VillageId) return;
+
             await LoadJobCommand.Execute(notification.VillageId);
             await LoadBuildingCommand.Execute(notification.VillageId);
         }
 
-        protected override async Task Load(VillageId villageId)
+        protected override async Task Load(AccountId accountId, VillageId villageId)
         {
             await LoadJobCommand.Execute(villageId);
             await LoadBuildingCommand.Execute(villageId);
             await LoadQueueCommand.Execute(villageId);
         }
 
-        [ReactiveCommand]
-        private async Task<List<ListBoxItem>> LoadBuilding(VillageId villageId)
+        protected override async Task OnContextInvalidated(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getLayoutBuildingsQuery = scope.ServiceProvider.GetRequiredService<GetLayoutBuildingsCommand.Handler>();
-            var buildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId));
+            await Signal.Start(() =>
+            {
+                Buildings.Load([]);
+                Jobs.Load([]);
+                Queue.Load([]);
+                NormalBuildInput.Clear();
+            }, RxSchedulers.MainThreadScheduler);
+        }
+
+        [ReactiveCommand(RunInBackground = true)]
+        private List<ListBoxItem> LoadBuilding(VillageId villageId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            var buildings = context.GetLayoutBuildings(villageId);
+
             static ListBoxItem ToListBoxItem(BuildingItem building)
             {
                 const string arrow = " -> ";
@@ -126,19 +169,20 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 };
                 return item;
             }
+
             var items = buildings
                 .Select(ToListBoxItem)
                 .ToList();
             return items;
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private List<ListBoxItem> LoadQueue(VillageId villageId)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
             var items = context.QueueBuildings
                  .Where(x => x.VillageId == villageId.Value)
+                 .OrderBy(x => x.CompleteTime)
                  .AsEnumerable()
                  .Select(x => new ListBoxItem()
                  {
@@ -147,11 +191,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                  })
                  .ToList();
 
-            var tribe = (TribeEnums)context.VillagesSetting
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Setting == VillageSettingEnums.Tribe)
-                .Select(x => x.Value)
-                .FirstOrDefault();
+            var tribe = (TribeEnums)context.ByName(villageId, VillageSettingEnums.Tribe);
 
             var count = 2;
             if (tribe == TribeEnums.Romans) count = 3;
@@ -159,11 +199,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             return items;
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private List<ListBoxItem> LoadJob(VillageId villageId)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
 
             var items = context.Jobs
                 .Where(x => x.VillageId == villageId.Value)
@@ -201,19 +240,18 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             BuildingEnums.Unknown,
         ];
 
-        private static readonly List<BuildingEnums> AvailableBuildings = Enum.GetValues(typeof(BuildingEnums))
-            .Cast<BuildingEnums>()
-            .Where(x => !IgnoreBuildings.Contains(x))
-            .ToList();
+        private static readonly List<BuildingEnums> AvailableBuildings =
+        [
+            .. Enum.GetValues<BuildingEnums>().Where(x => !IgnoreBuildings.Contains(x))
+        ];
 
-        [ReactiveCommand]
-        private async Task<List<BuildingEnums>> LoadBuildNormal(ListBoxItem item)
+        [ReactiveCommand(RunInBackground = true)]
+        private List<BuildingEnums> LoadBuildNormal(ListBoxItem item)
         {
             if (item is null) return [];
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var getLayoutBuildingsQuery = scope.ServiceProvider.GetRequiredService<GetLayoutBuildingsCommand.Handler>();
-            var buildingItems = await getLayoutBuildingsQuery.HandleAsync(new(VillageId));
+            using var context = _contextFactory.CreateDbContext();
+            var buildingItems = context.GetLayoutBuildings(VillageId);
 
             var type = buildingItems
                 .Where(x => x.Id == new BuildingId(item.Id))
@@ -228,248 +266,189 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 .Distinct()
                 .ToList();
 
-            return AvailableBuildings.Where(x => !buildings.Contains(x)).ToList();
+            return [.. AvailableBuildings.Where(x => !buildings.Contains(x))];
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task BuildNormal()
         {
-            if (!IsAccountPaused(AccountId))
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
-                return;
-            }
+            if (!await EnsureAccountPaused()) return;
 
             var result = await _normalBuildInputValidator.ValidateAsync(NormalBuildInput);
             if (!result.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, result.Errors.Select(x => x.ErrorMessage)));
                 return;
             }
+
+            if (!await EnsureBuildingSelected()) return;
 
             var location = Buildings.SelectedIndex + 1;
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var normalBuildCommand = scope.ServiceProvider.GetRequiredService<NormalBuildCommand.Handler>();
-            var buildResult = await normalBuildCommand.HandleAsync(new(VillageId, NormalBuildInput.ToPlan(location)));
-            if (buildResult.IsFailed)
+            var (type, level) = NormalBuildInput.Get();
+            var plan = new NormalBuildPlan()
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", buildResult.ToString()));
-                return;
+                Location = location,
+                Type = type,
+                Level = level,
+            };
+
+            using var context = _contextFactory.CreateDbContext();
+            var buildings = context.GetLayoutBuildings(VillageId);
+            var building = buildings.Find(x => x.Location == plan.Location);
+
+            if (building is null || building.Type == BuildingEnums.Site)
+            {
+                var checkResult = plan.Type.CheckRequirements(buildings);
+                if (checkResult.IsFailed)
+                {
+                    await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, checkResult.Errors.Select(x => x.Message)));
+                    return;
+                }
+                plan.FixLocation(buildings);
             }
 
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            context.AddJob(VillageId, plan);
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task UpgradeOneLevel()
         {
-            if (!IsAccountPaused(AccountId))
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
-                return;
-            }
+            if (!await EnsureAccountPaused()) return;
+            if (!await EnsureBuildingSelected()) return;
             var location = Buildings.SelectedIndex + 1;
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var upgradeCommand = scope.ServiceProvider.GetRequiredService<UpgradeCommand.Handler>();
-            await upgradeCommand.HandleAsync(new(VillageId, location, false));
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            using var context = _contextFactory.CreateDbContext();
+            context.Upgrade(VillageId, location, false);
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task UpgradeMaxLevel()
         {
-            if (!IsAccountPaused(AccountId))
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
-                return;
-            }
+            if (!await EnsureAccountPaused()) return;
+            if (!await EnsureBuildingSelected()) return;
             var location = Buildings.SelectedIndex + 1;
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var upgradeCommand = scope.ServiceProvider.GetRequiredService<UpgradeCommand.Handler>();
-            await upgradeCommand.HandleAsync(new(VillageId, location, true));
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            using var context = _contextFactory.CreateDbContext();
+            context.Upgrade(VillageId, location, true);
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task BuildResource()
         {
-            if (!IsAccountPaused(AccountId))
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
-                return;
-            }
+            if (!await EnsureAccountPaused()) return;
 
             var result = await _resourceBuildInputValidator.ValidateAsync(ResourceBuildInput);
             if (!result.IsValid)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Error", result.ToString()));
+                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, result.Errors.Select(x => x.ErrorMessage)));
                 return;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var resourceBuildCommand = scope.ServiceProvider.GetRequiredService<ResourceBuildCommand.Handler>();
-            await resourceBuildCommand.HandleAsync(new(VillageId, ResourceBuildInput.ToPlan()));
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            using var context = _contextFactory.CreateDbContext();
+            context.AddJob(VillageId, ResourceBuildInput);
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Up()
         {
-            if (!IsAccountPaused(AccountId))
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
-                return;
-            }
+            if (!await EnsureAccountPaused()) return;
+            if (!await EnsureJobSelected()) return;
 
-            if (Jobs.SelectedItem is null)
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
-                return;
-            }
-
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
-            var newIndex = await swapCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Up));
+            using var context = _contextFactory.CreateDbContext();
+            var newIndex = context.SwapJob(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Up);
             Jobs.SelectedIndex = newIndex;
-
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Down()
         {
-            if (!IsAccountPaused(AccountId))
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
-                return;
-            }
-            if (Jobs.SelectedItem is null)
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
-                return;
-            }
+            if (!await EnsureAccountPaused()) return;
+            if (!await EnsureJobSelected()) return;
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var swapCommand = scope.ServiceProvider.GetRequiredService<SwapCommand.Handler>();
-            var newIndex = await swapCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Down));
+            using var context = _contextFactory.CreateDbContext();
+            var newIndex = context.SwapJob(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Down);
             Jobs.SelectedIndex = newIndex;
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Top()
         {
-            if (!IsAccountPaused(AccountId))
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
-                return;
-            }
-            if (Jobs.SelectedItem is null)
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
-                return;
-            }
+            if (!await EnsureAccountPaused()) return;
+            if (!await EnsureJobSelected()) return;
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
-            var newIndex = await moveCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Top));
+            using var context = _contextFactory.CreateDbContext();
+            var newIndex = context.MoveJob(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Top);
             Jobs.SelectedIndex = newIndex;
-
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Bottom()
         {
-            if (!IsAccountPaused(AccountId))
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
-                return;
-            }
-            if (Jobs.SelectedItem is null)
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please select before moving"));
-                return;
-            }
+            if (!await EnsureAccountPaused()) return;
+            if (!await EnsureJobSelected()) return;
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var moveCommand = scope.ServiceProvider.GetRequiredService<MoveCommand.Handler>();
-            var newIndex = await moveCommand.HandleAsync(new(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Bottom));
+            using var context = _contextFactory.CreateDbContext();
+            var newIndex = context.MoveJob(new JobId(Jobs[Jobs.SelectedIndex].Id), MoveEnums.Bottom);
             Jobs.SelectedIndex = newIndex;
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Delete()
         {
-            if (!IsAccountPaused(AccountId))
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
-                return;
-            }
+            if (!await EnsureAccountPaused()) return;
             if (Jobs.SelectedItem is null) return;
             var jobId = Jobs.SelectedItem.Id;
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var deleteJobByIdCommand = scope.ServiceProvider.GetRequiredService<DeleteJobByIdCommand.Handler>();
-            await deleteJobByIdCommand.HandleAsync(new(new JobId(jobId)));
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
+            using var context = _contextFactory.CreateDbContext();
+            context.DeleteJobById(new JobId(jobId));
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task DeleteAll()
         {
-            if (!IsAccountPaused(AccountId))
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
-                return;
-            }
+            if (!await EnsureAccountPaused()) return;
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
             context.Jobs
                 .Where(x => x.VillageId == VillageId.Value)
                 .ExecuteDelete();
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Import()
         {
-            if (!IsAccountPaused(AccountId))
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
-                return;
-            }
-            var path = await _dialogService.OpenFileDialog.Handle(Unit.Default);
+            if (!await EnsureAccountPaused()) return;
+            var path = await _dialogService.OpenFileDialog();
             if (string.IsNullOrEmpty(path)) return;
             List<JobDto> jobs;
             try
             {
                 var jsonString = await File.ReadAllTextAsync(path);
-                jobs = JsonSerializer.Deserialize<List<JobDto>>(jsonString)!;
+                jobs = JsonSerializer.Deserialize<List<JobDto>>(jsonString) ?? [];
             }
             catch
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Invalid file."));
+                await _dialogService.SendMessage("Warning", "Invalid file.");
                 return;
             }
 
-            var confirm = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "TBS will remove resource field build job if its position doesn't match with current village."));
+            if (jobs.Count == 0)
+            {
+                await _dialogService.SendMessage("Warning", "No jobs found in file.");
+                return;
+            }
+
+            var confirm = await _dialogService.SendConfirm("Warning", "TBS will remove resource field build job if its position doesn't match with current village.");
             if (!confirm) return;
 
-            var shuffle = await _dialogService.ConfirmBox.Handle(new MessageBoxData("Warning", "Do you want to random building location?"));
+            var shuffle = await _dialogService.SendConfirm("Warning", "Do you want to random building location?");
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var fixJobsCommand = scope.ServiceProvider.GetRequiredService<FixJobsCommand.Handler>();
-            var fixedJobs = await fixJobsCommand.HandleAsync(new(VillageId, jobs, shuffle));
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
+
+            var fixedJobs = context.FixJobs(VillageId, jobs, shuffle);
             var count = context.Jobs
-                .Where(x => x.VillageId == VillageId.Value)
-                .Count();
+                .Count(x => x.VillageId == VillageId.Value);
 
             var additionJobs = fixedJobs
                 .Select((job, index) => new Job()
@@ -483,23 +462,17 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
             context.AddRange(additionJobs);
             context.SaveChanges();
-            await JobsModifiedCommand.Execute(new JobsModified(VillageId));
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task Export()
         {
-            if (!IsAccountPaused(AccountId))
-            {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "Please pause account before modifing building queue"));
-                return;
-            }
+            if (!await EnsureAccountPaused()) return;
 
-            var path = await _dialogService.SaveFileDialog.Handle(Unit.Default);
+            var path = await _dialogService.SaveFileDialog();
             if (string.IsNullOrEmpty(path)) return;
 
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
             var jobs = context.Jobs
                 .Where(x => x.VillageId == VillageId.Value)
                 .OrderBy(x => x.Position)
@@ -509,17 +482,34 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var jsonString = JsonSerializer.Serialize(jobs);
             await File.WriteAllTextAsync(path, jsonString);
 
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", "Job list exported"));
+            await _dialogService.SendMessage("Information", "Job list exported");
+        }
+
+        private async Task<bool> EnsureAccountPaused()
+        {
+            if (IsAccountPaused(AccountId)) return true;
+            await _dialogService.SendMessage("Warning", "Please pause account before modifying building queue");
+            return false;
+        }
+
+        private async Task<bool> EnsureJobSelected()
+        {
+            if (Jobs.SelectedItem is not null) return true;
+            await _dialogService.SendMessage("Warning", "Please select before moving");
+            return false;
+        }
+
+        private async Task<bool> EnsureBuildingSelected()
+        {
+            if (Buildings.SelectedItem is not null) return true;
+            await _dialogService.SendMessage("Warning", "Please select building before adding job");
+            return false;
         }
 
         private bool IsAccountPaused(AccountId accountId)
         {
             var status = _taskManager.GetStatus(accountId);
-            if (status == StatusEnums.Online)
-            {
-                return false;
-            }
-            return true;
+            return status != StatusEnums.Online;
         }
     }
 }

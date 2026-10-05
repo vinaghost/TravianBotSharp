@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -12,73 +12,65 @@
 
     <RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <PlaywrightPlatform>win</PlaywrightPlatform>
+  </PropertyGroup>
   <!--<PropertyGroup>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <GeneratedFolder>Generated</GeneratedFolder>
     <CompilerGeneratedFilesOutputPath>$(GeneratedFolder)</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>-->
-  <ItemGroup>
-    <EmbeddedResource Include="Infrasturecture\ExtensionFiles\**" />
-    
-    <!--<Compile Remove="$(GeneratedFolder)/**/*.cs" />
-    <None Include="$(GeneratedFolder)/**/*.cs" />-->
-
-  </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ardalis.Specification.EntityFrameworkCore" Version="9.3.1" />
-    <PackageReference Include="FluentValidation" Version="12.1.0" />
-    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.0" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="FluentResults" Version="4.0.0" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
-    <PackageReference Include="Humanizer.Core" Version="2.14.1" />
-    <PackageReference Include="Immediate.Handlers" Version="3.1.0" />
-    <PackageReference Include="Injectio" Version="5.1.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
-    <PackageReference Include="Polly" Version="8.6.4" />
-    <PackageReference Include="ReactiveUI" Version="22.2.1" />
-    <PackageReference Include="ReactiveUI.SourceGenerators" Version="2.5.1">
+    <PackageReference Include="Humanizer.Core" Version="3.0.10" />
+    <PackageReference Include="Immediate.Handlers" Version="4.2.0" />
+    <PackageReference Include="Injectio" Version="6.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Riok.Mapperly" Version="4.3.0" />
-    <PackageReference Include="Selenium.Support" Version="4.38.0" />
-    <PackageReference Include="Selenium.WebDriver" Version="4.38.0" />
-    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
+    <PackageReference Include="Patchright" Version="1.63.0" />
+    <PackageReference Include="Polly" Version="8.8.0" />
+    <PackageReference Include="ReactiveUI" Version="24.2.0" />
+    <PackageReference Include="ReactiveUI.SourceGenerators" Version="3.2.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Riok.Mapperly" Version="4.3.1" />
+    <PackageReference Include="Serilog" Version="4.4.0" />
     <PackageReference Include="Serilog.Expressions" Version="5.0.0" />
-    <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.Map" Version="2.0.0" />
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.15.0.120848">
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.34.0.3385">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Splat" Version="17.1.1" />
-    <PackageReference Include="Splat.Drawing" Version="17.1.1" />
-    <PackageReference Include="Splat.Microsoft.Extensions.DependencyInjection" Version="17.1.1" />
+    <PackageReference Include="Splat" Version="21.0.0" />
+    <PackageReference Include="Splat.Drawing" Version="21.0.0" />
+    <PackageReference Include="Splat.Microsoft.Extensions.DependencyInjection" Version="21.0.0" />
     <PackageReference Include="StronglyTypedId" Version="1.0.0-beta06" PrivateAssets="all" ExcludeAssets="runtime" />
   </ItemGroup>
   
   <ItemGroup>
-    <Using Include="Ardalis.Specification.EntityFrameworkCore" />
     <Using Include="FluentResults" />
     <Using Include="FluentValidation" />
-    <Using Include="HtmlAgilityPack" />
     <Using Include="Immediate.Handlers.Shared" />
     <Using Include="Injectio.Attributes" />
     <Using Include="Microsoft.EntityFrameworkCore" />
-    <Using Include="OpenQA.Selenium" />
+    <Using Include="Microsoft.Playwright" />
     <Using Include="ReactiveUI" />
     <Using Include="ReactiveUI.SourceGenerators" />
-    <Using Include="Splat" />
-    <Using Include="System.Reactive" />
-    <Using Include="System.Reactive.Linq" />
     <Using Include="Riok.Mapperly.Abstractions" />
+    <Using Include="Splat" />
     <Using Include="MainCore.DTO" />
     <Using Include="MainCore.Entities" />
     <Using Include="MainCore.Services" />
-    <Using Include="MainCore.Specifications" />    
     <Using Include="MainCore.Constraints" />    
     <Using Include="MainCore.Infrasturecture.Persistence" />
     <Using Include="MainCore.Parsers" />

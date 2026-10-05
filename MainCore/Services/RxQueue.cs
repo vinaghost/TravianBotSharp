@@ -1,21 +1,21 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.Reactive.Concurrency;
-using System.Reactive.Subjects;
-
 namespace MainCore.Services
 {
-    [RegisterSingleton<IRxQueue, RxQueue>]
-    public class RxQueue : IRxQueue
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Signals;
+
+    [RegisterSingleton<RxQueue>]
+    public class RxQueue
     {
-        private readonly Subject<INotification> _notifications = new Subject<INotification>();
-        private readonly IConnectableObservable<INotification> _connectableObservable;
+        private readonly Signal<INotification> _notifications = new Signal<INotification>();
+        private readonly ConnectableSignal<INotification> _connectableObservable;
 
-        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
-        public RxQueue(ICustomServiceScopeFactory serviceScopeFactory)
+        public RxQueue(IDbContextFactory<AppDbContext> contextFactory)
         {
-            _serviceScopeFactory = serviceScopeFactory;
-            _connectableObservable = _notifications.ObserveOn(Scheduler.Default).Publish();
+            _contextFactory = contextFactory;
+
+            _connectableObservable = _notifications.ObserveOn(RxSchedulers.TaskpoolScheduler).Publish();
             _connectableObservable.Connect();
         }
 
@@ -33,25 +33,26 @@ namespace MainCore.Services
         private void AccountInitHandler(AccountInit notification)
         {
             var accountId = notification.AccountId;
-            using var scope = _serviceScopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var taskManager = scope.ServiceProvider.GetRequiredService<ITaskManager>();
+            using var context = _contextFactory.CreateDbContext();
+            var taskManager = Locator.Current.GetService<TaskManager>()!;
 
             taskManager.Add(new LoginTask.Task(accountId), first: true);
 
             var workTime = context.ByName(accountId, AccountSettingEnums.WorkTimeMin, AccountSettingEnums.WorkTimeMax);
-            var sleepTask = new SleepTask.Task(accountId);
-            sleepTask.ExecuteAt = DateTime.Now.AddMinutes(workTime);
-            taskManager.AddOrUpdate<SleepTask.Task>(sleepTask);
+            var sleepTask = new SleepTask.Task(accountId)
+            {
+                ExecuteAt = DateTime.Now.AddMinutes(workTime)
+            };
+            taskManager.AddOrUpdate(sleepTask);
 
             var startAdventureTask = new StartAdventureTask.Task(accountId);
             if (startAdventureTask.CanStart(context) && !taskManager.IsExist<StartAdventureTask.Task>(accountId))
             {
                 taskManager.Add(startAdventureTask);
             }
-            var villagesSpec = new VillagesSpec(accountId);
             var villages = context.Villages
-                .WithSpecification(villagesSpec)
+                .Where(x => x.AccountId == accountId.Value)
+                .Select(x => new VillageId(x.Id))
                 .ToList();
             foreach (var village in villages)
             {
@@ -66,10 +67,12 @@ namespace MainCore.Services
                     taskManager.Add(trainTroopTask);
                 }
             }
-            var hasBuildJobVillagesSpec = new HasBuildJobVillagesSpec(accountId);
             var hasBuildJobVillages = context.Villages
-                .WithSpecification(hasBuildJobVillagesSpec)
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => x.Jobs.Any(x => _jobTypes.Contains(x.Type)))
+                .Select(x => new VillageId(x.Id))
                 .ToList();
+
             foreach (var village in hasBuildJobVillages)
             {
                 var upgradeBuildingTask = new UpgradeBuildingTask.Task(accountId, village);
@@ -80,10 +83,14 @@ namespace MainCore.Services
             }
         }
 
+        private static readonly List<JobTypeEnums> _jobTypes = new() {
+            JobTypeEnums.NormalBuild,
+            JobTypeEnums.ResourceBuild
+        };
+
         private void VillageTaskAddedHandler(VillageTaskAdded notification)
         {
-            using var scope = _serviceScopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
             notification.Task.SetVillageName(context);
         }
 
@@ -92,7 +99,7 @@ namespace MainCore.Services
             _connectableObservable.OfType<T>().Subscribe(handleAction);
         }
 
-        public void RegisterCommand<T>(ReactiveCommand<T, Unit> command) where T : INotification
+        public void RegisterCommand<T>(ReactiveCommand<T, RxVoid> command) where T : INotification
         {
             GetObservable<T>().InvokeCommand(command);
         }

@@ -3,8 +3,8 @@ using Serilog.Events;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton<ILogService, LogService>]
-    public sealed class LogService : ILogService
+    [RegisterSingleton<LogService>]
+    public sealed class LogService
     {
         public Dictionary<AccountId, ILogger> Loggers { get; } = [];
         private readonly LogSink _logSink;

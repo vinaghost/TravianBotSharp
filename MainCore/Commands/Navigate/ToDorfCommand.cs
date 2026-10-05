@@ -1,15 +1,11 @@
 ﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public static partial class ToDorfCommand
+    public sealed partial class ToDorfCommand(IChromeBrowser browser)
     {
         public sealed record Command(int Dorf) : ICommand;
 
-        private static async ValueTask<Result> HandleAsync(
-           Command command,
-           IChromeBrowser browser,
-           CancellationToken cancellationToken
-           )
+        private async ValueTask<Result> HandleAsync(Command command)
         {
             var dorf = command.Dorf;
 
@@ -26,14 +22,11 @@
                 return Result.Ok();
             }
 
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => NavigationBarParser.GetDorfButton(doc, dorf), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
             Result result;
-            result = await browser.Click(element, cancellationToken);
+            result = await browser.Click(NavigationBarParser.GetDorfButton(browser.CurrentPage, dorf));
             if (result.IsFailed) return result;
 
-            result = await browser.WaitPageChanged($"dorf{dorf}.php", cancellationToken);
+            result = await browser.WaitPageChanged($"dorf{dorf}.php");
             if (result.IsFailed) return result;
 
             return Result.Ok();

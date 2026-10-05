@@ -1,9 +1,10 @@
 ﻿using MainCore.UI.ViewModels.Tabs;
 using ReactiveUI;
-using System.Reactive.Disposables.Fluent;
 
 namespace WPFUI.Views.Tabs
 {
+    using ReactiveUI.Primitives;
+
     public class DebugTagBase : ReactiveUserControl<DebugViewModel>
     {
     }
@@ -23,7 +24,7 @@ namespace WPFUI.Views.Tabs
 
                 this.BindCommand(ViewModel, vm => vm.LeftCommand, v => v.ReportButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.RightCommand, v => v.LogButton).DisposeWith(d);
-                this.Bind(ViewModel, vm => vm.EndpointAddress, v => v.DevToolsEndpointAddress.Text).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.BringToFrontCommand, v => v.BringToFrontButton).DisposeWith(d);
             });
         }
     }

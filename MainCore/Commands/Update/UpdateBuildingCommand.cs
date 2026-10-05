@@ -1,41 +1,53 @@
-﻿namespace MainCore.Commands.Update
+namespace MainCore.Commands.Update
 {
     [Handler]
-    public static partial class UpdateBuildingCommand
+    public sealed partial class UpdateBuildingCommand(
+        IChromeBrowser browser,
+        IDbContextFactory<AppDbContext> contextFactory,
+        RxQueue rxQueue)
     {
         public sealed record Command(VillageId VillageId) : IVillageCommand;
 
-        private static async ValueTask<Result> HandleAsync(
-                 Command command,
-                 IChromeBrowser browser,
-                 AppDbContext context,
-                 IRxQueue rxQueue
-                 )
+        private async ValueTask<Result> HandleAsync(Command command)
         {
-            await Task.CompletedTask;
             var villageId = command.VillageId;
 
-            var dtoBuilding = GetBuildings(browser.CurrentUrl, browser.Html).ToList();
+            var dtoBuilding = await GetBuildings(browser.CurrentUrl, browser.CurrentPage);
             if (dtoBuilding.Count == 0) return Result.Ok();
 
-            var dtoQueueBuilding = BuildingLayoutParser.GetQueueBuilding(browser.Html).ToList();
+            var dtoQueueBuilding = await BuildingLayoutParser.GetQueueBuilding(browser.CurrentPage);
+
+            var tribe = await BuildingLayoutParser.GetTribe(browser.CurrentPage);
 
             var result = IsValidQueueBuilding(dtoQueueBuilding);
             if (result.IsFailed) return result;
 
-            context.UpdateToDatabase(villageId, dtoBuilding, dtoQueueBuilding);
-
-            rxQueue.Enqueue(new BuildingsModified(villageId));
+            UpdateToDatabase(villageId, dtoBuilding, dtoQueueBuilding, tribe);
+            Trigger(villageId);
             return Result.Ok();
         }
 
-        private static IEnumerable<BuildingDto> GetBuildings(string url, HtmlDocument html)
+        private void Trigger(VillageId villageId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var accountId = context.Villages
+                .Where(x => x.Id == villageId.Value)
+                .Select(x => new AccountId(x.AccountId))
+                .FirstOrDefault();
+
+            if (accountId != AccountId.Empty)
+            {
+                rxQueue.Enqueue(new BuildingsModified(accountId, villageId));
+            }
+        }
+
+        private static async Task<List<BuildingDto>> GetBuildings(string url, IPage page)
         {
             if (url.Contains("dorf1"))
-                return BuildingLayoutParser.GetFields(html);
+                return await BuildingLayoutParser.GetFields(page);
 
             if (url.Contains("dorf2"))
-                return BuildingLayoutParser.GetInfrastructures(html);
+                return await BuildingLayoutParser.GetInfrastructures(page);
 
             return [];
         }
@@ -50,21 +62,15 @@
             return Result.Ok();
         }
 
-        private static void UpdateToDatabase(this AppDbContext context, VillageId villageId, List<BuildingDto> buildingDtos, List<QueueBuildingDto> queueBuildingDtos)
+        private void UpdateToDatabase(VillageId villageId, List<BuildingDto> buildingDtos, List<QueueBuildingDto> queueBuildingDtos, TribeEnums tribe)
         {
+            using var context = contextFactory.CreateDbContext();
             var dbBuildings = context.Buildings
                 .Where(x => x.VillageId == villageId.Value)
                 .ToList();
 
             foreach (var dto in buildingDtos)
             {
-                if (dto.Location == 40)
-                {
-                    var tribe = (TribeEnums)context.ByName(villageId, VillageSettingEnums.Tribe);
-                    var wall = tribe.GetWall();
-                    dto.Type = wall;
-                }
-
                 var dbBuilding = dbBuildings
                     .Find(x => x.Location == dto.Location);
 
@@ -79,11 +85,6 @@
                     dto.To(dbBuilding);
                 }
             }
-
-            context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.CompleteTime < DateTime.Now)
-                .ExecuteDelete();
 
             var dbQueueBuildings = context.QueueBuildings
                 .Where(x => x.VillageId == villageId.Value)
@@ -196,6 +197,10 @@
                 }
             }
 
+            context.VillagesSetting
+                .Where(x => x.Id == villageId.Value)
+                .Where(x => x.Setting == VillageSettingEnums.Tribe)
+                .ExecuteUpdate(x => x.SetProperty(x => x.Value, (int)tribe));
             context.SaveChanges();
         }
     }
