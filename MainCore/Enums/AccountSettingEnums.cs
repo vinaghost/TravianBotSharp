@@ -18,5 +18,6 @@
         HeadlessChrome,
         EnableAutoStartAdventure,
         EnableAutoClaimDailyQuest,
+        EnableAutoSetHeroPoint,
     }
 }

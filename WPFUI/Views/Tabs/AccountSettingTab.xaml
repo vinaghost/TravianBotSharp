@@ -102,6 +102,7 @@
                         <CheckBox x:Name="EnableAutoLoadVillage" Content="Enable auto load village's building" />
                         <CheckBox x:Name="EnableAutoStartAdventure" Content="Enable auto start adventure" />
                         <CheckBox x:Name="EnableAutoClaimDailyQuest" Content="Enable auto claim daily quest" />
+                        <CheckBox x:Name="EnableAutoSetHeroPoint" Content="Enable auto set hero point (1 power, 3 res)" />
                     </StackPanel>
                 </Border>
                 <Border Style="{DynamicResource Box}">

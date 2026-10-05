@@ -69,6 +69,22 @@ namespace MainCore.UI.ViewModels.Tabs
                     taskManager.Remove<ClaimDailyQuestTask.Task>(accountId);
                 }
             }
+
+            if (settings.ContainsKey(AccountSettingEnums.EnableAutoSetHeroPoint))
+            {
+                if (settings[AccountSettingEnums.EnableAutoSetHeroPoint] == 1)
+                {
+                    var task = new SetHeroPointTask.Task(accountId);
+                    if (task.CanStart(context) && !taskManager.IsExist<SetHeroPointTask.Task>(accountId))
+                    {
+                        taskManager.Add(task);
+                    }
+                }
+                else
+                {
+                    taskManager.Remove<SetHeroPointTask.Task>(accountId);
+                }
+            }
         }
     }
 }
