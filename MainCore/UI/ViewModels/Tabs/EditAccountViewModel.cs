@@ -1,4 +1,4 @@
-﻿using MainCore.UI.Models.Input;
+using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 
@@ -15,12 +15,12 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private readonly IValidator<AccessInput> _accessInputValidator;
         private readonly IValidator<AccountInput> _accountInputValidator;
-        private readonly IDialogService _dialogService;
+        private readonly DialogService _dialogService;
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IRxQueue _rxQueue;
+        private readonly RxQueue _rxQueue;
 
-        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, IRxQueue rxQueue)
+        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, DialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, RxQueue rxQueue)
         {
             _accessInputValidator = accessInputValidator;
             _accountInputValidator = accountInputValidator;

@@ -1,10 +1,10 @@
-﻿namespace MainCore.Services
+namespace MainCore.Services
 {
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
 
-    [RegisterSingleton<IRxQueue, RxQueue>]
-    public class RxQueue : IRxQueue
+    [RegisterSingleton<RxQueue>]
+    public class RxQueue
     {
         private readonly Signal<INotification> _notifications = new Signal<INotification>();
         private readonly ConnectableSignal<INotification> _connectableObservable;
@@ -34,7 +34,7 @@
         {
             var accountId = notification.AccountId;
             using var context = _contextFactory.CreateDbContext();
-            var taskManager = Locator.Current.GetService<ITaskManager>()!;
+            var taskManager = Locator.Current.GetService<TaskManager>()!;
 
             taskManager.Add(new LoginTask.Task(accountId), first: true);
 

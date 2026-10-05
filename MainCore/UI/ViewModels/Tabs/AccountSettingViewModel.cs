@@ -1,4 +1,4 @@
-﻿using MainCore.Infrasturecture.Extensions;
+using MainCore.Infrasturecture.Extensions;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 using System.Text.Json;
@@ -13,12 +13,12 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         public AccountSettingInput AccountSettingInput { get; } = new();
 
-        private readonly IDialogService _dialogService;
+        private readonly DialogService _dialogService;
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly ITaskManager _taskManager;
+        private readonly TaskManager _taskManager;
 
-        public AccountSettingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, IDbContextFactory<AppDbContext> contextFactory, ITaskManager taskManager)
+        public AccountSettingViewModel(DialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, IDbContextFactory<AppDbContext> contextFactory, TaskManager taskManager)
         {
             _dialogService = dialogService;
             _accountsettingInputValidator = accountsettingInputValidator;

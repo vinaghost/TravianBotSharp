@@ -1,25 +1,25 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Retry;
 using System.Collections.Concurrent;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton<ITimerManager, TimerManager>]
-    public sealed class TimerManager : ITimerManager
+    [RegisterSingleton<TimerManager>]
+    public sealed class TimerManager
     {
         private readonly ConcurrentDictionary<AccountId, CancellationTokenSource> _loops = [];
 
         private volatile bool _isShutdown = false;
 
-        private readonly ITaskManager _taskManager;
-        private readonly IRxQueue _rxQueue;
-        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
+        private readonly TaskManager _taskManager;
+        private readonly RxQueue _rxQueue;
+        private readonly CustomServiceScopeFactory _serviceScopeFactory;
 
         private static readonly ResiliencePropertyKey<ContextData> contextDataKey = new(nameof(ContextData));
         private readonly ResiliencePipeline<Result> _pipeline;
 
-        public TimerManager(ITaskManager taskManager, ICustomServiceScopeFactory serviceScopeFactory, IRxQueue rxQueue)
+        public TimerManager(TaskManager taskManager, CustomServiceScopeFactory serviceScopeFactory, RxQueue rxQueue)
         {
             _taskManager = taskManager;
             _serviceScopeFactory = serviceScopeFactory;
@@ -182,7 +182,7 @@ namespace MainCore.Services
                 }
             }
 
-            var delayService = scope.ServiceProvider.GetRequiredService<IDelayService>();
+            var delayService = scope.ServiceProvider.GetRequiredService<DelayService>();
             await delayService.DelayTask();
         }
 

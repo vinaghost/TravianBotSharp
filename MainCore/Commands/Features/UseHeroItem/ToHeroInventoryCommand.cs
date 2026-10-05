@@ -1,4 +1,4 @@
-﻿#pragma warning disable S1172
+#pragma warning disable S1172
 
 namespace MainCore.Commands.Features.UseHeroItem
 {
@@ -10,7 +10,7 @@ namespace MainCore.Commands.Features.UseHeroItem
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            IDelayService delayService,
+            DelayService delayService,
             CancellationToken cancellationToken)
         {
             var result = await browser.Click(InventoryParser.GetHeroAvatar(browser.CurrentPage));

@@ -1,10 +1,10 @@
-﻿using MainCore.Tasks.Base;
+using MainCore.Tasks.Base;
 
 namespace MainCore.Behaviors
 {
     public sealed class AccountTaskBehavior<TRequest, TResponse>(
         IChromeBrowser browser,
-        ITaskManager taskManager,
+        TaskManager taskManager,
         UpdateAccountInfoCommand.Handler updateAccountInfoCommand,
         UpdateVillageListCommand.Handler updateVillageListCommand,
         UpdateDailyQuestCommand.Handler updateDailyQuestCommand,

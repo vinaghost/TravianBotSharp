@@ -1,4 +1,4 @@
-﻿using MainCore.UI.ViewModels.Abstract;
+using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using System.Collections.ObjectModel;
 using System.Text.Json;
@@ -11,17 +11,17 @@ namespace MainCore.UI.ViewModels.Tabs
     [RegisterSingleton<AddAccountsViewModel>]
     public partial class AddAccountsViewModel : TabViewModelBase
     {
-        private readonly IDialogService _dialogService;
+        private readonly DialogService _dialogService;
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IRxQueue _rxQueue;
-        private readonly IDefaultTemplatePathStore _defaultTemplatePathStore;
+        private readonly RxQueue _rxQueue;
+        private readonly DefaultTemplatePathStore _defaultTemplatePathStore;
         public ObservableCollection<AccountDetailDto> Accounts { get; } = [];
 
         [Reactive]
         private string _input = "";
 
-        public AddAccountsViewModel(IDialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, IRxQueue rxQueue, IDefaultTemplatePathStore defaultTemplatePathStore)
+        public AddAccountsViewModel(DialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, RxQueue rxQueue, DefaultTemplatePathStore defaultTemplatePathStore)
         {
             _dialogService = dialogService;
             _waitingOverlayViewModel = waitingOverlayViewModel;

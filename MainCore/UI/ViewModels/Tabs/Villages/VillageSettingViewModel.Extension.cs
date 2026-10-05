@@ -1,8 +1,8 @@
-﻿namespace MainCore.UI.ViewModels.Tabs.Villages
+namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     public static class VillageSettingViewModelExtension
     {
-        public static void TriggerTask(this AppDbContext context, ITaskManager taskManager, AccountId accountId, VillageId villageId, Dictionary<VillageSettingEnums, int> settings)
+        public static void TriggerTask(this AppDbContext context, TaskManager taskManager, AccountId accountId, VillageId villageId, Dictionary<VillageSettingEnums, int> settings)
         {
             if (settings.ContainsKey(VillageSettingEnums.CompleteImmediately))
             {

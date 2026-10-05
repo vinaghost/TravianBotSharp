@@ -7,7 +7,7 @@ namespace MainCore.Services
         IPage CurrentPage { get; }
         string CurrentUrl { get; }
         ILogger Logger { get; set; }
-        IDelayService DelayService { get; set; }
+        DelayService DelayService { get; set; }
         bool IsInitialized { get; }
         bool IsHeadless { get; }
 

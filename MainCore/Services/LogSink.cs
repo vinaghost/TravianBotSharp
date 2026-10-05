@@ -1,4 +1,4 @@
-﻿using Serilog;
+using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
@@ -10,9 +10,9 @@ namespace MainCore.Services
     {
         private Dictionary<AccountId, LinkedList<LogEvent>> Logs { get; } = [];
 
-        private readonly IRxQueue _rxQueue;
+        private readonly RxQueue _rxQueue;
 
-        public LogSink(IRxQueue rxQueue)
+        public LogSink(RxQueue rxQueue)
         {
             _rxQueue = rxQueue;
         }

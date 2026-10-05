@@ -1,4 +1,4 @@
-﻿using MainCore.Infrasturecture.Extensions;
+using MainCore.Infrasturecture.Extensions;
 using MainCore.UI.ViewModels.Tabs.Villages;
 using System.Text.Json;
 
@@ -8,9 +8,9 @@ namespace MainCore.Commands.Update
     public sealed partial class UpdateVillageListCommand(
         IChromeBrowser browser,
         IDbContextFactory<AppDbContext> contextFactory,
-        IRxQueue rxQueue,
-        ITaskManager taskManager,
-        IDefaultTemplatePathStore defaultTemplatePathStore)
+        RxQueue rxQueue,
+        TaskManager taskManager,
+        DefaultTemplatePathStore defaultTemplatePathStore)
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 

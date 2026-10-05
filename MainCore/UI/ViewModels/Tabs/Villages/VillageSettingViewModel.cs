@@ -1,4 +1,4 @@
-﻿using MainCore.Infrasturecture.Extensions;
+using MainCore.Infrasturecture.Extensions;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 using System.Text.Json;
@@ -13,12 +13,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
     {
         public VillageSettingInput VillageSettingInput { get; } = new();
 
-        private readonly IDialogService _dialogService;
+        private readonly DialogService _dialogService;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IValidator<VillageSettingInput> _villageSettingInputValidator;
-        private readonly ITaskManager _taskManager;
+        private readonly TaskManager _taskManager;
 
-        public VillageSettingViewModel(IDialogService dialogService, IValidator<VillageSettingInput> villageSettingInputValidator, ICustomServiceScopeFactory serviceScopeFactory, IDbContextFactory<AppDbContext> contextFactory, ITaskManager taskManager)
+        public VillageSettingViewModel(DialogService dialogService, IValidator<VillageSettingInput> villageSettingInputValidator, CustomServiceScopeFactory serviceScopeFactory, IDbContextFactory<AppDbContext> contextFactory, TaskManager taskManager)
         {
             _dialogService = dialogService;
             _villageSettingInputValidator = villageSettingInputValidator;

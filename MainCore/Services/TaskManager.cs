@@ -4,11 +4,11 @@ using System.Collections.Concurrent;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton<ITaskManager, TaskManager>]
+    [RegisterSingleton<TaskManager>]
     public sealed class TaskManager(
-        IRxQueue rxQueue,
+        RxQueue rxQueue,
         IDbContextFactory<AppDbContext> contextFactory,
-        ILogger logger) : ITaskManager
+        ILogger logger)
     {
         private readonly ConcurrentDictionary<AccountId, AccountSchedulerActor> _actors = [];
 

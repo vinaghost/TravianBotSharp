@@ -2,8 +2,8 @@
 
 namespace MainCore.Services
 {
-    [RegisterSingleton<IChromeManager, ChromeManager>]
-    public sealed class ChromeManager() : IChromeManager
+    [RegisterSingleton<ChromeManager>]
+    public sealed class ChromeManager()
     {
         private readonly ConcurrentDictionary<AccountId, ChromeBrowser> _dictionary = new();
 

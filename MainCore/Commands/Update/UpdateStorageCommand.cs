@@ -1,10 +1,10 @@
-﻿namespace MainCore.Commands.Update
+namespace MainCore.Commands.Update
 {
     [Handler]
     public sealed partial class UpdateStorageCommand(
         IDbContextFactory<AppDbContext> contextFactory,
         IChromeBrowser browser,
-        ITaskManager taskManager)
+        TaskManager taskManager)
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 

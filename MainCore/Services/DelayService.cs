@@ -1,9 +1,9 @@
-﻿namespace MainCore.Services
+namespace MainCore.Services
 {
-    [RegisterScoped<IDelayService, DelayService>]
-    public class DelayService(IDataService dataService, IDbContextFactory<AppDbContext> contextFactory) : IDelayService
+    [RegisterScoped<DelayService>]
+    public class DelayService(DataService dataService, IDbContextFactory<AppDbContext> contextFactory)
     {
-        private readonly IDataService _dataService = dataService;
+        private readonly DataService _dataService = dataService;
         private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
 
         public async Task DelayClick(CancellationToken cancellationToken = default)

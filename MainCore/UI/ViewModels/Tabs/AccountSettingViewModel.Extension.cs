@@ -1,8 +1,8 @@
-﻿namespace MainCore.UI.ViewModels.Tabs
+namespace MainCore.UI.ViewModels.Tabs
 {
     public static class AccountSettingViewModelExtension
     {
-        public static void TriggerTask(this AppDbContext context, ITaskManager taskManager, AccountId accountId, Dictionary<AccountSettingEnums, int> settings)
+        public static void TriggerTask(this AppDbContext context, TaskManager taskManager, AccountId accountId, Dictionary<AccountSettingEnums, int> settings)
         {
             if (settings.Count == 0) return;
 

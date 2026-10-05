@@ -1,4 +1,4 @@
-﻿using MainCore.Tasks.Base;
+using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -6,7 +6,7 @@ namespace MainCore.Tasks
     public sealed partial class CompleteImmediatelyTask(
         ToDorfCommand.Handler toDorfCommand,
         IChromeBrowser browser,
-        ITaskManager taskManager)
+        TaskManager taskManager)
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {

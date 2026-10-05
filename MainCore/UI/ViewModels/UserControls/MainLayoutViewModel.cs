@@ -1,4 +1,4 @@
-﻿using MainCore.UI.Models.Output;
+using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,22 +15,23 @@ namespace MainCore.UI.ViewModels.UserControls
     [RegisterSingleton<MainLayoutViewModel>]
     public partial class MainLayoutViewModel : ViewModelBase
     {
-        private readonly IDialogService _dialogService;
-        private readonly ITaskManager _taskManager;
-        private readonly ITimerManager _timerManager;
+        private readonly DialogService _dialogService;
+        private readonly TaskManager _taskManager;
+        private readonly TimerManager _timerManager;
+        private readonly ChromeManager _chromeManager;
         private readonly ILogger _logger;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly SelectedItemStore _selectedItemStore;
-        private readonly IRxQueue _rxQueue;
-        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
-        private readonly IDefaultTemplatePathStore _defaultTemplatePathStore;
+        private readonly RxQueue _rxQueue;
+        private readonly CustomServiceScopeFactory _serviceScopeFactory;
+        private readonly DefaultTemplatePathStore _defaultTemplatePathStore;
 
         private readonly AccountTabStore _accountTabStore;
         private readonly IObservable<bool> _canExecute;
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, IDialogService dialogService, ITaskManager taskManager, ILogger logger, IRxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, ITimerManager timerManager, ICustomServiceScopeFactory serviceScopeFactory, IDefaultTemplatePathStore defaultTemplatePathStore)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, DialogService dialogService, TaskManager taskManager, ILogger logger, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, TimerManager timerManager, CustomServiceScopeFactory serviceScopeFactory, DefaultTemplatePathStore defaultTemplatePathStore, ChromeManager chromeManager)
         {
             _accountTabStore = accountTabStore;
             _serviceScopeFactory = serviceScopeFactory;
@@ -43,6 +44,7 @@ namespace MainCore.UI.ViewModels.UserControls
             _timerManager = timerManager;
             _contextFactory = contextFactory;
             _selectedItemStore = selectedItemStore;
+            _chromeManager = chromeManager;
 
             _canExecute = this.WhenAnyValue(x => x.Accounts.IsEnable);
             _versionHelper = LoadVersionCommand
@@ -264,8 +266,7 @@ namespace MainCore.UI.ViewModels.UserControls
                     break;
             }
 
-            using var scope = _serviceScopeFactory.CreateScope(accountId);
-            var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
+            var browser = _chromeManager.Get(accountId);
 
             _taskManager.SetStatus(accountId, StatusEnums.Stopping);
             await _taskManager.StopCurrentTask(accountId);

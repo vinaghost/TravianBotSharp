@@ -1,4 +1,4 @@
-﻿using MainCore.Infrasturecture.Extensions;
+using MainCore.Infrasturecture.Extensions;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
@@ -15,10 +15,10 @@ namespace MainCore.UI.ViewModels.Tabs
         public AccountSettingInput AccountSettingInput { get; } = new();
         public ListBoxItemViewModel FarmLists { get; } = new();
 
-        private readonly IDialogService _dialogService;
+        private readonly DialogService _dialogService;
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly ITaskManager _taskManager;
+        private readonly TaskManager _taskManager;
 
         private static readonly Dictionary<SplatColor, string> _activeTexts = new()
         {
@@ -27,7 +27,7 @@ namespace MainCore.UI.ViewModels.Tabs
             { SplatColor.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(IDialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, ITaskManager taskManager, IRxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
+        public FarmingViewModel(DialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
         {
             _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;

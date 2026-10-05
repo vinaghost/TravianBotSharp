@@ -1,4 +1,4 @@
-﻿using MainCore.UI.Models.Output;
+using MainCore.UI.Models.Output;
 using MainCore.UI.Services;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
@@ -17,15 +17,15 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         private readonly VillageTabStore _villageTabStore;
         private readonly VillageContextCoordinator _villageContextCoordinator;
-        private readonly IDialogService _dialogService;
-        private readonly ITaskManager _taskManager;
+        private readonly DialogService _dialogService;
+        private readonly TaskManager _taskManager;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IRxQueue _rxQueue;
+        private readonly RxQueue _rxQueue;
         public ListBoxItemViewModel Villages { get; } = new();
 
         public VillageTabStore VillageTabStore => _villageTabStore;
 
-        public VillageViewModel(VillageTabStore villageTabStore, VillageContextCoordinator villageContextCoordinator, IDialogService dialogService, IRxQueue rxQueue, ITaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
+        public VillageViewModel(VillageTabStore villageTabStore, VillageContextCoordinator villageContextCoordinator, DialogService dialogService, RxQueue rxQueue, TaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
         {
             _villageTabStore = villageTabStore;
             _villageContextCoordinator = villageContextCoordinator;

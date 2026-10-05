@@ -1,10 +1,10 @@
-﻿namespace MainCore.Commands.Update
+namespace MainCore.Commands.Update
 {
     [Handler]
     public sealed partial class UpdateQuestCommand(
         IChromeBrowser browser,
         IDbContextFactory<AppDbContext> contextFactory,
-        ITaskManager taskManager)
+        TaskManager taskManager)
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 

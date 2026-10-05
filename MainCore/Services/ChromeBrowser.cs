@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace MainCore.Services
@@ -14,7 +14,7 @@ namespace MainCore.Services
         public string CurrentUrl => _mainPage?.Url ?? "";
 
         public ILogger Logger { get; set; } = null!;
-        public IDelayService DelayService { get; set; } = null!;
+        public DelayService DelayService { get; set; } = null!;
 
         public bool IsInitialized => _playwright is not null && _browser is not null && _mainPage is not null;
         public bool IsHeadless { get; private set; }

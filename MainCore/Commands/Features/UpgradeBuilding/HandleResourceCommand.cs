@@ -1,4 +1,4 @@
-﻿using MainCore.Commands.Features.UseHeroItem;
+using MainCore.Commands.Features.UseHeroItem;
 using MainCore.Infrasturecture.Extensions;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
@@ -7,7 +7,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     public sealed partial class HandleResourceCommand(
         UpdateStorageCommand.Handler updateStorageCommand,
         UseHeroResourceCommand.Handler useHeroResourceCommand,
-        IRxQueue rxQueue,
+        RxQueue rxQueue,
         IDbContextFactory<AppDbContext> contextFactory,
         IChromeBrowser browser,
         ILogger logger)

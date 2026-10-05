@@ -1,4 +1,4 @@
-﻿using MainCore.Infrasturecture.Extensions;
+using MainCore.Infrasturecture.Extensions;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -12,7 +12,7 @@ namespace MainCore.Tasks
         IDbContextFactory<AppDbContext> contextFactory,
         IChromeBrowser browser,
         ILogger logger,
-        ITaskManager taskManager)
+        TaskManager taskManager)
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {

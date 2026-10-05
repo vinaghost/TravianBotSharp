@@ -1,4 +1,4 @@
-﻿using MainCore;
+using MainCore;
 using MainCore.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -44,7 +44,7 @@ namespace WPFUI
             host.MapSplatLocator(sp =>
             {
                 SetupDialogService(sp);
-                sp.GetRequiredService<IRxQueue>().Setup();
+                sp.GetRequiredService<RxQueue>().Setup();
             });
 
             await host.RunAsync();
@@ -52,7 +52,7 @@ namespace WPFUI
 
         private static void SetupDialogService(IServiceProvider serviceProvider)
         {
-            var dialogService = serviceProvider.GetRequiredService<IDialogService>();
+            var dialogService = serviceProvider.GetRequiredService<DialogService>();
             dialogService.MessageBox.RegisterHandler(context =>
             {
                 ShowMessage(context.Input.Title, context.Input.Message);

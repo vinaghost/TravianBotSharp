@@ -1,4 +1,4 @@
-﻿using MainCore.Behaviors;
+using MainCore.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -53,14 +53,14 @@ namespace MainCore
 
                 services.AddScoped(sp =>
                 {
-                    var dataService = sp.GetRequiredService<IDataService>();
+                    var dataService = sp.GetRequiredService<DataService>();
                     if (dataService.AccountId == AccountId.Empty) throw new InvalidOperationException("AccountId is empty");
-                    var chromeManager = sp.GetRequiredService<IChromeManager>();
+                    var chromeManager = sp.GetRequiredService<ChromeManager>();
                     var logger = Log
                         .ForContext("Account", dataService.AccountData)
                         .ForContext("AccountId", dataService.AccountId);
 
-                    var delayService = sp.GetRequiredService<IDelayService>();
+                    var delayService = sp.GetRequiredService<DelayService>();
                     var browser = chromeManager.Get(dataService.AccountId);
                     browser.Logger = logger;
                     browser.DelayService = delayService;

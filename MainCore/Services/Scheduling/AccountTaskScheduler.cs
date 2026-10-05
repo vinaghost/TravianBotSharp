@@ -3,11 +3,11 @@ using System.Collections.Concurrent;
 
 namespace MainCore.Services.Scheduling
 {
-    [RegisterSingleton<IAccountTaskScheduler, AccountTaskScheduler>]
+    [RegisterSingleton<AccountTaskScheduler>]
     public sealed class AccountTaskScheduler(
-        IRxQueue rxQueue,
+        RxQueue rxQueue,
         IDbContextFactory<AppDbContext> contextFactory,
-        ILogger logger) : IAccountTaskScheduler, IDisposable
+        ILogger logger) : IDisposable
     {
         private readonly ConcurrentDictionary<AccountId, AccountSchedulerActor> _actors = [];
 

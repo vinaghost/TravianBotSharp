@@ -1,10 +1,10 @@
-﻿namespace MainCore.Commands.Update
+namespace MainCore.Commands.Update
 {
     [Handler]
     public sealed partial class UpdateFarmlistCommand(
         IChromeBrowser browser,
         IDbContextFactory<AppDbContext> contextFactory,
-        IRxQueue rxQueue)
+        RxQueue rxQueue)
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 

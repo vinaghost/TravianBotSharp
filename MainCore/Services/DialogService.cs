@@ -4,8 +4,8 @@ using ReactiveUI.Primitives.Signals;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton<IDialogService, DialogService>]
-    public sealed class DialogService : IDialogService
+    [RegisterSingleton<DialogService>]
+    public sealed class DialogService
     {
         public Interaction<MessageBoxData, bool> ConfirmBox { get; }
         public Interaction<MessageBoxData, RxVoid> MessageBox { get; }

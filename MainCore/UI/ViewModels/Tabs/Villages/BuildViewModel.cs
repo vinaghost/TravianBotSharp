@@ -1,4 +1,4 @@
-﻿using Humanizer;
+using Humanizer;
 using MainCore.Infrasturecture.Extensions;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
@@ -15,12 +15,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
     [RegisterSingleton<BuildViewModel>]
     public partial class BuildViewModel : VillageTabViewModelBase
     {
-        private readonly IDialogService _dialogService;
-        private readonly ITaskManager _taskManager;
+        private readonly DialogService _dialogService;
+        private readonly TaskManager _taskManager;
         private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
         private readonly IValidator<ResourceBuildInput> _resourceBuildInputValidator;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IRxQueue _rxQueue;
+        private readonly RxQueue _rxQueue;
 
         public NormalBuildInput NormalBuildInput { get; } = new();
         public ResourceBuildInput ResourceBuildInput { get; } = new();
@@ -29,7 +29,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(IDialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, ITaskManager taskManager, IRxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
+        public BuildViewModel(DialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
         {
             _dialogService = dialogService;
             _normalBuildInputValidator = normalBuildInputValidator;

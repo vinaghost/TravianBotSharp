@@ -1,4 +1,4 @@
-﻿using MainCore.Infrasturecture.Extensions;
+using MainCore.Infrasturecture.Extensions;
 using System.Text.Json;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         ToDorfCommand.Handler toDorfCommand,
         UpdateBuildingCommand.Handler updateBuildingCommand,
         ILogger logger,
-        IRxQueue rxQueue)
+        RxQueue rxQueue)
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 

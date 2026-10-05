@@ -1,4 +1,4 @@
-﻿using MainCore.UI.Models.Input;
+using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using System.Text.Json;
@@ -17,13 +17,13 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly IValidator<AccessInput> _accessInputValidator;
         private readonly IValidator<AccountInput> _accountInputValidator;
 
-        private readonly IDialogService _dialogService;
+        private readonly DialogService _dialogService;
         private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
-        private readonly IRxQueue _rxQueue;
-        private readonly IDefaultTemplatePathStore _defaultTemplatePathStore;
+        private readonly RxQueue _rxQueue;
+        private readonly DefaultTemplatePathStore _defaultTemplatePathStore;
 
-        public AddAccountViewModel(IValidator<AccessInput> accessInputValidator, IDialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, IRxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, IDefaultTemplatePathStore defaultTemplatePathStore)
+        public AddAccountViewModel(IValidator<AccessInput> accessInputValidator, DialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, DefaultTemplatePathStore defaultTemplatePathStore)
         {
             _accessInputValidator = accessInputValidator;
             _dialogService = dialogService;

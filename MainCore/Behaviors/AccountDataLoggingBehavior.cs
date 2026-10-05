@@ -1,8 +1,8 @@
-﻿using Serilog.Context;
+using Serilog.Context;
 
 namespace MainCore.Behaviors
 {
-    public sealed class AccountDataLoggingBehavior<TRequest, TResponse>(IDataService dataService)
+    public sealed class AccountDataLoggingBehavior<TRequest, TResponse>(DataService dataService)
        : Behavior<TRequest, TResponse>
            where TRequest : IAccountConstraint
     {

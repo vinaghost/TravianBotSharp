@@ -1,4 +1,4 @@
-﻿using MainCore.UI.Models.Output;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using Serilog.Events;
 using Serilog.Templates;
@@ -15,9 +15,9 @@ namespace MainCore.UI.ViewModels.Tabs
     public partial class DebugViewModel : AccountTabViewModelBase
     {
         private readonly LogSink _logSink;
-        private readonly ITaskManager _taskManager;
-        private readonly IChromeManager _chromeManager;
-        private readonly IDialogService _dialogService;
+        private readonly TaskManager _taskManager;
+        private readonly ChromeManager _chromeManager;
+        private readonly DialogService _dialogService;
         private static readonly ExpressionTemplate _template = new("{@t:HH:mm:ss} [{@l:u3}] {@m}\n{@x}");
 
         public ObservableCollection<TaskItem> Tasks { get; } = [];
@@ -29,7 +29,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private string _endpointAddress = "";
 
-        public DebugViewModel(LogSink logSink, ITaskManager taskManager, IRxQueue rxQueue, IChromeManager chromeManager, IDialogService dialogService)
+        public DebugViewModel(LogSink logSink, TaskManager taskManager, RxQueue rxQueue, ChromeManager chromeManager, DialogService dialogService)
         {
             _logSink = logSink;
             _taskManager = taskManager;

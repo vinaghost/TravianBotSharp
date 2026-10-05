@@ -1,7 +1,7 @@
 namespace MainCore.Services
 {
-    [RegisterSingleton<IDefaultTemplatePathStore, DefaultTemplatePathStore>]
-    public sealed class DefaultTemplatePathStore : IDefaultTemplatePathStore
+    [RegisterSingleton<DefaultTemplatePathStore>]
+    public sealed class DefaultTemplatePathStore
     {
         private const string AccountSettingsKey = "DefaultAccountSettingsPath";
         private const string VillageSettingsKey = "DefaultVillageSettingsPath";

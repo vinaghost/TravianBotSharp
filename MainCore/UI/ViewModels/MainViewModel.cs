@@ -1,4 +1,4 @@
-﻿using MainCore.UI.ViewModels.Abstract;
+using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 using Microsoft.Win32;
 using ReactiveUI.Primitives.Signals;
@@ -11,7 +11,7 @@ namespace MainCore.UI.ViewModels
     public partial class MainViewModel(
         IWaitingOverlayViewModel waitingOverlayViewModel,
         IDbContextFactory<AppDbContext> contextFactory,
-        IChromeManager chromeManager)
+        ChromeManager chromeManager)
         : ViewModelBase
     {
         [Reactive]
