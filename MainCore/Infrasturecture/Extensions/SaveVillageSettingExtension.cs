@@ -2,15 +2,18 @@
 {
     public static class SaveVillageSettingExtension
     {
-        public static void SaveVillageSetting(this AppDbContext context, VillageId villageId, Dictionary<VillageSettingEnums, int> settings)
+        extension(AppDbContext context)
         {
-            if (settings.Count == 0) return;
-            foreach (var setting in settings)
+            public void SaveVillageSetting(VillageId villageId, Dictionary<VillageSettingEnums, int> settings)
             {
-                context.VillagesSetting
-                    .Where(x => x.VillageId == villageId.Value)
-                    .Where(x => x.Setting == setting.Key)
-                    .ExecuteUpdate(x => x.SetProperty(x => x.Value, setting.Value));
+                if (settings.Count == 0) return;
+                foreach (var setting in settings)
+                {
+                    context.VillagesSetting
+                        .Where(x => x.VillageId == villageId.Value)
+                        .Where(x => x.Setting == setting.Key)
+                        .ExecuteUpdate(x => x.SetProperty(x => x.Value, setting.Value));
+                }
             }
         }
     }

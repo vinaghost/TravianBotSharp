@@ -4,96 +4,99 @@ namespace MainCore.Infrasturecture.Extensions
 {
     public static class GetLayoutBuildingsExtension
     {
-        public static List<BuildingItem> GetLayoutBuildings(this AppDbContext context, VillageId villageId, bool ignoreJobBuilding = false)
+        extension(AppDbContext context)
         {
-            var villageBuildings = context.Buildings
-                .AsNoTracking()
-                .Where(x => x.VillageId == villageId.Value)
-                .OrderBy(x => x.Location)
-                .Select(x => new BuildingItem()
-                {
-                    Id = new(x.Id),
-                    Location = x.Location,
-                    Type = x.Type,
-                    CurrentLevel = x.Level
-                })
-                .ToList();
-
-            var queueBuildings = context.QueueBuildings
-                .AsNoTracking()
-                .Where(x => x.VillageId == villageId.Value)
-                .GroupBy(x => x.Location)
-                .ToList();
-
-            foreach (var queueBuilding in queueBuildings)
+            public List<BuildingItem> GetLayoutBuildings(VillageId villageId, bool ignoreJobBuilding = false)
             {
-                var building = villageBuildings.Find(x => x.Location == queueBuilding.Key);
-                if (building is null) continue;
-                var queue = queueBuilding.MaxBy(x => x.Level);
-                if (queue is null) continue;
-                if (building.Type == BuildingEnums.Site) building.Type = queue.Type;
-                building.QueueLevel = queue.Level;
-                if (building.QueueLevel < queue.Level) building.JobLevel = queue.Level;
-            }
-            if (!ignoreJobBuilding)
-            {
-                var jobBuildings = context.Jobs
+                var villageBuildings = context.Buildings
                     .AsNoTracking()
                     .Where(x => x.VillageId == villageId.Value)
-                    .Where(x => x.Type == JobTypeEnums.NormalBuild)
-                    .Select(x => x.Content)
-                    .AsEnumerable()
-                    .Select(x => JsonSerializer.Deserialize<NormalBuildPlan>(x)!)
-                    .GroupBy(x => x.Location);
+                    .OrderBy(x => x.Location)
+                    .Select(x => new BuildingItem()
+                    {
+                        Id = new(x.Id),
+                        Location = x.Location,
+                        Type = x.Type,
+                        CurrentLevel = x.Level
+                    })
+                    .ToList();
 
-                foreach (var jobBuilding in jobBuildings)
+                var queueBuildings = context.QueueBuildings
+                    .AsNoTracking()
+                    .Where(x => x.VillageId == villageId.Value)
+                    .GroupBy(x => x.Location)
+                    .ToList();
+
+                foreach (var queueBuilding in queueBuildings)
                 {
-                    var building = villageBuildings.Find(x => x.Location == jobBuilding.Key);
+                    var building = villageBuildings.Find(x => x.Location == queueBuilding.Key);
                     if (building is null) continue;
-                    var job = jobBuilding.MaxBy(x => x.Level);
-                    if (job is null) continue;
-                    if (building.Type == BuildingEnums.Site) building.Type = job.Type;
-                    if (building.JobLevel < job.Level) building.JobLevel = job.Level;
+                    var queue = queueBuilding.MaxBy(x => x.Level);
+                    if (queue is null) continue;
+                    if (building.Type == BuildingEnums.Site) building.Type = queue.Type;
+                    building.QueueLevel = queue.Level;
+                    if (building.QueueLevel < queue.Level) building.JobLevel = queue.Level;
                 }
-
-                var resourceJobs = context.Jobs
-                    .AsNoTracking()
-                    .Where(x => x.VillageId == villageId.Value)
-                    .Where(x => x.Type == JobTypeEnums.ResourceBuild)
-                    .Select(x => x.Content)
-                    .AsEnumerable()
-                    .Select(x => JsonSerializer.Deserialize<ResourceBuildPlan>(x)!)
-                    .GroupBy(x => x.Plan);
-
-                var fields = villageBuildings.Where(x => x.Type.IsResourceField()).ToList();
-
-                foreach (var jobBuilding in resourceJobs)
+                if (!ignoreJobBuilding)
                 {
-                    var job = jobBuilding.FirstOrDefault();
-                    if (job is null) continue;
-                    if (jobBuilding.Key == ResourcePlanEnums.AllResources)
+                    var jobBuildings = context.Jobs
+                        .AsNoTracking()
+                        .Where(x => x.VillageId == villageId.Value)
+                        .Where(x => x.Type == JobTypeEnums.NormalBuild)
+                        .Select(x => x.Content)
+                        .AsEnumerable()
+                        .Select(x => JsonSerializer.Deserialize<NormalBuildPlan>(x)!)
+                        .GroupBy(x => x.Location);
+
+                    foreach (var jobBuilding in jobBuildings)
                     {
-                        fields
-                            .ForEach(x => x.JobLevel = x.JobLevel < job.Level ? job.Level : x.JobLevel);
-                        continue;
+                        var building = villageBuildings.Find(x => x.Location == jobBuilding.Key);
+                        if (building is null) continue;
+                        var job = jobBuilding.MaxBy(x => x.Level);
+                        if (job is null) continue;
+                        if (building.Type == BuildingEnums.Site) building.Type = job.Type;
+                        if (building.JobLevel < job.Level) building.JobLevel = job.Level;
                     }
-                    if (jobBuilding.Key == ResourcePlanEnums.ExcludeCrop)
+
+                    var resourceJobs = context.Jobs
+                        .AsNoTracking()
+                        .Where(x => x.VillageId == villageId.Value)
+                        .Where(x => x.Type == JobTypeEnums.ResourceBuild)
+                        .Select(x => x.Content)
+                        .AsEnumerable()
+                        .Select(x => JsonSerializer.Deserialize<ResourceBuildPlan>(x)!)
+                        .GroupBy(x => x.Plan);
+
+                    var fields = villageBuildings.Where(x => x.Type.IsResourceField()).ToList();
+
+                    foreach (var jobBuilding in resourceJobs)
                     {
-                        fields
-                            .Where(x => x.Type != BuildingEnums.Cropland)
-                            .ToList()
-                            .ForEach(x => x.JobLevel = x.JobLevel < job.Level ? job.Level : x.JobLevel);
-                    }
-                    if (jobBuilding.Key == ResourcePlanEnums.OnlyCrop)
-                    {
-                        fields
-                            .Where(x => x.Type == BuildingEnums.Cropland)
-                            .ToList()
-                            .ForEach(x => x.JobLevel = x.JobLevel < job.Level ? job.Level : x.JobLevel);
+                        var job = jobBuilding.FirstOrDefault();
+                        if (job is null) continue;
+                        if (jobBuilding.Key == ResourcePlanEnums.AllResources)
+                        {
+                            fields
+                                .ForEach(x => x.JobLevel = x.JobLevel < job.Level ? job.Level : x.JobLevel);
+                            continue;
+                        }
+                        if (jobBuilding.Key == ResourcePlanEnums.ExcludeCrop)
+                        {
+                            fields
+                                .Where(x => x.Type != BuildingEnums.Cropland)
+                                .ToList()
+                                .ForEach(x => x.JobLevel = x.JobLevel < job.Level ? job.Level : x.JobLevel);
+                        }
+                        if (jobBuilding.Key == ResourcePlanEnums.OnlyCrop)
+                        {
+                            fields
+                                .Where(x => x.Type == BuildingEnums.Cropland)
+                                .ToList()
+                                .ForEach(x => x.JobLevel = x.JobLevel < job.Level ? job.Level : x.JobLevel);
+                        }
                     }
                 }
+                return villageBuildings;
             }
-            return villageBuildings;
         }
     }
 }
