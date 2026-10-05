@@ -3,23 +3,17 @@
 namespace MainCore.Tasks
 {
     [Handler]
-    public static partial class UpdateBuildingTask
+    public sealed partial class UpdateBuildingTask(
+        IChromeBrowser browser,
+        UpdateBuildingCommand.Handler updateBuildingCommand,
+        ToDorfCommand.Handler toDorfCommand)
     {
-        public sealed class Task : VillageTask
+        public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            public Task(AccountId accountId, VillageId villageId) : base(accountId, villageId)
-            {
-            }
-
             protected override string TaskName => "Update building";
         }
 
-        private static async ValueTask<Result> HandleAsync(
-            Task task,
-            IChromeBrowser browser,
-            UpdateBuildingCommand.Handler updateBuildingCommand,
-            ToDorfCommand.Handler toDorfCommand,
-            CancellationToken cancellationToken)
+        private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
             var url = browser.CurrentUrl;
             Result result;

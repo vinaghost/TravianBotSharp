@@ -1,10 +1,9 @@
-﻿using MainCore.Behaviors;
+using MainCore.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 using Serilog.Templates;
-using Splat.Microsoft.Extensions.DependencyInjection;
 
 [assembly: Behaviors(
     typeof(AccountDataLoggingBehavior<,>),
@@ -40,7 +39,7 @@ namespace MainCore
         private static IHostBuilder ConfigureDbContext(this IHostBuilder hostBuilder) =>
             hostBuilder.ConfigureServices((hostContext, services) =>
             {
-                services.AddDbContext<AppDbContext>(options => options
+                services.AddPooledDbContextFactory<AppDbContext>(options => options
                     .EnableSensitiveDataLogging(hostContext.HostingEnvironment.IsDevelopment())
                     .UseSqlite(_connectionString, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
             });
@@ -50,36 +49,29 @@ namespace MainCore
             {
                 services.AddMainCore();
                 services.AddValidatorsFromAssembly(typeof(AppMixins).Assembly, ServiceLifetime.Singleton);
-                services.AddMainCoreBehaviors();
                 services.AddMainCoreHandlers();
 
-                services.AddScoped<IChromeBrowser>(sp =>
+                services.AddScoped(sp =>
                 {
-                    var dataService = sp.GetRequiredService<IDataService>();
+                    var dataService = sp.GetRequiredService<DataService>();
                     if (dataService.AccountId == AccountId.Empty) throw new InvalidOperationException("AccountId is empty");
-                    var chromeManager = sp.GetRequiredService<IChromeManager>();
+                    var chromeManager = sp.GetRequiredService<ChromeManager>();
                     var logger = Log
                         .ForContext("Account", dataService.AccountData)
                         .ForContext("AccountId", dataService.AccountId);
+
+                    var delayService = sp.GetRequiredService<DelayService>();
                     var browser = chromeManager.Get(dataService.AccountId);
                     browser.Logger = logger;
+                    browser.DelayService = delayService;
+
                     return browser;
                 });
-            });
-
-        private static IHostBuilder ConfigureSplatForMicrosoftDependencyResolver(this IHostBuilder hostBuilder) =>
-            hostBuilder.ConfigureServices((serviceCollection) =>
-            {
-                serviceCollection.UseMicrosoftDependencyResolver();
-                var resolver = Locator.CurrentMutable;
-                resolver.InitializeSplat();
-                resolver.InitializeReactiveUI();
             });
 
         public static IHostBuilder GetHostBuilder()
         {
             var hostBuilder = Host.CreateDefaultBuilder()
-                .ConfigureSplatForMicrosoftDependencyResolver()
                 .ConfigureLogging()
                 .ConfigureDbContext()
                 .ConfigureServices();
