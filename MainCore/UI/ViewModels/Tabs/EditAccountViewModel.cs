@@ -42,7 +42,6 @@ namespace MainCore.UI.ViewModels.Tabs
             DeleteAccessCommand.Subscribe(_ => SelectedAccess = null);
 
             LoadAccountCommand.InvokeCommand(SetAccountCommand);
-            EditAccountCommand.InvokeCommand(LoadAccountCommand);
         }
 
         protected override async Task Load(AccountId accountId)
@@ -103,6 +102,8 @@ namespace MainCore.UI.ViewModels.Tabs
 
             await _waitingOverlayViewModel.Hide();
             await _dialogService.SendMessage("Information", "Edited account");
+
+            await LoadAccountCommand.Execute(AccountId);
         }
 
         [ReactiveCommand(RunInBackground = true)]
