@@ -3,6 +3,8 @@ namespace MainCore.Services
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
 
+    using Splat;
+
     [RegisterSingleton<RxQueue>]
     public class RxQueue
     {

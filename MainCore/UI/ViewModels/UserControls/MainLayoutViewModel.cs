@@ -1,11 +1,15 @@
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
+
 using Microsoft.Extensions.DependencyInjection;
+
 using System.Reflection;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
+    using MainCore.Commands.Misc;
+
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Concurrency;
     using ReactiveUI.Primitives.Disposables;

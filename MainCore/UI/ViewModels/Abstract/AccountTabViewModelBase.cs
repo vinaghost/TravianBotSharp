@@ -4,6 +4,8 @@ namespace MainCore.UI.ViewModels.Abstract
 {
     using ReactiveUI.Primitives;
 
+    using Splat;
+
     public abstract partial class AccountTabViewModelBase : TabViewModelBase
     {
         protected readonly SelectedItemStore _selectedItemStore;

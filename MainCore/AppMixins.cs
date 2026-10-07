@@ -1,6 +1,10 @@
+using FluentValidation;
+
 using MainCore.Behaviors;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
 using Serilog;
 using Serilog.Events;
 using Serilog.Templates;

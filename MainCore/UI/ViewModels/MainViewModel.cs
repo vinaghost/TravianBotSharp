@@ -1,7 +1,12 @@
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
+
 using Microsoft.Win32;
+
 using ReactiveUI.Primitives.Signals;
+
+using Splat;
+
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 

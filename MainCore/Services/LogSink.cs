@@ -3,6 +3,8 @@ using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
 
+using Splat;
+
 namespace MainCore.Services
 {
     [RegisterSingleton<LogSink>]

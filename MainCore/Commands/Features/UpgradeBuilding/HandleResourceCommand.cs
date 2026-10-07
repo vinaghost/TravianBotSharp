@@ -1,4 +1,5 @@
 using MainCore.Commands.Features.UseHeroItem;
+using MainCore.Commands.Update;
 using MainCore.Infrasturecture.Extensions;
 
 namespace MainCore.Commands.Features.UpgradeBuilding

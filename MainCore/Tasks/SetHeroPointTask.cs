@@ -1,4 +1,5 @@
-﻿using MainCore.Tasks.Base;
+﻿using MainCore.Commands.Navigate;
+using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {

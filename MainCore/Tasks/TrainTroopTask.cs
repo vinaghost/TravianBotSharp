@@ -1,4 +1,6 @@
-﻿using MainCore.Infrasturecture.Extensions;
+﻿using MainCore.Commands.Navigate;
+using MainCore.Commands.Update;
+using MainCore.Infrasturecture.Extensions;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks

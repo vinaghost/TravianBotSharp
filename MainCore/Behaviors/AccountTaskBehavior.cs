@@ -1,3 +1,4 @@
+using MainCore.Commands.Update;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Behaviors

@@ -1,4 +1,5 @@
 ﻿using MainCore.Commands.Features.UpgradeBuilding;
+using MainCore.Commands.Update;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks

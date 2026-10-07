@@ -1,10 +1,13 @@
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
+
 using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using FluentValidation;
+
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
 

@@ -1,4 +1,6 @@
-﻿using MainCore.Tasks.Base;
+﻿using MainCore.Commands.Navigate;
+using MainCore.Commands.Update;
+using MainCore.Tasks.Base;
 
 namespace MainCore.Behaviors
 {

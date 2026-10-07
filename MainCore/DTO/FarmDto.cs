@@ -1,5 +1,7 @@
 ﻿#nullable disable
 
+using Riok.Mapperly.Abstractions;
+
 namespace MainCore.DTO
 {
     public class FarmDto

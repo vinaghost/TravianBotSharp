@@ -1,4 +1,7 @@
+using MainCore.Commands.Navigate;
+using MainCore.Commands.Update;
 using MainCore.Infrasturecture.Extensions;
+
 using System.Text.Json;
 
 namespace MainCore.Commands.Features.UpgradeBuilding

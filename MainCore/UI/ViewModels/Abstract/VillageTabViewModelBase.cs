@@ -4,6 +4,8 @@ namespace MainCore.UI.ViewModels.Abstract
 {
     using ReactiveUI.Primitives;
 
+    using Splat;
+
     public readonly record struct VillageContext(AccountId AccountId, VillageId VillageId, bool IsValid);
 
     public abstract partial class VillageTabViewModelBase : TabViewModelBase

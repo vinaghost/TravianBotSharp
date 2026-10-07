@@ -1,6 +1,9 @@
 ﻿#nullable disable
 
 using Humanizer;
+
+using Riok.Mapperly.Abstractions;
+
 using System.Text.Json;
 
 namespace MainCore.DTO

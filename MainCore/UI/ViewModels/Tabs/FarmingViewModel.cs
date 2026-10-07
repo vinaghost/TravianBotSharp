@@ -4,8 +4,12 @@ using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 
+using Splat;
+
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using FluentValidation;
+
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
 
