@@ -1,4 +1,4 @@
-﻿using MainCore.UI.Models.Output;
+using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using Serilog.Events;
 using Serilog.Templates;
@@ -8,11 +8,16 @@ using System.Text;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Signals;
+
     [RegisterSingleton<DebugViewModel>]
     public partial class DebugViewModel : AccountTabViewModelBase
     {
         private readonly LogSink _logSink;
-        private readonly ITaskManager _taskManager;
+        private readonly TaskManager _taskManager;
+        private readonly ChromeManager _chromeManager;
+        private readonly DialogService _dialogService;
         private static readonly ExpressionTemplate _template = new("{@t:HH:mm:ss} [{@l:u3}] {@m}\n{@x}");
 
         public ObservableCollection<TaskItem> Tasks { get; } = [];
@@ -24,49 +29,25 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private string _endpointAddress = "";
 
-        public DebugViewModel(LogSink logSink, ITaskManager taskManager, IRxQueue rxQueue)
+        public DebugViewModel(LogSink logSink, TaskManager taskManager, RxQueue rxQueue, ChromeManager chromeManager, DialogService dialogService)
         {
             _logSink = logSink;
             _taskManager = taskManager;
+            _chromeManager = chromeManager;
+            _dialogService = dialogService;
 
-            LoadTaskCommand.Subscribe(items =>
+            LoadTaskCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(items =>
             {
-                if (Tasks.Count == 0)
+                Tasks.Clear();
+                foreach (var input in items)
                 {
-                    foreach (var input in items)
-                    {
-                        Tasks.Add(input);
-                    }
-                    return;
-                }
-
-                if (items.Count == 0)
-                {
-                    Tasks.Clear();
-                    return;
-                }
-
-                for (var i = 0; i < items.Count; i++)
-                {
-                    var item = items[i];
-                    if (i > Tasks.Count - 1)
-                    {
-                        Tasks.Add(item);
-                        continue;
-                    }
-
-                    Tasks[i].CopyFrom(item);
-                }
-
-                while (Tasks.Count > items.Count)
-                {
-                    Tasks.RemoveAt(Tasks.Count - 1);
+                    Tasks.Add(input);
                 }
             });
 
-            LoadLogCommand.BindTo(this, vm => vm.Logs);
-            ReloadLogCommand.BindTo(this, vm => vm.Logs);
-            LoadEndpointAddressCommand.BindTo(this, vm => vm.EndpointAddress);
+            LoadLogCommand.ObserveOn(RxSchedulers.MainThreadScheduler).BindTo(this, vm => vm.Logs);
+            ReloadLogCommand.ObserveOn(RxSchedulers.MainThreadScheduler).BindTo(this, vm => vm.Logs);
+            LoadEndpointAddressCommand.ObserveOn(RxSchedulers.MainThreadScheduler).BindTo(this, vm => vm.EndpointAddress);
 
             rxQueue.GetObservable<LogEmitted>()
                 .InvokeCommand(LogEmittedCommand);
@@ -76,31 +57,31 @@ namespace MainCore.UI.ViewModels.Tabs
 
             LogEmittedCommand
                 .Where(x => x)
-                .Select(_ => Unit.Default)
-                .Throttle(TimeSpan.FromMilliseconds(100), RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .Select(_ => RxVoid.Default)
+                .Throttle(TimeSpan.FromMilliseconds(100), RxSchedulers.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(ReloadLogCommand);
 
             TasksModifiedCommand
                 .Where(x => x)
                 .Select(_ => AccountId)
-                .Throttle(TimeSpan.FromMilliseconds(100), RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .Throttle(TimeSpan.FromMilliseconds(100), RxSchedulers.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(LoadTaskCommand);
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private bool LogEmitted(LogEmitted notification)
         {
             if (!IsActive) return false;
             var (accountId, logEvent) = notification;
             if (accountId != AccountId) return false;
 
-            _logEvents.AddFirst(logEvent);
+            _logEvents.AddLast(logEvent);
             return true;
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private bool TasksModified(TasksModified notification)
         {
             if (!IsActive) return false;
@@ -116,48 +97,70 @@ namespace MainCore.UI.ViewModels.Tabs
             await LoadEndpointAddressCommand.Execute(accountId);
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private List<TaskItem> LoadTask(AccountId accountId)
         {
             var tasks = _taskManager
                .GetTaskList(accountId)
+               .OrderBy(x => x.ExecuteAt)
                .Select(x => new TaskItem(x))
                .ToList();
             return tasks;
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private string LoadLog(AccountId accountId)
         {
             var logs = _logSink.GetLogs(accountId);
-            using var sw = new StringWriter(new StringBuilder());
             _logEvents.Clear();
             foreach (var log in logs)
             {
-                _template.Format(log, sw);
-                _logEvents.AddFirst(log);
+                _logEvents.AddLast(log);
+            }
+
+            using var sw = new StringWriter(new StringBuilder());
+            for (var node = _logEvents.Last; node != null; node = node.Previous)
+            {
+                _template.Format(node.Value, sw);
             }
             return sw.ToString();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private string ReloadLog()
         {
             using var sw = new StringWriter(new StringBuilder());
-            foreach (var log in _logEvents)
+            for (var node = _logEvents.Last; node != null; node = node.Previous)
             {
-                _template.Format(log, sw);
+                _template.Format(node.Value, sw);
             }
             return sw.ToString();
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
+        private async Task BringToFront()
+        {
+            var browser = _chromeManager.Get(AccountId);
+            if (!browser.IsInitialized || browser.CurrentPage.IsClosed)
+            {
+                await _dialogService.SendMessage("Warning", "Account is not login.");
+                return;
+            }
+            if (browser.IsHeadless)
+            {
+                await _dialogService.SendMessage("Warning", "Browser is headless.");
+                return;
+            }
+            await browser.CurrentPage.BringToFrontAsync();
+        }
+
+        [ReactiveCommand(RunInBackground = true)]
         private string LoadEndpointAddress(AccountId accountId)
         {
             return "Address endpoint is disabled";
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private void Left()
         {
             Process.Start(new ProcessStartInfo
@@ -167,7 +170,7 @@ namespace MainCore.UI.ViewModels.Tabs
             });
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private void Right()
         {
             Process.Start(new ProcessStartInfo

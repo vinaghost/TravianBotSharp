@@ -1,4 +1,4 @@
-﻿#pragma warning disable S1172
+#pragma warning disable S1172
 
 namespace MainCore.Commands.Features.UseHeroItem
 {
@@ -10,26 +10,17 @@ namespace MainCore.Commands.Features.UseHeroItem
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            IDelayService delayService,
+            DelayService delayService,
             CancellationToken cancellationToken)
         {
-            var (_, isFailed, element, errors) = await browser.GetElement(doc => InventoryParser.GetHeroAvatar(doc), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
-            var result = await browser.Click(element, cancellationToken);
+            var result = await browser.Click(InventoryParser.GetHeroAvatar(browser.CurrentPage));
             if (result.IsFailed) return result;
 
-            static bool TabActived(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                return InventoryParser.IsInventoryPage(doc) && InventoryParser.IsInventoryLoaded(doc);
-            }
-
-            result = await browser.Wait(TabActived, cancellationToken);
+            result = await browser.Wait(InventoryParser.GetInventoryPageWrapper(browser.CurrentPage));
             if (result.IsFailed) return result;
 
-            await delayService.DelayTask(cancellationToken);
+            result = await browser.Wait(InventoryParser.GetInventoryPageWrapper(browser.CurrentPage), condition: "node => node.classList.contains('loading')");
+            if (result.IsFailed) return result;
 
             return Result.Ok();
         }
