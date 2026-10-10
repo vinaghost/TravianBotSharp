@@ -1,23 +1,26 @@
-﻿namespace MainCore.Commands.Update
+namespace MainCore.Commands.Update
 {
     [Handler]
-    public static partial class UpdateStorageCommand
+    public sealed partial class UpdateStorageCommand(
+        IDbContextFactory<AppDbContext> contextFactory,
+        IChromeBrowser browser,
+        TaskManager taskManager)
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
-        private static async ValueTask HandleAsync(
-            Command command,
-            AppDbContext context,
-            IChromeBrowser browser,
-            ITaskManager taskManager
-            )
+        private async ValueTask HandleAsync(
+            Command command)
         {
-            await Task.CompletedTask;
             var (accountId, villageId) = command;
 
-            var dto = Get(browser.Html);
-            context.UpdateStorage(villageId, dto);
+            var dto = await StorageParser.GetStorage(browser.CurrentPage);
+            UpdateStorage(villageId, dto);
+            TriggerNpcTask(accountId, villageId);
+        }
 
+        private void TriggerNpcTask(AccountId accountId, VillageId villageId)
+        {
+            using var context = contextFactory.CreateDbContext();
             var task = new NpcTask.Task(accountId, villageId);
             if (task.CanStart(context) && !taskManager.IsExist<NpcTask.Task>(accountId, villageId))
             {
@@ -25,26 +28,11 @@
             }
         }
 
-        private static StorageDto Get(HtmlDocument doc)
+        private void UpdateStorage(VillageId villageId, StorageDto dto)
         {
-            var storage = new StorageDto()
-            {
-                Wood = StorageParser.GetWood(doc),
-                Clay = StorageParser.GetClay(doc),
-                Iron = StorageParser.GetIron(doc),
-                Crop = StorageParser.GetCrop(doc),
-                FreeCrop = StorageParser.GetFreeCrop(doc),
-                Warehouse = StorageParser.GetWarehouseCapacity(doc),
-                Granary = StorageParser.GetGranaryCapacity(doc)
-            };
-            return storage;
-        }
-
-        private static void UpdateStorage(this AppDbContext context, VillageId villageId, StorageDto dto)
-        {
+            using var context = contextFactory.CreateDbContext();
             var dbStorage = context.Storages
-                .Where(x => x.VillageId == villageId.Value)
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.VillageId == villageId.Value);
 
             if (dbStorage is null)
             {

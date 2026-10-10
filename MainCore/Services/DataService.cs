@@ -1,7 +1,7 @@
 ﻿namespace MainCore.Services
 {
-    [RegisterScoped<IDataService, DataService>]
-    public sealed class DataService : IDataService
+    [RegisterScoped<DataService>]
+    public sealed class DataService
     {
         public AccountId AccountId { get; set; }
         public string AccountData { get; set; } = "";
