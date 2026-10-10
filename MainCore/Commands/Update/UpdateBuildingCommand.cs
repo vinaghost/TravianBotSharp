@@ -198,9 +198,10 @@ namespace MainCore.Commands.Update
             }
 
             context.VillagesSetting
-                .Where(x => x.Id == villageId.Value)
+                .Where(x => x.VillageId == villageId.Value)
                 .Where(x => x.Setting == VillageSettingEnums.Tribe)
                 .ExecuteUpdate(x => x.SetProperty(x => x.Value, (int)tribe));
+
             context.SaveChanges();
         }
     }
