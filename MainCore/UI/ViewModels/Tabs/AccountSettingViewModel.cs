@@ -1,8 +1,8 @@
+using System.Text.Json;
+
 using MainCore.Infrasturecture.Extensions;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
-
-using System.Text.Json;
 
 namespace MainCore.UI.ViewModels.Tabs
 {

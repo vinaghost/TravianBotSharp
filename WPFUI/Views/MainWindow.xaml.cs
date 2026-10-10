@@ -1,9 +1,11 @@
-﻿using MainCore.UI.ViewModels;
-using MainCore.UI.ViewModels.UserControls;
-using ReactiveMarbles.Extensions.Hosting.Wpf;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Windows;
+
+using MainCore.UI.ViewModels;
+using MainCore.UI.ViewModels.UserControls;
+
+using ReactiveMarbles.Extensions.Hosting.Wpf;
 
 namespace WPFUI.Views
 {

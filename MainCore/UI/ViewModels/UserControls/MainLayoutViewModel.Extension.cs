@@ -1,5 +1,6 @@
-﻿using MainCore.Infrasturecture.Extensions;
-using System.Net;
+﻿using System.Net;
+
+using MainCore.Infrasturecture.Extensions;
 
 namespace MainCore.UI.ViewModels.UserControls
 {

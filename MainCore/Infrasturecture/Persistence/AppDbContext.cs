@@ -1,5 +1,6 @@
-﻿using StronglyTypedIds;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
+
+using StronglyTypedIds;
 
 [assembly: StronglyTypedIdDefaults(backingType: StronglyTypedIdBackingType.Int, converters: StronglyTypedIdConverter.None)]
 

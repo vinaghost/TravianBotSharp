@@ -1,5 +1,6 @@
-﻿using MainCore.Infrasturecture.Extensions;
-using System.Text.Json;
+﻿using System.Text.Json;
+
+using MainCore.Infrasturecture.Extensions;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {

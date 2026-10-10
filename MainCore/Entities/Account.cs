@@ -1,5 +1,6 @@
-﻿using StronglyTypedIds;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+using StronglyTypedIds;
 
 #nullable disable
 

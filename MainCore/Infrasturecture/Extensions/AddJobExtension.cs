@@ -1,5 +1,6 @@
-﻿using MainCore.UI.Models.Input;
-using System.Text.Json;
+﻿using System.Text.Json;
+
+using MainCore.UI.Models.Input;
 
 namespace MainCore.Infrasturecture.Extensions
 {

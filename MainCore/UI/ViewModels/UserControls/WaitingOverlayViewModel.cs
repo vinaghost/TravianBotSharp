@@ -1,5 +1,7 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
+
 using Microsoft.Extensions.DependencyInjection;
+
 using ReactiveUI.Primitives.Concurrency;
 using ReactiveUI.Primitives.Disposables;
 

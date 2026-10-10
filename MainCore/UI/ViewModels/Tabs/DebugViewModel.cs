@@ -1,10 +1,12 @@
-using MainCore.UI.Models.Output;
-using MainCore.UI.ViewModels.Abstract;
-using Serilog.Events;
-using Serilog.Templates;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
+
+using MainCore.UI.Models.Output;
+using MainCore.UI.ViewModels.Abstract;
+
+using Serilog.Events;
+using Serilog.Templates;
 
 namespace MainCore.UI.ViewModels.Tabs
 {

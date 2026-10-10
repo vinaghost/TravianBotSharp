@@ -1,10 +1,10 @@
+using System.Reflection;
+
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 
 using Microsoft.Extensions.DependencyInjection;
-
-using System.Reflection;
 
 namespace MainCore.UI.ViewModels.UserControls
 {

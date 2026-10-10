@@ -1,7 +1,8 @@
-using MainCore.UI.ViewModels.Abstract;
-using MainCore.UI.ViewModels.UserControls;
 using System.Collections.ObjectModel;
 using System.Text.Json;
+
+using MainCore.UI.ViewModels.Abstract;
+using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.UI.ViewModels.Tabs
 {

@@ -1,9 +1,10 @@
-﻿using MainCore.UI.Models.Output;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
+
+using MainCore.UI.Models.Output;
 
 namespace WPFUI.Converter
 {

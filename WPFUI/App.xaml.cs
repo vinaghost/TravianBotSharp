@@ -1,17 +1,24 @@
-using MainCore;
-using MainCore.Services;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using ReactiveMarbles.Extensions.Hosting.ReactiveUI;
-using ReactiveMarbles.Extensions.Hosting.Wpf;
-using ReactiveUI.Builder;
-using ReactiveUI.Primitives;
-using Serilog;
-using Splat;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows;
+
+using MainCore;
+using MainCore.Services;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+using ReactiveMarbles.Extensions.Hosting.ReactiveUI;
+using ReactiveMarbles.Extensions.Hosting.Wpf;
+
+using ReactiveUI.Builder;
+using ReactiveUI.Primitives;
+
+using Serilog;
+
+using Splat;
+
 using WPFUI.Views;
 
 namespace WPFUI
