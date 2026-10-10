@@ -5,6 +5,7 @@ namespace MainCore.Commands.Navigate
     [Handler]
     public sealed partial class ToFarmListPageCommand(
         IDbContextFactory<AppDbContext> contextFactory,
+        IChromeBrowser browser,
         SwitchVillageCommand.Handler switchVillageCommand,
         ToDorfCommand.Handler toDorfCommand,
         UpdateBuildingCommand.Handler updateBuildingCommand,
@@ -34,6 +35,9 @@ namespace MainCore.Commands.Navigate
             if (result.IsFailed) return result;
 
             result = await switchTabCommand.HandleAsync(new(4), cancellationToken);
+            if (result.IsFailed) return result;
+
+            result = await browser.Wait(FarmListParser.GetStartAllButton(browser.CurrentPage));
             if (result.IsFailed) return result;
 
             return Result.Ok();
