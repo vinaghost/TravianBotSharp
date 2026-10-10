@@ -5,10 +5,9 @@ namespace MainCore.Services
     {
         private const string AccountSettingsKey = "DefaultAccountSettingsPath";
         private const string VillageSettingsKey = "DefaultVillageSettingsPath";
-        private const string BuildingListKey = "DefaultBuildingListPath";
 
         private readonly string _filePath = Path.Combine(AppContext.BaseDirectory, "default-templates.csv");
-        private readonly object _sync = new();
+        private readonly Lock _sync = new();
 
         public DefaultTemplatePaths Get()
         {
@@ -17,8 +16,7 @@ namespace MainCore.Services
                 var settings = LoadSettings();
                 return new DefaultTemplatePaths(
                     GetValue(settings, AccountSettingsKey),
-                    GetValue(settings, VillageSettingsKey),
-                    GetValue(settings, BuildingListKey));
+                    GetValue(settings, VillageSettingsKey));
             }
         }
 
@@ -32,11 +30,6 @@ namespace MainCore.Services
             SetValue(VillageSettingsKey, path);
         }
 
-        public void SetBuildingListPath(string path)
-        {
-            SetValue(BuildingListKey, path);
-        }
-
         public void ClearAccountSettingsPath()
         {
             SetValue(AccountSettingsKey, string.Empty);
@@ -45,11 +38,6 @@ namespace MainCore.Services
         public void ClearVillageSettingsPath()
         {
             SetValue(VillageSettingsKey, string.Empty);
-        }
-
-        public void ClearBuildingListPath()
-        {
-            SetValue(BuildingListKey, string.Empty);
         }
 
         private static string GetValue(Dictionary<string, string> settings, string key)
@@ -85,7 +73,7 @@ namespace MainCore.Services
 
                 var value = separatorIndex >= line.Length - 1 ? string.Empty : line[(separatorIndex + 1)..];
 
-                if (key != AccountSettingsKey && key != VillageSettingsKey && key != BuildingListKey) continue;
+                if (key != AccountSettingsKey && key != VillageSettingsKey) continue;
 
                 settings[key] = value;
             }
@@ -104,7 +92,6 @@ namespace MainCore.Services
             using var writer = new StreamWriter(_filePath, false);
             writer.WriteLine($"{AccountSettingsKey},{GetValue(settings, AccountSettingsKey)}");
             writer.WriteLine($"{VillageSettingsKey},{GetValue(settings, VillageSettingsKey)}");
-            writer.WriteLine($"{BuildingListKey},{GetValue(settings, BuildingListKey)}");
         }
     }
 }
