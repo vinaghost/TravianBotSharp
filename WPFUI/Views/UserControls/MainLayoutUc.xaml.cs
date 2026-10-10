@@ -1,6 +1,6 @@
 ﻿using MainCore.UI.ViewModels.UserControls;
-using ReactiveUI;
 
+using ReactiveUI;
 
 namespace WPFUI.Views.UserControls
 {
@@ -31,7 +31,6 @@ namespace WPFUI.Views.UserControls
                 this.BindCommand(ViewModel, vm => vm.RestartCommand, v => v.RestartButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.SetDefaultSettingsForNewAccountCommand, v => v.DefaultSettingsForNewAccountButton).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.SetDefaultSettingsForNewVillageCommand, v => v.DefaultSettingsForNewVillageButton).DisposeWith(d);
-                this.BindCommand(ViewModel, vm => vm.SetDefaultBuildingListForNewVillageCommand, v => v.DefaultBuildingListForNewVillageButton).DisposeWith(d);
 
                 this.OneWayBind(ViewModel, vm => vm.Version, v => v.Version.Content).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.PauseText, v => v.PauseButton.Content).DisposeWith(d);

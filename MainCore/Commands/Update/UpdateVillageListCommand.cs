@@ -1,5 +1,6 @@
 using MainCore.Infrasturecture.Extensions;
 using MainCore.UI.ViewModels.Tabs.Villages;
+
 using System.Text.Json;
 
 namespace MainCore.Commands.Update
@@ -66,7 +67,6 @@ namespace MainCore.Commands.Update
                 context.Add(x.ToEntity(accountId));
                 context.FillVillageSettings(accountId, x.Id);
                 ApplyVillageSettingTemplate(context, x.Id);
-                ApplyBuildingListTemplate(context, x.Id);
             });
 
             foreach (var village in villageUpdated)
@@ -97,51 +97,7 @@ namespace MainCore.Commands.Update
             }
             catch
             {
-                return;
-            }
-        }
-
-        private void ApplyBuildingListTemplate(AppDbContext context, VillageId villageId)
-        {
-            var path = defaultTemplatePathStore.Get().BuildingListPath;
-            if (string.IsNullOrWhiteSpace(path)) return;
-            if (!File.Exists(path)) return;
-
-            List<JobDto> jobs;
-            try
-            {
-                var jsonString = File.ReadAllText(path);
-                jobs = JsonSerializer.Deserialize<List<JobDto>>(jsonString) ?? [];
-            }
-            catch
-            {
-                return;
-            }
-
-            if (jobs.Count == 0) return;
-
-            try
-            {
-                var fixedJobs = context.FixJobs(villageId, jobs, shuffle: true);
-                var count = context.Jobs
-                    .Count(x => x.VillageId == villageId.Value);
-
-                var additionJobs = fixedJobs
-                    .Select((job, index) => new Job
-                    {
-                        Position = count + index,
-                        VillageId = villageId.Value,
-                        Type = job.Type,
-                        Content = job.Content,
-                    })
-                    .ToList();
-
-                if (additionJobs.Count == 0) return;
-                context.AddRange(additionJobs);
-            }
-            catch
-            {
-                return;
+                // Ignore
             }
         }
     }

@@ -160,16 +160,6 @@ namespace MainCore.UI.ViewModels.UserControls
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute), RunInBackground = true)]
-        private async Task SetDefaultBuildingListForNewVillage()
-        {
-            await SetOrClearDefaultTemplatePath(
-                x => x.BuildingListPath,
-                _defaultTemplatePathStore.SetBuildingListPath,
-                _defaultTemplatePathStore.ClearBuildingListPath,
-                "building list");
-        }
-
-        [ReactiveCommand(CanExecute = nameof(_canExecute), RunInBackground = true)]
         private async Task DeleteAccount()
         {
             if (Accounts.SelectedItem is null)

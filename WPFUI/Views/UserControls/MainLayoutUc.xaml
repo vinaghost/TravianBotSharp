@@ -101,11 +101,6 @@
                 Grid.Row="4"
                 Margin="5"
                 Content="Default settings for new village" />
-            <Button
-                x:Name="DefaultBuildingListForNewVillageButton"
-                Grid.Row="5"
-                Margin="5"
-                Content="Default building list for new village" />
         </Grid>
         <Border
             Grid.Column="1"
