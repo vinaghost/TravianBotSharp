@@ -73,10 +73,8 @@ namespace MainCore.Tasks
             result = await browser.Click(confirmButton);
             if (result.IsFailed) return result;
 
-            result = await browser.WaitPageChanged("&reload=auto");
-            if (result.IsFailed) return result;
-
-            result = await browser.WaitPageChanged(@"^(?!.*reload=auto).*");
+            var pageBody = browser.CurrentPage.Locator("body");
+            result = await browser.Wait(pageBody, condition: "node => node.querySelector('div.buildingList') === null");
             if (result.IsFailed) return result;
             return Result.Ok();
         }

@@ -41,8 +41,12 @@ namespace MainCore.Tasks
 
         private async ValueTask<Result> ToHeroPage()
         {
-            var heroAvatar = browser.CurrentPage.Locator("#topBarHero a.#heroImageButton");
+            var heroAvatar = browser.CurrentPage.Locator("#topBarHero #heroImageButton");
             var result = await browser.Click(heroAvatar);
+            if (result.IsFailed) return result;
+
+            var heroPageLocator = browser.CurrentPage.Locator("#heroV2");
+            result = await browser.Wait(heroPageLocator);
             if (result.IsFailed) return result;
 
             result = await switchTabCommand.HandleAsync(new(1));

@@ -14,6 +14,11 @@
             if (response.IsFailed)
             {
                 logger.Warning("Task {TaskName} failed", request.Description);
+                var message = string.Join(Environment.NewLine, response.Reasons.Select(e => e.Message));
+                if (!string.IsNullOrEmpty(message))
+                {
+                    logger.Warning("{Message}", message);
+                }
             }
             else
             {

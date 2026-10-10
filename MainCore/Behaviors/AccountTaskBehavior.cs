@@ -9,6 +9,7 @@ namespace MainCore.Behaviors
         UpdateAccountInfoCommand.Handler updateAccountInfoCommand,
         UpdateVillageListCommand.Handler updateVillageListCommand,
         UpdateDailyQuestCommand.Handler updateDailyQuestCommand,
+        UpdateHeroLevelUpCommand.Handler updateHeroLevelUpCommand,
         UpdateAdventureCommand.Handler updateAdventureCommand)
             : Behavior<TRequest, TResponse>
                 where TRequest : AccountTask
@@ -55,6 +56,7 @@ namespace MainCore.Behaviors
                 await updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
                 await updateAdventureCommand.HandleAsync(new(accountId), cancellationToken);
                 await updateDailyQuestCommand.HandleAsync(new(accountId), cancellationToken);
+                await updateHeroLevelUpCommand.HandleAsync(new(accountId), cancellationToken);
             }
 
             return response;
