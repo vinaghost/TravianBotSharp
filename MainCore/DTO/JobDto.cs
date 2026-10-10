@@ -1,7 +1,10 @@
 ﻿#nullable disable
 
-using Humanizer;
 using System.Text.Json;
+
+using Humanizer;
+
+using Riok.Mapperly.Abstractions;
 
 namespace MainCore.DTO
 {
@@ -45,12 +48,12 @@ namespace MainCore.DTO
             {
                 case JobTypeEnums.NormalBuild:
                     {
-                        var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
+                        var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
                         return $"Build {plan.Type.Humanize()} to level {plan.Level} at location {plan.Location}";
                     }
                 case JobTypeEnums.ResourceBuild:
                     {
-                        var plan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content)!;
+                        var plan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content);
                         return $"Build {plan.Plan.Humanize()} to level {plan.Level}";
                     }
                 default:

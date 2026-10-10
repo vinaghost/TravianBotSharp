@@ -1,10 +1,11 @@
-﻿using MainCore.Tasks.Base;
+using MainCore.Tasks.Base;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.Services
 {
-    [RegisterSingleton<ICustomServiceScopeFactory, CustomServiceScopeFactory>]
-    public class CustomServiceScopeFactory : ICustomServiceScopeFactory
+    [RegisterSingleton<CustomServiceScopeFactory>]
+    public class CustomServiceScopeFactory
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
@@ -21,7 +22,7 @@ namespace MainCore.Services
         public IServiceScope CreateScope(AccountId accountId)
         {
             var scope = _serviceScopeFactory.CreateScope();
-            var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
+            var dataService = scope.ServiceProvider.GetRequiredService<DataService>();
 
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var account = context.Accounts
@@ -104,6 +105,14 @@ namespace MainCore.Services
                 case UpgradeBuildingTask.Task upgradeBuildingTask:
                     var upgradeBuildingTaskHandler = scope.GetHandler<UpgradeBuildingTask.Task>();
                     return await upgradeBuildingTaskHandler.HandleAsync(upgradeBuildingTask, cancellationToken);
+
+                case ClaimDailyQuestTask.Task claimDailyQuestTask:
+                    var claimDailyQuestTaskHandler = scope.GetHandler<ClaimDailyQuestTask.Task>();
+                    return await claimDailyQuestTaskHandler.HandleAsync(claimDailyQuestTask, cancellationToken);
+
+                case SetHeroPointTask.Task setHeroPointTask:
+                    var setHeroPointTaskHandler = scope.GetHandler<SetHeroPointTask.Task>();
+                    return await setHeroPointTaskHandler.HandleAsync(setHeroPointTask, cancellationToken);
 
                 default:
                     throw new NotImplementedException($"Task {task.GetType().Name} is not implemented");

@@ -1,4 +1,6 @@
-﻿namespace MainCore.Enums
+﻿using Splat;
+
+namespace MainCore.Enums
 {
     public enum BuildingEnums
     {
@@ -322,7 +324,7 @@
             BuildingEnums.Palace => true,
             BuildingEnums.Marketplace => true,
             BuildingEnums.Treasury => true,
-            BuildingEnums.TownHall => true,
+            //BuildingEnums.TownHall => true,
             _ => false,
         };
 

@@ -1,4 +1,6 @@
-﻿namespace MainCore.Enums
+﻿using Splat;
+
+namespace MainCore.Enums
 {
     public enum StatusEnums
     {

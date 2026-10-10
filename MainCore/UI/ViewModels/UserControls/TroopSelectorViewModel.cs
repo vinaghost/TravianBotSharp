@@ -1,7 +1,7 @@
-﻿using DynamicData;
+﻿using System.Collections.ObjectModel;
+
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using System.Collections.ObjectModel;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
@@ -22,7 +22,10 @@ namespace MainCore.UI.ViewModels.UserControls
             Items.Clear();
             Items.Add(new(TroopEnums.None));
             var troops = GetTroops(building, tribe);
-            Items.AddRange(troops.Select(x => new TroopItem(x)));
+            foreach (var troop in troops)
+            {
+                Items.Add(new TroopItem(troop));
+            }
 
             SelectedItem = Items.FirstOrDefault(x => x.Troop == SelectedItem?.Troop) ?? Items[0];
         }
@@ -32,7 +35,10 @@ namespace MainCore.UI.ViewModels.UserControls
             Items.Clear();
             Items.Add(new(TroopEnums.None));
             var troops = GetTroops(building, tribe);
-            Items.AddRange(troops.Select(x => new TroopItem(x)));
+            foreach (var troop in troops)
+            {
+                Items.Add(new TroopItem(troop));
+            }
             SelectedItem = Items.FirstOrDefault(x => x.Troop == selectedTroop) ?? Items[0];
         }
 
