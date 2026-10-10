@@ -142,13 +142,6 @@ namespace MainCore.Services
                 var result = poliResult.Result;
                 if (result.IsFailed)
                 {
-                    var message = string.Join(Environment.NewLine, result.Reasons.Select(e => e.Message));
-                    if (!string.IsNullOrEmpty(message))
-                    {
-                        logger.Warning("Task {TaskName} failed", task.Description, message);
-                        logger.Warning("{Message}", message);
-                    }
-
                     if (result.HasError<Stop>() || result.HasError<Retry>())
                     {
                         var filename = await browser.Screenshot();

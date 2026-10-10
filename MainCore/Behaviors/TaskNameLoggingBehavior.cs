@@ -3,6 +3,7 @@
     public sealed class TaskNameLoggingBehavior<TRequest, TResponse>(ILogger logger)
         : Behavior<TRequest, TResponse>
         where TRequest : ITask
+        where TResponse : Result
     {
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
@@ -10,7 +11,14 @@
 
             var response = await Next(request, cancellationToken);
 
-            logger.Information("Task {TaskName} is finished", request.Description);
+            if (response.IsFailed)
+            {
+                logger.Warning("Task {TaskName} failed", request.Description);
+            }
+            else
+            {
+                logger.Information("Task {TaskName} is finished", request.Description);
+            }
             return response;
         }
     }
