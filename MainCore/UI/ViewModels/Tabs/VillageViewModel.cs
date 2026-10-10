@@ -1,53 +1,63 @@
-﻿using MainCore.UI.Models.Output;
+using MainCore.UI.Models.Output;
+using MainCore.UI.Services;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using ReactiveUI.Primitives;
+    using ReactiveUI.Primitives.Concurrency;
+    using ReactiveUI.Primitives.Disposables;
+    using ReactiveUI.Primitives.Extensions;
+    using ReactiveUI.Primitives.Signals;
+
     [RegisterSingleton<VillageViewModel>]
     public partial class VillageViewModel : AccountTabViewModelBase
     {
         private readonly VillageTabStore _villageTabStore;
-
-        private readonly IDialogService _dialogService;
-        private readonly ICustomServiceScopeFactory _serviceScopeFactory;
-        private readonly ITaskManager _taskManager;
+        private readonly VillageContextCoordinator _villageContextCoordinator;
+        private readonly DialogService _dialogService;
+        private readonly TaskManager _taskManager;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly RxQueue _rxQueue;
         public ListBoxItemViewModel Villages { get; } = new();
 
         public VillageTabStore VillageTabStore => _villageTabStore;
 
-        public VillageViewModel(VillageTabStore villageTabStore, IDialogService dialogService, ICustomServiceScopeFactory serviceScopeFactory, IRxQueue rxQueue, ITaskManager taskManager)
+        public VillageViewModel(VillageTabStore villageTabStore, VillageContextCoordinator villageContextCoordinator, DialogService dialogService, RxQueue rxQueue, TaskManager taskManager, IDbContextFactory<AppDbContext> contextFactory)
         {
             _villageTabStore = villageTabStore;
+            _villageContextCoordinator = villageContextCoordinator;
             _dialogService = dialogService;
-            _serviceScopeFactory = serviceScopeFactory;
+            _rxQueue = rxQueue;
             _taskManager = taskManager;
+            _contextFactory = contextFactory;
 
+            Init();
+        }
+
+        private void Init()
+        {
             var villageObservable = this.WhenAnyValue(x => x.Villages.SelectedItem);
-            villageObservable.BindTo(_selectedItemStore, vm => vm.Village);
-            villageObservable.Subscribe(x =>
-            {
-                var tabType = VillageTabType.Normal;
-                if (x is null) tabType = VillageTabType.NoVillage;
-                _villageTabStore.SetTabType(tabType);
-            });
+            villageObservable.Subscribe(x => _villageContextCoordinator.SetVillageSelection(AccountId, x));
 
-            LoadVillageCommand.Subscribe(Villages.Load);
+            LoadVillageCommand
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
+                .Subscribe(Villages.Load);
 
-            rxQueue.GetObservable<VillagesModified>()
+            _rxQueue.GetObservable<VillagesModified>()
                 .InvokeCommand(VillagesModifiedCommand);
 
             VillagesModifiedCommand
                 .Where(x => x)
                 .Select(_ => AccountId)
-                .Throttle(TimeSpan.FromMilliseconds(1000), RxApp.TaskpoolScheduler)
-                .ObserveOn(RxApp.TaskpoolScheduler)
+                .Throttle(TimeSpan.FromMilliseconds(1000), RxSchedulers.TaskpoolScheduler)
+                .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(LoadVillageCommand);
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         public bool VillagesModified(VillagesModified notification)
         {
             if (!IsActive) return false;
@@ -57,33 +67,43 @@ namespace MainCore.UI.ViewModels.Tabs
 
         protected override async Task Load(AccountId accountId)
         {
-            await LoadVillageCommand.Execute(accountId);
+            var villages = await LoadVillageCommand.Execute(accountId);
+            var selectedVillage = _villageContextCoordinator.ResolveAndApply(accountId, villages);
+
+            RxSchedulers.MainThreadScheduler.Schedule(
+                state: (this, selectedVillage),
+                action: static (sequencer, state) =>
+                {
+                    var (@this, selectedVillage) = state;
+                    @this.Villages.SelectedItem = selectedVillage;
+                    return EmptyDisposable.Instance;
+                });
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task LoadCurrent()
         {
             if (Villages.SelectedItem is null)
             {
-                await _dialogService.MessageBox.Handle(new MessageBoxData("Warning", "No village selected"));
+                await _dialogService.SendMessage("Warning", "No village selected");
                 return;
             }
 
             var villageId = new VillageId(Villages.SelectedItem.Id);
             _taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, villageId));
 
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
+            await _dialogService.SendMessage("Information", $"Added update task");
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task LoadUnload()
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var missingBuildingVillagesSpec = new MissingBuildingVillagesSpec(AccountId);
+            using var context = _contextFactory.CreateDbContext();
 
             var villages = context.Villages
-                .WithSpecification(missingBuildingVillagesSpec)
+                .Where(x => x.AccountId == AccountId.Value)
+                .Where(x => x.Buildings.Count < 40)
+                .Select(x => new VillageId(x.Id))
                 .ToList();
 
             foreach (var village in villages)
@@ -91,31 +111,29 @@ namespace MainCore.UI.ViewModels.Tabs
                 _taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village));
             }
 
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
+            await _dialogService.SendMessage("Information", $"Added update task");
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private async Task LoadAll()
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
 
-            var villagesSpec = new VillagesSpec(AccountId);
             var villages = context.Villages
-                .WithSpecification(villagesSpec)
+                .Where(x => x.AccountId == AccountId.Value)
+                .Select(x => new VillageId(x.Id))
                 .ToList();
             foreach (var village in villages)
             {
                 _taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village));
             }
-            await _dialogService.MessageBox.Handle(new MessageBoxData("Information", $"Added update task"));
+            await _dialogService.SendMessage("Information", $"Added update task");
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private List<ListBoxItem> LoadVillage(AccountId accountId)
         {
-            using var scope = _serviceScopeFactory.CreateScope(AccountId);
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            using var context = _contextFactory.CreateDbContext();
             var items = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .OrderBy(x => x.Name)

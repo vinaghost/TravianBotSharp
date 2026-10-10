@@ -2,39 +2,28 @@
 {
     public static class OptionParser
     {
-        public static bool IsContextualHelpEnable(HtmlDocument doc)
+        public static async Task<bool> IsContextualHelpEnable(IPage page)
         {
-            var node = doc.GetElementbyId("contextualHelp");
-            return node is not null;
+            var node = page.Locator("#contextualHelp");
+            return await node.CountAsync() > 0;
         }
 
-        public static HtmlNode? GetOptionButton(HtmlDocument doc)
+        public static ILocator GetOptionButton(IPage page)
         {
-            var outOfGame = doc.GetElementbyId("outOfGame");
-            if (outOfGame is null) return null;
-            var optionButton = outOfGame
-                .Descendants("a")
-                .FirstOrDefault(x => x.HasClass("options"));
-            return optionButton;
+            var button = page.Locator("#outOfGame a.options");
+            return button;
         }
 
-        public static HtmlNode GetHideContextualHelpOption(HtmlDocument doc)
+        public static ILocator GetHideContextualHelpOption(IPage page)
         {
-            var node = doc.GetElementbyId("hideContextualHelp");
+            var node = page.Locator("#hideContextualHelp");
             return node;
         }
 
-        public static HtmlNode? GetSubmitButton(HtmlDocument doc)
+        public static ILocator GetSubmitButton(IPage page)
         {
-            var submitButtonContainer = doc.DocumentNode
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("submitButtonContainer"));
-            if (submitButtonContainer is null) return null;
-
-            var submitButton = submitButtonContainer
-                .Descendants("button")
-                .FirstOrDefault();
-            return submitButton;
+            var button = page.Locator(".submitButtonContainer button");
+            return button;
         }
     }
 }
