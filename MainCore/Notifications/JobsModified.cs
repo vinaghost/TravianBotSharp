@@ -1,4 +1,4 @@
 ﻿namespace MainCore.Notifications
 {
-    public record JobsModified(VillageId VillageId) : IVillageNotification;
+    public record JobsModified(AccountId AccountId, VillageId VillageId) : IAccountVillageNotification;
 }

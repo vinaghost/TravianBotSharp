@@ -1,49 +1,28 @@
 ﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public static partial class SwitchTabCommand
+    public sealed partial class SwitchTabCommand(IChromeBrowser browser)
     {
         public sealed record Command(int TabIndex) : ICommand;
 
-        private static async ValueTask<Result> HandleAsync(
-           Command command,
-           IChromeBrowser browser,
-           CancellationToken cancellationToken
-           )
+        private async ValueTask<Result> HandleAsync(Command command)
         {
-            return await SwitchTab(browser, command.TabIndex, cancellationToken);
-        }
+            var tabIndex = command.TabIndex;
+            var tabs = BuildingTabParser.GetTabs(browser.CurrentPage);
+            var countTabs = await tabs.CountAsync();
+            if (countTabs == 0) return Result.Ok();
 
-        public static async ValueTask<Result> SwitchTab(
-            IChromeBrowser browser,
-            int tabIndex,
-            CancellationToken cancellationToken)
-        {
-            var count = BuildingTabParser.CountTab(browser.Html);
-            if (tabIndex >= count) return Retry.Error.WithError($"Found {count} tabs but need tab #{tabIndex + 1} active");
+            if (tabIndex >= countTabs) return Retry.Error.WithError($"Found {countTabs} tabs but need tab #{tabIndex + 1} active");
 
-            var tab = BuildingTabParser.GetTab(browser.Html, tabIndex);
-            if (BuildingTabParser.IsTabActive(tab)) return Result.Ok();
-
-            var (_, isFailed, element, errors) = await browser.GetElement(By.XPath(tab.XPath), cancellationToken);
-            if (isFailed) return Result.Fail(errors).WithError($"Failed to find tab element [{tab.XPath}]");
+            var tab = tabs.Nth(tabIndex);
+            if (await BuildingTabParser.IsTabActive(tab)) return Result.Ok();
 
             Result result;
-            result = await browser.Click(element, cancellationToken);
+            result = await browser.Click(tab);
             if (result.IsFailed) return result;
 
-            bool tabActived(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-                var tab = BuildingTabParser.GetTab(doc, tabIndex);
-                if (!BuildingTabParser.IsTabActive(tab)) return false;
-                return true;
-            }
-
-            result = await browser.Wait(tabActived, cancellationToken);
+            result = await browser.Wait(tab, condition: "node => node.classList.contains('active')");
             if (result.IsFailed) return result;
-
             return Result.Ok();
         }
     }

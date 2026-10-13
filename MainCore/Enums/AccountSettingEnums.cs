@@ -17,5 +17,7 @@
         SleepTimeMax,
         HeadlessChrome,
         EnableAutoStartAdventure,
+        EnableAutoClaimDailyQuest,
+        EnableAutoSetHeroPoint,
     }
 }

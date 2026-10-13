@@ -1,25 +1,22 @@
-﻿using System.Text.Json;
+using System.Text.Json;
+
+using MainCore.Commands.Navigate;
+using MainCore.Commands.Update;
+using MainCore.Infrasturecture.Extensions;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
-    public static partial class GetBuildPlanCommand
+    public sealed partial class GetBuildPlanCommand(
+        IDbContextFactory<AppDbContext> contextFactory,
+        ToDorfCommand.Handler toDorfCommand,
+        UpdateBuildingCommand.Handler updateBuildingCommand,
+        ILogger logger,
+        RxQueue rxQueue)
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
-        private static async ValueTask<Result<NormalBuildPlan>> HandleAsync(
-            Command command,
-            GetJobCommand.Handler getJobQuery,
-            ToDorfCommand.Handler toDorfCommand,
-            UpdateBuildingCommand.Handler updateBuildingCommand,
-            GetLayoutBuildingsCommand.Handler getLayoutBuildingsQuery,
-            DeleteJobByIdCommand.Handler deleteJobByIdCommand,
-            AddJobCommand.Handler addJobCommand,
-            ValidatePlanCompleteCommand.Handler validatePlanCompleteCommand,
-            ILogger logger,
-            IRxQueue rxQueue,
-            CancellationToken cancellationToken
-        )
+        private async ValueTask<Result<NormalBuildPlan>> HandleAsync(Command command, CancellationToken cancellationToken)
         {
             var (accountId, villageId) = command;
 
@@ -27,25 +24,25 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-                var (_, isFailed, job, errors) = await getJobQuery.HandleAsync(new(accountId, villageId), cancellationToken);
+                var (_, isFailed, job, errors) = GetJob(accountId, villageId);
                 if (isFailed) return Result.Fail(errors);
 
                 if (job.Type == JobTypeEnums.ResourceBuild)
                 {
                     logger.Information("{Content}", job);
 
-                    var layoutBuildings = await getLayoutBuildingsQuery.HandleAsync(new(villageId, true));
                     var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content)!;
-                    var normalBuildPlan = GetNormalBuildPlan(resourceBuildPlan, layoutBuildings);
+                    var normalBuildPlan = GetNormalBuildPlan(villageId, resourceBuildPlan);
+                    using var context = contextFactory.CreateDbContext();
                     if (normalBuildPlan is null)
                     {
-                        await deleteJobByIdCommand.HandleAsync(new(job.Id), cancellationToken);
+                        context.DeleteJobById(job.Id);
                     }
                     else
                     {
-                        await addJobCommand.HandleAsync(new(villageId, normalBuildPlan.ToJob(), true));
+                        context.AddJob(villageId, normalBuildPlan, true);
                     }
-                    rxQueue.Enqueue(new JobsModified(villageId));
+                    rxQueue.Enqueue(new JobsModified(accountId, villageId));
                     continue;
                 }
 
@@ -53,46 +50,172 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 Result result;
                 if (plan.Type.IsResourceBonus())
                 {
-                    result = await toDorfCommand.HandleAsync(new(1), cancellationToken);
-                    if (result.IsFailed) return result;
-
-                    result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
-                    if (result.IsFailed) return result;
-
-                    result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
-                    if (result.IsFailed) return result;
-
-                    result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+                    result = await CheckBonusBuilding(villageId, cancellationToken);
                     if (result.IsFailed) return result;
                 }
                 else
                 {
-                    var dorf = plan.Location < 19 ? 1 : 2;
-                    result = await toDorfCommand.HandleAsync(new(dorf), cancellationToken);
-                    if (result.IsFailed) return result;
-
-                    result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+                    result = await CheckBuilding(villageId, plan.Location, cancellationToken);
                     if (result.IsFailed) return result;
                 }
 
-                var validateResult = await validatePlanCompleteCommand.HandleAsync(new(villageId, plan), cancellationToken);
-                if (validateResult.IsFailed) return Result.Fail(validateResult.Errors);
-                if (!validateResult.Value)
+                var isComplete = IsBuildingComplete(villageId, plan);
+                if (isComplete)
                 {
-                    await deleteJobByIdCommand.HandleAsync(new(job.Id), cancellationToken);
-                    rxQueue.Enqueue(new JobsModified(villageId));
+                    using (var context = contextFactory.CreateDbContext())
+                    {
+                        context.DeleteJobById(job.Id);
+                    }
+                    rxQueue.Enqueue(new JobsModified(accountId, villageId));
                     continue;
                 }
+
+                result = CheckPrerequisite(villageId, plan);
+                if (result.IsFailed) return result;
 
                 return plan;
             }
         }
 
-        private static NormalBuildPlan? GetNormalBuildPlan(
-            ResourceBuildPlan plan,
-            List<BuildingItem> layoutBuildings
-        )
+        private Result<JobDto> GetJob(AccountId accountId, VillageId villageId)
         {
+            using var context = contextFactory.CreateDbContext();
+            return context.GetJob(accountId, villageId);
+        }
+
+        private async Task<Result> CheckBonusBuilding(VillageId villageId, CancellationToken cancellationToken)
+        {
+            var result = await toDorfCommand.HandleAsync(new(1), cancellationToken);
+            if (result.IsFailed) return result;
+
+            result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+            if (result.IsFailed) return result;
+
+            result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
+            if (result.IsFailed) return result;
+
+            result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+            if (result.IsFailed) return result;
+            return Result.Ok();
+        }
+
+        private async Task<Result> CheckBuilding(VillageId villageId, int location, CancellationToken cancellationToken)
+        {
+            var dorf = location < 19 ? 1 : 2;
+            var result = await toDorfCommand.HandleAsync(new(dorf), cancellationToken);
+            if (result.IsFailed) return result;
+            result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+            if (result.IsFailed) return result;
+            return Result.Ok();
+        }
+
+        private bool IsBuildingComplete(VillageId villageId, NormalBuildPlan plan)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var completeQueueBuildings = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .Where(x => x.CompleteTime < DateTime.Now)
+                .OrderBy(x => x.Level)
+                .ToList();
+
+            if (completeQueueBuildings.Count > 0)
+            {
+                foreach (var completeQueueBuilding in completeQueueBuildings)
+                {
+                    if (completeQueueBuilding.Location == -1) continue;
+
+                    var building = context.Buildings
+                        .Where(x => x.VillageId == villageId.Value)
+                        .FirstOrDefault(x => x.Location == completeQueueBuilding.Location);
+                    if (building is null) continue;
+
+                    building.Level = completeQueueBuilding.Level;
+                    context.Remove(completeQueueBuilding);
+                }
+                context.SaveChanges();
+            }
+
+            var oldBuilding = context.Buildings
+                .AsNoTracking()
+                .Where(x => x.VillageId == villageId.Value)
+                .FirstOrDefault(x => x.Location == plan.Location);
+
+            if (oldBuilding is not null && oldBuilding.Type == plan.Type)
+            {
+                if (oldBuilding.Level >= plan.Level) return true;
+                var queueBuilding = context.QueueBuildings
+                    .AsNoTracking()
+                    .Where(x => x.VillageId == villageId.Value)
+                    .Where(x => x.Location == plan.Location)
+                    .OrderByDescending(x => x.Level)
+                    .Select(x => x.Level)
+                    .FirstOrDefault();
+
+                if (queueBuilding >= plan.Level) return true;
+                return false;
+            }
+
+            return false;
+        }
+
+        private Result CheckPrerequisite(VillageId villageId, NormalBuildPlan plan)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var buildings = context.Buildings
+               .AsNoTracking()
+               .Where(x => x.VillageId == villageId.Value)
+               .ToList();
+
+            var queueBuildings = context.QueueBuildings
+                .AsNoTracking()
+                .Where(x => x.VillageId == villageId.Value)
+                .OrderBy(x => x.CompleteTime)
+                .ToList();
+
+            var errors = new List<IError>();
+            var prerequisiteBuildings = plan.Type.GetPrerequisiteBuildings();
+
+            foreach (var prerequisiteBuilding in prerequisiteBuildings)
+            {
+                var vaild = buildings
+                   .Any(x => x.Type == prerequisiteBuilding.Type && x.Level >= prerequisiteBuilding.Level);
+
+                if (!vaild)
+                {
+                    errors.Add(UpgradeBuildingError.PrerequisiteBuildingMissing(prerequisiteBuilding.Type, prerequisiteBuilding.Level));
+                    var queueBuilding = queueBuildings.Find(x => x.Type == prerequisiteBuilding.Type && x.Level == prerequisiteBuilding.Level);
+                    if (queueBuilding is not null)
+                    {
+                        errors.Add(NextExecuteError.PrerequisiteBuildingInQueue(prerequisiteBuilding.Type, prerequisiteBuilding.Level, queueBuilding.CompleteTime));
+                    }
+                }
+            }
+
+            if (!plan.Type.IsMultipleBuilding()) return Result.FailIfNotEmpty(errors);
+
+            var firstBuilding = buildings
+                .Where(x => x.Type == plan.Type)
+                .OrderByDescending(x => x.Level)
+                .FirstOrDefault();
+
+            if (firstBuilding is null) return Result.FailIfNotEmpty(errors);
+            if (firstBuilding.Location == plan.Location) return Result.FailIfNotEmpty(errors);
+            if (firstBuilding.Level == firstBuilding.Type.GetMaxLevel()) return Result.FailIfNotEmpty(errors);
+
+            errors.Add(UpgradeBuildingError.PrerequisiteBuildingMissing(firstBuilding.Type, firstBuilding.Level));
+            var prerequisiteBuildingUndercontruction = queueBuildings.Find(x => x.Type == firstBuilding.Type && x.Level == firstBuilding.Level);
+            if (prerequisiteBuildingUndercontruction is not null)
+            {
+                errors.Add(NextExecuteError.PrerequisiteBuildingInQueue(firstBuilding.Type, firstBuilding.Level, prerequisiteBuildingUndercontruction.CompleteTime));
+            }
+
+            return Result.FailIfNotEmpty(errors);
+        }
+
+        private NormalBuildPlan? GetNormalBuildPlan(VillageId villageId, ResourceBuildPlan plan)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var layoutBuildings = context.GetLayoutBuildings(villageId, true);
             List<BuildingItem> resourceFields;
 
             if (plan.Plan == ResourcePlanEnums.ExcludeCrop)
@@ -120,8 +243,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             if (resourceFields.Count == 0) return null;
 
             var minLevel = resourceFields
-                .Select(x => x.Level)
-                .Min();
+                .Min(x => x.Level);
 
             var chosenOne = resourceFields
                 .Where(x => x.Level == minLevel)

@@ -1,8 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
+
+using Splat;
 
 namespace MainCore.Services
 {
@@ -11,9 +12,9 @@ namespace MainCore.Services
     {
         private Dictionary<AccountId, LinkedList<LogEvent>> Logs { get; } = [];
 
-        private readonly IRxQueue _rxQueue;
+        private readonly RxQueue _rxQueue;
 
-        public LogSink(IRxQueue rxQueue)
+        public LogSink(RxQueue rxQueue)
         {
             _rxQueue = rxQueue;
         }
@@ -39,11 +40,11 @@ namespace MainCore.Services
             var accountId = new AccountId(int.Parse(value!));
 
             var logs = GetLogs(accountId);
-            logs.AddFirst(logEvent);
+            logs.AddLast(logEvent);
             // keeps 200 message
             if (logs.Count > 200)
             {
-                logs.RemoveLast();
+                logs.RemoveFirst();
             }
 
             _rxQueue.Enqueue(new LogEmitted(accountId, logEvent));

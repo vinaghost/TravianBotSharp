@@ -1,7 +1,7 @@
 ﻿namespace MainCore.Services
 {
-    [RegisterScoped<ISettingService, SettingService>]
-    public class SettingService : ISettingService
+    [RegisterScoped<SettingService>]
+    public class SettingService
     {
         private readonly AppDbContext _context;
 

@@ -1,65 +1,58 @@
-﻿namespace MainCore.Parsers
+﻿using System.Text.Json;
+
+namespace MainCore.Parsers
 {
     public static class FarmListParser
     {
-        public static IEnumerable<HtmlNode> GetFarmNodes(HtmlDocument doc)
+        public record struct RawFarmDto(string? FarmIdStr, string? Name);
+
+        public static async Task<List<FarmDto>> GetFarmInfo(IPage page)
         {
-            var farmListTable = doc.GetElementbyId("rallyPointFarmList");
-            if (farmListTable is null) return [];
+            var jsonResult = await page.EvaluateAsync<JsonElement>(@"() => {
+                const elements = document.querySelectorAll('#rallyPointFarmList div.farmListHeader');
+                const result = [];
 
-            var farmlistNodes = farmListTable
-                .Descendants("div")
-                .Where(x => x.HasClass("farmListHeader"));
-            return farmlistNodes;
-        }
+                elements.forEach(header => {
+                    const dragEl = header.querySelector('div.dragAndDrop');
+                    const nameEl = header.querySelector('div.farmListName div.name');
 
-        public static FarmId GetId(HtmlNode node)
-        {
-            var farmlistDiv = node
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("dragAndDrop"));
+                    result.push({
+                        FarmIdStr: dragEl ? (dragEl.getAttribute('data-list') || '') : '',
+                        Name: nameEl ? nameEl.innerText.trim() : ''
+                    });
+                });
+                return result;
+            }");
 
-            if (farmlistDiv is null) return default;
+            var text = jsonResult.GetRawText();
+            var rawFarmsData = JsonSerializer.Deserialize<List<RawFarmDto>>(text) ?? throw new InvalidOperationException($"Failed to deserialize farm data from the page. Content: {text}");
 
-            var id = farmlistDiv.GetAttributeValue("data-list", "0");
-            return new FarmId(id.ParseInt());
-        }
+            var extractedFarms = new List<FarmDto>();
 
-        public static string GetName(HtmlNode node)
-        {
-            var farmlistName = node
-                .Descendants("div")
-                .FirstOrDefault(x => x.HasClass("name"));
-            if (farmlistName is null) return "";
-            return farmlistName.InnerText.Trim();
-        }
-
-        public static HtmlNode? GetStartButton(HtmlDocument doc, FarmId raidId)
-        {
-            var nodes = GetFarmNodes(doc);
-            foreach (var node in nodes)
+            foreach (var raw in rawFarmsData)
             {
-                var id = GetId(node);
-                if (id != raidId) continue;
+                int farmId = int.TryParse(raw.FarmIdStr, out int id) ? id : -1;
 
-                var startNode = node
-                    .Descendants("button")
-                    .FirstOrDefault(x => x.HasClass("startFarmList"));
-                if (startNode is null) continue;
-                return startNode;
+                extractedFarms.Add(new FarmDto
+                {
+                    Id = new FarmId(farmId),
+                    Name = (raw.Name ?? "").Trim()
+                });
             }
-            return null;
+
+            return extractedFarms;
         }
 
-        public static HtmlNode? GetStartAllButton(HtmlDocument doc)
+        public static ILocator GetStartButton(IPage page, FarmId raidId)
         {
-            var farmlistTable = doc.GetElementbyId("rallyPointFarmList");
-            if (farmlistTable is null) return null;
-            var startAllFarmListButton = farmlistTable
-                .Descendants("button")
-                .FirstOrDefault(x => x.HasClass("startAllFarmLists"));
+            var button = page.Locator($"#rallyPointFarmList div.farmListHeader:has(div[data-list='{raidId.Value}']) button.startFarmList");
+            return button;
+        }
 
-            return startAllFarmListButton;
+        public static ILocator GetStartAllButton(IPage page)
+        {
+            var button = page.Locator("#rallyPointFarmList button.startAllFarmLists");
+            return button;
         }
     }
 }

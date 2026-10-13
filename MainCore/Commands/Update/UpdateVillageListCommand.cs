@@ -1,34 +1,43 @@
-﻿namespace MainCore.Commands.Update
+using System.Text.Json;
+
+using MainCore.Infrasturecture.Extensions;
+
+namespace MainCore.Commands.Update
 {
     [Handler]
-    public static partial class UpdateVillageListCommand
+    public sealed partial class UpdateVillageListCommand(
+        IChromeBrowser browser,
+        IDbContextFactory<AppDbContext> contextFactory,
+        RxQueue rxQueue,
+        TaskManager taskManager,
+        DefaultTemplatePathStore defaultTemplatePathStore)
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand;
 
-        private static async ValueTask HandleAsync(
-            Command command,
-            IChromeBrowser browser,
-            AppDbContext context,
-            IRxQueue rxQueue,
-            ITaskManager taskManager)
+        private async ValueTask HandleAsync(
+            Command command)
         {
             await Task.CompletedTask;
             var accountId = command.AccountId;
 
-            var dtos = VillagePanelParser.Get(browser.Html);
-            if (!dtos.Any()) return;
+            var dtos = await VillagePanelParser.Get(browser.CurrentPage);
+            if (dtos.Count == 0) return;
 
-            context.UpdateToDatabase(accountId, dtos.ToList());
-
+            UpdateToDatabase(accountId, dtos);
             rxQueue.Enqueue(new VillagesModified(accountId));
+            TriggerUpdateBuildingTask(accountId);
+        }
 
+        private void TriggerUpdateBuildingTask(AccountId accountId)
+        {
+            using var context = contextFactory.CreateDbContext();
             var settingEnable = context.BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             if (!settingEnable) return;
 
-            var missingBuildingVillagesSpec = new MissingBuildingVillagesSpec(accountId);
-
             var villages = context.Villages
-                .WithSpecification(missingBuildingVillagesSpec)
+                .Where(x => x.AccountId == accountId.Value)
+                .Where(x => x.Buildings.Count < 40)
+                .Select(x => new VillageId(x.Id))
                 .ToList();
 
             foreach (var village in villages)
@@ -38,8 +47,9 @@
             }
         }
 
-        private static void UpdateToDatabase(this AppDbContext context, AccountId accountId, List<VillageDto> dtos)
+        private void UpdateToDatabase(AccountId accountId, List<VillageDto> dtos)
         {
+            using var context = contextFactory.CreateDbContext();
             var villages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .ToList();
@@ -55,6 +65,7 @@
             {
                 context.Add(x.ToEntity(accountId));
                 context.FillVillageSettings(accountId, x.Id);
+                ApplyVillageSettingTemplate(context, x.Id);
             });
 
             foreach (var village in villageUpdated)
@@ -65,6 +76,28 @@
             }
 
             context.SaveChanges();
+        }
+
+        private void ApplyVillageSettingTemplate(AppDbContext context, VillageId villageId)
+        {
+            var path = defaultTemplatePathStore.Get().VillageSettingsPath;
+            if (string.IsNullOrWhiteSpace(path)) return;
+            if (!File.Exists(path)) return;
+
+            try
+            {
+                var jsonString = File.ReadAllText(path);
+                var settings = JsonSerializer.Deserialize<Dictionary<VillageSettingEnums, int>>(jsonString);
+                if (settings is null) return;
+                if (settings.Count == 0) return;
+
+                settings.Remove(VillageSettingEnums.Tribe);
+                context.SaveVillageSetting(villageId, settings);
+            }
+            catch
+            {
+                // Ignore
+            }
         }
     }
 }

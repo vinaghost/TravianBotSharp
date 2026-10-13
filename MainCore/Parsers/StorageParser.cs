@@ -1,52 +1,51 @@
 ﻿using System.Net;
+using System.Text.Json;
 
 namespace MainCore.Parsers
 {
     public static class StorageParser
     {
-        private static long GetResource(HtmlDocument doc, string id)
+        public record struct RawStorageDto(string? WoodText, string? ClayText, string? IronText, string? CropText, string? FreeCropText, string? WarehouseText, string? GranaryText);
+
+        public static async Task<StorageDto> GetStorage(IPage page)
         {
-            var node = doc.GetElementbyId(id);
-            if (node is null) return -1;
-            return node.InnerText.ParseLong();
-        }
+            // 1. Instantly pull all raw text payloads out of the browser DOM at the exact same moment
+            var jsonResult = await page.EvaluateAsync<JsonElement>(@"() => {
+                const getRawText = (selector) => {
+                    const el = document.querySelector(selector);
+                    return el ? (el.innerText || el.textContent).trim() : '';
+                };
 
-        public static long GetWood(HtmlDocument doc) => GetResource(doc, "l1");
+                return {
+                    WoodText: getRawText('#l1'),
+                    ClayText: getRawText('#l2'),
+                    IronText: getRawText('#l3'),
+                    CropText: getRawText('#l4'),
+                    FreeCropText: getRawText('#stockBarFreeCrop'),
+                    WarehouseText: getRawText('#stockBar div.warehouse div.capacity div.value'),
+                    GranaryText: getRawText('#stockBar div.granary div.capacity div.value')
+                };
+            }");
 
-        public static long GetClay(HtmlDocument doc) => GetResource(doc, "l2");
+            var text = jsonResult.GetRawText();
+            var raw = JsonSerializer.Deserialize<RawStorageDto>(text);
 
-        public static long GetIron(HtmlDocument doc) => GetResource(doc, "l3");
+            static long ProcessValue(string? rawValue)
+            {
+                string decoded = WebUtility.HtmlDecode(rawValue ?? "");
+                return decoded.ParseLong();
+            }
 
-        public static long GetCrop(HtmlDocument doc) => GetResource(doc, "l4");
-
-        public static long GetFreeCrop(HtmlDocument doc) => GetResource(doc, "stockBarFreeCrop");
-
-        public static long GetWarehouseCapacity(HtmlDocument doc)
-        {
-            var stockBarNode = doc.GetElementbyId("stockBar");
-            if (stockBarNode is null) return -1;
-            var warehouseNode = stockBarNode.Descendants("div").FirstOrDefault(x => x.HasClass("warehouse"));
-            if (warehouseNode is null) return -1;
-            var capacityNode = warehouseNode.Descendants("div").FirstOrDefault(x => x.HasClass("capacity"));
-            if (capacityNode is null) return -1;
-            var valueNode = capacityNode.Descendants("div").FirstOrDefault(x => x.HasClass("value"));
-            if (valueNode is null) return -1;
-            return valueNode.InnerText.ParseLong();
-        }
-
-        public static long GetGranaryCapacity(HtmlDocument doc)
-        {
-            var stockBarNode = doc.GetElementbyId("stockBar");
-            if (stockBarNode is null) return -1;
-            var granaryNode = stockBarNode.Descendants("div").FirstOrDefault(x => x.HasClass("granary"));
-            if (granaryNode is null) return -1;
-            var capacityNode = granaryNode.Descendants("div").FirstOrDefault(x => x.HasClass("capacity"));
-            if (capacityNode is null) return -1;
-            var valueNode = capacityNode.Descendants("div").FirstOrDefault(x => x.HasClass("value"));
-            if (valueNode is null) return -1;
-            var valueStrFixed = WebUtility.HtmlDecode(valueNode.InnerText);
-            if (string.IsNullOrEmpty(valueStrFixed)) return -1;
-            return valueNode.InnerText.ParseLong();
+            return new StorageDto
+            {
+                Wood = ProcessValue(raw.WoodText),
+                Clay = ProcessValue(raw.ClayText),
+                Iron = ProcessValue(raw.IronText),
+                Crop = ProcessValue(raw.CropText),
+                FreeCrop = ProcessValue(raw.FreeCropText),
+                Warehouse = ProcessValue(raw.WarehouseText),
+                Granary = ProcessValue(raw.GranaryText)
+            };
         }
     }
 }

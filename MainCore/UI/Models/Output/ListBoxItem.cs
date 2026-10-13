@@ -1,4 +1,6 @@
-﻿namespace MainCore.UI.Models.Output
+﻿using Splat;
+
+namespace MainCore.UI.Models.Output
 {
     public partial class ListBoxItem : ReactiveObject
     {
