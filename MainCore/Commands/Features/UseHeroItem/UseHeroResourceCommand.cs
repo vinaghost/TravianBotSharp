@@ -18,7 +18,11 @@
             if (result.IsFailed) return result;
 
             result = await IsEnoughResource(resource);
-            if (result.IsFailed) return result;
+            if (result.IsFailed)
+            {
+                await browser.Refresh();
+                return result;
+            }
 
             result = await browser.Click(InventoryParser.GetResourceConfirmButton(browser.CurrentPage));
             if (result.IsFailed) return result;
