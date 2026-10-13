@@ -1,4 +1,6 @@
-﻿namespace MainCore.DTO
+﻿using Riok.Mapperly.Abstractions;
+
+namespace MainCore.DTO
 {
     public class HeroItemDto
     {

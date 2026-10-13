@@ -1,4 +1,4 @@
 ﻿namespace MainCore.Notifications
 {
-    public record BuildingsModified(VillageId VillageId) : IVillageNotification;
+    public record BuildingsModified(AccountId AccountId, VillageId VillageId) : IAccountVillageNotification;
 }

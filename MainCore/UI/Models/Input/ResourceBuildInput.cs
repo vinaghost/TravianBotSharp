@@ -1,7 +1,9 @@
-﻿using Humanizer;
+﻿using System.Collections.ObjectModel;
+
+using Humanizer;
+
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
-using System.Collections.ObjectModel;
 
 namespace MainCore.UI.Models.Input
 {

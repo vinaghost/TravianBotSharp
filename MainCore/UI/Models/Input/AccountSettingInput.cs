@@ -15,6 +15,9 @@ namespace MainCore.UI.Models.Input
             EnableAutoLoadVillage = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoLoadVillageBuilding) == 1;
             HeadlessChrome = settings.GetValueOrDefault(AccountSettingEnums.HeadlessChrome) == 1;
             EnableAutoStartAdventure = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoStartAdventure) == 1;
+            EnableAutoClaimDailyQuest = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoClaimDailyQuest) == 1;
+            EnableAutoSetHeroPoint = settings.GetValueOrDefault(AccountSettingEnums.EnableAutoSetHeroPoint) == 1;
+
             FarmInterval.Set(settings.GetValueOrDefault(AccountSettingEnums.FarmIntervalMin), settings.GetValueOrDefault(AccountSettingEnums.FarmIntervalMax));
             UseStartAllButton = settings.GetValueOrDefault(AccountSettingEnums.UseStartAllButton) == 1;
         }
@@ -29,6 +32,8 @@ namespace MainCore.UI.Models.Input
             var (sleepTimeMin, sleepTimeMax) = SleepTime.Get();
             var headlessChrome = HeadlessChrome ? 1 : 0;
             var autoStartAdventure = EnableAutoStartAdventure ? 1 : 0;
+            var autoClaimDailyQuest = EnableAutoClaimDailyQuest ? 1 : 0;
+            var enableAutoSetHeroPoint = EnableAutoSetHeroPoint ? 1 : 0;
 
             var (farmIntervalMin, farmIntervalMax) = FarmInterval.Get();
             var useStartAllButton = UseStartAllButton ? 1 : 0;
@@ -53,6 +58,8 @@ namespace MainCore.UI.Models.Input
 
                 { AccountSettingEnums.HeadlessChrome, headlessChrome },
                 { AccountSettingEnums.EnableAutoStartAdventure, autoStartAdventure },
+                { AccountSettingEnums.EnableAutoClaimDailyQuest, autoClaimDailyQuest },
+                { AccountSettingEnums.EnableAutoSetHeroPoint, enableAutoSetHeroPoint }
             };
             return settings;
         }
@@ -76,5 +83,11 @@ namespace MainCore.UI.Models.Input
 
         [Reactive]
         private bool _useStartAllButton;
+
+        [Reactive]
+        private bool _enableAutoClaimDailyQuest;
+
+        [Reactive]
+        private bool _enableAutoSetHeroPoint;
     }
 }

@@ -1,41 +1,22 @@
 ﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public static partial class SwitchVillageCommand
+    public sealed partial class SwitchVillageCommand(IChromeBrowser browser)
     {
         public sealed record Command(VillageId VillageId) : IVillageCommand;
 
-        private static async ValueTask<Result> HandleAsync(
-           Command command,
-           IChromeBrowser browser,
-           CancellationToken cancellationToken
-           )
+        private async ValueTask<Result> HandleAsync(Command command)
         {
             var villageId = command.VillageId;
 
-            var villageNode = VillagePanelParser.GetVillageNode(browser.Html, villageId);
-            if (villageNode is null) return Skip.Error.WithError("Village not found");
+            var villageNode = VillagePanelParser.GetVillageNode(browser.CurrentPage, villageId);
+            if (await villageNode.CountAsync() == 0) return Skip.Error.WithError("Village not found");
 
-            if (VillagePanelParser.IsActive(villageNode)) return Result.Ok();
+            if (await VillagePanelParser.IsActive(villageNode)) return Result.Ok();
 
-            var (_, isFailed, element, errors) = await browser.GetElement(By.XPath(villageNode.XPath), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
             Result result;
-            result = await browser.Click(element, cancellationToken);
+            result = await browser.Click(villageNode);
             if (result.IsFailed) return result;
-
-            bool villageChanged(IWebDriver driver)
-            {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(driver.PageSource);
-
-                var villageNode = VillagePanelParser.GetVillageNode(doc, villageId);
-                return villageNode is not null && VillagePanelParser.IsActive(villageNode);
-            }
-
-            result = await browser.Wait(villageChanged, cancellationToken);
-            if (result.IsFailed) return result;
-
             return Result.Ok();
         }
     }
