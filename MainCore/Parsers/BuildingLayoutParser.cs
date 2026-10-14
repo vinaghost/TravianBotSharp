@@ -141,7 +141,7 @@ namespace MainCore.Parsers
 
             foreach (var raw in rawQueueData)
             {
-                string cleanedType = (raw.TypeName ?? "").Replace(" ", "");
+                string cleanedType = new(raw.TypeName?.Where(c => char.IsLetter(c) || char.IsDigit(c)).ToArray() ?? []);
 
                 var levelMatch = LevelExtractor().Match(raw.LevelText ?? "");
                 int level = levelMatch.Success && int.TryParse(levelMatch.Value, out var l) ? l : 0;
