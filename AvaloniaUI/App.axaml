@@ -1,0 +1,72 @@
+<Application
+    x:Class="AvaloniaUI.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converter="using:AvaloniaUI.Converter"
+    Name="Travian Bot Sharp"
+    RequestedThemeVariant="Light">
+    <Application.Resources>
+        <converter:SplatColorToBrushConverter x:Key="ColorConverter" />
+
+        <DataTemplate x:Key="ListBoxItem">
+            <TextBlock Text="{Binding Content}" />
+        </DataTemplate>
+        <DataTemplate x:Key="ListBoxColorItem">
+            <TextBlock Foreground="{Binding Color, Converter={StaticResource ColorConverter}}" Text="{Binding Content}" />
+        </DataTemplate>
+        <DataTemplate x:Key="ListBoxBlackColorItem">
+            <TextBlock
+                Background="Black"
+                Foreground="{Binding Color, Converter={StaticResource ColorConverter}}"
+                Text="{Binding Content}" />
+        </DataTemplate>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme DensityStyle="Compact" />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+
+        <Style Selector="Border.box">
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="BorderBrush" Value="Gray" />
+            <Setter Property="Padding" Value="5" />
+        </Style>
+        <Style Selector="Border.overlayBackground">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="Background" Value="DarkGray" />
+            <Setter Property="Opacity" Value=".7" />
+        </Style>
+        <Style Selector="Border.overlayContent">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="AliceBlue" />
+            <Setter Property="BorderBrush" Value="Black" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10,0,10,0" />
+            <Setter Property="BoxShadow" Value="0 1 3 0 #80000000" />
+        </Style>
+        <Style Selector="TextBlock.header">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <!--  WPF buttons stretch to fill their cell, Avalonia buttons do not by default  -->
+        <Style Selector="Button">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Label">
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <!--  Fluent tab headers are 24px by default, far larger than the WPF version  -->
+        <Style Selector="TabItem">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="MinHeight" Value="32" />
+            <Setter Property="Padding" Value="10,4" />
+        </Style>
+    </Application.Styles>
+</Application>

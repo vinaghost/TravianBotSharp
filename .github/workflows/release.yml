@@ -80,16 +80,48 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
                   
+  BuildMac:
+    runs-on: macos-latest
+    needs: Version
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install dotnet
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.400
+
+      - name: Build app bundle
+        run: VERSION=${{needs.version.outputs.version}} ./build-mac.sh
+
+      - name: Archive app bundle
+        run: ditto -c -k --keepParent publish/TravianBotSharp.app TBS-${{needs.version.outputs.version}}-macOS.zip
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: TBS-macOS
+          path: TBS-${{needs.version.outputs.version}}-macOS.zip
+          if-no-files-found: error
+
   Release:
     runs-on: ubuntu-latest
     permissions:
         contents: write
-    needs: [Build, Version]
+    needs: [Build, BuildMac, Version]
     steps:        
       - name: Download artifact
         uses: actions/download-artifact@v8
         with:
+          pattern: TBS-${{needs.version.outputs.version}}
           path: TBS
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: TBS-macOS
+          path: .
       
       - name: Archive release
         run: |
@@ -103,7 +135,7 @@ jobs:
           name: TBS-${{needs.version.outputs.version}}
           tag: ${{needs.version.outputs.version}}
           commit: main
-          artifacts: "TBS-${{needs.version.outputs.version}}.zip"
+          artifacts: "TBS-${{needs.version.outputs.version}}.zip,TBS-${{needs.version.outputs.version}}-macOS.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
             Please join our Discord server for more information: [https://discord.gg/mBa4f2K](https://discord.gg/mBa4f2K)
@@ -136,4 +168,6 @@ jobs:
       - name: Delete artifact
         uses: geekyeggo/delete-artifact@v6
         with:
-          name: TBS
+          name: |
+            TBS
+            TBS-macOS

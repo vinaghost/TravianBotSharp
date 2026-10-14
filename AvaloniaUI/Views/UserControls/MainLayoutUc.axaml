@@ -1,0 +1,115 @@
+<v_uc:MainLayoutUcBase
+    x:Class="AvaloniaUI.Views.UserControls.MainLayoutUc"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:v_tab="using:AvaloniaUI.Views.Tabs"
+    xmlns:v_uc="using:AvaloniaUI.Views.UserControls">
+    <Grid Margin="5" ColumnDefinitions="10*,45*">
+        <Grid Grid.Column="0" RowDefinitions="Auto,*,Auto,Auto,Auto,Auto">
+            <Grid
+                Grid.Row="0"
+                Margin="5,0,5,0"
+                ColumnDefinitions="*,2,*"
+                RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                <Button
+                    x:Name="AddAccountButton"
+                    Grid.Row="0"
+                    Grid.ColumnSpan="3"
+                    Margin="0,0,0,2"
+                    Content="Add account" />
+                <Button
+                    x:Name="AddAccountsButton"
+                    Grid.Row="1"
+                    Grid.ColumnSpan="3"
+                    Margin="0,0,0,2"
+                    Content="Add accounts" />
+                <Button
+                    x:Name="LoginButton"
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Margin="0,0,0,2"
+                    Content="Login" />
+                <Button
+                    x:Name="LogoutButton"
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    Margin="0,0,0,2"
+                    Content="Logout" />
+                <Button
+                    x:Name="DeleteButton"
+                    Grid.Row="3"
+                    Grid.ColumnSpan="3"
+                    Margin="0,0,0,2"
+                    Content="Delete" />
+                <Button
+                    x:Name="PauseButton"
+                    Grid.Row="4"
+                    Grid.Column="0"
+                    Margin="0,0,0,2"
+                    Content="Pause" />
+                <Button
+                    x:Name="RestartButton"
+                    Grid.Row="4"
+                    Grid.Column="2"
+                    Margin="0,0,0,2"
+                    Content="Restart" />
+            </Grid>
+            <Border Grid.Row="1" Classes="box">
+                <ListBox
+                    x:Name="AccountGrid"
+                    ItemTemplate="{StaticResource ListBoxColorItem}"
+                    SelectionMode="Single" />
+            </Border>
+            <Border Grid.Row="2" Classes="box">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Version: " />
+                    <Label x:Name="Version" Content="30.4.1975" />
+                </StackPanel>
+            </Border>
+            <Button
+                x:Name="DefaultSettingsForNewAccountButton"
+                Grid.Row="3"
+                Margin="5"
+                Content="Default settings for new account" />
+            <Button
+                x:Name="DefaultSettingsForNewVillageButton"
+                Grid.Row="4"
+                Margin="5"
+                Content="Default settings for new village" />
+        </Grid>
+        <Border
+            Grid.Column="1"
+            Margin="10,0,0,5"
+            Classes="box">
+            <TabControl>
+                <TabItem
+                    x:Name="NoAccountTab"
+                    Header="No account"
+                    IsSelected="True">
+                    <v_tab:NoAccountTab x:Name="NoAccount" />
+                </TabItem>
+                <TabItem x:Name="AddAccountTab" Header="Add account">
+                    <v_tab:AddAccountTab x:Name="AddAccount" />
+                </TabItem>
+                <TabItem x:Name="AddAccountsTab" Header="Add accounts">
+                    <v_tab:AddAccountsTab x:Name="AddAccounts" />
+                </TabItem>
+                <TabItem x:Name="AccountSettingTab" Header="Settings">
+                    <v_tab:AccountSettingTab x:Name="AccountSetting" />
+                </TabItem>
+                <TabItem x:Name="VillageTab" Header="Villages">
+                    <v_tab:VillageTab x:Name="Village" />
+                </TabItem>
+                <TabItem x:Name="FarmingTab" Header="Farming">
+                    <v_tab:FarmingTab x:Name="Farming" />
+                </TabItem>
+                <TabItem x:Name="EditAccountTab" Header="Edit account">
+                    <v_tab:EditAccountTab x:Name="EditAccount" />
+                </TabItem>
+                <TabItem x:Name="DebugTab" Header="Debug">
+                    <v_tab:DebugTab x:Name="Debug" />
+                </TabItem>
+            </TabControl>
+        </Border>
+    </Grid>
+</v_uc:MainLayoutUcBase>

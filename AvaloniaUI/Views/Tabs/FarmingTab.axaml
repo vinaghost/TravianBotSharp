@@ -1,0 +1,63 @@
+<v:FarmingTabBase
+    x:Class="AvaloniaUI.Views.Tabs.FarmingTab"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:uc="using:AvaloniaUI.Views.UserControls"
+    xmlns:v="using:AvaloniaUI.Views.Tabs">
+    <Grid Background="#FFE5E5E5" ColumnDefinitions="1*,4*">
+        <Grid Grid.Column="0" RowDefinitions="*,Auto">
+            <Border Grid.Row="0" Classes="box">
+                <ListBox
+                    x:Name="FarmlistGrid"
+                    ItemTemplate="{StaticResource ListBoxColorItem}"
+                    SelectionMode="Single" />
+            </Border>
+            <Button
+                x:Name="Load"
+                Grid.Row="1"
+                Margin="5,0,5,5"
+                Content="Load farmlist"
+                ToolTip.Tip="Load farmlist" />
+        </Grid>
+        <Border Grid.Column="1" Classes="box">
+            <Grid RowDefinitions="Auto,*,Auto,Auto">
+                <StackPanel
+                    Grid.Row="0"
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal">
+                    <StackPanel Margin="0,20,0,0">
+                        <uc:RangeInputUc
+                            x:Name="FarmInterval"
+                            Text="Start farm delay"
+                            Unit="s" />
+                        <CheckBox x:Name="UseStartAllCheckbox" Content="Use Start all button (ignore active settings)" />
+                    </StackPanel>
+                    <Button
+                        x:Name="SaveButton"
+                        Margin="10"
+                        VerticalAlignment="Center"
+                        Content="Save"
+                        ToolTip.Tip="Save" />
+                </StackPanel>
+                <Button
+                    x:Name="ActiveButton"
+                    Grid.Row="1"
+                    Margin="10"
+                    VerticalAlignment="Stretch"
+                    VerticalContentAlignment="Center" />
+                <Button
+                    x:Name="StartButton"
+                    Grid.Row="2"
+                    Margin="10"
+                    Content="Start"
+                    ToolTip.Tip="Start" />
+                <Button
+                    x:Name="StopButton"
+                    Grid.Row="3"
+                    Margin="10"
+                    Content="Stop"
+                    ToolTip.Tip="Stop" />
+            </Grid>
+        </Border>
+    </Grid>
+</v:FarmingTabBase>

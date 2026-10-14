@@ -1,0 +1,58 @@
+<v:ResourceInputUcBase
+    x:Class="AvaloniaUI.Views.UserControls.ResourceInputUc"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:v="using:AvaloniaUI.Views.UserControls"
+    x:Name="root">
+    <StackPanel Margin="5,0,0,0" Orientation="Horizontal">
+        <Label VerticalAlignment="Bottom" Content="{Binding #root.Text}" />
+
+        <Image
+            Width="16"
+            Height="12"
+            Margin="10,0,0,0"
+            Source="/Resources/wood.png" />
+        <TextBox
+            x:Name="Wood"
+            Width="60"
+            Margin="5,0,0,0"
+            PlaceholderText="Wood"
+            UseFloatingPlaceholder="True" />
+
+        <Image
+            Width="16"
+            Height="12"
+            Margin="10,0,0,0"
+            Source="/Resources/clay.png" />
+        <TextBox
+            x:Name="Clay"
+            Width="60"
+            Margin="5,0,0,0"
+            PlaceholderText="Clay"
+            UseFloatingPlaceholder="True" />
+
+        <Image
+            Width="16"
+            Height="12"
+            Margin="10,0,0,0"
+            Source="/Resources/iron.png" />
+        <TextBox
+            x:Name="Iron"
+            Width="60"
+            Margin="5,0,0,0"
+            PlaceholderText="Iron"
+            UseFloatingPlaceholder="True" />
+
+        <Image
+            Width="16"
+            Height="16"
+            Margin="10,0,0,0"
+            Source="/Resources/crop.png" />
+        <TextBox
+            x:Name="Crop"
+            Width="60"
+            Margin="5,0,0,0"
+            PlaceholderText="Crop"
+            UseFloatingPlaceholder="True" />
+    </StackPanel>
+</v:ResourceInputUcBase>

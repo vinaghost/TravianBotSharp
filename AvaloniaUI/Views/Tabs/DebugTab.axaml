@@ -1,0 +1,69 @@
+<v:DebugTabBase
+    x:Class="AvaloniaUI.Views.Tabs.DebugTab"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:v="using:AvaloniaUI.Views.Tabs">
+    <Grid Background="#FFE5E5E5" RowDefinitions="*,Auto">
+        <Grid
+            Grid.Row="0"
+            ColumnDefinitions="1*,1*"
+            RowDefinitions="Auto,Auto,1*">
+            <Button
+                x:Name="ReportButton"
+                Grid.Row="0"
+                Grid.Column="0"
+                Margin="10"
+                Content="Buy a Coffee for Vinaghost" />
+            <Button
+                x:Name="LogButton"
+                Grid.Row="0"
+                Grid.Column="1"
+                Margin="10"
+                Content="Open log folder" />
+
+            <Label
+                x:Name="TaskTableLabel"
+                Grid.Row="1"
+                Grid.Column="0"
+                HorizontalContentAlignment="Center"
+                Content="Task table" />
+            <Label
+                x:Name="LogTableLabel"
+                Grid.Row="1"
+                Grid.Column="1"
+                HorizontalContentAlignment="Center"
+                Content="Log messages" />
+            <Border
+                Grid.Row="2"
+                Grid.Column="0"
+                Classes="box">
+                <DataGrid
+                    x:Name="TaskView"
+                    AutoGenerateColumns="False"
+                    IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Task}" Header="Task" />
+                        <DataGridTextColumn Binding="{Binding ExecuteAt}" Header="Execute at" />
+                        <DataGridTextColumn Binding="{Binding Stage}" Header="Stage" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+            <Border
+                Grid.Row="2"
+                Grid.Column="1"
+                Classes="box">
+                <TextBox
+                    x:Name="LogView"
+                    VerticalContentAlignment="Top"
+                    AcceptsReturn="True"
+                    IsReadOnly="True"
+                    TextWrapping="Wrap" />
+            </Border>
+        </Grid>
+        <Button
+            x:Name="BringToFrontButton"
+            Grid.Row="1"
+            Margin="10"
+            Content="Bring browser to front" />
+    </Grid>
+</v:DebugTabBase>

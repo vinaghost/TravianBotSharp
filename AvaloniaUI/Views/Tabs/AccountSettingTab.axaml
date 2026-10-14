@@ -1,0 +1,76 @@
+<v:AccountSettingTabBase
+    x:Class="AvaloniaUI.Views.Tabs.AccountSettingTab"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:uc="using:AvaloniaUI.Views.UserControls"
+    xmlns:v="using:AvaloniaUI.Views.Tabs">
+    <Grid Background="#FFE5E5E5" RowDefinitions="Auto,*">
+        <Grid
+            Grid.Row="0"
+            Margin="10"
+            ColumnDefinitions="4*,*,*">
+            <Button
+                x:Name="SaveButton"
+                Grid.Column="0"
+                Content="Save"
+                ToolTip.Tip="Save" />
+            <Button
+                x:Name="ImportButton"
+                Grid.Column="1"
+                Margin="5,0,0,0"
+                Content="Import"
+                ToolTip.Tip="Import" />
+            <Button
+                x:Name="ExportButton"
+                Grid.Column="2"
+                Margin="5,0,0,0"
+                Content="Export"
+                ToolTip.Tip="Export" />
+        </Grid>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border Classes="box">
+                    <StackPanel>
+                        <TextBlock Classes="header" Text="Activity settings" />
+                        <uc:RangeInputUc
+                            x:Name="WorkTime"
+                            Text="Work time"
+                            Unit="minutes" />
+                        <uc:RangeInputUc
+                            x:Name="SleepTime"
+                            Text="Sleep time"
+                            Unit="minutes" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="box">
+                    <StackPanel>
+                        <TextBlock Classes="header" Text="Delay settings" />
+                        <uc:RangeInputUc
+                            x:Name="ClickDelay"
+                            Text="Click delay"
+                            Unit="milliseconds" />
+                        <uc:RangeInputUc
+                            x:Name="TaskDelay"
+                            Text="Task delay"
+                            Unit="milliseconds" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="box">
+                    <StackPanel>
+                        <TextBlock Classes="header" Text="Feature settings" />
+                        <CheckBox x:Name="EnableAutoLoadVillage" Content="Enable auto load village's building" />
+                        <CheckBox x:Name="EnableAutoStartAdventure" Content="Enable auto start adventure" />
+                        <CheckBox x:Name="EnableAutoClaimDailyQuest" Content="Enable auto claim daily quest" />
+                        <CheckBox x:Name="EnableAutoSetHeroPoint" Content="Enable auto set hero point (1 power, 3 res)" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="box">
+                    <StackPanel>
+                        <TextBlock Classes="header" Text="Chrome settings" />
+                        <CheckBox x:Name="HeadlessChrome" Content="Use headless chrome" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</v:AccountSettingTabBase>

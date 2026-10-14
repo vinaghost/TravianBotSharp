@@ -1,0 +1,137 @@
+<v:BuildTabBase
+    x:Class="AvaloniaUI.Views.Tabs.Villages.BuildTab"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:v="using:AvaloniaUI.Views.Tabs.Villages">
+    <Grid ColumnDefinitions="*,2,*,2,*">
+        <Grid Grid.Column="0" RowDefinitions="Auto,*">
+            <Border Grid.Row="0" Classes="box">
+                <ListBox
+                    x:Name="QueueGrid"
+                    ItemTemplate="{StaticResource ListBoxItem}"
+                    SelectionMode="Single" />
+            </Border>
+            <Border Grid.Row="1" Classes="box">
+                <ListBox
+                    x:Name="BuildingsGrid"
+                    ItemTemplate="{StaticResource ListBoxBlackColorItem}"
+                    SelectionMode="Single">
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem x:Name="UpgradeOneLevelButton" Header="Upgrade one level" />
+                            <MenuItem x:Name="UpgradeMaxLevelButton" Header="Upgrade max level" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                </ListBox>
+            </Border>
+        </Grid>
+        <Grid Grid.Column="2" RowDefinitions="Auto,Auto,*">
+            <Border Grid.Row="0" Classes="box">
+                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,5,Auto">
+                    <Label
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Content="Building" />
+                    <ComboBox
+                        x:Name="NormalBuildings"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+>
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <Label
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Content="Level" />
+                    <TextBox
+                        x:Name="NormalLevel"
+                        Grid.Row="1"
+                        Grid.Column="1" />
+                    <Button
+                        x:Name="NormalBuild"
+                        Grid.Row="3"
+                        Grid.ColumnSpan="2"
+                        Content="Build"
+                        ToolTip.Tip="Build" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Classes="box">
+                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,5,Auto">
+                    <ComboBox
+                        x:Name="ResType"
+                        Grid.Row="0"
+                        Grid.ColumnSpan="2"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        SelectedIndex="0">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <Label
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Content="Level" />
+                    <TextBox
+                        x:Name="ResourceLevel"
+                        Grid.Row="1"
+                        Grid.Column="1" />
+                    <Button
+                        x:Name="ResourceBuild"
+                        Grid.Row="3"
+                        Grid.ColumnSpan="2"
+                        Content="Build"
+                        ToolTip.Tip="Build" />
+                </Grid>
+            </Border>
+        </Grid>
+        <Grid Grid.Column="4" RowDefinitions="Auto,*">
+            <Grid Grid.Row="0" ColumnDefinitions="*,*">
+                <Button
+                    x:Name="ImportButton"
+                    Grid.Column="0"
+                    Margin="5"
+                    Content="Import" />
+                <Button
+                    x:Name="ExportButton"
+                    Grid.Column="1"
+                    Margin="5"
+                    Content="Export" />
+            </Grid>
+            <Border Grid.Row="1" Classes="box">
+                <ListBox
+                    x:Name="JobsGrid"
+                    ItemTemplate="{StaticResource ListBoxColorItem}"
+                    SelectionMode="Single">
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem x:Name="TopButton" Header="Top" />
+                            <MenuItem x:Name="UpButton" Header="Up" />
+                            <MenuItem x:Name="DownButton" Header="Down" />
+                            <MenuItem x:Name="BottomButton" Header="Bottom" />
+                            <MenuItem x:Name="DeleteButton" Header="Delete" />
+                            <MenuItem x:Name="DeleteAllButton" Header="Delete all" />
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                </ListBox>
+            </Border>
+        </Grid>
+    </Grid>
+</v:BuildTabBase>
