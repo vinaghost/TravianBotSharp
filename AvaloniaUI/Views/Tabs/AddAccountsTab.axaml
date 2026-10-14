@@ -1,0 +1,44 @@
+<v:AddAccountsTabBase
+    x:Class="AvaloniaUI.Views.Tabs.AddAccountsTab"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:v="using:AvaloniaUI.Views.Tabs">
+    <Grid Background="#FFE5E5E5" RowDefinitions="Auto,*,*,Auto">
+        <Border Classes="box">
+            <TextBox
+                Margin="5,0,5,0"
+                IsReadOnly="True"
+                Text="Format: https://serverl.url username password [proxy_host] [proxy_port] [proxy_username] [proxy_password]" />
+        </Border>
+        <Border Grid.Row="1" Classes="box">
+            <TextBox
+                x:Name="AccountsInput"
+                Margin="5,0,5,0"
+                VerticalContentAlignment="Top"
+                AcceptsReturn="True"
+                ScrollViewer.VerticalScrollBarVisibility="Visible" />
+        </Border>
+        <Border Grid.Row="2" Classes="box">
+            <DataGrid
+                x:Name="AccountsView"
+                AutoGenerateColumns="False"
+                IsReadOnly="True"
+                SelectionMode="Single">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding Server}" Header="Server" />
+                    <DataGridTextColumn Binding="{Binding Username}" Header="Username" />
+                    <DataGridTextColumn Binding="{Binding Password}" Header="Password" />
+                    <DataGridTextColumn Binding="{Binding ProxyHost}" Header="Proxy's host" />
+                    <DataGridTextColumn Binding="{Binding ProxyPort}" Header="Proxy's port" />
+                    <DataGridTextColumn Binding="{Binding ProxyUsername}" Header="Proxy's username" />
+                    <DataGridTextColumn Binding="{Binding ProxyPassword}" Header="Proxy's password" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+        <Button
+            x:Name="AddButton"
+            Grid.Row="3"
+            Margin="10"
+            Content="Add accounts" />
+    </Grid>
+</v:AddAccountsTabBase>

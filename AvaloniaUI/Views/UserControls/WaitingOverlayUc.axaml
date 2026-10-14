@@ -1,0 +1,12 @@
+<v:WaitingOverlayUcBase
+    x:Class="AvaloniaUI.Views.UserControls.WaitingOverlayUc"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:v="using:AvaloniaUI.Views.UserControls">
+    <Grid x:Name="Grid">
+        <Border Classes="overlayBackground" />
+        <Border Classes="overlayContent">
+            <TextBlock x:Name="Message" Margin="10" />
+        </Border>
+    </Grid>
+</v:WaitingOverlayUcBase>
