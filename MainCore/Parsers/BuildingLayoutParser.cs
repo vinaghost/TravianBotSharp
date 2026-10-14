@@ -141,7 +141,8 @@ namespace MainCore.Parsers
 
             foreach (var raw in rawQueueData)
             {
-                string cleanedType = (raw.TypeName ?? "").Replace(" ", "");
+                // "Hero's Mansion" -> "HerosMansion" to match BuildingEnums
+                string cleanedType = (raw.TypeName ?? "").Replace(" ", "").Replace("'", "").Replace("’", "");
 
                 var levelMatch = LevelExtractor().Match(raw.LevelText ?? "");
                 int level = levelMatch.Success && int.TryParse(levelMatch.Value, out var l) ? l : 0;
