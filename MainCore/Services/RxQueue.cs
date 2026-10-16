@@ -52,6 +52,11 @@ namespace MainCore.Services
             {
                 taskManager.Add(startAdventureTask);
             }
+            if (!taskManager.IsExist<DownloadMapDataTask.Task>(accountId))
+            {
+                taskManager.Add(new DownloadMapDataTask.Task(accountId));
+            }
+
             var villages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .Select(x => new VillageId(x.Id))

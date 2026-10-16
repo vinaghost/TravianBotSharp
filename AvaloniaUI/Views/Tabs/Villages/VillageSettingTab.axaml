@@ -1,0 +1,133 @@
+<v:VillageSettingTabBase
+    x:Class="AvaloniaUI.Views.Tabs.Villages.VillageSettingTab"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:uc="using:AvaloniaUI.Views.UserControls"
+    xmlns:v="using:AvaloniaUI.Views.Tabs.Villages">
+    <Grid Background="#FFE5E5E5" RowDefinitions="Auto,*">
+        <Grid
+            Grid.Row="0"
+            Margin="10"
+            ColumnDefinitions="4*,*,*">
+            <Button
+                x:Name="SaveButton"
+                Grid.Column="0"
+                Content="Save"
+                ToolTip.Tip="Save" />
+            <Button
+                x:Name="ImportButton"
+                Grid.Column="1"
+                Margin="5,0,0,0"
+                Content="Import"
+                ToolTip.Tip="Import" />
+            <Button
+                x:Name="ExportButton"
+                Grid.Column="2"
+                Margin="5,0,0,0"
+                Content="Export"
+                ToolTip.Tip="Export" />
+        </Grid>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border Classes="box">
+                    <StackPanel>
+                        <TextBlock Classes="header" Text="Upgrade settings" />
+                        <CheckBox x:Name="UseHeroResForBuilding" Content="Use hero resources when lack of resources" />
+                        <CheckBox x:Name="UseRomanQueueLogic" Content="Use Roman queue logic" />
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox x:Name="CompleteImmediately" Content="Use complete immediately button if queue time longer than " />
+                            <TextBox
+                                x:Name="CompleteImmediatelyTime"
+                                Width="50"
+                                VerticalAlignment="Center" />
+                            <Label Content=" mins" />
+                        </StackPanel>
+
+                        <CheckBox x:Name="UseSpecialUpgrade" Content="Use special upgrade method (the right upgrade button)" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="box">
+                    <StackPanel>
+                        <TextBlock Classes="header" Text="Auto refresh" />
+                        <CheckBox x:Name="AutoRefreshEnable" Content="Enable auto refresh" />
+                        <uc:RangeInputUc
+                            x:Name="AutoRefreshTime"
+                            Text="Refresh every"
+                            Unit="minutes" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="box">
+                    <StackPanel>
+                        <TextBlock Classes="header" Text="NPC Crop exchange settings" />
+                        <CheckBox x:Name="AutoNPCEnable" Content="Enable NPC Crop exchange" />
+                        <CheckBox x:Name="AutoNPCOverflow" Content="Despite warehouse overflow" />
+                        <uc:AmountInputUc
+                            x:Name="AutoNPCGranaryPercent"
+                            Text="Granary"
+                            Unit="%" />
+                        <uc:ResourceInputUc x:Name="AutoNPCRatio" Text="Ratio" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="box">
+                    <StackPanel>
+                        <TextBlock Classes="header" Text="Feature settings" />
+                        <CheckBox x:Name="AutoClaimQuestEnable" Content="Enable auto claim village's quest" />
+                    </StackPanel>
+                </Border>
+                <Border Classes="box">
+                    <StackPanel>
+                        <TextBlock Classes="header" Text="Troop training settings" />
+                        <CheckBox x:Name="TrainTroopEnable" Content="Enable train troop" />
+                        <uc:RangeInputUc
+                            x:Name="TrainTroopRepeatTime"
+                            Text="Next train troop execute after"
+                            Unit="mins" />
+                        <CheckBox x:Name="TrainWhenLowResource" Content="Train maximum number if low on resource" />
+                        <WrapPanel Orientation="Horizontal">
+                            <uc:TroopSelectorUc x:Name="BarrackTroop" Text="Train in barrack" />
+                            <uc:RangeInputUc
+                                x:Name="BarrackAmount"
+                                Margin="10,0,0,0"
+                                Text="for"
+                                Unit="units" />
+                            <uc:TroopSelectorUc
+                                x:Name="GreatBarrackTroop"
+                                Margin="10,0,0,0"
+                                Text="Train in greatbarrack" />
+                            <uc:RangeInputUc
+                                x:Name="GreatBarrackAmount"
+                                Margin="10,0,0,0"
+                                Text="for"
+                                Unit="units" />
+                        </WrapPanel>
+                        <WrapPanel Orientation="Horizontal">
+                            <uc:TroopSelectorUc x:Name="StableTroop" Text="Train in stable" />
+                            <uc:RangeInputUc
+                                x:Name="StableAmount"
+                                Margin="10,0,0,0"
+                                Text="for"
+                                Unit="units" />
+                            <uc:TroopSelectorUc
+                                x:Name="GreatStableTroop"
+                                Margin="10,0,0,0"
+                                Text="Train in greatstable" />
+                            <uc:RangeInputUc
+                                x:Name="GreatStableAmount"
+                                Margin="10,0,0,0"
+                                Text="for"
+                                Unit="units" />
+                        </WrapPanel>
+                        <WrapPanel Orientation="Horizontal">
+                            <uc:TroopSelectorUc x:Name="WorkshopTroop" Text="Train in workshop" />
+                            <uc:RangeInputUc
+                                x:Name="WorkshopAmount"
+                                Margin="10,0,0,0"
+                                Text="for"
+                                Unit="units" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</v:VillageSettingTabBase>

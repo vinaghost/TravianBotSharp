@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblyName>TravianBotSharp</AssemblyName>
+    <RootNamespace>AvaloniaUI</RootNamespace>
+    <ApplicationIcon>..\WPFUI\favicon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="..\WPFUI\Resources\**" Link="Resources\%(RecursiveDir)%(Filename)%(Extension)" />
+    <AvaloniaResource Include="..\WPFUI\favicon.ico" Link="Assets\favicon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.2" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.1.2" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.2" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.2" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.2" />
+    <PackageReference Include="ReactiveUI.Avalonia" Version="12.1.2" />
+    <PackageReference Include="ReactiveUI.Drawing" Version="24.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MainCore\MainCore.csproj" />
+  </ItemGroup>
+
+</Project>

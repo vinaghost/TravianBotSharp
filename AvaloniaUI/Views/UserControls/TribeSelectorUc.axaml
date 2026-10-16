@@ -1,0 +1,29 @@
+<v:TribeSelectorUcBase
+    x:Class="AvaloniaUI.Views.UserControls.TribeSelectorUc"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converter="using:AvaloniaUI.Converter"
+    xmlns:v="using:AvaloniaUI.Views.UserControls"
+    x:Name="root">
+    <v:TribeSelectorUcBase.Resources>
+        <converter:TribeItemToCroppedBitmap x:Key="TribeItemConverter" />
+    </v:TribeSelectorUcBase.Resources>
+    <StackPanel VerticalAlignment="Bottom">
+        <StackPanel Orientation="Horizontal">
+            <Label Content="{Binding #root.Text}" />
+            <ComboBox x:Name="TribeComboBox">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Image
+                                Width="16"
+                                Height="16"
+                                Source="{Binding ., Converter={StaticResource TribeItemConverter}}" />
+                            <TextBlock Margin="5,0,0,0" Text="{Binding Tribe}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+    </StackPanel>
+</v:TribeSelectorUcBase>

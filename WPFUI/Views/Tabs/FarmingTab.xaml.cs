@@ -1,4 +1,6 @@
-﻿using MainCore.UI.ViewModels.Tabs;
+﻿using System.Linq;
+
+using MainCore.UI.ViewModels.Tabs;
 
 using ReactiveUI;
 
@@ -19,6 +21,8 @@ namespace WPFUI.Views.Tabs
         public FarmingTab()
         {
             InitializeComponent();
+            CopyCoordinatesButton.Click += (_, _) => CopyCoordinates();
+
             this.WhenActivated(d =>
             {
                 this.BindCommand(ViewModel, vm => vm.SaveCommand, v => v.SaveButton).DisposeWith(d);
@@ -34,7 +38,30 @@ namespace WPFUI.Views.Tabs
                 this.OneWayBind(ViewModel, vm => vm.AccountSettingInput.FarmInterval, v => v.FarmInterval.ViewModel).DisposeWith(d);
 
                 this.Bind(ViewModel, vm => vm.ActiveText, v => v.ActiveButton.Content).DisposeWith(d);
+
+                // inactive finder
+                this.OneWayBind(ViewModel, vm => vm.CenterVillages.Items, v => v.CenterVillageComboBox.ItemsSource).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.CenterVillages.SelectedItem, v => v.CenterVillageComboBox.SelectedItem).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderRadius.Value, v => v.InactiveRadius.Text).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderPopulation, v => v.InactivePopulation.ViewModel).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderPlayerPopulation, v => v.InactivePlayerPopulation.ViewModel).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderIncludeOases, v => v.IncludeOasesCheckBox.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderSkipAnimalOases, v => v.SkipAnimalOasesCheckBox.IsChecked).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.FindInactivesCommand, v => v.FindInactivesButton).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.InactiveStatus, v => v.InactiveStatus.Text).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.InactiveVillages, v => v.InactiveGrid.ItemsSource).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderTroopSlot.Value, v => v.InactiveTroopSlot.Text).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderTroopAmount.Value, v => v.InactiveTroopAmount.Text).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.AddInactivesToFarmListCommand, v => v.AddToFarmListButton).DisposeWith(d);
             });
+        }
+
+        private void CopyCoordinates()
+        {
+            var villages = ViewModel?.InactiveVillages;
+            if (villages is null || villages.Count == 0) return;
+
+            System.Windows.Clipboard.SetText(string.Join(System.Environment.NewLine, villages.Select(x => x.Coordinates)));
         }
     }
 }

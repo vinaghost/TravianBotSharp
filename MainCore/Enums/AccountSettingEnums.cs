@@ -19,5 +19,14 @@
         EnableAutoStartAdventure,
         EnableAutoClaimDailyQuest,
         EnableAutoSetHeroPoint,
+        InactiveFinderRadius,
+        InactiveFinderMinPopulation,
+        InactiveFinderMaxPopulation,
+        InactiveFinderTroopSlot,
+        InactiveFinderTroopAmount,
+        InactiveFinderMinPlayerPopulation,
+        InactiveFinderMaxPlayerPopulation,
+        InactiveFinderIncludeOases,
+        InactiveFinderSkipAnimalOases,
     }
 }

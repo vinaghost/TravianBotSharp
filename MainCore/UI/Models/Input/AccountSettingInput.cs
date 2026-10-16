@@ -20,6 +20,14 @@ namespace MainCore.UI.Models.Input
 
             FarmInterval.Set(settings.GetValueOrDefault(AccountSettingEnums.FarmIntervalMin), settings.GetValueOrDefault(AccountSettingEnums.FarmIntervalMax));
             UseStartAllButton = settings.GetValueOrDefault(AccountSettingEnums.UseStartAllButton) == 1;
+
+            InactiveFinderRadius.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderRadius));
+            InactiveFinderPopulation.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderMinPopulation), settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderMaxPopulation));
+            InactiveFinderPlayerPopulation.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderMinPlayerPopulation), settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderMaxPlayerPopulation));
+            InactiveFinderIncludeOases = settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderIncludeOases) == 1;
+            InactiveFinderSkipAnimalOases = settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderSkipAnimalOases) == 1;
+            InactiveFinderTroopSlot.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderTroopSlot));
+            InactiveFinderTroopAmount.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderTroopAmount));
         }
 
         public Dictionary<AccountSettingEnums, int> Get()
@@ -38,6 +46,12 @@ namespace MainCore.UI.Models.Input
             var (farmIntervalMin, farmIntervalMax) = FarmInterval.Get();
             var useStartAllButton = UseStartAllButton ? 1 : 0;
 
+            var inactiveFinderRadius = InactiveFinderRadius.Get();
+            var (inactiveFinderMinPopulation, inactiveFinderMaxPopulation) = InactiveFinderPopulation.Get();
+            var (inactiveFinderMinPlayerPopulation, inactiveFinderMaxPlayerPopulation) = InactiveFinderPlayerPopulation.Get();
+            var inactiveFinderTroopSlot = InactiveFinderTroopSlot.Get();
+            var inactiveFinderTroopAmount = InactiveFinderTroopAmount.Get();
+
             var settings = new Dictionary<AccountSettingEnums, int>()
             {
                 { AccountSettingEnums.ClickDelayMin, clickDelayMin },
@@ -49,6 +63,16 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.FarmIntervalMin, farmIntervalMin },
                 { AccountSettingEnums.FarmIntervalMax, farmIntervalMax },
                 { AccountSettingEnums.UseStartAllButton, useStartAllButton },
+
+                { AccountSettingEnums.InactiveFinderRadius, inactiveFinderRadius },
+                { AccountSettingEnums.InactiveFinderMinPopulation, inactiveFinderMinPopulation },
+                { AccountSettingEnums.InactiveFinderMaxPopulation, inactiveFinderMaxPopulation },
+                { AccountSettingEnums.InactiveFinderMinPlayerPopulation, inactiveFinderMinPlayerPopulation },
+                { AccountSettingEnums.InactiveFinderMaxPlayerPopulation, inactiveFinderMaxPlayerPopulation },
+                { AccountSettingEnums.InactiveFinderIncludeOases, InactiveFinderIncludeOases ? 1 : 0 },
+                { AccountSettingEnums.InactiveFinderSkipAnimalOases, InactiveFinderSkipAnimalOases ? 1 : 0 },
+                { AccountSettingEnums.InactiveFinderTroopSlot, inactiveFinderTroopSlot },
+                { AccountSettingEnums.InactiveFinderTroopAmount, inactiveFinderTroopAmount },
 
                 { AccountSettingEnums.Tribe, tribe },
                 { AccountSettingEnums.WorkTimeMax, workTimeMax },
@@ -71,6 +95,11 @@ namespace MainCore.UI.Models.Input
         public RangeInputViewModel WorkTime { get; } = new();
         public RangeInputViewModel SleepTime { get; } = new();
         public RangeInputViewModel FarmInterval { get; } = new();
+        public AmountInputViewModel InactiveFinderRadius { get; } = new();
+        public RangeInputViewModel InactiveFinderPopulation { get; } = new();
+        public RangeInputViewModel InactiveFinderPlayerPopulation { get; } = new();
+        public AmountInputViewModel InactiveFinderTroopSlot { get; } = new();
+        public AmountInputViewModel InactiveFinderTroopAmount { get; } = new();
 
         [Reactive]
         private bool _enableAutoLoadVillage;
@@ -89,5 +118,11 @@ namespace MainCore.UI.Models.Input
 
         [Reactive]
         private bool _enableAutoSetHeroPoint;
+
+        [Reactive]
+        private bool _inactiveFinderIncludeOases;
+
+        [Reactive]
+        private bool _inactiveFinderSkipAnimalOases;
     }
 }
