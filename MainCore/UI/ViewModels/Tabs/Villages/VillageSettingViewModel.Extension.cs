@@ -72,15 +72,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             {
                 if (settings[VillageSettingEnums.AutoClaimQuestEnable] == 1)
                 {
-                    var task = new ClaimQuestTask.Task(accountId, villageId);
-                    if (task.CanStart(context) && !taskManager.IsExist<ClaimQuestTask.Task>(accountId, villageId))
+                    var task = new ClaimVillageQuestTask.Task(accountId, villageId);
+                    if (task.CanStart(context) && !taskManager.IsExist<ClaimVillageQuestTask.Task>(accountId, villageId))
                     {
                         taskManager.Add(task);
                     }
                 }
                 else
                 {
-                    taskManager.Remove<ClaimQuestTask.Task>(accountId, villageId);
+                    taskManager.Remove<ClaimVillageQuestTask.Task>(accountId, villageId);
                 }
             }
         }

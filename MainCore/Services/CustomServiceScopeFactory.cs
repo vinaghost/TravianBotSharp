@@ -58,8 +58,8 @@ namespace MainCore.Services
         {
             switch (task)
             {
-                case ClaimQuestTask.Task claimQuestTask:
-                    var claimQuestTaskHandler = scope.GetHandler<ClaimQuestTask.Task>();
+                case ClaimVillageQuestTask.Task claimQuestTask:
+                    var claimQuestTaskHandler = scope.GetHandler<ClaimVillageQuestTask.Task>();
                     return await claimQuestTaskHandler.HandleAsync(claimQuestTask, cancellationToken);
 
                 case CompleteImmediatelyTask.Task completeImmediatelyTask:
