@@ -1,5 +1,7 @@
 namespace MainCore.Services
 {
+    using MainCore.Infrasturecture.Extensions;
+
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
 

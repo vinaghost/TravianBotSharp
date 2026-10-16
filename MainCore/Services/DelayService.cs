@@ -1,3 +1,5 @@
+using MainCore.Infrasturecture.Extensions;
+
 namespace MainCore.Services
 {
     [RegisterScoped<DelayService>]
