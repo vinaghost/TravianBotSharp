@@ -1,10 +1,14 @@
-﻿using MainCore.Infrasturecture.Extensions;
+﻿using MainCore.Commands.Features.ClaimDailyQuest;
+using MainCore.Infrasturecture.Extensions;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
-    public sealed partial class ClaimDailyQuestTask(IChromeBrowser browser)
+    public sealed partial class ClaimDailyQuestTask(
+        IChromeBrowser browser,
+        OpenDailQuestPanelCommand.Handler openDailQuestPanelCommand,
+        ClaimRewardCommand.Handler claimRewardCommand)
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {
@@ -30,43 +34,12 @@ namespace MainCore.Tasks
             Result result;
             var canClaimQuest = await QuestParser.IsDailyQuestClaimable(browser.CurrentPage);
             if (!canClaimQuest) return Result.Ok();
-            result = await ToQuestPage();
-            if (result.IsFailed) return result;
-            result = await ClaimQuest();
-            if (result.IsFailed) return result;
-            return Result.Ok();
-        }
 
-        private async ValueTask<Result> ToQuestPage()
-        {
-            var questDaily = NavigationBarParser.GetDailyQuestButton(browser.CurrentPage);
-
-            var result = await browser.Click(questDaily);
+            result = await openDailQuestPanelCommand.HandleAsync(new(browser));
             if (result.IsFailed) return result;
 
-            var randomQuest = browser.CurrentPage.Locator("#dailyQuests .screen.active .dailyQuest:not(.placeholder)");
-            result = await browser.Wait(randomQuest.First);
+            result = await claimRewardCommand.HandleAsync(new(browser));
             if (result.IsFailed) return result;
-            return Result.Ok();
-        }
-
-        private async ValueTask<Result> ClaimQuest()
-        {
-            Result result;
-
-            var collectButtons = QuestParser.GetDailyQuestCollectButton(browser.CurrentPage);
-
-            var collectButton = collectButtons.Locator("svg.above #innerCircle path").First;
-            result = await browser.Click(collectButton);
-            if (result.IsFailed) return result;
-
-            var claimButton = browser.CurrentPage.Locator("#dailyQuests .screen.active #dailyQuestsRewardScreen button.collect.collectable");
-            result = await browser.Click(claimButton);
-            if (result.IsFailed) return result;
-
-            result = await browser.Refresh();
-            if (result.IsFailed) return result;
-
             return Result.Ok();
         }
     }
