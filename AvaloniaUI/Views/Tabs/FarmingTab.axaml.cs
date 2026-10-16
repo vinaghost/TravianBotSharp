@@ -42,6 +42,8 @@ namespace AvaloniaUI.Views.Tabs
                 this.Bind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderRadius.Value, v => v.InactiveRadius.Text).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderPopulation, v => v.InactivePopulation.ViewModel).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderPlayerPopulation, v => v.InactivePlayerPopulation.ViewModel).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderIncludeOases, v => v.IncludeOasesCheckBox.IsChecked).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderSkipAnimalOases, v => v.SkipAnimalOasesCheckBox.IsChecked).DisposeWith(d);
                 this.BindCommand(ViewModel, vm => vm.FindInactivesCommand, v => v.FindInactivesButton).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.InactiveStatus, v => v.InactiveStatus.Text).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.InactiveVillages, v => v.InactiveGrid.ItemsSource).DisposeWith(d);

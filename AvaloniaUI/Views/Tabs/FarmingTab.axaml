@@ -94,6 +94,16 @@
                         Margin="10,0,0,0"
                         Text="Player pop"
                         Unit="" />
+                    <CheckBox
+                        x:Name="IncludeOasesCheckBox"
+                        Margin="10,0,0,0"
+                        VerticalAlignment="Bottom"
+                        Content="Free oases" />
+                    <CheckBox
+                        x:Name="SkipAnimalOasesCheckBox"
+                        Margin="5,0,0,0"
+                        VerticalAlignment="Bottom"
+                        Content="Skip oases with animals" />
                     <Button
                         x:Name="FindInactivesButton"
                         Margin="10,0,0,0"
@@ -137,11 +147,14 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Distance}" Header="Distance" />
                         <DataGridTextColumn Binding="{Binding Coordinates}" Header="Coordinates" />
+                        <DataGridTextColumn Binding="{Binding Type}" Header="Type" />
                         <DataGridTextColumn Binding="{Binding Village}" Header="Village" />
                         <DataGridTextColumn Binding="{Binding Population}" Header="Population" />
                         <DataGridTextColumn Binding="{Binding Player}" Header="Player" />
                         <DataGridTextColumn Binding="{Binding Alliance}" Header="Alliance" />
                         <DataGridTextColumn Binding="{Binding PlayerPopulation}" Header="Player population" />
+                        <DataGridTextColumn Binding="{Binding Animals}" Header="Animals" />
+                        <DataGridTextColumn Binding="{Binding LastAttack}" Header="Last attack" />
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

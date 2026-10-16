@@ -28,6 +28,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly TaskManager _taskManager;
         private readonly MapDataService _mapDataService;
+        private readonly ChromeManager _chromeManager;
 
         private static readonly Dictionary<SplatColor, string> _activeTexts = new()
         {
@@ -36,9 +37,10 @@ namespace MainCore.UI.ViewModels.Tabs
             { SplatColor.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(DialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, MapDataService mapDataService)
+        public FarmingViewModel(DialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, MapDataService mapDataService, ChromeManager chromeManager)
         {
             _mapDataService = mapDataService;
+            _chromeManager = chromeManager;
             _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;
             _taskManager = taskManager;
@@ -253,6 +255,8 @@ namespace MainCore.UI.ViewModels.Tabs
             var radius = AccountSettingInput.InactiveFinderRadius.Get();
             var (minPopulation, maxPopulation) = AccountSettingInput.InactiveFinderPopulation.Get();
             var (minPlayerPopulation, maxPlayerPopulation) = AccountSettingInput.InactiveFinderPlayerPopulation.Get();
+            var includeOases = AccountSettingInput.InactiveFinderIncludeOases;
+            var skipAnimalOases = AccountSettingInput.InactiveFinderSkipAnimalOases;
 
             string server;
             List<(int X, int Y)> ownVillages;
@@ -266,6 +270,8 @@ namespace MainCore.UI.ViewModels.Tabs
                     { AccountSettingEnums.InactiveFinderMaxPopulation, maxPopulation },
                     { AccountSettingEnums.InactiveFinderMinPlayerPopulation, minPlayerPopulation },
                     { AccountSettingEnums.InactiveFinderMaxPlayerPopulation, maxPlayerPopulation },
+                    { AccountSettingEnums.InactiveFinderIncludeOases, includeOases ? 1 : 0 },
+                    { AccountSettingEnums.InactiveFinderSkipAnimalOases, skipAnimalOases ? 1 : 0 },
                 });
 
                 server = context.Accounts
@@ -282,30 +288,122 @@ namespace MainCore.UI.ViewModels.Tabs
             }
 
             var download = await _mapDataService.DownloadToday(server, cancellationToken);
-
             var search = _mapDataService.FindInactives(server, centerCoordinates.X, centerCoordinates.Y, radius, minPopulation, maxPopulation, minPlayerPopulation, maxPlayerPopulation, InactiveDays, ownVillages);
-            if (search.IsFailed)
+
+            // the game map gives free oases and the last report of our attacks on every tile
+            var (tiles, scanError) = await ScanMap(centerCoordinates.X, centerCoordinates.Y, radius);
+            var tileByCoordinates = tiles.ToDictionary(x => (x.X, x.Y));
+
+            var found = new List<(double Distance, InactiveVillageItem Item)>();
+            if (search.IsSuccess)
             {
-                var errors = search.Errors.Concat(download.Errors).Select(x => x.Message);
-                return new(string.Join(Environment.NewLine, errors), []);
+                foreach (var x in search.Value.Villages)
+                {
+                    tileByCoordinates.TryGetValue((x.Village.X, x.Village.Y), out var tile);
+                    found.Add((x.Distance, new InactiveVillageItem(
+                        x.Distance.ToString("0.0"),
+                        $"({x.Village.X}|{x.Village.Y})",
+                        "Village",
+                        x.Village.VillageName,
+                        x.Village.PlayerName,
+                        x.Village.AllianceTag,
+                        x.Village.Population.ToString(),
+                        $"{x.PlayerPopulationBefore} -> {x.PlayerPopulationNow}",
+                        "",
+                        FormatLastAttack(tile))));
+                }
             }
 
-            var (older, newer, found) = search.Value;
-            var items = found
-                .Select(x => new InactiveVillageItem(
-                    x.Distance.ToString("0.0"),
-                    $"({x.Village.X}|{x.Village.Y})",
-                    x.Village.VillageName,
-                    x.Village.PlayerName,
-                    x.Village.AllianceTag,
-                    x.Village.Population,
-                    $"{x.PlayerPopulationBefore} -> {x.PlayerPopulationNow}"))
-                .ToList();
+            var oasisCount = 0;
+            if (includeOases)
+            {
+                foreach (var tile in tiles.Where(x => x.Kind == MapTileKind.FreeOasis))
+                {
+                    if (skipAnimalOases && tile.Animals.Count > 0) continue;
+                    var distance = MapDataService.GetDistance(centerCoordinates.X, centerCoordinates.Y, tile.X, tile.Y, MapDataService.DefaultWorldSize);
+                    if (distance > radius) continue;
 
-            var status = older is null
-                ? $"{items.Count} villages within {radius} fields of ({centerCoordinates.X}|{centerCoordinates.Y}), filtered by population only. Not enough map history to tell inactive players yet (needs data from {InactiveDays} days ago, available from {MapDataService.GetSnapshotDates(server)[0].AddDays(InactiveDays):yyyy-MM-dd}). These players may be active."
-                : $"{items.Count} inactive villages within {radius} fields of ({centerCoordinates.X}|{centerCoordinates.Y}). Player population did not grow between {older:yyyy-MM-dd} and {newer:yyyy-MM-dd}.";
-            return new(status, items);
+                    oasisCount++;
+                    found.Add((distance, new InactiveVillageItem(
+                        distance.ToString("0.0"),
+                        $"({tile.X}|{tile.Y})",
+                        "Free oasis",
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        FormatAnimals(tile),
+                        FormatLastAttack(tile))));
+                }
+            }
+
+            var items = found.OrderBy(x => x.Distance).Select(x => x.Item).ToList();
+            var villageCount = items.Count - oasisCount;
+
+            var lines = new List<string>();
+            if (search.IsFailed)
+            {
+                lines.AddRange(search.Errors.Concat(download.Errors).Select(x => x.Message));
+            }
+            else if (search.Value.OldSnapshot is null)
+            {
+                lines.Add($"{villageCount} villages within {radius} fields of ({centerCoordinates.X}|{centerCoordinates.Y}), filtered by population only. Not enough map history to tell inactive players yet (needs data from {InactiveDays} days ago, available from {MapDataService.GetSnapshotDates(server)[0].AddDays(InactiveDays):yyyy-MM-dd}). These players may be active.");
+            }
+            else
+            {
+                lines.Add($"{villageCount} inactive villages within {radius} fields of ({centerCoordinates.X}|{centerCoordinates.Y}). Player population did not grow between {search.Value.OldSnapshot:yyyy-MM-dd} and {search.Value.NewSnapshot:yyyy-MM-dd}.");
+            }
+
+            if (scanError is not null)
+            {
+                lines.Add(scanError);
+            }
+            else if (includeOases)
+            {
+                lines.Add($"{oasisCount} free oases{(skipAnimalOases ? " without animals" : "")}.");
+            }
+
+            return new(string.Join(Environment.NewLine, lines), items);
+        }
+
+        private async Task<(List<MapTile> Tiles, string? Error)> ScanMap(int x, int y, int radius)
+        {
+            var browser = _chromeManager.Get(AccountId);
+            if (!browser.IsInitialized)
+            {
+                return ([], "Login the account to also list free oases and last attack results.");
+            }
+
+            try
+            {
+                return (await MapScanParser.Scan(browser.CurrentPage, x, y, radius), null);
+            }
+            catch (Exception ex) when (ex is PlaywrightException or System.Text.Json.JsonException or InvalidOperationException)
+            {
+                return ([], $"Map scan failed, free oases and last attack results are missing. Try again. ({ex.Message})");
+            }
+        }
+
+        private static string FormatAnimals(MapTile tile)
+        {
+            if (tile.Animals.Count == 0) return "none";
+            return string.Join(", ", tile.Animals.Select(x => $"{x.Value} {MapScanParser.AnimalNames.GetValueOrDefault(x.Key, $"u{x.Key}")}"));
+        }
+
+        private static string FormatLastAttack(MapTile? tile)
+        {
+            if (tile?.LastAttack is null) return "";
+
+            var result = tile.LastAttack switch
+            {
+                AttackResult.WonWithoutLosses => "Won",
+                AttackResult.WonWithLosses => "Won with losses",
+                AttackResult.Lost => "LOST",
+                _ => "",
+            };
+            var loot = string.IsNullOrEmpty(tile.LastAttackLoot) ? "" : $", loot {tile.LastAttackLoot}";
+            return $"{result} ({tile.LastAttackTime}{loot})";
         }
 
         [ReactiveCommand(RunInBackground = true)]

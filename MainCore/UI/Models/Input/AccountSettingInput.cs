@@ -24,6 +24,8 @@ namespace MainCore.UI.Models.Input
             InactiveFinderRadius.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderRadius));
             InactiveFinderPopulation.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderMinPopulation), settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderMaxPopulation));
             InactiveFinderPlayerPopulation.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderMinPlayerPopulation), settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderMaxPlayerPopulation));
+            InactiveFinderIncludeOases = settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderIncludeOases) == 1;
+            InactiveFinderSkipAnimalOases = settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderSkipAnimalOases) == 1;
             InactiveFinderTroopSlot.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderTroopSlot));
             InactiveFinderTroopAmount.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderTroopAmount));
         }
@@ -67,6 +69,8 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.InactiveFinderMaxPopulation, inactiveFinderMaxPopulation },
                 { AccountSettingEnums.InactiveFinderMinPlayerPopulation, inactiveFinderMinPlayerPopulation },
                 { AccountSettingEnums.InactiveFinderMaxPlayerPopulation, inactiveFinderMaxPlayerPopulation },
+                { AccountSettingEnums.InactiveFinderIncludeOases, InactiveFinderIncludeOases ? 1 : 0 },
+                { AccountSettingEnums.InactiveFinderSkipAnimalOases, InactiveFinderSkipAnimalOases ? 1 : 0 },
                 { AccountSettingEnums.InactiveFinderTroopSlot, inactiveFinderTroopSlot },
                 { AccountSettingEnums.InactiveFinderTroopAmount, inactiveFinderTroopAmount },
 
@@ -114,5 +118,11 @@ namespace MainCore.UI.Models.Input
 
         [Reactive]
         private bool _enableAutoSetHeroPoint;
+
+        [Reactive]
+        private bool _inactiveFinderIncludeOases;
+
+        [Reactive]
+        private bool _inactiveFinderSkipAnimalOases;
     }
 }

@@ -39,6 +39,7 @@ namespace MainCore.Services
     public sealed class MapDataService
     {
         private const int NatarsPlayerId = 1;
+        public const int DefaultWorldSize = 401;
         private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromMinutes(2) };
 
         public static string GetFolder(string server)

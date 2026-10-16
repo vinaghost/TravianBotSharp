@@ -26,5 +26,7 @@
         InactiveFinderTroopAmount,
         InactiveFinderMinPlayerPopulation,
         InactiveFinderMaxPlayerPopulation,
+        InactiveFinderIncludeOases,
+        InactiveFinderSkipAnimalOases,
     }
 }
