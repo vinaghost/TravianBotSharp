@@ -11,6 +11,11 @@
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     d:DesignHeight="450" d:DesignWidth="800">
     <Grid Background="#FFE5E5E5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />
             <ColumnDefinition Width="4*" />
@@ -49,6 +54,53 @@
                 <Button x:Name="StopButton"     Grid.Row="3" ToolTip="Stop"             Margin="10">
                     <materialDesign:PackIcon Width="{DynamicResource IconSize}" Height="{DynamicResource IconSize}" Kind="Stop" />
                 </Button>
+            </Grid>
+        </Border>
+        </Grid>
+
+        <Border Style="{DynamicResource Box}" Grid.Row="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <WrapPanel Grid.Row="0" Orientation="Horizontal">
+                    <TextBlock Text="Inactive finder" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,15,0" />
+                    <Label Content="Around" VerticalAlignment="Bottom" />
+                    <ComboBox x:Name="CenterVillageComboBox" MinWidth="180" VerticalAlignment="Bottom">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Content}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBox x:Name="InactiveRadius" materialDesign:HintAssist.Hint="Radius (fields)" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="90" Margin="10,0,0,0" />
+                    <uc:RangeInputUc x:Name="InactivePopulation" Text="Village pop" Unit="" Margin="10,0,0,0" />
+                    <uc:RangeInputUc x:Name="InactivePlayerPopulation" Text="Player pop" Unit="" Margin="10,0,0,0" />
+                    <CheckBox x:Name="IncludeOasesCheckBox" Content="Free oases" VerticalAlignment="Bottom" Margin="10,0,0,0" />
+                    <CheckBox x:Name="SkipAnimalOasesCheckBox" Content="Skip oases with animals" VerticalAlignment="Bottom" Margin="5,0,0,0" />
+                    <Button x:Name="FindInactivesButton" Content="Find inactives" VerticalAlignment="Bottom" Margin="10,0,0,0" />
+                    <Button x:Name="CopyCoordinatesButton" Content="Copy coordinates" VerticalAlignment="Bottom" Margin="5,0,0,0" />
+                    <TextBox x:Name="InactiveTroopSlot" materialDesign:HintAssist.Hint="Troop t (1-10)" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="90" Margin="20,0,0,0" />
+                    <TextBox x:Name="InactiveTroopAmount" materialDesign:HintAssist.Hint="Amount" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Width="60" Margin="5,0,0,0" />
+                    <Button x:Name="AddToFarmListButton" Content="Add to selected farm list" VerticalAlignment="Bottom" Margin="5,0,0,0" />
+                </WrapPanel>
+                <TextBlock x:Name="InactiveStatus" Grid.Row="1" Margin="0,5" TextWrapping="Wrap" />
+                <DataGrid x:Name="InactiveGrid" Grid.Row="2" IsReadOnly="True" AutoGenerateColumns="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Distance" Binding="{Binding Distance}" />
+                        <DataGridTextColumn Header="Coordinates" Binding="{Binding Coordinates}" />
+                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" />
+                        <DataGridTextColumn Header="Village" Binding="{Binding Village}" />
+                        <DataGridTextColumn Header="Population" Binding="{Binding Population}" />
+                        <DataGridTextColumn Header="Player" Binding="{Binding Player}" />
+                        <DataGridTextColumn Header="Alliance" Binding="{Binding Alliance}" />
+                        <DataGridTextColumn Header="Player population" Binding="{Binding PlayerPopulation}" />
+                        <DataGridTextColumn Header="Animals" Binding="{Binding Animals}" />
+                        <DataGridTextColumn Header="Last attack" Binding="{Binding LastAttack}" />
+                    </DataGrid.Columns>
+                </DataGrid>
             </Grid>
         </Border>
     </Grid>
