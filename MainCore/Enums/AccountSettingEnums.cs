@@ -24,5 +24,7 @@
         InactiveFinderMaxPopulation,
         InactiveFinderTroopSlot,
         InactiveFinderTroopAmount,
+        InactiveFinderMinPlayerPopulation,
+        InactiveFinderMaxPlayerPopulation,
     }
 }

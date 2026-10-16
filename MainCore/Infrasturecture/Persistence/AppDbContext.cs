@@ -55,6 +55,8 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.InactiveFinderMaxPopulation, 300 },
             {AccountSettingEnums.InactiveFinderTroopSlot, 1 },
             {AccountSettingEnums.InactiveFinderTroopAmount, 5 },
+            {AccountSettingEnums.InactiveFinderMinPlayerPopulation, 0 },
+            {AccountSettingEnums.InactiveFinderMaxPlayerPopulation, 100000 },
         }.ToImmutableDictionary();
 
         private List<AccountSettingEnums> GetMissingAccountSettings()

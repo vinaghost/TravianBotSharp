@@ -23,6 +23,7 @@ namespace MainCore.UI.Models.Input
 
             InactiveFinderRadius.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderRadius));
             InactiveFinderPopulation.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderMinPopulation), settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderMaxPopulation));
+            InactiveFinderPlayerPopulation.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderMinPlayerPopulation), settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderMaxPlayerPopulation));
             InactiveFinderTroopSlot.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderTroopSlot));
             InactiveFinderTroopAmount.Set(settings.GetValueOrDefault(AccountSettingEnums.InactiveFinderTroopAmount));
         }
@@ -45,6 +46,7 @@ namespace MainCore.UI.Models.Input
 
             var inactiveFinderRadius = InactiveFinderRadius.Get();
             var (inactiveFinderMinPopulation, inactiveFinderMaxPopulation) = InactiveFinderPopulation.Get();
+            var (inactiveFinderMinPlayerPopulation, inactiveFinderMaxPlayerPopulation) = InactiveFinderPlayerPopulation.Get();
             var inactiveFinderTroopSlot = InactiveFinderTroopSlot.Get();
             var inactiveFinderTroopAmount = InactiveFinderTroopAmount.Get();
 
@@ -63,6 +65,8 @@ namespace MainCore.UI.Models.Input
                 { AccountSettingEnums.InactiveFinderRadius, inactiveFinderRadius },
                 { AccountSettingEnums.InactiveFinderMinPopulation, inactiveFinderMinPopulation },
                 { AccountSettingEnums.InactiveFinderMaxPopulation, inactiveFinderMaxPopulation },
+                { AccountSettingEnums.InactiveFinderMinPlayerPopulation, inactiveFinderMinPlayerPopulation },
+                { AccountSettingEnums.InactiveFinderMaxPlayerPopulation, inactiveFinderMaxPlayerPopulation },
                 { AccountSettingEnums.InactiveFinderTroopSlot, inactiveFinderTroopSlot },
                 { AccountSettingEnums.InactiveFinderTroopAmount, inactiveFinderTroopAmount },
 
@@ -89,6 +93,7 @@ namespace MainCore.UI.Models.Input
         public RangeInputViewModel FarmInterval { get; } = new();
         public AmountInputViewModel InactiveFinderRadius { get; } = new();
         public RangeInputViewModel InactiveFinderPopulation { get; } = new();
+        public RangeInputViewModel InactiveFinderPlayerPopulation { get; } = new();
         public AmountInputViewModel InactiveFinderTroopSlot { get; } = new();
         public AmountInputViewModel InactiveFinderTroopAmount { get; } = new();
 

@@ -252,6 +252,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             var radius = AccountSettingInput.InactiveFinderRadius.Get();
             var (minPopulation, maxPopulation) = AccountSettingInput.InactiveFinderPopulation.Get();
+            var (minPlayerPopulation, maxPlayerPopulation) = AccountSettingInput.InactiveFinderPlayerPopulation.Get();
 
             string server;
             List<(int X, int Y)> ownVillages;
@@ -263,6 +264,8 @@ namespace MainCore.UI.ViewModels.Tabs
                     { AccountSettingEnums.InactiveFinderRadius, radius },
                     { AccountSettingEnums.InactiveFinderMinPopulation, minPopulation },
                     { AccountSettingEnums.InactiveFinderMaxPopulation, maxPopulation },
+                    { AccountSettingEnums.InactiveFinderMinPlayerPopulation, minPlayerPopulation },
+                    { AccountSettingEnums.InactiveFinderMaxPlayerPopulation, maxPlayerPopulation },
                 });
 
                 server = context.Accounts
@@ -280,7 +283,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             var download = await _mapDataService.DownloadToday(server, cancellationToken);
 
-            var search = _mapDataService.FindInactives(server, centerCoordinates.X, centerCoordinates.Y, radius, minPopulation, maxPopulation, InactiveDays, ownVillages);
+            var search = _mapDataService.FindInactives(server, centerCoordinates.X, centerCoordinates.Y, radius, minPopulation, maxPopulation, minPlayerPopulation, maxPlayerPopulation, InactiveDays, ownVillages);
             if (search.IsFailed)
             {
                 var errors = search.Errors.Concat(download.Errors).Select(x => x.Message);

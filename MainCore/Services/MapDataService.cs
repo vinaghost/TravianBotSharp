@@ -101,6 +101,8 @@ namespace MainCore.Services
             int radius,
             int minPopulation,
             int maxPopulation,
+            int minPlayerPopulation,
+            int maxPlayerPopulation,
             int days,
             IReadOnlyCollection<(int X, int Y)> ownVillages)
         {
@@ -131,6 +133,7 @@ namespace MainCore.Services
                 .Where(x => x.PlayerId != NatarsPlayerId && x.PlayerId != 0)
                 .Where(x => !ownPlayerIds.Contains(x.PlayerId))
                 .Where(x => x.Population >= minPopulation && x.Population <= maxPopulation)
+                .Where(x => newPopulation[x.PlayerId] >= minPlayerPopulation && newPopulation[x.PlayerId] <= maxPlayerPopulation)
                 .Where(x => oldPopulation.TryGetValue(x.PlayerId, out var before) && newPopulation[x.PlayerId] <= before)
                 .Select(x => new InactiveVillage(
                     x,

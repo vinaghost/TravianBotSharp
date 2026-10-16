@@ -87,7 +87,12 @@
                     <uc:RangeInputUc
                         x:Name="InactivePopulation"
                         Margin="10,0,0,0"
-                        Text="Population"
+                        Text="Village pop"
+                        Unit="" />
+                    <uc:RangeInputUc
+                        x:Name="InactivePlayerPopulation"
+                        Margin="10,0,0,0"
+                        Text="Player pop"
                         Unit="" />
                     <Button
                         x:Name="FindInactivesButton"
