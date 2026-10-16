@@ -64,10 +64,8 @@ namespace MainCore
                         .ForContext("Account", dataService.AccountData)
                         .ForContext("AccountId", dataService.AccountId);
 
-                    var delayService = sp.GetRequiredService<DelayService>();
                     var browser = chromeManager.Get(dataService.AccountId);
                     browser.Logger = logger;
-                    browser.DelayService = delayService;
 
                     return browser;
                 });

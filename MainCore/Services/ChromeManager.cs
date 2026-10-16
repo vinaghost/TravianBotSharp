@@ -3,17 +3,18 @@
 namespace MainCore.Services
 {
     [RegisterSingleton<ChromeManager>]
-    public sealed class ChromeManager()
+    public sealed class ChromeManager(IDbContextFactory<AppDbContext> contextFactory)
     {
-        private readonly ConcurrentDictionary<AccountId, ChromeBrowser> _dictionary = new();
+        private readonly ConcurrentDictionary<AccountId, IChromeBrowser> _dictionary = new();
 
         public IChromeBrowser Get(AccountId accountId)
         {
-            if (_dictionary.TryGetValue(accountId, out ChromeBrowser? browser))
+            if (_dictionary.TryGetValue(accountId, out IChromeBrowser? browser))
             {
                 return browser;
             }
-            browser = new ChromeBrowser();
+            browser = new ChromeBrowser(contextFactory);
+            browser.SetAccountId(accountId);
             _dictionary.TryAdd(accountId, browser);
             return browser;
         }
@@ -22,7 +23,7 @@ namespace MainCore.Services
         {
             foreach (var id in _dictionary.Keys)
             {
-                if (_dictionary.Remove(id, out ChromeBrowser? browser))
+                if (_dictionary.Remove(id, out IChromeBrowser? browser))
                 {
                     await browser.Shutdown();
                 }

@@ -7,7 +7,6 @@ namespace MainCore.Services
         IPage CurrentPage { get; }
         string CurrentUrl { get; }
         ILogger Logger { get; set; }
-        DelayService DelayService { get; set; }
         bool IsInitialized { get; }
         bool IsHeadless { get; }
 
@@ -22,6 +21,8 @@ namespace MainCore.Services
         Task<Result> Refresh();
 
         Task<string> Screenshot();
+
+        void SetAccountId(AccountId accountId);
 
         Task Setup(ChromeSetting setting);
 
