@@ -9,6 +9,7 @@ namespace MainCore.Services
         ILogger Logger { get; set; }
         bool IsInitialized { get; }
         bool IsHeadless { get; }
+        AccountId AccountId { get; }
 
         Task<Result> Click(ILocator locator, [CallerArgumentExpression(nameof(locator))] string? expression = null);
 
