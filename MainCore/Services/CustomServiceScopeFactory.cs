@@ -110,6 +110,10 @@ namespace MainCore.Services
                     var claimDailyQuestTaskHandler = scope.GetHandler<ClaimDailyQuestTask.Task>();
                     return await claimDailyQuestTaskHandler.HandleAsync(claimDailyQuestTask, cancellationToken);
 
+                case DownloadMapDataTask.Task downloadMapDataTask:
+                    var downloadMapDataTaskHandler = scope.GetHandler<DownloadMapDataTask.Task>();
+                    return await downloadMapDataTaskHandler.HandleAsync(downloadMapDataTask, cancellationToken);
+
                 case SetHeroPointTask.Task setHeroPointTask:
                     var setHeroPointTaskHandler = scope.GetHandler<SetHeroPointTask.Task>();
                     return await setHeroPointTaskHandler.HandleAsync(setHeroPointTask, cancellationToken);

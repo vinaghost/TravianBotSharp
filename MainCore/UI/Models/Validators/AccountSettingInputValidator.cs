@@ -27,6 +27,16 @@ namespace MainCore.UI.Models.Validators
             RuleFor(x => x.FarmInterval.Min)
                 .GreaterThanOrEqualTo(0)
                 .WithMessage("Minimum farm interval ({PropertyValue}) should be positive number");
+
+            RuleFor(x => x.InactiveFinderRadius.Value)
+                .GreaterThan(0)
+                .WithMessage("Inactive finder radius ({PropertyValue}) should be greater than 0");
+            RuleFor(x => x.InactiveFinderPopulation.Min)
+                .LessThanOrEqualTo(x => x.InactiveFinderPopulation.Max)
+                .WithMessage("Minimum inactive population ({PropertyValue}) should be less than maximum inactive population ({ComparisonValue})");
+            RuleFor(x => x.InactiveFinderPopulation.Min)
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Minimum inactive population ({PropertyValue}) should be positive number");
         }
     }
 }

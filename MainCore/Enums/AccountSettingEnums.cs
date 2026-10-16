@@ -19,5 +19,8 @@
         EnableAutoStartAdventure,
         EnableAutoClaimDailyQuest,
         EnableAutoSetHeroPoint,
+        InactiveFinderRadius,
+        InactiveFinderMinPopulation,
+        InactiveFinderMaxPopulation,
     }
 }

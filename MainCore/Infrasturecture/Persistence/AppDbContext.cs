@@ -50,6 +50,9 @@ namespace MainCore.Infrasturecture.Persistence
             {AccountSettingEnums.EnableAutoStartAdventure, 0 },
             {AccountSettingEnums.EnableAutoClaimDailyQuest, 0 },
             {AccountSettingEnums.EnableAutoSetHeroPoint, 0 },
+            {AccountSettingEnums.InactiveFinderRadius, 15 },
+            {AccountSettingEnums.InactiveFinderMinPopulation, 0 },
+            {AccountSettingEnums.InactiveFinderMaxPopulation, 300 },
         }.ToImmutableDictionary();
 
         private List<AccountSettingEnums> GetMissingAccountSettings()

@@ -4,59 +4,124 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:uc="using:AvaloniaUI.Views.UserControls"
     xmlns:v="using:AvaloniaUI.Views.Tabs">
-    <Grid Background="#FFE5E5E5" ColumnDefinitions="1*,4*">
-        <Grid Grid.Column="0" RowDefinitions="*,Auto">
-            <Border Grid.Row="0" Classes="box">
-                <ListBox
-                    x:Name="FarmlistGrid"
-                    ItemTemplate="{StaticResource ListBoxColorItem}"
-                    SelectionMode="Single" />
-            </Border>
-            <Button
-                x:Name="Load"
-                Grid.Row="1"
-                Margin="5,0,5,5"
-                Content="Load farmlist"
-                ToolTip.Tip="Load farmlist" />
-        </Grid>
-        <Border Grid.Column="1" Classes="box">
-            <Grid RowDefinitions="Auto,*,Auto,Auto">
-                <StackPanel
-                    Grid.Row="0"
-                    HorizontalAlignment="Center"
-                    Orientation="Horizontal">
-                    <StackPanel Margin="0,20,0,0">
-                        <uc:RangeInputUc
-                            x:Name="FarmInterval"
-                            Text="Start farm delay"
-                            Unit="s" />
-                        <CheckBox x:Name="UseStartAllCheckbox" Content="Use Start all button (ignore active settings)" />
+    <Grid Background="#FFE5E5E5" RowDefinitions="*,*">
+        <Grid Grid.Row="0" ColumnDefinitions="1*,4*">
+            <Grid Grid.Column="0" RowDefinitions="*,Auto">
+                <Border Grid.Row="0" Classes="box">
+                    <ListBox
+                        x:Name="FarmlistGrid"
+                        ItemTemplate="{StaticResource ListBoxColorItem}"
+                        SelectionMode="Single" />
+                </Border>
+                <Button
+                    x:Name="Load"
+                    Grid.Row="1"
+                    Margin="5,0,5,5"
+                    Content="Load farmlist"
+                    ToolTip.Tip="Load farmlist" />
+            </Grid>
+            <Border Grid.Column="1" Classes="box">
+                <Grid RowDefinitions="Auto,*,Auto,Auto">
+                    <StackPanel
+                        Grid.Row="0"
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal">
+                        <StackPanel Margin="0,20,0,0">
+                            <uc:RangeInputUc
+                                x:Name="FarmInterval"
+                                Text="Start farm delay"
+                                Unit="s" />
+                            <CheckBox x:Name="UseStartAllCheckbox" Content="Use Start all button (ignore active settings)" />
+                        </StackPanel>
+                        <Button
+                            x:Name="SaveButton"
+                            Margin="10"
+                            VerticalAlignment="Center"
+                            Content="Save"
+                            ToolTip.Tip="Save" />
                     </StackPanel>
                     <Button
-                        x:Name="SaveButton"
+                        x:Name="ActiveButton"
+                        Grid.Row="1"
                         Margin="10"
+                        VerticalAlignment="Stretch"
+                        VerticalContentAlignment="Center" />
+                    <Button
+                        x:Name="StartButton"
+                        Grid.Row="2"
+                        Margin="10"
+                        Content="Start"
+                        ToolTip.Tip="Start" />
+                    <Button
+                        x:Name="StopButton"
+                        Grid.Row="3"
+                        Margin="10"
+                        Content="Stop"
+                        ToolTip.Tip="Stop" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="1" Classes="box">
+            <Grid RowDefinitions="Auto,Auto,*">
+                <WrapPanel Grid.Row="0" Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,15,0"
                         VerticalAlignment="Center"
-                        Content="Save"
-                        ToolTip.Tip="Save" />
-                </StackPanel>
-                <Button
-                    x:Name="ActiveButton"
+                        Classes="header"
+                        Text="Inactive finder" />
+                    <Label Content="Around" />
+                    <ComboBox x:Name="CenterVillageComboBox" MinWidth="180">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Content}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Label Margin="10,0,0,0" Content="Radius" />
+                    <TextBox
+                        x:Name="InactiveRadius"
+                        Width="60"
+                        VerticalAlignment="Center" />
+                    <Label Content="fields" />
+                    <uc:RangeInputUc
+                        x:Name="InactivePopulation"
+                        Margin="10,0,0,0"
+                        Text="Population"
+                        Unit="" />
+                    <Button
+                        x:Name="FindInactivesButton"
+                        Margin="10,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Content="Find inactives" />
+                    <Button
+                        x:Name="CopyCoordinatesButton"
+                        Margin="5,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Content="Copy coordinates" />
+                </WrapPanel>
+                <TextBlock
+                    x:Name="InactiveStatus"
                     Grid.Row="1"
-                    Margin="10"
-                    VerticalAlignment="Stretch"
-                    VerticalContentAlignment="Center" />
-                <Button
-                    x:Name="StartButton"
+                    Margin="0,5"
+                    TextWrapping="Wrap" />
+                <DataGrid
+                    x:Name="InactiveGrid"
                     Grid.Row="2"
-                    Margin="10"
-                    Content="Start"
-                    ToolTip.Tip="Start" />
-                <Button
-                    x:Name="StopButton"
-                    Grid.Row="3"
-                    Margin="10"
-                    Content="Stop"
-                    ToolTip.Tip="Stop" />
+                    AutoGenerateColumns="False"
+                    IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Distance}" Header="Distance" />
+                        <DataGridTextColumn Binding="{Binding Coordinates}" Header="Coordinates" />
+                        <DataGridTextColumn Binding="{Binding Village}" Header="Village" />
+                        <DataGridTextColumn Binding="{Binding Population}" Header="Population" />
+                        <DataGridTextColumn Binding="{Binding Player}" Header="Player" />
+                        <DataGridTextColumn Binding="{Binding Alliance}" Header="Alliance" />
+                        <DataGridTextColumn Binding="{Binding PlayerPopulation}" Header="Player population" />
+                    </DataGrid.Columns>
+                </DataGrid>
             </Grid>
         </Border>
     </Grid>

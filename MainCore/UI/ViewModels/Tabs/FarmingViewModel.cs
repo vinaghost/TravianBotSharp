@@ -18,11 +18,16 @@ namespace MainCore.UI.ViewModels.Tabs
     {
         public AccountSettingInput AccountSettingInput { get; } = new();
         public ListBoxItemViewModel FarmLists { get; } = new();
+        public ListBoxItemViewModel CenterVillages { get; } = new();
+
+        // a player whose population did not grow for this many days counts as inactive
+        private const int InactiveDays = 2;
 
         private readonly DialogService _dialogService;
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly TaskManager _taskManager;
+        private readonly MapDataService _mapDataService;
 
         private static readonly Dictionary<SplatColor, string> _activeTexts = new()
         {
@@ -31,8 +36,9 @@ namespace MainCore.UI.ViewModels.Tabs
             { SplatColor.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(DialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
+        public FarmingViewModel(DialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, MapDataService mapDataService)
         {
+            _mapDataService = mapDataService;
             _accountsettingInputValidator = accountsettingInputValidator;
             _dialogService = dialogService;
             _taskManager = taskManager;
@@ -52,6 +58,25 @@ namespace MainCore.UI.ViewModels.Tabs
             LoadSettingCommand
                 .ObserveOn(RxSchedulers.MainThreadScheduler)
                 .Subscribe(AccountSettingInput.Set);
+
+            LoadCenterVillagesCommand
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
+                .Subscribe(items =>
+                {
+                    CenterVillages.Load(items);
+                    if (CenterVillages.SelectedItem is null || !CenterVillages.Items.Contains(CenterVillages.SelectedItem))
+                    {
+                        CenterVillages.SelectedItem = CenterVillages.Items.FirstOrDefault();
+                    }
+                });
+
+            FindInactivesCommand
+                .ObserveOn(RxSchedulers.MainThreadScheduler)
+                .Subscribe(output =>
+                {
+                    InactiveStatus = output.Status;
+                    InactiveVillages = output.Villages;
+                });
 
             ActiveFarmListCommand
                 .ObserveOn(RxSchedulers.MainThreadScheduler)
@@ -93,6 +118,7 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             await LoadFarmListCommand.Execute(accountId);
             await LoadSettingCommand.Execute(accountId);
+            await LoadCenterVillagesCommand.Execute(accountId);
         }
 
         [ReactiveCommand(RunInBackground = true)]
@@ -193,6 +219,95 @@ namespace MainCore.UI.ViewModels.Tabs
                  .ToList();
             return items;
         }
+
+        [ReactiveCommand(RunInBackground = true)]
+        private List<ListBoxItem> LoadCenterVillages(AccountId accountId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            return context.Villages
+                .Where(x => x.AccountId == accountId.Value)
+                .OrderBy(x => x.Id)
+                .Select(x => new ListBoxItem()
+                {
+                    Id = x.Id,
+                    Content = x.Name + " (" + x.X + "|" + x.Y + ")",
+                })
+                .ToList();
+        }
+
+        [ReactiveCommand(RunInBackground = true)]
+        private async Task<InactiveSearchOutput> FindInactives(CancellationToken cancellationToken)
+        {
+            var center = CenterVillages.SelectedItem;
+            if (center is null)
+            {
+                return new("Select the village to search around", []);
+            }
+
+            var validation = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput, cancellationToken);
+            if (!validation.IsValid)
+            {
+                return new(string.Join(Environment.NewLine, validation.Errors.Select(x => x.ErrorMessage)), []);
+            }
+
+            var radius = AccountSettingInput.InactiveFinderRadius.Get();
+            var (minPopulation, maxPopulation) = AccountSettingInput.InactiveFinderPopulation.Get();
+
+            string server;
+            List<(int X, int Y)> ownVillages;
+            (int X, int Y) centerCoordinates;
+            using (var context = _contextFactory.CreateDbContext())
+            {
+                context.SaveAccountSetting(AccountId, new()
+                {
+                    { AccountSettingEnums.InactiveFinderRadius, radius },
+                    { AccountSettingEnums.InactiveFinderMinPopulation, minPopulation },
+                    { AccountSettingEnums.InactiveFinderMaxPopulation, maxPopulation },
+                });
+
+                server = context.Accounts
+                    .Where(x => x.Id == AccountId.Value)
+                    .Select(x => x.Server)
+                    .First();
+                var villages = context.Villages
+                    .Where(x => x.AccountId == AccountId.Value)
+                    .Select(x => new { x.Id, x.X, x.Y })
+                    .ToList();
+                ownVillages = villages.Select(x => (x.X, x.Y)).ToList();
+                var centerVillage = villages.First(x => x.Id == center.Id);
+                centerCoordinates = (centerVillage.X, centerVillage.Y);
+            }
+
+            var download = await _mapDataService.DownloadToday(server, cancellationToken);
+
+            var search = _mapDataService.FindInactives(server, centerCoordinates.X, centerCoordinates.Y, radius, minPopulation, maxPopulation, InactiveDays, ownVillages);
+            if (search.IsFailed)
+            {
+                var errors = search.Errors.Concat(download.Errors).Select(x => x.Message);
+                return new(string.Join(Environment.NewLine, errors), []);
+            }
+
+            var (older, newer, found) = search.Value;
+            var items = found
+                .Select(x => new InactiveVillageItem(
+                    x.Distance.ToString("0.0"),
+                    $"({x.Village.X}|{x.Village.Y})",
+                    x.Village.VillageName,
+                    x.Village.PlayerName,
+                    x.Village.AllianceTag,
+                    x.Village.Population,
+                    $"{x.PlayerPopulationBefore} -> {x.PlayerPopulationNow}"))
+                .ToList();
+
+            var status = $"{items.Count} inactive villages within {radius} fields of ({centerCoordinates.X}|{centerCoordinates.Y}). Player population did not grow between {older:yyyy-MM-dd} and {newer:yyyy-MM-dd}.";
+            return new(status, items);
+        }
+
+        [Reactive]
+        private string _inactiveStatus = "Map data is downloaded once a day. Inactive players can be found once there is data from 2 days ago.";
+
+        [Reactive]
+        private List<InactiveVillageItem> _inactiveVillages = [];
 
         [Reactive]
         private string _activeText = "No farmlist selected";

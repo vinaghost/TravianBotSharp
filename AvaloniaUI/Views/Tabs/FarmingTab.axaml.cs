@@ -1,3 +1,6 @@
+using Avalonia.Controls;
+using Avalonia.Input.Platform;
+
 using MainCore.UI.ViewModels.Tabs;
 
 using ReactiveUI;
@@ -15,6 +18,8 @@ namespace AvaloniaUI.Views.Tabs
         public FarmingTab()
         {
             InitializeComponent();
+            CopyCoordinatesButton.Click += async (_, _) => await CopyCoordinates();
+
             this.WhenActivated(d =>
             {
                 this.BindCommand(ViewModel, vm => vm.SaveCommand, v => v.SaveButton).DisposeWith(d);
@@ -30,7 +35,27 @@ namespace AvaloniaUI.Views.Tabs
                 this.OneWayBind(ViewModel, vm => vm.AccountSettingInput.FarmInterval, v => v.FarmInterval.ViewModel).DisposeWith(d);
 
                 this.OneWayBind(ViewModel, vm => vm.ActiveText, v => v.ActiveButton.Content).DisposeWith(d);
+
+                // inactive finder
+                this.OneWayBind(ViewModel, vm => vm.CenterVillages.Items, v => v.CenterVillageComboBox.ItemsSource).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.CenterVillages.SelectedItem, v => v.CenterVillageComboBox.SelectedItem).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderRadius.Value, v => v.InactiveRadius.Text).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderPopulation, v => v.InactivePopulation.ViewModel).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.FindInactivesCommand, v => v.FindInactivesButton).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.InactiveStatus, v => v.InactiveStatus.Text).DisposeWith(d);
+                this.OneWayBind(ViewModel, vm => vm.InactiveVillages, v => v.InactiveGrid.ItemsSource).DisposeWith(d);
             });
+        }
+
+        private async Task CopyCoordinates()
+        {
+            var villages = ViewModel?.InactiveVillages;
+            if (villages is null || villages.Count == 0) return;
+
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard is null) return;
+
+            await clipboard.SetTextAsync(string.Join(Environment.NewLine, villages.Select(x => x.Coordinates)));
         }
     }
 }
