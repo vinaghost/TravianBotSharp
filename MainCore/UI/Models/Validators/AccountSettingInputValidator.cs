@@ -37,6 +37,12 @@ namespace MainCore.UI.Models.Validators
             RuleFor(x => x.InactiveFinderPopulation.Min)
                 .GreaterThanOrEqualTo(0)
                 .WithMessage("Minimum inactive population ({PropertyValue}) should be positive number");
+            RuleFor(x => x.InactiveFinderTroopSlot.Value)
+                .InclusiveBetween(1, 10)
+                .WithMessage("Farm list troop ({PropertyValue}) should be between 1 and 10");
+            RuleFor(x => x.InactiveFinderTroopAmount.Value)
+                .GreaterThan(0)
+                .WithMessage("Farm list troop amount ({PropertyValue}) should be greater than 0");
         }
     }
 }

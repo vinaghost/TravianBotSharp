@@ -101,6 +101,23 @@
                         HorizontalAlignment="Left"
                         VerticalAlignment="Bottom"
                         Content="Copy coordinates" />
+                    <Label Margin="20,0,0,0" Content="Send t" />
+                    <TextBox
+                        x:Name="InactiveTroopSlot"
+                        Width="40"
+                        VerticalAlignment="Center"
+                        ToolTip.Tip="Troop column 1-10 (t1 is the first unit of your tribe)" />
+                    <Label Content="x" />
+                    <TextBox
+                        x:Name="InactiveTroopAmount"
+                        Width="60"
+                        VerticalAlignment="Center" />
+                    <Button
+                        x:Name="AddToFarmListButton"
+                        Margin="5,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Content="Add to selected farm list" />
                 </WrapPanel>
                 <TextBlock
                     x:Name="InactiveStatus"

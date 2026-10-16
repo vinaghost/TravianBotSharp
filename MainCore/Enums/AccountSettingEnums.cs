@@ -22,5 +22,7 @@
         InactiveFinderRadius,
         InactiveFinderMinPopulation,
         InactiveFinderMaxPopulation,
+        InactiveFinderTroopSlot,
+        InactiveFinderTroopAmount,
     }
 }

@@ -303,6 +303,57 @@ namespace MainCore.UI.ViewModels.Tabs
             return new(status, items);
         }
 
+        [ReactiveCommand(RunInBackground = true)]
+        private async Task AddInactivesToFarmList()
+        {
+            var farmList = FarmLists.SelectedItem;
+            if (farmList is null)
+            {
+                await _dialogService.SendMessage("Warning", "Select the farm list to add the targets to. Use Load farmlist if the list is empty.");
+                return;
+            }
+
+            var targets = InactiveVillages
+                .Select(x => ParseCoordinates(x.Coordinates))
+                .ToList();
+            if (targets.Count == 0)
+            {
+                await _dialogService.SendMessage("Warning", "Find inactives first");
+                return;
+            }
+
+            var validation = await _accountsettingInputValidator.ValidateAsync(AccountSettingInput);
+            if (!validation.IsValid)
+            {
+                await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, validation.Errors.Select(x => x.ErrorMessage)));
+                return;
+            }
+
+            var troopSlot = AccountSettingInput.InactiveFinderTroopSlot.Get();
+            var troopAmount = AccountSettingInput.InactiveFinderTroopAmount.Get();
+            using (var context = _contextFactory.CreateDbContext())
+            {
+                context.SaveAccountSetting(AccountId, new()
+                {
+                    { AccountSettingEnums.InactiveFinderTroopSlot, troopSlot },
+                    { AccountSettingEnums.InactiveFinderTroopAmount, troopAmount },
+                });
+            }
+
+            var confirmed = await _dialogService.SendConfirm("Add to farm list", $"Add {targets.Count} villages to farm list \"{farmList.Content}\" with {troopAmount} x t{troopSlot} each? Targets already in the list are skipped.");
+            if (!confirmed) return;
+
+            _taskManager.Remove<AddFarmTargetsTask.Task>(AccountId);
+            _taskManager.Add(new AddFarmTargetsTask.Task(AccountId, new FarmId(farmList.Id), targets, troopSlot, troopAmount), first: true);
+            await _dialogService.SendMessage("Information", "Added task to add the targets to the farm list");
+        }
+
+        private static (int X, int Y) ParseCoordinates(string coordinates)
+        {
+            var parts = coordinates.Trim('(', ')').Split('|');
+            return (int.Parse(parts[0]), int.Parse(parts[1]));
+        }
+
         [Reactive]
         private string _inactiveStatus = "Map data is downloaded once a day. Inactive players can be found once there is data from 2 days ago.";
 

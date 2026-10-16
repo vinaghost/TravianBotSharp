@@ -110,6 +110,10 @@ namespace MainCore.Services
                     var claimDailyQuestTaskHandler = scope.GetHandler<ClaimDailyQuestTask.Task>();
                     return await claimDailyQuestTaskHandler.HandleAsync(claimDailyQuestTask, cancellationToken);
 
+                case AddFarmTargetsTask.Task addFarmTargetsTask:
+                    var addFarmTargetsTaskHandler = scope.GetHandler<AddFarmTargetsTask.Task>();
+                    return await addFarmTargetsTaskHandler.HandleAsync(addFarmTargetsTask, cancellationToken);
+
                 case DownloadMapDataTask.Task downloadMapDataTask:
                     var downloadMapDataTaskHandler = scope.GetHandler<DownloadMapDataTask.Task>();
                     return await downloadMapDataTaskHandler.HandleAsync(downloadMapDataTask, cancellationToken);

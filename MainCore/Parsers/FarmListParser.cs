@@ -54,5 +54,66 @@ namespace MainCore.Parsers
             var button = page.Locator("#rallyPointFarmList button.startAllFarmLists");
             return button;
         }
+
+        public record struct RawTargetDto(int X, int Y);
+
+        /// <summary>
+        /// Coordinates of the targets already in a farm list, read from each slot's map link.
+        /// </summary>
+        public static async Task<List<(int X, int Y)>> GetTargetCoordinates(IPage page, FarmId farmId)
+        {
+            var jsonResult = await page.EvaluateAsync<JsonElement>(@"(farmId) => {
+                const result = [];
+                document.querySelectorAll(`#rallyPointFarmList tr.slot:has(input[data-farm-list-id='${farmId}'])`).forEach(row => {
+                    const href = row.querySelector('td.target a')?.getAttribute('href') || '';
+                    const match = href.match(/x=(-?\d+)&y=(-?\d+)/);
+                    if (match) result.push({ X: parseInt(match[1]), Y: parseInt(match[2]) });
+                });
+                return result;
+            }", farmId.Value);
+
+            var targets = JsonSerializer.Deserialize<List<RawTargetDto>>(jsonResult.GetRawText()) ?? [];
+            return targets.Select(x => (x.X, x.Y)).ToList();
+        }
+
+        public static ILocator GetAddTargetButton(IPage page)
+        {
+            return page.Locator("#rallyPointFarmList td.addTarget a").First;
+        }
+
+        public static ILocator GetTargetForm(IPage page)
+        {
+            return page.Locator("#farmListTargetForm");
+        }
+
+        public static ILocator GetTargetListSelect(IPage page)
+        {
+            return page.Locator("#farmListTargetForm select[name='listId']");
+        }
+
+        public static ILocator GetTargetXInput(IPage page)
+        {
+            return page.Locator("#farmListTargetForm input[name='x']");
+        }
+
+        public static ILocator GetTargetYInput(IPage page)
+        {
+            return page.Locator("#farmListTargetForm input[name='y']");
+        }
+
+        public static ILocator GetTargetTroopInput(IPage page, int troopSlot)
+        {
+            return page.Locator($"#farmListTargetForm input[name='t{troopSlot}']");
+        }
+
+        public static ILocator GetTargetSaveButton(IPage page)
+        {
+            return page.Locator("#farmListTargetForm button.save");
+        }
+
+        public static ILocator GetTargetCancelButton(IPage page)
+        {
+            return page.Locator("#farmListTargetForm button.cancel");
+        }
     }
 }

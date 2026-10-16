@@ -44,6 +44,9 @@ namespace AvaloniaUI.Views.Tabs
                 this.BindCommand(ViewModel, vm => vm.FindInactivesCommand, v => v.FindInactivesButton).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.InactiveStatus, v => v.InactiveStatus.Text).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.InactiveVillages, v => v.InactiveGrid.ItemsSource).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderTroopSlot.Value, v => v.InactiveTroopSlot.Text).DisposeWith(d);
+                this.Bind(ViewModel, vm => vm.AccountSettingInput.InactiveFinderTroopAmount.Value, v => v.InactiveTroopAmount.Text).DisposeWith(d);
+                this.BindCommand(ViewModel, vm => vm.AddInactivesToFarmListCommand, v => v.AddToFarmListButton).DisposeWith(d);
             });
         }
 
