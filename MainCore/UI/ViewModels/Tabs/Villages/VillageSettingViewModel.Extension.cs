@@ -8,15 +8,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             {
                 if (settings[VillageSettingEnums.CompleteImmediately] == 1)
                 {
-                    var task = new CompleteImmediatelyTask.Task(accountId, villageId);
-                    if (task.CanStart(context) && !taskManager.IsExist<CompleteImmediatelyTask.Task>(accountId, villageId))
+                    var task = new InstantUpgradeTask.Task(accountId, villageId);
+                    if (task.CanStart(context) && !taskManager.IsExist<InstantUpgradeTask.Task>(accountId, villageId))
                     {
                         taskManager.Add(task);
                     }
                 }
                 else
                 {
-                    taskManager.Remove<CompleteImmediatelyTask.Task>(accountId, villageId);
+                    taskManager.Remove<InstantUpgradeTask.Task>(accountId, villageId);
                 }
             }
 

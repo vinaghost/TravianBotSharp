@@ -98,8 +98,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             if (notification.AccountId != AccountId) return;
 
             using var context = _contextFactory.CreateDbContext();
-            var task = new CompleteImmediatelyTask.Task(AccountId, notification.VillageId);
-            if (task.CanStart(context) && !_taskManager.IsExist<CompleteImmediatelyTask.Task>(AccountId, notification.VillageId))
+            var task = new InstantUpgradeTask.Task(AccountId, notification.VillageId);
+            if (task.CanStart(context) && !_taskManager.IsExist<InstantUpgradeTask.Task>(AccountId, notification.VillageId))
             {
                 _taskManager.Add(task);
             }

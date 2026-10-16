@@ -62,8 +62,8 @@ namespace MainCore.Services
                     var claimQuestTaskHandler = scope.GetHandler<ClaimVillageQuestTask.Task>();
                     return await claimQuestTaskHandler.HandleAsync(claimQuestTask, cancellationToken);
 
-                case CompleteImmediatelyTask.Task completeImmediatelyTask:
-                    var completeImmediatelyTaskHandler = scope.GetHandler<CompleteImmediatelyTask.Task>();
+                case InstantUpgradeTask.Task completeImmediatelyTask:
+                    var completeImmediatelyTaskHandler = scope.GetHandler<InstantUpgradeTask.Task>();
                     return await completeImmediatelyTaskHandler.HandleAsync(completeImmediatelyTask, cancellationToken);
 
                 case LoginTask.Task loginTask:

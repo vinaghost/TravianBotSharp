@@ -35,7 +35,7 @@ namespace MainCore.UI.ViewModels.Tabs
                             .ToList();
                         foreach (var village in villages)
                         {
-                            taskManager.Remove<CompleteImmediatelyTask.Task>(accountId, village);
+                            taskManager.Remove<InstantUpgradeTask.Task>(accountId, village);
                         }
                     }
                 }
