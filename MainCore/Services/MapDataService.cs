@@ -21,8 +21,12 @@ namespace MainCore.Services
         int PlayerPopulationBefore,
         int PlayerPopulationNow);
 
+    /// <summary>
+    /// <paramref name="OldSnapshot"/> is null when there was not enough history yet;
+    /// the villages are then only filtered by distance and population.
+    /// </summary>
     public sealed record InactiveSearchResult(
-        DateOnly OldSnapshot,
+        DateOnly? OldSnapshot,
         DateOnly NewSnapshot,
         List<InactiveVillage> Villages);
 
@@ -108,18 +112,12 @@ namespace MainCore.Services
 
             var newest = dates[^1];
             var oldDates = dates.Where(x => x.DayNumber <= newest.DayNumber - days).ToList();
-            if (oldDates.Count == 0)
-            {
-                var readyDate = dates[0].AddDays(days);
-                return Result.Fail<InactiveSearchResult>($"Inactive players need map data from at least {days} days ago. The first map data is from {dates[0]:yyyy-MM-dd}, so results are available from {readyDate:yyyy-MM-dd}.");
-            }
-            var older = oldDates[^1];
+            DateOnly? older = oldDates.Count == 0 ? null : oldDates[^1];
 
             var newVillages = Parse(GetSnapshotPath(server, newest));
-            var oldVillages = Parse(GetSnapshotPath(server, older));
-
             var newPopulation = GetPlayerPopulation(newVillages);
-            var oldPopulation = GetPlayerPopulation(oldVillages);
+            // without enough history every player passes the inactive check
+            var oldPopulation = older is null ? newPopulation : GetPlayerPopulation(Parse(GetSnapshotPath(server, older.Value)));
 
             var ownCoordinates = ownVillages.ToHashSet();
             var ownPlayerIds = newVillages

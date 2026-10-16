@@ -299,7 +299,9 @@ namespace MainCore.UI.ViewModels.Tabs
                     $"{x.PlayerPopulationBefore} -> {x.PlayerPopulationNow}"))
                 .ToList();
 
-            var status = $"{items.Count} inactive villages within {radius} fields of ({centerCoordinates.X}|{centerCoordinates.Y}). Player population did not grow between {older:yyyy-MM-dd} and {newer:yyyy-MM-dd}.";
+            var status = older is null
+                ? $"{items.Count} villages within {radius} fields of ({centerCoordinates.X}|{centerCoordinates.Y}), filtered by population only. Not enough map history to tell inactive players yet (needs data from {InactiveDays} days ago, available from {MapDataService.GetSnapshotDates(server)[0].AddDays(InactiveDays):yyyy-MM-dd}). These players may be active."
+                : $"{items.Count} inactive villages within {radius} fields of ({centerCoordinates.X}|{centerCoordinates.Y}). Player population did not grow between {older:yyyy-MM-dd} and {newer:yyyy-MM-dd}.";
             return new(status, items);
         }
 
