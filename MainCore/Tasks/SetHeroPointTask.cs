@@ -1,5 +1,4 @@
 ﻿using MainCore.Commands.Features.SetHeroPoint;
-using MainCore.Commands.Navigate;
 using MainCore.Infrasturecture.Extensions;
 using MainCore.Tasks.Base;
 

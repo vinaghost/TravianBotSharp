@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MainCore.Commands.Features.SetHeroPoint
+﻿namespace MainCore.Commands.Features.SetHeroPoint
 {
     [Handler]
     public static partial class SetPointCommand
