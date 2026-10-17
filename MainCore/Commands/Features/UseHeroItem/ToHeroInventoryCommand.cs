@@ -10,7 +10,6 @@ namespace MainCore.Commands.Features.UseHeroItem
         private static async ValueTask<Result> HandleAsync(
             Command command,
             IChromeBrowser browser,
-            DelayService delayService,
             CancellationToken cancellationToken)
         {
             var result = await browser.Click(InventoryParser.GetHeroAvatar(browser.CurrentPage));

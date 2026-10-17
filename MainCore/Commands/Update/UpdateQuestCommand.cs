@@ -14,12 +14,12 @@ namespace MainCore.Commands.Update
             if (!(await QuestParser.IsQuestClaimable(browser.CurrentPage))) return;
             var (accountId, villageId) = command;
             using var context = contextFactory.CreateDbContext();
-            var claimQuestTask = new ClaimQuestTask.Task(accountId, villageId);
-            if (!claimQuestTask.CanStart(context) || taskManager.IsExist<ClaimQuestTask.Task>(accountId))
+            var claimQuestTask = new ClaimVillageQuestTask.Task(accountId, villageId);
+            if (!claimQuestTask.CanStart(context) || taskManager.IsExist<ClaimVillageQuestTask.Task>(accountId))
             {
                 return;
             }
-            if (taskManager.IsExist<ClaimQuestTask.Task>(accountId, villageId)) return;
+            if (taskManager.IsExist<ClaimVillageQuestTask.Task>(accountId, villageId)) return;
             taskManager.Add(claimQuestTask);
         }
     }
