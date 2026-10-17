@@ -7,9 +7,9 @@ namespace MainCore.Services
         IPage CurrentPage { get; }
         string CurrentUrl { get; }
         ILogger Logger { get; set; }
-        DelayService DelayService { get; set; }
         bool IsInitialized { get; }
         bool IsHeadless { get; }
+        AccountId AccountId { get; }
 
         Task<Result> Click(ILocator locator, [CallerArgumentExpression(nameof(locator))] string? expression = null);
 
@@ -22,6 +22,8 @@ namespace MainCore.Services
         Task<Result> Refresh();
 
         Task<string> Screenshot();
+
+        void SetAccountId(AccountId accountId);
 
         Task Setup(ChromeSetting setting);
 

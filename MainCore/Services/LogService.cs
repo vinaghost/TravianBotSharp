@@ -4,17 +4,12 @@ using Serilog.Events;
 namespace MainCore.Services
 {
     [RegisterSingleton<LogService>]
-    public sealed class LogService
+    public sealed class LogService(LogSink logSink)
     {
         public Dictionary<AccountId, ILogger> Loggers { get; } = [];
-        private readonly LogSink _logSink;
+        private readonly LogSink _logSink = logSink;
 
-        public LogService(LogSink logSink)
-        {
-            _logSink = logSink;
-        }
-
-        public void Shutdown()
+        public static void Shutdown()
         {
             Log.CloseAndFlush();
         }

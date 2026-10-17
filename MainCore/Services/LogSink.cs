@@ -8,16 +8,11 @@ using Splat;
 namespace MainCore.Services
 {
     [RegisterSingleton<LogSink>]
-    public sealed class LogSink : ILogEventSink
+    public sealed class LogSink(RxQueue rxQueue) : ILogEventSink
     {
         private Dictionary<AccountId, LinkedList<LogEvent>> Logs { get; } = [];
 
-        private readonly RxQueue _rxQueue;
-
-        public LogSink(RxQueue rxQueue)
-        {
-            _rxQueue = rxQueue;
-        }
+        private readonly RxQueue _rxQueue = rxQueue;
 
         public LinkedList<LogEvent> GetLogs(AccountId accountId)
         {

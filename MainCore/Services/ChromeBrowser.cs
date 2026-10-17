@@ -1,9 +1,11 @@
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
+using MainCore.Infrasturecture.Extensions;
+
 namespace MainCore.Services
 {
-    public sealed class ChromeBrowser : IChromeBrowser
+    public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory) : IChromeBrowser
     {
         private IPlaywright? _playwright;
         private IBrowserContext? _browser;
@@ -14,10 +16,23 @@ namespace MainCore.Services
         public string CurrentUrl => _mainPage?.Url ?? "";
 
         public ILogger Logger { get; set; } = null!;
-        public DelayService DelayService { get; set; } = null!;
 
         public bool IsInitialized => _playwright is not null && _browser is not null && _mainPage is not null;
         public bool IsHeadless { get; private set; }
+
+        public AccountId AccountId { get; private set; }
+
+        public void SetAccountId(AccountId accountId)
+        {
+            AccountId = accountId;
+        }
+
+        public async Task DelayClick()
+        {
+            using var context = contextFactory.CreateDbContext();
+            var delay = context.ByName(AccountId, AccountSettingEnums.ClickDelayMin, AccountSettingEnums.ClickDelayMax);
+            await Task.Delay(delay);
+        }
 
         public async Task Setup(ChromeSetting setting)
         {
@@ -132,7 +147,7 @@ namespace MainCore.Services
             try
             {
                 await locator.ClickAsync();
-                await DelayService.DelayClick();
+                await DelayClick();
                 return Result.Ok();
             }
             catch (TimeoutException ex)
@@ -147,7 +162,7 @@ namespace MainCore.Services
             try
             {
                 await locator.FillAsync(content);
-                await DelayService.DelayClick();
+                await DelayClick();
                 return Result.Ok();
             }
             catch (TimeoutException ex)
@@ -160,8 +175,7 @@ namespace MainCore.Services
         {
             if (_mainPage is null) return Stop.DriverNotReady;
             await _mainPage.EvaluateAsync(javascript);
-            await DelayService.DelayClick();
-
+            await DelayClick();
             return Result.Ok();
         }
 

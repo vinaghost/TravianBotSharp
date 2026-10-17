@@ -1,11 +1,14 @@
-﻿using MainCore.Tasks.Base;
+﻿using MainCore.Commands.Features.StartAdventure;
+using MainCore.Infrasturecture.Extensions;
+using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class StartAdventureTask(
         IChromeBrowser browser,
-        ILogger logger)
+        OpenAdventurePanelCommand.Handler openAdventurePanelCommand,
+        ExploreAdeventureCommand.Handler exploreAdeventureCommand)
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {
@@ -20,49 +23,21 @@ namespace MainCore.Tasks
             }
         }
 
-        private async ValueTask<Result> HandleAsync(Task task)
+        private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
             var canStartAdventure = await AdventureParser.CanStartAdventure(browser.CurrentPage);
             if (!canStartAdventure) return Skip.Error.WithError("No adventure available");
 
             Result result;
-            result = await ToAdventurePage();
+            result = await openAdventurePanelCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await ExploreAdeventure();
+            result = await exploreAdeventureCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;
 
             var adventureDuration = await AdventureParser.GetAdventureDuration(browser.CurrentPage);
             task.ExecuteAt = DateTime.Now.Add(adventureDuration * 2);
 
-            return Result.Ok();
-        }
-
-        private async Task<Result> ExploreAdeventure()
-        {
-            var adventures = await AdventureParser.GetAdventureInfo(browser.CurrentPage);
-            if (adventures.Count == 0) return Skip.Error.WithError("No adventure available");
-
-            var adventure = adventures[0];
-
-            logger.Information("Start {Difficult} adventure takes {Duration} ", adventure.Difficult, adventure.Duration);
-
-            var result = await browser.Click(adventure.Button);
-            if (result.IsFailed) return result;
-
-            result = await browser.Wait(AdventureParser.GetContinueButton(browser.CurrentPage));
-            if (result.IsFailed) return result;
-            return Result.Ok();
-        }
-
-        private async Task<Result> ToAdventurePage()
-        {
-            var result = await browser.Click(AdventureParser.GetHeroAdventureButton(browser.CurrentPage));
-            if (result.IsFailed) return result;
-            result = await browser.WaitPageChanged("hero/adventures");
-            if (result.IsFailed) return result;
-            result = await browser.Wait(AdventureParser.GetAdventureDurationSection(browser.CurrentPage));
-            if (result.IsFailed) return result;
             return Result.Ok();
         }
     }

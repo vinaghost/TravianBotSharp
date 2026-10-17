@@ -1,16 +1,18 @@
-﻿using MainCore.Commands.Navigate;
+﻿using MainCore.Commands.Features.ClaimVillageQuest;
+using MainCore.Infrasturecture.Extensions;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
-    public sealed partial class ClaimQuestTask(
+    public sealed partial class ClaimVillageQuestTask(
         IChromeBrowser browser,
-        SwitchTabCommand.Handler switchTabCommand)
+        OpenVillageQuestPageCommand.Handler openVillageQuestPageCommand,
+        ClaimRewardCommand.Handler claimRewardCommand)
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            protected override string TaskName => "Claim quest";
+            protected override string TaskName => "Claim village quest";
 
             public override bool CanStart(AppDbContext context)
             {
@@ -32,59 +34,11 @@ namespace MainCore.Tasks
             Result result;
             var canClaimQuest = await QuestParser.IsQuestClaimable(browser.CurrentPage);
             if (!canClaimQuest) return Result.Ok();
-            result = await ToQuestPage();
+
+            result = await openVillageQuestPageCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;
-            result = await ClaimQuest(cancellationToken);
+            result = await claimRewardCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;
-            return Result.Ok();
-        }
-
-        private async ValueTask<Result> ToQuestPage()
-        {
-            var questMaster = QuestParser.GetQuestMaster(browser.CurrentPage);
-
-            var result = await browser.Click(questMaster);
-            if (result.IsFailed) return result;
-
-            result = await browser.WaitPageChanged("tasks");
-            if (result.IsFailed) return result;
-
-            var randomQuest = browser.CurrentPage.Locator("#tasks .taskOverview .task .taskImage");
-            result = await browser.Wait(randomQuest.First);
-            if (result.IsFailed) return result;
-            return Result.Ok();
-        }
-
-        private async ValueTask<Result> ClaimQuest(CancellationToken cancellationToken)
-        {
-            Result result;
-
-            do
-            {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return Cancel.Error;
-                }
-                var quest = QuestParser.GetQuestCollectButton(browser.CurrentPage);
-
-                if (await quest.CountAsync() == 0)
-                {
-                    result = await switchTabCommand.HandleAsync(new(1), cancellationToken);
-                    if (result.IsFailed) return result;
-
-                    quest = QuestParser.GetQuestCollectButton(browser.CurrentPage);
-                }
-
-                if (await quest.CountAsync() == 0)
-                {
-                    return Result.Ok();
-                }
-
-                result = await browser.Click(quest.First);
-                if (result.IsFailed) return result;
-            }
-            while (await QuestParser.IsQuestClaimable(browser.CurrentPage));
-
             return Result.Ok();
         }
     }

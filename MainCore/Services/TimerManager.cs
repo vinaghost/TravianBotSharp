@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 
+using MainCore.Infrasturecture.Extensions;
+
 using Microsoft.Extensions.DependencyInjection;
 
 using Polly;
@@ -17,15 +19,17 @@ namespace MainCore.Services
         private readonly TaskManager _taskManager;
         private readonly RxQueue _rxQueue;
         private readonly CustomServiceScopeFactory _serviceScopeFactory;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
 
         private static readonly ResiliencePropertyKey<ContextData> contextDataKey = new(nameof(ContextData));
         private readonly ResiliencePipeline<Result> _pipeline;
 
-        public TimerManager(TaskManager taskManager, CustomServiceScopeFactory serviceScopeFactory, RxQueue rxQueue)
+        public TimerManager(TaskManager taskManager, CustomServiceScopeFactory serviceScopeFactory, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
         {
             _taskManager = taskManager;
             _serviceScopeFactory = serviceScopeFactory;
             _rxQueue = rxQueue;
+            _contextFactory = contextFactory;
 
             static async ValueTask OnRetry(OnRetryArguments<Result> args)
             {
@@ -98,16 +102,16 @@ namespace MainCore.Services
             var contextData = new ContextData(task.Description, browser);
 
             ///===========================================================///
-            var context = ResilienceContextPool.Shared.Get(cts.Token);
+            var resilienceContext = ResilienceContextPool.Shared.Get(cts.Token);
 
-            context.Properties.Set(contextDataKey, contextData);
+            resilienceContext.Properties.Set(contextDataKey, contextData);
 
             var poliResult = await _pipeline.ExecuteOutcomeAsync(
                 async (ctx, state) => Outcome.FromResult(await scope.Execute(state, ctx.CancellationToken)),
-                context,
+                resilienceContext,
                 task);
 
-            ResilienceContextPool.Shared.Return(context);
+            ResilienceContextPool.Shared.Return(resilienceContext);
             ///===========================================================///
 
             task.Stage = StageEnums.Waiting;
@@ -177,8 +181,9 @@ namespace MainCore.Services
                 }
             }
 
-            var delayService = scope.ServiceProvider.GetRequiredService<DelayService>();
-            await delayService.DelayTask();
+            using var context = _contextFactory.CreateDbContext();
+            var delay = context.ByName(accountId, AccountSettingEnums.TaskDelayMin, AccountSettingEnums.TaskDelayMax);
+            await Task.Delay(delay);
         }
 
         public void Shutdown()
