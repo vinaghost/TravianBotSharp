@@ -14,9 +14,7 @@ namespace MainCore.Tasks
             protected override string TaskName => "Update farm list";
         }
 
-        private async ValueTask<Result> HandleAsync(
-            Task task,
-            CancellationToken cancellationToken)
+        private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
             Result result;
             result = await toFarmListPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
