@@ -1,5 +1,4 @@
 ﻿using MainCore.Commands.Features.Login;
-using MainCore.Commands.Navigate;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
@@ -26,16 +25,15 @@ namespace MainCore.Tasks
             CancellationToken cancellationToken
            )
         {
-            {
-                await accecptCookieConsentCommand.HandleAsync(new(browser), cancellationToken);
+            await accecptCookieConsentCommand.HandleAsync(new(browser), cancellationToken);
 
-                Result result;
-                result = await loginCommand.HandleAsync(new(browser), cancellationToken);
-                if (result.IsFailed) return result;
+            Result result;
+            result = await loginCommand.HandleAsync(new(browser), cancellationToken);
+            if (result.IsFailed) return result;
 
-                result = await disableContextualHelpCommand.HandleAsync(new(browser), cancellationToken);
-                if (result.IsFailed) return result;
-                return Result.Ok();
-            }
+            result = await disableContextualHelpCommand.HandleAsync(new(browser), cancellationToken);
+            if (result.IsFailed) return result;
+            return Result.Ok();
         }
     }
+}

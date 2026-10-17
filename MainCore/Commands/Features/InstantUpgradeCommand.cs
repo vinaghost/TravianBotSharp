@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MainCore.Commands.Features
+﻿namespace MainCore.Commands.Features
 {
     [Handler]
     public static partial class InstantUpgradeCommand

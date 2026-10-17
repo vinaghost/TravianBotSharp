@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MainCore.Commands.Features.ClaimVillageQuest
+﻿namespace MainCore.Commands.Features.ClaimVillageQuest
 {
     [Handler]
     public static partial class OpenVillageQuestPageCommand

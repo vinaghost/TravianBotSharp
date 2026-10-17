@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Microsoft.EntityFrameworkCore.Internal;
-
-namespace MainCore.Commands.Features.Login
+﻿namespace MainCore.Commands.Features.Login
 {
     [Handler]
     public sealed partial class LoginCommand(IDbContextFactory<AppDbContext> contextFactory)

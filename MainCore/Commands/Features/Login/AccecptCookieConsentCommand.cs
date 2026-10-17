@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MainCore.Commands.Features.Login
+﻿namespace MainCore.Commands.Features.Login
 {
     [Handler]
     public static partial class AccecptCookieConsentCommand
