@@ -1,4 +1,6 @@
-﻿namespace MainCore.Commands.Misc
+﻿using MainCore.Infrasturecture.Extensions;
+
+namespace MainCore.Commands.Misc
 {
     [Handler]
     public sealed partial class OpenBrowserCommand(IChromeBrowser browser, IDbContextFactory<AppDbContext> contextFactory)

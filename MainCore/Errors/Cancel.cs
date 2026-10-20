@@ -6,6 +6,6 @@
         {
         }
 
-        public static Cancel Error => new();
+        public static Result Error => new Cancel();
     }
 }

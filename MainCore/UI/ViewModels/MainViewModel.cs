@@ -54,6 +54,7 @@ namespace MainCore.UI.ViewModels
         public async Task Unload()
         {
             await chromeManager.Shutdown();
+            LogService.Shutdown();
         }
 
         private static void CheckDriver()

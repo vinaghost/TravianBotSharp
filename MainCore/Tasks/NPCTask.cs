@@ -1,5 +1,5 @@
+using MainCore.Commands.Features.NPC;
 using MainCore.Commands.Navigate;
-using MainCore.Commands.Update;
 using MainCore.Infrasturecture.Extensions;
 using MainCore.Tasks.Base;
 
@@ -7,10 +7,9 @@ namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class NpcTask(
-        ToDorfCommand.Handler toDorfCommand,
-        UpdateBuildingCommand.Handler updateBuildingCommand,
         ToBuildingByTypeCommand.Handler toBuildingCommand,
-        SwitchTabCommand.Handler switchTabCommand,
+        OpenNPCPanelCommand.Handler openNpcPanelCommand,
+        NPCCommand.Handler npcCommand,
         IDbContextFactory<AppDbContext> contextFactory,
         IChromeBrowser browser,
         ILogger logger,
@@ -43,45 +42,47 @@ namespace MainCore.Tasks
             }
         }
 
-        private async ValueTask<Result> HandleAsync(Task task)
+        private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
             Result result;
-            result = await ToNpcResourcePage(task.VillageId);
-            if (result.IsFailed) return result;
+            result = await toBuildingCommand.HandleAsync(new(task.VillageId, BuildingEnums.Marketplace), cancellationToken);
+            if (result.IsFailed)
+            {
+                if (result.HasError<MissingBuilding>())
+                {
+                    await TurnOffNPC(task.VillageId);
+                    return Skip.Error.WithErrors(result.Errors);
+                }
+                return result;
+            }
 
             if (!await CanNPC(task.VillageId))
             {
                 return Result.Ok();
             }
 
-            result = await NPCResource(task.VillageId);
+            result = await openNpcPanelCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;
 
-            taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId));
+            var values = await GetValues(task.VillageId);
 
-            return Result.Ok();
-        }
-
-        private async ValueTask<Result> ToNpcResourcePage(VillageId villageId)
-        {
-            var result = await toDorfCommand.HandleAsync(new(2));
-            if (result.IsFailed) return result;
-
-            result = await updateBuildingCommand.HandleAsync(new(villageId));
-            if (result.IsFailed) return result;
-
-            result = await toBuildingCommand.HandleAsync(new(villageId, BuildingEnums.Marketplace));
+            result = await CheckOverflow(task.VillageId, values);
             if (result.IsFailed)
             {
-                if (result.HasError<MissingBuilding>())
-                {
-                    await TurnOffNPC(villageId);
-                    return Skip.Error.WithErrors(result.Errors);
-                }
-                return result;
+                await TurnOffNPC(task.VillageId);
+                return Skip.Error.WithErrors(result.Errors);
             }
-            result = await switchTabCommand.HandleAsync(new(0));
+
+            logger.Information("Current resource:");
+            await LogResource();
+
+            result = await npcCommand.HandleAsync(new(browser, values), cancellationToken);
             if (result.IsFailed) return result;
+
+            logger.Information("After NPC:");
+            await LogResource();
+
+            taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId));
 
             return Result.Ok();
         }
@@ -104,36 +105,23 @@ namespace MainCore.Tasks
             VillageSettingEnums.AutoNPCCrop,
         ];
 
-        private async ValueTask<Result> NPCResource(VillageId villageId)
+        private async ValueTask<bool> CanNPC(VillageId villageId)
         {
-            var result = await OpenDialog();
-            if (result.IsFailed) return result;
+            var storage = await StorageParser.GetStorage(browser.CurrentPage);
 
-            var values = await GetValues(villageId);
+            var granaryPercent = (int)(storage.Crop * 100f / storage.Granary);
 
-            result = await CheckOverflow(villageId, values);
-            if (result.IsFailed)
+            using var context = contextFactory.CreateDbContext();
+            var autoNPCGranaryPercent = context.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
+
+            if (granaryPercent < autoNPCGranaryPercent)
             {
-                await TurnOffNPC(villageId);
-                return Skip.Error.WithErrors(result.Errors);
+                logger.Information("NPC resources not available. Granary percent is too low: {GranaryPercent} < {AutoNPCGranaryPercent}",
+                    granaryPercent, autoNPCGranaryPercent);
+                return false;
             }
 
-            result = await InputAmount(values);
-            if (result.IsFailed) return result;
-
-            logger.Information("Current resource:");
-            await LogResource();
-
-            result = await browser.Click(NpcResourceParser.GetDistributeButton(browser.CurrentPage));
-            if (result.IsFailed) return result;
-
-            result = await browser.Click(NpcResourceParser.GetRedeemButton(browser.CurrentPage));
-            if (result.IsFailed) return result;
-
-            logger.Information("After NPC:");
-            await LogResource();
-
-            return Result.Ok();
+            return true;
         }
 
         private async ValueTask<Result> CheckOverflow(VillageId villageId, long[] values)
@@ -159,56 +147,6 @@ namespace MainCore.Tasks
             var storage = await StorageParser.GetStorage(browser.CurrentPage);
 
             logger.Information("[{Warehouse}]: {Wood} - {Clay} - {Iron} | [{Granary}]: {Crop}", storage.Warehouse, storage.Wood, storage.Clay, storage.Iron, storage.Granary, storage.Crop);
-        }
-
-        private async ValueTask<bool> CanNPC(VillageId villageId)
-        {
-            var storage = await StorageParser.GetStorage(browser.CurrentPage);
-
-            var granaryPercent = (int)(storage.Crop * 100f / storage.Granary);
-
-            using var context = contextFactory.CreateDbContext();
-            var autoNPCGranaryPercent = context.ByName(villageId, VillageSettingEnums.AutoNPCGranaryPercent);
-
-            if (granaryPercent < autoNPCGranaryPercent)
-            {
-                logger.Information("NPC resources not available. Granary percent is too low: {GranaryPercent} < {AutoNPCGranaryPercent}",
-                    granaryPercent, autoNPCGranaryPercent);
-                return false;
-            }
-
-            return true;
-        }
-
-        private async ValueTask<Result> OpenDialog()
-        {
-            var result = await browser.Click(NpcResourceParser.GetExchangeResourcesButton(browser.CurrentPage));
-            if (result.IsFailed) return result;
-
-            result = await browser.Wait(NpcResourceParser.NpcDialog(browser.CurrentPage));
-            if (result.IsFailed) return result;
-            return Result.Ok();
-        }
-
-        private async ValueTask<Result> InputAmount(long[] values)
-        {
-            var inputs = NpcResourceParser.GetInputs(browser.CurrentPage);
-
-            var inputCount = await inputs.CountAsync();
-
-            if (inputCount != 4)
-            {
-                return Stop.Error.WithError($"Expected 4 input elements, but found {inputCount}.");
-            }
-
-            for (var i = 0; i < 4; i++)
-            {
-                var inputElement = inputs.Nth(i);
-                var result = await browser.Input(inputElement, $"{values[i]}");
-                if (result.IsFailed) return result;
-            }
-
-            return Result.Ok();
         }
 
         private async ValueTask<long[]> GetValues(VillageId villageId)

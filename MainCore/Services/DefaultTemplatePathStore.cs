@@ -1,5 +1,9 @@
 namespace MainCore.Services
 {
+    public sealed record DefaultTemplatePaths(
+        string AccountSettingsPath,
+        string VillageSettingsPath);
+
     [RegisterSingleton<DefaultTemplatePathStore>]
     public sealed class DefaultTemplatePathStore
     {

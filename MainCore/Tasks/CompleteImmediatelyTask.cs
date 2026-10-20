@@ -1,17 +1,20 @@
+using MainCore.Commands.Features;
 using MainCore.Commands.Navigate;
+using MainCore.Infrasturecture.Extensions;
 using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
-    public sealed partial class CompleteImmediatelyTask(
+    public sealed partial class InstantUpgradeTask(
         ToDorfCommand.Handler toDorfCommand,
+        InstantUpgradeCommand.Handler instantUpgradeCommand,
         IChromeBrowser browser,
         TaskManager taskManager)
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            protected override string TaskName => "Complete immediately";
+            protected override string TaskName => "Instant upgrade";
 
             private static readonly List<BuildingEnums> UnskippableBuildings =
             [
@@ -44,38 +47,16 @@ namespace MainCore.Tasks
             }
         }
 
-        private async ValueTask<Result> HandleAsync(
-            Task task,
-            CancellationToken cancellationToken)
+        private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
             Result result;
             result = await toDorfCommand.HandleAsync(new(0), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await InstantUpgrade();
+            result = await instantUpgradeCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;
 
             taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId));
-
-            return Result.Ok();
-        }
-
-        private async ValueTask<Result> InstantUpgrade()
-        {
-            var oldQueueCount = await BuildingLayoutParser.CountQueueBuilding(browser.CurrentPage);
-            if (oldQueueCount == 0) return Result.Ok();
-
-            var completeButton = CompleteImmediatelyParser.GetCompleteButton(browser.CurrentPage);
-            var result = await browser.Click(completeButton);
-            if (result.IsFailed) return result;
-
-            var confirmButton = CompleteImmediatelyParser.GetConfirmButton(browser.CurrentPage);
-            result = await browser.Click(confirmButton);
-            if (result.IsFailed) return result;
-
-            var pageBody = browser.CurrentPage.Locator("body");
-            result = await browser.Wait(pageBody, condition: "node => node.querySelector('div.buildingList') === null");
-            if (result.IsFailed) return result;
             return Result.Ok();
         }
     }

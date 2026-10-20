@@ -1,4 +1,6 @@
-﻿namespace MainCore.Commands.Features.UpgradeBuilding
+﻿using MainCore.Infrasturecture.Extensions;
+
+namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
     public sealed partial class HandleUpgradeCommand(
