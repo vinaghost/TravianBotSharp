@@ -1,0 +1,14 @@
+<v:NoAccountTabBase
+    x:Class="AvaloniaUI.Views.Tabs.NoAccountTab"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:v="using:AvaloniaUI.Views.Tabs">
+    <Grid Background="#FFE5E5E5">
+        <TextBlock
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Text="Click account on the left side, if no account, use Add account or Add accounts button to add account"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
+    </Grid>
+</v:NoAccountTabBase>
