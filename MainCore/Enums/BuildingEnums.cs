@@ -67,7 +67,7 @@ namespace MainCore.Enums
                 BuildingEnums.Palisade => true,
                 BuildingEnums.StoneWall => true,
                 BuildingEnums.MakeshiftWall => true,
-                BuildingEnums.DefensiveWall => true
+                BuildingEnums.DefensiveWall => true,
                 _ => false,
             };
         }
