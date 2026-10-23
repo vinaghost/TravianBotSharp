@@ -15,6 +15,7 @@ namespace MainCore.UI.Models.Output
             {TribeEnums.Natars, "natar_big.png" },
             {TribeEnums.Egyptians, "egyptian_big.png" },
             {TribeEnums.Huns, "hun_big.png" },
+            {TribeEnums.Spartan, "hun_big.png" },
         }.ToImmutableDictionary();
 
         public TribeItem(TribeEnums tribe)

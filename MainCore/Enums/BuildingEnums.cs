@@ -52,6 +52,8 @@ namespace MainCore.Enums
         CommandCenter,
         Waterworks,
         Hospital,
+        DefensiveWall,
+        Asclepeion,
     }
 
     public static class BuildingEnumsExtension
@@ -65,6 +67,7 @@ namespace MainCore.Enums
                 BuildingEnums.Palisade => true,
                 BuildingEnums.StoneWall => true,
                 BuildingEnums.MakeshiftWall => true,
+                BuildingEnums.DefensiveWall => true
                 _ => false,
             };
         }
@@ -78,6 +81,7 @@ namespace MainCore.Enums
                 TribeEnums.Gauls => BuildingEnums.Palisade,
                 TribeEnums.Egyptians => BuildingEnums.StoneWall,
                 TribeEnums.Huns => BuildingEnums.MakeshiftWall,
+                TribeEnums.Spartan => BuildingEnums.DefensiveWall,
                 _ => BuildingEnums.Site,
             };
         }
@@ -115,150 +119,160 @@ namespace MainCore.Enums
         {
             return building switch
             {
-                BuildingEnums.Sawmill => new()
-                    {
+                BuildingEnums.Sawmill =>
+                    [
                         new(BuildingEnums.Woodcutter, 10),
                         new(BuildingEnums.MainBuilding, 5),
-                    },
-                BuildingEnums.Brickyard => new()
-                    {
+                    ],
+                BuildingEnums.Brickyard =>
+                    [
                         new(BuildingEnums.ClayPit, 10),
                         new(BuildingEnums.MainBuilding, 5),
-                    },
-                BuildingEnums.IronFoundry => new()
-                    {
+                    ],
+                BuildingEnums.IronFoundry =>
+                    [
                         new(BuildingEnums.IronMine, 10),
                         new(BuildingEnums.MainBuilding, 5),
-                    },
-                BuildingEnums.GrainMill => new()
-                    {
+                    ],
+                BuildingEnums.GrainMill =>
+                    [
                         new(BuildingEnums.Cropland, 5),
-                    },
-                BuildingEnums.Bakery => new()
-                    {
+                    ],
+                BuildingEnums.Bakery =>
+                    [
                         new(BuildingEnums.Cropland, 10),
                         new(BuildingEnums.GrainMill, 5),
                         new(BuildingEnums.MainBuilding, 5),
-                    },
-                BuildingEnums.Warehouse => new()
-                    {
+                    ],
+                BuildingEnums.Warehouse =>
+                    [
                         new(BuildingEnums.MainBuilding, 1),
-                    },
-                BuildingEnums.Granary => new()
-                    {
+                    ],
+                BuildingEnums.Granary =>
+                    [
                         new(BuildingEnums.MainBuilding, 1),
-                    },
-                BuildingEnums.Smithy => new()
-                    {
+                    ],
+                BuildingEnums.Smithy =>
+                    [
                         new(BuildingEnums.MainBuilding, 3),
                         new(BuildingEnums.Academy, 1),
-                    },
-                BuildingEnums.TournamentSquare => new()
-                    {
+                    ],
+                BuildingEnums.TournamentSquare =>
+                    [
                         new(BuildingEnums.RallyPoint, 15),
-                    },
-                BuildingEnums.Marketplace => new()
-                    {
+                    ],
+                BuildingEnums.Marketplace =>
+                    [
                         new(BuildingEnums.Warehouse, 1),
                         new(BuildingEnums.Granary, 1),
                         new(BuildingEnums.MainBuilding, 3),
-                    },
-                BuildingEnums.Embassy => new()
-                    {
+                    ],
+                BuildingEnums.Embassy =>
+                    [
                         new(BuildingEnums.MainBuilding, 1),
-                    },
-                BuildingEnums.Barracks => new()
-                    {
+                    ],
+                BuildingEnums.Barracks =>
+                    [
                         new(BuildingEnums.RallyPoint, 1),
                         new(BuildingEnums.MainBuilding, 3),
-                    },
-                BuildingEnums.Stable => new()
-                    {
+                    ],
+                BuildingEnums.Stable =>
+                    [
                         new(BuildingEnums.Academy, 5),
                         new(BuildingEnums.Smithy, 3),
-                    },
-                BuildingEnums.Workshop => new()
-                    {
+                    ],
+                BuildingEnums.Workshop =>
+                    [
                         new(BuildingEnums.Academy, 10),
                         new(BuildingEnums.MainBuilding, 5),
-                    },
-                BuildingEnums.Academy => new()
-                    {
+                    ],
+                BuildingEnums.Academy =>
+                    [
                         new(BuildingEnums.Barracks, 3),
                         new(BuildingEnums.MainBuilding, 3),
-                    },
-                BuildingEnums.TownHall => new()
-                    {
+                    ],
+                BuildingEnums.TownHall =>
+                    [
                         new(BuildingEnums.Academy, 10),
                         new(BuildingEnums.MainBuilding, 10),
-                    },
-                BuildingEnums.Residence => new()
-                    {
+                    ],
+                BuildingEnums.Residence =>
+                    [
                         new(BuildingEnums.MainBuilding, 5),
-                    },
-                BuildingEnums.Palace => new()
-                    {
+                    ],
+                BuildingEnums.Palace =>
+                    [
                         new(BuildingEnums.MainBuilding, 5),
                         new(BuildingEnums.Embassy, 1),
-                    },
-                BuildingEnums.Treasury => new()
-                    {
+                    ],
+                BuildingEnums.Treasury =>
+                    [
                         new(BuildingEnums.MainBuilding, 10),
-                    },
-                BuildingEnums.TradeOffice => new()
-                    {
+                    ],
+                BuildingEnums.TradeOffice =>
+                    [
                         new(BuildingEnums.Stable, 10),
                         new(BuildingEnums.Marketplace, 20),
-                    },
-                BuildingEnums.GreatBarracks => new()
-                    {
+                    ],
+                BuildingEnums.GreatBarracks =>
+                    [
                         new(BuildingEnums.Barracks, 20),
-                    },
-                BuildingEnums.GreatStable => new()
-                    {
+                    ],
+                BuildingEnums.GreatStable =>
+                    [
                         new(BuildingEnums.Stable, 20),
-                    },
-                BuildingEnums.StonemasonsLodge => new()
-                    {
+                    ],
+                BuildingEnums.StonemasonsLodge =>
+                    [
                         new(BuildingEnums.MainBuilding, 5),
-                    },
-                BuildingEnums.Brewery => new()
-                    {
+                    ],
+                BuildingEnums.Brewery =>
+                    [
                         new(BuildingEnums.Granary, 20),
                         new(BuildingEnums.RallyPoint, 10),
-                    },
-                BuildingEnums.Trapper => new()
-                    {
+                    ],
+                BuildingEnums.Trapper =>
+                    [
                         new(BuildingEnums.RallyPoint, 1),
-                    },
-                BuildingEnums.HerosMansion => new()
-                    {
+                    ],
+                BuildingEnums.HerosMansion =>
+                    [
                         new(BuildingEnums.MainBuilding, 3),
                         new(BuildingEnums.RallyPoint, 1),
-                    },
-                BuildingEnums.GreatWarehouse => new()
-                    {
+                    ],
+                BuildingEnums.GreatWarehouse =>
+                    [
                         new(BuildingEnums.MainBuilding, 10),
-                    },
-                BuildingEnums.GreatGranary => new()
-                    {
+                    ],
+                BuildingEnums.GreatGranary =>
+                    [
                         new(BuildingEnums.MainBuilding, 10),
-                    },
-                BuildingEnums.HorseDrinkingTrough => new()
-                    {
+                    ],
+                BuildingEnums.HorseDrinkingTrough =>
+                    [
                         new(BuildingEnums.RallyPoint, 10),
                         new(BuildingEnums.Stable, 20),
-                    },
+                    ],
                 //no res/palace
-                BuildingEnums.CommandCenter => new()
-                    {
+                BuildingEnums.CommandCenter =>
+                    [
                         new(BuildingEnums.MainBuilding, 5),
-                    },
-                BuildingEnums.Waterworks => new()
-                    {
+                    ],
+                BuildingEnums.Waterworks =>
+                    [
                         new(BuildingEnums.HerosMansion, 10),
-                    },
-                _ => new(),
+                    ],
+                BuildingEnums.Hospital =>
+                    [
+                            new(BuildingEnums.MainBuilding, 10),
+                            new(BuildingEnums.Academy, 15),
+                    ],
+                BuildingEnums.Asclepeion =>
+                    [
+                            new(BuildingEnums.MainBuilding, 5),
+                            new(BuildingEnums.Academy, 10),
+                    ],
+                _ => [],
             };
         }
 
@@ -313,6 +327,7 @@ namespace MainCore.Enums
             BuildingEnums.TournamentSquare => 1,
             BuildingEnums.Hospital => 1,
             BuildingEnums.Trapper => 1,
+            BuildingEnums.Asclepeion => 1,
             _ => 0,
         };
 
@@ -381,53 +396,53 @@ namespace MainCore.Enums
 
         private static long[] GetBaseCost(this BuildingEnums building) => building switch
         {
-            BuildingEnums.Woodcutter => new long[] { 40, 100, 50, 60, 2 },
-            BuildingEnums.ClayPit => new long[] { 80, 40, 80, 50, 2 },
-            BuildingEnums.IronMine => new long[] { 100, 80, 30, 60, 3 },
-            BuildingEnums.Cropland => new long[] { 70, 90, 70, 20, 0 },
-            BuildingEnums.Sawmill => new long[] { 520, 380, 290, 90, 4 },
-            BuildingEnums.Brickyard => new long[] { 440, 480, 320, 50, 3 },
-            BuildingEnums.IronFoundry => new long[] { 200, 450, 510, 120, 6 },
-            BuildingEnums.GrainMill => new long[] { 500, 440, 380, 1240, 3 },
-            BuildingEnums.Bakery => new long[] { 1200, 1480, 870, 1600, 4 },
-            BuildingEnums.Warehouse => new long[] { 130, 160, 90, 40, 1 },
-            BuildingEnums.Granary => new long[] { 80, 100, 70, 20, 1 },
-            BuildingEnums.Blacksmith => new long[] { 170, 200, 380, 130, 4 },
-            BuildingEnums.Smithy => new long[] { 130, 210, 410, 130, 4 },
-            BuildingEnums.TournamentSquare => new long[] { 1750, 2250, 1530, 240, 1 },
-            BuildingEnums.MainBuilding => new long[] { 70, 40, 60, 20, 2 },
-            BuildingEnums.RallyPoint => new long[] { 110, 160, 90, 70, 1 },
-            BuildingEnums.Marketplace => new long[] { 80, 70, 120, 70, 4 },
-            BuildingEnums.Embassy => new long[] { 180, 130, 150, 80, 3 },
-            BuildingEnums.Barracks => new long[] { 210, 140, 260, 120, 4 },
-            BuildingEnums.Stable => new long[] { 260, 140, 220, 100, 5 },
-            BuildingEnums.Workshop => new long[] { 460, 510, 600, 320, 3 },
-            BuildingEnums.Academy => new long[] { 220, 160, 90, 40, 4 },
-            BuildingEnums.Cranny => new long[] { 40, 50, 30, 10, 0 },
-            BuildingEnums.TownHall => new long[] { 1250, 1110, 1260, 600, 4 },
-            BuildingEnums.Residence => new long[] { 580, 460, 350, 180, 1 },
-            BuildingEnums.Palace => new long[] { 550, 800, 750, 250, 1 },
-            BuildingEnums.Treasury => new long[] { 2880, 2740, 2580, 990, 4 },
-            BuildingEnums.TradeOffice => new long[] { 1400, 1330, 1200, 400, 3 },
-            BuildingEnums.GreatBarracks => new long[] { 630, 420, 780, 360, 4 },
-            BuildingEnums.GreatStable => new long[] { 780, 420, 660, 300, 5 },
-            BuildingEnums.CityWall => new long[] { 70, 90, 170, 70, 0 },
-            BuildingEnums.EarthWall => new long[] { 120, 200, 0, 80, 0 },
-            BuildingEnums.Palisade => new long[] { 160, 100, 80, 60, 0 },
-            BuildingEnums.StonemasonsLodge => new long[] { 155, 130, 125, 70, 2 },
-            BuildingEnums.Brewery => new long[] { 1460, 930, 1250, 1740, 6 },
-            BuildingEnums.Trapper => new long[] { 100, 100, 100, 100, 4 },
-            BuildingEnums.HerosMansion => new long[] { 700, 670, 700, 240, 2 },
-            BuildingEnums.GreatWarehouse => new long[] { 650, 800, 450, 200, 1 },
-            BuildingEnums.GreatGranary => new long[] { 400, 500, 350, 100, 1 },
-            BuildingEnums.WW => new long[] { 66700, 69050, 72200, 13200, 1 },
-            BuildingEnums.HorseDrinkingTrough => new long[] { 780, 420, 660, 540, 5 },
-            BuildingEnums.StoneWall => new long[] { 110, 160, 70, 60, 0 },
-            BuildingEnums.MakeshiftWall => new long[] { 50, 80, 40, 30, 0 },
-            BuildingEnums.CommandCenter => new long[] { 1600, 1250, 1050, 200, 1 },
-            BuildingEnums.Waterworks => new long[] { 910, 945, 910, 340, 1 },
-            BuildingEnums.Hospital => new long[] { 320, 280, 420, 360, 3 },
-            _ => new long[] { 0, 0, 0, 0, 0 },
+            BuildingEnums.Woodcutter => [40, 100, 50, 60, 2],
+            BuildingEnums.ClayPit => [80, 40, 80, 50, 2],
+            BuildingEnums.IronMine => [100, 80, 30, 60, 3],
+            BuildingEnums.Cropland => [70, 90, 70, 20, 0],
+            BuildingEnums.Sawmill => [520, 380, 290, 90, 4],
+            BuildingEnums.Brickyard => [440, 480, 320, 50, 3],
+            BuildingEnums.IronFoundry => [200, 450, 510, 120, 6],
+            BuildingEnums.GrainMill => [500, 440, 380, 1240, 3],
+            BuildingEnums.Bakery => [1200, 1480, 870, 1600, 4],
+            BuildingEnums.Warehouse => [130, 160, 90, 40, 1],
+            BuildingEnums.Granary => [80, 100, 70, 20, 1],
+            BuildingEnums.Blacksmith => [170, 200, 380, 130, 4],
+            BuildingEnums.Smithy => [130, 210, 410, 130, 4],
+            BuildingEnums.TournamentSquare => [1750, 2250, 1530, 240, 1],
+            BuildingEnums.MainBuilding => [70, 40, 60, 20, 2],
+            BuildingEnums.RallyPoint => [110, 160, 90, 70, 1],
+            BuildingEnums.Marketplace => [80, 70, 120, 70, 4],
+            BuildingEnums.Embassy => [180, 130, 150, 80, 3],
+            BuildingEnums.Barracks => [210, 140, 260, 120, 4],
+            BuildingEnums.Stable => [260, 140, 220, 100, 5],
+            BuildingEnums.Workshop => [460, 510, 600, 320, 3],
+            BuildingEnums.Academy => [220, 160, 90, 40, 4],
+            BuildingEnums.Cranny => [40, 50, 30, 10, 0],
+            BuildingEnums.TownHall => [1250, 1110, 1260, 600, 4],
+            BuildingEnums.Residence => [580, 460, 350, 180, 1],
+            BuildingEnums.Palace => [550, 800, 750, 250, 1],
+            BuildingEnums.Treasury => [2880, 2740, 2580, 990, 4],
+            BuildingEnums.TradeOffice => [1400, 1330, 1200, 400, 3],
+            BuildingEnums.GreatBarracks => [630, 420, 780, 360, 4],
+            BuildingEnums.GreatStable => [780, 420, 660, 300, 5],
+            BuildingEnums.CityWall => [70, 90, 170, 70, 0],
+            BuildingEnums.EarthWall => [120, 200, 0, 80, 0],
+            BuildingEnums.Palisade => [160, 100, 80, 60, 0],
+            BuildingEnums.StonemasonsLodge => [155, 130, 125, 70, 2],
+            BuildingEnums.Brewery => [1460, 930, 1250, 1740, 6],
+            BuildingEnums.Trapper => [100, 100, 100, 100, 4],
+            BuildingEnums.HerosMansion => [700, 670, 700, 240, 2],
+            BuildingEnums.GreatWarehouse => [650, 800, 450, 200, 1],
+            BuildingEnums.GreatGranary => [400, 500, 350, 100, 1],
+            BuildingEnums.WW => [66700, 69050, 72200, 13200, 1],
+            BuildingEnums.HorseDrinkingTrough => [780, 420, 660, 540, 5],
+            BuildingEnums.StoneWall => [110, 160, 70, 60, 0],
+            BuildingEnums.MakeshiftWall => [50, 80, 40, 30, 0],
+            BuildingEnums.CommandCenter => [1600, 1250, 1050, 200, 1],
+            BuildingEnums.Waterworks => [910, 945, 910, 340, 1],
+            BuildingEnums.Hospital => [320, 280, 420, 360, 3],
+            _ => [0, 0, 0, 0, 0],
         };
 
         private static double RoundMul(double v, double n)
@@ -443,11 +458,9 @@ namespace MainCore.Enums
                 .ToArray();
             if (building == BuildingEnums.WW)
             {
-                cost = cost
-                    .Select(x => Math.Min(x, 1e6))
-                    .ToArray();
+                cost = [.. cost.Select(x => Math.Min(x, 1e6))];
             }
-            return cost.Select(x => (long)x).ToArray();
+            return [.. cost.Select(x => (long)x)];
         }
     }
 }
