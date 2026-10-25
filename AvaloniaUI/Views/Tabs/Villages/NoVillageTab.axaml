@@ -1,0 +1,14 @@
+<v:NoVillageTabBase
+    x:Class="AvaloniaUI.Views.Tabs.Villages.NoVillageTab"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:v="using:AvaloniaUI.Views.Tabs.Villages">
+    <Grid Background="#FFE5E5E5">
+        <TextBlock
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Text="Click village on the left side, if no village, login to let bot update village list"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
+    </Grid>
+</v:NoVillageTabBase>
