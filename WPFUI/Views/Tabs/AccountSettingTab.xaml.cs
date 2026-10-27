@@ -15,6 +15,13 @@ namespace WPFUI.Views.Tabs
     /// </summary>
     public partial class AccountSettingTab : AccountSettingTabBase
     {
+        private void OpenTelegram(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (ViewModel is null || ViewModel.AccountId == MainCore.Entities.AccountId.Empty) return;
+            new WPFUI.Views.TelegramSettingsWindow(ViewModel.Telegram, ViewModel.AccountId)
+                { Owner = System.Windows.Window.GetWindow(this) }.ShowDialog();
+        }
+
         public AccountSettingTab()
         {
             InitializeComponent();

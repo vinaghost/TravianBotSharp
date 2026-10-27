@@ -4,7 +4,8 @@ namespace MainCore.Commands.Update
     public sealed partial class UpdateStorageCommand(
         IDbContextFactory<AppDbContext> contextFactory,
         IChromeBrowser browser,
-        TaskManager taskManager)
+        TaskManager taskManager,
+        RxQueue rxQueue)
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
 
@@ -15,6 +16,8 @@ namespace MainCore.Commands.Update
 
             var dto = await StorageParser.GetStorage(browser.CurrentPage);
             UpdateStorage(villageId, dto);
+            rxQueue.Enqueue(new MainCore.Services.Telegram.TelegramVillageScan(accountId, villageId,
+                Storage: new(dto.Wood, dto.Clay, dto.Iron, dto.Crop, dto.Warehouse, dto.Granary)));
             TriggerNpcTask(accountId, villageId);
         }
 

@@ -148,6 +148,9 @@ namespace MainCore.Services
                 {
                     if (result.HasError<Stop>() || result.HasError<Retry>())
                     {
+                        _rxQueue.Enqueue(new MainCore.Services.Telegram.TelegramAlert(accountId, null,
+                            MainCore.Services.Telegram.TelegramEvents.Errors,
+                            "A task failed and the bot is pausing. Open the account's bot log for details.", "error"));
                         var filename = await browser.Screenshot();
                         logger.Information(messageTemplate: "Screenshot saved as {FileName}", filename);
                         _taskManager.SetStatus(accountId, StatusEnums.Paused);
