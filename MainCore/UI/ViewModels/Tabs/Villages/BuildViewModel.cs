@@ -32,8 +32,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Buildings { get; } = new();
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
+        public MainCore.Services.AiPlanning.AiPlannerService AiPlanner { get; }
 
-        public BuildViewModel(DialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
+        public BuildViewModel(DialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, MainCore.Services.AiPlanning.AiPlannerService aiPlanner)
         {
             _dialogService = dialogService;
             _normalBuildInputValidator = normalBuildInputValidator;
@@ -41,6 +42,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             _taskManager = taskManager;
             _rxQueue = rxQueue;
             _contextFactory = contextFactory;
+            AiPlanner = aiPlanner;
 
             Init();
         }
