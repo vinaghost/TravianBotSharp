@@ -24,6 +24,13 @@ namespace MainCore.Commands.Update
 
             UpdateToDatabase(villageId, dtoBuilding, dtoQueueBuilding, tribe);
             Trigger(villageId);
+            using (var context = contextFactory.CreateDbContext())
+            {
+                var account = context.Villages.Where(x => x.Id == villageId.Value).Select(x => (int?)x.AccountId).FirstOrDefault();
+                if (account is int id)
+                    rxQueue.Enqueue(new MainCore.Services.Telegram.TelegramVillageScan(new(id), villageId,
+                        Buildings: dtoBuilding.Select(x => new MainCore.Services.Telegram.ObservedBuilding(x.Location, x.Type, Math.Max(0, x.Level))).ToArray()));
+            }
             return Result.Ok();
         }
 

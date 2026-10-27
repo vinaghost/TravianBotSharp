@@ -37,6 +37,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     if (normalBuildPlan is null)
                     {
                         context.DeleteJobById(job.Id);
+                        NotifyQueueDrained(accountId, villageId, job.Id);
                     }
                     else
                     {
@@ -66,6 +67,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                     {
                         context.DeleteJobById(job.Id);
                     }
+                    NotifyQueueDrained(accountId, villageId, job.Id);
                     rxQueue.Enqueue(new JobsModified(accountId, villageId));
                     continue;
                 }
@@ -75,6 +77,15 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
                 return plan;
             }
+        }
+
+        private void NotifyQueueDrained(AccountId accountId, VillageId villageId, JobId jobId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            if (context.Jobs.Any(x => x.VillageId == villageId.Value)) return;
+            rxQueue.Enqueue(new MainCore.Services.Telegram.TelegramAlert(accountId, villageId,
+                MainCore.Services.Telegram.TelegramEvents.BuildQueueEmpty,
+                "The pending build queue has been dispatched or satisfied. Construction already started in-game may still be running.", $"queue-{jobId}"));
         }
 
         private Result<JobDto> GetJob(AccountId accountId, VillageId villageId)

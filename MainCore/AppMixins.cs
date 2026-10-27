@@ -54,6 +54,8 @@ namespace MainCore
                 services.AddMainCore();
                 services.AddValidatorsFromAssembly(typeof(AppMixins).Assembly, ServiceLifetime.Singleton);
                 services.AddMainCoreHandlers();
+                services.AddSingleton<MainCore.Services.Telegram.ITelegramTransport>(_ => new MainCore.Services.Telegram.TelegramApiClient());
+                services.AddHostedService(sp => sp.GetRequiredService<MainCore.Services.Telegram.TelegramNotificationService>());
 
                 services.AddScoped(sp =>
                 {

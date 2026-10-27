@@ -24,6 +24,8 @@ namespace MainCore.Commands.Update
             if (dtos.Count == 0) return;
 
             UpdateToDatabase(accountId, dtos);
+            foreach (var village in dtos)
+                rxQueue.Enqueue(new MainCore.Services.Telegram.TelegramVillageScan(accountId, village.Id, UnderAttack: village.IsUnderAttack));
             rxQueue.Enqueue(new VillagesModified(accountId));
             TriggerUpdateBuildingTask(accountId);
         }

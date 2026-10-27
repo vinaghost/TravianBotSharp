@@ -57,6 +57,13 @@
             <StackPanel>
                 <Border Style="{DynamicResource Box}">
                     <StackPanel>
+                        <TextBlock FontWeight="Bold" Text="Telegram notifications" />
+                        <TextBlock Text="Choose which events this account sends to your Telegram chat." TextWrapping="Wrap" Margin="0,4,0,8" />
+                        <Button Content="Configure Telegram notifications" Click="OpenTelegram" HorizontalAlignment="Left" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{DynamicResource Box}">
+                    <StackPanel>
                         <TextBlock
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"

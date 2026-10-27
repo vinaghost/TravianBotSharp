@@ -15,14 +15,16 @@ namespace MainCore.UI.ViewModels.Tabs
     public partial class AccountSettingViewModel : AccountTabViewModelBase
     {
         public AccountSettingInput AccountSettingInput { get; } = new();
+        public MainCore.Services.Telegram.TelegramNotificationService Telegram { get; }
 
         private readonly DialogService _dialogService;
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly TaskManager _taskManager;
 
-        public AccountSettingViewModel(DialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, IDbContextFactory<AppDbContext> contextFactory, TaskManager taskManager)
+        public AccountSettingViewModel(DialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, IDbContextFactory<AppDbContext> contextFactory, TaskManager taskManager, MainCore.Services.Telegram.TelegramNotificationService telegram)
         {
+            Telegram = telegram;
             _dialogService = dialogService;
             _accountsettingInputValidator = accountsettingInputValidator;
             _contextFactory = contextFactory;

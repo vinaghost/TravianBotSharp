@@ -24,6 +24,7 @@
 - Auto claim daily quest/ village quest
 - Auto NPC
 - Auto train troop
+- [Telegram notifications](FAQs/telegram-notifications.md) with per-account event selection
 
 ## Tech specification
 

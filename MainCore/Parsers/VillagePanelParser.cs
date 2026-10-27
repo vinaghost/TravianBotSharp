@@ -40,8 +40,8 @@ namespace MainCore.Parsers
                         Name: nameEl ? (nameEl.innerText || nameEl.textContent).trim() : '',
                         CoordinateX: xEl ? (xEl.innerText || xEl.textContent).trim() : '0',
                         CoordinateY: yEl ? (yEl.innerText || yEl.textContent).trim() : '0',
-                        IsActive: node.classList.contains('active'),
-                        IsUnderAttack: node.classList.contains('attack')
+                        Active: node.classList.contains('active'),
+                        UnderAttack: node.classList.contains('attack')
                     });
                 });
                 return result;
