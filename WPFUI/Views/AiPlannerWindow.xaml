@@ -1,0 +1,94 @@
+<Window x:Class="WPFUI.Views.AiPlannerWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="AI village planner" Width="1180" Height="850" MinWidth="900" MinHeight="680"
+    WindowStartupLocation="CenterOwner" Background="#F5F7FA" Closing="OnClosing">
+    <Window.Resources>
+        <Style TargetType="TextBlock"><Setter Property="Foreground" Value="#203047" /></Style>
+        <Style x:Key="FieldLabel" TargetType="TextBlock"><Setter Property="Margin" Value="0,10,0,4" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+    </Window.Resources>
+    <Grid Margin="20">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <StackPanel Margin="0,0,0,14">
+            <TextBlock Text="Build toward your next goal" FontSize="24" FontWeight="SemiBold" />
+            <TextBlock Text="Pause the account first. Analyze reads the live village and sends its gameplay data and guide context to your selected AI provider." TextWrapping="Wrap" Margin="0,6,0,0" />
+        </StackPanel>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="305" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+            <Border Background="White" CornerRadius="8" Padding="16">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="OptionsPanel">
+                        <TextBlock Text="AI provider" Style="{StaticResource FieldLabel}" />
+                        <ComboBox x:Name="ProviderBox" SelectionChanged="ProviderChanged"><ComboBoxItem Content="OpenRouter" /><ComboBoxItem Content="OpenAI" /></ComboBox>
+                        <TextBlock Text="API key" Style="{StaticResource FieldLabel}" />
+                        <PasswordBox x:Name="KeyBox" ToolTip="Sent only to the selected provider as an authorization header." />
+                        <CheckBox x:Name="RememberKey" Content="Remember key on this Windows account" Margin="0,8,0,4" />
+                        <Button Content="Forget saved key" Click="ForgetKey" HorizontalAlignment="Left" Margin="0,2,0,4" />
+                        <CheckBox x:Name="FreeOnlyBox" Content="Free models only (OpenRouter)" IsChecked="True" Checked="OptionChanged" Unchecked="OptionChanged" Margin="0,10,0,4" />
+                        <TextBlock Text="Model" Style="{StaticResource FieldLabel}" />
+                        <ComboBox x:Name="ModelBox" IsEditable="True" DisplayMemberPath="Id" TextBoxBase.TextChanged="OptionChanged" />
+                        <Button Content="Test key / refresh models" Click="LoadModels" Margin="0,8,0,0" />
+                        <TextBlock Text="Goal" Style="{StaticResource FieldLabel}" />
+                        <ComboBox x:Name="GoalBox" SelectionChanged="OptionChanged">
+                            <ComboBoxItem Content="New village — prepare another settlement" />
+                            <ComboBoxItem Content="Offensive Army" /><ComboBoxItem Content="Defensive Army" />
+                            <ComboBoxItem Content="Conqueror — catapults and chiefs" /><ComboBoxItem Content="Production" />
+                        </ComboBox>
+                        <TextBlock Text="Queue action" Style="{StaticResource FieldLabel}" />
+                        <ComboBox x:Name="ModeBox" SelectionChanged="OptionChanged"><ComboBoxItem Content="Append after existing jobs" /><ComboBoxItem Content="Replace pending jobs" /></ComboBox>
+                        <TextBlock Text="Active construction is always preserved." FontSize="11" Margin="0,5,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="Existing gold, NPC and hero-resource settings still control execution." FontSize="11" Margin="0,5,0,0" TextWrapping="Wrap" />
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="10" /><ColumnDefinition /></Grid.ColumnDefinitions>
+                            <StackPanel><TextBlock Text="Max upgrades" /><TextBox x:Name="StepsBox" Text="25" TextChanged="OptionChanged" Margin="0,5,0,0" /></StackPanel>
+                            <StackPanel Grid.Column="2"><TextBlock Text="Horizon (hours)" /><TextBox x:Name="HoursBox" Text="24" TextChanged="OptionChanged" Margin="0,5,0,0" /></StackPanel>
+                        </Grid>
+                        <TextBlock Text="Server speed" Style="{StaticResource FieldLabel}" /><TextBox x:Name="SpeedBox" Text="1" TextChanged="OptionChanged" />
+                        <TextBlock Text="Capital status" Style="{StaticResource FieldLabel}" />
+                        <ComboBox x:Name="CapitalBox" SelectionChanged="OptionChanged"><ComboBoxItem Content="Unknown" /><ComboBoxItem Content="Capital" /><ComboBoxItem Content="Not capital" /></ComboBox>
+                        <TextBlock Text="Additional situation / preferences" Style="{StaticResource FieldLabel}" />
+                        <TextBox x:Name="SituationBox" AcceptsReturn="True" TextWrapping="Wrap" Height="110" MaxLength="4000" VerticalScrollBarVisibility="Auto" TextChanged="OptionChanged" />
+                        <TextBlock Text="For settlement: include culture points, occupied expansion slots and settlers already trained. For armies: include troop mix, research and crop support. Unknown values stay unknown." FontSize="11" TextWrapping="Wrap" Margin="0,6,0,0" />
+                        <TextBlock Text="One request per analysis; up to 6,000 output tokens. Paid models use your API balance. No automatic paid fallback." FontSize="11" TextWrapping="Wrap" Margin="0,10,0,0" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+            <Border Grid.Column="2" Background="White" CornerRadius="8" Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="3*" /><RowDefinition Height="2*" /></Grid.RowDefinitions>
+                    <StackPanel Margin="0,0,0,10"><TextBlock Text="Queue preview" FontSize="18" FontWeight="SemiBold" /><TextBlock x:Name="SummaryText" Text="Choose a goal and analyze your village." TextWrapping="Wrap" Margin="0,5,0,0" /></StackPanel>
+                    <DataGrid Grid.Row="1" x:Name="StepsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False" CanUserSortColumns="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" SelectionMode="Single">
+                        <DataGrid.ColumnHeaderStyle><Style TargetType="DataGridColumnHeader"><Setter Property="Padding" Value="6,10" /></Style></DataGrid.ColumnHeaderStyle>
+                        <DataGrid.CellStyle><Style TargetType="DataGridCell"><Setter Property="Padding" Value="6,8" /><Setter Property="VerticalContentAlignment" Value="Top" /></Style></DataGrid.CellStyle>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding Order}" Width="30" />
+                            <DataGridTextColumn Header="Slot" Binding="{Binding Slot}" Width="40" />
+                            <DataGridTextColumn Header="Building" Binding="{Binding Building}" Width="115" />
+                            <DataGridTextColumn Header="From" Binding="{Binding FromLevel}" Width="45" />
+                            <DataGridTextColumn Header="To" Binding="{Binding TargetLevel}" Width="35" />
+                            <DataGridTextColumn Header="Cost: wood / clay / iron / crop" Binding="{Binding Cost}" Width="215" />
+                            <DataGridTextColumn Header="Why" Binding="{Binding Reason}" Width="*" MinWidth="180">
+                                <DataGridTextColumn.ElementStyle><Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap" /></Style></DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TabControl Grid.Row="2" Margin="0,12,0,0">
+                        <TabItem Header="Analysis"><TextBox x:Name="AnalysisText" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="8" /></TabItem>
+                        <TabItem Header="Validation"><TextBox x:Name="ValidationText" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="8" /></TabItem>
+                        <TabItem Header="Sources"><TextBox x:Name="SourcesText" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="8" /></TabItem>
+                    </TabControl>
+                </Grid>
+            </Border>
+        </Grid>
+        <Grid Grid.Row="2" Margin="0,14,0,0">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <TextBlock x:Name="StatusText" Text="Ready. Preview does not change the queue." TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,12,0" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button x:Name="CancelButton" Content="Cancel request" Click="CancelRequest" IsEnabled="False" Margin="0,0,8,0" />
+                <Button x:Name="UndoButton" Content="Undo apply" Click="UndoApply" IsEnabled="False" Margin="0,0,8,0" />
+                <Button x:Name="AnalyzeButton" Content="Analyze village" Click="AnalyzeVillage" Margin="0,0,8,0" />
+                <Button x:Name="ApplyButton" Content="Apply queue" Click="ApplyQueue" IsEnabled="False" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

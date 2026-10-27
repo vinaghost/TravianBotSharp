@@ -16,6 +16,16 @@ namespace WPFUI.Views.Tabs.Villages
     /// </summary>
     public partial class BuildTab : BuildTabBase
     {
+        private void OpenAiPlanner(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (ViewModel is null || ViewModel.AccountId == MainCore.Entities.AccountId.Empty || ViewModel.VillageId == MainCore.Entities.VillageId.Empty) return;
+            var window = new WPFUI.Views.AiPlannerWindow(ViewModel.AiPlanner, ViewModel.AccountId, ViewModel.VillageId)
+            {
+                Owner = System.Windows.Window.GetWindow(this)
+            };
+            window.ShowDialog();
+        }
+
         public BuildTab()
         {
             InitializeComponent();

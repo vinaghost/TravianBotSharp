@@ -19,6 +19,7 @@
 
 - Multi-account support
 - Auto builder (support use resource from hero inventory, instant upgrade)
+- [AI village planner](FAQs/ai-planner.md) with OpenRouter/OpenAI and queue preview/apply
 - Auto start adventures
 - Auto start farm lists
 - Auto claim daily quest/ village quest
