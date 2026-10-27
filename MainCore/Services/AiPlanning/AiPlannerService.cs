@@ -17,8 +17,7 @@ namespace MainCore.Services.AiPlanning
             if (!await _operation.WaitAsync(0, token)) throw new InvalidOperationException("Another planner operation is running. Wait for it to finish.");
             try
             {
-                progress?.Report("Refreshing village fields, buildings and resources…");
-                var snapshot = await new PlannerSnapshotService(factory, scopes, tasks).RefreshAsync(accountId, villageId, token);
+                var snapshot = await new PlannerSnapshotService(factory, scopes, tasks).RefreshAsync(accountId, villageId, token, progress);
                 // Reject an unprojectable pending queue before spending tokens.
                 PlannerValidator.Project(snapshot, options.ApplyMode);
                 progress?.Report("Checking model availability and loading guide context…");
@@ -34,7 +33,7 @@ namespace MainCore.Services.AiPlanning
             finally { _operation.Release(); }
         }
 
-        public async Task<int> ApplyAsync(PlannerPreview preview, CancellationToken token)
+        public async Task<int> ApplyAsync(PlannerPreview preview, CancellationToken token, IProgress<string>? progress = null)
         {
             if (!await _operation.WaitAsync(0, token)) throw new InvalidOperationException("Another planner operation is running.");
             try
@@ -42,7 +41,7 @@ namespace MainCore.Services.AiPlanning
                 var accountId = new AccountId(preview.Snapshot.AccountId);
                 var villageId = new VillageId(preview.Snapshot.VillageId);
                 var snapshots = new PlannerSnapshotService(factory, scopes, tasks);
-                var current = await snapshots.RefreshAsync(accountId, villageId, token);
+                var current = await snapshots.RefreshAsync(accountId, villageId, token, progress);
                 if (current.Revision != preview.Snapshot.Revision) throw new InvalidOperationException("The live village changed since this preview. Analyze again before applying.");
                 token.ThrowIfCancellationRequested();
                 snapshots.EnsurePaused(accountId);

@@ -126,8 +126,10 @@ namespace WPFUI.Views
             {
                 var options = ReadOptions();
                 SaveSettings(options);
+                using var progress = new PlannerProgress(message => StatusText.Text = message);
                 _preview = await _service.AnalyzeAsync(_accountId, _villageId, options, KeyBox.Password,
-                    new Progress<string>(message => StatusText.Text = message), token);
+                    progress, token);
+                progress.Dispose();
                 DisplayPreview(_preview);
             });
         }
@@ -161,8 +163,9 @@ namespace WPFUI.Views
                 "Apply preview", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
             await RunAsync(async token =>
             {
-                StatusText.Text = "Refreshing the village and checking the preview before applying…";
-                var count = await _service.ApplyAsync(preview, token);
+                using var progress = new PlannerProgress(message => StatusText.Text = message);
+                var count = await _service.ApplyAsync(preview, token, progress);
+                progress.Dispose();
                 _appliedId = preview.PlanId;
                 _preview = null;
                 StatusText.Text = $"Applied {count} upgrades. Resume the account when ready. Undo is available until pending jobs change.";

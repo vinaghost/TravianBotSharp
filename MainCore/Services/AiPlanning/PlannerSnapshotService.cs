@@ -14,9 +14,15 @@ namespace MainCore.Services.AiPlanning
                 throw new InvalidOperationException("Pause this account and wait for its current task to finish before using the planner.");
         }
 
-        public async Task<VillageSnapshot> RefreshAsync(AccountId accountId, VillageId villageId, CancellationToken token)
+        public async Task<VillageSnapshot> RefreshAsync(AccountId accountId, VillageId villageId, CancellationToken token, IProgress<string>? progress = null)
         {
             EnsurePaused(accountId);
+            void Report(string message)
+            {
+                token.ThrowIfCancellationRequested();
+                progress?.Report(message);
+            }
+            Report("Checking the village browser session…");
             using var scope = scopes.CreateScope(accountId);
             var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
             if (!browser.IsInitialized || !await LoginParser.IsIngamePage(browser.CurrentPage))
@@ -24,10 +30,11 @@ namespace MainCore.Services.AiPlanning
             using (var db = factory.CreateDbContext())
                 if (!db.Villages.Any(x => x.Id == villageId.Value && x.AccountId == accountId.Value))
                     throw new InvalidOperationException("The selected village does not belong to this account.");
-            token.ThrowIfCancellationRequested();
+            Report("Selecting the village…");
             Check(await scope.ServiceProvider.GetRequiredService<SwitchVillageCommand.Handler>().HandleAsync(new(villageId), token));
             var navigate = scope.ServiceProvider.GetRequiredService<ToDorfCommand.Handler>();
             var update = scope.ServiceProvider.GetRequiredService<UpdateBuildingCommand.Handler>();
+            Report("Refreshing resource fields…");
             Check(await navigate.HandleAsync(new(1), token));
             // Force a fresh read even when navigation was already on dorf1.
             Check(await browser.Refresh());
@@ -36,11 +43,13 @@ namespace MainCore.Services.AiPlanning
                 throw new InvalidOperationException("Could not read the current resource fields. Check the bot browser and try again.");
             Check(await update.HandleAsync(new(villageId), token));
             var production = await ReadProductionAsync(browser.CurrentPage);
+            Report("Refreshing village buildings and construction…");
             Check(await navigate.HandleAsync(new(2), token));
             var center = await BuildingLayoutParser.GetInfrastructures(browser.CurrentPage);
             if (center.Count < 20 || center.Any(x => x.Location is < 19 or > 40 || x.Type == BuildingEnums.Unknown))
                 throw new InvalidOperationException("Could not read the current village center. Check the bot browser and try again.");
             Check(await update.HandleAsync(new(villageId), token));
+            Report("Reading account details, resources and attack status…");
             await scope.ServiceProvider.GetRequiredService<UpdateAccountInfoCommand.Handler>().HandleAsync(new(accountId), token);
             await scope.ServiceProvider.GetRequiredService<UpdateStorageCommand.Handler>().HandleAsync(new(accountId, villageId), token);
             var underAttack = await ReadAttackStatusAsync(browser.CurrentPage, villageId);
