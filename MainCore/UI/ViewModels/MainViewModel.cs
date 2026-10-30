@@ -59,19 +59,59 @@ namespace MainCore.UI.ViewModels
 
         private static void CheckDriver()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                throw new PlatformNotSupportedException("Your operating system is not supported.");
+            Version chromeVersion;
 
-            string chromePath = Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe", null, null) as string ?? throw new Exception("Google Chrome not found in registry");
-            var fileVersionInfo = FileVersionInfo.GetVersionInfo(chromePath);
-            if (fileVersionInfo.FileVersion is null)
+            var chromeVersionString = GetChromePath("HKEY_CURRENT_USER\\SOFTWARE\\Google\\Chrome\\BLBeacon", "version");
+            if (!string.IsNullOrEmpty(chromeVersionString))
             {
-                throw new Exception("Failed to get chrome version");
+                chromeVersion = new Version(chromeVersionString);
             }
-            var chromeVersion = new Version(fileVersionInfo.FileVersion);
+            else
+            {
+                chromeVersionString = GetChromePath("HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Google Chrome", "version");
+                if (!string.IsNullOrEmpty(chromeVersionString))
+                {
+                    chromeVersion = new Version(chromeVersionString);
+                }
+                else
+                {
+                    var chromePath = GetChromePath("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe");
+                    if (!string.IsNullOrEmpty(chromePath))
+                    {
+                        FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(chromePath);
+                        if (!string.IsNullOrEmpty(fileVersionInfo.FileVersion))
+                        {
+                            chromeVersion = new Version(fileVersionInfo.FileVersion);
+                        }
+                        else
+                        {
+                            throw new Exception($"Chrome is installed but failed to get chrome version [{fileVersionInfo.FileVersion}]");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Chrome is not installed");
+                    }
+                }
+            }
+
             if (chromeVersion.Major <= 114)
             {
                 throw new Exception($"Your chrome version is {chromeVersion}. Please update your chrome first");
+            }
+        }
+
+        private static string? GetChromePath(string registryPath, string? valueName = null)
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                throw new PlatformNotSupportedException("Your operating system is not supported.");
+            try
+            {
+                return Registry.GetValue(registryPath, valueName, null) as string;
+            }
+            catch
+            {
+                return null;
             }
         }
     }
