@@ -3,7 +3,11 @@
     [Handler]
     public sealed partial class UseHeroItemCommand(IChromeBrowser browser, ILogger logger)
     {
-        public sealed record Command(Dictionary<HeroItemEnums, long> ItemToUse) : ICommand;
+        public sealed record Command(Dictionary<HeroItemEnums, long> ItemToUse) : ICommand
+        {
+            public string Name => $"{nameof(UseHeroItemCommand)} {Description}";
+            private string Description => $"{string.Join(", ", ItemToUse.Select(x => $"{x.Value} {x.Key}"))}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {

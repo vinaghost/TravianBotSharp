@@ -5,7 +5,11 @@ namespace MainCore.Commands.Misc
     [Handler]
     public sealed partial class OpenBrowserCommand(IChromeBrowser browser, IDbContextFactory<AppDbContext> contextFactory)
     {
-        public sealed record Command(AccountId AccountId, AccessDto Access) : IAccountCommand;
+        public sealed record Command(AccountId AccountId, AccessDto Access) : IAccountCommand
+        {
+            public string Name => $"{nameof(OpenBrowserCommand)} [{Description}]";
+            private string Description => $"{Access.ProxyHost}";
+        }
 
         private async ValueTask HandleAsync(Command command)
         {

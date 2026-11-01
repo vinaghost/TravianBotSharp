@@ -6,7 +6,10 @@ namespace MainCore.Commands.Update
         IDbContextFactory<AppDbContext> contextFactory,
         RxQueue rxQueue)
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand;
+        public sealed record Command(AccountId AccountId) : IAccountCommand
+        {
+            public string Name => "";
+        }
 
         private async ValueTask<Result> HandleAsync(
             Command command)

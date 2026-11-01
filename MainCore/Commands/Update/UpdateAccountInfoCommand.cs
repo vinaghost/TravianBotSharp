@@ -5,7 +5,10 @@
         IChromeBrowser browser,
         IDbContextFactory<AppDbContext> contextFactory)
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand;
+        public sealed record Command(AccountId AccountId) : IAccountCommand
+        {
+            public string Name => "";
+        }
 
         private async ValueTask HandleAsync(Command command)
         {

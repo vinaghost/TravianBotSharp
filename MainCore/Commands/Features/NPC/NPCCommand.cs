@@ -3,7 +3,11 @@
     [Handler]
     public static partial class NPCCommand
     {
-        public sealed record Command(IChromeBrowser Browser, long[] Values);
+        public sealed record Command(IChromeBrowser Browser, long[] Values) : ICommand
+        {
+            public string Name => $"{nameof(NPCCommand)} [{Description}]";
+            private string Description => $"{string.Join(", ", Values)}";
+        }
 
         private static async ValueTask<Result> HandleAsync(Command command)
         {

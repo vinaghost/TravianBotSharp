@@ -5,7 +5,11 @@ namespace MainCore.Commands.Navigate
     [Handler]
     public sealed partial class ToBuildingByLocationCommand(IChromeBrowser browser)
     {
-        public sealed record Command(int Location) : ICommand;
+        public sealed record Command(int Location) : ICommand
+        {
+            public string Name => $"{nameof(ToBuildingByLocationCommand)} [{Description}]";
+            private string Description => $"{Location}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {

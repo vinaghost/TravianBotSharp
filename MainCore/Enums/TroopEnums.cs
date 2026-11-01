@@ -111,153 +111,159 @@
 
     public static class TroopExtension
     {
-        public static TribeEnums GetTribe(this TroopEnums troop)
+        extension(TroopEnums troop)
         {
-            return (int)troop switch
+            public TribeEnums GetTribe()
             {
-                >= (int)TroopEnums.Legionnaire and <= (int)TroopEnums.RomanSettler => TribeEnums.Romans,
-                >= (int)TroopEnums.Clubswinger and <= (int)TroopEnums.TeutonSettler => TribeEnums.Teutons,
-                >= (int)TroopEnums.Phalanx and <= (int)TroopEnums.GaulSettler => TribeEnums.Gauls,
-                >= (int)TroopEnums.Rat and <= (int)TroopEnums.Elephant => TribeEnums.Nature,
-                >= (int)TroopEnums.Pikeman and <= (int)TroopEnums.Settler => TribeEnums.Natars,
-                >= (int)TroopEnums.SlaveMilitia and <= (int)TroopEnums.EgyptianSettler => TribeEnums.Egyptians,
-                >= (int)TroopEnums.Mercenary and <= (int)TroopEnums.HunSettler => TribeEnums.Huns,
-                >= (int)TroopEnums.Hoplite and <= (int)TroopEnums.CorinthianCrusher => TribeEnums.Spartan,
-                _ => TribeEnums.Any,
-            };
+                return (int)troop switch
+                {
+                    >= (int)TroopEnums.Legionnaire and <= (int)TroopEnums.RomanSettler => TribeEnums.Romans,
+                    >= (int)TroopEnums.Clubswinger and <= (int)TroopEnums.TeutonSettler => TribeEnums.Teutons,
+                    >= (int)TroopEnums.Phalanx and <= (int)TroopEnums.GaulSettler => TribeEnums.Gauls,
+                    >= (int)TroopEnums.Rat and <= (int)TroopEnums.Elephant => TribeEnums.Nature,
+                    >= (int)TroopEnums.Pikeman and <= (int)TroopEnums.Settler => TribeEnums.Natars,
+                    >= (int)TroopEnums.SlaveMilitia and <= (int)TroopEnums.EgyptianSettler => TribeEnums.Egyptians,
+                    >= (int)TroopEnums.Mercenary and <= (int)TroopEnums.HunSettler => TribeEnums.Huns,
+                    >= (int)TroopEnums.Hoplite and <= (int)TroopEnums.SpartanSettler => TribeEnums.Spartan,
+                    _ => TribeEnums.Any,
+                };
+            }
         }
 
-        public static List<TroopEnums> GetInfantryTroops(this TribeEnums tribe)
+        extension(TribeEnums tribe)
         {
-            return tribe switch
+            public List<TroopEnums> GetInfantryTroops()
             {
-                TribeEnums.Romans =>
-                [
-                    TroopEnums.Legionnaire,
+                return tribe switch
+                {
+                    TribeEnums.Romans =>
+                    [
+                        TroopEnums.Legionnaire,
                     TroopEnums.Praetorian,
                     TroopEnums.Imperian,
                 ],
-                TribeEnums.Teutons =>
-                [
-                    TroopEnums.Clubswinger,
+                    TribeEnums.Teutons =>
+                    [
+                        TroopEnums.Clubswinger,
                     TroopEnums.Spearman,
                     TroopEnums.Axeman,
                     TroopEnums.Scout,
                 ],
-                TribeEnums.Gauls =>
-                [
-                   TroopEnums.Phalanx,
+                    TribeEnums.Gauls =>
+                    [
+                       TroopEnums.Phalanx,
                     TroopEnums.Swordsman,
                 ],
-                TribeEnums.Nature => [],
-                TribeEnums.Natars => [],
-                TribeEnums.Egyptians =>
-                [
-                    TroopEnums.SlaveMilitia,
+                    TribeEnums.Nature => [],
+                    TribeEnums.Natars => [],
+                    TribeEnums.Egyptians =>
+                    [
+                        TroopEnums.SlaveMilitia,
                     TroopEnums.AshWarden,
                     TroopEnums.KhopeshWarrior,
                 ],
-                TribeEnums.Huns =>
-                [
-                    TroopEnums.Mercenary,
+                    TribeEnums.Huns =>
+                    [
+                        TroopEnums.Mercenary,
                     TroopEnums.Bowman,
                 ],
-                TribeEnums.Spartan =>
-                [
-                    TroopEnums.Hoplite,
+                    TribeEnums.Spartan =>
+                    [
+                        TroopEnums.Hoplite,
                     TroopEnums.Sentinel,
                     TroopEnums.Shieldsman,
                     TroopEnums.TwinsteelTherion,
                 ],
-                _ => [],
-            };
-        }
+                    _ => [],
+                };
+            }
 
-        public static List<TroopEnums> GetCavalryTroops(this TribeEnums tribe)
-        {
-            return tribe switch
+            public List<TroopEnums> GetCavalryTroops()
             {
-                TribeEnums.Romans =>
-                [
-                    TroopEnums.EquitesLegati,
+                return tribe switch
+                {
+                    TribeEnums.Romans =>
+                    [
+                        TroopEnums.EquitesLegati,
                     TroopEnums.EquitesImperatoris,
                     TroopEnums.EquitesCaesaris,
                 ],
-                TribeEnums.Teutons =>
-                [
-                    TroopEnums.Paladin,
+                    TribeEnums.Teutons =>
+                    [
+                        TroopEnums.Paladin,
                     TroopEnums.TeutonicKnight,
                 ],
-                TribeEnums.Gauls =>
-                [
-                    TroopEnums.Pathfinder,
+                    TribeEnums.Gauls =>
+                    [
+                        TroopEnums.Pathfinder,
                     TroopEnums.TheutatesThunder,
                     TroopEnums.Druidrider,
                     TroopEnums.Haeduan,
                 ],
-                TribeEnums.Nature => [],
-                TribeEnums.Natars => [],
-                TribeEnums.Egyptians =>
-                [
-                    TroopEnums.SopduExplorer,
+                    TribeEnums.Nature => [],
+                    TribeEnums.Natars => [],
+                    TribeEnums.Egyptians =>
+                    [
+                        TroopEnums.SopduExplorer,
                     TroopEnums.AnhurGuard,
                     TroopEnums.ReshephChariot,
                 ],
-                TribeEnums.Huns =>
-                [
-                    TroopEnums.Spotter,
+                    TribeEnums.Huns =>
+                    [
+                        TroopEnums.Spotter,
                     TroopEnums.SteppeRider,
                     TroopEnums.Marksman,
                     TroopEnums.Marauder,
                 ],
 
-                TribeEnums.Spartan =>
-                [
-                    TroopEnums.ElpidaRider,
+                    TribeEnums.Spartan =>
+                    [
+                        TroopEnums.ElpidaRider,
                     TroopEnums.CorinthianCrusher,
                 ],
-                _ => [],
-            };
-        }
+                    _ => [],
+                };
+            }
 
-        public static List<TroopEnums> GetSiegeTroops(this TribeEnums tribe)
-        {
-            return tribe switch
+            public List<TroopEnums> GetSiegeTroops()
             {
-                TribeEnums.Romans =>
-                [
-                    TroopEnums.RomanRam,
+                return tribe switch
+                {
+                    TribeEnums.Romans =>
+                    [
+                        TroopEnums.RomanRam,
                     TroopEnums.RomanCatapult,
                 ],
-                TribeEnums.Teutons =>
-                [
-                    TroopEnums.TeutonRam,
+                    TribeEnums.Teutons =>
+                    [
+                        TroopEnums.TeutonRam,
                     TroopEnums.TeutonCatapult,
                 ],
-                TribeEnums.Gauls =>
-                [
-                    TroopEnums.GaulRam,
+                    TribeEnums.Gauls =>
+                    [
+                        TroopEnums.GaulRam,
                     TroopEnums.GaulCatapult,
                 ],
-                TribeEnums.Nature => [],
-                TribeEnums.Natars => [],
-                TribeEnums.Egyptians =>
-                [
-                    TroopEnums.EgyptianRam,
+                    TribeEnums.Nature => [],
+                    TribeEnums.Natars => [],
+                    TribeEnums.Egyptians =>
+                    [
+                        TroopEnums.EgyptianRam,
                     TroopEnums.EgyptianCatapult
-                ],
-                TribeEnums.Huns =>
-                [
-                    TroopEnums.HunRam,
+                    ],
+                    TribeEnums.Huns =>
+                    [
+                        TroopEnums.HunRam,
                     TroopEnums.HunCatapult,
                 ],
-                TribeEnums.Spartan =>
-                [
-                    TroopEnums.SpartanRam,
+                    TribeEnums.Spartan =>
+                    [
+                        TroopEnums.SpartanRam,
                     TroopEnums.SpartanCatapult,
                 ],
-                _ => [],
-            };
+                    _ => [],
+                };
+            }
         }
     }
 }

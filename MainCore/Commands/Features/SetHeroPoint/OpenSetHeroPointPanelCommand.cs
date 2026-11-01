@@ -5,7 +5,10 @@ namespace MainCore.Commands.Features.SetHeroPoint
     [Handler]
     public sealed partial class OpenSetPointPanelCommand(SwitchTabCommand.Handler switchTabCommand)
     {
-        public sealed record Command(IChromeBrowser Browser);
+        public sealed record Command(IChromeBrowser Browser) : ICommand
+        {
+            public string Name => nameof(OpenSetPointPanelCommand);
+        }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {

@@ -3,7 +3,10 @@
     [Handler]
     public sealed partial class ExploreAdeventureCommand(ILogger logger)
     {
-        public sealed record Command(IChromeBrowser Browser);
+        public sealed record Command(IChromeBrowser Browser) : ICommand
+        {
+            public string Name => nameof(ExploreAdeventureCommand);
+        }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {

@@ -10,7 +10,11 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         SwitchTabCommand.Handler switchTabCommand,
         IDbContextFactory<AppDbContext> contextFactory)
     {
-        public sealed record Command(VillageId VillageId, NormalBuildPlan Plan) : IVillageCommand;
+        public sealed record Command(VillageId VillageId, NormalBuildPlan Plan) : IVillageCommand
+        {
+            public string Name => $"{nameof(ToBuildPageCommand)} [{Description}]";
+            private string Description => $"{Plan}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {

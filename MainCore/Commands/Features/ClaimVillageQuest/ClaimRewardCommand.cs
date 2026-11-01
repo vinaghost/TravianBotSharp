@@ -5,7 +5,10 @@ namespace MainCore.Commands.Features.ClaimVillageQuest
     [Handler]
     public sealed partial class ClaimRewardCommand(SwitchTabCommand.Handler switchTabCommand)
     {
-        public sealed record Command(IChromeBrowser Browser);
+        public sealed record Command(IChromeBrowser Browser) : ICommand
+        {
+            public string Name => nameof(ClaimRewardCommand);
+        }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {

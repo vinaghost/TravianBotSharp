@@ -5,7 +5,10 @@ namespace MainCore.Commands.Features.NPC
     [Handler]
     public sealed partial class OpenNPCPanelCommand(SwitchTabCommand.Handler switchTabCommand)
     {
-        public sealed record Command(IChromeBrowser Browser);
+        public sealed record Command(IChromeBrowser Browser) : ICommand
+        {
+            public string Name => nameof(OpenNPCPanelCommand);
+        }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {

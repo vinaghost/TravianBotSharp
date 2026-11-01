@@ -3,7 +3,11 @@
     [Handler]
     public sealed partial class SwitchVillageCommand(IChromeBrowser browser)
     {
-        public sealed record Command(VillageId VillageId) : IVillageCommand;
+        public sealed record Command(VillageId VillageId) : IVillageCommand
+        {
+            public string Name => $"{nameof(SwitchVillageCommand)} [{Description}]";
+            private string Description => $"{VillageId}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {

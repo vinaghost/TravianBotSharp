@@ -6,7 +6,10 @@ namespace MainCore.Commands.Update
         IChromeBrowser browser,
         TaskManager taskManager)
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand
+        {
+            public string Name => "";
+        }
 
         private async ValueTask HandleAsync(
             Command command)

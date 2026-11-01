@@ -12,7 +12,10 @@ namespace MainCore.Commands.Navigate
         ToBuildingByLocationCommand.Handler toBuildingCommand,
         SwitchTabCommand.Handler switchTabCommand)
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand;
+        public sealed record Command(AccountId AccountId) : IAccountCommand
+        {
+            public string Name => $"{nameof(ToFarmListPageCommand)}";
+        }
 
         private async ValueTask<Result> HandleAsync(
             Command command,

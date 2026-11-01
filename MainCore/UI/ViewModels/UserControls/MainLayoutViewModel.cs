@@ -16,6 +16,8 @@ namespace MainCore.UI.ViewModels.UserControls
     using ReactiveUI.Primitives.Extensions;
     using ReactiveUI.Primitives.Signals;
 
+    using Serilog;
+
     [RegisterSingleton<MainLayoutViewModel>]
     public partial class MainLayoutViewModel : ViewModelBase
     {
@@ -212,16 +214,18 @@ namespace MainCore.UI.ViewModels.UserControls
             }
 
             _taskManager.SetStatus(accountId, StatusEnums.Starting);
+            using var scope = _serviceScopeFactory.CreateScope(accountId);
 
             try
             {
-                using var scope = _serviceScopeFactory.CreateScope(accountId);
                 var openBrowserCommand = scope.ServiceProvider.GetRequiredService<OpenBrowserCommand.Handler>();
                 await openBrowserCommand.HandleAsync(new(accountId, result.Value));
             }
             catch (Exception ex)
             {
                 await _dialogService.SendMessage("Error", $"Failed to open browser: {ex.Message}");
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger>();
+                logger.Error(ex, "Failed to open browser for account {AccountId}", accountId);
                 _taskManager.SetStatus(accountId, StatusEnums.Offline);
                 return;
             }
