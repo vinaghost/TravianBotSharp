@@ -3,7 +3,11 @@
     [Handler]
     public sealed partial class SwitchTabCommand(IChromeBrowser browser)
     {
-        public sealed record Command(int TabIndex) : ICommand;
+        public sealed record Command(int TabIndex) : ICommand
+        {
+            public string Name => $"{nameof(SwitchTabCommand)} [{Description}]";
+            private string Description => $"#{TabIndex + 1}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {

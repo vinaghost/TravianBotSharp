@@ -8,7 +8,11 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         IDbContextFactory<AppDbContext> contextFactory,
         ILogger logger)
     {
-        public sealed record Command(VillageId VillageId, NormalBuildPlan Plan) : IVillageCommand;
+        public sealed record Command(VillageId VillageId, NormalBuildPlan Plan) : IVillageCommand
+        {
+            public string Name => $"{nameof(HandleUpgradeCommand)} [{Description}]";
+            private string Description => $"{Plan}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {
@@ -101,7 +105,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         {
             if (repeat)
             {
-                return Result.Fail("Special upgrade failed after retrying.");
+                return Retry.Error.WithError("Special upgrade failed after retrying.");
             }
 
             var page = browser.CurrentPage;

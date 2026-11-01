@@ -14,7 +14,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         ILogger logger,
         RxQueue rxQueue)
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand
+        {
+            public string Name => $"{nameof(GetBuildPlanCommand)}";
+        }
 
         private async ValueTask<Result<NormalBuildPlan>> HandleAsync(Command command, CancellationToken cancellationToken)
         {

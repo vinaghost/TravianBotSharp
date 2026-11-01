@@ -3,7 +3,11 @@
     [Handler]
     public sealed partial class ToDorfCommand(IChromeBrowser browser)
     {
-        public sealed record Command(int Dorf) : ICommand;
+        public sealed record Command(int Dorf) : ICommand
+        {
+            public string Name => $"{nameof(ToDorfCommand)} [{Description}]";
+            private string Description => $"{Dorf}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {

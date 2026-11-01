@@ -3,7 +3,10 @@
     [Handler]
     public sealed partial class LoginCommand(IDbContextFactory<AppDbContext> contextFactory)
     {
-        public sealed record Command(IChromeBrowser Browser);
+        public sealed record Command(IChromeBrowser Browser) : ICommand
+        {
+            public string Name => nameof(LoginCommand);
+        }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {

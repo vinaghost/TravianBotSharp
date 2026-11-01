@@ -3,7 +3,11 @@
     [Handler]
     public static partial class SetPointCommand
     {
-        public sealed record Command(IChromeBrowser Browser);
+        public sealed record Command(IChromeBrowser Browser) : ICommand
+        {
+            public string Name => $"{nameof(SetPointCommand)} [{Description}]";
+            private static string Description => $"{string.Join(", ", [1, 0, 0, 3])}";
+        }
 
         private static readonly string[] NameInputs = [
             "power",

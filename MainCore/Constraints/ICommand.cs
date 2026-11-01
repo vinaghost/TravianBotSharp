@@ -1,8 +1,9 @@
 ﻿namespace MainCore.Constraints
 {
-    public interface ICommand : IConstraint;
-
-    public sealed record Command : ICommand;
+    public interface ICommand : IConstraint
+    {
+        string Name { get; }
+    }
 
     public interface IAccountCommand : ICommand, IAccountConstraint;
 

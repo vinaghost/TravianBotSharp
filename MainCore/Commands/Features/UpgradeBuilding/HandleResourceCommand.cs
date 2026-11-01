@@ -13,7 +13,11 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         IChromeBrowser browser,
         ILogger logger)
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand
+        {
+            public string Name => $"{nameof(HandleResourceCommand)} [{Description}]";
+            private string Description => $"{Plan}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {

@@ -3,7 +3,11 @@
     [Handler]
     public sealed partial class UseHeroResourceCommand(IChromeBrowser browser)
     {
-        public sealed record Command(BuildingEnums Building, long[] Resource);
+        public sealed record Command(BuildingEnums Building, long[] Resource) : ICommand
+        {
+            public string Name => $"{nameof(UseHeroResourceCommand)} {Description}";
+            private string Description => $"{string.Join(", ", Resource.Select(x => $"{x}"))}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {

@@ -6,7 +6,10 @@ namespace MainCore.Commands.Update
         IDbContextFactory<AppDbContext> contextFactory,
         TaskManager taskManager)
     {
-        public sealed record Command(AccountId AccountId) : IAccountConstraint;
+        public sealed record Command(AccountId AccountId) : IAccountCommand
+        {
+            public string Name => "";
+        }
 
         private async ValueTask HandleAsync(Command command)
         {

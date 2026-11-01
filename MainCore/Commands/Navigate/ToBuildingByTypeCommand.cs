@@ -9,7 +9,11 @@ namespace MainCore.Commands.Navigate
         UpdateBuildingCommand.Handler updateBuildingCommand,
         ToBuildingByLocationCommand.Handler toBuildingByLocationCommand)
     {
-        public sealed record Command(VillageId VillageId, BuildingEnums BuildingType) : IVillageCommand;
+        public sealed record Command(VillageId VillageId, BuildingEnums BuildingType) : IVillageCommand
+        {
+            public string Name => $"{nameof(ToBuildingByTypeCommand)} [{Description}]";
+            private string Description => $"{BuildingType}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {

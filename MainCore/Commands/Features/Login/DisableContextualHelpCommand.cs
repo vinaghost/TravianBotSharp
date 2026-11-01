@@ -5,7 +5,10 @@ namespace MainCore.Commands.Features.Login
     [Handler]
     public sealed partial class DisableContextualHelpCommand(ToDorfCommand.Handler toDorfCommand)
     {
-        public sealed record Command(IChromeBrowser Browser);
+        public sealed record Command(IChromeBrowser Browser) : ICommand
+        {
+            public string Name => nameof(DisableContextualHelpCommand);
+        }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {
