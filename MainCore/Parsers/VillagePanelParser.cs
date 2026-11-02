@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace MainCore.Parsers
+﻿namespace MainCore.Parsers
 {
     public static class VillagePanelParser
     {
