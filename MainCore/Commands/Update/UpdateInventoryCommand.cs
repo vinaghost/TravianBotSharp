@@ -2,7 +2,7 @@
 {
     [Handler]
     public sealed partial class UpdateInventoryCommand(
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
         IDbContextFactory<AppDbContext> contextFactory)
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand
@@ -12,6 +12,7 @@
 
         private async ValueTask HandleAsync(Command command)
         {
+            var browser = chromeManager.Get(command.AccountId);
             var dtos = await InventoryParser.GetItems(browser.CurrentPage);
             Update(command.AccountId, dtos);
         }

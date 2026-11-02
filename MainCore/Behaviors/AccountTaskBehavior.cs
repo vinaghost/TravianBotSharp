@@ -4,7 +4,7 @@ using MainCore.Tasks.Base;
 namespace MainCore.Behaviors
 {
     public sealed class AccountTaskBehavior<TRequest, TResponse>(
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
         TaskManager taskManager,
         UpdateAccountInfoCommand.Handler updateAccountInfoCommand,
         UpdateVillageListCommand.Handler updateVillageListCommand,
@@ -23,6 +23,7 @@ namespace MainCore.Behaviors
             }
             var accountId = request.AccountId;
             var cacheExecuteAt = request.ExecuteAt;
+            var browser = chromeManager.Get(accountId);
             var isIngamePage = await LoginParser.IsIngamePage(browser.CurrentPage);
             request.ExecuteAt = cacheExecuteAt;
 

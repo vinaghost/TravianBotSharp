@@ -6,7 +6,7 @@ namespace MainCore.Commands.Update
 {
     [Handler]
     public sealed partial class UpdateVillageListCommand(
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
         IDbContextFactory<AppDbContext> contextFactory,
         RxQueue rxQueue,
         TaskManager taskManager,
@@ -17,12 +17,11 @@ namespace MainCore.Commands.Update
             public string Name => "";
         }
 
-        private async ValueTask HandleAsync(
-            Command command)
+        private async ValueTask HandleAsync(Command command)
         {
             await Task.CompletedTask;
             var accountId = command.AccountId;
-
+            var browser = chromeManager.Get(accountId);
             var dtos = await VillagePanelParser.Get(browser.CurrentPage);
             if (dtos.Count == 0) return;
 

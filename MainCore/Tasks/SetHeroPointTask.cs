@@ -6,9 +6,9 @@ namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class SetHeroPointTask(
-        IChromeBrowser browser,
-        OpenSetPointPanelCommand.Handler openSetHeroPointPanelCommand,
-        SetPointCommand.Handler setPointCommand
+        CheckLevelUpCommand.Handler checkLevelUpCommand,
+        OpenAttributesPanelCommand.Handler openAttributesPanelCommand,
+        SetHeroPointCommand.Handler setPointCommand
         )
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
@@ -24,21 +24,15 @@ namespace MainCore.Tasks
             }
         }
 
-        private async ValueTask<Result> HandleAsync(
-#pragma warning disable S1172 // Unused method parameters should be removed
-#pragma warning disable IDE0060 // Remove unused parameter
-            Task task,
-#pragma warning restore IDE0060 // Remove unused parameter
-#pragma warning restore S1172 // Unused method parameters should be removed
-            CancellationToken cancellationToken
-           )
+        private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
             Result result;
-            var canSetHeroPoint = await browser.CurrentPage.Locator("#topBarHero i.levelUp.show").CountAsync() > 0;
+            var canSetHeroPoint = await checkLevelUpCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (!canSetHeroPoint) return Result.Ok();
-            result = await openSetHeroPointPanelCommand.HandleAsync(new(browser), cancellationToken);
+
+            result = await openAttributesPanelCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
-            result = await setPointCommand.HandleAsync(new(browser), cancellationToken);
+            result = await setPointCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }

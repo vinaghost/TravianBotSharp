@@ -17,24 +17,24 @@ namespace MainCore.Behaviors
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
             var (accountId, villageId) = request;
-
-            var (_, isFailed, errors) = await switchVillageCommand.HandleAsync(new(villageId), cancellationToken);
-            if (isFailed) return (TResponse)Result.Fail(errors);
+            Result result;
+            result = await switchVillageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            if (result.IsFailed) return (TResponse)result;
 
             await updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
 
-            (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
-            if (isFailed) return (TResponse)Result.Fail(errors);
+            result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            if (result.IsFailed) return (TResponse)result;
 
             var response = await Next(request, cancellationToken);
 
             if (response.IsFailed && !response.HasError<Skip>()) return response;
 
-            (_, isFailed, errors) = await toDorfCommand.HandleAsync(new(0), cancellationToken);
-            if (isFailed) return (TResponse)Result.Fail(errors);
+            result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
+            if (result.IsFailed) return (TResponse)result;
 
-            (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
-            if (isFailed) return (TResponse)Result.Fail(errors);
+            result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            if (result.IsFailed) return (TResponse)result;
 
             await updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
             await updateQuestCommand.HandleAsync(new(accountId, villageId), cancellationToken);

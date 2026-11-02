@@ -2,7 +2,7 @@ namespace MainCore.Commands.Update
 {
     [Handler]
     public sealed partial class UpdateDailyQuestCommand(
-         IChromeBrowser browser,
+         ChromeManager chromeManager,
          IDbContextFactory<AppDbContext> contextFactory,
          TaskManager taskManager)
     {
@@ -13,6 +13,7 @@ namespace MainCore.Commands.Update
 
         private async ValueTask HandleAsync(Command command)
         {
+            var browser = chromeManager.Get(command.AccountId);
             if (!(await QuestParser.IsDailyQuestClaimable(browser.CurrentPage))) return;
             var accountId = command.AccountId;
             using var context = contextFactory.CreateDbContext();

@@ -9,7 +9,6 @@ namespace MainCore.Tasks
     public sealed partial class InstantUpgradeTask(
         ToDorfCommand.Handler toDorfCommand,
         InstantUpgradeCommand.Handler instantUpgradeCommand,
-        IChromeBrowser browser,
         TaskManager taskManager)
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
@@ -50,10 +49,10 @@ namespace MainCore.Tasks
         private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
             Result result;
-            result = await toDorfCommand.HandleAsync(new(0), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(task.AccountId, 0), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await instantUpgradeCommand.HandleAsync(new(browser), cancellationToken);
+            result = await instantUpgradeCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
 
             taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId));

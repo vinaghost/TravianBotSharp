@@ -10,7 +10,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         SwitchTabCommand.Handler switchTabCommand,
         IDbContextFactory<AppDbContext> contextFactory)
     {
-        public sealed record Command(VillageId VillageId, NormalBuildPlan Plan) : IVillageCommand
+        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand
         {
             public string Name => $"{nameof(ToBuildPageCommand)} [{Description}]";
             private string Description => $"{Plan}";
@@ -18,22 +18,21 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {
-            var (villageId, plan) = command;
-
-            var (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
+            var (accountId, villageId, plan) = command;
             Result result;
-            result = await toBuildingCommand.HandleAsync(new(plan.Location), cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await SwitchManagementTab(villageId, plan, cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(accountId, plan.Location), cancellationToken);
+            if (result.IsFailed) return result;
+
+            result = await SwitchManagementTab(accountId, villageId, plan, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();
         }
 
-        private async ValueTask<Result> SwitchManagementTab(VillageId villageId, NormalBuildPlan plan, CancellationToken cancellationToken)
+        private async ValueTask<Result> SwitchManagementTab(AccountId accountId, VillageId villageId, NormalBuildPlan plan, CancellationToken cancellationToken)
         {
             using var context = contextFactory.CreateDbContext();
             var building = context.Buildings
@@ -47,7 +46,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             {
                 var tabIndex = plan.Type.GetBuildingsCategory();
 
-                result = await switchTabCommand.HandleAsync(new(tabIndex), cancellationToken);
+                result = await switchTabCommand.HandleAsync(new(accountId, tabIndex), cancellationToken);
                 if (result.IsFailed) return result;
             }
             else
@@ -55,7 +54,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 if (building.Level < 1) return Result.Ok();
                 if (!building.Type.HasMultipleTabs()) return Result.Ok();
 
-                result = await switchTabCommand.HandleAsync(new(0), cancellationToken);
+                result = await switchTabCommand.HandleAsync(new(accountId, 0), cancellationToken);
                 if (result.IsFailed) return result;
             }
 

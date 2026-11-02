@@ -1,16 +1,16 @@
 ﻿namespace MainCore.Commands.Features.ClaimVillageQuest
 {
     [Handler]
-    public static partial class OpenVillageQuestPageCommand
+    public sealed partial class OpenVillageQuestPageCommand(ChromeManager chromeManager)
     {
-        public sealed record Command(IChromeBrowser Browser) : ICommand
+        public sealed record Command(AccountId AccountId) : IAccountCommand
         {
             public string Name => nameof(OpenVillageQuestPageCommand);
         }
 
-        private static async ValueTask<Result> HandleAsync(Command command)
+        private async ValueTask<Result> HandleAsync(Command command)
         {
-            var browser = command.Browser;
+            var browser = chromeManager.Get(command.AccountId);
             Result result;
 
             var questMaster = QuestParser.GetQuestMaster(browser.CurrentPage);

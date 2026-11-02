@@ -206,20 +206,18 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            var result = await context.GetValidAccess(accountId);
-            if (result.IsFailed)
-            {
-                await _dialogService.SendMessage("Warning", string.Join(Environment.NewLine, result.Errors.Select(x => x.Message)));
-                return;
-            }
-
             _taskManager.SetStatus(accountId, StatusEnums.Starting);
             using var scope = _serviceScopeFactory.CreateScope(accountId);
 
             try
             {
                 var openBrowserCommand = scope.ServiceProvider.GetRequiredService<OpenBrowserCommand.Handler>();
-                await openBrowserCommand.HandleAsync(new(accountId, result.Value));
+                var result = await openBrowserCommand.HandleAsync(new(accountId, true));
+                if (result.IsFailed)
+                {
+                    await _dialogService.SendMessage("Warning", string.Join(Environment.NewLine, result.Errors.Select(x => x.Message)));
+                    return;
+                }
             }
             catch (Exception ex)
             {

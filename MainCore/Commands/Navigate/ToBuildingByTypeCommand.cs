@@ -9,7 +9,7 @@ namespace MainCore.Commands.Navigate
         UpdateBuildingCommand.Handler updateBuildingCommand,
         ToBuildingByLocationCommand.Handler toBuildingByLocationCommand)
     {
-        public sealed record Command(VillageId VillageId, BuildingEnums BuildingType) : IVillageCommand
+        public sealed record Command(AccountId AccountId, VillageId VillageId, BuildingEnums BuildingType) : IAccountVillageCommand
         {
             public string Name => $"{nameof(ToBuildingByTypeCommand)} [{Description}]";
             private string Description => $"{BuildingType}";
@@ -17,13 +17,13 @@ namespace MainCore.Commands.Navigate
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {
-            var (villageId, buildingType) = command;
+            var (accountId, villageId, buildingType) = command;
             Result result;
 
-            result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
             if (result.IsFailed) return result;
 
             using var context = contextFactory.CreateDbContext();
@@ -38,7 +38,7 @@ namespace MainCore.Commands.Navigate
                 return MissingBuilding.Error(buildingType);
             }
 
-            result = await toBuildingByLocationCommand.HandleAsync(new(location), cancellationToken);
+            result = await toBuildingByLocationCommand.HandleAsync(new(accountId, location), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }

@@ -4,11 +4,11 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
     public sealed partial class HandleUpgradeCommand(
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
         IDbContextFactory<AppDbContext> contextFactory,
         ILogger logger)
     {
-        public sealed record Command(VillageId VillageId, NormalBuildPlan Plan) : IVillageCommand
+        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand
         {
             public string Name => $"{nameof(HandleUpgradeCommand)} [{Description}]";
             private string Description => $"{Plan}";
@@ -16,19 +16,19 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private async ValueTask<Result> HandleAsync(Command command)
         {
-            var (villageId, plan) = command;
+            var (accountId, villageId, plan) = command;
 
             LogBuildingInfo(villageId, plan);
 
             Result result;
             if (CanUseSpecialUpgrade(villageId) && !UnskippableBuildings.Contains(plan.Type))
             {
-                result = await SpecialUpgrade(plan.Type);
+                result = await SpecialUpgrade(accountId, plan.Type);
                 if (result.IsFailed) return result;
             }
             else
             {
-                result = await Upgrade(plan.Type);
+                result = await Upgrade(accountId, plan.Type);
                 if (result.IsFailed) return result;
             }
 
@@ -74,8 +74,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return useSpecialUpgrade;
         }
 
-        private async Task<Result> SpecialUpgrade(BuildingEnums building, bool repeat = false)
+        private async Task<Result> SpecialUpgrade(AccountId accountId, BuildingEnums building, bool repeat = false)
         {
+            var browser = chromeManager.Get(accountId);
+
             var button = await UpgradeParser.GetSpecialButton(browser.CurrentPage, building);
             var result = await browser.Click(button);
             if (result.IsFailed) return result;
@@ -96,18 +98,19 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             result = await browser.Wait(videoFeature);
             if (result.IsFailed) return result;
 
-            result = await HandleAds(building, repeat);
+            result = await HandleAds(accountId, building, repeat);
             if (result.IsFailed) return result;
             return Result.Ok();
         }
 
-        private async Task<Result> HandleAds(BuildingEnums building, bool repeat = false)
+        private async Task<Result> HandleAds(AccountId accountId, BuildingEnums building, bool repeat = false)
         {
             if (repeat)
             {
                 return Retry.Error.WithError("Special upgrade failed after retrying.");
             }
 
+            var browser = chromeManager.Get(accountId);
             var page = browser.CurrentPage;
             var videoFeature = page.Locator("#videoFeature");
             Result result;
@@ -131,7 +134,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 browser.Logger.Information("Video not loaded. Refreshing the page.");
                 result = await browser.Refresh();
                 if (result.IsFailed) return result;
-                result = await SpecialUpgrade(building, true);
+                result = await SpecialUpgrade(accountId, building, true);
                 if (result.IsFailed) return result;
                 return Result.Ok();
             }
@@ -141,8 +144,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return Result.Ok();
         }
 
-        private async Task<Result> Upgrade(BuildingEnums building)
+        private async Task<Result> Upgrade(AccountId accountId, BuildingEnums building)
         {
+            var browser = chromeManager.Get(accountId);
             var button = await UpgradeParser.GetNormalButton(browser.CurrentPage, building);
             var result = await browser.Click(button);
             if (result.IsFailed) return result;

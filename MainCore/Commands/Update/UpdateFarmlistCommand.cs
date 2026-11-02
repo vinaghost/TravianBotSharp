@@ -2,7 +2,7 @@ namespace MainCore.Commands.Update
 {
     [Handler]
     public sealed partial class UpdateFarmlistCommand(
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
         IDbContextFactory<AppDbContext> contextFactory,
         RxQueue rxQueue)
     {
@@ -11,9 +11,9 @@ namespace MainCore.Commands.Update
             public string Name => "";
         }
 
-        private async ValueTask<Result> HandleAsync(
-            Command command)
+        private async ValueTask<Result> HandleAsync(Command command)
         {
+            var browser = chromeManager.Get(command.AccountId);
             var dtos = await FarmListParser.GetFarmInfo(browser.CurrentPage);
             UpdateToDatabase(command.AccountId, dtos);
             rxQueue.Enqueue(new FarmsModified(command.AccountId));

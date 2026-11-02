@@ -7,7 +7,7 @@ namespace MainCore.Tasks
     [Handler]
     public sealed partial class UpgradeBuildingTask(
         ILogger logger,
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
         GetBuildPlanCommand.Handler getBuildPlanCommand,
         ToBuildPageCommand.Handler toBuildPageCommand,
         HandleResourceCommand.Handler handleResourceCommand,
@@ -22,7 +22,7 @@ namespace MainCore.Tasks
         private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
             Result result;
-
+            var browser = chromeManager.Get(task.AccountId);
             while (true)
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
@@ -41,7 +41,7 @@ namespace MainCore.Tasks
 
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
 
-                result = await toBuildPageCommand.HandleAsync(new(task.VillageId, plan), cancellationToken);
+                result = await toBuildPageCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
                 if (result.IsFailed) return result;
 
                 result = await handleResourceCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
@@ -64,12 +64,12 @@ namespace MainCore.Tasks
                     return result;
                 }
 
-                result = await handleUpgradeCommand.HandleAsync(new(task.VillageId, plan), cancellationToken);
+                result = await handleUpgradeCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
                 if (result.IsFailed) return result;
 
                 logger.Information("Upgrade for {Type} at location {Location} completed successfully.", plan.Type, plan.Location);
 
-                result = await updateBuildingCommand.HandleAsync(new(task.VillageId), cancellationToken);
+                result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (result.IsFailed) return result;
             }
         }

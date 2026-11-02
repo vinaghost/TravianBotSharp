@@ -1,16 +1,18 @@
 ﻿namespace MainCore.Commands.Features.StartAdventure
 {
     [Handler]
-    public sealed partial class ExploreAdeventureCommand(ILogger logger)
+    public sealed partial class ExploreAdeventureCommand(
+        ILogger logger,
+        ChromeManager chromeManager)
     {
-        public sealed record Command(IChromeBrowser Browser) : ICommand
+        public sealed record Command(AccountId AccountId) : IAccountCommand
         {
             public string Name => nameof(ExploreAdeventureCommand);
         }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {
-            var browser = command.Browser;
+            var browser = chromeManager.Get(command.AccountId);
             Result result;
 
             var adventures = await AdventureParser.GetAdventureInfo(browser.CurrentPage);

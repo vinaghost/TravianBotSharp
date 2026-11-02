@@ -6,7 +6,7 @@ namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class ClaimVillageQuestTask(
-        IChromeBrowser browser,
+        CheckVillageQuestCommand.Handler checkVillageQuestCommand,
         OpenVillageQuestPageCommand.Handler openVillageQuestPageCommand,
         ClaimRewardCommand.Handler claimRewardCommand)
     {
@@ -23,21 +23,15 @@ namespace MainCore.Tasks
             }
         }
 
-        private async ValueTask<Result> HandleAsync(
-#pragma warning disable S1172 // Unused method parameters should be removed
-#pragma warning disable IDE0060 // Remove unused parameter
-            Task task,
-#pragma warning restore IDE0060 // Remove unused parameter
-#pragma warning restore S1172 // Unused method parameters should be removed
-            CancellationToken cancellationToken)
+        private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
             Result result;
-            var canClaimQuest = await QuestParser.IsQuestClaimable(browser.CurrentPage);
+            var canClaimQuest = await checkVillageQuestCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (!canClaimQuest) return Result.Ok();
 
-            result = await openVillageQuestPageCommand.HandleAsync(new(browser), cancellationToken);
+            result = await openVillageQuestPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
-            result = await claimRewardCommand.HandleAsync(new(browser), cancellationToken);
+            result = await claimRewardCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }

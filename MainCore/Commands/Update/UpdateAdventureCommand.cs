@@ -2,7 +2,7 @@ namespace MainCore.Commands.Update
 {
     [Handler]
     public sealed partial class UpdateAdventureCommand(
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
         IDbContextFactory<AppDbContext> contextFactory,
         TaskManager taskManager)
     {
@@ -13,6 +13,7 @@ namespace MainCore.Commands.Update
 
         private async ValueTask HandleAsync(Command command)
         {
+            var browser = chromeManager.Get(command.AccountId);
             var canStartAdventure = await AdventureParser.CanStartAdventure(browser.CurrentPage);
             if (!canStartAdventure) return;
 

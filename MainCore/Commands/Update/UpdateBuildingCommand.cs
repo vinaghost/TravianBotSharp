@@ -2,18 +2,20 @@ namespace MainCore.Commands.Update
 {
     [Handler]
     public sealed partial class UpdateBuildingCommand(
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
         IDbContextFactory<AppDbContext> contextFactory,
         RxQueue rxQueue)
     {
-        public sealed record Command(VillageId VillageId) : IVillageCommand
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand
         {
             public string Name => "";
         }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {
-            var villageId = command.VillageId;
+            var (accountId, villageId) = command;
+
+            var browser = chromeManager.Get(accountId);
 
             var dtoBuilding = await GetBuildings(browser.CurrentUrl, browser.CurrentPage);
             if (dtoBuilding.Count == 0) return Result.Ok();

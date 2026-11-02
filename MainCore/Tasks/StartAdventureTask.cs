@@ -6,7 +6,8 @@ namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class StartAdventureTask(
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
+        CheckHeroReadyCommand.Handler checkHeroReadyCommand,
         OpenAdventurePanelCommand.Handler openAdventurePanelCommand,
         ExploreAdeventureCommand.Handler exploreAdeventureCommand)
     {
@@ -25,16 +26,17 @@ namespace MainCore.Tasks
 
         private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
-            var canStartAdventure = await AdventureParser.CanStartAdventure(browser.CurrentPage);
+            var canStartAdventure = await checkHeroReadyCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (!canStartAdventure) return Skip.Error.WithError("No adventure available");
 
             Result result;
-            result = await openAdventurePanelCommand.HandleAsync(new(browser), cancellationToken);
+            result = await openAdventurePanelCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await exploreAdeventureCommand.HandleAsync(new(browser), cancellationToken);
+            result = await exploreAdeventureCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
 
+            var browser = chromeManager.Get(task.AccountId);
             var adventureDuration = await AdventureParser.GetAdventureDuration(browser.CurrentPage);
             task.ExecuteAt = DateTime.Now.Add(adventureDuration * 2);
 

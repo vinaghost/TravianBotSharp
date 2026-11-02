@@ -1,16 +1,18 @@
 ﻿namespace MainCore.Commands.Features.Login
 {
     [Handler]
-    public sealed partial class LoginCommand(IDbContextFactory<AppDbContext> contextFactory)
+    public sealed partial class LoginCommand(
+        IDbContextFactory<AppDbContext> contextFactory,
+        ChromeManager chromeManager)
     {
-        public sealed record Command(IChromeBrowser Browser) : ICommand
+        public sealed record Command(AccountId AccountId) : IAccountCommand
         {
             public string Name => nameof(LoginCommand);
         }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {
-            var browser = command.Browser;
+            var browser = chromeManager.Get(command.AccountId);
 
             if (await LoginParser.IsIngamePage(browser.CurrentPage)) return Result.Ok();
 

@@ -20,16 +20,18 @@ namespace MainCore.Services
         private readonly RxQueue _rxQueue;
         private readonly CustomServiceScopeFactory _serviceScopeFactory;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly ChromeManager _chromeManager;
 
         private static readonly ResiliencePropertyKey<ContextData> contextDataKey = new(nameof(ContextData));
         private readonly ResiliencePipeline<Result> _pipeline;
 
-        public TimerManager(TaskManager taskManager, CustomServiceScopeFactory serviceScopeFactory, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
+        public TimerManager(TaskManager taskManager, CustomServiceScopeFactory serviceScopeFactory, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, ChromeManager chromeManager)
         {
             _taskManager = taskManager;
             _serviceScopeFactory = serviceScopeFactory;
             _rxQueue = rxQueue;
             _contextFactory = contextFactory;
+            _chromeManager = chromeManager;
 
             static async ValueTask OnRetry(OnRetryArguments<Result> args)
             {
@@ -96,8 +98,7 @@ namespace MainCore.Services
             using var scope = _serviceScopeFactory.CreateScope(accountId);
 
             ///===========================================================///
-            var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
-            var logger = browser.Logger;
+            var browser = _chromeManager.Get(accountId);
 
             var contextData = new ContextData(task.Description, browser);
 
@@ -128,14 +129,14 @@ namespace MainCore.Services
 
                 if (ex is OperationCanceledException)
                 {
-                    logger.Information("Pause button is pressed");
+                    browser.Logger.Information("Pause button is pressed");
                 }
                 else
                 {
                     var filename = await browser.Screenshot();
-                    logger.Information("Screenshot saved as {FileName}", filename);
-                    logger.Warning("There is something wrong. Bot is pausing. Last exception is");
-                    logger.Error(ex, "{Message}", ex.Message);
+                    browser.Logger.Information("Screenshot saved as {FileName}", filename);
+                    browser.Logger.Warning("There is something wrong. Bot is pausing. Last exception is");
+                    browser.Logger.Error(ex, "{Message}", ex.Message);
                 }
 
                 _taskManager.SetStatus(accountId, StatusEnums.Paused);
@@ -149,7 +150,7 @@ namespace MainCore.Services
                     if (result.HasError<Stop>() || result.HasError<Retry>())
                     {
                         var filename = await browser.Screenshot();
-                        logger.Information(messageTemplate: "Screenshot saved as {FileName}", filename);
+                        browser.Logger.Information(messageTemplate: "Screenshot saved as {FileName}", filename);
                         _taskManager.SetStatus(accountId, StatusEnums.Paused);
                     }
                     else if (result.HasError<Skip>())
@@ -160,7 +161,7 @@ namespace MainCore.Services
                         }
                         else
                         {
-                            logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
+                            browser.Logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                         }
                     }
                     else if (result.HasError<Cancel>())
@@ -176,7 +177,7 @@ namespace MainCore.Services
                     }
                     else
                     {
-                        logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
+                        browser.Logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     }
                 }
             }

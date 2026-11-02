@@ -3,7 +3,7 @@ namespace MainCore.Commands.Update
     [Handler]
     public sealed partial class UpdateStorageCommand(
         IDbContextFactory<AppDbContext> contextFactory,
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
         TaskManager taskManager)
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand
@@ -15,6 +15,7 @@ namespace MainCore.Commands.Update
             Command command)
         {
             var (accountId, villageId) = command;
+            var browser = chromeManager.Get(accountId);
 
             var dto = await StorageParser.GetStorage(browser.CurrentPage);
             UpdateStorage(villageId, dto);

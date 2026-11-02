@@ -53,12 +53,12 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 Result result;
                 if (plan.Type.IsResourceBonus())
                 {
-                    result = await CheckBonusBuilding(villageId, cancellationToken);
+                    result = await CheckBonusBuilding(accountId, villageId, cancellationToken);
                     if (result.IsFailed) return result;
                 }
                 else
                 {
-                    result = await CheckBuilding(villageId, plan.Location, cancellationToken);
+                    result = await CheckBuilding(accountId, villageId, plan.Location, cancellationToken);
                     if (result.IsFailed) return result;
                 }
 
@@ -86,28 +86,28 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return context.GetJob(accountId, villageId);
         }
 
-        private async Task<Result> CheckBonusBuilding(VillageId villageId, CancellationToken cancellationToken)
+        private async Task<Result> CheckBonusBuilding(AccountId accountId, VillageId villageId, CancellationToken cancellationToken)
         {
-            var result = await toDorfCommand.HandleAsync(new(1), cancellationToken);
+            var result = await toDorfCommand.HandleAsync(new(accountId, 1), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }
 
-        private async Task<Result> CheckBuilding(VillageId villageId, int location, CancellationToken cancellationToken)
+        private async Task<Result> CheckBuilding(AccountId accountId, VillageId villageId, int location, CancellationToken cancellationToken)
         {
             var dorf = location < 19 ? 1 : 2;
-            var result = await toDorfCommand.HandleAsync(new(dorf), cancellationToken);
+            var result = await toDorfCommand.HandleAsync(new(accountId, dorf), cancellationToken);
             if (result.IsFailed) return result;
-            result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }
