@@ -1,4 +1,6 @@
-﻿namespace MainCore.Commands.Features.NPC
+﻿using MainCore.Commands.Update;
+
+namespace MainCore.Commands.Features.NPC
 {
     [Handler]
     public sealed partial class CheckNPCCommand(
@@ -15,7 +17,7 @@
         {
             var browser = chromeManager.Get(command.AccountId);
 
-            var storage = await StorageParser.GetStorage(browser.CurrentPage);
+            var storage = await UpdateStorageCommand.GetData(browser.CurrentPage);
 
             var granaryPercent = (int)(storage.Crop * 100f / storage.Granary);
 

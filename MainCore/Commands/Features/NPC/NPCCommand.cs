@@ -1,4 +1,6 @@
-﻿namespace MainCore.Commands.Features.NPC
+﻿using MainCore.Commands.Update;
+
+namespace MainCore.Commands.Features.NPC
 {
     [Handler]
     public sealed partial class NPCCommand(
@@ -89,7 +91,7 @@
             var overflowNPC = context.BooleanByName(villageId, VillageSettingEnums.AutoNPCOverflow);
             if (overflowNPC) return Result.Ok();
 
-            var storage = await StorageParser.GetStorage(page);
+            var storage = await UpdateStorageCommand.GetData(page);
             for (var i = 0; i < 3; i++)
             {
                 if (values[i] > storage.Warehouse)
@@ -112,7 +114,7 @@
                 logger.Information("Before NPC:");
             }
 
-            var storage = await StorageParser.GetStorage(page);
+            var storage = await UpdateStorageCommand.GetData(page);
             logger.Information("[{Warehouse}]: {Wood} - {Clay} - {Iron} | [{Granary}]: {Crop}", storage.Warehouse, storage.Wood, storage.Clay, storage.Iron, storage.Granary, storage.Crop);
         }
 
