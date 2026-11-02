@@ -1,8 +1,10 @@
+using MainCore.Commands.Features.StartAdventure;
+
 namespace MainCore.Commands.Update
 {
     [Handler]
     public sealed partial class UpdateAdventureCommand(
-        ChromeManager chromeManager,
+        CheckHeroReadyCommand.Handler checkHeroReadyCommand,
         IDbContextFactory<AppDbContext> contextFactory,
         TaskManager taskManager)
     {
@@ -11,10 +13,9 @@ namespace MainCore.Commands.Update
             public string Name => "";
         }
 
-        private async ValueTask HandleAsync(Command command)
+        private async ValueTask HandleAsync(Command command, CancellationToken cancellationToken)
         {
-            var browser = chromeManager.Get(command.AccountId);
-            var canStartAdventure = await AdventureParser.CanStartAdventure(browser.CurrentPage);
+            var canStartAdventure = await checkHeroReadyCommand.HandleAsync(new(command.AccountId), cancellationToken);
             if (!canStartAdventure) return;
 
             var startAdventureTask = new StartAdventureTask.Task(command.AccountId);

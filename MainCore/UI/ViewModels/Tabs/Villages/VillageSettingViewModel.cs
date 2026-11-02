@@ -8,6 +8,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     using FluentValidation;
 
+    using Microsoft.Extensions.DependencyInjection;
+
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
 
@@ -21,7 +23,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         private readonly IValidator<VillageSettingInput> _villageSettingInputValidator;
         private readonly TaskManager _taskManager;
 
-        public VillageSettingViewModel(DialogService dialogService, IValidator<VillageSettingInput> villageSettingInputValidator, CustomServiceScopeFactory serviceScopeFactory, IDbContextFactory<AppDbContext> contextFactory, TaskManager taskManager)
+        public VillageSettingViewModel(DialogService dialogService, IValidator<VillageSettingInput> villageSettingInputValidator, IServiceScopeFactory serviceScopeFactory, IDbContextFactory<AppDbContext> contextFactory, TaskManager taskManager)
         {
             _dialogService = dialogService;
             _villageSettingInputValidator = villageSettingInputValidator;

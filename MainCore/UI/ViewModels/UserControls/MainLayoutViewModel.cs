@@ -29,7 +29,7 @@ namespace MainCore.UI.ViewModels.UserControls
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly SelectedItemStore _selectedItemStore;
         private readonly RxQueue _rxQueue;
-        private readonly CustomServiceScopeFactory _serviceScopeFactory;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly DefaultTemplatePathStore _defaultTemplatePathStore;
 
         private readonly AccountTabStore _accountTabStore;
@@ -37,7 +37,7 @@ namespace MainCore.UI.ViewModels.UserControls
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, DialogService dialogService, TaskManager taskManager, ILogger logger, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, TimerManager timerManager, CustomServiceScopeFactory serviceScopeFactory, DefaultTemplatePathStore defaultTemplatePathStore, ChromeManager chromeManager)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, DialogService dialogService, TaskManager taskManager, ILogger logger, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, TimerManager timerManager, IServiceScopeFactory serviceScopeFactory, DefaultTemplatePathStore defaultTemplatePathStore, ChromeManager chromeManager)
         {
             _accountTabStore = accountTabStore;
             _serviceScopeFactory = serviceScopeFactory;
@@ -207,7 +207,7 @@ namespace MainCore.UI.ViewModels.UserControls
             }
 
             _taskManager.SetStatus(accountId, StatusEnums.Starting);
-            using var scope = _serviceScopeFactory.CreateScope(accountId);
+            using var scope = _serviceScopeFactory.CreateScope();
 
             try
             {

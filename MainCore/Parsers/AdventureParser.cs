@@ -26,17 +26,51 @@ namespace MainCore.Parsers
             return adventureButton;
         }
 
-        public static async Task<bool> CanStartAdventure(IPage page)
+        public record struct HeroState(int Health, bool IsAtHome, bool IsAdventureReady);
+
+        public static async Task<HeroState> GetHeroStateAsync(IPage page)
         {
             var heroStatus = page.Locator("div.heroStatus a");
             await heroStatus.WaitForAsync();
 
-            var heroHome = heroStatus.Locator("i.heroHome");
-            if (await heroHome.CountAsync() == 0) return false;
+            var result = await page.EvaluateAsync<HeroState>(@"() => {
+                let health = -1;
+                const healthMask = document.getElementById('healthMask');
+                if (healthMask) {
+                    const path = healthMask.querySelector('path');
+                    if (path) {
+                        const dAttr = path.getAttribute('d');
+                        if (dAttr) {
+                            const commands = dAttr.trim().split(/\s+/);
+                            if (commands.length >= 2) {
+                                const xx = parseFloat(commands[commands.length - 2]);
+                                const yy = parseFloat(commands[commands.length - 1]);
 
-            var adventureButton = GetHeroAdventureButton(page);
-            if (await adventureButton.CountAsync() == 0) return false;
-            return true;
+                                if (!isNaN(xx) && !isNaN(yy)) {
+                                    const rad = Math.atan2(yy - 55, xx - 55);
+                                    health = Math.round(-56.173 * rad + 96.077);
+                                } else {
+                                    health = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                const heroHomeElement = document.querySelector('div.heroStatus a i.heroHome');
+                const isAtHome = heroHomeElement !== null;
+
+                const adventureButton = document.querySelector('a.adventure.round.attention');
+                const isAdventureReady = adventureButton !== null;
+
+                return {
+                    Health: health,
+                    IsAtHome: isAtHome,
+                    IsAdventureReady: isAdventureReady
+                };
+            }");
+
+            return result;
         }
 
         public record struct AdventureInfo(string Difficult, TimeSpan Duration, ILocator Button);
