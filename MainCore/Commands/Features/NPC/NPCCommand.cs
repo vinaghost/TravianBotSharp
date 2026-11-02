@@ -10,7 +10,7 @@ namespace MainCore.Commands.Features.NPC
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand
         {
-            public string Name => $"{nameof(NPCCommand)}";
+            public string Name => nameof(NPCCommand).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Command command)

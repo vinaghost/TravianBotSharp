@@ -7,7 +7,7 @@ namespace MainCore.Commands.Features.UseHeroItem
     {
         public sealed record Command(IChromeBrowser Browser) : ICommand
         {
-            public string Name => nameof(ToHeroInventoryCommand);
+            public string Name => nameof(ToHeroInventoryCommand).Humanize();
         }
 
         private static async ValueTask<Result> HandleAsync(Command command)

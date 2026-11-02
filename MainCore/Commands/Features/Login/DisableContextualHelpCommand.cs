@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.Login
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand
         {
-            public string Name => nameof(DisableContextualHelpCommand);
+            public string Name => nameof(DisableContextualHelpCommand).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Command command)

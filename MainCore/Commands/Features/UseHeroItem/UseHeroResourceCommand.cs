@@ -5,7 +5,7 @@
     {
         public sealed record Command(AccountId AccountId, BuildingEnums Building, long[] Resource) : IAccountCommand
         {
-            public string Name => $"{nameof(UseHeroResourceCommand)} {Description}";
+            public string Name => $"{nameof(UseHeroResourceCommand).Humanize()} {Description}";
             private string Description => $"{string.Join(", ", Resource.Select(x => $"{x}"))}";
         }
 

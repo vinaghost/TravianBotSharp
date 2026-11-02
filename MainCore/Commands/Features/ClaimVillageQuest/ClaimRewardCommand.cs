@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.ClaimVillageQuest
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand
         {
-            public string Name => nameof(ClaimRewardCommand);
+            public string Name => nameof(ClaimRewardCommand).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)

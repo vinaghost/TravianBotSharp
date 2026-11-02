@@ -8,7 +8,7 @@
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand
         {
-            public string Name => $"{nameof(HandleUpgradeCommand)} [{Description}]";
+            public string Name => $"{nameof(HandleUpgradeCommand).Humanize()} [{Description}]";
             private string Description => $"{Plan}";
         }
 

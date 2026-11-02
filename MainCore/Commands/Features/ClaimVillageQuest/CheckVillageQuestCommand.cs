@@ -5,7 +5,7 @@
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand
         {
-            public string Name => $"{nameof(CheckVillageQuestCommand)}";
+            public string Name => nameof(CheckVillageQuestCommand).Humanize();
         }
 
         private async ValueTask<bool> HandleAsync(Command command)

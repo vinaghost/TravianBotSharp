@@ -14,7 +14,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand
         {
-            public string Name => $"{nameof(HandleResourceCommand)} [{Description}]";
+            public string Name => $"{nameof(HandleResourceCommand).Humanize()} [{Description}]";
             private string Description => $"{Plan}";
         }
 

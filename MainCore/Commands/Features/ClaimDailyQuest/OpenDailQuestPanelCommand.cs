@@ -5,7 +5,7 @@
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand
         {
-            public string Name => nameof(OpenDailQuestPanelCommand);
+            public string Name => nameof(OpenDailQuestPanelCommand).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Command command)

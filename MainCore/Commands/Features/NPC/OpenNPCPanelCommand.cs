@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.NPC
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand
         {
-            public string Name => nameof(OpenNPCPanelCommand);
+            public string Name => nameof(OpenNPCPanelCommand).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Command command)

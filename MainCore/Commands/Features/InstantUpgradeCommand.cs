@@ -5,7 +5,7 @@
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand
         {
-            public string Name => $"{nameof(InstantUpgradeCommand)}";
+            public string Name => nameof(InstantUpgradeCommand).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Command command)

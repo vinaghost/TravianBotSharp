@@ -7,7 +7,7 @@
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand
         {
-            public string Name => $"{nameof(SleepCommand)}";
+            public string Name => nameof(SleepCommand).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)

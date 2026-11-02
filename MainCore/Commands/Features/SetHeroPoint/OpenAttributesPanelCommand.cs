@@ -9,7 +9,7 @@ namespace MainCore.Commands.Features.SetHeroPoint
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand
         {
-            public string Name => nameof(OpenAttributesPanelCommand);
+            public string Name => nameof(OpenAttributesPanelCommand).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)

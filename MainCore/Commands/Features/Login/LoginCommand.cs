@@ -7,7 +7,7 @@
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand
         {
-            public string Name => nameof(LoginCommand);
+            public string Name => nameof(LoginCommand).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Command command)

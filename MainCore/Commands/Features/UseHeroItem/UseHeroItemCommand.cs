@@ -7,7 +7,7 @@
     {
         public sealed record Command(AccountId AccountId, Dictionary<HeroItemEnums, long> ItemToUse) : IAccountCommand
         {
-            public string Name => $"{nameof(UseHeroItemCommand)} {Description}";
+            public string Name => $"{nameof(UseHeroItemCommand).Humanize()} {Description}";
             private string Description => $"{string.Join(", ", ItemToUse.Select(x => $"{x.Value} {x.Key}"))}";
         }
 

@@ -15,7 +15,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
     {
         public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand
         {
-            public string Name => $"{nameof(GetBuildPlanCommand)}";
+            public string Name => nameof(GetBuildPlanCommand).Humanize();
         }
 
         private async ValueTask<Result<NormalBuildPlan>> HandleAsync(Command command, CancellationToken cancellationToken)

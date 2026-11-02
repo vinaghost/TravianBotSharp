@@ -5,6 +5,7 @@ namespace MainCore.Tasks
     [Handler]
     public sealed partial class LoginTask(
         LoginCommand.Handler loginCommand,
+        CloseAnnouncementCommand.Handler closeAnnouncementCommand,
         AccecptCookieConsentCommand.Handler accecptCookieConsentCommand,
         DisableContextualHelpCommand.Handler disableContextualHelpCommand
         )
@@ -21,6 +22,9 @@ namespace MainCore.Tasks
             if (result.IsFailed) return result;
 
             result = await loginCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            if (result.IsFailed) return result;
+
+            result = await closeAnnouncementCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await disableContextualHelpCommand.HandleAsync(new(task.AccountId), cancellationToken);

@@ -5,7 +5,7 @@
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand
         {
-            public string Name => $"{nameof(SetHeroPointCommand)} [{Description}]";
+            public string Name => $"{nameof(SetHeroPointCommand).Humanize()} [{Description}]";
             private static string Description => $"{string.Join(", ", [1, 0, 0, 3])}";
         }
 

@@ -7,7 +7,7 @@
     {
         public sealed record Command(AccountId AccountId, TroopEnums Troop, int Amount, bool TrainWhenLowResource) : IAccountCommand
         {
-            public string Name => $"{nameof(TrainTroopCommand)} [{Description}]";
+            public string Name => $"{nameof(TrainTroopCommand).Humanize()} [{Description}]";
             private string Description => $"Train {Amount} {Troop}";
         }
 

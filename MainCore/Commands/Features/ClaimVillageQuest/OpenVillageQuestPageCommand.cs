@@ -5,7 +5,7 @@
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand
         {
-            public string Name => nameof(OpenVillageQuestPageCommand);
+            public string Name => nameof(OpenVillageQuestPageCommand).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Command command)
