@@ -1,8 +1,5 @@
 using System.Collections.Concurrent;
 
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
-
 using Microsoft.Extensions.DependencyInjection;
 
 using Polly;
@@ -261,8 +258,8 @@ namespace MainCore.Services
                     var loginTaskHandler = scope.GetHandler<LoginTask.Task>();
                     return await loginTaskHandler.HandleAsync(loginTask, cancellationToken);
 
-                case NpcTask.Task npcTask:
-                    var npcTaskHandler = scope.GetHandler<NpcTask.Task>();
+                case NPCTask.Task npcTask:
+                    var npcTaskHandler = scope.GetHandler<NPCTask.Task>();
                     return await npcTaskHandler.HandleAsync(npcTask, cancellationToken);
 
                 case SleepTask.Task sleepTask:

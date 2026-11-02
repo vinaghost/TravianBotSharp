@@ -1,6 +1,4 @@
 ﻿using MainCore.Commands.Features.StartAdventure;
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -13,7 +11,7 @@ namespace MainCore.Tasks
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {
-            protected override string TaskName => "Start adventure";
+            protected override string TaskName => nameof(StartAdventureTask).Humanize();
 
             public override bool CanStart(AppDbContext context)
             {

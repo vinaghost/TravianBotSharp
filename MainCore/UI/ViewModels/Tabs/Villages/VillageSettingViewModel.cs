@@ -1,6 +1,5 @@
 using System.Text.Json;
 
-using MainCore.Infrasturecture.Extensions;
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 

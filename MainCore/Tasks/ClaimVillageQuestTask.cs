@@ -1,6 +1,4 @@
 ﻿using MainCore.Commands.Features.ClaimVillageQuest;
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -12,7 +10,7 @@ namespace MainCore.Tasks
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            protected override string TaskName => "Claim village quest";
+            protected override string TaskName => nameof(ClaimVillageQuestTask).Humanize();
 
             public override bool CanStart(AppDbContext context)
             {

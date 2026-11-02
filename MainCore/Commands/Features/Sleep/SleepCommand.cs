@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using MainCore.Infrasturecture.Extensions;
-
-using Microsoft.EntityFrameworkCore.Internal;
-
-namespace MainCore.Commands.Features.Sleep
+﻿namespace MainCore.Commands.Features.Sleep
 {
     [Handler]
     public sealed partial class SleepCommand(

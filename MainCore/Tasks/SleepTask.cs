@@ -1,8 +1,5 @@
 ﻿using MainCore.Commands.Features.Sleep;
 using MainCore.Commands.Misc;
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
-using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.Tasks
 {
@@ -15,7 +12,7 @@ namespace MainCore.Tasks
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {
-            protected override string TaskName => "Sleep";
+            protected override string TaskName => nameof(SleepTask).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)

@@ -2,8 +2,6 @@
 
 using System.Text.Json;
 
-using Humanizer;
-
 using Riok.Mapperly.Abstractions;
 
 namespace MainCore.DTO

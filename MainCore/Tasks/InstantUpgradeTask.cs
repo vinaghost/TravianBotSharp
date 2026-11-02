@@ -1,7 +1,5 @@
 using MainCore.Commands.Features;
 using MainCore.Commands.Navigate;
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -13,7 +11,7 @@ namespace MainCore.Tasks
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            protected override string TaskName => "Instant upgrade";
+            protected override string TaskName => nameof(InstantUpgradeTask).Humanize();
 
             private static readonly List<BuildingEnums> UnskippableBuildings =
             [

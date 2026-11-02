@@ -1,6 +1,4 @@
-﻿using MainCore.Infrasturecture.Extensions;
-
-namespace MainCore.Commands.Features.NPC
+﻿namespace MainCore.Commands.Features.NPC
 {
     [Handler]
     public sealed partial class NPCCommand(

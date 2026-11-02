@@ -1,6 +1,4 @@
 ﻿using MainCore.Commands.Features.SetHeroPoint;
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -13,7 +11,7 @@ namespace MainCore.Tasks
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {
-            protected override string TaskName => "Set hero point";
+            protected override string TaskName => nameof(SetHeroPointTask).Humanize();
 
             public override bool CanStart(AppDbContext context)
             {

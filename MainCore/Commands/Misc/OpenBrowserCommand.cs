@@ -1,7 +1,5 @@
 ﻿using System.Net;
 
-using MainCore.Infrasturecture.Extensions;
-
 namespace MainCore.Commands.Misc
 {
     [Handler]

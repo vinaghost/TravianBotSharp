@@ -2,7 +2,6 @@ using System.Text.Json;
 
 using MainCore.Commands.Navigate;
 using MainCore.Commands.Update;
-using MainCore.Infrasturecture.Extensions;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {

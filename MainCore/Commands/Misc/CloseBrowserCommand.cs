@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MainCore.Commands.Misc
+﻿namespace MainCore.Commands.Misc
 {
     [Handler]
     public sealed partial class CloseBrowserCommand(ChromeManager chromeManager)

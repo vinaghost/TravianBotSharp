@@ -1,12 +1,10 @@
 using MainCore.Commands.Features.NPC;
 using MainCore.Commands.Navigate;
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
-    public sealed partial class NpcTask(
+    public sealed partial class NPCTask(
         CheckNPCCommand.Handler checkNPCCommand,
         ToBuildingByTypeCommand.Handler toBuildingCommand,
         OpenNPCPanelCommand.Handler openNPCPanelCommand,
@@ -17,7 +15,7 @@ namespace MainCore.Tasks
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            protected override string TaskName => "NPC";
+            protected override string TaskName => nameof(NPCTask).Humanize();
 
             public override bool CanStart(AppDbContext context)
             {

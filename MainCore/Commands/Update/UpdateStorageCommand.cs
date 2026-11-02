@@ -25,8 +25,8 @@ namespace MainCore.Commands.Update
         private void TriggerNpcTask(AccountId accountId, VillageId villageId)
         {
             using var context = contextFactory.CreateDbContext();
-            var task = new NpcTask.Task(accountId, villageId);
-            if (task.CanStart(context) && !taskManager.IsExist<NpcTask.Task>(accountId, villageId))
+            var task = new NPCTask.Task(accountId, villageId);
+            if (task.CanStart(context) && !taskManager.IsExist<NPCTask.Task>(accountId, villageId))
             {
                 taskManager.Add(task);
             }

@@ -1,7 +1,7 @@
 ﻿namespace MainCore.Commands.Features.StartAdventure
 {
     [Handler]
-    public partial class OpenAdventurePanelCommand(ChromeManager chromeManager)
+    public sealed partial class OpenAdventurePanelCommand(ChromeManager chromeManager)
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand
         {

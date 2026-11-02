@@ -1,6 +1,5 @@
 ﻿using MainCore.Commands.Features.UpgradeBuilding;
 using MainCore.Commands.Update;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -16,7 +15,7 @@ namespace MainCore.Tasks
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            protected override string TaskName => "Upgrade building";
+            protected override string TaskName => nameof(UpgradeBuildingTask).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)

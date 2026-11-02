@@ -1,6 +1,4 @@
-﻿using Humanizer;
-
-namespace MainCore.Models
+﻿namespace MainCore.Models
 {
     public struct PrerequisiteBuilding
     {

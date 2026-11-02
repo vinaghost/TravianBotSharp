@@ -1,7 +1,5 @@
 ﻿using System.Collections.Concurrent;
 
-using MainCore.Infrasturecture.Extensions;
-
 using Serilog;
 
 namespace MainCore.Services

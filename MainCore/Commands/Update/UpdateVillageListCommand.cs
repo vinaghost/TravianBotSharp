@@ -1,7 +1,5 @@
 using System.Text.Json;
 
-using MainCore.Infrasturecture.Extensions;
-
 namespace MainCore.Commands.Update
 {
     [Handler]

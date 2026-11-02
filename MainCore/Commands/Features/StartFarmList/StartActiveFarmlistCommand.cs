@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MainCore.Commands.Features.StartFarmList
+﻿namespace MainCore.Commands.Features.StartFarmList
 {
     [Handler]
     public sealed partial class StartActiveFarmlistCommand(ChromeManager chromeManager)

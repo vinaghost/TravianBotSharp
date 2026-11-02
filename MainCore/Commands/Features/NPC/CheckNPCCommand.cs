@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using MainCore.Infrasturecture.Extensions;
-
-namespace MainCore.Commands.Features.NPC
+﻿namespace MainCore.Commands.Features.NPC
 {
     [Handler]
     public sealed partial class CheckNPCCommand(

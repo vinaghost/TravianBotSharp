@@ -1,6 +1,4 @@
 ﻿using MainCore.Commands.Features.ClaimDailyQuest;
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -12,7 +10,7 @@ namespace MainCore.Tasks
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {
-            protected override string TaskName => "Claim daily quest";
+            protected override string TaskName => nameof(ClaimDailyQuestTask).Humanize();
 
             public override bool CanStart(AppDbContext context)
             {

@@ -1,7 +1,5 @@
 ﻿using MainCore.Commands.Navigate;
 using MainCore.Commands.Update;
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -14,7 +12,7 @@ namespace MainCore.Tasks
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            protected override string TaskName => "Update village";
+            protected override string TaskName => nameof(UpdateVillageTask).Humanize();
 
             public override bool CanStart(AppDbContext context)
             {
