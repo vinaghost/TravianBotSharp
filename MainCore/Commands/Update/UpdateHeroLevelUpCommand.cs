@@ -2,14 +2,18 @@ namespace MainCore.Commands.Update
 {
     [Handler]
     public sealed partial class UpdateHeroLevelUpCommand(
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
         IDbContextFactory<AppDbContext> contextFactory,
         TaskManager taskManager)
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand;
+        public sealed record Command(AccountId AccountId) : IAccountCommand
+        {
+            public string Name => "";
+        }
 
         private async ValueTask HandleAsync(Command command)
         {
+            var browser = chromeManager.Get(command.AccountId);
             await Task.CompletedTask;
             if (await browser.CurrentPage.Locator("#topBarHero i.levelUp.show").CountAsync() == 0) return;
             var accountId = command.AccountId;

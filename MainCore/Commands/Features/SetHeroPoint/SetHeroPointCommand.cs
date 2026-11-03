@@ -1,20 +1,24 @@
 ﻿namespace MainCore.Commands.Features.SetHeroPoint
 {
     [Handler]
-    public static partial class SetPointCommand
+    public sealed partial class SetHeroPointCommand(ChromeManager chromeManager)
     {
-        public sealed record Command(IChromeBrowser Browser);
+        public sealed record Command(AccountId AccountId) : IAccountCommand
+        {
+            public string Name => $"{nameof(SetHeroPointCommand).Humanize()} [{Description}]";
+            private static string Description => $"{string.Join(", ", [1, 0, 0, 3])}";
+        }
 
         private static readonly string[] NameInputs = [
             "power",
             "offBonus",
             "defBonus",
             "productionPoints",
-            ];
+        ];
 
-        private static async ValueTask<Result> HandleAsync(Command command)
+        private async ValueTask<Result> HandleAsync(Command command)
         {
-            var browser = command.Browser;
+            var browser = chromeManager.Get(command.AccountId);
             Result result;
 
             int[] Points = [1, 0, 0, 3];

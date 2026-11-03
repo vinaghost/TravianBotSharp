@@ -1,30 +1,32 @@
-﻿using MainCore.Infrasturecture.Extensions;
-
-namespace MainCore.Commands.Features.UpgradeBuilding
+﻿namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
     public sealed partial class HandleUpgradeCommand(
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
         IDbContextFactory<AppDbContext> contextFactory,
         ILogger logger)
     {
-        public sealed record Command(VillageId VillageId, NormalBuildPlan Plan) : IVillageCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand
+        {
+            public string Name => $"{nameof(HandleUpgradeCommand).Humanize()} [{Description}]";
+            private string Description => $"{Plan}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {
-            var (villageId, plan) = command;
+            var (accountId, villageId, plan) = command;
 
             LogBuildingInfo(villageId, plan);
 
             Result result;
             if (CanUseSpecialUpgrade(villageId) && !UnskippableBuildings.Contains(plan.Type))
             {
-                result = await SpecialUpgrade(plan.Type);
+                result = await SpecialUpgrade(accountId, plan.Type);
                 if (result.IsFailed) return result;
             }
             else
             {
-                result = await Upgrade(plan.Type);
+                result = await Upgrade(accountId, plan.Type);
                 if (result.IsFailed) return result;
             }
 
@@ -70,25 +72,46 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             return useSpecialUpgrade;
         }
 
-        private async Task<Result> SpecialUpgrade(BuildingEnums building)
+        private async Task<Result> SpecialUpgrade(AccountId accountId, BuildingEnums building, bool repeat = false)
         {
+            var browser = chromeManager.Get(accountId);
+
             var button = await UpgradeParser.GetSpecialButton(browser.CurrentPage, building);
             var result = await browser.Click(button);
             if (result.IsFailed) return result;
 
-            result = await HandleAds();
+            var videoFeature = browser.CurrentPage.Locator("#videoFeature");
+
+            await Task.Delay(5_000);
+            if (await videoFeature.CountAsync() == 0)
+            {
+                browser.Logger.Information("Video not shown. Refreshing the page.");
+                result = await browser.Refresh();
+                if (result.IsFailed) return result;
+
+                result = await browser.Click(button);
+                if (result.IsFailed) return result;
+            }
+
+            result = await browser.Wait(videoFeature);
+            if (result.IsFailed) return result;
+
+            result = await HandleAds(accountId, building, repeat);
             if (result.IsFailed) return result;
             return Result.Ok();
         }
 
-        private async Task<Result> HandleAds()
+        private async Task<Result> HandleAds(AccountId accountId, BuildingEnums building, bool repeat = false)
         {
+            if (repeat)
+            {
+                return Retry.Error.WithError("Special upgrade failed after retrying.");
+            }
+
+            var browser = chromeManager.Get(accountId);
             var page = browser.CurrentPage;
             var videoFeature = page.Locator("#videoFeature");
-
-            var result = await browser.Wait(videoFeature);
-            if (result.IsFailed) return result;
-
+            Result result;
             var classess = await videoFeature.GetAttributeAsync("class") ?? "";
             if (classess.Contains("infoScreen"))
             {
@@ -100,14 +123,28 @@ namespace MainCore.Commands.Features.UpgradeBuilding
                 result = await browser.Click(buttonWatchAds);
                 if (result.IsFailed) return result;
             }
-            await Task.Delay(20_000);
+
+            await Task.Delay(10_000);
+
+            var videoAreaChildrend = browser.CurrentPage.Locator("#videoArea > *");
+            if (await videoAreaChildrend.CountAsync() == 0)
+            {
+                browser.Logger.Information("Video not loaded. Refreshing the page.");
+                result = await browser.Refresh();
+                if (result.IsFailed) return result;
+                result = await SpecialUpgrade(accountId, building, true);
+                if (result.IsFailed) return result;
+                return Result.Ok();
+            }
+
             result = await browser.WaitPageChanged("dorf");
             if (result.IsFailed) return result;
             return Result.Ok();
         }
 
-        private async Task<Result> Upgrade(BuildingEnums building)
+        private async Task<Result> Upgrade(AccountId accountId, BuildingEnums building)
         {
+            var browser = chromeManager.Get(accountId);
             var button = await UpgradeParser.GetNormalButton(browser.CurrentPage, building);
             var result = await browser.Click(button);
             if (result.IsFailed) return result;

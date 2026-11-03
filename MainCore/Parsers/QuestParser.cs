@@ -8,7 +8,7 @@
             return button;
         }
 
-        public static async Task<bool> IsQuestClaimable(IPage page)
+        public static async Task<bool> IsVillageQuestClaimable(IPage page)
         {
             var speechBubble = page.Locator("#questmasterButton div.newQuestSpeechBubble");
             return await speechBubble.CountAsync() > 0;

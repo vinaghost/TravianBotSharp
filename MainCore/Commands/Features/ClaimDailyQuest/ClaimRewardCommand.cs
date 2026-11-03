@@ -1,13 +1,16 @@
 ﻿namespace MainCore.Commands.Features.ClaimDailyQuest
 {
     [Handler]
-    public static partial class ClaimRewardCommand
+    public sealed partial class ClaimRewardCommand(ChromeManager chromeManager)
     {
-        public sealed record Command(IChromeBrowser Browser);
-
-        private static async ValueTask<Result> HandleAsync(Command command)
+        public sealed record Command(AccountId AccountId) : IAccountCommand
         {
-            var browser = command.Browser;
+            public string Name => nameof(ClaimRewardCommand).Humanize();
+        }
+
+        private async ValueTask<Result> HandleAsync(Command command)
+        {
+            var browser = chromeManager.Get(command.AccountId);
 
             Result result;
 

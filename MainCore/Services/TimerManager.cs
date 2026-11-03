@@ -1,7 +1,5 @@
 using System.Collections.Concurrent;
 
-using MainCore.Infrasturecture.Extensions;
-
 using Microsoft.Extensions.DependencyInjection;
 
 using Polly;
@@ -18,18 +16,20 @@ namespace MainCore.Services
 
         private readonly TaskManager _taskManager;
         private readonly RxQueue _rxQueue;
-        private readonly CustomServiceScopeFactory _serviceScopeFactory;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
+        private readonly ChromeManager _chromeManager;
 
         private static readonly ResiliencePropertyKey<ContextData> contextDataKey = new(nameof(ContextData));
         private readonly ResiliencePipeline<Result> _pipeline;
 
-        public TimerManager(TaskManager taskManager, CustomServiceScopeFactory serviceScopeFactory, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
+        public TimerManager(TaskManager taskManager, IServiceScopeFactory serviceScopeFactory, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, ChromeManager chromeManager)
         {
             _taskManager = taskManager;
             _serviceScopeFactory = serviceScopeFactory;
             _rxQueue = rxQueue;
             _contextFactory = contextFactory;
+            _chromeManager = chromeManager;
 
             static async ValueTask OnRetry(OnRetryArguments<Result> args)
             {
@@ -93,11 +93,10 @@ namespace MainCore.Services
 
             var cacheExecuteTime = task.ExecuteAt;
 
-            using var scope = _serviceScopeFactory.CreateScope(accountId);
+            using var scope = _serviceScopeFactory.CreateScope();
 
             ///===========================================================///
-            var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
-            var logger = browser.Logger;
+            var browser = _chromeManager.Get(accountId);
 
             var contextData = new ContextData(task.Description, browser);
 
@@ -128,14 +127,14 @@ namespace MainCore.Services
 
                 if (ex is OperationCanceledException)
                 {
-                    logger.Information("Pause button is pressed");
+                    browser.Logger.Information("Pause button is pressed");
                 }
                 else
                 {
                     var filename = await browser.Screenshot();
-                    logger.Information("Screenshot saved as {FileName}", filename);
-                    logger.Warning("There is something wrong. Bot is pausing. Last exception is");
-                    logger.Error(ex, "{Message}", ex.Message);
+                    browser.Logger.Information("Screenshot saved as {FileName}", filename);
+                    browser.Logger.Warning("There is something wrong. Bot is pausing. Last exception is");
+                    browser.Logger.Error(ex, "{Message}", ex.Message);
                 }
 
                 _taskManager.SetStatus(accountId, StatusEnums.Paused);
@@ -149,7 +148,7 @@ namespace MainCore.Services
                     if (result.HasError<Stop>() || result.HasError<Retry>())
                     {
                         var filename = await browser.Screenshot();
-                        logger.Information(messageTemplate: "Screenshot saved as {FileName}", filename);
+                        browser.Logger.Information(messageTemplate: "Screenshot saved as {FileName}", filename);
                         _taskManager.SetStatus(accountId, StatusEnums.Paused);
                     }
                     else if (result.HasError<Skip>())
@@ -160,7 +159,7 @@ namespace MainCore.Services
                         }
                         else
                         {
-                            logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
+                            browser.Logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                         }
                     }
                     else if (result.HasError<Cancel>())
@@ -176,7 +175,7 @@ namespace MainCore.Services
                     }
                     else
                     {
-                        logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
+                        browser.Logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     }
                 }
             }
@@ -234,5 +233,78 @@ namespace MainCore.Services
         }
 
         public record ContextData(string TaskName, IChromeBrowser Browser);
+    }
+
+    public static class ServiceScopeExtension
+    {
+        private static IHandler<T, Result> GetHandler<T>(this IServiceScope scope)
+        {
+            return scope.ServiceProvider.GetRequiredService<IHandler<T, Result>>();
+        }
+
+        public static async Task<Result> Execute(this IServiceScope scope, BaseTask task, CancellationToken cancellationToken)
+        {
+            switch (task)
+            {
+                case ClaimVillageQuestTask.Task claimQuestTask:
+                    var claimQuestTaskHandler = scope.GetHandler<ClaimVillageQuestTask.Task>();
+                    return await claimQuestTaskHandler.HandleAsync(claimQuestTask, cancellationToken);
+
+                case InstantUpgradeTask.Task completeImmediatelyTask:
+                    var completeImmediatelyTaskHandler = scope.GetHandler<InstantUpgradeTask.Task>();
+                    return await completeImmediatelyTaskHandler.HandleAsync(completeImmediatelyTask, cancellationToken);
+
+                case LoginTask.Task loginTask:
+                    var loginTaskHandler = scope.GetHandler<LoginTask.Task>();
+                    return await loginTaskHandler.HandleAsync(loginTask, cancellationToken);
+
+                case NPCTask.Task npcTask:
+                    var npcTaskHandler = scope.GetHandler<NPCTask.Task>();
+                    return await npcTaskHandler.HandleAsync(npcTask, cancellationToken);
+
+                case SleepTask.Task sleepTask:
+                    var sleepTaskHandler = scope.GetHandler<SleepTask.Task>();
+                    return await sleepTaskHandler.HandleAsync(sleepTask, cancellationToken);
+
+                case StartAdventureTask.Task startAdventureTask:
+                    var startAdventureTaskHandler = scope.GetHandler<StartAdventureTask.Task>();
+                    return await startAdventureTaskHandler.HandleAsync(startAdventureTask, cancellationToken);
+
+                case StartFarmListTask.Task startFarmListTask:
+                    var startFarmListTaskHandler = scope.GetHandler<StartFarmListTask.Task>();
+                    return await startFarmListTaskHandler.HandleAsync(startFarmListTask, cancellationToken);
+
+                case TrainTroopTask.Task trainTroopTask:
+                    var trainTroopTaskHandler = scope.GetHandler<TrainTroopTask.Task>();
+                    return await trainTroopTaskHandler.HandleAsync(trainTroopTask, cancellationToken);
+
+                case UpdateBuildingTask.Task updateBuildingTask:
+                    var updateBuildingTaskHandler = scope.GetHandler<UpdateBuildingTask.Task>();
+                    return await updateBuildingTaskHandler.HandleAsync(updateBuildingTask, cancellationToken);
+
+                case UpdateFarmListTask.Task updateFarmListTask:
+                    var updateFarmListTaskHandler = scope.GetHandler<UpdateFarmListTask.Task>();
+                    return await updateFarmListTaskHandler.HandleAsync(updateFarmListTask, cancellationToken);
+
+                case UpdateVillageTask.Task updateVillageTask:
+                    var updateVillageTaskHandler = scope.GetHandler<UpdateVillageTask.Task>();
+                    return await updateVillageTaskHandler.HandleAsync(updateVillageTask, cancellationToken);
+
+                case UpgradeBuildingTask.Task upgradeBuildingTask:
+                    var upgradeBuildingTaskHandler = scope.GetHandler<UpgradeBuildingTask.Task>();
+                    return await upgradeBuildingTaskHandler.HandleAsync(upgradeBuildingTask, cancellationToken);
+
+                case ClaimDailyQuestTask.Task claimDailyQuestTask:
+                    var claimDailyQuestTaskHandler = scope.GetHandler<ClaimDailyQuestTask.Task>();
+                    return await claimDailyQuestTaskHandler.HandleAsync(claimDailyQuestTask, cancellationToken);
+
+                case SetHeroPointTask.Task setHeroPointTask:
+                    var setHeroPointTaskHandler = scope.GetHandler<SetHeroPointTask.Task>();
+                    return await setHeroPointTaskHandler.HandleAsync(setHeroPointTask, cancellationToken);
+
+                default:
+                    throw new NotImplementedException($"Task {task.GetType().Name} is not implemented");
+            }
+        }
     }
 }
