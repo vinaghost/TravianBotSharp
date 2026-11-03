@@ -3,15 +3,16 @@
 namespace MainCore.Commands.Features.UseHeroItem
 {
     [Handler]
-    public static partial class ToHeroInventoryCommand
+    public partial class ToHeroInventoryCommand(ChromeManager chromeManager)
     {
-        public sealed record Command : ICommand;
-
-        private static async ValueTask<Result> HandleAsync(
-            Command command,
-            IChromeBrowser browser,
-            CancellationToken cancellationToken)
+        public sealed record Command(AccountId AccountId) : IAccountCommand
         {
+            public string Name => nameof(ToHeroInventoryCommand).Humanize();
+        }
+
+        private async ValueTask<Result> HandleAsync(Command command)
+        {
+            var browser = chromeManager.Get(command.AccountId);
             var result = await browser.Click(InventoryParser.GetHeroAvatar(browser.CurrentPage));
             if (result.IsFailed) return result;
 

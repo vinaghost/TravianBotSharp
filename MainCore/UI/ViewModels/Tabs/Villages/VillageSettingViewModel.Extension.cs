@@ -40,15 +40,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             {
                 if (settings[VillageSettingEnums.AutoNPCEnable] == 1)
                 {
-                    var task = new NpcTask.Task(accountId, villageId);
-                    if (task.CanStart(context) && !taskManager.IsExist<NpcTask.Task>(accountId, villageId))
+                    var task = new NPCTask.Task(accountId, villageId);
+                    if (task.CanStart(context) && !taskManager.IsExist<NPCTask.Task>(accountId, villageId))
                     {
                         taskManager.Add(task);
                     }
                 }
                 else
                 {
-                    taskManager.Remove<NpcTask.Task>(accountId, villageId);
+                    taskManager.Remove<NPCTask.Task>(accountId, villageId);
                 }
             }
 

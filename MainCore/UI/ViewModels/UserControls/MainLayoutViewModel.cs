@@ -16,6 +16,9 @@ namespace MainCore.UI.ViewModels.UserControls
     using ReactiveUI.Primitives.Extensions;
     using ReactiveUI.Primitives.Signals;
 
+    using Serilog;
+    using Serilog.Context;
+
     [RegisterSingleton<MainLayoutViewModel>]
     public partial class MainLayoutViewModel : ViewModelBase
     {
@@ -27,7 +30,7 @@ namespace MainCore.UI.ViewModels.UserControls
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly SelectedItemStore _selectedItemStore;
         private readonly RxQueue _rxQueue;
-        private readonly CustomServiceScopeFactory _serviceScopeFactory;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly DefaultTemplatePathStore _defaultTemplatePathStore;
 
         private readonly AccountTabStore _accountTabStore;
@@ -35,7 +38,7 @@ namespace MainCore.UI.ViewModels.UserControls
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, DialogService dialogService, TaskManager taskManager, ILogger logger, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, TimerManager timerManager, CustomServiceScopeFactory serviceScopeFactory, DefaultTemplatePathStore defaultTemplatePathStore, ChromeManager chromeManager)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, DialogService dialogService, TaskManager taskManager, ILogger logger, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, TimerManager timerManager, IServiceScopeFactory serviceScopeFactory, DefaultTemplatePathStore defaultTemplatePathStore, ChromeManager chromeManager)
         {
             _accountTabStore = accountTabStore;
             _serviceScopeFactory = serviceScopeFactory;
@@ -204,24 +207,28 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            var result = await context.GetValidAccess(accountId);
-            if (result.IsFailed)
-            {
-                await _dialogService.SendMessage("Warning", string.Join(Environment.NewLine, result.Errors.Select(x => x.Message)));
-                return;
-            }
-
             _taskManager.SetStatus(accountId, StatusEnums.Starting);
+            using var scope = _serviceScopeFactory.CreateScope();
+            var openBrowserCommand = scope.ServiceProvider.GetRequiredService<OpenBrowserCommand.Handler>();
 
             try
             {
-                using var scope = _serviceScopeFactory.CreateScope(accountId);
-                var openBrowserCommand = scope.ServiceProvider.GetRequiredService<OpenBrowserCommand.Handler>();
-                await openBrowserCommand.HandleAsync(new(accountId, result.Value));
+                using (LogContext.PushProperty("AccountId", accountId))
+                using (LogContext.PushProperty("Account", context.GetAccountData(accountId)))
+                {
+                    var result = await openBrowserCommand.HandleAsync(new(accountId, true));
+                    if (result.IsFailed)
+                    {
+                        await _dialogService.SendMessage("Warning", string.Join(Environment.NewLine, result.Errors.Select(x => x.Message)));
+                        return;
+                    }
+                }
             }
             catch (Exception ex)
             {
                 await _dialogService.SendMessage("Error", $"Failed to open browser: {ex.Message}");
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger>();
+                logger.Error(ex, "Failed to open browser for account {AccountId}", accountId);
                 _taskManager.SetStatus(accountId, StatusEnums.Offline);
                 return;
             }

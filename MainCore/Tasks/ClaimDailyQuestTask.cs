@@ -1,18 +1,16 @@
 ﻿using MainCore.Commands.Features.ClaimDailyQuest;
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class ClaimDailyQuestTask(
-        IChromeBrowser browser,
+        CheckDailyQuestCommand.Handler checkDailyQuestCommand,
         OpenDailQuestPanelCommand.Handler openDailQuestPanelCommand,
         ClaimRewardCommand.Handler claimRewardCommand)
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {
-            protected override string TaskName => "Claim daily quest";
+            protected override string TaskName => nameof(ClaimDailyQuestTask).Humanize();
 
             public override bool CanStart(AppDbContext context)
             {
@@ -23,23 +21,16 @@ namespace MainCore.Tasks
             }
         }
 
-        private async ValueTask<Result> HandleAsync(
-#pragma warning disable S1172 // Unused method parameters should be removed
-#pragma warning disable IDE0060 // Remove unused parameter
-            Task task,
-#pragma warning restore IDE0060 // Remove unused parameter
-#pragma warning restore S1172 // Unused method parameters should be removed
-            CancellationToken cancellationToken
-           )
+        private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
             Result result;
-            var canClaimQuest = await QuestParser.IsDailyQuestClaimable(browser.CurrentPage);
+            var canClaimQuest = await checkDailyQuestCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (!canClaimQuest) return Result.Ok();
 
-            result = await openDailQuestPanelCommand.HandleAsync(new(browser), cancellationToken);
+            result = await openDailQuestPanelCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await claimRewardCommand.HandleAsync(new(browser), cancellationToken);
+            result = await claimRewardCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }

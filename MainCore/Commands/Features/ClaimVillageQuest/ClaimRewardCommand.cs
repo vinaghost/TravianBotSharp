@@ -3,13 +3,18 @@
 namespace MainCore.Commands.Features.ClaimVillageQuest
 {
     [Handler]
-    public sealed partial class ClaimRewardCommand(SwitchTabCommand.Handler switchTabCommand)
+    public sealed partial class ClaimRewardCommand(
+        ChromeManager chromeManager,
+        SwitchTabCommand.Handler switchTabCommand)
     {
-        public sealed record Command(IChromeBrowser Browser);
+        public sealed record Command(AccountId AccountId) : IAccountCommand
+        {
+            public string Name => nameof(ClaimRewardCommand).Humanize();
+        }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {
-            var browser = command.Browser;
+            var browser = chromeManager.Get(command.AccountId);
 
             Result result;
 
@@ -24,7 +29,7 @@ namespace MainCore.Commands.Features.ClaimVillageQuest
 
                 if (await quest.CountAsync() == 0)
                 {
-                    result = await switchTabCommand.HandleAsync(new(1), cancellationToken);
+                    result = await switchTabCommand.HandleAsync(new(command.AccountId, 1), cancellationToken);
                     if (result.IsFailed) return result;
 
                     quest = QuestParser.GetQuestCollectButton(browser.CurrentPage);
@@ -38,7 +43,7 @@ namespace MainCore.Commands.Features.ClaimVillageQuest
                 result = await browser.Click(quest.First);
                 if (result.IsFailed) return result;
             }
-            while (await QuestParser.IsQuestClaimable(browser.CurrentPage));
+            while (await QuestParser.IsVillageQuestClaimable(browser.CurrentPage));
 
             return Result.Ok();
         }

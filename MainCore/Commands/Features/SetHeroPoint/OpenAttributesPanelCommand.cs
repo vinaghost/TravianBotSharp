@@ -3,13 +3,18 @@
 namespace MainCore.Commands.Features.SetHeroPoint
 {
     [Handler]
-    public sealed partial class OpenSetPointPanelCommand(SwitchTabCommand.Handler switchTabCommand)
+    public sealed partial class OpenAttributesPanelCommand(
+        SwitchTabCommand.Handler switchTabCommand,
+        ChromeManager chromeManager)
     {
-        public sealed record Command(IChromeBrowser Browser);
+        public sealed record Command(AccountId AccountId) : IAccountCommand
+        {
+            public string Name => nameof(OpenAttributesPanelCommand).Humanize();
+        }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {
-            var browser = command.Browser;
+            var browser = chromeManager.Get(command.AccountId);
             Result result;
 
             var heroAvatar = browser.CurrentPage.Locator("#topBarHero #heroImageButton");
@@ -20,7 +25,7 @@ namespace MainCore.Commands.Features.SetHeroPoint
             result = await browser.Wait(heroPageLocator);
             if (result.IsFailed) return result;
 
-            result = await switchTabCommand.HandleAsync(new(1), cancellationToken);
+            result = await switchTabCommand.HandleAsync(new(command.AccountId, 1), cancellationToken);
             if (result.IsFailed) return result;
 
             var attributeBox = browser.CurrentPage.Locator("#heroV2 .attributeBox .heroAttributes .attributes.formV2");

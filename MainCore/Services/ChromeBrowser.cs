@@ -1,8 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-using MainCore.Infrasturecture.Extensions;
-
 namespace MainCore.Services
 {
     public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory) : IChromeBrowser
@@ -86,12 +84,18 @@ namespace MainCore.Services
                 if (_mainPage is not null)
                 {
                     await _mainPage.CloseAsync();
+                    _mainPage = null;
                 }
                 if (_browser is not null)
                 {
                     await _browser.CloseAsync();
+                    _browser = null;
                 }
-                _playwright?.Dispose();
+                if (_playwright is not null)
+                {
+                    _playwright.Dispose();
+                    _playwright = null;
+                }
             }
             catch (Exception ex)
             {

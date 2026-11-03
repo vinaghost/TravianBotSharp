@@ -1,13 +1,11 @@
 using MainCore.Commands.Update;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Behaviors
 {
     public sealed class AccountTaskBehavior<TRequest, TResponse>(
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
         TaskManager taskManager,
         UpdateAccountInfoCommand.Handler updateAccountInfoCommand,
-        UpdateVillageListCommand.Handler updateVillageListCommand,
         UpdateDailyQuestCommand.Handler updateDailyQuestCommand,
         UpdateHeroLevelUpCommand.Handler updateHeroLevelUpCommand,
         UpdateAdventureCommand.Handler updateAdventureCommand)
@@ -23,6 +21,7 @@ namespace MainCore.Behaviors
             }
             var accountId = request.AccountId;
             var cacheExecuteAt = request.ExecuteAt;
+            var browser = chromeManager.Get(accountId);
             var isIngamePage = await LoginParser.IsIngamePage(browser.CurrentPage);
             request.ExecuteAt = cacheExecuteAt;
 
@@ -35,7 +34,6 @@ namespace MainCore.Behaviors
                     if (result.IsFailed) return (TResponse)Stop.Error.WithError("Travian is not ingame nor login page. Please check browser");
 
                     await updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
-                    await updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
                 }
 
                 if (request is not LoginTask.Task)
@@ -48,7 +46,6 @@ namespace MainCore.Behaviors
             else
             {
                 await updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
-                await updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
             }
 
             var response = await Next(request, cancellationToken);
@@ -57,7 +54,6 @@ namespace MainCore.Behaviors
             if (isIngamePage)
             {
                 await updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
-                await updateVillageListCommand.HandleAsync(new(accountId), cancellationToken);
                 await updateAdventureCommand.HandleAsync(new(accountId), cancellationToken);
                 await updateDailyQuestCommand.HandleAsync(new(accountId), cancellationToken);
                 await updateHeroLevelUpCommand.HandleAsync(new(accountId), cancellationToken);

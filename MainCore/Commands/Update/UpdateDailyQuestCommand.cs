@@ -2,14 +2,18 @@ namespace MainCore.Commands.Update
 {
     [Handler]
     public sealed partial class UpdateDailyQuestCommand(
-         IChromeBrowser browser,
+         ChromeManager chromeManager,
          IDbContextFactory<AppDbContext> contextFactory,
          TaskManager taskManager)
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand;
+        public sealed record Command(AccountId AccountId) : IAccountCommand
+        {
+            public string Name => "";
+        }
 
         private async ValueTask HandleAsync(Command command)
         {
+            var browser = chromeManager.Get(command.AccountId);
             if (!(await QuestParser.IsDailyQuestClaimable(browser.CurrentPage))) return;
             var accountId = command.AccountId;
             using var context = contextFactory.CreateDbContext();

@@ -1,6 +1,5 @@
 ﻿using MainCore.Commands.Navigate;
 using MainCore.Commands.Update;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -11,7 +10,7 @@ namespace MainCore.Tasks
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {
-            protected override string TaskName => "Update farm list";
+            protected override string TaskName => nameof(UpdateFarmListTask).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)

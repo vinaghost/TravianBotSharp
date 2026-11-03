@@ -1,7 +1,5 @@
 ﻿using MainCore.Commands.Features;
 using MainCore.Commands.Navigate;
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
@@ -14,7 +12,7 @@ namespace MainCore.Tasks
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            protected override string TaskName => "Train troop";
+            protected override string TaskName => nameof(TrainTroopTask).Humanize();
 
             public override bool CanStart(AppDbContext context)
             {
@@ -34,7 +32,7 @@ namespace MainCore.Tasks
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-                result = await toBuildingCommand.HandleAsync(new(task.VillageId, building), cancellationToken);
+                result = await toBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId, building), cancellationToken);
                 if (result.IsFailed)
                 {
                     if (result.HasError<MissingBuilding>())
@@ -50,7 +48,7 @@ namespace MainCore.Tasks
 
                 var (troop, amount) = GetTroopDataToTrain(task.VillageId, building);
                 var trainWhenLowResource = TrainWhenLowResource(task.VillageId);
-                result = await trainTroopCommand.HandleAsync(new(troop, amount, trainWhenLowResource), cancellationToken);
+                result = await trainTroopCommand.HandleAsync(new(task.AccountId, troop, amount, trainWhenLowResource), cancellationToken);
                 if (result.IsFailed)
                 {
                     if (result.HasError<MissingResource>())

@@ -1,14 +1,21 @@
 ﻿namespace MainCore.Commands.Features.UseHeroItem
 {
     [Handler]
-    public sealed partial class UseHeroItemCommand(IChromeBrowser browser, ILogger logger)
+    public sealed partial class UseHeroItemCommand(
+        ChromeManager chromeManager,
+        ILogger logger)
     {
-        public sealed record Command(Dictionary<HeroItemEnums, long> ItemToUse) : ICommand;
+        public sealed record Command(AccountId AccountId, Dictionary<HeroItemEnums, long> ItemToUse) : IAccountCommand
+        {
+            public string Name => $"{nameof(UseHeroItemCommand).Humanize()} {Description}";
+            private string Description => $"{string.Join(", ", ItemToUse.Select(x => $"{x.Value} {x.Key}"))}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {
             var itemToUse = command.ItemToUse;
             Result result;
+            var browser = chromeManager.Get(command.AccountId);
             foreach (var (item, amount) in itemToUse)
             {
                 if (amount <= 0) continue;
