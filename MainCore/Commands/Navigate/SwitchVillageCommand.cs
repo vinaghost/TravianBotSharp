@@ -3,7 +3,7 @@
     [Handler]
     public sealed partial class SwitchVillageCommand(ChromeManager chromeManager)
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IVillageCommand
+        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand
         {
             public string Name => $"{nameof(SwitchVillageCommand)} [{Description}]";
             private string Description => $"{VillageId}";
