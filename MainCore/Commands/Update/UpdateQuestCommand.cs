@@ -23,7 +23,7 @@ namespace MainCore.Commands.Update
                 return;
             }
             if (taskManager.IsExist<ClaimVillageQuestTask.Task>(accountId, villageId)) return;
-            taskManager.Add(claimQuestTask);
+            taskManager.Add(claimQuestTask, true);
         }
     }
 }

@@ -30,7 +30,7 @@ namespace MainCore.Commands.Update
             var task = new NPCTask.Task(accountId, villageId);
             if (task.CanStart(context) && !taskManager.IsExist<NPCTask.Task>(accountId, villageId))
             {
-                taskManager.Add(task);
+                taskManager.Add(task, true);
             }
         }
 

@@ -29,15 +29,17 @@ namespace MainCore.Commands.Features.ClaimVillageQuest
 
                 if (await quest.CountAsync() == 0)
                 {
-                    result = await switchTabCommand.HandleAsync(new(command.AccountId, 1), cancellationToken);
-                    if (result.IsFailed) return result;
+                    await Task.Delay(1000, CancellationToken.None);
+                    if (await quest.CountAsync() == 0)
+                    {
+                        result = await switchTabCommand.HandleAsync(new(command.AccountId, 1), cancellationToken);
+                        if (result.IsFailed) return result;
+                    }
 
-                    quest = QuestParser.GetQuestCollectButton(browser.CurrentPage);
-                }
-
-                if (await quest.CountAsync() == 0)
-                {
-                    return Result.Ok();
+                    if (await quest.CountAsync() == 0)
+                    {
+                        return Result.Ok();
+                    }
                 }
 
                 result = await browser.Click(quest.First);
