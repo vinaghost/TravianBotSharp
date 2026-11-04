@@ -7,6 +7,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
     public sealed partial class GetBuildPlanCommand(
+        ChromeManager chromeManager,
         IDbContextFactory<AppDbContext> contextFactory,
         ToDorfCommand.Handler toDorfCommand,
         UpdateBuildingCommand.Handler updateBuildingCommand,
@@ -87,13 +88,14 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private async Task<Result> CheckBonusBuilding(AccountId accountId, VillageId villageId, CancellationToken cancellationToken)
         {
-            var result = await toDorfCommand.HandleAsync(new(accountId, 1), cancellationToken);
+            var browser = chromeManager.Get(accountId);
+            var result = await toDorfCommand.HandleAsync(new(browser, 1), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(browser, 2), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
@@ -103,8 +105,9 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private async Task<Result> CheckBuilding(AccountId accountId, VillageId villageId, int location, CancellationToken cancellationToken)
         {
+            var browser = chromeManager.Get(accountId);
             var dorf = location < 19 ? 1 : 2;
-            var result = await toDorfCommand.HandleAsync(new(accountId, dorf), cancellationToken);
+            var result = await toDorfCommand.HandleAsync(new(browser, dorf), cancellationToken);
             if (result.IsFailed) return result;
             result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
             if (result.IsFailed) return result;

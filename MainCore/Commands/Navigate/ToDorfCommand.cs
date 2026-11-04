@@ -1,18 +1,17 @@
 ﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public sealed partial class ToDorfCommand(ChromeManager chromeManager)
+    public static partial class ToDorfCommand
     {
-        public sealed record Command(AccountId AccountId, int Dorf) : IAccountCommand
+        public sealed record Command(IChromeBrowser Browser, int Dorf) : ICommand
         {
             public string Name => $"{nameof(ToDorfCommand)} [{Description}]";
             private string Description => $"{Dorf}";
         }
 
-        private async ValueTask<Result> HandleAsync(Command command)
+        private static async ValueTask<Result> HandleAsync(Command command)
         {
-            var (accountId, dorf) = command;
-            var browser = chromeManager.Get(accountId);
+            var (browser, dorf) = command;
 
             var currentUrl = browser.CurrentUrl;
             var currentDorf = GetCurrentDorf(currentUrl);

@@ -1,16 +1,16 @@
 ﻿namespace MainCore.Commands.Features.StartAdventure
 {
     [Handler]
-    public sealed partial class CheckHeroReadyCommand(ChromeManager chromeManager)
+    public static partial class CheckHeroReadyCommand
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand
+        public sealed record Command(IChromeBrowser Browser) : ICommand
         {
             public string Name => nameof(CheckHeroReadyCommand).Humanize();
         }
 
-        private async ValueTask<bool> HandleAsync(Command command)
+        private static async ValueTask<bool> HandleAsync(Command command)
         {
-            var browser = chromeManager.Get(command.AccountId);
+            var browser = command.Browser;
             var heroState = await AdventureParser.GetHeroStateAsync(browser.CurrentPage);
 
             if (heroState.Health <= 30)

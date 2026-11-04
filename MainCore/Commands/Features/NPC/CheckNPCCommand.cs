@@ -4,18 +4,17 @@ namespace MainCore.Commands.Features.NPC
 {
     [Handler]
     public sealed partial class CheckNPCCommand(
-        ChromeManager chromeManager,
         IDbContextFactory<AppDbContext> contextFactory,
         ILogger logger)
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand
+        public sealed record Command(IChromeBrowser Browser, VillageId VillageId) : ICommand
         {
             public string Name => nameof(CheckNPCCommand).Humanize();
         }
 
         private async ValueTask<bool> HandleAsync(Command command)
         {
-            var browser = chromeManager.Get(command.AccountId);
+            var browser = command.Browser;
 
             var storage = await UpdateStorageCommand.GetData(browser.CurrentPage);
 

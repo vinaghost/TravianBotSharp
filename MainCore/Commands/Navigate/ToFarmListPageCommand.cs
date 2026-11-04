@@ -8,8 +8,7 @@ namespace MainCore.Commands.Navigate
         ChromeManager chromeManager,
         SwitchVillageCommand.Handler switchVillageCommand,
         ToDorfCommand.Handler toDorfCommand,
-        UpdateBuildingCommand.Handler updateBuildingCommand,
-        ToBuildingByLocationCommand.Handler toBuildingCommand,
+        ToBuildingByTypeCommand.Handler toBuildingCommand,
         SwitchTabCommand.Handler switchTabCommand)
     {
         public sealed record Command(AccountId AccountId) : IAccountCommand
@@ -17,31 +16,26 @@ namespace MainCore.Commands.Navigate
             public string Name => $"{nameof(ToFarmListPageCommand)}";
         }
 
-        private async ValueTask<Result> HandleAsync(
-            Command command,
-            CancellationToken cancellationToken)
+        private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {
             var accountId = command.AccountId;
+            var browser = chromeManager.Get(accountId);
 
             var rallypointVillageId = GetHasRallypointVillage(accountId);
             if (rallypointVillageId == VillageId.Empty) return Skip.Error.WithError("No rallypoint found. Recheck & load village has rallypoint in Village>Build tab");
 
-            var result = await switchVillageCommand.HandleAsync(new(accountId, rallypointVillageId), cancellationToken);
+            var result = await switchVillageCommand.HandleAsync(new(browser, rallypointVillageId), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(browser, 2), cancellationToken);
             if (result.IsFailed) return result;
 
-            var (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(accountId, rallypointVillageId), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
-
-            result = await toBuildingCommand.HandleAsync(new(accountId, 39), cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(browser, BuildingEnums.RallyPoint), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await switchTabCommand.HandleAsync(new(accountId, 4), cancellationToken);
+            result = await switchTabCommand.HandleAsync(new(browser, 4), cancellationToken);
             if (result.IsFailed) return result;
 
-            var browser = chromeManager.Get(accountId);
             result = await browser.Wait(FarmListParser.GetStartAllButton(browser.CurrentPage));
             if (result.IsFailed) return result;
 

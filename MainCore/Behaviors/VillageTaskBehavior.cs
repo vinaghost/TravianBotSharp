@@ -4,6 +4,7 @@ using MainCore.Commands.Update;
 namespace MainCore.Behaviors
 {
     public class VillageTaskBehavior<TRequest, TResponse>(
+        ChromeManager chromeManager,
         SwitchVillageCommand.Handler switchVillageCommand,
         UpdateStorageCommand.Handler updateStorageCommand,
         ToDorfCommand.Handler toDorfCommand,
@@ -16,8 +17,9 @@ namespace MainCore.Behaviors
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
             var (accountId, villageId) = request;
+            var browser = chromeManager.Get(accountId);
             Result result;
-            result = await switchVillageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            result = await switchVillageCommand.HandleAsync(new(browser, villageId), cancellationToken);
             if (result.IsFailed) return (TResponse)result;
 
             await updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
@@ -29,7 +31,7 @@ namespace MainCore.Behaviors
 
             if (response.IsFailed && !response.HasError<Skip>()) return response;
 
-            result = await toDorfCommand.HandleAsync(new(accountId, 2), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(browser, 2), cancellationToken);
             if (result.IsFailed) return (TResponse)result;
 
             result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);

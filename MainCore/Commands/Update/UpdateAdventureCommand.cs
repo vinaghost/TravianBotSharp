@@ -8,14 +8,14 @@ namespace MainCore.Commands.Update
         IDbContextFactory<AppDbContext> contextFactory,
         TaskManager taskManager)
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand
+        public sealed record Command(AccountId AccountId, IChromeBrowser Browser) : IAccountCommand
         {
             public string Name => "";
         }
 
         private async ValueTask HandleAsync(Command command, CancellationToken cancellationToken)
         {
-            var canStartAdventure = await checkHeroReadyCommand.HandleAsync(new(command.AccountId), cancellationToken);
+            var canStartAdventure = await checkHeroReadyCommand.HandleAsync(new(command.Browser), cancellationToken);
             if (!canStartAdventure) return;
 
             var startAdventureTask = new StartAdventureTask.Task(command.AccountId);

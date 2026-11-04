@@ -1,11 +1,9 @@
 ﻿namespace MainCore.Commands.Features
 {
     [Handler]
-    public sealed partial class TrainTroopCommand(
-        ILogger logger,
-        ChromeManager chromeManager)
+    public sealed partial class TrainTroopCommand(ILogger logger)
     {
-        public sealed record Command(AccountId AccountId, TroopEnums Troop, int Amount, bool TrainWhenLowResource) : IAccountCommand
+        public sealed record Command(IChromeBrowser Browser, TroopEnums Troop, int Amount, bool TrainWhenLowResource) : ICommand
         {
             public string Name => $"{nameof(TrainTroopCommand).Humanize()} [{Description}]";
             private string Description => $"Train {Amount} {Troop}";
@@ -13,8 +11,7 @@
 
         private async ValueTask<Result> HandleAsync(Command command)
         {
-            var (accountId, troop, amount, trainWhenLowResource) = command;
-            var browser = chromeManager.Get(accountId);
+            var (browser, troop, amount, trainWhenLowResource) = command;
 
             var maxAmount = await TrainTroopParser.GetMaxAmount(browser.CurrentPage, troop);
             if (maxAmount == 0)

@@ -1,16 +1,16 @@
 ﻿namespace MainCore.Commands.Features.StartAdventure
 {
     [Handler]
-    public sealed partial class OpenAdventurePanelCommand(ChromeManager chromeManager)
+    public static partial class OpenAdventurePanelCommand
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand
+        public sealed record Command(IChromeBrowser Browser) : ICommand
         {
             public string Name => nameof(OpenAdventurePanelCommand).Humanize();
         }
 
-        private async ValueTask<Result> HandleAsync(Command command)
+        private static async ValueTask<Result> HandleAsync(Command command)
         {
-            var browser = chromeManager.Get(command.AccountId);
+            var browser = command.Browser;
             Result result;
 
             result = await browser.Click(AdventureParser.GetHeroAdventureButton(browser.CurrentPage));

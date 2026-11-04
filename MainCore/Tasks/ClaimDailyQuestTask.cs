@@ -4,6 +4,7 @@ namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class ClaimDailyQuestTask(
+        ChromeManager chromeManager,
         CheckDailyQuestCommand.Handler checkDailyQuestCommand,
         OpenDailQuestPanelCommand.Handler openDailQuestPanelCommand,
         ClaimRewardCommand.Handler claimRewardCommand)
@@ -23,14 +24,15 @@ namespace MainCore.Tasks
 
         private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
+            var browser = chromeManager.Get(task.AccountId);
             Result result;
-            var canClaimQuest = await checkDailyQuestCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            var canClaimQuest = await checkDailyQuestCommand.HandleAsync(new(browser), cancellationToken);
             if (!canClaimQuest) return Result.Ok();
 
-            result = await openDailQuestPanelCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            result = await openDailQuestPanelCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await claimRewardCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            result = await claimRewardCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }

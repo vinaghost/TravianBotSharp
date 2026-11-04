@@ -1,18 +1,16 @@
 ﻿namespace MainCore.Commands.Features.Sleep
 {
     [Handler]
-    public sealed partial class SleepCommand(
-        IDbContextFactory<AppDbContext> contextFactory,
-        ILogger logger)
+    public sealed partial class SleepCommand(ILogger logger)
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand
+        public sealed record Command(DateTime SleepEnd) : ICommand
         {
             public string Name => nameof(SleepCommand).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {
-            var sleepEnd = GetSleepTime(command.AccountId);
+            var sleepEnd = command.SleepEnd;
             int lastMinute = 0;
             while (true)
             {
@@ -36,19 +34,6 @@
                     lastMinute = currentMinute;
                 }
             }
-        }
-
-        private DateTime GetSleepTime(AccountId accountId)
-        {
-            using var context = contextFactory.CreateDbContext();
-            var sleepTime = context.ByName(
-                accountId,
-                AccountSettingEnums.SleepTimeMin,
-                AccountSettingEnums.SleepTimeMax,
-                60);
-            var sleepEnd = DateTime.Now.AddSeconds(sleepTime);
-
-            return sleepEnd;
         }
     }
 }

@@ -5,22 +5,19 @@ namespace MainCore.Commands.Update
 {
     [Handler]
     public sealed partial class UpdateAccountInfoCommand(
-        ChromeManager chromeManager,
         IDbContextFactory<AppDbContext> contextFactory,
         RxQueue rxQueue,
         TaskManager taskManager,
         DefaultTemplatePathStore defaultTemplatePathStore)
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand
+        public sealed record Command(AccountId AccountId, IChromeBrowser Browser) : IAccountCommand
         {
             public string Name => "";
         }
 
         private async ValueTask HandleAsync(Command command)
         {
-            var accountId = command.AccountId;
-            var browser = chromeManager.Get(accountId);
-
+            var (accountId, browser) = command;
             var (accountInfo, villageDtos) = await GetData(browser.CurrentPage);
 
             UpdateAccountInfo(accountId, accountInfo);

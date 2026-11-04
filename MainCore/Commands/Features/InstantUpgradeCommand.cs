@@ -1,16 +1,16 @@
 ﻿namespace MainCore.Commands.Features
 {
     [Handler]
-    public sealed partial class InstantUpgradeCommand(ChromeManager chromeManager)
+    public static partial class InstantUpgradeCommand
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand
+        public sealed record Command(IChromeBrowser Browser) : ICommand
         {
             public string Name => nameof(InstantUpgradeCommand).Humanize();
         }
 
-        private async ValueTask<Result> HandleAsync(Command command)
+        private static async ValueTask<Result> HandleAsync(Command command)
         {
-            var browser = chromeManager.Get(command.AccountId);
+            var browser = command.Browser;
             Result result;
 
             var oldQueueCount = await BuildingLayoutParser.CountQueueBuilding(browser.CurrentPage);

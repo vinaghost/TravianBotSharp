@@ -1,18 +1,17 @@
 ﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public sealed partial class SwitchTabCommand(ChromeManager chromeManager)
+    public static partial class SwitchTabCommand
     {
-        public sealed record Command(AccountId AccountId, int TabIndex) : IAccountCommand
+        public sealed record Command(IChromeBrowser Browser, int TabIndex) : ICommand
         {
             public string Name => $"{nameof(SwitchTabCommand)} [{Description}]";
             private string Description => $"#{TabIndex + 1}";
         }
 
-        private async ValueTask<Result> HandleAsync(Command command)
+        private static async ValueTask<Result> HandleAsync(Command command)
         {
-            var (accountId, tabIndex) = command;
-            var browser = chromeManager.Get(accountId);
+            var (browser, tabIndex) = command;
             var tabs = BuildingTabParser.GetTabs(browser.CurrentPage);
 
             var countTabs = await tabs.CountAsync();

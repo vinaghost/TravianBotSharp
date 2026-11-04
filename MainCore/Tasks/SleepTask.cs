@@ -19,13 +19,28 @@ namespace MainCore.Tasks
         {
             await closeBrowserCommand.HandleAsync(new(task.AccountId), cancellationToken);
 
-            var result = await sleepCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            var sleepEnd = GetSleepTime(task.AccountId);
+            var result = await sleepCommand.HandleAsync(new(sleepEnd), cancellationToken);
             if (result.IsFailed) return result;
+
             result = await openBrowserCommand.HandleAsync(new(task.AccountId), cancellationToken);
             if (result.IsFailed) return result;
 
             task.ExecuteAt = GetNextExecuteTime(task.AccountId);
             return Result.Ok();
+        }
+
+        private DateTime GetSleepTime(AccountId accountId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var sleepTime = context.ByName(
+                accountId,
+                AccountSettingEnums.SleepTimeMin,
+                AccountSettingEnums.SleepTimeMax,
+                60);
+            var sleepEnd = DateTime.Now.AddSeconds(sleepTime);
+
+            return sleepEnd;
         }
 
         private DateTime GetNextExecuteTime(AccountId accountId)

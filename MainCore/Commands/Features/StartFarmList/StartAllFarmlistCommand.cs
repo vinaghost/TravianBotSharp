@@ -1,38 +1,19 @@
 ﻿namespace MainCore.Commands.Features.StartFarmList
 {
     [Handler]
-    public sealed partial class StartAllFarmlistCommand(
-        ChromeManager chromeManager,
-        IDbContextFactory<AppDbContext> contextFactory)
+    public static partial class StartAllFarmlistCommand
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand
+        public sealed record Command(IChromeBrowser Browser) : ICommand
         {
             public string Name => nameof(StartAllFarmlistCommand).Humanize();
         }
 
-        private async ValueTask<Result> HandleAsync(Command command)
+        private static async ValueTask<Result> HandleAsync(Command command)
         {
-            var browser = chromeManager.Get(command.AccountId);
-            var farmLists = GetActiveFarms(command.AccountId);
-            if (farmLists.Count == 0) return Skip.Error.WithError("No farmlist is active");
-            Result result;
-            foreach (var farmList in farmLists)
-            {
-                result = await browser.Click(FarmListParser.GetStartButton(browser.CurrentPage, farmList));
-                if (result.IsFailed) return result;
-            }
+            var browser = command.Browser;
+            var result = await browser.Click(FarmListParser.GetStartAllButton(browser.CurrentPage));
+            if (result.IsFailed) return result;
             return Result.Ok();
-        }
-
-        private List<FarmId> GetActiveFarms(AccountId accountId)
-        {
-            using var context = contextFactory.CreateDbContext();
-            var farmLists = context.FarmLists
-                .Where(x => x.AccountId == accountId.Value)
-                .Where(x => x.IsActive)
-                .Select(x => new FarmId(x.Id))
-                .ToList();
-            return farmLists;
         }
     }
 }

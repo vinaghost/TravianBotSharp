@@ -33,7 +33,7 @@ namespace MainCore.Behaviors
                     var result = await browser.Wait(LoginParser.GetServerTime(browser.CurrentPage));
                     if (result.IsFailed) return (TResponse)Stop.Error.WithError("Travian is not ingame nor login page. Please check browser");
 
-                    await updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
+                    await updateAccountInfoCommand.HandleAsync(new(accountId, browser), cancellationToken);
                 }
 
                 if (request is not LoginTask.Task)
@@ -45,7 +45,7 @@ namespace MainCore.Behaviors
             }
             else
             {
-                await updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
+                await updateAccountInfoCommand.HandleAsync(new(accountId, browser), cancellationToken);
             }
 
             var response = await Next(request, cancellationToken);
@@ -53,10 +53,10 @@ namespace MainCore.Behaviors
             isIngamePage = await LoginParser.IsIngamePage(browser.CurrentPage);
             if (isIngamePage)
             {
-                await updateAccountInfoCommand.HandleAsync(new(accountId), cancellationToken);
-                await updateAdventureCommand.HandleAsync(new(accountId), cancellationToken);
-                await updateDailyQuestCommand.HandleAsync(new(accountId), cancellationToken);
-                await updateHeroLevelUpCommand.HandleAsync(new(accountId), cancellationToken);
+                await updateAccountInfoCommand.HandleAsync(new(accountId, browser), cancellationToken);
+                await updateAdventureCommand.HandleAsync(new(accountId, browser), cancellationToken);
+                await updateDailyQuestCommand.HandleAsync(new(accountId, browser), cancellationToken);
+                await updateHeroLevelUpCommand.HandleAsync(new(accountId, browser), cancellationToken);
             }
 
             return response;

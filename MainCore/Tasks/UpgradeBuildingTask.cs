@@ -40,7 +40,7 @@ namespace MainCore.Tasks
 
                 logger.Information("Build {Type} to level {Level} at location {Location}", plan.Type, plan.Level, plan.Location);
 
-                result = await toBuildPageCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
+                result = await toBuildPageCommand.HandleAsync(new(browser, plan), cancellationToken);
                 if (result.IsFailed) return result;
 
                 result = await handleResourceCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);

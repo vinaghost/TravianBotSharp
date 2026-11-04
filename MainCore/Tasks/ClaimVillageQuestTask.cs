@@ -4,6 +4,7 @@ namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class ClaimVillageQuestTask(
+        ChromeManager chromeManager,
         CheckVillageQuestCommand.Handler checkVillageQuestCommand,
         OpenVillageQuestPageCommand.Handler openVillageQuestPageCommand,
         ClaimRewardCommand.Handler claimRewardCommand)
@@ -23,13 +24,14 @@ namespace MainCore.Tasks
 
         private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
+            var browser = chromeManager.Get(task.AccountId);
             Result result;
-            var canClaimQuest = await checkVillageQuestCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            var canClaimQuest = await checkVillageQuestCommand.HandleAsync(new(browser), cancellationToken);
             if (!canClaimQuest) return Result.Ok();
 
-            result = await openVillageQuestPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            result = await openVillageQuestPageCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;
-            result = await claimRewardCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            result = await claimRewardCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }

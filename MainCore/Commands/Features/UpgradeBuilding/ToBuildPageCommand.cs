@@ -5,12 +5,10 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
     public sealed partial class ToBuildPageCommand(
-        UpdateBuildingCommand.Handler updateBuildingCommand,
         ToBuildingByLocationCommand.Handler toBuildingCommand,
-        SwitchTabCommand.Handler switchTabCommand,
-        IDbContextFactory<AppDbContext> contextFactory)
+        SwitchTabCommand.Handler switchTabCommand)
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand
+        public sealed record Command(IChromeBrowser Browser, NormalBuildPlan Plan) : ICommand
         {
             public string Name => $"{nameof(ToBuildPageCommand).Humanize()} [{Description}]";
             private string Description => $"{Plan}";
@@ -18,47 +16,37 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {
-            var (accountId, villageId, plan) = command;
+            var (browser, plan) = command;
             Result result;
-            result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+
+            result = await toBuildingCommand.HandleAsync(new(browser, plan.Location), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await toBuildingCommand.HandleAsync(new(accountId, plan.Location), cancellationToken);
-            if (result.IsFailed) return result;
-
-            result = await SwitchManagementTab(accountId, villageId, plan, cancellationToken);
+            result = await SwitchManagementTab(browser, plan, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();
         }
 
-        private async ValueTask<Result> SwitchManagementTab(AccountId accountId, VillageId villageId, NormalBuildPlan plan, CancellationToken cancellationToken)
+        private async ValueTask<Result> SwitchManagementTab(IChromeBrowser browser, NormalBuildPlan plan, CancellationToken cancellationToken)
         {
-            using var context = contextFactory.CreateDbContext();
-            var building = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .FirstOrDefault(x => x.Location == plan.Location);
-
-            if (building is null) return Result.Ok();
-
             Result result;
-            if (building.Type == BuildingEnums.Site)
+            if (IsEmptySite(browser.CurrentUrl))
             {
                 var tabIndex = plan.Type.GetBuildingsCategory();
 
-                result = await switchTabCommand.HandleAsync(new(accountId, tabIndex), cancellationToken);
+                result = await switchTabCommand.HandleAsync(new(browser, tabIndex), cancellationToken);
                 if (result.IsFailed) return result;
             }
             else
             {
-                if (building.Level < 1) return Result.Ok();
-                if (!building.Type.HasMultipleTabs()) return Result.Ok();
-
-                result = await switchTabCommand.HandleAsync(new(accountId, 0), cancellationToken);
+                result = await switchTabCommand.HandleAsync(new(browser, 0), cancellationToken);
                 if (result.IsFailed) return result;
             }
 
             return Result.Ok();
         }
+
+        private static bool IsEmptySite(string url) => !url.Contains("gid");
     }
 }

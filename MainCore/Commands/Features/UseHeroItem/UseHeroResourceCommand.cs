@@ -1,18 +1,17 @@
 ﻿namespace MainCore.Commands.Features.UseHeroItem
 {
     [Handler]
-    public sealed partial class UseHeroResourceCommand(ChromeManager chromeManager)
+    public static partial class UseHeroResourceCommand
     {
-        public sealed record Command(AccountId AccountId, BuildingEnums Building, long[] Resource) : IAccountCommand
+        public sealed record Command(IChromeBrowser Browser, BuildingEnums Building, long[] Resource) : ICommand
         {
             public string Name => $"{nameof(UseHeroResourceCommand).Humanize()} {Description}";
             private string Description => $"{string.Join(", ", Resource.Select(x => $"{x}"))}";
         }
 
-        private async ValueTask<Result> HandleAsync(Command command)
+        private static async ValueTask<Result> HandleAsync(Command command)
         {
-            var (accountId, building, resource) = command;
-            var browser = chromeManager.Get(accountId);
+            var (browser, building, resource) = command;
 
             Result result;
             var fillUpButton = await UpgradeParser.GetFillUpButton(browser.CurrentPage, building);
@@ -49,7 +48,7 @@
             "crop",
         ];
 
-        private async Task<Result> IsEnoughResource(IChromeBrowser browser, long[] requiredResources)
+        private static async Task<Result> IsEnoughResource(IChromeBrowser browser, long[] requiredResources)
         {
             var errors = new List<Error>();
             var resources = await InventoryParser.GetInventoryResources(browser.CurrentPage);

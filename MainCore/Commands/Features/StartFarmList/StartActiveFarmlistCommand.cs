@@ -1,18 +1,23 @@
 ﻿namespace MainCore.Commands.Features.StartFarmList
 {
     [Handler]
-    public sealed partial class StartActiveFarmlistCommand(ChromeManager chromeManager)
+    public static partial class StartActiveFarmlistCommand
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand
+        public sealed record Command(IChromeBrowser Browser, List<FarmId> Farms) : ICommand
         {
             public string Name => nameof(StartAllFarmlistCommand).Humanize();
         }
 
-        private async ValueTask<Result> HandleAsync(Command command)
+        private static async ValueTask<Result> HandleAsync(Command command)
         {
-            var browser = chromeManager.Get(command.AccountId);
-            var result = await browser.Click(FarmListParser.GetStartAllButton(browser.CurrentPage));
-            if (result.IsFailed) return result;
+            var (browser, farmLists) = command;
+
+            Result result;
+            foreach (var farmList in farmLists)
+            {
+                result = await browser.Click(FarmListParser.GetStartButton(browser.CurrentPage, farmList));
+                if (result.IsFailed) return result;
+            }
             return Result.Ok();
         }
     }

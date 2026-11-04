@@ -5,16 +5,16 @@ using System.Text;
 namespace MainCore.Commands.Features.Login
 {
     [Handler]
-    public sealed partial class CloseAnnouncementCommand(ChromeManager chromeManager)
+    public static partial class CloseAnnouncementCommand
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand
+        public sealed record Command(IChromeBrowser Browser) : ICommand
         {
             public string Name => nameof(CloseAnnouncementCommand).Humanize();
         }
 
-        private async ValueTask<Result> HandleAsync(Command command)
+        private static async ValueTask<Result> HandleAsync(Command command)
         {
-            var browser = chromeManager.Get(command.AccountId);
+            var browser = command.Browser;
             Result result;
 
             var cmpwrapper = browser.CurrentPage.Locator("#constructionPlansSpawnedAnnouncement");

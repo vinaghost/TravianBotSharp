@@ -5,6 +5,7 @@ namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class TrainTroopTask(
+        ChromeManager chromeManager,
         IDbContextFactory<AppDbContext> contextFactory,
         ToBuildingByTypeCommand.Handler toBuildingCommand,
         TrainTroopCommand.Handler trainTroopCommand,
@@ -24,6 +25,7 @@ namespace MainCore.Tasks
 
         private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
+            var browser = chromeManager.Get(task.AccountId);
             Result result;
             var buildings = GetTrainTroopBuildings(task.VillageId);
             var settings = new Dictionary<VillageSettingEnums, int>();
@@ -32,7 +34,7 @@ namespace MainCore.Tasks
             {
                 if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-                result = await toBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId, building), cancellationToken);
+                result = await toBuildingCommand.HandleAsync(new(browser, building), cancellationToken);
                 if (result.IsFailed)
                 {
                     if (result.HasError<MissingBuilding>())
@@ -48,7 +50,7 @@ namespace MainCore.Tasks
 
                 var (troop, amount) = GetTroopDataToTrain(task.VillageId, building);
                 var trainWhenLowResource = TrainWhenLowResource(task.VillageId);
-                result = await trainTroopCommand.HandleAsync(new(task.AccountId, troop, amount, trainWhenLowResource), cancellationToken);
+                result = await trainTroopCommand.HandleAsync(new(browser, troop, amount, trainWhenLowResource), cancellationToken);
                 if (result.IsFailed)
                 {
                     if (result.HasError<MissingResource>())

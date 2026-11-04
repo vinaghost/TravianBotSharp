@@ -39,7 +39,7 @@ namespace MainCore.Tasks
                 result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
                 if (result.IsFailed) return result;
 
-                result = await toDorfCommand.HandleAsync(new(task.AccountId, 1), cancellationToken);
+                result = await toDorfCommand.HandleAsync(new(browser, 1), cancellationToken);
                 if (result.IsFailed) return result;
 
                 result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
@@ -47,7 +47,7 @@ namespace MainCore.Tasks
             }
             else
             {
-                result = await toDorfCommand.HandleAsync(new(task.AccountId, 1), cancellationToken);
+                result = await toDorfCommand.HandleAsync(new(browser, 1), cancellationToken);
                 if (result.IsFailed) return result;
 
                 result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);

@@ -3,18 +3,17 @@
 namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public sealed partial class ToBuildingByLocationCommand(ChromeManager chromeManager)
+    public static partial class ToBuildingByLocationCommand
     {
-        public sealed record Command(AccountId AccountId, int Location) : IAccountCommand
+        public sealed record Command(IChromeBrowser Browser, int Location) : ICommand
         {
             public string Name => $"{nameof(ToBuildingByLocationCommand)} [{Description}]";
             private string Description => $"{Location}";
         }
 
-        private async ValueTask<Result> HandleAsync(Command command)
+        private static async ValueTask<Result> HandleAsync(Command command)
         {
-            var (accountId, location) = command;
-            var browser = chromeManager.Get(accountId);
+            var (browser, location) = command;
             Result result;
             if (location < 19)
             {

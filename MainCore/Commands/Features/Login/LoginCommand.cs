@@ -1,22 +1,18 @@
 ﻿namespace MainCore.Commands.Features.Login
 {
     [Handler]
-    public sealed partial class LoginCommand(
-        IDbContextFactory<AppDbContext> contextFactory,
-        ChromeManager chromeManager)
+    public static partial class LoginCommand
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand
+        public sealed record Command(IChromeBrowser Browser, string Username, string Password) : ICommand
         {
             public string Name => nameof(LoginCommand).Humanize();
         }
 
-        private async ValueTask<Result> HandleAsync(Command command)
+        private static async ValueTask<Result> HandleAsync(Command command)
         {
-            var browser = chromeManager.Get(command.AccountId);
+            var (browser, username, password) = command;
 
             if (await LoginParser.IsIngamePage(browser.CurrentPage)) return Result.Ok();
-
-            var (username, password) = GetLoginInfo(browser.AccountId);
 
             Result result;
 
@@ -33,20 +29,6 @@
             if (result.IsFailed) return result;
 
             return Result.Ok();
-        }
-
-        private (string username, string password) GetLoginInfo(AccountId accountId)
-        {
-            using var context = contextFactory.CreateDbContext();
-            var data = context.Accesses
-                .Where(x => x.AccountId == accountId.Value)
-                .OrderByDescending(x => x.LastUsed)
-                .Select(x => new { x.Username, x.Password })
-                .FirstOrDefault();
-
-            if (data is null) return ("", "");
-
-            return (data.Username, data.Password);
         }
     }
 }

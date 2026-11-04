@@ -5,12 +5,13 @@ namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class NPCTask(
+        ChromeManager chromeManager,
+        IDbContextFactory<AppDbContext> contextFactory,
+        ILogger logger,
         CheckNPCCommand.Handler checkNPCCommand,
         ToBuildingByTypeCommand.Handler toBuildingCommand,
         OpenNPCPanelCommand.Handler openNPCPanelCommand,
         NPCCommand.Handler NPCCommand,
-        IDbContextFactory<AppDbContext> contextFactory,
-        ILogger logger,
         TaskManager taskManager)
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
@@ -42,8 +43,9 @@ namespace MainCore.Tasks
 
         private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
+            var browser = chromeManager.Get(task.AccountId);
             Result result;
-            result = await toBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId, BuildingEnums.Marketplace), cancellationToken);
+            result = await toBuildingCommand.HandleAsync(new(browser, BuildingEnums.Marketplace), cancellationToken);
             if (result.IsFailed)
             {
                 if (result.HasError<MissingBuilding>())
@@ -54,15 +56,15 @@ namespace MainCore.Tasks
                 return result;
             }
 
-            if (!await checkNPCCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken))
+            if (!await checkNPCCommand.HandleAsync(new(browser, task.VillageId), cancellationToken))
             {
                 return Result.Ok();
             }
 
-            result = await openNPCPanelCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            result = await openNPCPanelCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await NPCCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            result = await NPCCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
             if (result.IsFailed)
             {
                 if (result.HasError<StorageLimit>())

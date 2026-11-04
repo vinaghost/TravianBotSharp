@@ -3,21 +3,19 @@
 namespace MainCore.Commands.Features.NPC
 {
     [Handler]
-    public sealed partial class OpenNPCPanelCommand(
-        SwitchTabCommand.Handler switchTabCommand,
-        ChromeManager chromeManager)
+    public sealed partial class OpenNPCPanelCommand(SwitchTabCommand.Handler switchTabCommand)
     {
-        public sealed record Command(AccountId AccountId) : IAccountCommand
+        public sealed record Command(IChromeBrowser Browser) : ICommand
         {
             public string Name => nameof(OpenNPCPanelCommand).Humanize();
         }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {
-            var browser = chromeManager.Get(command.AccountId);
+            var browser = command.Browser;
             Result result;
 
-            result = await switchTabCommand.HandleAsync(new(command.AccountId, 0));
+            result = await switchTabCommand.HandleAsync(new(browser, 0));
             if (result.IsFailed) return result;
 
             result = await browser.Click(NpcResourceParser.GetExchangeResourcesButton(browser.CurrentPage));

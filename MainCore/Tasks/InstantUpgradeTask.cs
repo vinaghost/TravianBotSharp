@@ -5,6 +5,7 @@ namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class InstantUpgradeTask(
+        ChromeManager chromeManager,
         ToDorfCommand.Handler toDorfCommand,
         InstantUpgradeCommand.Handler instantUpgradeCommand,
         TaskManager taskManager)
@@ -46,11 +47,12 @@ namespace MainCore.Tasks
 
         private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
+            var browser = chromeManager.Get(task.AccountId);
             Result result;
-            result = await toDorfCommand.HandleAsync(new(task.AccountId, 0), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(browser, 0), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await instantUpgradeCommand.HandleAsync(new(task.AccountId), cancellationToken);
+            result = await instantUpgradeCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;
 
             taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId));
