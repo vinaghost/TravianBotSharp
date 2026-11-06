@@ -1,18 +1,17 @@
 ﻿using MainCore.Commands.Features.StartAdventure;
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class StartAdventureTask(
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
+        CheckHeroReadyCommand.Handler checkHeroReadyCommand,
         OpenAdventurePanelCommand.Handler openAdventurePanelCommand,
         ExploreAdeventureCommand.Handler exploreAdeventureCommand)
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {
-            protected override string TaskName => "Start adventure";
+            protected override string TaskName => nameof(StartAdventureTask).Humanize();
 
             public override bool CanStart(AppDbContext context)
             {
@@ -25,7 +24,9 @@ namespace MainCore.Tasks
 
         private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
-            var canStartAdventure = await AdventureParser.CanStartAdventure(browser.CurrentPage);
+            var browser = chromeManager.Get(task.AccountId);
+
+            var canStartAdventure = await checkHeroReadyCommand.HandleAsync(new(browser), cancellationToken);
             if (!canStartAdventure) return Skip.Error.WithError("No adventure available");
 
             Result result;

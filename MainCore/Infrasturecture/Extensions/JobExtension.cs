@@ -4,7 +4,7 @@ using MainCore.UI.Models.Input;
 
 namespace MainCore.Infrasturecture.Extensions
 {
-    public static class AddJobExtension
+    public static class JobExtension
     {
         extension(AppDbContext context)
         {
@@ -44,20 +44,47 @@ namespace MainCore.Infrasturecture.Extensions
                 {
                     context.Jobs
                        .Where(x => x.VillageId == villageId.Value)
-                       .ExecuteUpdate(x =>
-                           x.SetProperty(x => x.Position, x => x.Position + 1));
+                       .ExecuteUpdate(s => s.SetProperty(x => x.Position, x => x.Position + 1));
+                    context.ChangeTracker.Clear();
+
                     job.Position = 0;
                 }
                 else
                 {
-                    var count = context.Jobs
-                        .Count(x => x.VillageId == villageId.Value);
+                    var maxPosition = context.Jobs
+                        .Where(x => x.VillageId == villageId.Value)
+                        .Select(x => (int?)x.Position)
+                        .Max();
 
-                    job.Position = count;
+                    job.Position = (maxPosition ?? -1) + 1;
                 }
 
                 context.Add(job.ToEntity(villageId));
                 context.SaveChanges();
+            }
+            public void DeleteJobById(JobId jobId)
+            {
+                var targetJobMetadata = context.Jobs
+                   .Where(x => x.Id == jobId.Value)
+                   .Select(x => new
+                   {
+                       x.VillageId,
+                       x.Position
+                   })
+                   .FirstOrDefault();
+
+                if (targetJobMetadata is null) return;
+
+                context.Jobs
+                    .Where(x => x.Id == jobId.Value)
+                    .ExecuteDelete();
+
+                context.Jobs
+                    .Where(x => x.VillageId == targetJobMetadata.VillageId)
+                    .Where(x => x.Position > targetJobMetadata.Position)
+                    .ExecuteUpdate(s => s.SetProperty(x => x.Position, x => x.Position - 1));
+
+                context.ChangeTracker.Clear();
             }
         }
     }

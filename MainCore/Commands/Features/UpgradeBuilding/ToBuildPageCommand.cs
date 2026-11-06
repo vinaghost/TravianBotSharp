@@ -5,57 +5,87 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
     public sealed partial class ToBuildPageCommand(
-        UpdateBuildingCommand.Handler updateBuildingCommand,
+        ILogger logger,
+        ToDorfCommand.Handler toDorfCommand,
         ToBuildingByLocationCommand.Handler toBuildingCommand,
-        SwitchTabCommand.Handler switchTabCommand,
-        IDbContextFactory<AppDbContext> contextFactory)
+        SwitchTabCommand.Handler switchTabCommand)
     {
-        public sealed record Command(VillageId VillageId, NormalBuildPlan Plan) : IVillageCommand;
+        public sealed record Command(IChromeBrowser Browser, NormalBuildPlan Plan, bool IsChecked = false) : ICommand
+        {
+            public string Name => $"{nameof(ToBuildPageCommand).Humanize()} [{Description}]";
+            private string Description => $"{Plan}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {
-            var (villageId, plan) = command;
-
-            var (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
-            if (isFailed) return Result.Fail(errors);
+            var (browser, plan, isChecked) = command;
+            var dorf = plan.Type.IsResourceField() ? 1 : 2;
 
             Result result;
-            result = await toBuildingCommand.HandleAsync(new(plan.Location), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(browser, dorf), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await SwitchManagementTab(villageId, plan, cancellationToken);
+            if (!isChecked)
+            {
+                result = await CheckBuildingStatus(browser, plan);
+                if (result.IsFailed) return result;
+            }
+
+            result = await toBuildingCommand.HandleAsync(new(browser, plan.Location), cancellationToken);
+            if (result.IsFailed) return result;
+
+            result = await SwitchManagementTab(browser, plan, cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();
         }
 
-        private async ValueTask<Result> SwitchManagementTab(VillageId villageId, NormalBuildPlan plan, CancellationToken cancellationToken)
+        private async Task<Result> CheckBuildingStatus(IChromeBrowser browser, NormalBuildPlan plan)
         {
-            using var context = contextFactory.CreateDbContext();
-            var building = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .FirstOrDefault(x => x.Location == plan.Location);
+            bool isBuildingExist = await BuildingLayoutParser.IsBuildingLocationExist(browser.CurrentPage, plan.Type, plan.Location);
 
-            if (building is null) return Result.Ok();
+            if (!isBuildingExist)
+            {
+                logger.Information("{Type} at #{Location} does not exist, need to check its prerequisites", plan.Type, plan.Location);
+                return new UpgradeError(UpgradeErrorType.BuildingNotExist);
+            }
 
+            var level = await BuildingLayoutParser.GetLevel(browser.CurrentPage, plan.Type, plan.Location);
+            if (level >= plan.Level)
+            {
+                logger.Information("{Type} at #{Location} is already at level {Level}", plan.Type, plan.Location, level);
+                return new UpgradeError(UpgradeErrorType.BuildingComplete);
+            }
+
+            var isUnderConstruction = await BuildingLayoutParser.IsUnderConstruction(browser.CurrentPage, plan.Type, plan.Location);
+            if (isUnderConstruction && level >= plan.Level - 2)
+            {
+                logger.Information("{Type} at #{Location} is under construction, need to check the ingame building queue", plan.Type, plan.Location);
+                return new UpgradeError(UpgradeErrorType.BuildingInQueue);
+            }
+
+            return Result.Ok();
+        }
+
+        private async ValueTask<Result> SwitchManagementTab(IChromeBrowser browser, NormalBuildPlan plan, CancellationToken cancellationToken)
+        {
             Result result;
-            if (building.Type == BuildingEnums.Site)
+            if (IsEmptySite(browser.CurrentUrl))
             {
                 var tabIndex = plan.Type.GetBuildingsCategory();
 
-                result = await switchTabCommand.HandleAsync(new(tabIndex), cancellationToken);
+                result = await switchTabCommand.HandleAsync(new(browser, tabIndex), cancellationToken);
                 if (result.IsFailed) return result;
             }
             else
             {
-                if (building.Level < 1) return Result.Ok();
-                if (!building.Type.HasMultipleTabs()) return Result.Ok();
-
-                result = await switchTabCommand.HandleAsync(new(0), cancellationToken);
+                result = await switchTabCommand.HandleAsync(new(browser, 0), cancellationToken);
                 if (result.IsFailed) return result;
             }
 
             return Result.Ok();
         }
+
+        private static bool IsEmptySite(string url) => !url.Contains("gid");
     }
 }

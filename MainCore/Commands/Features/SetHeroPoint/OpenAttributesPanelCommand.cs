@@ -3,9 +3,12 @@
 namespace MainCore.Commands.Features.SetHeroPoint
 {
     [Handler]
-    public sealed partial class OpenSetPointPanelCommand(SwitchTabCommand.Handler switchTabCommand)
+    public sealed partial class OpenAttributesPanelCommand(SwitchTabCommand.Handler switchTabCommand)
     {
-        public sealed record Command(IChromeBrowser Browser);
+        public sealed record Command(IChromeBrowser Browser) : ICommand
+        {
+            public string Name => nameof(OpenAttributesPanelCommand).Humanize();
+        }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {
@@ -20,7 +23,7 @@ namespace MainCore.Commands.Features.SetHeroPoint
             result = await browser.Wait(heroPageLocator);
             if (result.IsFailed) return result;
 
-            result = await switchTabCommand.HandleAsync(new(1), cancellationToken);
+            result = await switchTabCommand.HandleAsync(new(browser, 1), cancellationToken);
             if (result.IsFailed) return result;
 
             var attributeBox = browser.CurrentPage.Locator("#heroV2 .attributeBox .heroAttributes .attributes.formV2");

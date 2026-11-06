@@ -3,7 +3,10 @@
     [Handler]
     public static partial class OpenAdventurePanelCommand
     {
-        public sealed record Command(IChromeBrowser Browser);
+        public sealed record Command(IChromeBrowser Browser) : ICommand
+        {
+            public string Name => nameof(OpenAdventurePanelCommand).Humanize();
+        }
 
         private static async ValueTask<Result> HandleAsync(Command command)
         {

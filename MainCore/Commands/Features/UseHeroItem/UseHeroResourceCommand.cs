@@ -1,13 +1,17 @@
 ﻿namespace MainCore.Commands.Features.UseHeroItem
 {
     [Handler]
-    public sealed partial class UseHeroResourceCommand(IChromeBrowser browser)
+    public static partial class UseHeroResourceCommand
     {
-        public sealed record Command(BuildingEnums Building, long[] Resource);
-
-        private async ValueTask<Result> HandleAsync(Command command)
+        public sealed record Command(IChromeBrowser Browser, BuildingEnums Building, long[] Resource) : ICommand
         {
-            var (building, resource) = command;
+            public string Name => $"{nameof(UseHeroResourceCommand).Humanize()} {Description}";
+            private string Description => $"{string.Join(", ", Resource.Select(x => $"{x}"))}";
+        }
+
+        private static async ValueTask<Result> HandleAsync(Command command)
+        {
+            var (browser, building, resource) = command;
 
             Result result;
             var fillUpButton = await UpgradeParser.GetFillUpButton(browser.CurrentPage, building);
@@ -17,7 +21,7 @@
             result = await browser.Wait(InventoryParser.GetResourceTransferDialog(browser.CurrentPage));
             if (result.IsFailed) return result;
 
-            result = await IsEnoughResource(resource);
+            result = await IsEnoughResource(browser, resource);
             if (result.IsFailed)
             {
                 await browser.Refresh();
@@ -44,7 +48,7 @@
             "crop",
         ];
 
-        private async Task<Result> IsEnoughResource(long[] requiredResources)
+        private static async Task<Result> IsEnoughResource(IChromeBrowser browser, long[] requiredResources)
         {
             var errors = new List<Error>();
             var resources = await InventoryParser.GetInventoryResources(browser.CurrentPage);

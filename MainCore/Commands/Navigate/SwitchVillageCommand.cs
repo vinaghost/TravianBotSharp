@@ -1,13 +1,17 @@
 ﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public sealed partial class SwitchVillageCommand(IChromeBrowser browser)
+    public static partial class SwitchVillageCommand
     {
-        public sealed record Command(VillageId VillageId) : IVillageCommand;
-
-        private async ValueTask<Result> HandleAsync(Command command)
+        public sealed record Command(IChromeBrowser Browser, VillageId VillageId) : ICommand
         {
-            var villageId = command.VillageId;
+            public string Name => $"{nameof(SwitchVillageCommand)} [{Description}]";
+            private string Description => $"{VillageId}";
+        }
+
+        private static async ValueTask<Result> HandleAsync(Command command)
+        {
+            var (browser, villageId) = command;
 
             var villageNode = VillagePanelParser.GetVillageNode(browser.CurrentPage, villageId);
             if (await villageNode.CountAsync() == 0) return Skip.Error.WithError("Village not found");

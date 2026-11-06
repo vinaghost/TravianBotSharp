@@ -1,14 +1,19 @@
 ﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
-    public sealed partial class SwitchTabCommand(IChromeBrowser browser)
+    public static partial class SwitchTabCommand
     {
-        public sealed record Command(int TabIndex) : ICommand;
-
-        private async ValueTask<Result> HandleAsync(Command command)
+        public sealed record Command(IChromeBrowser Browser, int TabIndex) : ICommand
         {
-            var tabIndex = command.TabIndex;
+            public string Name => $"{nameof(SwitchTabCommand)} [{Description}]";
+            private string Description => $"#{TabIndex + 1}";
+        }
+
+        private static async ValueTask<Result> HandleAsync(Command command)
+        {
+            var (browser, tabIndex) = command;
             var tabs = BuildingTabParser.GetTabs(browser.CurrentPage);
+
             var countTabs = await tabs.CountAsync();
             if (countTabs == 0) return Result.Ok();
 

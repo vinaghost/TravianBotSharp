@@ -1,20 +1,18 @@
 using MainCore.Commands.Features;
 using MainCore.Commands.Navigate;
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class InstantUpgradeTask(
+        ChromeManager chromeManager,
         ToDorfCommand.Handler toDorfCommand,
         InstantUpgradeCommand.Handler instantUpgradeCommand,
-        IChromeBrowser browser,
         TaskManager taskManager)
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            protected override string TaskName => "Instant upgrade";
+            protected override string TaskName => nameof(InstantUpgradeTask).Humanize();
 
             private static readonly List<BuildingEnums> UnskippableBuildings =
             [
@@ -49,8 +47,9 @@ namespace MainCore.Tasks
 
         private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
+            var browser = chromeManager.Get(task.AccountId);
             Result result;
-            result = await toDorfCommand.HandleAsync(new(0), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(browser, 0), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await instantUpgradeCommand.HandleAsync(new(browser), cancellationToken);

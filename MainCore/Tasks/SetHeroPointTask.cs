@@ -1,19 +1,18 @@
 ﻿using MainCore.Commands.Features.SetHeroPoint;
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class SetHeroPointTask(
-        IChromeBrowser browser,
-        OpenSetPointPanelCommand.Handler openSetHeroPointPanelCommand,
-        SetPointCommand.Handler setPointCommand
+        ChromeManager chromeManager,
+        CheckLevelUpCommand.Handler checkLevelUpCommand,
+        OpenAttributesPanelCommand.Handler openAttributesPanelCommand,
+        SetHeroPointCommand.Handler setPointCommand
         )
     {
         public sealed class Task(AccountId accountId) : AccountTask(accountId)
         {
-            protected override string TaskName => "Set hero point";
+            protected override string TaskName => nameof(SetHeroPointTask).Humanize();
 
             public override bool CanStart(AppDbContext context)
             {
@@ -24,19 +23,14 @@ namespace MainCore.Tasks
             }
         }
 
-        private async ValueTask<Result> HandleAsync(
-#pragma warning disable S1172 // Unused method parameters should be removed
-#pragma warning disable IDE0060 // Remove unused parameter
-            Task task,
-#pragma warning restore IDE0060 // Remove unused parameter
-#pragma warning restore S1172 // Unused method parameters should be removed
-            CancellationToken cancellationToken
-           )
+        private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
+            var browser = chromeManager.Get(task.AccountId);
             Result result;
-            var canSetHeroPoint = await browser.CurrentPage.Locator("#topBarHero i.levelUp.show").CountAsync() > 0;
+            var canSetHeroPoint = await checkLevelUpCommand.HandleAsync(new(browser), cancellationToken);
             if (!canSetHeroPoint) return Result.Ok();
-            result = await openSetHeroPointPanelCommand.HandleAsync(new(browser), cancellationToken);
+
+            result = await openAttributesPanelCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;
             result = await setPointCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;

@@ -1,10 +1,10 @@
 ﻿using MainCore.Commands.Navigate;
 using MainCore.Commands.Update;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Behaviors
 {
     public class VillageTaskBehavior<TRequest, TResponse>(
+        ChromeManager chromeManager,
         SwitchVillageCommand.Handler switchVillageCommand,
         UpdateStorageCommand.Handler updateStorageCommand,
         ToDorfCommand.Handler toDorfCommand,
@@ -17,24 +17,25 @@ namespace MainCore.Behaviors
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
             var (accountId, villageId) = request;
-
-            var (_, isFailed, errors) = await switchVillageCommand.HandleAsync(new(villageId), cancellationToken);
-            if (isFailed) return (TResponse)Result.Fail(errors);
+            var browser = chromeManager.Get(accountId);
+            Result result;
+            result = await switchVillageCommand.HandleAsync(new(browser, villageId), cancellationToken);
+            if (result.IsFailed) return (TResponse)result;
 
             await updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
 
-            (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
-            if (isFailed) return (TResponse)Result.Fail(errors);
+            result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            if (result.IsFailed) return (TResponse)result;
 
             var response = await Next(request, cancellationToken);
 
             if (response.IsFailed && !response.HasError<Skip>()) return response;
 
-            (_, isFailed, errors) = await toDorfCommand.HandleAsync(new(0), cancellationToken);
-            if (isFailed) return (TResponse)Result.Fail(errors);
+            result = await toDorfCommand.HandleAsync(new(browser, 2), cancellationToken);
+            if (result.IsFailed) return (TResponse)result;
 
-            (_, isFailed, errors) = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
-            if (isFailed) return (TResponse)Result.Fail(errors);
+            result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            if (result.IsFailed) return (TResponse)result;
 
             await updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
             await updateQuestCommand.HandleAsync(new(accountId, villageId), cancellationToken);

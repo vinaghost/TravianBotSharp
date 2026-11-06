@@ -1,4 +1,6 @@
-﻿using Splat;
+﻿using System.Collections.Frozen;
+
+using Splat;
 
 namespace MainCore.Enums
 {
@@ -115,7 +117,7 @@ namespace MainCore.Enums
             };
         }
 
-        public static List<PrerequisiteBuilding> GetPrerequisiteBuildings(this BuildingEnums building)
+        public static List<PrerequisiteBuilding> GetPrerequisites(this BuildingEnums building)
         {
             return building switch
             {

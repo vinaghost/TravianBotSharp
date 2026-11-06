@@ -4,37 +4,33 @@ namespace MainCore.Commands.Navigate
 {
     [Handler]
     public sealed partial class ToBuildingByTypeCommand(
-        IDbContextFactory<AppDbContext> contextFactory,
         ToDorfCommand.Handler toDorfCommand,
-        UpdateBuildingCommand.Handler updateBuildingCommand,
         ToBuildingByLocationCommand.Handler toBuildingByLocationCommand)
     {
-        public sealed record Command(VillageId VillageId, BuildingEnums BuildingType) : IVillageCommand;
+        public sealed record Command(IChromeBrowser Browser, BuildingEnums BuildingType) : ICommand
+        {
+            public string Name => $"{nameof(ToBuildingByTypeCommand)} [{Description}]";
+            private string Description => $"{BuildingType}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {
-            var (villageId, buildingType) = command;
+            var (browser, buildingType) = command;
             Result result;
 
-            result = await toDorfCommand.HandleAsync(new(2), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(browser, 2), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await updateBuildingCommand.HandleAsync(new(villageId), cancellationToken);
-            if (result.IsFailed) return result;
+            var buildingLocator = BuildingLayoutParser.GetBuildingLocator(browser.CurrentPage, buildingType);
 
-            using var context = contextFactory.CreateDbContext();
-            var location = context.Buildings
-                .Where(x => x.VillageId == villageId.Value)
-                .Where(x => x.Type == buildingType)
-                .Select(x => x.Location)
-                .FirstOrDefault();
-
-            if (location == default)
+            if (await buildingLocator.CountAsync() == 0)
             {
                 return MissingBuilding.Error(buildingType);
             }
 
-            result = await toBuildingByLocationCommand.HandleAsync(new(location), cancellationToken);
+            var location = await BuildingLayoutParser.GetBuildingLocation(buildingLocator);
+
+            result = await toBuildingByLocationCommand.HandleAsync(new(browser, location), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
         }

@@ -3,7 +3,10 @@
     [Handler]
     public static partial class AccecptCookieConsentCommand
     {
-        public sealed record Command(IChromeBrowser Browser);
+        public sealed record Command(IChromeBrowser Browser) : ICommand
+        {
+            public string Name => nameof(AccecptCookieConsentCommand).Humanize();
+        }
 
         private static async ValueTask<Result> HandleAsync(Command command)
         {

@@ -1,18 +1,17 @@
 ﻿using MainCore.Commands.Features.ClaimVillageQuest;
-using MainCore.Infrasturecture.Extensions;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Tasks
 {
     [Handler]
     public sealed partial class ClaimVillageQuestTask(
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
+        CheckVillageQuestCommand.Handler checkVillageQuestCommand,
         OpenVillageQuestPageCommand.Handler openVillageQuestPageCommand,
         ClaimRewardCommand.Handler claimRewardCommand)
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
         {
-            protected override string TaskName => "Claim village quest";
+            protected override string TaskName => nameof(ClaimVillageQuestTask).Humanize();
 
             public override bool CanStart(AppDbContext context)
             {
@@ -23,16 +22,11 @@ namespace MainCore.Tasks
             }
         }
 
-        private async ValueTask<Result> HandleAsync(
-#pragma warning disable S1172 // Unused method parameters should be removed
-#pragma warning disable IDE0060 // Remove unused parameter
-            Task task,
-#pragma warning restore IDE0060 // Remove unused parameter
-#pragma warning restore S1172 // Unused method parameters should be removed
-            CancellationToken cancellationToken)
+        private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
         {
+            var browser = chromeManager.Get(task.AccountId);
             Result result;
-            var canClaimQuest = await QuestParser.IsQuestClaimable(browser.CurrentPage);
+            var canClaimQuest = await checkVillageQuestCommand.HandleAsync(new(browser), cancellationToken);
             if (!canClaimQuest) return Result.Ok();
 
             result = await openVillageQuestPageCommand.HandleAsync(new(browser), cancellationToken);

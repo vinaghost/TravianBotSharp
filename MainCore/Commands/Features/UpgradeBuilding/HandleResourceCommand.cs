@@ -1,6 +1,5 @@
 using MainCore.Commands.Features.UseHeroItem;
 using MainCore.Commands.Update;
-using MainCore.Infrasturecture.Extensions;
 
 namespace MainCore.Commands.Features.UpgradeBuilding
 {
@@ -10,10 +9,14 @@ namespace MainCore.Commands.Features.UpgradeBuilding
         UseHeroResourceCommand.Handler useHeroResourceCommand,
         RxQueue rxQueue,
         IDbContextFactory<AppDbContext> contextFactory,
-        IChromeBrowser browser,
+        ChromeManager chromeManager,
         ILogger logger)
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand;
+        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand
+        {
+            public string Name => $"{nameof(HandleResourceCommand).Humanize()} [{Description}]";
+            private string Description => $"{Plan}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
         {
@@ -21,7 +24,7 @@ namespace MainCore.Commands.Features.UpgradeBuilding
 
             await updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
 
-            var requiredResource = await GetRequiredResource(plan.Type);
+            var requiredResource = await GetRequiredResource(accountId, plan.Type);
 
             var result = IsEnoughResource(villageId, requiredResource);
             if (!result.IsFailed) return Result.Ok();
@@ -38,14 +41,16 @@ namespace MainCore.Commands.Features.UpgradeBuilding
             logger.Information("Don't have enough resource. Use resource in hero invetory to upgrade building");
             var missingResource = GetMissingResource(villageId, requiredResource);
 
-            result = await useHeroResourceCommand.HandleAsync(new(plan.Type, missingResource), cancellationToken);
+            var browser = chromeManager.Get(accountId);
+            result = await useHeroResourceCommand.HandleAsync(new(browser, plan.Type, missingResource), cancellationToken);
             if (result.IsFailed) return result;
 
             return Result.Ok();
         }
 
-        private async Task<long[]> GetRequiredResource(BuildingEnums building)
+        private async Task<long[]> GetRequiredResource(AccountId accountId, BuildingEnums building)
         {
+            var browser = chromeManager.Get(accountId);
             var resources = await UpgradeParser.GetRequiredResource(browser.CurrentPage, building);
             var count = await resources.CountAsync();
 

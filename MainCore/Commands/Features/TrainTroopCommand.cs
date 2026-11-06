@@ -1,16 +1,17 @@
 ﻿namespace MainCore.Commands.Features
 {
     [Handler]
-    public sealed partial class TrainTroopCommand(
-        ILogger logger,
-        IChromeBrowser browser)
+    public sealed partial class TrainTroopCommand(ILogger logger)
     {
-        public sealed record Command(TroopEnums Troop, int Amount, bool TrainWhenLowResource);
+        public sealed record Command(IChromeBrowser Browser, TroopEnums Troop, int Amount, bool TrainWhenLowResource) : ICommand
+        {
+            public string Name => $"{nameof(TrainTroopCommand).Humanize()} [{Description}]";
+            private string Description => $"Train {Amount} {Troop}";
+        }
 
         private async ValueTask<Result> HandleAsync(Command command)
         {
-            var (troop, amount, trainWhenLowResource) = command;
-            Result result;
+            var (browser, troop, amount, trainWhenLowResource) = command;
 
             var maxAmount = await TrainTroopParser.GetMaxAmount(browser.CurrentPage, troop);
             if (maxAmount == 0)
@@ -22,16 +23,6 @@
             {
                 return MissingResource.Error(troop);
             }
-
-            result = await Train(troop, amount);
-            if (result.IsFailed) return result;
-
-            logger.Information("Troop training for {Troop} with amount {Amount} is done.", troop, amount);
-            return Result.Ok();
-        }
-
-        private async ValueTask<Result> Train(TroopEnums troop, long amount)
-        {
             Result result;
             result = await browser.Input(TrainTroopParser.GetInputBox(browser.CurrentPage, troop), $"{amount}");
             if (result.IsFailed) return result;
@@ -39,6 +30,7 @@
             result = await browser.Click(TrainTroopParser.GetTrainButton(browser.CurrentPage));
             if (result.IsFailed) return result;
 
+            logger.Information("Train {Amount} {Troop} is done.", amount, troop);
             return Result.Ok();
         }
     }
