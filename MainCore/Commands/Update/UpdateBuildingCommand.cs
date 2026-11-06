@@ -224,19 +224,19 @@ namespace MainCore.Commands.Update
                 // --- 1. PARSE BUILDINGS (Dorf1 vs Dorf2 dependent) ---
                 if (isDorf1) {
                     const elements = document.querySelectorAll('#resourceFieldContainer a.level');
-                    const slotRegex = /buildingSlot(\d+)/;
+                    const locRegex = /buildingSlot(\d+)/;
                     const gidRegex = /gid(\d+)/;
                     const levelRegex = /\blevel(\d+)/;
 
                     elements.forEach(field => {
                         const classAttr = field.getAttribute('class') || '';
-                        const slotMatch = classAttr.match(slotRegex);
+                        const locMatch = classAttr.match(slotRegex);
                         const gidMatch = classAttr.match(gidRegex);
                         const levelMatch = classAttr.match(levelRegex);
                         const isUnderConstruction = classAttr.includes('underConstruction');
 
                         buildingsResult.push({
-                            LocStr: slotMatch ? slotMatch[1] : null,
+                            LocStr: locMatch ? locMatch[1] : null,
                             TypeStr: gidMatch ? gidMatch[1] : null,
                             LevelStr: levelMatch ? levelMatch[1] : null,
                             IsUnderConstruction: isUnderConstruction
@@ -245,13 +245,13 @@ namespace MainCore.Commands.Update
                 } else {
                     const elements = document.querySelectorAll('#villageContent .buildingSlot');
                     elements.forEach((building, i) => {
-                        if (i === 22) return; // Ignore rally point expansion slot
+                        if (i === 22) return;
                         const link = building.querySelector('a');
 
                         buildingsResult.push({
                             LocStr: building.getAttribute('data-aid'),
-                            LevelStr: link ? link.getAttribute('data-level') : null,
                             TypeStr: building.getAttribute('data-gid'),
+                            LevelStr: link ? link.getAttribute('data-level') : null,
                             IsUnderConstruction: link ? link.classList.contains('underConstruction') : false
                         });
                     });
@@ -323,8 +323,7 @@ namespace MainCore.Commands.Update
                 if (rawData.IsDorf1)
                 {
                     type = int.TryParse(raw.TypeStr, out int gid) ? (BuildingEnums)gid : BuildingEnums.Unknown;
-                    // Handle C# Dto bug patch if raw code variant used raw.LevelVal instead of raw.LevelStr
-                    level = int.TryParse(raw.LevelStr, out int lvl) ? lvl : -2;
+                    level = int.TryParse(raw.LevelStr, out int lvl) ? lvl : -1;
                 }
                 else
                 {

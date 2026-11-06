@@ -21,29 +21,18 @@ namespace MainCore.Commands.Navigate
             result = await toDorfCommand.HandleAsync(new(browser, 2), cancellationToken);
             if (result.IsFailed) return result;
 
-            var buildingLocator = GetBuildingLocator(browser.CurrentPage, buildingType);
+            var buildingLocator = BuildingLayoutParser.GetBuildingLocator(browser.CurrentPage, buildingType);
 
             if (await buildingLocator.CountAsync() == 0)
             {
                 return MissingBuilding.Error(buildingType);
             }
 
-            var location = await GetBuildingLocation(buildingLocator);
+            var location = await BuildingLayoutParser.GetBuildingLocation(buildingLocator);
 
             result = await toBuildingByLocationCommand.HandleAsync(new(browser, location), cancellationToken);
             if (result.IsFailed) return result;
             return Result.Ok();
-        }
-
-        private static ILocator GetBuildingLocator(IPage page, BuildingEnums buildingType)
-        {
-            return page.Locator($".buildingSlot.g{buildingType}");
-        }
-
-        private static async Task<int> GetBuildingLocation(ILocator locator)
-        {
-            var location = await locator.GetAttributeAsync("data-aid");
-            return int.Parse(location ?? "0");
         }
     }
 }

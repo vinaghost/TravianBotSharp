@@ -118,7 +118,7 @@
 
         public static Result CheckRequirements(this BuildingEnums buildingType, List<BuildingItem> buildings)
         {
-            var prerequisiteBuildings = buildingType.GetPrerequisiteBuildings();
+            var prerequisiteBuildings = buildingType.GetPrerequisites();
             if (prerequisiteBuildings.Count == 0) return Result.Ok();
             IList<Error> errors = [];
             foreach (var prerequisiteBuilding in prerequisiteBuildings)
