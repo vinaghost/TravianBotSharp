@@ -1,6 +1,6 @@
 ﻿using System.Web;
 
-namespace MainCore.Commands.Navigate
+namespace MainCore.Navigate
 {
     [Handler]
     public static partial class ToBuildingByLocationCommand

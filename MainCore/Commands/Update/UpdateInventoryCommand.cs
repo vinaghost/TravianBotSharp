@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Update
+﻿namespace MainCore.Update
 {
     [Handler]
     public sealed partial class UpdateInventoryCommand(

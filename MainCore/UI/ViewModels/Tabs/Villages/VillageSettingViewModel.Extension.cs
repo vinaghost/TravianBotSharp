@@ -1,3 +1,6 @@
+using MainCore.Features.ClaimVillageQuest;
+using MainCore.Features.NPC;
+
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     public static class VillageSettingViewModelExtension

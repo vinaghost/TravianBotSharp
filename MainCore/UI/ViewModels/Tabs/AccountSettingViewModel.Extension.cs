@@ -1,3 +1,7 @@
+using MainCore.Features.ClaimDailyQuest;
+using MainCore.Features.SetHeroPoint;
+using MainCore.Features.StartAdventure;
+
 namespace MainCore.UI.ViewModels.Tabs
 {
     public static class AccountSettingViewModelExtension

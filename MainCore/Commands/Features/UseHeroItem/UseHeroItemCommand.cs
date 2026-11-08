@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Features.UseHeroItem
+﻿namespace MainCore.Features.UseHeroItem
 {
     [Handler]
     public sealed partial class UseHeroItemCommand(ILogger logger)

@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace MainCore.Commands.Misc
+namespace MainCore.Misc
 {
     [Handler]
     public sealed partial class OpenBrowserCommand(

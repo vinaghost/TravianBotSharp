@@ -1,5 +1,15 @@
 using System.Collections.Concurrent;
 
+using MainCore.Features.ClaimDailyQuest;
+using MainCore.Features.ClaimVillageQuest;
+using MainCore.Features.Login;
+using MainCore.Features.NPC;
+using MainCore.Features.SetHeroPoint;
+using MainCore.Features.Sleep;
+using MainCore.Features.StartAdventure;
+using MainCore.Features.StartFarmList;
+using MainCore.Features.UpgradeBuilding;
+
 using Microsoft.Extensions.DependencyInjection;
 
 using Polly;

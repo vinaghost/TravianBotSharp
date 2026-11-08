@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Navigate
+﻿namespace MainCore.Navigate
 {
     [Handler]
     public sealed partial class ToFarmListPageCommand(

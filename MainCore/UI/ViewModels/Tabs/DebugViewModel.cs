@@ -23,7 +23,7 @@ namespace MainCore.UI.ViewModels.Tabs
         private static readonly ExpressionTemplate _template = new("{@t:HH:mm:ss} [{@l:u3}] {@m}\n{@x}");
 
         public ObservableCollection<TaskItem> Tasks { get; } = [];
-        private LinkedList<LogEvent> _logEvents = [];
+        private readonly LinkedList<LogEvent> _logEvents = [];
 
         [Reactive]
         private string _logs = "";

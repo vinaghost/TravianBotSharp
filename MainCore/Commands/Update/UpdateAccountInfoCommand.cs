@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace MainCore.Commands.Update
+namespace MainCore.Update
 {
     [Handler]
     public sealed partial class UpdateAccountInfoCommand(

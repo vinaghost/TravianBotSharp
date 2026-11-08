@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Features
+﻿namespace MainCore.Features
 {
     [Handler]
     public sealed partial class TrainTroopCommand(ILogger logger)

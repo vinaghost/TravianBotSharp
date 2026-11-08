@@ -1,5 +1,9 @@
 namespace MainCore.Services
 {
+    using MainCore.Features.Login;
+    using MainCore.Features.Sleep;
+    using MainCore.Features.StartAdventure;
+    using MainCore.Features.UpgradeBuilding;
     using MainCore.Infrasturecture.Extensions;
 
     using ReactiveUI.Primitives;
@@ -10,7 +14,7 @@ namespace MainCore.Services
     [RegisterSingleton<RxQueue>]
     public class RxQueue
     {
-        private readonly Signal<INotification> _notifications = new Signal<INotification>();
+        private readonly Signal<INotification> _notifications = new();
         private readonly ConnectableSignal<INotification> _connectableObservable;
 
         private readonly IDbContextFactory<AppDbContext> _contextFactory;

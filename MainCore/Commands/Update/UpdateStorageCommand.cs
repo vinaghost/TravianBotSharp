@@ -1,7 +1,9 @@
 using System.Net;
 using System.Text.Json;
 
-namespace MainCore.Commands.Update
+using MainCore.Features.NPC;
+
+namespace MainCore.Update
 {
     [Handler]
     public sealed partial class UpdateStorageCommand(

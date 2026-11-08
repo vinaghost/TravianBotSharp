@@ -1,5 +1,5 @@
-﻿using MainCore.Commands.Features;
-using MainCore.Commands.Navigate;
+﻿using MainCore.Features;
+using MainCore.Navigate;
 
 namespace MainCore.Tasks
 {

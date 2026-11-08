@@ -1,4 +1,6 @@
-namespace MainCore.Commands.Update
+using MainCore.Features.ClaimDailyQuest;
+
+namespace MainCore.Update
 {
     [Handler]
     public sealed partial class UpdateDailyQuestCommand(

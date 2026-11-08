@@ -1,6 +1,6 @@
-using MainCore.Commands.Features.StartAdventure;
+using MainCore.Features.StartAdventure;
 
-namespace MainCore.Commands.Update
+namespace MainCore.Update
 {
     [Handler]
     public sealed partial class UpdateAdventureCommand(

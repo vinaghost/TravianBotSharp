@@ -1,4 +1,4 @@
-﻿namespace MainCore.Commands.Misc
+﻿namespace MainCore.Misc
 {
     [Handler]
     public sealed partial class CloseBrowserCommand(ChromeManager chromeManager)

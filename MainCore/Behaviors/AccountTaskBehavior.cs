@@ -1,4 +1,5 @@
-using MainCore.Commands.Update;
+using MainCore.Features.Login;
+using MainCore.Update;
 
 namespace MainCore.Behaviors
 {

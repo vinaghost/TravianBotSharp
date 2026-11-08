@@ -1,6 +1,6 @@
 #pragma warning disable S1172
 
-namespace MainCore.Commands.Features.UseHeroItem
+namespace MainCore.Features.UseHeroItem
 {
     [Handler]
     public static partial class ToHeroInventoryCommand

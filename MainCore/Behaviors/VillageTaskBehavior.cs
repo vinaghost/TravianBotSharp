@@ -1,5 +1,5 @@
-﻿using MainCore.Commands.Navigate;
-using MainCore.Commands.Update;
+﻿using MainCore.Navigate;
+using MainCore.Update;
 
 namespace MainCore.Behaviors
 {

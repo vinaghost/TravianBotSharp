@@ -28,7 +28,7 @@ namespace MainCore.DTO
 
         private static int ToInt(this AccountId accountId) => accountId.Value;
 
-        private static AccountId ToAccountId(this int id) => new AccountId(id);
+        private static AccountId ToAccountId(this int id) => new(id);
 
         private static Access ToAccessEntity(this AccessDto dto) => dto.ToEntity();
 
