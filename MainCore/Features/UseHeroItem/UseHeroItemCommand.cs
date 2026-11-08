@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Features.UseHeroItem;
+﻿namespace MainCore.Features.UseHeroItem;
 
 [Handler]
 public sealed partial class UseHeroItemCommand(ILogger logger)

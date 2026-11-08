@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Tasks;
-
-namespace MainCore.Features.ClaimDailyQuest;
+﻿namespace MainCore.Features.ClaimDailyQuest;
 
 [Handler]
 public sealed partial class ClaimDailyQuestTask(

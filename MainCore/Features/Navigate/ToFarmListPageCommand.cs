@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Features.Navigate;
+﻿namespace MainCore.Features.Navigate;
 
 [Handler]
 public sealed partial class ToFarmListPageCommand(

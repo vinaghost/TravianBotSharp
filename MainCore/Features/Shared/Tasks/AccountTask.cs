@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Features.Shared.Tasks;
+﻿namespace MainCore.Features.Shared.Tasks;
 
 public abstract class AccountTask(AccountId accountId) : BaseTask, IAccountConstraint
 {

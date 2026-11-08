@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Features.ClaimVillageQuest;
+﻿namespace MainCore.Features.ClaimVillageQuest;
 
 [Handler]
 public static partial class CheckVillageQuestCommand

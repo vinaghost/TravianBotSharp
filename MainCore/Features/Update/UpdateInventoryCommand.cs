@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Features.Update;
+﻿namespace MainCore.Features.Update;
 
 [Handler]
 public sealed partial class UpdateInventoryCommand(

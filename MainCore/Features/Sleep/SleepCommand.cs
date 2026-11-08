@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Features.Sleep;
+﻿namespace MainCore.Features.Sleep;
 
 [Handler]
 public sealed partial class SleepCommand(ILogger logger)

@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Features.Shared.Tasks;
+﻿namespace MainCore.Features.Shared.Tasks;
 
 public abstract class VillageTask(AccountId accountId, VillageId villageId) : AccountTask(accountId), IAccountVillageConstraint
 {

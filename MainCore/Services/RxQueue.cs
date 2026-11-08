@@ -1,6 +1,8 @@
 namespace MainCore.Services
 {
     using MainCore.Features.Login;
+    using MainCore.Features.Shared.Enums;
+    using MainCore.Features.Shared.Notifications;
     using MainCore.Features.Sleep;
     using MainCore.Features.StartAdventure;
     using MainCore.Features.TrainTroop;

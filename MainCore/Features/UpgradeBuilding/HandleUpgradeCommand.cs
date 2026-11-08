@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Features.UpgradeBuilding;
+﻿namespace MainCore.Features.UpgradeBuilding;
 
 [Handler]
 public static partial class UpgradeCommand

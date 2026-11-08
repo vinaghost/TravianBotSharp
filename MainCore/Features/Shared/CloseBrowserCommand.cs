@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Features.Shared;
+﻿namespace MainCore.Features.Shared;
 
 [Handler]
 public sealed partial class CloseBrowserCommand(ChromeManager chromeManager)

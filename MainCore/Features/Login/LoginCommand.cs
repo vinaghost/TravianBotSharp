@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Features.Login;
+﻿namespace MainCore.Features.Login;
 
 [Handler]
 public static partial class LoginCommand

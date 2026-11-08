@@ -1,5 +1,4 @@
 using MainCore.Features.Login;
-using MainCore.Features.Shared.Tasks;
 using MainCore.Features.Update;
 
 namespace MainCore.Behaviors

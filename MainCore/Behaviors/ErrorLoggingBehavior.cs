@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Behaviors
+﻿namespace MainCore.Behaviors
 {
     public sealed class ErrorLoggingBehavior<TRequest, TResponse>(ILogger logger)
         : Behavior<TRequest, TResponse>

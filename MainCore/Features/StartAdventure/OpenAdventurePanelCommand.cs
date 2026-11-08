@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Features.StartAdventure;
+﻿namespace MainCore.Features.StartAdventure;
 
 [Handler]
 public static partial class OpenAdventurePanelCommand

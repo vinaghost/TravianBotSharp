@@ -9,6 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace MainCore.UI.ViewModels.UserControls
 {
     using MainCore.Features.Shared;
+    using MainCore.Features.Shared.Enums;
+    using MainCore.Features.Shared.Notifications;
 
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Concurrency;

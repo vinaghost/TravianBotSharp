@@ -1,5 +1,4 @@
 ﻿using MainCore.Features.Navigate;
-using MainCore.Features.Shared.Tasks;
 
 namespace MainCore.Features.StartFarmList;
 

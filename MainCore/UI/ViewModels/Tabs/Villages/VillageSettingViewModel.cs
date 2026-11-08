@@ -7,6 +7,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     using FluentValidation;
 
+    using MainCore.Features.Shared.Enums;
+
     using Microsoft.Extensions.DependencyInjection;
 
     using ReactiveUI.Primitives;

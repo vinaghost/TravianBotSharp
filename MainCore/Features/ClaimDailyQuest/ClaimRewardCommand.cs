@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Features.ClaimDailyQuest;
+﻿namespace MainCore.Features.ClaimDailyQuest;
 
 [Handler]
 public static partial class ClaimRewardCommand

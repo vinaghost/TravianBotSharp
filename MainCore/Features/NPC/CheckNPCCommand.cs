@@ -1,5 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-using MainCore.Features.Update;
+﻿using MainCore.Features.Update;
 
 namespace MainCore.Features.NPC;
 

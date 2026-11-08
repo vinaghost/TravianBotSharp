@@ -3,6 +3,8 @@ using MainCore.UI.ViewModels.Tabs.Villages;
 
 namespace MainCore.UI.Stores
 {
+    using MainCore.Features.Shared.Enums;
+
     using ReactiveUI.Primitives;
 
     [RegisterSingleton<VillageTabStore>]

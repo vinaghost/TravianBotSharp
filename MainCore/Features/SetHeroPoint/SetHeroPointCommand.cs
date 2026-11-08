@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Features.SetHeroPoint;
+﻿namespace MainCore.Features.SetHeroPoint;
 
 [Handler]
 public static partial class SetHeroPointCommand

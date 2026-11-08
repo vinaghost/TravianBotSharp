@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Constraints;
-
-namespace MainCore.Features.TrainTroop;
+﻿namespace MainCore.Features.TrainTroop;
 
 [Handler]
 public sealed partial class TrainTroopCommand(ILogger logger)

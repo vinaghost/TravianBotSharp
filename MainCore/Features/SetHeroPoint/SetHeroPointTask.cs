@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Tasks;
-
-namespace MainCore.Features.SetHeroPoint;
+﻿namespace MainCore.Features.SetHeroPoint;
 
 [Handler]
 public sealed partial class SetHeroPointTask(

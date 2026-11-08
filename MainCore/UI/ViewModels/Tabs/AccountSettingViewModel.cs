@@ -7,6 +7,8 @@ namespace MainCore.UI.ViewModels.Tabs
 {
     using FluentValidation;
 
+    using MainCore.Features.Shared.Enums;
+
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
 
