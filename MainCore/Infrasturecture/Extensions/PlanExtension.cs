@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Microsoft.EntityFrameworkCore.Internal;
-
-namespace MainCore.Infrasturecture.Extensions
+﻿namespace MainCore.Infrasturecture.Extensions
 {
     public static class PlanExtension
     {

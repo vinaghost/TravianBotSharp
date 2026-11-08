@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MainCore.Errors
+﻿namespace MainCore.Errors
 {
     public enum UpgradeErrorType
     {

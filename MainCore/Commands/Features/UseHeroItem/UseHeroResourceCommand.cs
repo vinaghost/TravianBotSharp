@@ -1,7 +1,7 @@
 ﻿namespace MainCore.Commands.Features.UseHeroItem
 {
     [Handler]
-    public static partial class UseHeroResourceCommand
+    public sealed partial class UseHeroResourceCommand(ILogger logger)
     {
         public sealed record Command(IChromeBrowser Browser, BuildingEnums Building, long[] Resource) : ICommand
         {
@@ -9,7 +9,7 @@
             private string Description => $"{string.Join(", ", Resource.Select(x => $"{x}"))}";
         }
 
-        private static async ValueTask<Result> HandleAsync(Command command)
+        private async ValueTask<Result> HandleAsync(Command command)
         {
             var (browser, building, resource) = command;
 
@@ -48,16 +48,19 @@
             "crop",
         ];
 
-        private static async Task<Result> IsEnoughResource(IChromeBrowser browser, long[] requiredResources)
+        private async Task<Result> IsEnoughResource(IChromeBrowser browser, long[] requiredResources)
         {
             var errors = new List<Error>();
             var resources = await InventoryParser.GetInventoryResources(browser.CurrentPage);
             for (var i = 0; i < 4; i++)
             {
-                if (resources[i] < requiredResources[i])
+                if (resources[i] >= requiredResources[i])
                 {
-                    errors.Add(MissingResource.Error($"{_itemInputName[i]}", resources[i], requiredResources[i]));
+                    continue;
                 }
+
+                logger.Warning("Not enough resource in hero inventory. Required: {Required} {Type}, Current: {Current}", requiredResources[i], _itemInputName[i], resources[i]);
+                errors.Add(new UpgradeError(UpgradeErrorType.MissingResource));
             }
             return Result.FailIfNotEmpty(errors);
         }

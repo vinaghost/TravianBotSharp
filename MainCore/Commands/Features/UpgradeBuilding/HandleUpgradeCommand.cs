@@ -1,32 +1,27 @@
 ﻿namespace MainCore.Commands.Features.UpgradeBuilding
 {
     [Handler]
-    public sealed partial class HandleUpgradeCommand(
-        ChromeManager chromeManager,
-        IDbContextFactory<AppDbContext> contextFactory,
-        ILogger logger)
+    public static partial class UpgradeCommand
     {
-        public sealed record Command(AccountId AccountId, VillageId VillageId, NormalBuildPlan Plan) : IAccountVillageCommand
+        public sealed record Command(IChromeBrowser Browser, NormalBuildPlan Plan, bool CanUseSpecialUpgrade) : ICommand
         {
-            public string Name => $"{nameof(HandleUpgradeCommand).Humanize()} [{Description}]";
+            public string Name => $"{nameof(UpgradeCommand).Humanize()} [{Description}]";
             private string Description => $"{Plan}";
         }
 
-        private async ValueTask<Result> HandleAsync(Command command)
+        private static async ValueTask<Result> HandleAsync(Command command)
         {
-            var (accountId, villageId, plan) = command;
-
-            LogBuildingInfo(villageId, plan);
+            var (browser, plan, canUseSpecialUpgrade) = command;
 
             Result result;
-            if (CanUseSpecialUpgrade(villageId) && !UnskippableBuildings.Contains(plan.Type))
+            if (canUseSpecialUpgrade && !UnskippableBuildings.Contains(plan.Type))
             {
-                result = await SpecialUpgrade(accountId, plan.Type);
+                result = await SpecialUpgrade(browser, plan.Type);
                 if (result.IsFailed) return result;
             }
             else
             {
-                result = await Upgrade(accountId, plan.Type);
+                result = await Upgrade(browser, plan.Type);
                 if (result.IsFailed) return result;
             }
 
@@ -40,42 +35,8 @@
             BuildingEnums.CommandCenter,
         ];
 
-        private void LogBuildingInfo(VillageId villageId, NormalBuildPlan plan)
+        private static async Task<Result> SpecialUpgrade(IChromeBrowser browser, BuildingEnums building, bool repeat = false)
         {
-            using var context = contextFactory.CreateDbContext();
-
-            var queueBuilding = context.QueueBuildings
-                .Where(x => x.VillageId == villageId.Value)
-                .FirstOrDefault(x => x.Location == plan.Location);
-
-            if (queueBuilding is not null)
-            {
-                logger.Information("{Type} at location {Location} is in queue at level {Level}", queueBuilding.Type, queueBuilding.Location, queueBuilding.Level);
-            }
-            else
-            {
-                var building = context.Buildings
-                   .Where(x => x.VillageId == villageId.Value)
-                   .FirstOrDefault(x => x.Location == plan.Location);
-
-                if (building is not null)
-                {
-                    logger.Information("{Type} at location {Location} is at level {Level}", building.Type, building.Location, building.Level);
-                }
-            }
-        }
-
-        private bool CanUseSpecialUpgrade(VillageId villageId)
-        {
-            using var context = contextFactory.CreateDbContext();
-            var useSpecialUpgrade = context.BooleanByName(villageId, VillageSettingEnums.UseSpecialUpgrade);
-            return useSpecialUpgrade;
-        }
-
-        private async Task<Result> SpecialUpgrade(AccountId accountId, BuildingEnums building, bool repeat = false)
-        {
-            var browser = chromeManager.Get(accountId);
-
             var button = await UpgradeParser.GetSpecialButton(browser.CurrentPage, building);
             var result = await browser.Click(button);
             if (result.IsFailed) return result;
@@ -96,19 +57,18 @@
             result = await browser.Wait(videoFeature);
             if (result.IsFailed) return result;
 
-            result = await HandleAds(accountId, building, repeat);
+            result = await HandleAds(browser, building, repeat);
             if (result.IsFailed) return result;
             return Result.Ok();
         }
 
-        private async Task<Result> HandleAds(AccountId accountId, BuildingEnums building, bool repeat = false)
+        private static async Task<Result> HandleAds(IChromeBrowser browser, BuildingEnums building, bool repeat = false)
         {
             if (repeat)
             {
                 return Retry.Error.WithError("Special upgrade failed after retrying.");
             }
 
-            var browser = chromeManager.Get(accountId);
             var page = browser.CurrentPage;
             var videoFeature = page.Locator("#videoFeature");
             Result result;
@@ -132,7 +92,7 @@
                 browser.Logger.Information("Video not loaded. Refreshing the page.");
                 result = await browser.Refresh();
                 if (result.IsFailed) return result;
-                result = await SpecialUpgrade(accountId, building, true);
+                result = await SpecialUpgrade(browser, building, true);
                 if (result.IsFailed) return result;
                 return Result.Ok();
             }
@@ -142,9 +102,8 @@
             return Result.Ok();
         }
 
-        private async Task<Result> Upgrade(AccountId accountId, BuildingEnums building)
+        private static async Task<Result> Upgrade(IChromeBrowser browser, BuildingEnums building)
         {
-            var browser = chromeManager.Get(accountId);
             var button = await UpgradeParser.GetNormalButton(browser.CurrentPage, building);
             var result = await browser.Click(button);
             if (result.IsFailed) return result;

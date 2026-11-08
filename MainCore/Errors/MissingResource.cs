@@ -13,13 +13,5 @@
         public static MissingResource Error(TroopEnums troop) => new(troop);
 
         public static MissingResource Error(string resource, long storage, long required) => new(resource, storage, required);
-
-        public static MissingResource Wood(long storage, long required) => new("Wood", storage, required);
-
-        public static MissingResource Clay(long storage, long required) => new("Clay", storage, required);
-
-        public static MissingResource Iron(long storage, long required) => new("Iron", storage, required);
-
-        public static MissingResource Crop(long storage, long required) => new("Crop", storage, required);
     }
 }

@@ -1,6 +1,4 @@
-﻿using MainCore.Commands.Update;
-
-namespace MainCore.Commands.Navigate
+﻿namespace MainCore.Commands.Navigate
 {
     [Handler]
     public sealed partial class ToBuildingByTypeCommand(

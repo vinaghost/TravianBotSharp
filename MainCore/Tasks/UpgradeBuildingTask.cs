@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-using MainCore.Commands.Features.UpgradeBuilding;
+﻿using MainCore.Commands.Features.UpgradeBuilding;
 using MainCore.Commands.Navigate;
 using MainCore.Commands.Update;
 
@@ -9,13 +7,14 @@ namespace MainCore.Tasks
     [Handler]
     public sealed partial class UpgradeBuildingTask(
         ILogger logger,
+        RxQueue rxQueue,
         ChromeManager chromeManager,
         IDbContextFactory<AppDbContext> contextFactory,
         ToDorfCommand.Handler toDorfCommand,
         GetBuildPlanCommand.Handler getBuildPlanCommand,
         ToBuildPageCommand.Handler toBuildPageCommand,
         HandleResourceCommand.Handler handleResourceCommand,
-        HandleUpgradeCommand.Handler handleUpgradeCommand,
+        UpgradeCommand.Handler handleUpgradeCommand,
         UpdateBuildingCommand.Handler updateBuildingCommand)
     {
         public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
@@ -115,28 +114,42 @@ namespace MainCore.Tasks
                         if (result.IsFailed) return result;
                     }
                 }
-
-                result = await handleResourceCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
+                var canUseHeroResource = CanUseHeroResource(task.VillageId);
+                result = await handleResourceCommand.HandleAsync(new(browser, plan, canUseHeroResource), cancellationToken);
                 if (result.IsFailed)
                 {
-                    if (result.HasError<LackOfFreeCrop>())
-                        continue;
+                    if (!result.HasError<UpgradeError>())
+                        return result;
 
-                    if (result.HasError<StorageLimit>())
+                    var lackOfFreeCropError = result.Errors.OfType<UpgradeError>().FirstOrDefault(x => x.Type == UpgradeErrorType.LackOfFreeCrop);
+
+                    if (lackOfFreeCropError is not null)
                     {
-                        return Stop.Error.WithErrors(result.Errors);
+                        AddCropland(task.AccountId, task.VillageId);
+                        continue;
                     }
-                    if (result.HasError<MissingResource>())
+
+                    var storageLimitError = result.Errors.OfType<UpgradeError>().FirstOrDefault(x => x.Type == UpgradeErrorType.StorageLimit);
+
+                    if (storageLimitError is not null)
+                    {
+                        return Stop.Error;
+                    }
+
+                    var missingResourceError = result.Errors.OfType<UpgradeError>().FirstOrDefault(x => x.Type == UpgradeErrorType.MissingResource);
+                    if (missingResourceError is not null)
                     {
                         var time = await UpgradeParser.GetTimeWhenEnoughResource(browser.CurrentPage, plan.Type);
                         task.ExecuteAt = DateTime.Now.Add(time);
-                        return Skip.Error.WithErrors(result.Errors);
+                        return Skip.Error;
                     }
-
-                    return result;
                 }
 
-                result = await handleUpgradeCommand.HandleAsync(new(task.AccountId, task.VillageId, plan), cancellationToken);
+                LogBuildingInfo(task.VillageId, plan);
+
+                var canUseSpecialUpgrade = CanUseSpecialUpgrade(task.VillageId);
+
+                result = await handleUpgradeCommand.HandleAsync(new(browser, plan, canUseSpecialUpgrade), cancellationToken);
                 if (result.IsFailed) return result;
 
                 logger.Information("Upgrade for {Type} at #{Location} completed successfully.", plan.Type, plan.Location);
@@ -242,6 +255,65 @@ namespace MainCore.Tasks
             }
 
             return Result.FailIfNotEmpty(errors);
+        }
+
+        private bool CanUseHeroResource(VillageId villageId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            return context.BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
+        }
+
+        private bool CanUseSpecialUpgrade(VillageId villageId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var useSpecialUpgrade = context.BooleanByName(villageId, VillageSettingEnums.UseSpecialUpgrade);
+            return useSpecialUpgrade;
+        }
+
+        private void AddCropland(AccountId accountId, VillageId villageId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            var buildings = context.GetLayoutBuildings(villageId, true);
+
+            var cropland = buildings
+                .Where(x => x.Type == BuildingEnums.Cropland)
+                .OrderBy(x => x.Level)
+                .First();
+
+            var cropLandPlan = new NormalBuildPlan()
+            {
+                Location = cropland.Location,
+                Type = cropland.Type,
+                Level = cropland.Level + 1,
+            };
+
+            context.AddJob(villageId, cropLandPlan, true);
+            rxQueue.Enqueue(new JobsModified(accountId, villageId));
+        }
+
+        private void LogBuildingInfo(VillageId villageId, NormalBuildPlan plan)
+        {
+            using var context = contextFactory.CreateDbContext();
+
+            var queueBuilding = context.QueueBuildings
+                .Where(x => x.VillageId == villageId.Value)
+                .FirstOrDefault(x => x.Location == plan.Location);
+
+            if (queueBuilding is not null)
+            {
+                logger.Information("{Type} at location {Location} is in queue at level {Level}", queueBuilding.Type, queueBuilding.Location, queueBuilding.Level);
+            }
+            else
+            {
+                var building = context.Buildings
+                   .Where(x => x.VillageId == villageId.Value)
+                   .FirstOrDefault(x => x.Location == plan.Location);
+
+                if (building is not null)
+                {
+                    logger.Information("{Type} at location {Location} is at level {Level}", building.Type, building.Location, building.Level);
+                }
+            }
         }
     }
 }

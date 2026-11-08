@@ -1,6 +1,4 @@
-﻿using System.Collections.Frozen;
-
-using Splat;
+﻿using Splat;
 
 namespace MainCore.Enums
 {

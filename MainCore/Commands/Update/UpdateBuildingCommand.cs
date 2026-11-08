@@ -230,7 +230,7 @@ namespace MainCore.Commands.Update
 
                     elements.forEach(field => {
                         const classAttr = field.getAttribute('class') || '';
-                        const locMatch = classAttr.match(slotRegex);
+                        const locMatch = classAttr.match(locRegex);
                         const gidMatch = classAttr.match(gidRegex);
                         const levelMatch = classAttr.match(levelRegex);
                         const isUnderConstruction = classAttr.includes('underConstruction');

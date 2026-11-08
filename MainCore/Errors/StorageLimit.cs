@@ -7,7 +7,5 @@
         }
 
         public static StorageLimit Warehouse(long storage, long required) => new("Warehouse", storage, required);
-
-        public static StorageLimit Granary(long storage, long required) => new("Granary", storage, required);
     }
 }
