@@ -55,7 +55,7 @@ namespace MainCore.Tasks
             result = await instantUpgradeCommand.HandleAsync(new(browser), cancellationToken);
             if (result.IsFailed) return result;
 
-            taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId));
+            taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId), true);
             return Result.Ok();
         }
     }

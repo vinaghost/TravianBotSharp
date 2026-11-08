@@ -28,5 +28,15 @@ namespace MainCore.Test.ArchitectureTests
                 .NotDependOnAny(typeof(IChromeBrowser))
                 .Check(Architecture);
         }
+
+        [Fact]
+        public void Command_ShouldNotDependOn_ChromeManager()
+        {
+            Classes().That()
+                .HaveNameContaining("Command")
+                .Should()
+                .NotDependOnAny(typeof(ChromeManager))
+                .Check(Architecture);
+        }
     }
 }

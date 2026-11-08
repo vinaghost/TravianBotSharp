@@ -75,7 +75,7 @@ namespace MainCore.Tasks
                 return result;
             }
 
-            taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId));
+            taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId), true);
 
             return Result.Ok();
         }
