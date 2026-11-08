@@ -1,4 +1,6 @@
-﻿namespace MainCore.Features.SetHeroPoint;
+﻿using MainCore.Features.Shared.Constraints;
+
+namespace MainCore.Features.SetHeroPoint;
 
 [Handler]
 public static partial class CheckLevelUpCommand

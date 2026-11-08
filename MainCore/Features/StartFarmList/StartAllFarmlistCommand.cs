@@ -1,4 +1,6 @@
-﻿namespace MainCore.Features.StartFarmList;
+﻿using MainCore.Features.Shared.Constraints;
+
+namespace MainCore.Features.StartFarmList;
 
 [Handler]
 public static partial class StartAllFarmlistCommand

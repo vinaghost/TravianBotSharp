@@ -1,5 +1,5 @@
-﻿using MainCore.Navigate;
-using MainCore.Update;
+﻿using MainCore.Features.Navigate;
+using MainCore.Features.Update;
 
 namespace MainCore.Features.UpgradeBuilding;
 

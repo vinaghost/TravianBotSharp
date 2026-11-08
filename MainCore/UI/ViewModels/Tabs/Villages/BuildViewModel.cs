@@ -10,6 +10,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     using FluentValidation;
 
+    using MainCore.Features.InstantUpgrade;
     using MainCore.Features.UpgradeBuilding;
 
     using ReactiveUI.Primitives;

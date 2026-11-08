@@ -1,3 +1,5 @@
+using MainCore.Features.Shared.Tasks;
+
 namespace MainCore.Services.Scheduling
 {
     internal sealed class AccountSchedulerActor(AccountId accountId, RxQueue rxQueue)

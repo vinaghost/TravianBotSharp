@@ -1,4 +1,6 @@
-﻿namespace MainCore.Features.StartAdventure;
+﻿using MainCore.Features.Shared.Tasks;
+
+namespace MainCore.Features.StartAdventure;
 
 [Handler]
 public sealed partial class StartAdventureTask(

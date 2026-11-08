@@ -1,5 +1,5 @@
 using MainCore.Features.UpgradeBuilding;
-using MainCore.Navigate;
+using MainCore.Features.Navigate;
 
 namespace MainCore.Features.NPC;
 

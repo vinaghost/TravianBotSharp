@@ -3,6 +3,8 @@ namespace MainCore.Services
     using MainCore.Features.Login;
     using MainCore.Features.Sleep;
     using MainCore.Features.StartAdventure;
+    using MainCore.Features.TrainTroop;
+    using MainCore.Features.Update;
     using MainCore.Features.UpgradeBuilding;
     using MainCore.Infrasturecture.Extensions;
 

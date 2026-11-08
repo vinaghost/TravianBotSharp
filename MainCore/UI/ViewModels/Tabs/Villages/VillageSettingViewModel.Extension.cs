@@ -1,5 +1,8 @@
 using MainCore.Features.ClaimVillageQuest;
+using MainCore.Features.InstantUpgrade;
 using MainCore.Features.NPC;
+using MainCore.Features.TrainTroop;
+using MainCore.Features.Update;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {

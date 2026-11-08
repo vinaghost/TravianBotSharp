@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 
+using MainCore.Features.Shared.Tasks;
+
 namespace MainCore.Services.Scheduling
 {
     [RegisterSingleton<AccountTaskScheduler>]

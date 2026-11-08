@@ -1,5 +1,7 @@
 using System.Text.Json;
 
+using MainCore.Features.Shared.Constraints;
+
 namespace MainCore.Features.UpgradeBuilding;
 
 [Handler]

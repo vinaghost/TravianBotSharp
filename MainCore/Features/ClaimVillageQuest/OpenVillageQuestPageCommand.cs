@@ -1,4 +1,6 @@
-﻿namespace MainCore.Features.ClaimVillageQuest;
+﻿using MainCore.Features.Shared.Constraints;
+
+namespace MainCore.Features.ClaimVillageQuest;
 
 [Handler]
 public static partial class OpenVillageQuestPageCommand

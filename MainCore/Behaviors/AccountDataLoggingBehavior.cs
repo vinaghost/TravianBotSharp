@@ -1,3 +1,5 @@
+using MainCore.Features.Shared.Tasks;
+
 using Serilog.Context;
 
 namespace MainCore.Behaviors

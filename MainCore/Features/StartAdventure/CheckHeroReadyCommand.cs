@@ -1,4 +1,6 @@
-﻿namespace MainCore.Features.StartAdventure;
+﻿using MainCore.Features.Shared.Constraints;
+
+namespace MainCore.Features.StartAdventure;
 
 [Handler]
 public static partial class CheckHeroReadyCommand

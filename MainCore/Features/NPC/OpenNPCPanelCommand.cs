@@ -1,4 +1,5 @@
-﻿using MainCore.Navigate;
+﻿using MainCore.Features.Navigate;
+using MainCore.Features.Shared.Constraints;
 
 namespace MainCore.Features.NPC;
 

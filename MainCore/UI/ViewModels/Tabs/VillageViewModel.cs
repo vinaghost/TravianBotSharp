@@ -6,6 +6,8 @@ using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
+    using MainCore.Features.Update;
+
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Concurrency;
     using ReactiveUI.Primitives.Disposables;

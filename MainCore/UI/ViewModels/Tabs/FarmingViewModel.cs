@@ -10,6 +10,7 @@ namespace MainCore.UI.ViewModels.Tabs
     using FluentValidation;
 
     using MainCore.Features.StartFarmList;
+    using MainCore.Features.Update;
 
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;

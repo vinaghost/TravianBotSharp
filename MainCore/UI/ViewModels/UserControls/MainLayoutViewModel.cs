@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
-    using MainCore.Misc;
+    using MainCore.Features.Shared;
 
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Concurrency;

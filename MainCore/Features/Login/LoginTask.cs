@@ -1,4 +1,6 @@
-﻿namespace MainCore.Features.Login;
+﻿using MainCore.Features.Shared.Tasks;
+
+namespace MainCore.Features.Login;
 
 [Handler]
 public sealed partial class LoginTask(
