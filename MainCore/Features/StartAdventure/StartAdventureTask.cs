@@ -3,7 +3,6 @@
 [Handler]
 public sealed partial class StartAdventureTask(
     ChromeManager chromeManager,
-    CheckHeroReadyCommand.Handler checkHeroReadyCommand,
     OpenAdventurePanelCommand.Handler openAdventurePanelCommand,
     ExploreAdeventureCommand.Handler exploreAdeventureCommand)
 {
@@ -24,7 +23,7 @@ public sealed partial class StartAdventureTask(
     {
         var browser = chromeManager.Get(task.AccountId);
 
-        var canStartAdventure = await checkHeroReadyCommand.HandleAsync(new(browser), cancellationToken);
+        var canStartAdventure = await CanStartAdventure(browser.CurrentPage);
         if (!canStartAdventure) return Skip.Error.WithError("No adventure available");
 
         Result result;
@@ -34,9 +33,30 @@ public sealed partial class StartAdventureTask(
         result = await exploreAdeventureCommand.HandleAsync(new(browser), cancellationToken);
         if (result.IsFailed) return result;
 
-        var adventureDuration = await AdventureParser.GetAdventureDuration(browser.CurrentPage);
+        var adventureDuration = await browser.CurrentPage.GetAdventureDuration();
         task.ExecuteAt = DateTime.Now.Add(adventureDuration * 2);
 
         return Result.Ok();
+    }
+
+    private static async Task<bool> CanStartAdventure(IPage page)
+    {
+        var heroState = await page.GetHeroState();
+
+        if (heroState.Health <= 30)
+        {
+            return false;
+        }
+
+        if (!heroState.IsAtHome)
+        {
+            return false;
+        }
+
+        if (!heroState.IsAdventureReady)
+        {
+            return false;
+        }
+        return true;
     }
 }

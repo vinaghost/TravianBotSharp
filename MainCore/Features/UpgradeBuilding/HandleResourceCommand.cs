@@ -42,7 +42,7 @@ public sealed partial class HandleResourceCommand(
 
     private static async Task<long[]> GetRequiredResource(IPage page, BuildingEnums building)
     {
-        var resources = await UpgradeParser.GetRequiredResource(page, building);
+        var resources = await page.GetRequiredResource(building);
         var count = await resources.CountAsync();
 
         if (count != 5) throw new InvalidOperationException($"Expected 5 elements, but found {count} when fetching required resources.");

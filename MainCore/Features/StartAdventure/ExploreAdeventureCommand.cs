@@ -13,7 +13,7 @@ public sealed partial class ExploreAdeventureCommand(ILogger logger)
         var browser = command.Browser;
         Result result;
 
-        var adventures = await AdventureParser.GetAdventureInfo(browser.CurrentPage);
+        var adventures = await browser.CurrentPage.GetAdventureInfo();
         if (adventures.Count == 0) return Skip.Error.WithError("No adventure available");
 
         var adventure = adventures[0];
@@ -23,7 +23,7 @@ public sealed partial class ExploreAdeventureCommand(ILogger logger)
         result = await browser.Click(adventure.Button);
         if (result.IsFailed) return result;
 
-        result = await browser.Wait(AdventureParser.GetContinueButton(browser.CurrentPage));
+        result = await browser.Wait(browser.CurrentPage.GetContinueButton());
         if (result.IsFailed) return result;
         return Result.Ok();
     }

@@ -14,11 +14,11 @@ public sealed partial class UseHeroResourceCommand(ILogger logger)
         var (browser, building, resource) = command;
 
         Result result;
-        var fillUpButton = await UpgradeParser.GetFillUpButton(browser.CurrentPage, building);
+        var fillUpButton = await browser.CurrentPage.GetFillUpButton(building);
         result = await browser.Click(fillUpButton);
         if (result.IsFailed) return result;
 
-        result = await browser.Wait(InventoryParser.GetResourceTransferDialog(browser.CurrentPage));
+        result = await browser.Wait(browser.CurrentPage.GetResourceTransferDialog());
         if (result.IsFailed) return result;
 
         result = await IsEnoughResource(browser, resource);
@@ -28,7 +28,7 @@ public sealed partial class UseHeroResourceCommand(ILogger logger)
             return result;
         }
 
-        result = await browser.Click(InventoryParser.GetResourceConfirmButton(browser.CurrentPage));
+        result = await browser.Click(browser.CurrentPage.GetResourceConfirmButton());
         if (result.IsFailed) return result;
 
         result = await browser.WaitPageChanged("&reload=auto");
@@ -51,7 +51,7 @@ public sealed partial class UseHeroResourceCommand(ILogger logger)
     private async Task<Result> IsEnoughResource(IChromeBrowser browser, long[] requiredResources)
     {
         var errors = new List<Error>();
-        var resources = await InventoryParser.GetInventoryResources(browser.CurrentPage);
+        var resources = await browser.CurrentPage.GetInventoryResources();
         for (var i = 0; i < 4; i++)
         {
             if (resources[i] >= requiredResources[i])

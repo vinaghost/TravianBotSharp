@@ -13,17 +13,12 @@ public static partial class AccecptCookieConsentCommand
         var browser = command.Browser;
         Result result;
 
-        var cmpwrapper = browser.CurrentPage.Locator("div#cmpwrapper");
-        if (await cmpwrapper.CountAsync() == 0)
-        {
-            return Result.Ok();
-        }
-
-        var acceptButton = cmpwrapper.Locator(".cmpboxbtn.cmpboxbtnyes.cmptxt_btn_yes");
+        var acceptButton = browser.CurrentPage.GetCookieConsentAcceptButton();
         if (await acceptButton.CountAsync() == 0)
         {
             return Result.Ok();
         }
+
         result = await browser.Click(acceptButton);
         if (result.IsFailed) return result;
 

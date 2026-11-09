@@ -18,10 +18,10 @@ public sealed partial class OpenNPCPanelCommand(SwitchTabCommand.Handler switchT
         result = await switchTabCommand.HandleAsync(new(browser, 0));
         if (result.IsFailed) return result;
 
-        result = await browser.Click(NpcResourceParser.GetExchangeResourcesButton(browser.CurrentPage));
+        result = await browser.Click(browser.CurrentPage.GetExchangeResourcesButton());
         if (result.IsFailed) return result;
 
-        result = await browser.Wait(NpcResourceParser.NpcDialog(browser.CurrentPage));
+        result = await browser.Wait(browser.CurrentPage.NpcDialog());
         if (result.IsFailed) return result;
 
         return Result.Ok();

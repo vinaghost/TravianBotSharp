@@ -15,7 +15,7 @@ public sealed partial class UpdateDailyQuestCommand(
     private async ValueTask HandleAsync(Command command)
     {
         var (accountId, browser) = command;
-        if (!(await QuestParser.IsDailyQuestClaimable(browser.CurrentPage))) return;
+        if (!(await browser.CurrentPage.IsDailyQuestClaimable())) return;
 
         using var context = contextFactory.CreateDbContext();
         var claimQuestTask = new ClaimDailyQuestTask.Task(accountId);

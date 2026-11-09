@@ -3,7 +3,6 @@
 [Handler]
 public sealed partial class SetHeroPointTask(
     ChromeManager chromeManager,
-    CheckLevelUpCommand.Handler checkLevelUpCommand,
     OpenAttributesPanelCommand.Handler openAttributesPanelCommand,
     SetHeroPointCommand.Handler setPointCommand
     )
@@ -25,7 +24,7 @@ public sealed partial class SetHeroPointTask(
     {
         var browser = chromeManager.Get(task.AccountId);
         Result result;
-        var canSetHeroPoint = await checkLevelUpCommand.HandleAsync(new(browser), cancellationToken);
+        var canSetHeroPoint = await browser.CurrentPage.GetHeroLevelUpMark().CountAsync() > 0;
         if (!canSetHeroPoint) return Result.Ok();
 
         result = await openAttributesPanelCommand.HandleAsync(new(browser), cancellationToken);

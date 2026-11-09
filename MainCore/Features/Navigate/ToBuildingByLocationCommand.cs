@@ -17,13 +17,13 @@ public static partial class ToBuildingByLocationCommand
         Result result;
         if (location < 19)
         {
-            var field = BuildingLayoutParser.GetFieldButton(browser.CurrentPage, location);
+            var field = browser.CurrentPage.GetFieldButton(location);
             result = await browser.Click(field);
             if (result.IsFailed) return result;
         }
         else
         {
-            var building = BuildingLayoutParser.GetBuildingButton(browser.CurrentPage, location);
+            var building = browser.CurrentPage.GetBuildingButton(location);
 
             var javascript = await building.GetAttributeAsync("onclick");
             var decodedJs = HttpUtility.HtmlDecode(javascript ?? "");

@@ -27,7 +27,7 @@ public static partial class SetHeroPointCommand
         for (var i = 0; i < NameInputs.Length; i++)
         {
             if (Points[i] == 0) continue;
-            var input = browser.CurrentPage.Locator($"#heroV2 .attributeBox .heroAttributes .attributes.formV2 input[name='{NameInputs[i]}']");
+            var input = browser.CurrentPage.GetHeroAttributeBox(NameInputs[i]);
 
             var currentValueText = await input.InputValueAsync();
             var currentValue = int.TryParse(currentValueText, out var value) ? value : 0;
@@ -37,7 +37,7 @@ public static partial class SetHeroPointCommand
             if (result.IsFailed) return result;
         }
 
-        var saveButton = browser.CurrentPage.Locator("#heroV2 .attributeBox .heroAttributes .attributes.formV2 button#savePoints");
+        var saveButton = browser.CurrentPage.GetHeroAttributeSaveButton();
         result = await browser.Click(saveButton);
         if (result.IsFailed) return result;
 

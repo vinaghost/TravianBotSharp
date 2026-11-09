@@ -1,3 +1,5 @@
+using MainCore.Features.StartFarmList;
+
 namespace MainCore.Features.Update;
 
 [Handler]
@@ -14,7 +16,7 @@ public sealed partial class UpdateFarmlistCommand(
     private async ValueTask<Result> HandleAsync(Command command)
     {
         var browser = chromeManager.Get(command.AccountId);
-        var dtos = await FarmListParser.GetFarmInfo(browser.CurrentPage);
+        var dtos = await browser.CurrentPage.GetFarmInfo();
         UpdateToDatabase(command.AccountId, dtos);
         rxQueue.Enqueue(new FarmsModified(command.AccountId));
         return Result.Ok();

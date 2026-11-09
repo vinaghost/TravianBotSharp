@@ -12,17 +12,18 @@ public static partial class LoginCommand
     {
         var (browser, username, password) = command;
 
-        if (await LoginParser.IsIngamePage(browser.CurrentPage)) return Result.Ok();
+        var page = browser.CurrentPage;
+        if (await page.IsIngamePage()) return Result.Ok();
 
         Result result;
 
-        result = await browser.Input(LoginParser.GetUsernameInput(browser.CurrentPage), username);
+        result = await browser.Input(page.GetUsernameInput(), username);
         if (result.IsFailed) return result;
 
-        result = await browser.Input(LoginParser.GetPasswordInput(browser.CurrentPage), password);
+        result = await browser.Input(page.GetPasswordInput(), password);
         if (result.IsFailed) return result;
 
-        result = await browser.Click(LoginParser.GetLoginButton(browser.CurrentPage));
+        result = await browser.Click(page.GetLoginButton());
         if (result.IsFailed) return result;
 
         result = await browser.WaitPageChanged("dorf");

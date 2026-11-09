@@ -12,20 +12,15 @@ public static partial class ClaimRewardCommand
     {
         var browser = command.Browser;
 
-        Result result;
-
-        var collectButtons = QuestParser.GetDailyQuestCollectButton(browser.CurrentPage);
-        var collectButton = collectButtons.Locator("svg.above #innerCircle path").First;
-        result = await browser.Click(collectButton);
+        var collectButtons = browser.CurrentPage.GetDailyQuestCollectButton();
+        var result = await browser.Click(collectButtons.First);
         if (result.IsFailed) return result;
 
-        var claimButton = browser.CurrentPage.Locator("#dailyQuests .screen.active #dailyQuestsRewardScreen button.collect.collectable");
+        var claimButton = browser.CurrentPage.GetDailyQuestClaimButton();
         result = await browser.Click(claimButton);
         if (result.IsFailed) return result;
 
-        result = await browser.Refresh();
-        if (result.IsFailed) return result;
-
+        await browser.Refresh();
         return Result.Ok();
     }
 }

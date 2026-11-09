@@ -13,11 +13,11 @@ public static partial class OpenAdventurePanelCommand
         var browser = command.Browser;
         Result result;
 
-        result = await browser.Click(AdventureParser.GetHeroAdventureButton(browser.CurrentPage));
+        result = await browser.Click(browser.CurrentPage.GetHeroAdventureButton());
         if (result.IsFailed) return result;
         result = await browser.WaitPageChanged("hero/adventures");
         if (result.IsFailed) return result;
-        result = await browser.Wait(AdventureParser.GetAdventureDurationSection(browser.CurrentPage));
+        result = await browser.Wait(browser.CurrentPage.GetAdventureDurationSection());
         if (result.IsFailed) return result;
         return Result.Ok();
     }

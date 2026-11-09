@@ -13,12 +13,14 @@ public static partial class SwitchVillageCommand
     {
         var (browser, villageId) = command;
 
-        var villageNode = VillagePanelParser.GetVillageNode(browser.CurrentPage, villageId);
-        if (await villageNode.CountAsync() == 0) return Skip.Error.WithError("Village not found");
-
-        if (await VillagePanelParser.IsActive(villageNode)) return Result.Ok();
-
+        var villageNode = browser.CurrentPage.GetVillageNode(villageId);
         Result result;
+
+        result = await browser.Wait(villageNode);
+        if (result.IsFailed) return result;
+
+        if (await villageNode.IsActive()) return Result.Ok();
+
         result = await browser.Click(villageNode);
         if (result.IsFailed) return result;
         return Result.Ok();

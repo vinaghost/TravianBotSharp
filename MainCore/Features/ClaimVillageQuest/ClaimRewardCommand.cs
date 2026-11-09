@@ -16,7 +16,7 @@ public sealed partial class ClaimRewardCommand(SwitchTabCommand.Handler switchTa
 
         Result result;
 
-        var quest = QuestParser.GetQuestCollectButton(browser.CurrentPage);
+        var quest = browser.CurrentPage.GetVillageQuestCollectButton();
 
         while (true)
         {
@@ -25,23 +25,29 @@ public sealed partial class ClaimRewardCommand(SwitchTabCommand.Handler switchTa
                 return Cancel.Error;
             }
 
-            if (await quest.CountAsync() == 0)
+            if (await quest.CountAsync() != 0)
             {
-                await Task.Delay(1000, CancellationToken.None);
-                if (await quest.CountAsync() == 0)
-                {
-                    result = await switchTabCommand.HandleAsync(new(browser, 1), cancellationToken);
-                    if (result.IsFailed) return result;
-                }
-
-                if (await quest.CountAsync() == 0)
-                {
-                    return Result.Ok();
-                }
+                result = await browser.Click(quest.First);
+                if (result.IsFailed) return result;
+                continue;
             }
 
-            result = await browser.Click(quest.First);
+            await Task.Delay(1000, CancellationToken.None);
+
+            if (await quest.CountAsync() != 0)
+            {
+                continue;
+            }
+
+            result = await switchTabCommand.HandleAsync(new(browser, 1), cancellationToken);
             if (result.IsFailed) return result;
+
+            if (await quest.CountAsync() != 0)
+            {
+                continue;
+            }
+
+            return Result.Ok();
         }
     }
 }

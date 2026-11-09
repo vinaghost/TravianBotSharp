@@ -23,16 +23,22 @@ namespace MainCore.Behaviors
             var accountId = request.AccountId;
             var cacheExecuteAt = request.ExecuteAt;
             var browser = chromeManager.Get(accountId);
-            var isIngamePage = await LoginParser.IsIngamePage(browser.CurrentPage);
+            var isIngamePage = await browser.CurrentPage.IsIngamePage();
             request.ExecuteAt = cacheExecuteAt;
 
             if (!isIngamePage)
             {
-                var isLoginPage = await LoginParser.IsLoginPage(browser.CurrentPage);
+                var isLoginPage = await browser.CurrentPage.IsLoginPage();
                 if (!isLoginPage)
                 {
-                    var result = await browser.Wait(LoginParser.GetServerTime(browser.CurrentPage));
-                    if (result.IsFailed) return (TResponse)Stop.Error.WithError("Travian is not ingame nor login page. Please check browser");
+                    try
+                    {
+                        await browser.CurrentPage.GetServerTime().WaitForAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        return (TResponse)Stop.Error.WithError($"Travian is not ingame nor login page. Please check browser. Exception: {ex.Message}");
+                    }
 
                     await updateAccountInfoCommand.HandleAsync(new(accountId, browser), cancellationToken);
                 }
@@ -51,7 +57,7 @@ namespace MainCore.Behaviors
 
             var response = await Next(request, cancellationToken);
 
-            isIngamePage = await LoginParser.IsIngamePage(browser.CurrentPage);
+            isIngamePage = await browser.CurrentPage.IsIngamePage();
             if (isIngamePage)
             {
                 await updateAccountInfoCommand.HandleAsync(new(accountId, browser), cancellationToken);

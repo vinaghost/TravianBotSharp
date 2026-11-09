@@ -13,7 +13,7 @@ public sealed partial class TrainTroopCommand(ILogger logger)
     {
         var (browser, troop, amount, trainWhenLowResource) = command;
 
-        var maxAmount = await TrainTroopParser.GetMaxAmount(browser.CurrentPage, troop);
+        var maxAmount = await browser.CurrentPage.GetMaxAmount(troop);
         if (maxAmount == 0)
         {
             return MissingResource.Error(troop);
@@ -24,10 +24,10 @@ public sealed partial class TrainTroopCommand(ILogger logger)
             return MissingResource.Error(troop);
         }
         Result result;
-        result = await browser.Input(TrainTroopParser.GetInputBox(browser.CurrentPage, troop), $"{amount}");
+        result = await browser.Input(browser.CurrentPage.GetInputBox(troop), $"{amount}");
         if (result.IsFailed) return result;
 
-        result = await browser.Click(TrainTroopParser.GetTrainButton(browser.CurrentPage));
+        result = await browser.Click(browser.CurrentPage.GetTrainButton());
         if (result.IsFailed) return result;
 
         logger.Information("Train {Amount} {Troop} is done.", amount, troop);

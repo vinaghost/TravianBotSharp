@@ -11,16 +11,15 @@ public static partial class InstantUpgradeCommand
     private static async ValueTask<Result> HandleAsync(Command command)
     {
         var browser = command.Browser;
-        Result result;
 
-        var oldQueueCount = await BuildingLayoutParser.CountQueueBuilding(browser.CurrentPage);
+        var oldQueueCount = await browser.CurrentPage.CountQueueBuilding();
         if (oldQueueCount == 0) return Result.Ok();
 
-        var completeButton = CompleteImmediatelyParser.GetCompleteButton(browser.CurrentPage);
-        result = await browser.Click(completeButton);
+        var completeButton = browser.CurrentPage.GetCompleteButton();
+        var result = await browser.Click(completeButton);
         if (result.IsFailed) return result;
 
-        var confirmButton = CompleteImmediatelyParser.GetConfirmButton(browser.CurrentPage);
+        var confirmButton = browser.CurrentPage.GetConfirmButton();
         result = await browser.Click(confirmButton);
         if (result.IsFailed) return result;
 

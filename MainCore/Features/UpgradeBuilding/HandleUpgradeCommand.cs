@@ -37,7 +37,7 @@ public static partial class UpgradeCommand
 
     private static async Task<Result> SpecialUpgrade(IChromeBrowser browser, BuildingEnums building, bool repeat = false)
     {
-        var button = await UpgradeParser.GetSpecialButton(browser.CurrentPage, building);
+        var button = await browser.CurrentPage.GetSpecialButton(building);
         var result = await browser.Click(button);
         if (result.IsFailed) return result;
 
@@ -104,7 +104,7 @@ public static partial class UpgradeCommand
 
     private static async Task<Result> Upgrade(IChromeBrowser browser, BuildingEnums building)
     {
-        var button = await UpgradeParser.GetNormalButton(browser.CurrentPage, building);
+        var button = await browser.CurrentPage.GetNormalButton(building);
         var result = await browser.Click(button);
         if (result.IsFailed) return result;
 

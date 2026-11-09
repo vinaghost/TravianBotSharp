@@ -15,19 +15,19 @@ public sealed partial class OpenAttributesPanelCommand(SwitchTabCommand.Handler 
         var browser = command.Browser;
         Result result;
 
-        var heroAvatar = browser.CurrentPage.Locator("#topBarHero #heroImageButton");
+        var heroAvatar = browser.CurrentPage.GetHeroAvatar();
         result = await browser.Click(heroAvatar);
         if (result.IsFailed) return result;
 
-        var heroPageLocator = browser.CurrentPage.Locator("#heroV2");
+        var heroPageLocator = browser.CurrentPage.GetHeroPanel();
         result = await browser.Wait(heroPageLocator);
         if (result.IsFailed) return result;
 
         result = await switchTabCommand.HandleAsync(new(browser, 1), cancellationToken);
         if (result.IsFailed) return result;
 
-        var attributeBox = browser.CurrentPage.Locator("#heroV2 .attributeBox .heroAttributes .attributes.formV2");
-        result = await browser.Wait(attributeBox);
+        var attributeBoxes = browser.CurrentPage.GetHeroAttributeBoxes();
+        result = await browser.Wait(attributeBoxes);
         if (result.IsFailed) return result;
         return Result.Ok();
     }

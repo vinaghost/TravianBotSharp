@@ -9,7 +9,7 @@ namespace MainCore.Behaviors
         UpdateStorageCommand.Handler updateStorageCommand,
         ToDorfCommand.Handler toDorfCommand,
         UpdateBuildingCommand.Handler updateBuildingCommand,
-        UpdateQuestCommand.Handler updateQuestCommand)
+        UpdateVillageQuestCommand.Handler updateQuestCommand)
             : Behavior<TRequest, TResponse>
                 where TRequest : VillageTask
                 where TResponse : Result

@@ -19,14 +19,12 @@ public sealed partial class ToBuildingByTypeCommand(
         result = await toDorfCommand.HandleAsync(new(browser, 2), cancellationToken);
         if (result.IsFailed) return result;
 
-        var buildingLocator = BuildingLayoutParser.GetBuildingLocator(browser.CurrentPage, buildingType);
+        var location = await browser.CurrentPage.GetBuildingLocation(buildingType);
 
-        if (await buildingLocator.CountAsync() == 0)
+        if (location == -1)
         {
             return MissingBuilding.Error(buildingType);
         }
-
-        var location = await BuildingLayoutParser.GetBuildingLocation(buildingLocator);
 
         result = await toBuildingByLocationCommand.HandleAsync(new(browser, location), cancellationToken);
         if (result.IsFailed) return result;

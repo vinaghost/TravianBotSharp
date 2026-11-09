@@ -138,7 +138,7 @@ public sealed partial class UpgradeBuildingTask(
                 var missingResourceError = result.Errors.OfType<UpgradeError>().FirstOrDefault(x => x.Type == UpgradeErrorType.MissingResource);
                 if (missingResourceError is not null)
                 {
-                    var time = await UpgradeParser.GetTimeWhenEnoughResource(browser.CurrentPage, plan.Type);
+                    var time = await browser.CurrentPage.GetTimeWhenEnoughResource(plan.Type);
                     task.ExecuteAt = DateTime.Now.Add(time);
                     return Skip.Error;
                 }

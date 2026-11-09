@@ -41,7 +41,7 @@ public sealed partial class ToBuildPageCommand(
 
     private async Task<Result> CheckBuildingStatus(IChromeBrowser browser, NormalBuildPlan plan)
     {
-        bool isBuildingExist = await BuildingLayoutParser.IsBuildingLocationExist(browser.CurrentPage, plan.Type, plan.Location);
+        bool isBuildingExist = await browser.CurrentPage.IsBuildingExist(plan.Type, plan.Location);
 
         if (!isBuildingExist)
         {
@@ -49,14 +49,14 @@ public sealed partial class ToBuildPageCommand(
             return new UpgradeError(UpgradeErrorType.BuildingNotExist);
         }
 
-        var level = await BuildingLayoutParser.GetLevel(browser.CurrentPage, plan.Type, plan.Location);
+        var level = await browser.CurrentPage.GetLevel(plan.Type, plan.Location);
         if (level >= plan.Level)
         {
             logger.Information("{Type} at #{Location} is already at level {Level}", plan.Type, plan.Location, level);
             return new UpgradeError(UpgradeErrorType.BuildingComplete);
         }
 
-        var isUnderConstruction = await BuildingLayoutParser.IsUnderConstruction(browser.CurrentPage, plan.Type, plan.Location);
+        var isUnderConstruction = await browser.CurrentPage.IsUnderConstruction(plan.Type, plan.Location);
         if (isUnderConstruction && level >= plan.Level - 2)
         {
             logger.Information("{Type} at #{Location} is under construction, need to check the ingame building queue", plan.Type, plan.Location);

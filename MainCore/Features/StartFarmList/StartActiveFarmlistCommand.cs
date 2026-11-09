@@ -15,7 +15,7 @@ public static partial class StartActiveFarmlistCommand
         Result result;
         foreach (var farmList in farmLists)
         {
-            result = await browser.Click(FarmListParser.GetStartButton(browser.CurrentPage, farmList));
+            result = await browser.Click(browser.CurrentPage.GetStartButton(farmList));
             if (result.IsFailed) return result;
         }
         return Result.Ok();

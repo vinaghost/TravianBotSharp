@@ -13,7 +13,7 @@ public sealed partial class UpdateInventoryCommand(
     private async ValueTask HandleAsync(Command command)
     {
         var browser = chromeManager.Get(command.AccountId);
-        var dtos = await InventoryParser.GetItems(browser.CurrentPage);
+        var dtos = await browser.CurrentPage.GetItems();
         Update(command.AccountId, dtos);
     }
 

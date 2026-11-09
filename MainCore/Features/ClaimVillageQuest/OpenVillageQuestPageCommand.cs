@@ -11,18 +11,18 @@ public static partial class OpenVillageQuestPageCommand
     private static async ValueTask<Result> HandleAsync(Command command)
     {
         var browser = command.Browser;
-        Result result;
 
-        var questMaster = QuestParser.GetQuestMaster(browser.CurrentPage);
-        result = await browser.Click(questMaster);
+        var questMaster = browser.CurrentPage.GetQuestMaster();
+        var result = await browser.Click(questMaster);
         if (result.IsFailed) return result;
 
         result = await browser.WaitPageChanged("tasks");
         if (result.IsFailed) return result;
 
-        var villageQuestPanelReadyLocator = browser.CurrentPage.Locator("#tasks .taskOverview .task .taskImage");
-        result = await browser.Wait(villageQuestPanelReadyLocator.First);
+        var questItems = browser.CurrentPage.GetVillageQuestItems();
+        result = await browser.Wait(questItems.First);
         if (result.IsFailed) return result;
+
         return Result.Ok();
     }
 }

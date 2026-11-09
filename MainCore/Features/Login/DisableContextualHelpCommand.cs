@@ -15,16 +15,19 @@ public sealed partial class DisableContextualHelpCommand(ToDorfCommand.Handler t
         var browser = command.Browser;
         Result result;
 
-        var contextualHelpEnable = await OptionParser.IsContextualHelpEnable(browser.CurrentPage);
-        if (!contextualHelpEnable) return Result.Ok();
+        var contextualHelp = browser.CurrentPage.GetContextualHelp();
+        if (await contextualHelp.CountAsync() == 0)
+        {
+            return Result.Ok();
+        }
 
-        result = await browser.Click(OptionParser.GetOptionButton(browser.CurrentPage));
+        result = await browser.Click(browser.CurrentPage.GetOptionButton());
         if (result.IsFailed) return result;
 
-        result = await browser.Click(OptionParser.GetHideContextualHelpOption(browser.CurrentPage));
+        result = await browser.Click(browser.CurrentPage.GetHideContextualHelpOption());
         if (result.IsFailed) return result;
 
-        result = await browser.Click(OptionParser.GetSubmitButton(browser.CurrentPage));
+        result = await browser.Click(browser.CurrentPage.GetSubmitButton());
         if (result.IsFailed) return result;
 
         result = await toDorfCommand.HandleAsync(new(command.Browser, 0));

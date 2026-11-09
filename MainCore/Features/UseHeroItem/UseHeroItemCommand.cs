@@ -33,15 +33,13 @@ public sealed partial class UseHeroItemCommand(ILogger logger)
         return Result.Ok();
     }
 
-    private static async Task<Result> ClickItem(
-        IChromeBrowser browser,
-        HeroItemEnums item)
+    private static async Task<Result> ClickItem(IChromeBrowser browser, HeroItemEnums item)
     {
         Result result;
-        result = await browser.Click(InventoryParser.GetItemSlot(browser.CurrentPage, item));
+        result = await browser.Click(browser.CurrentPage.GetItemSlot(item));
         if (result.IsFailed) return result;
 
-        result = await browser.Wait(InventoryParser.GetResourceTransferDialog(browser.CurrentPage));
+        result = await browser.Wait(browser.CurrentPage.GetResourceTransferDialog());
         if (result.IsFailed) return result;
         return Result.Ok();
     }
@@ -54,13 +52,10 @@ public sealed partial class UseHeroItemCommand(ILogger logger)
             { HeroItemEnums.Crop, "crop" },
         };
 
-    private static async Task<Result> EnterAmount(
-        IChromeBrowser browser,
-        HeroItemEnums item,
-        long amount)
+    private static async Task<Result> EnterAmount(IChromeBrowser browser, HeroItemEnums item, long amount)
     {
         Result result;
-        result = await browser.Input(InventoryParser.GetAmountBox(browser.CurrentPage, _itemInputName[item]), amount.ToString());
+        result = await browser.Input(browser.CurrentPage.GetAmountBox(_itemInputName[item]), amount.ToString());
         if (result.IsFailed) return result;
         return Result.Ok();
     }
@@ -68,10 +63,10 @@ public sealed partial class UseHeroItemCommand(ILogger logger)
     private static async Task<Result> Confirm(IChromeBrowser browser)
     {
         Result result;
-        result = await browser.Click(InventoryParser.GetConfirmButton(browser.CurrentPage));
+        result = await browser.Click(browser.CurrentPage.GetConfirmButton());
         if (result.IsFailed) return result;
 
-        result = await browser.Wait(InventoryParser.GetSuccessToast(browser.CurrentPage));
+        result = await browser.Wait(browser.CurrentPage.GetSuccessToast());
         if (result.IsFailed) return result;
 
         return Result.Ok();

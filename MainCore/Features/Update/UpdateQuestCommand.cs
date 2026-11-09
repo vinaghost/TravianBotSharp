@@ -3,7 +3,7 @@ using MainCore.Features.ClaimVillageQuest;
 namespace MainCore.Features.Update;
 
 [Handler]
-public sealed partial class UpdateQuestCommand(
+public sealed partial class UpdateVillageQuestCommand(
     ChromeManager chromeManager,
     IDbContextFactory<AppDbContext> contextFactory,
     TaskManager taskManager)
@@ -17,7 +17,7 @@ public sealed partial class UpdateQuestCommand(
     {
         var (accountId, villageId) = command;
         var browser = chromeManager.Get(accountId);
-        if (!(await QuestParser.IsVillageQuestClaimable(browser.CurrentPage))) return;
+        if (!(await browser.CurrentPage.IsVillageQuestClaimable())) return;
         using var context = contextFactory.CreateDbContext();
         var claimQuestTask = new ClaimVillageQuestTask.Task(accountId, villageId);
         if (!claimQuestTask.CanStart(context) || taskManager.IsExist<ClaimVillageQuestTask.Task>(accountId))

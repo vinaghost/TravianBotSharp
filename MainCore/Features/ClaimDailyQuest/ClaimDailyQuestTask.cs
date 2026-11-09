@@ -3,7 +3,6 @@
 [Handler]
 public sealed partial class ClaimDailyQuestTask(
     ChromeManager chromeManager,
-    CheckDailyQuestCommand.Handler checkDailyQuestCommand,
     OpenDailQuestPanelCommand.Handler openDailQuestPanelCommand,
     ClaimRewardCommand.Handler claimRewardCommand)
 {
@@ -23,15 +22,15 @@ public sealed partial class ClaimDailyQuestTask(
     private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
     {
         var browser = chromeManager.Get(task.AccountId);
-        Result result;
-        var canClaimQuest = await checkDailyQuestCommand.HandleAsync(new(browser), cancellationToken);
+        var canClaimQuest = await browser.CurrentPage.IsDailyQuestClaimable();
         if (!canClaimQuest) return Result.Ok();
 
-        result = await openDailQuestPanelCommand.HandleAsync(new(browser), cancellationToken);
+        var result = await openDailQuestPanelCommand.HandleAsync(new(browser), cancellationToken);
         if (result.IsFailed) return result;
 
         result = await claimRewardCommand.HandleAsync(new(browser), cancellationToken);
         if (result.IsFailed) return result;
+
         return Result.Ok();
     }
 }

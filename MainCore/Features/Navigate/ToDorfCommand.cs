@@ -27,7 +27,7 @@ public static partial class ToDorfCommand
         }
 
         Result result;
-        result = await browser.Click(NavigationBarParser.GetDorfButton(browser.CurrentPage, dorf));
+        result = await browser.Click(browser.CurrentPage.GetDorfButton(dorf));
         if (result.IsFailed) return result;
 
         result = await browser.WaitPageChanged($"dorf{dorf}.php");

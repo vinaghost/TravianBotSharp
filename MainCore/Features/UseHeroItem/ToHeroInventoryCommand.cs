@@ -11,13 +11,13 @@ public static partial class ToHeroInventoryCommand
     private static async ValueTask<Result> HandleAsync(Command command)
     {
         var browser = command.Browser;
-        var result = await browser.Click(InventoryParser.GetHeroAvatar(browser.CurrentPage));
+        var result = await browser.Click(browser.CurrentPage.GetHeroAvatar());
         if (result.IsFailed) return result;
 
-        result = await browser.Wait(InventoryParser.GetInventoryPageWrapper(browser.CurrentPage));
+        result = await browser.Wait(browser.CurrentPage.GetInventoryPageWrapper());
         if (result.IsFailed) return result;
 
-        result = await browser.Wait(InventoryParser.GetInventoryPageWrapper(browser.CurrentPage), condition: "node => node.classList.contains('loading')");
+        result = await browser.Wait(browser.CurrentPage.GetInventoryPageWrapper(), condition: "node => node.classList.contains('loading')");
         if (result.IsFailed) return result;
 
         return Result.Ok();

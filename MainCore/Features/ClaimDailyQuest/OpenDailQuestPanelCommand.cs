@@ -12,13 +12,12 @@ public static partial class OpenDailQuestPanelCommand
     {
         var browser = command.Browser;
         Result result;
-
-        var dailyQuestButton = NavigationBarParser.GetDailyQuestButton(browser.CurrentPage);
+        var dailyQuestButton = browser.CurrentPage.GetDailyQuestButton();
         result = await browser.Click(dailyQuestButton);
         if (result.IsFailed) return result;
 
-        var dailyQuestPanelReadyLocator = browser.CurrentPage.Locator("#dailyQuests .screen.active .dailyQuest:not(.placeholder)").First;
-        result = await browser.Wait(dailyQuestPanelReadyLocator);
+        var getDailyQuestItems = browser.CurrentPage.GetDailyQuestItems();
+        result = await browser.Wait(getDailyQuestItems);
         if (result.IsFailed) return result;
 
         return Result.Ok();

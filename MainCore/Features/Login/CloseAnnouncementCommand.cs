@@ -13,18 +13,13 @@ public static partial class CloseAnnouncementCommand
         var browser = command.Browser;
         Result result;
 
-        var cmpwrapper = browser.CurrentPage.Locator("#constructionPlansSpawnedAnnouncement");
-        if (await cmpwrapper.CountAsync() == 0)
+        var continueButton = browser.CurrentPage.GetConstructionPlansContinueButton();
+        if (await continueButton.CountAsync() == 0)
         {
             return Result.Ok();
         }
 
-        var acceptButton = cmpwrapper.Locator("#constructionPlansButton");
-        if (await acceptButton.CountAsync() == 0)
-        {
-            return Result.Ok();
-        }
-        result = await browser.Click(acceptButton);
+        result = await browser.Click(continueButton);
         if (result.IsFailed) return result;
 
         return Result.Ok();

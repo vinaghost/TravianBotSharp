@@ -1,4 +1,6 @@
-﻿namespace MainCore.Features.Navigate;
+﻿using MainCore.Features.StartFarmList;
+
+namespace MainCore.Features.Navigate;
 
 [Handler]
 public sealed partial class ToFarmListPageCommand(
@@ -34,7 +36,7 @@ public sealed partial class ToFarmListPageCommand(
         result = await switchTabCommand.HandleAsync(new(browser, 4), cancellationToken);
         if (result.IsFailed) return result;
 
-        result = await browser.Wait(FarmListParser.GetStartAllButton(browser.CurrentPage));
+        result = await browser.Wait(browser.CurrentPage.GetStartAllButton());
         if (result.IsFailed) return result;
 
         return Result.Ok();

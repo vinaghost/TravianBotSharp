@@ -27,10 +27,10 @@ public sealed partial class NPCCommand(
         result = await InputAmount(browser, values);
         if (result.IsFailed) return result;
 
-        result = await browser.Click(NpcResourceParser.GetDistributeButton(browser.CurrentPage));
+        result = await browser.Click(browser.CurrentPage.GetDistributeButton());
         if (result.IsFailed) return result;
 
-        result = await browser.Click(NpcResourceParser.GetRedeemButton(browser.CurrentPage));
+        result = await browser.Click(browser.CurrentPage.GetRedeemButton());
         if (result.IsFailed) return result;
 
         await LogResource(browser.CurrentPage, after: true);
@@ -52,7 +52,7 @@ public sealed partial class NPCCommand(
         var settings = context.ByName(villageId, SettingNames);
         var ratio = GetRatio(settings);
 
-        var sum = await NpcResourceParser.GetSum(page);
+        var sum = await page.GetSum();
         var sumRatio = ratio.Sum();
         var values = new long[4];
         for (var i = 0; i < 4; i++)
@@ -118,7 +118,7 @@ public sealed partial class NPCCommand(
 
     private static async ValueTask<Result> InputAmount(IChromeBrowser browser, long[] values)
     {
-        var inputs = NpcResourceParser.GetInputs(browser.CurrentPage);
+        var inputs = browser.CurrentPage.GetInputs();
 
         var inputCount = await inputs.CountAsync();
 

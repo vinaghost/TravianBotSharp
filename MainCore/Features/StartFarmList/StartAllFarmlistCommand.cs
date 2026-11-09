@@ -11,7 +11,7 @@ public static partial class StartAllFarmlistCommand
     private static async ValueTask<Result> HandleAsync(Command command)
     {
         var browser = command.Browser;
-        var result = await browser.Click(FarmListParser.GetStartAllButton(browser.CurrentPage));
+        var result = await browser.Click(browser.CurrentPage.GetStartAllButton());
         if (result.IsFailed) return result;
         return Result.Ok();
     }

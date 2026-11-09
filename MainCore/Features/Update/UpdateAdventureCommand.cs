@@ -4,7 +4,6 @@ namespace MainCore.Features.Update;
 
 [Handler]
 public sealed partial class UpdateAdventureCommand(
-    CheckHeroReadyCommand.Handler checkHeroReadyCommand,
     IDbContextFactory<AppDbContext> contextFactory,
     TaskManager taskManager)
 {
@@ -13,9 +12,9 @@ public sealed partial class UpdateAdventureCommand(
         public string Name => "";
     }
 
-    private async ValueTask HandleAsync(Command command, CancellationToken cancellationToken)
+    private async ValueTask HandleAsync(Command command)
     {
-        var canStartAdventure = await checkHeroReadyCommand.HandleAsync(new(command.Browser), cancellationToken);
+        var canStartAdventure = await CanStartAdventure(command.Browser.CurrentPage);
         if (!canStartAdventure) return;
 
         var startAdventureTask = new StartAdventureTask.Task(command.AccountId);
@@ -27,5 +26,16 @@ public sealed partial class UpdateAdventureCommand(
 
         if (taskManager.IsExist<StartAdventureTask.Task>(command.AccountId)) return;
         taskManager.Add(startAdventureTask);
+    }
+
+    private static async Task<bool> CanStartAdventure(IPage page)
+    {
+        var heroState = await page.GetHeroState();
+
+        if (!heroState.IsAdventureReady)
+        {
+            return false;
+        }
+        return true;
     }
 }
