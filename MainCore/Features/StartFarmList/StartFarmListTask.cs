@@ -20,7 +20,7 @@ public sealed partial class StartFarmListTask(
     {
         var browser = chromeManager.Get(task.AccountId);
         Result result;
-        result = await toFarmListPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
+        result = await toFarmListPageCommand.HandleAsync(new(browser), cancellationToken);
         if (result.IsFailed) return result;
 
         if (UseStartAllButton(task.AccountId))

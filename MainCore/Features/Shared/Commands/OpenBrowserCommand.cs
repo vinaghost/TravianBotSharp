@@ -1,26 +1,28 @@
 ﻿using System.Net;
 
-namespace MainCore.Features.Shared;
+namespace MainCore.Features.Shared.Commands;
 
 [Handler]
 public sealed partial class OpenBrowserCommand(
     IDbContextFactory<AppDbContext> contextFactory,
-    ChromeManager chromeManager,
     ILogger logger)
 {
-    public sealed record Command(AccountId AccountId, bool IgnoreSleepTime = false) : IAccountCommand
+    public sealed record Command(IChromeBrowser Browser, bool IgnoreSleepTime = false) : IBrowserCommand
     {
         public string Name => $"{nameof(OpenBrowserCommand)}";
     }
 
     private async ValueTask<Result> HandleAsync(Command command)
     {
-        var result = await GetValidAccess(command.AccountId, command.IgnoreSleepTime);
+        var (browser, ignoreSleepTime) = command;
+        var accountId = browser.AccountId;
+
+        var result = await GetValidAccess(accountId, ignoreSleepTime);
         if (result.IsFailed) return Result.Fail(result.Errors);
 
         var access = result.Value;
 
-        var (username, server, headless) = GetAccount(command.AccountId);
+        var (username, server, headless) = GetAccount(accountId);
         var chromeSetting = new ChromeSetting()
         {
             UserAgent = access.Useragent,
@@ -32,7 +34,6 @@ public sealed partial class OpenBrowserCommand(
             IsHeadless = headless,
         };
 
-        var browser = chromeManager.Get(command.AccountId);
         await browser.Setup(chromeSetting);
         await browser.Navigate($"{server}");
 

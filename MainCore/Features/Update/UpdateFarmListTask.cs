@@ -17,7 +17,7 @@ public sealed partial class UpdateFarmListTask(
     {
         var browser = chromeManager.Get(task.AccountId);
         Result result;
-        result = await toFarmListPageCommand.HandleAsync(new(task.AccountId), cancellationToken);
+        result = await toFarmListPageCommand.HandleAsync(new(browser), cancellationToken);
         if (result.IsFailed) return result;
         result = await updateFarmlistCommand.HandleAsync(new(browser), cancellationToken);
         if (result.IsFailed) return result;

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace MainCore.UI.ViewModels.UserControls
 {
     using MainCore.Features.Shared;
+    using MainCore.Features.Shared.Commands;
     using MainCore.Features.Shared.Enums;
     using MainCore.Features.Shared.Notifications;
 
@@ -218,7 +219,8 @@ namespace MainCore.UI.ViewModels.UserControls
                 using (LogContext.PushProperty("AccountId", accountId))
                 using (LogContext.PushProperty("Account", context.GetAccountData(accountId)))
                 {
-                    var result = await openBrowserCommand.HandleAsync(new(accountId, true));
+                    var browser = scope.ServiceProvider.GetRequiredService<ChromeManager>().Get(accountId);
+                    var result = await openBrowserCommand.HandleAsync(new(browser, true));
                     if (result.IsFailed)
                     {
                         await _dialogService.SendMessage("Warning", string.Join(Environment.NewLine, result.Errors.Select(x => x.Message)));

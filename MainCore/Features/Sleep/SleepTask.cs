@@ -1,8 +1,11 @@
-﻿namespace MainCore.Features.Sleep;
+﻿using MainCore.Features.Shared.Commands;
+
+namespace MainCore.Features.Sleep;
 
 [Handler]
 public sealed partial class SleepTask(
     IDbContextFactory<AppDbContext> contextFactory,
+    ChromeManager chromeManager,
     OpenBrowserCommand.Handler openBrowserCommand,
     CloseBrowserCommand.Handler closeBrowserCommand,
     SleepCommand.Handler sleepCommand)
@@ -14,13 +17,14 @@ public sealed partial class SleepTask(
 
     private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
     {
-        await closeBrowserCommand.HandleAsync(new(task.AccountId), cancellationToken);
+        var browser = chromeManager.Get(task.AccountId);
+        await closeBrowserCommand.HandleAsync(new(browser), cancellationToken);
 
         var sleepEnd = GetSleepTime(task.AccountId);
         var result = await sleepCommand.HandleAsync(new(sleepEnd), cancellationToken);
         if (result.IsFailed) return result;
 
-        result = await openBrowserCommand.HandleAsync(new(task.AccountId), cancellationToken);
+        result = await openBrowserCommand.HandleAsync(new(browser), cancellationToken);
         if (result.IsFailed) return result;
 
         task.ExecuteAt = GetNextExecuteTime(task.AccountId);

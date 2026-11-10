@@ -5,21 +5,19 @@ namespace MainCore.Features.Navigate;
 [Handler]
 public sealed partial class ToFarmListPageCommand(
     IDbContextFactory<AppDbContext> contextFactory,
-    ChromeManager chromeManager,
     SwitchVillageCommand.Handler switchVillageCommand,
     ToDorfCommand.Handler toDorfCommand,
     ToBuildingByTypeCommand.Handler toBuildingCommand,
     SwitchTabCommand.Handler switchTabCommand)
 {
-    public sealed record Command(AccountId AccountId) : IAccountCommand
+    public sealed record Command(IChromeBrowser Browser) : IBrowserCommand
     {
         public string Name => $"{nameof(ToFarmListPageCommand)}";
     }
 
     private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
     {
-        var accountId = command.AccountId;
-        var browser = chromeManager.Get(accountId);
+        var (browser, accountId) = command;
 
         var rallypointVillageId = GetHasRallypointVillage(accountId);
         if (rallypointVillageId == VillageId.Empty) return Skip.Error.WithError("No rallypoint found. Recheck & load village has rallypoint in Village>Build tab");
