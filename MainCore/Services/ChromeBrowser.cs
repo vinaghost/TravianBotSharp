@@ -1,6 +1,8 @@
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
+using MainCore.Features.Shared.Models;
+
 namespace MainCore.Services
 {
     public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory) : IChromeBrowser

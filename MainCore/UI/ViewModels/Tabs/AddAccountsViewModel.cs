@@ -132,16 +132,25 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             using var context = _contextFactory.CreateDbContext();
             var existAccounts = context.Accounts
-                .Select(x => new
-                {
-                    x.Username,
-                    x.Server,
-                })
-                .ToList();
+                .Select(x => new { x.Username, x.Server })
+                .AsEnumerable()
+                .Select(x => $"{x.Username}-{x.Server}")
+                .ToHashSet();
 
             return [.. dtos
-                .Select(x => x.ToDto())
-                .Where(dto => !existAccounts.Exists(x => x.Username == dto.Username && x.Server == dto.Server))];
+                .Where(x => !existAccounts.Contains($"{x.Username}-{x.Server}"))
+                .Select(x => new AccountDto() {
+                    Username = x.Username,
+                    Server = x.Server,
+                    Accesses = [ new AccessDto() {
+                        Username = x.Username,
+                        Password = x.Password,
+                        ProxyHost = x.ProxyHost,
+                        ProxyPort = x.ProxyPort,
+                        ProxyUsername = x.ProxyUsername,
+                        ProxyPassword = x.ProxyPassword,
+                    }],
+                })];
         }
 
         private void UpdateDatabase(List<AccountDto> dtos)
@@ -150,7 +159,20 @@ namespace MainCore.UI.ViewModels.Tabs
             var defaultSettings = LoadAccountDefaultSettings();
 
             var accounts = dtos
-                .Select(x => x.ToEntity());
+                .Select(dto => new Account()
+                {
+                    Username = dto.Username,
+                    Server = dto.Server,
+                    Accesses = [..dto.Accesses.Select(x => new Access()
+                    {
+                        Username = x.Username,
+                        Password = x.Password,
+                        ProxyHost = x.ProxyHost,
+                        ProxyPort = x.ProxyPort,
+                        ProxyUsername = x.ProxyUsername,
+                        ProxyPassword = x.ProxyPassword,
+                    })],
+                });
 
             foreach (var account in accounts)
             {

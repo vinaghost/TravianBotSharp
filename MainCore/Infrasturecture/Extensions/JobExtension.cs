@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 
+using MainCore.Features.Shared.Models;
 using MainCore.UI.Models.Input;
 
 namespace MainCore.Infrasturecture.Extensions

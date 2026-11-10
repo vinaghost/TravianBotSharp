@@ -1,5 +1,7 @@
 ﻿using System.Net;
 
+using MainCore.Features.Shared.Models;
+
 namespace MainCore.Features.Shared.Commands;
 
 [Handler]
@@ -25,7 +27,6 @@ public sealed partial class OpenBrowserCommand(
         var (username, server, headless) = GetAccount(accountId);
         var chromeSetting = new ChromeSetting()
         {
-            UserAgent = access.Useragent,
             ProfilePath = GetProfilePath(server, username),
             ProxyHost = access.ProxyHost,
             ProxyPort = access.ProxyPort,
@@ -72,14 +73,36 @@ public sealed partial class OpenBrowserCommand(
            .ExecuteUpdate(x => x.SetProperty(x => x.LastUsed, x => DateTime.Now));
     }
 
-    private async Task<Result<AccessDto>> GetValidAccess(AccountId accountId, bool ignoreSleepTime)
+    private List<AccessDto> GetAccesses(AccountId accountId)
     {
         using var context = contextFactory.CreateDbContext();
         var accesses = context.Accesses
           .Where(x => x.AccountId == accountId.Value)
-          .OrderBy(x => x.LastUsed) // get oldest one
-          .ToDto()
+          .OrderBy(x => x.LastUsed)
+          .Select(x => new AccessDto
+          {
+              Id = new AccessId(x.Id),
+              Username = x.Username,
+              Password = x.Password,
+              ProxyHost = x.ProxyHost,
+              ProxyPort = x.ProxyPort,
+              ProxyUsername = x.ProxyUsername,
+              ProxyPassword = x.ProxyPassword,
+              LastUsed = x.LastUsed
+          })
           .ToList();
+        return accesses;
+    }
+
+    private int GetSleepTime(AccountId accountId)
+    {
+        using var context = contextFactory.CreateDbContext();
+        return context.ByName(accountId, AccountSettingEnums.SleepTimeMin);
+    }
+
+    private async Task<Result<AccessDto>> GetValidAccess(AccountId accountId, bool ignoreSleepTime)
+    {
+        var accesses = GetAccesses(accountId);
 
         var access = await GetValidAccess(accesses);
         if (access is null) return Stop.Error.WithError("All accesses not working");
@@ -87,11 +110,11 @@ public sealed partial class OpenBrowserCommand(
         if (accesses.Count == 1) return access;
         if (ignoreSleepTime) return access;
 
-        var minSleep = context.ByName(accountId, AccountSettingEnums.SleepTimeMin);
+        var minSleep = GetSleepTime(accountId);
         var timeValid = DateTime.Now.AddMinutes(-minSleep);
         if (access.LastUsed > timeValid) return Stop.Error.WithError("Last access is reused, it may get MH's attention");
 
-        logger.Information("Using connection {Proxy} to start chrome", access.Proxy);
+        logger.Information("Using connection {Proxy} to start chrome", access);
         return access;
     }
 
@@ -100,17 +123,17 @@ public sealed partial class OpenBrowserCommand(
         foreach (var proxy in proxies)
         {
             var client = GetHttpClient(proxy);
-            logger.Information("Checking proxy {Proxy}, last used {LastUsed}", proxy.Proxy, proxy.LastUsed);
+            logger.Information("Checking proxy {Proxy}, last used {LastUsed}", proxy, proxy.LastUsed);
             try
             {
                 var response = await client.GetAsync(TRAVIAN_PAGE);
                 if (response.IsSuccessStatusCode)
                 {
-                    logger.Information("Access {Proxy} is good", proxy.Proxy);
+                    logger.Information("Access {Proxy} is good", proxy);
                     return proxy;
                 }
 
-                logger.Warning("Access {Proxy} is not working, status code: {StatusCode}", proxy.Proxy, response.StatusCode);
+                logger.Warning("Access {Proxy} is not working, status code: {StatusCode}", proxy, response.StatusCode);
                 continue;
             }
             catch (Exception ex)

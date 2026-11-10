@@ -14,9 +14,9 @@ global using MainCore.Features.Shared.Enums;
 global using MainCore.Features.Shared.Errors;
 global using MainCore.Features.Shared.Notifications;
 global using MainCore.Features.Shared.Tasks;
+global using MainCore.Features.Shared.Models;
 global using MainCore.Infrasturecture.Extensions;
 global using MainCore.Infrasturecture.Persistence;
-global using MainCore.Models;
 global using MainCore.Services;
 
 global using Microsoft.EntityFrameworkCore;

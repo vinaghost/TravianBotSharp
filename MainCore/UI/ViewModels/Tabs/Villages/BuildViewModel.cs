@@ -12,6 +12,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
     using MainCore.Features.InstantUpgrade;
     using MainCore.Features.Shared.Enums;
+    using MainCore.Features.Shared.Models;
     using MainCore.Features.Shared.Notifications;
     using MainCore.Features.UpgradeBuilding;
 

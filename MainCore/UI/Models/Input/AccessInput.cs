@@ -1,4 +1,6 @@
-﻿namespace MainCore.UI.Models.Input
+﻿using MainCore.Features.Shared.Commands;
+
+namespace MainCore.UI.Models.Input
 {
     public partial class AccessInput : ReactiveObject
     {
@@ -84,7 +86,7 @@
                 ProxyPort = dto.ProxyPort,
                 ProxyUsername = dto.ProxyUsername,
                 ProxyPassword = dto.ProxyPassword,
-                Useragent = dto.Useragent,
+                Useragent = "",
                 LastUsed = dto.LastUsed,
             };
         }
@@ -100,7 +102,6 @@
                 ProxyPort = input.ProxyPort,
                 ProxyUsername = input.ProxyUsername,
                 ProxyPassword = input.ProxyPassword,
-                Useragent = input.Useragent,
                 LastUsed = input.LastUsed,
             };
         }

@@ -115,7 +115,21 @@ namespace MainCore.UI.ViewModels.Tabs
             var account = context.Accounts
                .Where(x => x.Id == accountId.Value)
                .Include(x => x.Accesses)
-               .ToDto()
+               .AsEnumerable()
+               .Select(e => new AccountDto()
+               {
+                   Username = e.Username,
+                   Server = e.Server,
+                   Accesses = [..e.Accesses.Select(x => new AccessDto()
+                {
+                    Username = x.Username,
+                    Password = x.Password,
+                    ProxyHost = x.ProxyHost,
+                    ProxyPort = x.ProxyPort,
+                    ProxyUsername = x.ProxyUsername,
+                    ProxyPassword = x.ProxyPassword,
+                })],
+               })
                .First();
             return account;
         }
@@ -136,17 +150,30 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private void UpdateDatabase(AccountDto dto)
         {
-            var account = dto.ToEntity();
+            var account = new Account()
+            {
+                Username = dto.Username,
+                Server = dto.Server,
+                Accesses = [..dto.Accesses.Select(x => new Access()
+                {
+                    Username = x.Username,
+                    Password = x.Password,
+                    ProxyHost = x.ProxyHost,
+                    ProxyPort = x.ProxyPort,
+                    ProxyUsername = x.ProxyUsername,
+                    ProxyPassword = x.ProxyPassword,
+                })],
+            };
 
             using var context = _contextFactory.CreateDbContext();
-            var existingAccessIds = dto.Accesses.Select(a => a.Id.Value).ToList();
+            var existingAccessIds = dto.Accesses.Select(a => a.Id.Value).ToHashSet();
+
+            context.Update(account);
+            context.SaveChanges();
 
             context.Accesses
                 .Where(a => a.AccountId == account.Id && !existingAccessIds.Contains(a.Id))
                 .ExecuteDelete();
-
-            context.Update(account);
-            context.SaveChanges();
         }
     }
 }

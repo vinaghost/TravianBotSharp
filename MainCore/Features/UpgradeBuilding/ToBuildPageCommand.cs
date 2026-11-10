@@ -1,4 +1,5 @@
 ﻿using MainCore.Features.Navigate;
+using MainCore.Features.Shared.Models;
 
 namespace MainCore.Features.UpgradeBuilding;
 

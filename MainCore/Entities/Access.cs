@@ -27,4 +27,22 @@ namespace MainCore.Entities
     [StronglyTypedId]
     public partial struct AccessId
     { }
+
+    public class AccessDto
+    {
+        public AccessId Id { get; set; }
+        public required string Username { get; set; }
+        public required string Password { get; set; }
+
+        public required string ProxyHost { get; set; }
+        public int ProxyPort { get; set; }
+        public required string ProxyUsername { get; set; }
+        public required string ProxyPassword { get; set; }
+        public DateTime LastUsed { get; set; }
+
+        public override string ToString()
+        {
+            return string.IsNullOrEmpty(ProxyHost) ? "[default]" : ProxyHost;
+        }
+    }
 }

@@ -1,4 +1,6 @@
-﻿namespace MainCore.Features.UpgradeBuilding;
+﻿using MainCore.Features.Shared.Models;
+
+namespace MainCore.Features.UpgradeBuilding;
 
 [Handler]
 public static partial class UpgradeCommand

@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
 
+using MainCore.Features.Shared.Models;
+
 namespace MainCore.Infrasturecture.Extensions
 {
     public static class GetLayoutBuildingsExtension

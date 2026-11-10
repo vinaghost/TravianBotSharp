@@ -138,7 +138,20 @@ namespace MainCore.UI.ViewModels.Tabs
         private void UpdateDatabase(AccountDto dto)
         {
             using var context = _contextFactory.CreateDbContext();
-            var account = dto.ToEntity();
+            var account = new Account()
+            {
+                Username = dto.Username,
+                Server = dto.Server,
+                Accesses = [..dto.Accesses.Select(x => new Access()
+                {
+                    Username = x.Username,
+                    Password = x.Password,
+                    ProxyHost = x.ProxyHost,
+                    ProxyPort = x.ProxyPort,
+                    ProxyUsername = x.ProxyUsername,
+                    ProxyPassword = x.ProxyPassword,
+                })],
+            };
             var defaultSettings = LoadAccountDefaultSettings();
 
             account.Settings = [];

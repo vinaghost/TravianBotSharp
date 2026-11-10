@@ -1,4 +1,6 @@
-﻿namespace MainCore.UI.ViewModels.Tabs.Villages
+﻿using MainCore.Features.Shared.Models;
+
+namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     public static class BuildViewModelExtension
     {

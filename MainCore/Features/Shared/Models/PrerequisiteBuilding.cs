@@ -1,4 +1,4 @@
-﻿namespace MainCore.Models
+﻿namespace MainCore.Features.Shared.Models
 {
     public struct PrerequisiteBuilding
     {

@@ -1,4 +1,6 @@
-﻿using Splat;
+﻿using MainCore.Features.Shared.Models;
+
+using Splat;
 
 namespace MainCore.Features.Shared.Enums
 {

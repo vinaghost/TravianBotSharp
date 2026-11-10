@@ -40,25 +40,4 @@ namespace MainCore.DTO
             return dto;
         }
     }
-
-    [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.Target)]
-    public static partial class AccountDetailMapper
-    {
-        public static AccountDto ToDto(this AccountDetailDto dto)
-        {
-            var account = dto.ToAccount();
-            var access = dto.ToAccess();
-            account.Accesses = [access];
-            return account;
-        }
-
-        [MapperIgnoreTarget(nameof(AccountDto.Id))]
-        [MapperIgnoreTarget(nameof(AccountDto.Accesses))]
-        private static partial AccountDto ToAccount(this AccountDetailDto dto);
-
-        [MapperIgnoreTarget(nameof(AccessDto.Id))]
-        [MapperIgnoreTarget(nameof(AccessDto.Useragent))]
-        [MapperIgnoreTarget(nameof(AccessDto.LastUsed))]
-        private static partial AccessDto ToAccess(this AccountDetailDto dto);
-    }
 }
