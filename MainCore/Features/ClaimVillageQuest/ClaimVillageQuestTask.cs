@@ -9,14 +9,6 @@ public sealed partial class ClaimVillageQuestTask(
     public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
     {
         protected override string TaskName => nameof(ClaimVillageQuestTask).Humanize();
-
-        public override bool CanStart(AppDbContext context)
-        {
-            var settingEnable = context.BooleanByName(VillageId, VillageSettingEnums.AutoClaimQuestEnable);
-            if (!settingEnable) return false;
-
-            return true;
-        }
     }
 
     private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)

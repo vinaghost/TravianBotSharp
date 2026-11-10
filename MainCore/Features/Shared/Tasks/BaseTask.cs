@@ -7,6 +7,4 @@ public abstract class BaseTask : ITask
     public DateTime ExecuteAt { get; set; } = DateTime.Now;
     public virtual string Description { get; } = "";
     protected virtual string TaskName { get; } = "";
-
-    public virtual bool CanStart(AppDbContext context) => true;
 }

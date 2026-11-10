@@ -21,15 +21,13 @@ namespace MainCore.UI.ViewModels.Tabs
                         var villages = context.Villages
                             .Where(x => x.AccountId == accountId.Value)
                             .Where(x => x.Buildings.Count < 40)
-                            .Select(x => new VillageId(x.Id))
-                            .ToList();
+                            .Select(x => new VillageId(x.Id));
 
                         foreach (var village in villages)
                         {
-                            var task = new UpdateBuildingTask.Task(accountId, village);
                             if (!taskManager.IsExist<UpdateBuildingTask.Task>(accountId, village))
                             {
-                                taskManager.Add(task);
+                                taskManager.Add(new UpdateBuildingTask.Task(accountId, village));
                             }
                         }
                     }
@@ -41,7 +39,7 @@ namespace MainCore.UI.ViewModels.Tabs
                             .ToList();
                         foreach (var village in villages)
                         {
-                            taskManager.Remove<InstantUpgradeTask.Task>(accountId, village);
+                            taskManager.Remove<UpdateBuildingTask.Task>(accountId, village);
                         }
                     }
                 }
@@ -50,10 +48,9 @@ namespace MainCore.UI.ViewModels.Tabs
                 {
                     if (settings[AccountSettingEnums.EnableAutoStartAdventure] == 1)
                     {
-                        var task = new StartAdventureTask.Task(accountId);
-                        if (task.CanStart(context) && !taskManager.IsExist<StartAdventureTask.Task>(accountId))
+                        if (context.IsStartAdventureEnable(accountId) && !taskManager.IsExist<StartAdventureTask.Task>(accountId))
                         {
-                            taskManager.Add(task);
+                            taskManager.Add(new StartAdventureTask.Task(accountId));
                         }
                     }
                     else
@@ -66,10 +63,9 @@ namespace MainCore.UI.ViewModels.Tabs
                 {
                     if (settings[AccountSettingEnums.EnableAutoClaimDailyQuest] == 1)
                     {
-                        var task = new ClaimDailyQuestTask.Task(accountId);
-                        if (task.CanStart(context) && !taskManager.IsExist<ClaimDailyQuestTask.Task>(accountId))
+                        if (context.IsDailyQuestEnable(accountId) && !taskManager.IsExist<ClaimDailyQuestTask.Task>(accountId))
                         {
-                            taskManager.Add(task);
+                            taskManager.Add(new ClaimDailyQuestTask.Task(accountId));
                         }
                     }
                     else
@@ -82,10 +78,9 @@ namespace MainCore.UI.ViewModels.Tabs
                 {
                     if (settings[AccountSettingEnums.EnableAutoSetHeroPoint] == 1)
                     {
-                        var task = new SetHeroPointTask.Task(accountId);
-                        if (task.CanStart(context) && !taskManager.IsExist<SetHeroPointTask.Task>(accountId))
+                        if (context.IsSetHeroPointEnable(accountId) && !taskManager.IsExist<SetHeroPointTask.Task>(accountId))
                         {
-                            taskManager.Add(task);
+                            taskManager.Add(new SetHeroPointTask.Task(accountId));
                         }
                     }
                     else

@@ -1,11 +1,16 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
+using MainCore.Features.InstantUpgrade;
+
+using Microsoft.EntityFrameworkCore.Internal;
+
 namespace MainCore.Features.Update;
 
 [Handler]
 public sealed partial class UpdateBuildingCommand(
     IDbContextFactory<AppDbContext> contextFactory,
+    TaskManager taskManager,
     RxQueue rxQueue)
 {
     public sealed record Command(IChromeBrowser Browser, VillageId VillageId) : IVillageBrowserCommand
@@ -26,9 +31,20 @@ public sealed partial class UpdateBuildingCommand(
         if (dtoBuilding.Count == 0) return Result.Ok();
         UpdateBuildings(villageId, dtoBuilding, dtoQueueBuilding);
 
+        TriggerTask(accountId, villageId);
+
         rxQueue.Enqueue(new BuildingsModified(accountId, villageId));
 
         return Result.Ok();
+    }
+
+    private void TriggerTask(AccountId accountId, VillageId villageId)
+    {
+        using var context = contextFactory.CreateDbContext();
+        if (!taskManager.IsExist<InstantUpgradeTask.Task>(accountId, villageId)) return;
+        if (!context.IsInstantUpgradeEnable(accountId, villageId)) return;
+
+        taskManager.Add(new InstantUpgradeTask.Task(accountId, villageId), true);
     }
 
     private static Result IsValidQueueBuilding(List<QueueBuildingDto> dtos)

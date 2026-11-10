@@ -14,10 +14,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             {
                 if (settings[VillageSettingEnums.CompleteImmediately] == 1)
                 {
-                    var task = new InstantUpgradeTask.Task(accountId, villageId);
-                    if (task.CanStart(context) && !taskManager.IsExist<InstantUpgradeTask.Task>(accountId, villageId))
+                    if (context.IsInstantUpgradeEnable(accountId, villageId) && !taskManager.IsExist<InstantUpgradeTask.Task>(accountId, villageId))
                     {
-                        taskManager.Add(task);
+                        taskManager.Add(new InstantUpgradeTask.Task(accountId, villageId));
                     }
                 }
                 else
@@ -30,10 +29,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             {
                 if (settings[VillageSettingEnums.TrainTroopEnable] == 1)
                 {
-                    var task = new TrainTroopTask.Task(accountId, villageId);
-                    if (task.CanStart(context) && !taskManager.IsExist<TrainTroopTask.Task>(accountId, villageId))
+                    if (context.IsTrainTroopEnable(villageId) && !taskManager.IsExist<TrainTroopTask.Task>(accountId, villageId))
                     {
-                        taskManager.Add(task);
+                        taskManager.Add(new TrainTroopTask.Task(accountId, villageId));
                     }
                 }
                 else
@@ -46,10 +44,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             {
                 if (settings[VillageSettingEnums.AutoNPCEnable] == 1)
                 {
-                    var task = new NPCTask.Task(accountId, villageId);
-                    if (task.CanStart(context) && !taskManager.IsExist<NPCTask.Task>(accountId, villageId))
+                    if (context.IsNPCEnable(accountId, villageId) && !taskManager.IsExist<NPCTask.Task>(accountId, villageId))
                     {
-                        taskManager.Add(task);
+                        taskManager.Add(new NPCTask.Task(accountId, villageId));
                     }
                 }
                 else
@@ -62,10 +59,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             {
                 if (settings[VillageSettingEnums.AutoRefreshEnable] == 1)
                 {
-                    var task = new UpdateVillageTask.Task(accountId, villageId);
-                    if (task.CanStart(context) && !taskManager.IsExist<UpdateVillageTask.Task>(accountId, villageId))
+                    if (context.IsRefreshEnable(villageId) && !taskManager.IsExist<UpdateVillageTask.Task>(accountId, villageId))
                     {
-                        taskManager.Add(task);
+                        taskManager.Add(new UpdateVillageTask.Task(accountId, villageId));
                     }
                 }
                 else
@@ -78,10 +74,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             {
                 if (settings[VillageSettingEnums.AutoClaimQuestEnable] == 1)
                 {
-                    var task = new ClaimVillageQuestTask.Task(accountId, villageId);
-                    if (task.CanStart(context) && !taskManager.IsExist<ClaimVillageQuestTask.Task>(accountId, villageId))
+                    if (context.IsVillageQuestEnable(villageId) && !taskManager.IsExist<ClaimVillageQuestTask.Task>(accountId, villageId))
                     {
-                        taskManager.Add(task);
+                        taskManager.Add(new ClaimVillageQuestTask.Task(accountId, villageId));
                     }
                 }
                 else

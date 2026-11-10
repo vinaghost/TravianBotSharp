@@ -29,7 +29,7 @@ public sealed partial class UpdateStorageCommand(
     {
         using var context = contextFactory.CreateDbContext();
         if (taskManager.IsExist<NPCTask.Task>(accountId, villageId)) return;
-        if (!context.IsNPCEnable(villageId)) return;
+        if (!context.IsNPCEnable(accountId, villageId)) return;
         taskManager.Add(new NPCTask.Task(accountId, villageId), true);
     }
 

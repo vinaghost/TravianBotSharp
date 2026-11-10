@@ -17,28 +17,6 @@ public sealed partial class NPCTask(
     public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
     {
         protected override string TaskName => nameof(NPCTask).Humanize();
-
-        public override bool CanStart(AppDbContext context)
-        {
-            var settingEnable = context.BooleanByName(VillageId, VillageSettingEnums.AutoNPCEnable);
-            if (!settingEnable) return false;
-
-            var gold = context.AccountsInfo
-                .Where(x => x.AccountId == AccountId.Value)
-                .Select(x => x.Gold)
-                .FirstOrDefault();
-            if (gold < 3) return false;
-
-            var granaryPercent = (int)context.Storages
-               .Where(x => x.VillageId == VillageId.Value)
-               .Select(x => x.Crop * 100f / x.Granary)
-               .FirstOrDefault();
-
-            var autoNPCGranaryPercent = context.ByName(VillageId, VillageSettingEnums.AutoNPCGranaryPercent);
-            if (granaryPercent < autoNPCGranaryPercent) return false;
-
-            return true;
-        }
     }
 
     private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)

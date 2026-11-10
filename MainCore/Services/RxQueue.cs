@@ -1,5 +1,7 @@
 namespace MainCore.Services
 {
+    using System.Collections.Frozen;
+
     using MainCore.Features.Login;
     using MainCore.Features.Shared.Enums;
     using MainCore.Features.Shared.Notifications;
@@ -57,28 +59,29 @@ namespace MainCore.Services
             };
             taskManager.AddOrUpdate(sleepTask);
 
-            var startAdventureTask = new StartAdventureTask.Task(accountId);
-            if (startAdventureTask.CanStart(context) && !taskManager.IsExist<StartAdventureTask.Task>(accountId))
+            if (context.IsStartAdventureEnable(accountId) && !taskManager.IsExist<StartAdventureTask.Task>(accountId))
             {
-                taskManager.Add(startAdventureTask);
+                taskManager.Add(new StartAdventureTask.Task(accountId));
             }
+
             var villages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .Select(x => new VillageId(x.Id))
                 .ToList();
+
             foreach (var village in villages)
             {
-                var updateVillageTask = new UpdateVillageTask.Task(accountId, village);
-                if (updateVillageTask.CanStart(context) && !taskManager.IsExist<UpdateVillageTask.Task>(accountId, village))
+                if (context.IsRefreshEnable(village) && !taskManager.IsExist<UpdateVillageTask.Task>(accountId, village))
                 {
-                    taskManager.Add(updateVillageTask);
+                    taskManager.Add(new UpdateVillageTask.Task(accountId, village));
                 }
-                var trainTroopTask = new TrainTroopTask.Task(accountId, village);
-                if (trainTroopTask.CanStart(context) && !taskManager.IsExist<TrainTroopTask.Task>(accountId, village))
+
+                if (context.IsTrainTroopEnable(village) && !taskManager.IsExist<TrainTroopTask.Task>(accountId, village))
                 {
-                    taskManager.Add(trainTroopTask);
+                    taskManager.Add(new TrainTroopTask.Task(accountId, village));
                 }
             }
+
             var hasBuildJobVillages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
                 .Where(x => x.Jobs.Any(x => _jobTypes.Contains(x.Type)))
@@ -87,18 +90,18 @@ namespace MainCore.Services
 
             foreach (var village in hasBuildJobVillages)
             {
-                var upgradeBuildingTask = new UpgradeBuildingTask.Task(accountId, village);
                 if (!taskManager.IsExist<UpgradeBuildingTask.Task>(accountId, village))
                 {
-                    taskManager.Add(upgradeBuildingTask);
+                    taskManager.Add(new UpgradeBuildingTask.Task(accountId, village));
                 }
             }
         }
 
-        private static readonly List<JobTypeEnums> _jobTypes = new() {
+        private static readonly FrozenSet<JobTypeEnums> _jobTypes =
+        [
             JobTypeEnums.NormalBuild,
             JobTypeEnums.ResourceBuild
-        };
+        ];
 
         private void VillageTaskAddedHandler(VillageTaskAdded notification)
         {

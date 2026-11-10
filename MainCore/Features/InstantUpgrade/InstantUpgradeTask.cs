@@ -13,36 +13,6 @@ public sealed partial class InstantUpgradeTask(
     public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
     {
         protected override string TaskName => nameof(InstantUpgradeTask).Humanize();
-
-        private static readonly List<BuildingEnums> UnskippableBuildings =
-        [
-            BuildingEnums.Residence,
-            BuildingEnums.Palace,
-            BuildingEnums.CommandCenter,
-        ];
-
-        public override bool CanStart(AppDbContext context)
-        {
-            var settingEnable = context.BooleanByName(VillageId, VillageSettingEnums.CompleteImmediately);
-            if (!settingEnable) return false;
-
-            var queueBuildings = context.QueueBuildings
-                .Where(x => x.VillageId == VillageId.Value)
-                .ToList();
-
-            // empty
-            if (queueBuildings.Count == 0) return false;
-            // contains unskippable building
-            if (queueBuildings.Any(x => UnskippableBuildings.Contains(x.Type))) return false;
-
-            var completeImmediatelyMinimumTime = context.ByName(VillageId, VillageSettingEnums.CompleteImmediatelyTime);
-            var requiredTime = DateTime.Now.AddMinutes(completeImmediatelyMinimumTime);
-
-            var anyBuilding = queueBuildings
-                .Any(x => x.CompleteTime > requiredTime);
-
-            return anyBuilding;
-        }
     }
 
     private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
