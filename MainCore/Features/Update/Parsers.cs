@@ -1,7 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.RegularExpressions;
-
-namespace MainCore.Features.Update;
+﻿namespace MainCore.Features.Update;
 
 public static class Parsers
 {

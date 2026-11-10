@@ -1,9 +1,4 @@
-using System.Text.Json;
-using System.Text.RegularExpressions;
-
 using MainCore.Features.InstantUpgrade;
-
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace MainCore.Features.Update;
 

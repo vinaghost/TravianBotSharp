@@ -10,11 +10,10 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     using FluentValidation;
 
-    using MainCore.Features.InstantUpgrade;
-    using MainCore.Features.Shared.Enums;
-    using MainCore.Features.Shared.Models;
-    using MainCore.Features.Shared.Notifications;
     using MainCore.Features.UpgradeBuilding;
+    using MainCore.Shared.Enums;
+    using MainCore.Shared.Models;
+    using MainCore.Shared.Notifications;
 
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;

@@ -10,7 +10,7 @@ using Serilog.Templates;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    using MainCore.Features.Shared.Notifications;
+    using MainCore.Shared.Notifications;
 
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;

@@ -1,7 +1,6 @@
 using System.Net;
 using System.Text.Json;
 
-using MainCore.Features.ClaimVillageQuest;
 using MainCore.Features.NPC;
 
 namespace MainCore.Features.Update;

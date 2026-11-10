@@ -1,6 +1,4 @@
-﻿using MainCore.Features.Shared.Models;
-
-namespace MainCore.Infrasturecture.Extensions
+﻿namespace MainCore.Infrasturecture.Extensions
 {
     public static class PlanExtension
     {

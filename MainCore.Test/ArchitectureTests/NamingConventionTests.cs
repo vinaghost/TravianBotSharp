@@ -2,7 +2,7 @@
 
 using Immediate.Handlers.Shared;
 
-using MainCore.Features.Shared.Constraints;
+using MainCore.Shared.Constraints;
 
 using static ArchUnitNET.Fluent.ArchRuleDefinition;
 

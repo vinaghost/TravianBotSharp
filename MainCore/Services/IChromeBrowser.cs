@@ -1,7 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 
-using MainCore.Features.Shared.Models;
-
 namespace MainCore.Services
 {
     public interface IChromeBrowser

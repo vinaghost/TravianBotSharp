@@ -5,7 +5,7 @@ using MainCore.UI.ViewModels.Abstract;
 
 namespace MainCore.UI.Models.Input
 {
-    using MainCore.Features.Shared.Enums;
+    using MainCore.Shared.Enums;
 
     using ReactiveUI.Primitives;
 

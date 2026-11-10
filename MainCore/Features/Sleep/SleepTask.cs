@@ -1,4 +1,4 @@
-﻿using MainCore.Features.Shared.Commands;
+﻿using MainCore.Shared.Commands;
 
 namespace MainCore.Features.Sleep;
 

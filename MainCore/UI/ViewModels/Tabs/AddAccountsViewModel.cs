@@ -6,7 +6,7 @@ using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    using MainCore.Features.Shared.Enums;
+    using MainCore.Shared.Enums;
 
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;

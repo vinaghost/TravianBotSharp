@@ -1,5 +1,4 @@
 using MainCore.Features.ClaimDailyQuest;
-using MainCore.Features.InstantUpgrade;
 using MainCore.Features.SetHeroPoint;
 using MainCore.Features.StartAdventure;
 using MainCore.Features.Update;

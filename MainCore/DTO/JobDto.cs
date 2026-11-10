@@ -2,8 +2,6 @@
 
 using System.Text.Json;
 
-using MainCore.Features.Shared.Models;
-
 using Riok.Mapperly.Abstractions;
 
 namespace MainCore.DTO

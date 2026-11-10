@@ -9,10 +9,10 @@ namespace MainCore.UI.ViewModels.Tabs
 {
     using FluentValidation;
 
-    using MainCore.Features.Shared.Enums;
-    using MainCore.Features.Shared.Notifications;
     using MainCore.Features.StartFarmList;
     using MainCore.Features.Update;
+    using MainCore.Shared.Enums;
+    using MainCore.Shared.Notifications;
 
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;

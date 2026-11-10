@@ -1,9 +1,5 @@
 ﻿#nullable disable
 
-using MainCore.Features.Shared.Commands;
-
-using Riok.Mapperly.Abstractions;
-
 namespace MainCore.DTO
 {
     public class AccountDto

@@ -6,8 +6,8 @@ using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    using MainCore.Features.Shared.Notifications;
     using MainCore.Features.Update;
+    using MainCore.Shared.Notifications;
 
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Concurrency;
