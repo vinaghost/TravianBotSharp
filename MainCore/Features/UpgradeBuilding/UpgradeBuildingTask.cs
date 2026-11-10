@@ -61,7 +61,7 @@ public sealed partial class UpgradeBuildingTask(
                 }
                 else if (upgradeError.Type == UpgradeErrorType.BuildingInQueue)
                 {
-                    result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                    result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
                     if (result.IsFailed) return result;
 
                     if (IsPlanUnderConstruction(task.VillageId, plan))
@@ -76,7 +76,7 @@ public sealed partial class UpgradeBuildingTask(
                 }
                 else if (upgradeError.Type == UpgradeErrorType.BuildingNotExist)
                 {
-                    result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                    result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
                     if (result.IsFailed) return result;
 
                     if (plan.Type.IsResourceBonus())
@@ -84,7 +84,7 @@ public sealed partial class UpgradeBuildingTask(
                         result = await toDorfCommand.HandleAsync(new(browser, 1), cancellationToken);
                         if (result.IsFailed) return result;
 
-                        result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+                        result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
                         if (result.IsFailed) return result;
                     }
 
@@ -153,7 +153,7 @@ public sealed partial class UpgradeBuildingTask(
 
             logger.Information("Upgrade for {Type} at #{Location} completed successfully.", plan.Type, plan.Location);
 
-            result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
             if (result.IsFailed) return result;
         }
     }

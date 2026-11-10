@@ -5,22 +5,19 @@ namespace MainCore.Features.Update;
 
 [Handler]
 public sealed partial class UpdateBuildingCommand(
-    ChromeManager chromeManager,
     IDbContextFactory<AppDbContext> contextFactory,
     RxQueue rxQueue)
 {
-    public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand
+    public sealed record Command(IChromeBrowser Browser, VillageId VillageId) : IVillageBrowserCommand
     {
         public string Name => "";
     }
 
     private async ValueTask<Result> HandleAsync(Command command)
     {
-        var (accountId, villageId) = command;
+        var (browser, accountId, villageId) = command;
 
-        var browser = chromeManager.Get(accountId);
-
-        var (dtoBuilding, dtoQueueBuilding, tribe) = await GetData(browser.CurrentPage);
+        var (dtoBuilding, dtoQueueBuilding, tribe) = await browser.CurrentPage.GetBuildingData();
         UpdateTribe(villageId, tribe);
 
         var result = IsValidQueueBuilding(dtoQueueBuilding);
@@ -196,156 +193,5 @@ public sealed partial class UpdateBuildingCommand(
         }
 
         context.SaveChanges();
-    }
-
-    public record struct RawBuildingDto(string? LocStr, string? TypeStr, string? LevelStr, bool IsUnderConstruction);
-    public record struct RawQueueBuildingDto(string? TypeName, string? LevelText, string? DurationText);
-    public record struct CombinedPageDataDto(
-        List<RawBuildingDto> Buildings,
-        List<RawQueueBuildingDto> Queue,
-        string TribeClass,
-        bool IsDorf1
-    );
-
-    [GeneratedRegex(@"vid_(\d+)")]
-    private static partial Regex TribeExtractor();
-
-    [GeneratedRegex(@"\d+")]
-    private static partial Regex LevelExtractor();
-
-    public static async Task<(List<BuildingDto> Buildings, List<QueueBuildingDto> Queue, TribeEnums Tribe)> GetData(IPage page)
-    {
-        var jsonResult = await page.EvaluateAsync<JsonElement>(@"() => {
-                const url = window.location.href;
-                const isDorf1 = url.includes('dorf1');
-                const buildingsResult = [];
-                const queueResult = [];
-
-                // --- 1. PARSE BUILDINGS (Dorf1 vs Dorf2 dependent) ---
-                if (isDorf1) {
-                    const elements = document.querySelectorAll('#resourceFieldContainer a.level');
-                    const locRegex = /buildingSlot(\d+)/;
-                    const gidRegex = /gid(\d+)/;
-                    const levelRegex = /\blevel(\d+)/;
-
-                    elements.forEach(field => {
-                        const classAttr = field.getAttribute('class') || '';
-                        const locMatch = classAttr.match(locRegex);
-                        const gidMatch = classAttr.match(gidRegex);
-                        const levelMatch = classAttr.match(levelRegex);
-                        const isUnderConstruction = classAttr.includes('underConstruction');
-
-                        buildingsResult.push({
-                            LocStr: locMatch ? locMatch[1] : null,
-                            TypeStr: gidMatch ? gidMatch[1] : null,
-                            LevelStr: levelMatch ? levelMatch[1] : null,
-                            IsUnderConstruction: isUnderConstruction
-                        });
-                    });
-                } else {
-                    const elements = document.querySelectorAll('#villageContent .buildingSlot');
-                    elements.forEach((building, i) => {
-                        if (i === 22) return;
-                        const link = building.querySelector('a');
-
-                        buildingsResult.push({
-                            LocStr: building.getAttribute('data-aid'),
-                            TypeStr: building.getAttribute('data-gid'),
-                            LevelStr: link ? link.getAttribute('data-level') : null,
-                            IsUnderConstruction: link ? link.classList.contains('underConstruction') : false
-                        });
-                    });
-                }
-
-                // --- 2. PARSE QUEUE BUILDINGS (Always visible on both pages) ---
-                const queueElements = document.querySelectorAll('.buildingList li');
-                queueElements.forEach(building => {
-                    const nameEl = building.querySelector('.name');
-                    const lvlEl = building.querySelector('.lvl');
-                    const timerEl = building.querySelector('.timer');
-
-                    const typeName = nameEl && nameEl.childNodes.length > 0
-                        ? nameEl.childNodes[0].textContent.trim()
-                        : '';
-
-                    queueResult.push({
-                        TypeName: typeName,
-                        LevelText: lvlEl ? lvlEl.innerText.trim() : '',
-                        DurationText: timerEl ? (timerEl.getAttribute('value') || '') : ''
-                    });
-                });
-
-                // --- 3. PARSE TRIBE CONTEXT ---
-                const questMaster = document.querySelector('#questmasterButton');
-                const tribeClass = questMaster ? (questMaster.getAttribute('class') || '') : '';
-
-                return {
-                    Buildings: buildingsResult,
-                    Queue: queueResult,
-                    TribeClass: tribeClass,
-                    IsDorf1: isDorf1
-                };
-            }");
-
-        var text = jsonResult.GetRawText();
-        var rawData = JsonSerializer.Deserialize<CombinedPageDataDto>(text);
-
-        var tribeMatch = TribeExtractor().Match(rawData.TribeClass);
-        TribeEnums tribe = tribeMatch.Success ? (TribeEnums)int.Parse(tribeMatch.Groups[1].Value) : TribeEnums.Any;
-
-        // --- Process Queue items ---
-        var queueData = new List<QueueBuildingDto>();
-        foreach (var raw in rawData.Queue)
-        {
-            string cleanedType = new(raw.TypeName?.Where(c => char.IsLetter(c) || char.IsDigit(c)).ToArray() ?? []);
-            var levelMatch = LevelExtractor().Match(raw.LevelText ?? "");
-            int level = levelMatch.Success && int.TryParse(levelMatch.Value, out var l) ? l : 0;
-            int durationSeconds = int.TryParse(raw.DurationText, out int d) ? d : 0;
-
-            queueData.Add(new QueueBuildingDto
-            {
-                Type = cleanedType,
-                Level = level,
-                CompleteTime = DateTime.Now.AddSeconds(durationSeconds),
-                Location = -1
-            });
-        }
-
-        // --- Process Buildings List ---
-        var buildingsData = new List<BuildingDto>();
-        foreach (var raw in rawData.Buildings)
-        {
-            int location = int.TryParse(raw.LocStr, out int loc) ? loc : -1;
-
-            BuildingEnums type;
-            int level;
-
-            if (rawData.IsDorf1)
-            {
-                type = int.TryParse(raw.TypeStr, out int gid) ? (BuildingEnums)gid : BuildingEnums.Unknown;
-                level = int.TryParse(raw.LevelStr, out int lvl) ? lvl : -1;
-            }
-            else
-            {
-                level = int.TryParse(raw.LevelStr, out int l) ? l : -1;
-                type = location switch
-                {
-                    26 => BuildingEnums.MainBuilding,
-                    39 => BuildingEnums.RallyPoint,
-                    40 => tribe.GetWall(),
-                    _ => (BuildingEnums)(int.TryParse(raw.TypeStr, out int t) ? t : -1)
-                };
-            }
-
-            buildingsData.Add(new BuildingDto
-            {
-                Location = location,
-                Type = type,
-                Level = level,
-                IsUnderConstruction = raw.IsUnderConstruction
-            });
-        }
-
-        return (buildingsData, queueData, tribe);
     }
 }

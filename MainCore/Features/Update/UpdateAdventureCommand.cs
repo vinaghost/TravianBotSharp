@@ -7,25 +7,24 @@ public sealed partial class UpdateAdventureCommand(
     IDbContextFactory<AppDbContext> contextFactory,
     TaskManager taskManager)
 {
-    public sealed record Command(AccountId AccountId, IChromeBrowser Browser) : IAccountCommand
+    public sealed record Command(IChromeBrowser Browser) : IBrowserCommand
     {
         public string Name => "";
     }
 
     private async ValueTask HandleAsync(Command command)
     {
-        var canStartAdventure = await CanStartAdventure(command.Browser.CurrentPage);
+        var (browser, accountId) = command;
+
+        var canStartAdventure = await CanStartAdventure(browser.CurrentPage);
         if (!canStartAdventure) return;
 
-        var startAdventureTask = new StartAdventureTask.Task(command.AccountId);
-        using var context = contextFactory.CreateDbContext();
-        if (!startAdventureTask.CanStart(context) || taskManager.IsExist<StartAdventureTask.Task>(command.AccountId))
-        {
-            return;
-        }
+        if (taskManager.IsExist<StartAdventureTask.Task>(accountId)) return;
 
-        if (taskManager.IsExist<StartAdventureTask.Task>(command.AccountId)) return;
-        taskManager.Add(startAdventureTask);
+        using var context = contextFactory.CreateDbContext();
+        if (!context.IsStartAdventureEnable(accountId)) return;
+
+        taskManager.Add(new StartAdventureTask.Task(accountId));
     }
 
     private static async Task<bool> CanStartAdventure(IPage page)

@@ -40,7 +40,7 @@ namespace MainCore.Behaviors
                         return (TResponse)Stop.Error.WithError($"Travian is not ingame nor login page. Please check browser. Exception: {ex.Message}");
                     }
 
-                    await updateAccountInfoCommand.HandleAsync(new(accountId, browser), cancellationToken);
+                    await updateAccountInfoCommand.HandleAsync(new(browser), cancellationToken);
                 }
 
                 if (request is not LoginTask.Task)
@@ -52,7 +52,7 @@ namespace MainCore.Behaviors
             }
             else
             {
-                await updateAccountInfoCommand.HandleAsync(new(accountId, browser), cancellationToken);
+                await updateAccountInfoCommand.HandleAsync(new(browser), cancellationToken);
             }
 
             var response = await Next(request, cancellationToken);
@@ -60,10 +60,10 @@ namespace MainCore.Behaviors
             isIngamePage = await browser.CurrentPage.IsIngamePage();
             if (isIngamePage)
             {
-                await updateAccountInfoCommand.HandleAsync(new(accountId, browser), cancellationToken);
-                await updateAdventureCommand.HandleAsync(new(accountId, browser), cancellationToken);
-                await updateDailyQuestCommand.HandleAsync(new(accountId, browser), cancellationToken);
-                await updateHeroLevelUpCommand.HandleAsync(new(accountId, browser), cancellationToken);
+                await updateAccountInfoCommand.HandleAsync(new(browser), cancellationToken);
+                await updateAdventureCommand.HandleAsync(new(browser), cancellationToken);
+                await updateDailyQuestCommand.HandleAsync(new(browser), cancellationToken);
+                await updateHeroLevelUpCommand.HandleAsync(new(browser), cancellationToken);
             }
 
             return response;

@@ -9,14 +9,6 @@ public sealed partial class ClaimDailyQuestTask(
     public sealed class Task(AccountId accountId) : AccountTask(accountId)
     {
         protected override string TaskName => nameof(ClaimDailyQuestTask).Humanize();
-
-        public override bool CanStart(AppDbContext context)
-        {
-            var settingEnable = context.BooleanByName(AccountId, AccountSettingEnums.EnableAutoClaimDailyQuest);
-            if (!settingEnable) return false;
-
-            return true;
-        }
     }
 
     private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)

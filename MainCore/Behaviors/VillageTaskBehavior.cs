@@ -22,9 +22,9 @@ namespace MainCore.Behaviors
             result = await switchVillageCommand.HandleAsync(new(browser, villageId), cancellationToken);
             if (result.IsFailed) return (TResponse)result;
 
-            await updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            await updateStorageCommand.HandleAsync(new(browser, villageId), cancellationToken);
 
-            result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(browser, villageId), cancellationToken);
             if (result.IsFailed) return (TResponse)result;
 
             var response = await Next(request, cancellationToken);
@@ -34,11 +34,11 @@ namespace MainCore.Behaviors
             result = await toDorfCommand.HandleAsync(new(browser, 2), cancellationToken);
             if (result.IsFailed) return (TResponse)result;
 
-            result = await updateBuildingCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(browser, villageId), cancellationToken);
             if (result.IsFailed) return (TResponse)result;
 
-            await updateStorageCommand.HandleAsync(new(accountId, villageId), cancellationToken);
-            await updateQuestCommand.HandleAsync(new(accountId, villageId), cancellationToken);
+            await updateStorageCommand.HandleAsync(new(browser, villageId), cancellationToken);
+            await updateQuestCommand.HandleAsync(new(browser, villageId), cancellationToken);
 
             return response;
         }

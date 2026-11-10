@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 
+using MainCore.Features.ClaimVillageQuest;
 using MainCore.Features.NPC;
 
 namespace MainCore.Features.Update;
@@ -8,18 +9,16 @@ namespace MainCore.Features.Update;
 [Handler]
 public sealed partial class UpdateStorageCommand(
     IDbContextFactory<AppDbContext> contextFactory,
-    ChromeManager chromeManager,
     TaskManager taskManager)
 {
-    public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand
+    public sealed record Command(IChromeBrowser Browser, VillageId VillageId) : IVillageBrowserCommand
     {
         public string Name => "";
     }
 
     private async ValueTask HandleAsync(Command command)
     {
-        var (accountId, villageId) = command;
-        var browser = chromeManager.Get(accountId);
+        var (browser, accountId, villageId) = command;
 
         var dto = await GetData(browser.CurrentPage);
         UpdateStorage(villageId, dto);
@@ -29,11 +28,9 @@ public sealed partial class UpdateStorageCommand(
     private void TriggerNpcTask(AccountId accountId, VillageId villageId)
     {
         using var context = contextFactory.CreateDbContext();
-        var task = new NPCTask.Task(accountId, villageId);
-        if (task.CanStart(context) && !taskManager.IsExist<NPCTask.Task>(accountId, villageId))
-        {
-            taskManager.Add(task, true);
-        }
+        if (taskManager.IsExist<NPCTask.Task>(accountId, villageId)) return;
+        if (!context.IsNPCEnable(villageId)) return;
+        taskManager.Add(new NPCTask.Task(accountId, villageId), true);
     }
 
     private void UpdateStorage(VillageId villageId, StorageDto dto)

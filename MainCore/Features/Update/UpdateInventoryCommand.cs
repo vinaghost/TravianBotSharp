@@ -1,20 +1,18 @@
 ﻿namespace MainCore.Features.Update;
 
 [Handler]
-public sealed partial class UpdateInventoryCommand(
-    ChromeManager chromeManager,
-    IDbContextFactory<AppDbContext> contextFactory)
+public sealed partial class UpdateInventoryCommand(IDbContextFactory<AppDbContext> contextFactory)
 {
-    public sealed record Command(AccountId AccountId) : IAccountCommand
+    public sealed record Command(IChromeBrowser Browser) : IBrowserCommand
     {
         public string Name => "";
     }
 
     private async ValueTask HandleAsync(Command command)
     {
-        var browser = chromeManager.Get(command.AccountId);
-        var dtos = await browser.CurrentPage.GetItems();
-        Update(command.AccountId, dtos);
+        var (browser, accountId) = command;
+        var dtos = await browser.CurrentPage.GetHeroItems();
+        Update(accountId, dtos);
     }
 
     private void Update(AccountId accountId, List<HeroItemDto> dtos)

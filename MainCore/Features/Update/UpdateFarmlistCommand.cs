@@ -4,21 +4,20 @@ namespace MainCore.Features.Update;
 
 [Handler]
 public sealed partial class UpdateFarmlistCommand(
-    ChromeManager chromeManager,
     IDbContextFactory<AppDbContext> contextFactory,
     RxQueue rxQueue)
 {
-    public sealed record Command(AccountId AccountId) : IAccountCommand
+    public sealed record Command(IChromeBrowser Browser) : IBrowserCommand
     {
         public string Name => "";
     }
 
     private async ValueTask<Result> HandleAsync(Command command)
     {
-        var browser = chromeManager.Get(command.AccountId);
+        var (browser, accountId) = command;
         var dtos = await browser.CurrentPage.GetFarmInfo();
-        UpdateToDatabase(command.AccountId, dtos);
-        rxQueue.Enqueue(new FarmsModified(command.AccountId));
+        UpdateToDatabase(accountId, dtos);
+        rxQueue.Enqueue(new FarmsModified(accountId));
         return Result.Ok();
     }
 

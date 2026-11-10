@@ -49,6 +49,7 @@ public sealed partial class InstantUpgradeTask(
     {
         var browser = chromeManager.Get(task.AccountId);
         Result result;
+
         result = await toDorfCommand.HandleAsync(new(browser, 0), cancellationToken);
         if (result.IsFailed) return result;
 

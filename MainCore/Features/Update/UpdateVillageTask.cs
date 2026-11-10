@@ -12,14 +12,6 @@ public sealed partial class UpdateVillageTask(
     public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
     {
         protected override string TaskName => nameof(UpdateVillageTask).Humanize();
-
-        public override bool CanStart(AppDbContext context)
-        {
-            var settingEnable = context.BooleanByName(VillageId, VillageSettingEnums.AutoRefreshEnable);
-            if (!settingEnable) return false;
-
-            return true;
-        }
     }
 
     private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
@@ -30,18 +22,18 @@ public sealed partial class UpdateVillageTask(
 
         if (url.Contains("dorf1"))
         {
-            result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
             if (result.IsFailed) return result;
         }
         else if (url.Contains("dorf2"))
         {
-            result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
             if (result.IsFailed) return result;
 
             result = await toDorfCommand.HandleAsync(new(browser, 1), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
             if (result.IsFailed) return result;
         }
         else
@@ -49,7 +41,7 @@ public sealed partial class UpdateVillageTask(
             result = await toDorfCommand.HandleAsync(new(browser, 1), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await updateBuildingCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
             if (result.IsFailed) return result;
         }
 

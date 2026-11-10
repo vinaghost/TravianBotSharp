@@ -7,23 +7,20 @@ public sealed partial class UpdateDailyQuestCommand(
      IDbContextFactory<AppDbContext> contextFactory,
      TaskManager taskManager)
 {
-    public sealed record Command(AccountId AccountId, IChromeBrowser Browser) : IAccountCommand
+    public sealed record Command(IChromeBrowser Browser) : IBrowserCommand
     {
         public string Name => "";
     }
 
     private async ValueTask HandleAsync(Command command)
     {
-        var (accountId, browser) = command;
+        var (browser, accountId) = command;
         if (!(await browser.CurrentPage.IsDailyQuestClaimable())) return;
+        if (taskManager.IsExist<ClaimDailyQuestTask.Task>(accountId)) return;
 
         using var context = contextFactory.CreateDbContext();
-        var claimQuestTask = new ClaimDailyQuestTask.Task(accountId);
-        if (!claimQuestTask.CanStart(context) || taskManager.IsExist<ClaimDailyQuestTask.Task>(accountId))
-        {
-            return;
-        }
-        if (taskManager.IsExist<ClaimDailyQuestTask.Task>(accountId)) return;
-        taskManager.Add(claimQuestTask);
+        if (!context.IsDailyQuestEnable(accountId)) return;
+
+        taskManager.Add(new ClaimDailyQuestTask.Task(accountId));
     }
 }

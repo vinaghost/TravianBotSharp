@@ -7,23 +7,19 @@ public sealed partial class UpdateHeroLevelUpCommand(
     IDbContextFactory<AppDbContext> contextFactory,
     TaskManager taskManager)
 {
-    public sealed record Command(AccountId AccountId, IChromeBrowser Browser) : IAccountCommand
+    public sealed record Command(IChromeBrowser Browser) : IBrowserCommand
     {
         public string Name => "";
     }
 
     private async ValueTask HandleAsync(Command command)
     {
-        var (accountId, browser) = command;
-        await Task.CompletedTask;
+        var (browser, accountId) = command;
+
         if (await browser.CurrentPage.Locator("#topBarHero i.levelUp.show").CountAsync() == 0) return;
-        using var context = contextFactory.CreateDbContext();
-        var setHeroPointTask = new SetHeroPointTask.Task(accountId);
-        if (!setHeroPointTask.CanStart(context) || taskManager.IsExist<SetHeroPointTask.Task>(accountId))
-        {
-            return;
-        }
         if (taskManager.IsExist<SetHeroPointTask.Task>(accountId)) return;
-        taskManager.Add(setHeroPointTask);
+        using var context = contextFactory.CreateDbContext();
+        if (!context.IsSetHeroPointEnable(accountId)) return;
+        taskManager.Add(new SetHeroPointTask.Task(accountId));
     }
 }

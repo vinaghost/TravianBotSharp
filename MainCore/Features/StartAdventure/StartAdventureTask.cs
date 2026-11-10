@@ -9,14 +9,6 @@ public sealed partial class StartAdventureTask(
     public sealed class Task(AccountId accountId) : AccountTask(accountId)
     {
         protected override string TaskName => nameof(StartAdventureTask).Humanize();
-
-        public override bool CanStart(AppDbContext context)
-        {
-            var settingEnable = context.BooleanByName(AccountId, AccountSettingEnums.EnableAutoStartAdventure);
-            if (!settingEnable) return false;
-
-            return true;
-        }
     }
 
     private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
