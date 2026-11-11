@@ -3,85 +3,66 @@ using MainCore.UI.ViewModels.Abstract;
 
 namespace MainCore.UI.Stores
 {
-    using ReactiveUI.Primitives;
-
     [RegisterSingleton<SelectedItemStore>]
     public partial class SelectedItemStore : ViewModelBase
     {
-        private int? _lastAccountId;
-
         public SelectedItemStore()
         {
-            var accountObservable = this.WhenAnyValue(vm => vm.Account);
-
-            _isAccountSelectedHelper = accountObservable
-                .Select(x => x is not null)
-                .ToProperty(this, vm => vm.IsAccountSelected);
-            _isAccountNotSelectedHelper = accountObservable
-                .Select(x => x is null)
-                .ToProperty(this, vm => vm.IsAccountNotSelected);
-
-            var villageObservable = this.WhenAnyValue(vm => vm.Village);
-            _isVillageSelectedHelper = villageObservable
-                .Select(x => x is not null)
-                .ToProperty(this, vm => vm.IsVillageSelected);
-            _isVillageNotSelectedHelper = villageObservable
-                .Select(x => x is null)
-                .ToProperty(this, vm => vm.IsVillageNotSelected);
-
-            AccountChanges = accountObservable;
-            VillageChanges = villageObservable;
-            VillageInvalidated = villageObservable
-                .Where(x => x is null)
-                .Select(_ => RxVoid.Default);
+            AccountChanges = this.WhenAnyValue(vm => vm.AccountId);
+            VillageChanges = this.WhenAnyValue(vm => vm.VillageId);
         }
 
-        public IObservable<ListBoxItem?> AccountChanges { get; }
+        public IObservable<AccountId> AccountChanges { get; }
 
-        public IObservable<ListBoxItem?> VillageChanges { get; }
-
-        public IObservable<RxVoid> VillageInvalidated { get; }
+        public IObservable<VillageId> VillageChanges { get; }
 
         public void SetAccount(ListBoxItem? account)
         {
-            var newAccountId = account?.Id;
-            if (_lastAccountId != newAccountId)
+            if (account is null)
             {
-                _lastAccountId = newAccountId;
-                Account = account;
-                ClearVillage();
+                if (AccountId != AccountId.Empty)
+                {
+                    AccountId = AccountId.Empty;
+                    ClearVillage();
+                }
+
                 return;
             }
 
-            Account = account;
+            if (account.Id != AccountId.Value)
+            {
+                AccountId = new AccountId(account.Id);
+                ClearVillage();
+            }
         }
 
         public void SetVillage(ListBoxItem? village)
         {
-            Village = village;
+            if (village is null)
+            {
+                if (VillageId != VillageId.Empty)
+                {
+                    VillageId = VillageId.Empty;
+                }
+
+                return;
+            }
+
+            if (village.Id != VillageId.Value)
+            {
+                VillageId = new VillageId(village.Id);
+            }
         }
 
         public void ClearVillage()
         {
-            Village = null;
+            VillageId = VillageId.Empty;
         }
 
         [Reactive]
-        private ListBoxItem? _account;
+        private AccountId _accountId;
 
         [Reactive]
-        private ListBoxItem? _village;
-
-        [ObservableAsProperty]
-        private bool _isAccountSelected;
-
-        [ObservableAsProperty]
-        private bool _isAccountNotSelected;
-
-        [ObservableAsProperty]
-        private bool _isVillageSelected;
-
-        [ObservableAsProperty]
-        private bool _isVillageNotSelected;
+        private VillageId _villageId;
     }
 }

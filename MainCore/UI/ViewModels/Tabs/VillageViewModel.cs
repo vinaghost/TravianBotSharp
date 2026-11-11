@@ -4,11 +4,11 @@ using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 
+using MainCore.Features.Update;
+using MainCore.Shared.Notifications;
+
 namespace MainCore.UI.ViewModels.Tabs
 {
-    using MainCore.Features.Update;
-    using MainCore.Shared.Notifications;
-
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Concurrency;
     using ReactiveUI.Primitives.Disposables;
@@ -58,6 +58,12 @@ namespace MainCore.UI.ViewModels.Tabs
                 .Throttle(TimeSpan.FromMilliseconds(1000), RxSchedulers.TaskpoolScheduler)
                 .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(LoadVillageCommand);
+
+            _selectedItemStore.VillageChanges.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(villageId =>
+            {
+                var tabType = villageId == VillageId.Empty ? VillageTabType.NoVillage : VillageTabType.Normal;
+                _villageTabStore.SetTabType(tabType);
+            });
         }
 
         [ReactiveCommand(RunInBackground = true)]

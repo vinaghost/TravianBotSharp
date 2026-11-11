@@ -22,13 +22,11 @@ namespace MainCore.UI.ViewModels.Abstract
         {
             _selectedItemStore = Locator.Current.GetService<SelectedItemStore>()!;
 
-            var accountIdObservable = this.WhenAnyValue(vm => vm._selectedItemStore.Account)
-                                            .Select(x => x is null ? AccountId.Empty : new AccountId(x.Id));
+            var accountIdObservable = this.WhenAnyValue(vm => vm._selectedItemStore.AccountId);
 
             _accountIdHelper = accountIdObservable.ToProperty(this, vm => vm.AccountId);
 
-            var villageIdObservable = this.WhenAnyValue(vm => vm._selectedItemStore.Village)
-                                            .Select(x => x is null ? VillageId.Empty : new VillageId(x.Id));
+            var villageIdObservable = this.WhenAnyValue(vm => vm._selectedItemStore.VillageId);
 
             _villageIdHelper = villageIdObservable.ToProperty(this, vm => vm.VillageId);
 

@@ -1,14 +1,15 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.Tabs.Villages;
+using MainCore.Shared.Enums;
 
 namespace MainCore.UI.Stores
 {
-    using MainCore.Shared.Enums;
-
-    using ReactiveUI.Primitives;
-
     [RegisterSingleton<VillageTabStore>]
-    public partial class VillageTabStore : ViewModelBase
+    public partial class VillageTabStore(
+        NoVillageViewModel noVillageViewModel,
+        InfoViewModel infoViewModel,
+        VillageSettingViewModel villageSettingViewModel,
+        BuildViewModel buildViewModel) : ViewModelBase
     {
         private readonly bool[] _tabVisibility = new bool[2];
         private VillageTabType _currentTabType;
@@ -19,28 +20,15 @@ namespace MainCore.UI.Stores
         [Reactive]
         private bool _isNormalTabVisible;
 
-        private readonly NoVillageViewModel _noVillageViewModel;
-        private readonly VillageSettingViewModel _villageSettingViewModel;
-        private readonly BuildViewModel _buildViewModel;
-        private readonly InfoViewModel _infoViewModel;
-
-        public VillageTabStore(NoVillageViewModel noVillageViewModel, InfoViewModel infoViewModel, BuildViewModel buildViewModel, VillageSettingViewModel villageSettingViewModel, SelectedItemStore selectedItemStore)
-        {
-            _noVillageViewModel = noVillageViewModel;
-            _buildViewModel = buildViewModel;
-            _infoViewModel = infoViewModel;
-            _villageSettingViewModel = villageSettingViewModel;
-
-            selectedItemStore.VillageChanges.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(village =>
-            {
-                var tabType = village is null ? VillageTabType.NoVillage : VillageTabType.Normal;
-                SetTabType(tabType);
-            });
-        }
-
         public void SetTabType(VillageTabType tabType)
         {
-            if (tabType == _currentTabType) return;
+            if (tabType == _currentTabType)
+            {
+                GetTabViewModel(tabType).IsActive = true;
+                return;
+            }
+
+            GetTabViewModel(_currentTabType).IsActive = false;
             _currentTabType = tabType;
 
             for (int i = 0; i < _tabVisibility.Length; i++)
@@ -52,24 +40,31 @@ namespace MainCore.UI.Stores
             IsNoVillageTabVisible = _tabVisibility[(int)VillageTabType.NoVillage];
             IsNormalTabVisible = _tabVisibility[(int)VillageTabType.Normal];
 
-            switch (tabType)
-            {
-                case VillageTabType.NoVillage:
-                    _noVillageViewModel.IsActive = true;
-                    break;
-
-                case VillageTabType.Normal:
-                    _buildViewModel.IsActive = true;
-                    break;
-
-                default:
-                    break;
-            }
+            GetTabViewModel(tabType).IsActive = true;
         }
 
-        public NoVillageViewModel NoVillageViewModel => _noVillageViewModel;
-        public BuildViewModel BuildViewModel => _buildViewModel;
-        public VillageSettingViewModel VillageSettingViewModel => _villageSettingViewModel;
-        public InfoViewModel InfoViewModel => _infoViewModel;
+        private TabViewModelBase GetTabViewModel(VillageTabType tabType)
+        {
+            return tabType switch
+            {
+                VillageTabType.NoVillage => noVillageViewModel,
+                VillageTabType.Normal => GetCurrentNormalTabViewModel(),
+                _ => throw new ArgumentOutOfRangeException(nameof(tabType), tabType, null)
+            };
+        }
+
+        private TabViewModelBase GetCurrentNormalTabViewModel()
+        {
+            if (buildViewModel.IsActive) return buildViewModel;
+            if (infoViewModel.IsActive) return infoViewModel;
+            if (villageSettingViewModel.IsActive) return villageSettingViewModel;
+
+            return buildViewModel;
+        }
+
+        public NoVillageViewModel NoVillageViewModel => noVillageViewModel;
+        public BuildViewModel BuildViewModel => buildViewModel;
+        public VillageSettingViewModel VillageSettingViewModel => villageSettingViewModel;
+        public InfoViewModel InfoViewModel => infoViewModel;
     }
 }
