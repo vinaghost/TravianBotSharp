@@ -18,6 +18,7 @@ public sealed partial class ClaimRewardCommand(SwitchTabCommand.Handler switchTa
 
         var quest = browser.CurrentPage.GetVillageQuestCollectButton();
 
+        var attempt = 0;
         while (true)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -39,15 +40,28 @@ public sealed partial class ClaimRewardCommand(SwitchTabCommand.Handler switchTa
                 continue;
             }
 
-            result = await switchTabCommand.HandleAsync(new(browser, 1), cancellationToken);
-            if (result.IsFailed) return result;
-
-            if (await quest.CountAsync() != 0)
+            switch (attempt)
             {
-                continue;
+                case 0:
+                    result = await switchTabCommand.HandleAsync(new(browser, 1), cancellationToken);
+                    if (result.IsFailed) return result;
+                    break;
+
+                case 1:
+                    result = await switchTabCommand.HandleAsync(new(browser, 0), cancellationToken);
+                    if (result.IsFailed) return result;
+                    break;
+
+                case 2:
+                    result = await browser.Refresh();
+                    if (result.IsFailed) return result;
+                    break;
+
+                default:
+                    return Result.Ok();
             }
 
-            return Result.Ok();
+            attempt++;
         }
     }
 }
