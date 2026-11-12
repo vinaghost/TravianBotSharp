@@ -16,56 +16,29 @@ namespace MainCore.UI.ViewModels.UserControls
         [Reactive]
         private bool _isEnable = true;
 
-        public ObservableCollection<ListBoxItem> Items { get; } = new();
+        public ObservableCollection<ListBoxItem> Items { get; } = [];
 
-        public void Load(List<ListBoxItem> inputs)
+        public void Load(List<ListBoxItem> inputs, int oldId = -1)
         {
-            if (Items.Count == 0)
+            if (oldId == -1 && SelectedItem is not null)
             {
-                foreach (var input in inputs)
-                {
-                    Items.Add(input);
-                }
-                return;
+                oldId = SelectedItem.Id;
             }
 
-            if (inputs.Count == 0)
+            Items.Clear();
+            foreach (var input in inputs)
             {
-                Items.Clear();
-                return;
+                Items.Add(input);
             }
 
-            var oldId = SelectedItem?.Id ?? -1;
-
-            for (var i = 0; i < inputs.Count; i++)
+            if (oldId >= 0 && oldId < Items.Count)
             {
-                var input = inputs[i];
-                var item = Items.FirstOrDefault(x => x.Id == input.Id);
-
-                if (item is not null)
-                {
-                    item.Content = input.Content;
-                    item.Color = input.Color;
-
-                    var index = Items.IndexOf(item);
-
-                    if (index != i)
-                        Items.Move(index, i);
-                }
-                else
-                {
-                    Items.Insert(i, input);
-                }
-
-                if (input.Id == oldId)
-                {
-                    SelectedIndex = i;
-                }
+                var item = Items.FirstOrDefault(x => x.Id == oldId);
+                SelectedItem = item;
             }
-
-            while (Items.Count > inputs.Count)
+            else
             {
-                Items.RemoveAt(Items.Count - 1);
+                SelectedItem = null;
             }
         }
 

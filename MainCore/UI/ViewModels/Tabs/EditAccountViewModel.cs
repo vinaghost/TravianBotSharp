@@ -1,11 +1,12 @@
+using FluentValidation;
+
 using MainCore.UI.Models.Input;
+using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    using FluentValidation;
-
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
 
@@ -17,16 +18,14 @@ namespace MainCore.UI.ViewModels.Tabs
 
         private readonly IValidator<AccessInput> _accessInputValidator;
         private readonly IValidator<AccountInput> _accountInputValidator;
-        private readonly DialogService _dialogService;
-        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly RxQueue _rxQueue;
 
-        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, DialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, RxQueue rxQueue)
+        public EditAccountViewModel(IValidator<AccessInput> accessInputValidator, DialogService dialogService, IValidator<AccountInput> accountInputValidator, WaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, RxQueue rxQueue, SelectedItemStore selectedItemStore) : base(dialogService, selectedItemStore)
         {
             _accessInputValidator = accessInputValidator;
             _accountInputValidator = accountInputValidator;
-            _dialogService = dialogService;
             _waitingOverlayViewModel = waitingOverlayViewModel;
 
             _contextFactory = contextFactory;
@@ -41,9 +40,8 @@ namespace MainCore.UI.ViewModels.Tabs
                 .WhereNotNull()
                 .Subscribe(x => x.CopyTo(AccessInput));
 
-            DeleteAccessCommand.Subscribe(_ => SelectedAccess = null);
-
-            LoadAccountCommand.InvokeCommand(SetAccountCommand);
+            LoadAccountCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(SetAccount);
+            DeleteAccessCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(_ => SelectedAccess = null);
         }
 
         protected override async Task Load(AccountId accountId)
@@ -62,13 +60,23 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
+            if (string.IsNullOrEmpty(AccountInput.Username))
+            {
+                AccountInput.Username = AccessInput.Username;
+            }
+
             AccountInput.Accesses.Add(AccessInput.Clone());
         }
 
         [ReactiveCommand]
         private async Task EditAccess()
         {
-            if (SelectedAccess is null) return;
+            if (SelectedAccess is null)
+            {
+                await _dialogService.SendMessage("Error", "No access selected");
+                return;
+            }
+
             var result = _accessInputValidator.Validate(AccessInput);
 
             if (!result.IsValid)
@@ -81,9 +89,17 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private void DeleteAccess()
+        private async Task DeleteAccess()
         {
-            if (SelectedAccess is null) return;
+            if (SelectedAccess is null)
+            {
+                await _dialogService.SendMessage("Error", "No access selected");
+                return;
+            }
+
+            var confirm = await _dialogService.SendConfirm("Delete access", $"Are you sure you want to delete access {AccessInput.Username} ?");
+            if (!confirm) return;
+
             AccountInput.Accesses.Remove(SelectedAccess);
         }
 
@@ -97,50 +113,61 @@ namespace MainCore.UI.ViewModels.Tabs
                 await _dialogService.SendMessage("Error", string.Join(Environment.NewLine, results.Errors.Select(x => x.ErrorMessage)));
                 return;
             }
-            await _waitingOverlayViewModel.Show("editing account");
 
-            UpdateDatabase(AccountInput.ToDto());
-            _rxQueue.Enqueue(new AccountsModified());
+            _waitingOverlayViewModel.Show("adding account");
 
-            await _waitingOverlayViewModel.Hide();
-            await _dialogService.SendMessage("Information", "Edited account");
+            try
+            {
+                await UpdateDatabaseCommand.Execute(AccountInput);
+                _rxQueue.Enqueue(new AccountsModified());
+            }
+            finally
+            {
+                _waitingOverlayViewModel.Hide();
+            }
 
-            await LoadAccountCommand.Execute(AccountId);
+            await _dialogService.SendMessage("Information", "Account updated");
         }
 
         [ReactiveCommand(RunInBackground = true)]
-        private AccountDto LoadAccount(AccountId accountId)
+        private (AccountId Id, string Username, string Server, IList<AccessInput> Accesses) LoadAccount(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();
             var account = context.Accounts
-               .Where(x => x.Id == accountId.Value)
-               .Include(x => x.Accesses)
-               .AsEnumerable()
-               .Select(e => new AccountDto()
-               {
-                   Username = e.Username,
-                   Server = e.Server,
-                   Accesses = [..e.Accesses.Select(x => new AccessDto()
+                .Where(x => x.Id == accountId.Value)
+                .Select(e => new
                 {
+                    e.Username,
+                    e.Server,
+                })
+                .First();
+
+            var accesses = context.Accesses
+                .Where(x => x.AccountId == accountId.Value)
+                .AsEnumerable()
+                .Select(x => new AccessInput()
+                {
+                    Id = new(x.Id),
                     Username = x.Username,
                     Password = x.Password,
                     ProxyHost = x.ProxyHost,
                     ProxyPort = x.ProxyPort,
                     ProxyUsername = x.ProxyUsername,
                     ProxyPassword = x.ProxyPassword,
-                })],
-               })
-               .First();
-            return account;
+                })
+                .ToList();
+
+            return (accountId, account.Username, account.Server, accesses);
         }
 
-        [ReactiveCommand]
-        private void SetAccount(AccountDto account)
+        private void SetAccount((AccountId Id, string Username, string Server, IList<AccessInput> Accesses) data)
         {
-            AccountInput.Id = account.Id;
-            AccountInput.Username = account.Username;
-            AccountInput.Server = account.Server;
-            AccountInput.SetAccesses(account.Accesses.Select(x => x.ToInput()));
+            var (id, username, server, accesses) = data;
+
+            AccountInput.Id = id;
+            AccountInput.Username = username;
+            AccountInput.Server = server;
+            AccountInput.SetAccesses(accesses);
 
             AccessInput.Clear();
         }
@@ -148,7 +175,8 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private AccessInput? _selectedAccess;
 
-        private void UpdateDatabase(AccountDto dto)
+        [ReactiveCommand(RunInBackground = true)]
+        private void UpdateDatabase(AccountInput dto)
         {
             var account = new Account()
             {
@@ -166,11 +194,10 @@ namespace MainCore.UI.ViewModels.Tabs
             };
 
             using var context = _contextFactory.CreateDbContext();
-            var existingAccessIds = dto.Accesses.Select(a => a.Id.Value).ToHashSet();
-
             context.Update(account);
             context.SaveChanges();
 
+            var existingAccessIds = dto.Accesses.Select(a => a.Id.Value).ToHashSet();
             context.Accesses
                 .Where(a => a.AccountId == account.Id && !existingAccessIds.Contains(a.Id))
                 .ExecuteDelete();

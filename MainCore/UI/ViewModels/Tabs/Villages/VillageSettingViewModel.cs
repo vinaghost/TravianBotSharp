@@ -8,6 +8,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
     using FluentValidation;
 
     using MainCore.Shared.Enums;
+    using MainCore.UI.Stores;
 
     using Microsoft.Extensions.DependencyInjection;
 
@@ -19,14 +20,12 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
     {
         public VillageSettingInput VillageSettingInput { get; } = new();
 
-        private readonly DialogService _dialogService;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly IValidator<VillageSettingInput> _villageSettingInputValidator;
         private readonly TaskManager _taskManager;
 
-        public VillageSettingViewModel(DialogService dialogService, IValidator<VillageSettingInput> villageSettingInputValidator, IServiceScopeFactory serviceScopeFactory, IDbContextFactory<AppDbContext> contextFactory, TaskManager taskManager)
+        public VillageSettingViewModel(DialogService dialogService, IValidator<VillageSettingInput> villageSettingInputValidator, IServiceScopeFactory serviceScopeFactory, IDbContextFactory<AppDbContext> contextFactory, TaskManager taskManager, SelectedItemStore selectedItemStore) : base(dialogService, selectedItemStore)
         {
-            _dialogService = dialogService;
             _villageSettingInputValidator = villageSettingInputValidator;
             _contextFactory = contextFactory;
             _taskManager = taskManager;
@@ -41,14 +40,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await LoadSettingCommand.Execute(villageId);
         }
 
-        protected override async Task Load(AccountId accountId, VillageId villageId)
+        protected override async Task Load(VillageId villageId)
         {
             await LoadSettingCommand.Execute(villageId);
-        }
-
-        protected override async Task OnContextInvalidated(AccountId accountId)
-        {
-            await Signal.Start(() => VillageSettingInput.Set([]), RxSchedulers.MainThreadScheduler);
         }
 
         [ReactiveCommand(RunInBackground = true)]

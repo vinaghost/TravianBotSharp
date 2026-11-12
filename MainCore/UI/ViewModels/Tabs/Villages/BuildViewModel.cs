@@ -6,22 +6,19 @@ using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 
+using FluentValidation;
+
+using MainCore.Features.UpgradeBuilding;
+using MainCore.UI.Stores;
+
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
-    using FluentValidation;
-
-    using MainCore.Features.UpgradeBuilding;
-    using MainCore.Shared.Enums;
-    using MainCore.Shared.Models;
-    using MainCore.Shared.Notifications;
-
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
 
     [RegisterSingleton<BuildViewModel>]
     public partial class BuildViewModel : VillageTabViewModelBase
     {
-        private readonly DialogService _dialogService;
         private readonly TaskManager _taskManager;
         private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
         private readonly IValidator<ResourceBuildInput> _resourceBuildInputValidator;
@@ -35,9 +32,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(DialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
+        public BuildViewModel(DialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, SelectedItemStore selectedItemStore) : base(dialogService, selectedItemStore)
         {
-            _dialogService = dialogService;
             _normalBuildInputValidator = normalBuildInputValidator;
             _resourceBuildInputValidator = resourceBuildInputValidator;
             _taskManager = taskManager;
@@ -54,9 +50,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 .WhereNotNull()
                 .InvokeCommand(LoadBuildNormalCommand);
 
-            LoadBuildingCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(Buildings.Load);
-            LoadJobCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(Jobs.Load);
-            LoadQueueCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(Queue.Load);
+            LoadBuildingCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(x => Buildings.Load(x));
+            LoadJobCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(x => Jobs.Load(x));
+            LoadQueueCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(x => Queue.Load(x));
 
             LoadBuildNormalCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(SetNormalBuildInput);
 
@@ -120,22 +116,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await LoadBuildingCommand.Execute(notification.VillageId);
         }
 
-        protected override async Task Load(AccountId accountId, VillageId villageId)
+        protected override async Task Load(VillageId villageId)
         {
             await LoadJobCommand.Execute(villageId);
             await LoadBuildingCommand.Execute(villageId);
             await LoadQueueCommand.Execute(villageId);
-        }
-
-        protected override async Task OnContextInvalidated(AccountId accountId)
-        {
-            await Signal.Start(() =>
-            {
-                Buildings.Load([]);
-                Jobs.Load([]);
-                Queue.Load([]);
-                NormalBuildInput.Clear();
-            }, RxSchedulers.MainThreadScheduler);
         }
 
         [ReactiveCommand(RunInBackground = true)]

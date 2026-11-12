@@ -1,68 +1,67 @@
 ﻿using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 
-namespace MainCore.UI.Stores
+using ReactiveUI.Primitives;
+
+namespace MainCore.UI.Stores;
+
+[RegisterSingleton<SelectedItemStore>]
+public partial class SelectedItemStore : ViewModelBase
 {
-    [RegisterSingleton<SelectedItemStore>]
-    public partial class SelectedItemStore : ViewModelBase
+    private readonly Dictionary<AccountId, VillageId> _lastSelectedVillageByAccount = [];
+
+    public VillageId GetLastSelectedVillage(AccountId accountId)
     {
-        public SelectedItemStore()
+        if (_lastSelectedVillageByAccount.TryGetValue(accountId, out var villageId))
         {
-            AccountChanges = this.WhenAnyValue(vm => vm.AccountId);
-            VillageChanges = this.WhenAnyValue(vm => vm.VillageId);
+            return villageId;
+        }
+        return VillageId.Empty;
+    }
+
+    public SelectedItemStore()
+    {
+        AccountChanges = this.WhenAnyValue(x => x.AccountId);
+        VillageChanges = this.WhenAnyValue(x => x.VillageId);
+    }
+
+    public IObservable<AccountId> AccountChanges { get; }
+    public IObservable<VillageId> VillageChanges { get; }
+
+    public void SetAccount(ListBoxItem? account)
+    {
+        _lastSelectedVillageByAccount[AccountId] = VillageId;
+        if (account is null)
+        {
+            AccountId = AccountId.Empty;
+            return;
         }
 
-        public IObservable<AccountId> AccountChanges { get; }
-
-        public IObservable<VillageId> VillageChanges { get; }
-
-        public void SetAccount(ListBoxItem? account)
+        if (account.Id != AccountId.Value)
         {
-            if (account is null)
-            {
-                if (AccountId != AccountId.Empty)
-                {
-                    AccountId = AccountId.Empty;
-                    ClearVillage();
-                }
-
-                return;
-            }
-
-            if (account.Id != AccountId.Value)
-            {
-                AccountId = new AccountId(account.Id);
-                ClearVillage();
-            }
+            AccountId = new AccountId(account.Id);
         }
+    }
 
-        public void SetVillage(ListBoxItem? village)
-        {
-            if (village is null)
-            {
-                if (VillageId != VillageId.Empty)
-                {
-                    VillageId = VillageId.Empty;
-                }
+    public void SetVillage(ListBoxItem? village)
+    {
+        _lastSelectedVillageByAccount[AccountId] = VillageId;
 
-                return;
-            }
-
-            if (village.Id != VillageId.Value)
-            {
-                VillageId = new VillageId(village.Id);
-            }
-        }
-
-        public void ClearVillage()
+        if (village is null)
         {
             VillageId = VillageId.Empty;
+            return;
         }
 
-        [Reactive]
-        private AccountId _accountId;
-
-        [Reactive]
-        private VillageId _villageId;
+        if (village.Id != VillageId.Value)
+        {
+            VillageId = new VillageId(village.Id);
+        }
     }
+
+    [Reactive]
+    private AccountId _accountId;
+
+    [Reactive]
+    private VillageId _villageId;
 }

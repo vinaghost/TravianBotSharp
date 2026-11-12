@@ -6,16 +6,13 @@ using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    using MainCore.Shared.Enums;
-
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
 
     [RegisterSingleton<AddAccountsViewModel>]
     public partial class AddAccountsViewModel : TabViewModelBase
     {
-        private readonly DialogService _dialogService;
-        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly RxQueue _rxQueue;
         private readonly DefaultTemplatePathStore _defaultTemplatePathStore;
@@ -24,9 +21,8 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private string _input = "";
 
-        public AddAccountsViewModel(DialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, RxQueue rxQueue, DefaultTemplatePathStore defaultTemplatePathStore)
+        public AddAccountsViewModel(DialogService dialogService, WaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, RxQueue rxQueue, DefaultTemplatePathStore defaultTemplatePathStore) : base(dialogService)
         {
-            _dialogService = dialogService;
             _waitingOverlayViewModel = waitingOverlayViewModel;
             _contextFactory = contextFactory;
             _rxQueue = rxQueue;
@@ -41,9 +37,9 @@ namespace MainCore.UI.ViewModels.Tabs
                 .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(ParseCommand);
 
-            ParseCommand.Subscribe(UpdateTable);
+            ParseCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(UpdateTable);
 
-            AddAccountCommand.Subscribe(_ => Clear());
+            AddAccountCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(_ => Clear());
         }
 
         private void UpdateTable(List<AccountDetailDto> data)
@@ -68,16 +64,22 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
-            await _waitingOverlayViewModel.Show("adding accounts");
-            await Signal.Start(() => UpdateDatabase(dtos), RxSchedulers.TaskpoolScheduler);
+            _waitingOverlayViewModel.Show("adding accounts");
 
-            _rxQueue.Enqueue(new AccountsModified());
-            await _waitingOverlayViewModel.Hide();
+            try
+            {
+                await AddToDatabaseCommand.Execute(dtos);
+                _rxQueue.Enqueue(new AccountsModified());
+            }
+            finally
+            {
+                _waitingOverlayViewModel.Hide();
+            }
 
-            await _dialogService.SendMessage("Information", $"Added accounts");
+            await _dialogService.SendMessage("Information", $"Added {dtos.Count} accounts");
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private static List<AccountDetailDto> Parse(string input)
         {
             if (string.IsNullOrEmpty(input)) return [];
@@ -128,7 +130,7 @@ namespace MainCore.UI.ViewModels.Tabs
             };
         }
 
-        private List<AccountDto> FilterDuplicated(List<AccountDetailDto> dtos)
+        private List<AccountDetailDto> FilterDuplicated(List<AccountDetailDto> dtos)
         {
             using var context = _contextFactory.CreateDbContext();
             var existAccounts = context.Accounts
@@ -137,25 +139,12 @@ namespace MainCore.UI.ViewModels.Tabs
                 .Select(x => $"{x.Username}-{x.Server}")
                 .ToHashSet();
 
-            return [.. dtos
-                .Where(x => !existAccounts.Contains($"{x.Username}-{x.Server}"))
-                .Select(x => new AccountDto() {
-                    Username = x.Username,
-                    Server = x.Server,
-                    Accesses = [ new AccessDto() {
-                        Username = x.Username,
-                        Password = x.Password,
-                        ProxyHost = x.ProxyHost,
-                        ProxyPort = x.ProxyPort,
-                        ProxyUsername = x.ProxyUsername,
-                        ProxyPassword = x.ProxyPassword,
-                    }],
-                })];
+            return [.. dtos.Where(x => !existAccounts.Contains($"{x.Username}-{x.Server}"))];
         }
 
-        private void UpdateDatabase(List<AccountDto> dtos)
+        [ReactiveCommand(RunInBackground = true)]
+        private void AddToDatabase(List<AccountDetailDto> dtos)
         {
-            using var context = _contextFactory.CreateDbContext();
             var defaultSettings = LoadAccountDefaultSettings();
 
             var accounts = dtos
@@ -163,20 +152,21 @@ namespace MainCore.UI.ViewModels.Tabs
                 {
                     Username = dto.Username,
                     Server = dto.Server,
-                    Accesses = [..dto.Accesses.Select(x => new Access()
+                    Accesses = [ new Access()
                     {
-                        Username = x.Username,
-                        Password = x.Password,
-                        ProxyHost = x.ProxyHost,
-                        ProxyPort = x.ProxyPort,
-                        ProxyUsername = x.ProxyUsername,
-                        ProxyPassword = x.ProxyPassword,
-                    })],
+                        Username = dto.Username,
+                        Password = dto.Password,
+                        ProxyHost = dto.ProxyHost,
+                        ProxyPort = dto.ProxyPort,
+                        ProxyUsername = dto.ProxyUsername,
+                        ProxyPassword = dto.ProxyPassword,
+                    }],
+                    Settings = [],
                 });
 
+            using var context = _contextFactory.CreateDbContext();
             foreach (var account in accounts)
             {
-                account.Settings = [];
                 foreach (var (setting, value) in defaultSettings)
                 {
                     account.Settings.Add(new AccountSetting

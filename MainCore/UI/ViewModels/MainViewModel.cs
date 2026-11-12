@@ -14,7 +14,7 @@ namespace MainCore.UI.ViewModels
 {
     [RegisterSingleton<MainViewModel>]
     public partial class MainViewModel(
-        IWaitingOverlayViewModel waitingOverlayViewModel,
+        WaitingOverlayViewModel waitingOverlayViewModel,
         IDbContextFactory<AppDbContext> contextFactory,
         ChromeManager chromeManager)
         : ViewModelBase
@@ -24,7 +24,7 @@ namespace MainCore.UI.ViewModels
 
         public async Task Load()
         {
-            await waitingOverlayViewModel.Show();
+            waitingOverlayViewModel.Show();
 
             await Signal.Start(() =>
             {
@@ -44,11 +44,11 @@ namespace MainCore.UI.ViewModels
                 }
             }, RxSchedulers.TaskpoolScheduler);
 
-            await waitingOverlayViewModel.ChangeMessage("loading program layout");
+            waitingOverlayViewModel.ChangeMessage("loading program layout");
             MainLayoutViewModel = Locator.Current.GetService<MainLayoutViewModel>()!;
             await MainLayoutViewModel.Load();
 
-            await waitingOverlayViewModel.Hide();
+            waitingOverlayViewModel.Hide();
         }
 
         public async Task Unload()

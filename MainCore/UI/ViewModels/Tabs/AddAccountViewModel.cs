@@ -1,15 +1,13 @@
 using System.Text.Json;
 
+using FluentValidation;
+
 using MainCore.UI.Models.Input;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    using FluentValidation;
-
-    using MainCore.Shared.Enums;
-
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
 
@@ -22,16 +20,14 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly IValidator<AccessInput> _accessInputValidator;
         private readonly IValidator<AccountInput> _accountInputValidator;
 
-        private readonly DialogService _dialogService;
-        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly RxQueue _rxQueue;
         private readonly DefaultTemplatePathStore _defaultTemplatePathStore;
 
-        public AddAccountViewModel(IValidator<AccessInput> accessInputValidator, DialogService dialogService, IValidator<AccountInput> accountInputValidator, IWaitingOverlayViewModel waitingOverlayViewModel, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, DefaultTemplatePathStore defaultTemplatePathStore)
+        public AddAccountViewModel(IValidator<AccessInput> accessInputValidator, DialogService dialogService, IValidator<AccountInput> accountInputValidator, WaitingOverlayViewModel waitingOverlayViewModel, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, DefaultTemplatePathStore defaultTemplatePathStore) : base(dialogService)
         {
             _accessInputValidator = accessInputValidator;
-            _dialogService = dialogService;
             _accountInputValidator = accountInputValidator;
             _waitingOverlayViewModel = waitingOverlayViewModel;
             _rxQueue = rxQueue;
@@ -47,8 +43,8 @@ namespace MainCore.UI.ViewModels.Tabs
                 .WhereNotNull()
                 .Subscribe(x => x.CopyTo(AccessInput));
 
-            DeleteAccessCommand.Subscribe(x => SelectedAccess = null);
-            AddAccountCommand.Where(x => x).Subscribe(x =>
+            DeleteAccessCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(_ => SelectedAccess = null);
+            AddAccountCommand.Where(x => x).ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(_ =>
             {
                 AccountInput.Clear();
                 AccessInput.Clear();
@@ -77,7 +73,11 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand]
         private async Task EditAccess()
         {
-            if (SelectedAccess is null) return;
+            if (SelectedAccess is null)
+            {
+                await _dialogService.SendMessage("Error", "No access selected");
+                return;
+            }
 
             var result = _accessInputValidator.Validate(AccessInput);
 
@@ -91,9 +91,17 @@ namespace MainCore.UI.ViewModels.Tabs
         }
 
         [ReactiveCommand]
-        private void DeleteAccess()
+        private async Task DeleteAccess()
         {
-            if (SelectedAccess is null) return;
+            if (SelectedAccess is null)
+            {
+                await _dialogService.SendMessage("Error", "No access selected");
+                return;
+            }
+
+            var confirm = await _dialogService.SendConfirm("Delete access", $"Are you sure you want to delete access {AccessInput.Username} ?");
+            if (!confirm) return;
+
             AccountInput.Accesses.Remove(SelectedAccess);
         }
 
@@ -114,14 +122,20 @@ namespace MainCore.UI.ViewModels.Tabs
                 return false;
             }
 
-            await _waitingOverlayViewModel.Show("adding account");
+            _waitingOverlayViewModel.Show("adding account");
 
-            await Signal.Start(() => UpdateDatabase(AccountInput.ToDto()), RxSchedulers.TaskpoolScheduler);
-            _rxQueue.Enqueue(new AccountsModified());
+            try
+            {
+                await AddToDatabaseCommand.Execute(AccountInput);
+                _rxQueue.Enqueue(new AccountsModified());
+            }
+            finally
+            {
+                _waitingOverlayViewModel.Hide();
+            }
 
-            await _waitingOverlayViewModel.Hide();
+            await _dialogService.SendMessage("Information", "Account created");
 
-            await _dialogService.SendMessage("Information", "Added account");
             return true;
         }
 
@@ -135,9 +149,11 @@ namespace MainCore.UI.ViewModels.Tabs
                 .Any(x => x.Username == input.Username && x.Server == input.Server);
         }
 
-        private void UpdateDatabase(AccountDto dto)
+        [ReactiveCommand(RunInBackground = true)]
+        private void AddToDatabase(AccountInput dto)
         {
-            using var context = _contextFactory.CreateDbContext();
+            var defaultSettings = LoadAccountDefaultSettings();
+
             var account = new Account()
             {
                 Username = dto.Username,
@@ -151,10 +167,9 @@ namespace MainCore.UI.ViewModels.Tabs
                     ProxyUsername = x.ProxyUsername,
                     ProxyPassword = x.ProxyPassword,
                 })],
+                Settings = [],
             };
-            var defaultSettings = LoadAccountDefaultSettings();
 
-            account.Settings = [];
             foreach (var (setting, value) in defaultSettings)
             {
                 account.Settings.Add(new AccountSetting
@@ -163,6 +178,7 @@ namespace MainCore.UI.ViewModels.Tabs
                     Value = value,
                 });
             }
+            using var context = _contextFactory.CreateDbContext();
             context.Add(account);
             context.SaveChanges();
         }

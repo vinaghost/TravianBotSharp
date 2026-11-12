@@ -6,11 +6,12 @@ using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 
 using Serilog.Events;
+using MainCore.Shared.Notifications;
 using Serilog.Templates;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    using MainCore.Shared.Notifications;
+    using MainCore.UI.Stores;
 
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
@@ -21,7 +22,6 @@ namespace MainCore.UI.ViewModels.Tabs
         private readonly LogSink _logSink;
         private readonly TaskManager _taskManager;
         private readonly ChromeManager _chromeManager;
-        private readonly DialogService _dialogService;
         private static readonly ExpressionTemplate _template = new("{@t:HH:mm:ss} [{@l:u3}] {@m}\n{@x}");
 
         public ObservableCollection<TaskItem> Tasks { get; } = [];
@@ -33,13 +33,17 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private string _endpointAddress = "";
 
-        public DebugViewModel(LogSink logSink, TaskManager taskManager, RxQueue rxQueue, ChromeManager chromeManager, DialogService dialogService)
+        public DebugViewModel(LogSink logSink, TaskManager taskManager, RxQueue rxQueue, ChromeManager chromeManager, DialogService dialogService, SelectedItemStore selectedItemStore) : base(dialogService, selectedItemStore)
         {
             _logSink = logSink;
             _taskManager = taskManager;
             _chromeManager = chromeManager;
-            _dialogService = dialogService;
 
+            Init(rxQueue);
+        }
+
+        private void Init(RxQueue rxQueue)
+        {
             LoadTaskCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(items =>
             {
                 Tasks.Clear();

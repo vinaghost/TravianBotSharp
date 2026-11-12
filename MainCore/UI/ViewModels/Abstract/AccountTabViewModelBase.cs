@@ -1,27 +1,24 @@
 ﻿using MainCore.UI.Stores;
 
+using ReactiveUI.Primitives;
+
 namespace MainCore.UI.ViewModels.Abstract
 {
-    using ReactiveUI.Primitives;
-
-    using Splat;
-
     public abstract partial class AccountTabViewModelBase : TabViewModelBase
     {
-        protected readonly SelectedItemStore _selectedItemStore;
-
         [ObservableAsProperty]
         private AccountId _accountId;
 
-        protected AccountTabViewModelBase()
+        protected SelectedItemStore _selectedItemStore;
+
+        protected AccountTabViewModelBase(DialogService dialogService, SelectedItemStore selectedItemStore)
+            : base(dialogService)
         {
-            _selectedItemStore = Locator.Current.GetService<SelectedItemStore>()!;
+            _selectedItemStore = selectedItemStore;
 
-            var accountIdObservable = this.WhenAnyValue(vm => vm._selectedItemStore.AccountId);
+            _accountIdHelper = selectedItemStore.AccountChanges.ToProperty(this, vm => vm.AccountId);
 
-            _accountIdHelper = accountIdObservable.ToProperty(this, vm => vm.AccountId);
-
-            accountIdObservable
+            selectedItemStore.AccountChanges
                 .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(AccountChangedCommand);
         }
@@ -30,30 +27,14 @@ namespace MainCore.UI.ViewModels.Abstract
         private async Task AccountChanged(AccountId accountId)
         {
             if (!IsActive) return;
-
-            if (accountId == AccountId.Empty)
-            {
-                await OnAccountContextInvalidated();
-                return;
-            }
-
+            if (accountId == AccountId.Empty) return;
             await Load(accountId);
         }
 
         protected override async Task OnActive()
         {
-            if (AccountId == AccountId.Empty)
-            {
-                await OnAccountContextInvalidated();
-                return;
-            }
-
+            if (AccountId == AccountId.Empty) return;
             await Load(AccountId);
-        }
-
-        protected virtual Task OnAccountContextInvalidated()
-        {
-            return Task.CompletedTask;
         }
 
         protected abstract Task Load(AccountId accountId);

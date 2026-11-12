@@ -3,16 +3,18 @@ using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 
+using MainCore.Features.StartFarmList;
+using MainCore.Features.Update;
+using MainCore.Shared.Enums;
+using MainCore.Shared.Notifications;
+
+using FluentValidation;
+
 using Splat;
 
 namespace MainCore.UI.ViewModels.Tabs
 {
-    using FluentValidation;
-
-    using MainCore.Features.StartFarmList;
-    using MainCore.Features.Update;
-    using MainCore.Shared.Enums;
-    using MainCore.Shared.Notifications;
+    using MainCore.UI.Stores;
 
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
@@ -23,7 +25,6 @@ namespace MainCore.UI.ViewModels.Tabs
         public AccountSettingInput AccountSettingInput { get; } = new();
         public ListBoxItemViewModel FarmLists { get; } = new();
 
-        private readonly DialogService _dialogService;
         private readonly IValidator<AccountSettingInput> _accountsettingInputValidator;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly TaskManager _taskManager;
@@ -35,24 +36,28 @@ namespace MainCore.UI.ViewModels.Tabs
             { SplatColor.Black , "No farmlist selected" },
         };
 
-        public FarmingViewModel(DialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
+        public FarmingViewModel(DialogService dialogService, IValidator<AccountSettingInput> accountsettingInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, SelectedItemStore selectedItemStore) : base(dialogService, selectedItemStore)
         {
             _accountsettingInputValidator = accountsettingInputValidator;
-            _dialogService = dialogService;
             _taskManager = taskManager;
             _contextFactory = contextFactory;
 
+            Init(rxQueue);
+        }
+
+        private void Init(RxQueue rxQueue)
+        {
             LoadFarmListCommand
                 .ObserveOn(RxSchedulers.MainThreadScheduler)
                 .Subscribe(items =>
-            {
-                FarmLists.Load(items);
-                if (items.Count > 0)
                 {
-                    var color = FarmLists.SelectedItem?.Color ?? SplatColor.Black;
-                    ActiveText = _activeTexts[color];
-                }
-            });
+                    FarmLists.Load(items);
+                    if (items.Count > 0)
+                    {
+                        var color = FarmLists.SelectedItem?.Color ?? SplatColor.Black;
+                        ActiveText = _activeTexts[color];
+                    }
+                });
             LoadSettingCommand
                 .ObserveOn(RxSchedulers.MainThreadScheduler)
                 .Subscribe(AccountSettingInput.Set);
@@ -60,10 +65,10 @@ namespace MainCore.UI.ViewModels.Tabs
             ActiveFarmListCommand
                 .ObserveOn(RxSchedulers.MainThreadScheduler)
                 .Subscribe(x =>
-            {
-                var color = FarmLists.SelectedItem?.Color ?? SplatColor.Black;
-                ActiveText = _activeTexts[color];
-            });
+                {
+                    var color = FarmLists.SelectedItem?.Color ?? SplatColor.Black;
+                    ActiveText = _activeTexts[color];
+                });
 
             this.WhenAnyValue(x => x.FarmLists.SelectedItem)
                 .WhereNotNull()
@@ -131,8 +136,11 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand(RunInBackground = true)]
         private async Task Stop()
         {
+            var confirm = await _dialogService.SendConfirm("Stop farmlist", "Are you sure you want to stop the farm list task?");
+            if (!confirm) return;
+
             _taskManager.Remove<StartFarmListTask.Task>(AccountId);
-            await _dialogService.SendMessage("Information", "Removed start farm list task");
+            await _dialogService.SendMessage("Information", "Removed farm list task");
         }
 
         [ReactiveCommand(RunInBackground = true)]
@@ -145,9 +153,9 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
-            using var context = _contextFactory.CreateDbContext();
             var settings = AccountSettingInput.Get();
-            context.SaveAccountSetting(AccountId, settings);
+            SaveSetting(AccountId, settings);
+
             await _dialogService.SendMessage("Information", "Saved");
         }
 
@@ -163,13 +171,18 @@ namespace MainCore.UI.ViewModels.Tabs
             var selectedFarmList = FarmLists.SelectedItem;
             if (selectedFarmList is null) return;
 
-            using var context = _contextFactory.CreateDbContext();
-            context.FarmLists
-               .Where(x => x.Id == selectedFarmList.Id)
-               .ExecuteUpdate(x => x.SetProperty(x => x.IsActive, x => !x.IsActive));
+            ActiveFarmList(new(selectedFarmList.Id));
 
             await FarmsModifiedCommand.Execute(new FarmsModified(AccountId));
             await _dialogService.SendMessage("Information", "Activated farm list");
+        }
+
+        private void ActiveFarmList(FarmId farmId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+            context.FarmLists
+               .Where(x => x.Id == farmId.Value)
+               .ExecuteUpdate(x => x.SetProperty(x => x.IsActive, x => !x.IsActive));
         }
 
         [ReactiveCommand(RunInBackground = true)]
@@ -200,5 +213,20 @@ namespace MainCore.UI.ViewModels.Tabs
 
         [Reactive]
         private string _activeText = "No farmlist selected";
+
+        private void SaveSetting(AccountId accountId, Dictionary<AccountSettingEnums, int> settings)
+        {
+            settings.Remove(AccountSettingEnums.Tribe);
+
+            if (settings.Count == 0) return;
+            using var context = _contextFactory.CreateDbContext();
+            foreach (var setting in settings)
+            {
+                context.AccountsSetting
+                    .Where(x => x.AccountId == accountId.Value)
+                    .Where(x => x.Setting == setting.Key)
+                    .ExecuteUpdate(x => x.SetProperty(x => x.Value, setting.Value));
+            }
+        }
     }
 }

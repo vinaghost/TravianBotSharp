@@ -1,13 +1,9 @@
 ﻿using MainCore.UI.Stores;
 
+using ReactiveUI.Primitives;
+
 namespace MainCore.UI.ViewModels.Abstract
 {
-    using ReactiveUI.Primitives;
-
-    using Splat;
-
-    public readonly record struct VillageContext(AccountId AccountId, VillageId VillageId, bool IsValid);
-
     public abstract partial class VillageTabViewModelBase : TabViewModelBase
     {
         protected readonly SelectedItemStore _selectedItemStore;
@@ -18,53 +14,31 @@ namespace MainCore.UI.ViewModels.Abstract
         [ObservableAsProperty]
         private VillageId _villageId;
 
-        protected VillageTabViewModelBase()
+        protected VillageTabViewModelBase(DialogService dialogService, SelectedItemStore selectedItemStore) : base(dialogService)
         {
-            _selectedItemStore = Locator.Current.GetService<SelectedItemStore>()!;
+            _selectedItemStore = selectedItemStore;
 
-            var accountIdObservable = this.WhenAnyValue(vm => vm._selectedItemStore.AccountId);
+            _accountIdHelper = _selectedItemStore.AccountChanges.ToProperty(this, vm => vm.AccountId);
+            _villageIdHelper = _selectedItemStore.VillageChanges.ToProperty(this, vm => vm.VillageId);
 
-            _accountIdHelper = accountIdObservable.ToProperty(this, vm => vm.AccountId);
-
-            var villageIdObservable = this.WhenAnyValue(vm => vm._selectedItemStore.VillageId);
-
-            _villageIdHelper = villageIdObservable.ToProperty(this, vm => vm.VillageId);
-
-            accountIdObservable
-                .CombineLatest(villageIdObservable, (accountId, villageId) => new VillageContext(accountId, villageId, accountId != AccountId.Empty && villageId != VillageId.Empty))
+            selectedItemStore.AccountChanges
                 .ObserveOn(RxSchedulers.TaskpoolScheduler)
-                .Subscribe(context => _ = VillageContextChanged(context));
+                .InvokeCommand(VillageChangedCommand);
         }
 
-        private async Task VillageContextChanged(VillageContext context)
+        [ReactiveCommand]
+        private async Task VillageChanged(VillageId villageId)
         {
             if (!IsActive) return;
-
-            if (!context.IsValid)
-            {
-                await OnContextInvalidated(context.AccountId);
-                return;
-            }
-
-            await Load(context.AccountId, context.VillageId);
+            if (villageId == VillageId.Empty) return;
+            await Load(villageId);
         }
 
         protected override async Task OnActive()
         {
-            if (AccountId == AccountId.Empty || VillageId == VillageId.Empty)
-            {
-                await OnContextInvalidated(AccountId);
-                return;
-            }
-
-            await Load(AccountId, VillageId);
+            await Load(VillageId);
         }
 
-        protected virtual Task OnContextInvalidated(AccountId accountId)
-        {
-            return Task.CompletedTask;
-        }
-
-        protected abstract Task Load(AccountId accountId, VillageId villageId);
+        protected abstract Task Load(VillageId villageId);
     }
 }

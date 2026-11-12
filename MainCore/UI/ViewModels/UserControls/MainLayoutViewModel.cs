@@ -6,20 +6,19 @@ using MainCore.UI.ViewModels.Abstract;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using MainCore.Shared.Commands;
+using MainCore.Shared.Enums;
+using MainCore.Shared.Notifications;
+using Serilog;
+using Serilog.Context;
+
 namespace MainCore.UI.ViewModels.UserControls
 {
-    using MainCore.Shared.Commands;
-    using MainCore.Shared.Enums;
-    using MainCore.Shared.Notifications;
-
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Concurrency;
     using ReactiveUI.Primitives.Disposables;
     using ReactiveUI.Primitives.Extensions;
     using ReactiveUI.Primitives.Signals;
-
-    using Serilog;
-    using Serilog.Context;
 
     [RegisterSingleton<MainLayoutViewModel>]
     public partial class MainLayoutViewModel : ViewModelBase
@@ -64,28 +63,23 @@ namespace MainCore.UI.ViewModels.UserControls
 
         private void Init()
         {
-            var accountObservable = this.WhenAnyValue(x => x.Accounts.SelectedItem);
-            accountObservable.Subscribe(_selectedItemStore.SetAccount);
+            this.WhenAnyValue(x => x.Accounts.SelectedItem)
+                .DistinctUntilChanged()
+                .Throttle(TimeSpan.FromMilliseconds(100), RxSchedulers.MainThreadScheduler)
+                .Subscribe(_selectedItemStore.SetAccount);
 
-            accountObservable.Subscribe(x =>
-            {
-                var tabType = AccountTabType.Normal;
-                if (x is null) tabType = AccountTabType.NoAccount;
-                _accountTabStore.SetTabType(tabType);
-            });
-
-            accountObservable
-                .WhereNotNull()
-                .Select(x => new AccountId(x.Id))
-                .ObserveOn(RxSchedulers.TaskpoolScheduler)
+            _selectedItemStore.AccountChanges
                 .InvokeCommand(GetStatusCommand);
 
             LoadAccountCommand
                 .ObserveOn(RxSchedulers.MainThreadScheduler)
-                .Subscribe(Accounts.Load);
-            GetStatusCommand.Subscribe(SetPauseText);
+                .Subscribe(x => Accounts.Load(x));
 
-            DeleteAccountCommand.InvokeCommand(LoadAccountCommand);
+            GetStatusCommand
+                .Subscribe(SetPauseText);
+
+            DeleteAccountCommand
+                .InvokeCommand(LoadAccountCommand);
 
             Signal
                 .Merge(
@@ -99,7 +93,8 @@ namespace MainCore.UI.ViewModels.UserControls
             _rxQueue.RegisterCommand(StatusModifiedCommand);
 
             _rxQueue.GetObservable<AccountsModified>()
-                .Select(x => RxVoid.Default)
+                .Select(_ => RxVoid.Default)
+                .Throttle(TimeSpan.FromMilliseconds(1000), RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(LoadAccountCommand);
         }
 
@@ -133,15 +128,15 @@ namespace MainCore.UI.ViewModels.UserControls
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
         private void AddAccount()
         {
-            Accounts.SelectedItem = null;
             _accountTabStore.SetTabType(AccountTabType.AddAccount);
+            Accounts.SelectedItem = null;
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
         private void AddAccounts()
         {
-            Accounts.SelectedItem = null;
             _accountTabStore.SetTabType(AccountTabType.AddAccounts);
+            Accounts.SelectedItem = null;
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute), RunInBackground = true)]

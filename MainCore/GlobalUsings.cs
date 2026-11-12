@@ -26,3 +26,4 @@ global using ReactiveUI;
 global using ReactiveUI.SourceGenerators;
 
 global using ILogger = Serilog.ILogger;
+global using Result = FluentResults.Result;
