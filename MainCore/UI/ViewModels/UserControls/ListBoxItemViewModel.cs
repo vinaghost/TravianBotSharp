@@ -18,12 +18,9 @@ namespace MainCore.UI.ViewModels.UserControls
 
         public ObservableCollection<ListBoxItem> Items { get; } = [];
 
-        public void Load(List<ListBoxItem> inputs, int oldId = -1)
+        public void Load(List<ListBoxItem> inputs)
         {
-            if (oldId == -1 && SelectedItem is not null)
-            {
-                oldId = SelectedItem.Id;
-            }
+            var oldId = SelectedItem?.Id ?? 0;
 
             Items.Clear();
             foreach (var input in inputs)
@@ -31,14 +28,10 @@ namespace MainCore.UI.ViewModels.UserControls
                 Items.Add(input);
             }
 
-            if (oldId >= 0 && oldId < Items.Count)
+            if (oldId > 0)
             {
                 var item = Items.FirstOrDefault(x => x.Id == oldId);
                 SelectedItem = item;
-            }
-            else
-            {
-                SelectedItem = null;
             }
         }
 

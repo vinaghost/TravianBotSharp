@@ -5,6 +5,19 @@ using ReactiveUI.Primitives;
 
 namespace MainCore.UI.Stores;
 
+public enum VillageTabType
+{
+    NoVillage = 0,
+    Normal
+}
+
+public enum VillageNormalTabType
+{
+    Build = 0,
+    VillageSetting,
+    Info,
+}
+
 [RegisterSingleton<VillageTabStore>]
 public partial class VillageTabStore : ViewModelBase
 {
@@ -15,6 +28,7 @@ public partial class VillageTabStore : ViewModelBase
     private readonly BuildViewModel _buildViewModel;
 
     private VillageTabType _currentTabType;
+    private VillageNormalTabType _currentNormalTabType;
 
     [Reactive]
     private bool _isNoVillageTabVisible = true;
@@ -44,20 +58,28 @@ public partial class VillageTabStore : ViewModelBase
             var tabType = villageId == VillageId.Empty ? VillageTabType.NoVillage : VillageTabType.Normal;
             Active(tabType);
         });
+
+        _buildViewModel.WhenAnyValue(vm => vm.IsActive)
+            .Where(isActive => isActive)
+            .Subscribe(_ => _currentNormalTabType = VillageNormalTabType.Build);
+
+        _villageSettingViewModel.WhenAnyValue(vm => vm.IsActive)
+            .Where(isActive => isActive)
+            .Subscribe(_ => _currentNormalTabType = VillageNormalTabType.VillageSetting);
+
+        _infoViewModel.WhenAnyValue(vm => vm.IsActive)
+            .Where(isActive => isActive)
+            .Subscribe(_ => _currentNormalTabType = VillageNormalTabType.Info);
     }
 
     public void Deactive()
     {
-        GetTabViewModel(_currentTabType).IsActive = false;
+        Active(VillageTabType.NoVillage);
     }
 
-    private void Active(VillageTabType tabType)
+    public void Active(VillageTabType tabType)
     {
-        if (tabType == _currentTabType)
-        {
-            GetTabViewModel(tabType).IsActive = true;
-            return;
-        }
+        if (tabType == _currentTabType) return;
 
         GetTabViewModel(_currentTabType).IsActive = false;
         _currentTabType = tabType;
@@ -79,18 +101,20 @@ public partial class VillageTabStore : ViewModelBase
         return tabType switch
         {
             VillageTabType.NoVillage => _noVillageViewModel,
-            VillageTabType.Normal => GetCurrentNormalTabViewModel(),
+            VillageTabType.Normal => GetCurrentNormalTabViewModel(_currentNormalTabType),
             _ => throw new ArgumentOutOfRangeException(nameof(tabType), tabType, null)
         };
     }
 
-    private TabViewModelBase GetCurrentNormalTabViewModel()
+    private TabViewModelBase GetCurrentNormalTabViewModel(VillageNormalTabType normalTabType)
     {
-        if (_buildViewModel.IsActive) return _buildViewModel;
-        if (_infoViewModel.IsActive) return _infoViewModel;
-        if (_villageSettingViewModel.IsActive) return _villageSettingViewModel;
-
-        return _buildViewModel;
+        return normalTabType switch
+        {
+            VillageNormalTabType.Build => _buildViewModel,
+            VillageNormalTabType.VillageSetting => _villageSettingViewModel,
+            VillageNormalTabType.Info => _infoViewModel,
+            _ => throw new ArgumentOutOfRangeException(nameof(normalTabType), normalTabType, null)
+        };
     }
 
     public NoVillageViewModel NoVillageViewModel => _noVillageViewModel;

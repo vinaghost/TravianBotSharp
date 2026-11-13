@@ -41,7 +41,19 @@ namespace MainCore.UI.ViewModels.Tabs
                 .ObserveOn(RxSchedulers.MainThreadScheduler)
                 .Subscribe(x =>
                 {
-                    Villages.Load(x, _selectedItemStore.GetLastSelectedVillage(AccountId).Value);
+                    Villages.Load(x);
+
+                    var oldSelectedVillage = _selectedItemStore.GetLastSelectedVillage(AccountId);
+                    if (oldSelectedVillage != VillageId.Empty)
+                    {
+                        var item = Villages.Items.FirstOrDefault(v => v.Id == oldSelectedVillage.Value);
+                        Villages.SelectedItem = item;
+                    }
+
+                    if (Villages.SelectedItem is null && Villages.Items.Count > 0)
+                    {
+                        Villages.SelectedItem = Villages.Items[0];
+                    }
                 });
 
             _rxQueue.GetObservable<VillagesModified>()

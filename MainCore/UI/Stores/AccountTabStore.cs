@@ -98,7 +98,17 @@ public partial class AccountTabStore : ViewModelBase
 
         _villageViewModel.WhenAnyValue(x => x.IsActive)
             .Where(isActive => isActive)
-            .Subscribe(_ => _currentNormalTabType = AccountNormalTabType.Village);
+            .Subscribe(_ =>
+            {
+                _currentNormalTabType = AccountNormalTabType.Village;
+                var villageId = selectedItemStore.VillageId;
+                var tabType = villageId == VillageId.Empty ? VillageTabType.NoVillage : VillageTabType.Normal;
+                _villageTabStore.Active(tabType);
+            });
+
+        _villageViewModel.WhenAnyValue(x => x.IsActive)
+            .Where(isActive => !isActive)
+            .Subscribe(_ => _villageTabStore.Deactive());
 
         _editAccountViewModel.WhenAnyValue(x => x.IsActive)
             .Where(isActive => isActive)
