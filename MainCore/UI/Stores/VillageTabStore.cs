@@ -42,11 +42,16 @@ public partial class VillageTabStore : ViewModelBase
         selectedItemStore.VillageChanges.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(villageId =>
         {
             var tabType = villageId == VillageId.Empty ? VillageTabType.NoVillage : VillageTabType.Normal;
-            SetTabType(tabType);
+            Active(tabType);
         });
     }
 
-    private void SetTabType(VillageTabType tabType)
+    public void Deactive()
+    {
+        GetTabViewModel(_currentTabType).IsActive = false;
+    }
+
+    private void Active(VillageTabType tabType)
     {
         if (tabType == _currentTabType)
         {

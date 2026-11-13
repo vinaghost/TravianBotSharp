@@ -21,7 +21,7 @@ namespace MainCore.UI.ViewModels.Abstract
             _accountIdHelper = _selectedItemStore.AccountChanges.ToProperty(this, vm => vm.AccountId);
             _villageIdHelper = _selectedItemStore.VillageChanges.ToProperty(this, vm => vm.VillageId);
 
-            selectedItemStore.AccountChanges
+            _selectedItemStore.VillageChanges
                 .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(VillageChangedCommand);
         }

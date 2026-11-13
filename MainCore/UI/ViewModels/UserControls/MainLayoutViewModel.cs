@@ -128,14 +128,14 @@ namespace MainCore.UI.ViewModels.UserControls
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
         private void AddAccount()
         {
-            _accountTabStore.SetTabType(AccountTabType.AddAccount);
+            _accountTabStore.Active(AccountTabType.AddAccount);
             Accounts.SelectedItem = null;
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
         private void AddAccounts()
         {
-            _accountTabStore.SetTabType(AccountTabType.AddAccounts);
+            _accountTabStore.Active(AccountTabType.AddAccounts);
             Accounts.SelectedItem = null;
         }
 

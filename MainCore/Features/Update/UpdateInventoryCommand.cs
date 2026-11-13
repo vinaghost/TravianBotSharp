@@ -29,12 +29,18 @@ public sealed partial class UpdateInventoryCommand(IDbContextFactory<AppDbContex
         var itemUpdated = items.Where(x => types.Contains(x.Type)).ToList();
 
         itemDeleted.ForEach(x => context.Remove(x));
-        itemInserted.ForEach(x => context.Add(x.ToEntity(accountId)));
+        itemInserted.ForEach(x => context.Add(new HeroItem()
+        {
+            AccountId = accountId.Value,
+            Type = x.Type,
+            Amount = x.Amount,
+        }));
 
         foreach (var item in itemUpdated)
         {
             var dto = dtos.First(x => x.Type == item.Type);
-            dto.To(item);
+            item.Type = dto.Type;
+            item.Amount = dto.Amount;
         }
 
         context.SaveChanges();

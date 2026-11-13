@@ -5,6 +5,23 @@ using ReactiveUI.Primitives;
 
 namespace MainCore.UI.Stores;
 
+public enum AccountTabType
+{
+    NoAccount = 0,
+    AddAccount,
+    AddAccounts,
+    Normal,
+}
+
+public enum AccountNormalTabType
+{
+    AccountSetting = 0,
+    Village,
+    EditAccount,
+    Farming,
+    Debug,
+}
+
 [RegisterSingleton<AccountTabStore>]
 public partial class AccountTabStore : ViewModelBase
 {
@@ -17,7 +34,12 @@ public partial class AccountTabStore : ViewModelBase
     private readonly AccountSettingViewModel _accountSettingViewModel;
     private readonly VillageViewModel _villageViewModel;
     private readonly FarmingViewModel _farmingViewModel;
+
+    private readonly VillageTabStore _villageTabStore;
+
     private AccountTabType _currentTabType;
+
+    private AccountNormalTabType _currentNormalTabType;
 
     [Reactive]
     private bool _isNoAccountTabVisible = true;
@@ -40,7 +62,8 @@ public partial class AccountTabStore : ViewModelBase
         AccountSettingViewModel accountSettingViewModel,
         VillageViewModel villageViewModel,
         FarmingViewModel farmingViewModel,
-        SelectedItemStore selectedItemStore)
+        SelectedItemStore selectedItemStore,
+        VillageTabStore villageTabStore)
     {
         _noAccountViewModel = noAccountViewModel;
         _addAccountViewModel = addAccountViewModel;
@@ -50,6 +73,7 @@ public partial class AccountTabStore : ViewModelBase
         _accountSettingViewModel = accountSettingViewModel;
         _villageViewModel = villageViewModel;
         _farmingViewModel = farmingViewModel;
+        _villageTabStore = villageTabStore;
 
         Init(selectedItemStore);
     }
@@ -61,21 +85,37 @@ public partial class AccountTabStore : ViewModelBase
             if (accountId == AccountId.Empty)
             {
                 if (_currentTabType == AccountTabType.AddAccount || _currentTabType == AccountTabType.AddAccounts) return;
-                SetTabType(AccountTabType.NoAccount);
+                Active(AccountTabType.NoAccount);
                 return;
             }
 
-            SetTabType(AccountTabType.Normal);
+            Active(AccountTabType.Normal);
         });
+
+        _accountSettingViewModel.WhenAnyValue(x => x.IsActive)
+            .Where(isActive => isActive)
+            .Subscribe(_ => _currentNormalTabType = AccountNormalTabType.AccountSetting);
+
+        _villageViewModel.WhenAnyValue(x => x.IsActive)
+            .Where(isActive => isActive)
+            .Subscribe(_ => _currentNormalTabType = AccountNormalTabType.Village);
+
+        _editAccountViewModel.WhenAnyValue(x => x.IsActive)
+            .Where(isActive => isActive)
+            .Subscribe(_ => _currentNormalTabType = AccountNormalTabType.EditAccount);
+
+        _farmingViewModel.WhenAnyValue(x => x.IsActive)
+            .Where(isActive => isActive)
+            .Subscribe(_ => _currentNormalTabType = AccountNormalTabType.Farming);
+
+        _debugViewModel.WhenAnyValue(x => x.IsActive)
+            .Where(isActive => isActive)
+            .Subscribe(_ => _currentNormalTabType = AccountNormalTabType.Debug);
     }
 
-    public void SetTabType(AccountTabType tabType)
+    public void Active(AccountTabType tabType)
     {
-        if (tabType == _currentTabType)
-        {
-            GetTabViewModel(tabType).IsActive = true;
-            return;
-        }
+        if (tabType == _currentTabType) return;
 
         GetTabViewModel(_currentTabType).IsActive = false;
         _currentTabType = tabType;
@@ -101,19 +141,22 @@ public partial class AccountTabStore : ViewModelBase
             AccountTabType.NoAccount => _noAccountViewModel,
             AccountTabType.AddAccount => _addAccountViewModel,
             AccountTabType.AddAccounts => _addAccountsViewModel,
-            AccountTabType.Normal => GetCurrentNormalTabViewModel(),
+            AccountTabType.Normal => GetCurrentNormalTabViewModel(_currentNormalTabType),
             _ => throw new ArgumentOutOfRangeException(nameof(tabType), tabType, null)
         };
     }
 
-    private TabViewModelBase GetCurrentNormalTabViewModel()
+    private TabViewModelBase GetCurrentNormalTabViewModel(AccountNormalTabType normalTabType)
     {
-        if (_villageViewModel.IsActive) return _villageViewModel;
-        if (_editAccountViewModel.IsActive) return _editAccountViewModel;
-        if (_farmingViewModel.IsActive) return _farmingViewModel;
-        if (_debugViewModel.IsActive) return _debugViewModel;
-
-        return _accountSettingViewModel;
+        return normalTabType switch
+        {
+            AccountNormalTabType.AccountSetting => _accountSettingViewModel,
+            AccountNormalTabType.Village => _villageViewModel,
+            AccountNormalTabType.EditAccount => _editAccountViewModel,
+            AccountNormalTabType.Farming => _farmingViewModel,
+            AccountNormalTabType.Debug => _debugViewModel,
+            _ => throw new ArgumentOutOfRangeException(nameof(normalTabType), normalTabType, null)
+        };
     }
 
     public NoAccountViewModel NoAccountViewModel => _noAccountViewModel;
