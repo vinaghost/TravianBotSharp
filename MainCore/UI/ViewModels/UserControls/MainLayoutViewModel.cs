@@ -6,10 +6,14 @@ using MainCore.UI.ViewModels.Abstract;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using MainCore.Shared.Commands;
+using MainCore.Shared.Enums;
+using MainCore.Shared.Notifications;
+using Serilog;
+using Serilog.Context;
+
 namespace MainCore.UI.ViewModels.UserControls
 {
-    using MainCore.Commands.Misc;
-
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Concurrency;
     using ReactiveUI.Primitives.Disposables;
@@ -27,7 +31,7 @@ namespace MainCore.UI.ViewModels.UserControls
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly SelectedItemStore _selectedItemStore;
         private readonly RxQueue _rxQueue;
-        private readonly CustomServiceScopeFactory _serviceScopeFactory;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly DefaultTemplatePathStore _defaultTemplatePathStore;
 
         private readonly AccountTabStore _accountTabStore;
@@ -35,7 +39,7 @@ namespace MainCore.UI.ViewModels.UserControls
         public ListBoxItemViewModel Accounts { get; } = new();
         public AccountTabStore AccountTabStore => _accountTabStore;
 
-        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, DialogService dialogService, TaskManager taskManager, ILogger logger, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, TimerManager timerManager, CustomServiceScopeFactory serviceScopeFactory, DefaultTemplatePathStore defaultTemplatePathStore, ChromeManager chromeManager)
+        public MainLayoutViewModel(AccountTabStore accountTabStore, SelectedItemStore selectedItemStore, DialogService dialogService, TaskManager taskManager, ILogger logger, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, TimerManager timerManager, IServiceScopeFactory serviceScopeFactory, DefaultTemplatePathStore defaultTemplatePathStore, ChromeManager chromeManager)
         {
             _accountTabStore = accountTabStore;
             _serviceScopeFactory = serviceScopeFactory;
@@ -59,28 +63,23 @@ namespace MainCore.UI.ViewModels.UserControls
 
         private void Init()
         {
-            var accountObservable = this.WhenAnyValue(x => x.Accounts.SelectedItem);
-            accountObservable.Subscribe(_selectedItemStore.SetAccount);
+            this.WhenAnyValue(x => x.Accounts.SelectedItem)
+                .DistinctUntilChanged()
+                .Throttle(TimeSpan.FromMilliseconds(100), RxSchedulers.MainThreadScheduler)
+                .Subscribe(_selectedItemStore.SetAccount);
 
-            accountObservable.Subscribe(x =>
-            {
-                var tabType = AccountTabType.Normal;
-                if (x is null) tabType = AccountTabType.NoAccount;
-                _accountTabStore.SetTabType(tabType);
-            });
-
-            accountObservable
-                .WhereNotNull()
-                .Select(x => new AccountId(x.Id))
-                .ObserveOn(RxSchedulers.TaskpoolScheduler)
+            _selectedItemStore.AccountChanges
                 .InvokeCommand(GetStatusCommand);
 
             LoadAccountCommand
                 .ObserveOn(RxSchedulers.MainThreadScheduler)
-                .Subscribe(Accounts.Load);
-            GetStatusCommand.Subscribe(SetPauseText);
+                .Subscribe(x => Accounts.Load(x));
 
-            DeleteAccountCommand.InvokeCommand(LoadAccountCommand);
+            GetStatusCommand
+                .Subscribe(SetPauseText);
+
+            DeleteAccountCommand
+                .InvokeCommand(LoadAccountCommand);
 
             Signal
                 .Merge(
@@ -94,7 +93,8 @@ namespace MainCore.UI.ViewModels.UserControls
             _rxQueue.RegisterCommand(StatusModifiedCommand);
 
             _rxQueue.GetObservable<AccountsModified>()
-                .Select(x => RxVoid.Default)
+                .Select(_ => RxVoid.Default)
+                .Throttle(TimeSpan.FromMilliseconds(1000), RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(LoadAccountCommand);
         }
 
@@ -128,15 +128,15 @@ namespace MainCore.UI.ViewModels.UserControls
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
         private void AddAccount()
         {
+            _accountTabStore.Active(AccountTabType.AddAccount);
             Accounts.SelectedItem = null;
-            _accountTabStore.SetTabType(AccountTabType.AddAccount);
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute))]
         private void AddAccounts()
         {
+            _accountTabStore.Active(AccountTabType.AddAccounts);
             Accounts.SelectedItem = null;
-            _accountTabStore.SetTabType(AccountTabType.AddAccounts);
         }
 
         [ReactiveCommand(CanExecute = nameof(_canExecute), RunInBackground = true)]
@@ -204,24 +204,29 @@ namespace MainCore.UI.ViewModels.UserControls
                 return;
             }
 
-            var result = await context.GetValidAccess(accountId);
-            if (result.IsFailed)
-            {
-                await _dialogService.SendMessage("Warning", string.Join(Environment.NewLine, result.Errors.Select(x => x.Message)));
-                return;
-            }
-
             _taskManager.SetStatus(accountId, StatusEnums.Starting);
+            using var scope = _serviceScopeFactory.CreateScope();
+            var openBrowserCommand = scope.ServiceProvider.GetRequiredService<OpenBrowserCommand.Handler>();
 
             try
             {
-                using var scope = _serviceScopeFactory.CreateScope(accountId);
-                var openBrowserCommand = scope.ServiceProvider.GetRequiredService<OpenBrowserCommand.Handler>();
-                await openBrowserCommand.HandleAsync(new(accountId, result.Value));
+                using (LogContext.PushProperty("AccountId", accountId))
+                using (LogContext.PushProperty("Account", context.GetAccountData(accountId)))
+                {
+                    var browser = scope.ServiceProvider.GetRequiredService<ChromeManager>().Get(accountId);
+                    var result = await openBrowserCommand.HandleAsync(new(browser, true));
+                    if (result.IsFailed)
+                    {
+                        await _dialogService.SendMessage("Warning", string.Join(Environment.NewLine, result.Errors.Select(x => x.Message)));
+                        return;
+                    }
+                }
             }
             catch (Exception ex)
             {
                 await _dialogService.SendMessage("Error", $"Failed to open browser: {ex.Message}");
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger>();
+                logger.Error(ex, "Failed to open browser for account {AccountId}", accountId);
                 _taskManager.SetStatus(accountId, StatusEnums.Offline);
                 return;
             }

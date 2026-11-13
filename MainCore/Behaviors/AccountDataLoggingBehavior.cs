@@ -2,23 +2,23 @@ using Serilog.Context;
 
 namespace MainCore.Behaviors
 {
-    public sealed class AccountDataLoggingBehavior<TRequest, TResponse>(DataService dataService)
+    public sealed class AccountDataLoggingBehavior<TRequest, TResponse>(IDbContextFactory<AppDbContext> contextFactory)
        : Behavior<TRequest, TResponse>
-           where TRequest : IAccountConstraint
+           where TRequest : AccountTask
     {
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
-            if (dataService.IsLoggerConfigured) return await Next(request, cancellationToken);
-            if (request.AccountId != dataService.AccountId) return await Next(request, cancellationToken);
-
-            using (LogContext.PushProperty("Account", dataService.AccountData))
-            using (LogContext.PushProperty("AccountId", dataService.AccountId))
+            using (LogContext.PushProperty("AccountId", request.AccountId))
+            using (LogContext.PushProperty("Account", GetAccountData(request.AccountId)))
             {
-                dataService.IsLoggerConfigured = true;
-                var response = await Next(request, cancellationToken);
-                dataService.IsLoggerConfigured = false;
-                return response;
+                return await Next(request, cancellationToken);
             }
+        }
+
+        private string GetAccountData(AccountId accountId)
+        {
+            using var context = contextFactory.CreateDbContext();
+            return context.GetAccountData(accountId);
         }
     }
 }

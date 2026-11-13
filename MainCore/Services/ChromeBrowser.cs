@@ -1,8 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-using MainCore.Infrasturecture.Extensions;
-
 namespace MainCore.Services
 {
     public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory) : IChromeBrowser
@@ -86,12 +84,18 @@ namespace MainCore.Services
                 if (_mainPage is not null)
                 {
                     await _mainPage.CloseAsync();
+                    _mainPage = null;
                 }
                 if (_browser is not null)
                 {
                     await _browser.CloseAsync();
+                    _browser = null;
                 }
-                _playwright?.Dispose();
+                if (_playwright is not null)
+                {
+                    _playwright.Dispose();
+                    _playwright = null;
+                }
             }
             catch (Exception ex)
             {
@@ -216,7 +220,7 @@ namespace MainCore.Services
                 const int timeout = 180_000; // 3 minutes in milliseconds
                 await _mainPage.WaitForURLAsync(new Regex(url, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1)), new() { Timeout = timeout });
                 await _mainPage.WaitForLoadStateAsync();
-                await LoginParser.GetServerTime(_mainPage).WaitForAsync(new() { Timeout = timeout });
+                await _mainPage.GetServerTime().WaitForAsync(new() { Timeout = timeout });
                 return Result.Ok();
             }
             catch (TimeoutException ex)

@@ -107,10 +107,7 @@
             Margin="10,0,0,5"
             Style="{DynamicResource Box}">
             <TabControl>
-                <TabItem
-                    x:Name="NoAccountTab"
-                    Header="No account"
-                    IsSelected="True">
+                <TabItem x:Name="NoAccountTab" Header="No account">
                     <v_tab:NoAccountTab x:Name="NoAccount" />
                 </TabItem>
                 <TabItem x:Name="AddAccountTab" Header="Add account">

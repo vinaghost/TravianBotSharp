@@ -8,94 +8,111 @@ namespace MainCore.Infrasturecture.Extensions
         {
             public List<BuildingItem> GetLayoutBuildings(VillageId villageId, bool ignoreJobBuilding = false)
             {
-                var villageBuildings = context.Buildings
+                var buildingsByLocation = context.Buildings
                     .AsNoTracking()
-                    .Where(x => x.VillageId == villageId.Value)
-                    .OrderBy(x => x.Location)
-                    .Select(x => new BuildingItem()
+                    .Where(b => b.VillageId == villageId.Value)
+                    .OrderBy(b => b.Location)
+                    .Select(b => new BuildingItem()
                     {
-                        Id = new(x.Id),
-                        Location = x.Location,
-                        Type = x.Type,
-                        CurrentLevel = x.Level
+                        Id = new(b.Id),
+                        Location = b.Location,
+                        Type = b.Type,
+                        CurrentLevel = b.Level
                     })
-                    .ToList();
+                    .ToDictionary(b => b.Location);
 
-                var queueBuildings = context.QueueBuildings
+                var activeUpgrades = context.QueueBuildings
                     .AsNoTracking()
-                    .Where(x => x.VillageId == villageId.Value)
-                    .GroupBy(x => x.Location)
+                    .Where(qb => qb.VillageId == villageId.Value)
+                    .GroupBy(qb => qb.Location)
                     .ToList();
 
-                foreach (var queueBuilding in queueBuildings)
+                foreach (var upgradeGroup in activeUpgrades)
                 {
-                    var building = villageBuildings.Find(x => x.Location == queueBuilding.Key);
-                    if (building is null) continue;
-                    var queue = queueBuilding.MaxBy(x => x.Level);
-                    if (queue is null) continue;
-                    if (building.Type == BuildingEnums.Site) building.Type = queue.Type;
-                    building.QueueLevel = queue.Level;
-                    if (building.QueueLevel < queue.Level) building.JobLevel = queue.Level;
+                    if (!buildingsByLocation.TryGetValue(upgradeGroup.Key, out var building))
+                        continue;
+
+                    var highestUpgrade = upgradeGroup.MaxBy(qb => qb.Level);
+                    if (highestUpgrade is null)
+                        continue;
+
+                    if (building.Type == BuildingEnums.Site)
+                        building.Type = highestUpgrade.Type;
+
+                    if (building.QueueLevel < highestUpgrade.Level)
+                        building.QueueLevel = highestUpgrade.Level;
                 }
+
                 if (!ignoreJobBuilding)
                 {
-                    var jobBuildings = context.Jobs
+                    var plannedNormalBuilds = context.Jobs
                         .AsNoTracking()
-                        .Where(x => x.VillageId == villageId.Value)
-                        .Where(x => x.Type == JobTypeEnums.NormalBuild)
-                        .Select(x => x.Content)
+                        .Where(j => j.VillageId == villageId.Value && j.Type == JobTypeEnums.NormalBuild)
+                        .Select(j => j.Content)
                         .AsEnumerable()
-                        .Select(x => JsonSerializer.Deserialize<NormalBuildPlan>(x)!)
-                        .GroupBy(x => x.Location);
+                        .Select(content => JsonSerializer.Deserialize<NormalBuildPlan>(content)!)
+                        .GroupBy(plan => plan.Location);
 
-                    foreach (var jobBuilding in jobBuildings)
+                    foreach (var planGroup in plannedNormalBuilds)
                     {
-                        var building = villageBuildings.Find(x => x.Location == jobBuilding.Key);
-                        if (building is null) continue;
-                        var job = jobBuilding.MaxBy(x => x.Level);
-                        if (job is null) continue;
-                        if (building.Type == BuildingEnums.Site) building.Type = job.Type;
-                        if (building.JobLevel < job.Level) building.JobLevel = job.Level;
+                        if (!buildingsByLocation.TryGetValue(planGroup.Key, out var building))
+                            continue;
+
+                        var highestPlannedJob = planGroup.MaxBy(plan => plan.Level);
+                        if (highestPlannedJob is null)
+                            continue;
+
+                        if (building.Type == BuildingEnums.Site)
+                            building.Type = highestPlannedJob.Type;
+
+                        if (building.JobLevel < highestPlannedJob.Level)
+                            building.JobLevel = highestPlannedJob.Level;
                     }
 
-                    var resourceJobs = context.Jobs
+                    var plannedResourceBuilds = context.Jobs
                         .AsNoTracking()
-                        .Where(x => x.VillageId == villageId.Value)
-                        .Where(x => x.Type == JobTypeEnums.ResourceBuild)
-                        .Select(x => x.Content)
+                        .Where(j => j.VillageId == villageId.Value && j.Type == JobTypeEnums.ResourceBuild)
+                        .Select(j => j.Content)
                         .AsEnumerable()
-                        .Select(x => JsonSerializer.Deserialize<ResourceBuildPlan>(x)!)
-                        .GroupBy(x => x.Plan);
+                        .Select(content => JsonSerializer.Deserialize<ResourceBuildPlan>(content)!)
+                        .GroupBy(plan => plan.Plan);
 
-                    var fields = villageBuildings.Where(x => x.Type.IsResourceField()).ToList();
+                    var resourceFields = buildingsByLocation.Values
+                        .Where(b => b.Type.IsResourceField())
+                        .ToList();
 
-                    foreach (var jobBuilding in resourceJobs)
+                    foreach (var planGroup in plannedResourceBuilds)
                     {
-                        var job = jobBuilding.FirstOrDefault();
-                        if (job is null) continue;
-                        if (jobBuilding.Key == ResourcePlanEnums.AllResources)
+                        var highestPlannedJob = planGroup.MaxBy(plan => plan.Level);
+                        if (highestPlannedJob is null)
+                            continue;
+
+                        if (planGroup.Key == ResourcePlanEnums.AllResources)
                         {
-                            fields
-                                .ForEach(x => x.JobLevel = x.JobLevel < job.Level ? job.Level : x.JobLevel);
+                            resourceFields.ForEach(b => b.JobLevel = Math.Max(b.JobLevel, highestPlannedJob.Level));
                             continue;
                         }
-                        if (jobBuilding.Key == ResourcePlanEnums.ExcludeCrop)
+
+                        if (planGroup.Key == ResourcePlanEnums.ExcludeCrop)
                         {
-                            fields
-                                .Where(x => x.Type != BuildingEnums.Cropland)
+                            resourceFields
+                                .Where(b => b.Type != BuildingEnums.Cropland)
                                 .ToList()
-                                .ForEach(x => x.JobLevel = x.JobLevel < job.Level ? job.Level : x.JobLevel);
+                                .ForEach(b => b.JobLevel = Math.Max(b.JobLevel, highestPlannedJob.Level));
+                            continue;
                         }
-                        if (jobBuilding.Key == ResourcePlanEnums.OnlyCrop)
+
+                        if (planGroup.Key == ResourcePlanEnums.OnlyCrop)
                         {
-                            fields
-                                .Where(x => x.Type == BuildingEnums.Cropland)
+                            resourceFields
+                                .Where(b => b.Type == BuildingEnums.Cropland)
                                 .ToList()
-                                .ForEach(x => x.JobLevel = x.JobLevel < job.Level ? job.Level : x.JobLevel);
+                                .ForEach(b => b.JobLevel = Math.Max(b.JobLevel, highestPlannedJob.Level));
                         }
                     }
                 }
-                return villageBuildings;
+
+                return [.. buildingsByLocation.Values.OrderBy(b => b.Location)];
             }
         }
     }

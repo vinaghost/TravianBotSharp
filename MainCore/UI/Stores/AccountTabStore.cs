@@ -1,100 +1,180 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.Tabs;
 
-namespace MainCore.UI.Stores
+using ReactiveUI.Primitives;
+
+namespace MainCore.UI.Stores;
+
+public enum AccountTabType
 {
-    [RegisterSingleton<AccountTabStore>]
-    public partial class AccountTabStore : ViewModelBase
+    NoAccount = 0,
+    AddAccount,
+    AddAccounts,
+    Normal,
+}
+
+public enum AccountNormalTabType
+{
+    AccountSetting = 0,
+    Village,
+    EditAccount,
+    Farming,
+    Debug,
+}
+
+[RegisterSingleton<AccountTabStore>]
+public partial class AccountTabStore : ViewModelBase
+{
+    private readonly bool[] _tabVisibility = new bool[4];
+    private readonly NoAccountViewModel _noAccountViewModel;
+    private readonly AddAccountViewModel _addAccountViewModel;
+    private readonly AddAccountsViewModel _addAccountsViewModel;
+    private readonly EditAccountViewModel _editAccountViewModel;
+    private readonly DebugViewModel _debugViewModel;
+    private readonly AccountSettingViewModel _accountSettingViewModel;
+    private readonly VillageViewModel _villageViewModel;
+    private readonly FarmingViewModel _farmingViewModel;
+
+    private readonly VillageTabStore _villageTabStore;
+
+    private AccountTabType _currentTabType;
+
+    private AccountNormalTabType _currentNormalTabType;
+
+    [Reactive]
+    private bool _isNoAccountTabVisible = true;
+
+    [Reactive]
+    private bool _isAddAccountTabVisible;
+
+    [Reactive]
+    private bool _isAddAccountsTabVisible;
+
+    [Reactive]
+    private bool _isNormalTabVisible;
+
+    public AccountTabStore(
+        NoAccountViewModel noAccountViewModel,
+        AddAccountViewModel addAccountViewModel,
+        AddAccountsViewModel addAccountsViewModel,
+        EditAccountViewModel editAccountViewModel,
+        DebugViewModel debugViewModel,
+        AccountSettingViewModel accountSettingViewModel,
+        VillageViewModel villageViewModel,
+        FarmingViewModel farmingViewModel,
+        SelectedItemStore selectedItemStore,
+        VillageTabStore villageTabStore)
     {
-        private readonly bool[] _tabVisibility = new bool[4];
-        private AccountTabType _currentTabType;
+        _noAccountViewModel = noAccountViewModel;
+        _addAccountViewModel = addAccountViewModel;
+        _addAccountsViewModel = addAccountsViewModel;
+        _editAccountViewModel = editAccountViewModel;
+        _debugViewModel = debugViewModel;
+        _accountSettingViewModel = accountSettingViewModel;
+        _villageViewModel = villageViewModel;
+        _farmingViewModel = farmingViewModel;
+        _villageTabStore = villageTabStore;
 
-        [Reactive]
-        private bool _isNoAccountTabVisible = true;
+        Init(selectedItemStore);
+    }
 
-        [Reactive]
-        private bool _isAddAccountTabVisible;
-
-        [Reactive]
-        private bool _isAddAccountsTabVisible;
-
-        [Reactive]
-        private bool _isNormalTabVisible;
-
-        private readonly NoAccountViewModel _noAccountViewModel;
-        private readonly AddAccountViewModel _addAccountViewModel;
-        private readonly AddAccountsViewModel _addAccountsViewModel;
-        private readonly AccountSettingViewModel _accountSettingViewModel;
-        private readonly VillageViewModel _villageViewModel;
-        private readonly EditAccountViewModel _editAccountViewModel;
-        private readonly FarmingViewModel _farmingViewModel;
-        private readonly DebugViewModel _debugViewModel;
-
-        public AccountTabStore(NoAccountViewModel noAccountViewModel, AddAccountViewModel addAccountViewModel, AddAccountsViewModel addAccountsViewModel, EditAccountViewModel editAccountViewModel, DebugViewModel debugViewModel, AccountSettingViewModel accountSettingViewModel, VillageViewModel villageViewModel, FarmingViewModel farmingViewModel)
+    private void Init(SelectedItemStore selectedItemStore)
+    {
+        selectedItemStore.AccountChanges.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(accountId =>
         {
-            _noAccountViewModel = noAccountViewModel;
-            _addAccountViewModel = addAccountViewModel;
-            _addAccountsViewModel = addAccountsViewModel;
-            _accountSettingViewModel = accountSettingViewModel;
-            _editAccountViewModel = editAccountViewModel;
-            _debugViewModel = debugViewModel;
-            _villageViewModel = villageViewModel;
-            _farmingViewModel = farmingViewModel;
-        }
-
-        public void SetTabType(AccountTabType tabType)
-        {
-            if (tabType == _currentTabType)
+            if (accountId == AccountId.Empty)
             {
-                if (tabType == AccountTabType.NoAccount && !_noAccountViewModel.IsActive)
-                {
-                    _noAccountViewModel.IsActive = true;
-                }
+                if (_currentTabType == AccountTabType.AddAccount || _currentTabType == AccountTabType.AddAccounts) return;
+                Active(AccountTabType.NoAccount);
                 return;
             }
-            _currentTabType = tabType;
 
-            for (int i = 0; i < _tabVisibility.Length; i++)
+            Active(AccountTabType.Normal);
+        });
+
+        _accountSettingViewModel.WhenAnyValue(x => x.IsActive)
+            .Where(isActive => isActive)
+            .Subscribe(_ => _currentNormalTabType = AccountNormalTabType.AccountSetting);
+
+        _villageViewModel.WhenAnyValue(x => x.IsActive)
+            .Where(isActive => isActive)
+            .Subscribe(_ =>
             {
-                _tabVisibility[i] = false;
-            }
-            _tabVisibility[(int)tabType] = true;
+                _currentNormalTabType = AccountNormalTabType.Village;
+                var villageId = selectedItemStore.VillageId;
+                var tabType = villageId == VillageId.Empty ? VillageTabType.NoVillage : VillageTabType.Normal;
+                _villageTabStore.Active(tabType);
+            });
 
-            IsNoAccountTabVisible = _tabVisibility[(int)AccountTabType.NoAccount];
-            IsAddAccountTabVisible = _tabVisibility[(int)AccountTabType.AddAccount];
-            IsAddAccountsTabVisible = _tabVisibility[(int)AccountTabType.AddAccounts];
-            IsNormalTabVisible = _tabVisibility[(int)AccountTabType.Normal];
+        _villageViewModel.WhenAnyValue(x => x.IsActive)
+            .Where(isActive => !isActive)
+            .Subscribe(_ => _villageTabStore.Deactive());
 
-            switch (tabType)
-            {
-                case AccountTabType.NoAccount:
-                    _noAccountViewModel.IsActive = true;
-                    break;
+        _editAccountViewModel.WhenAnyValue(x => x.IsActive)
+            .Where(isActive => isActive)
+            .Subscribe(_ => _currentNormalTabType = AccountNormalTabType.EditAccount);
 
-                case AccountTabType.Normal:
-                    _accountSettingViewModel.IsActive = true;
-                    break;
+        _farmingViewModel.WhenAnyValue(x => x.IsActive)
+            .Where(isActive => isActive)
+            .Subscribe(_ => _currentNormalTabType = AccountNormalTabType.Farming);
 
-                case AccountTabType.AddAccount:
-                    _addAccountViewModel.IsActive = true;
-                    break;
-
-                case AccountTabType.AddAccounts:
-                    _addAccountsViewModel.IsActive = true;
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-        public NoAccountViewModel NoAccountViewModel => _noAccountViewModel;
-        public AddAccountViewModel AddAccountViewModel => _addAccountViewModel;
-        public AddAccountsViewModel AddAccountsViewModel => _addAccountsViewModel;
-        public AccountSettingViewModel AccountSettingViewModel => _accountSettingViewModel;
-        public VillageViewModel VillageViewModel => _villageViewModel;
-        public EditAccountViewModel EditAccountViewModel => _editAccountViewModel;
-        public DebugViewModel DebugViewModel => _debugViewModel;
-        public FarmingViewModel FarmingViewModel => _farmingViewModel;
+        _debugViewModel.WhenAnyValue(x => x.IsActive)
+            .Where(isActive => isActive)
+            .Subscribe(_ => _currentNormalTabType = AccountNormalTabType.Debug);
     }
+
+    public void Active(AccountTabType tabType)
+    {
+        if (tabType == _currentTabType) return;
+
+        GetTabViewModel(_currentTabType).IsActive = false;
+        _currentTabType = tabType;
+
+        for (int i = 0; i < _tabVisibility.Length; i++)
+        {
+            _tabVisibility[i] = false;
+        }
+        _tabVisibility[(int)tabType] = true;
+
+        IsNoAccountTabVisible = _tabVisibility[(int)AccountTabType.NoAccount];
+        IsAddAccountTabVisible = _tabVisibility[(int)AccountTabType.AddAccount];
+        IsAddAccountsTabVisible = _tabVisibility[(int)AccountTabType.AddAccounts];
+        IsNormalTabVisible = _tabVisibility[(int)AccountTabType.Normal];
+
+        GetTabViewModel(tabType).IsActive = true;
+    }
+
+    private TabViewModelBase GetTabViewModel(AccountTabType tabType)
+    {
+        return tabType switch
+        {
+            AccountTabType.NoAccount => _noAccountViewModel,
+            AccountTabType.AddAccount => _addAccountViewModel,
+            AccountTabType.AddAccounts => _addAccountsViewModel,
+            AccountTabType.Normal => GetCurrentNormalTabViewModel(_currentNormalTabType),
+            _ => throw new ArgumentOutOfRangeException(nameof(tabType), tabType, null)
+        };
+    }
+
+    private TabViewModelBase GetCurrentNormalTabViewModel(AccountNormalTabType normalTabType)
+    {
+        return normalTabType switch
+        {
+            AccountNormalTabType.AccountSetting => _accountSettingViewModel,
+            AccountNormalTabType.Village => _villageViewModel,
+            AccountNormalTabType.EditAccount => _editAccountViewModel,
+            AccountNormalTabType.Farming => _farmingViewModel,
+            AccountNormalTabType.Debug => _debugViewModel,
+            _ => throw new ArgumentOutOfRangeException(nameof(normalTabType), normalTabType, null)
+        };
+    }
+
+    public NoAccountViewModel NoAccountViewModel => _noAccountViewModel;
+    public AddAccountViewModel AddAccountViewModel => _addAccountViewModel;
+    public AddAccountsViewModel AddAccountsViewModel => _addAccountsViewModel;
+    public AccountSettingViewModel AccountSettingViewModel => _accountSettingViewModel;
+    public VillageViewModel VillageViewModel => _villageViewModel;
+    public EditAccountViewModel EditAccountViewModel => _editAccountViewModel;
+    public DebugViewModel DebugViewModel => _debugViewModel;
+    public FarmingViewModel FarmingViewModel => _farmingViewModel;
 }
