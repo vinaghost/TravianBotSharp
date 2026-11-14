@@ -3,6 +3,8 @@ using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.UI.Models.Input
 {
+    using MainCore.Shared.Enums;
+
     using ReactiveUI.Primitives;
 
     public partial class VillageSettingInput : ViewModelBase

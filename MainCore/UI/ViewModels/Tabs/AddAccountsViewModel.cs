@@ -9,11 +9,47 @@ namespace MainCore.UI.ViewModels.Tabs
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
 
+    public class AccountDetailDto
+    {
+        public string Username { get; set; } = "";
+        public string Server { get; set; } = "";
+        public string Password { get; set; } = "";
+        public string ProxyHost { get; set; } = "";
+        public int ProxyPort { get; set; }
+        public string ProxyUsername { get; set; } = "";
+        public string ProxyPassword { get; set; } = "";
+
+        public static AccountDetailDto Create(string username, string server, string password)
+        {
+            return new AccountDetailDto()
+            {
+                Username = username,
+                Server = server,
+                Password = password,
+            };
+        }
+
+        public static AccountDetailDto Create(string username, string server, string password, string proxyHost, int proxyPort)
+        {
+            var dto = Create(username, server, password);
+            dto.ProxyHost = proxyHost;
+            dto.ProxyPort = proxyPort;
+            return dto;
+        }
+
+        public static AccountDetailDto Create(string username, string server, string password, string proxyHost, int proxyPort, string proxyUsername, string proxyPassword)
+        {
+            var dto = Create(username, server, password, proxyHost, proxyPort);
+            dto.ProxyUsername = proxyUsername;
+            dto.ProxyPassword = proxyPassword;
+            return dto;
+        }
+    }
+
     [RegisterSingleton<AddAccountsViewModel>]
     public partial class AddAccountsViewModel : TabViewModelBase
     {
-        private readonly DialogService _dialogService;
-        private readonly IWaitingOverlayViewModel _waitingOverlayViewModel;
+        private readonly WaitingOverlayViewModel _waitingOverlayViewModel;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly RxQueue _rxQueue;
         private readonly DefaultTemplatePathStore _defaultTemplatePathStore;
@@ -22,9 +58,8 @@ namespace MainCore.UI.ViewModels.Tabs
         [Reactive]
         private string _input = "";
 
-        public AddAccountsViewModel(DialogService dialogService, IWaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, RxQueue rxQueue, DefaultTemplatePathStore defaultTemplatePathStore)
+        public AddAccountsViewModel(DialogService dialogService, WaitingOverlayViewModel waitingOverlayViewModel, IDbContextFactory<AppDbContext> contextFactory, RxQueue rxQueue, DefaultTemplatePathStore defaultTemplatePathStore) : base(dialogService)
         {
-            _dialogService = dialogService;
             _waitingOverlayViewModel = waitingOverlayViewModel;
             _contextFactory = contextFactory;
             _rxQueue = rxQueue;
@@ -39,9 +74,9 @@ namespace MainCore.UI.ViewModels.Tabs
                 .ObserveOn(RxSchedulers.TaskpoolScheduler)
                 .InvokeCommand(ParseCommand);
 
-            ParseCommand.Subscribe(UpdateTable);
+            ParseCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(UpdateTable);
 
-            AddAccountCommand.Subscribe(_ => Clear());
+            AddAccountCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(_ => Clear());
         }
 
         private void UpdateTable(List<AccountDetailDto> data)
@@ -66,16 +101,22 @@ namespace MainCore.UI.ViewModels.Tabs
                 return;
             }
 
-            await _waitingOverlayViewModel.Show("adding accounts");
-            await Signal.Start(() => UpdateDatabase(dtos), RxSchedulers.TaskpoolScheduler);
+            _waitingOverlayViewModel.Show("adding accounts");
 
-            _rxQueue.Enqueue(new AccountsModified());
-            await _waitingOverlayViewModel.Hide();
+            try
+            {
+                await AddToDatabaseCommand.Execute(dtos);
+                _rxQueue.Enqueue(new AccountsModified());
+            }
+            finally
+            {
+                _waitingOverlayViewModel.Hide();
+            }
 
-            await _dialogService.SendMessage("Information", $"Added accounts");
+            await _dialogService.SendMessage("Information", $"Added {dtos.Count} accounts");
         }
 
-        [ReactiveCommand]
+        [ReactiveCommand(RunInBackground = true)]
         private static List<AccountDetailDto> Parse(string input)
         {
             if (string.IsNullOrEmpty(input)) return [];
@@ -126,33 +167,43 @@ namespace MainCore.UI.ViewModels.Tabs
             };
         }
 
-        private List<AccountDto> FilterDuplicated(List<AccountDetailDto> dtos)
+        private List<AccountDetailDto> FilterDuplicated(List<AccountDetailDto> dtos)
         {
             using var context = _contextFactory.CreateDbContext();
             var existAccounts = context.Accounts
-                .Select(x => new
-                {
-                    x.Username,
-                    x.Server,
-                })
-                .ToList();
+                .Select(x => new { x.Username, x.Server })
+                .AsEnumerable()
+                .Select(x => $"{x.Username}-{x.Server}")
+                .ToHashSet();
 
-            return [.. dtos
-                .Select(x => x.ToDto())
-                .Where(dto => !existAccounts.Exists(x => x.Username == dto.Username && x.Server == dto.Server))];
+            return [.. dtos.Where(x => !existAccounts.Contains($"{x.Username}-{x.Server}"))];
         }
 
-        private void UpdateDatabase(List<AccountDto> dtos)
+        [ReactiveCommand(RunInBackground = true)]
+        private void AddToDatabase(List<AccountDetailDto> dtos)
         {
-            using var context = _contextFactory.CreateDbContext();
             var defaultSettings = LoadAccountDefaultSettings();
 
             var accounts = dtos
-                .Select(x => x.ToEntity());
+                .Select(dto => new Account()
+                {
+                    Username = dto.Username,
+                    Server = dto.Server,
+                    Accesses = [ new Access()
+                    {
+                        Username = dto.Username,
+                        Password = dto.Password,
+                        ProxyHost = dto.ProxyHost,
+                        ProxyPort = dto.ProxyPort,
+                        ProxyUsername = dto.ProxyUsername,
+                        ProxyPassword = dto.ProxyPassword,
+                    }],
+                    Settings = [],
+                });
 
+            using var context = _contextFactory.CreateDbContext();
             foreach (var account in accounts)
             {
-                account.Settings = [];
                 foreach (var (setting, value) in defaultSettings)
                 {
                     account.Settings.Add(new AccountSetting

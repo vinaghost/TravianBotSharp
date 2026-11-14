@@ -1,6 +1,4 @@
-﻿using MainCore.Infrasturecture.Extensions;
-
-namespace MainCore.UI.ViewModels.Tabs.Villages
+﻿namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     public static class BuildViewModelExtension
     {
@@ -120,7 +118,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
 
         public static Result CheckRequirements(this BuildingEnums buildingType, List<BuildingItem> buildings)
         {
-            var prerequisiteBuildings = buildingType.GetPrerequisiteBuildings();
+            var prerequisiteBuildings = buildingType.GetPrerequisites();
             if (prerequisiteBuildings.Count == 0) return Result.Ok();
             IList<Error> errors = [];
             foreach (var prerequisiteBuilding in prerequisiteBuildings)

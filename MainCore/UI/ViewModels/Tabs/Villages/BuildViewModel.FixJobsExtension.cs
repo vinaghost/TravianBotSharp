@@ -1,7 +1,5 @@
 ﻿using System.Text.Json;
 
-using MainCore.Infrasturecture.Extensions;
-
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
     public static class FixJobsExtension

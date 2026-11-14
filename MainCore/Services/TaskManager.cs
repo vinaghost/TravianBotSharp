@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
 using MainCore.Services.Scheduling;
-using MainCore.Tasks.Base;
 
 namespace MainCore.Services
 {

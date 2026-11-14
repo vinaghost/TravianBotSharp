@@ -57,25 +57,5 @@
     <PackageReference Include="StronglyTypedId" Version="1.0.0-beta06" PrivateAssets="all" ExcludeAssets="runtime" />
   </ItemGroup>
   
-  <ItemGroup>
-    <Using Include="FluentResults" />
-    <Using Include="Immediate.Handlers.Shared" />
-    <Using Include="Injectio.Attributes" />
-    <Using Include="Microsoft.EntityFrameworkCore" />
-    <Using Include="Microsoft.Playwright" />
-    <Using Include="ReactiveUI" />
-    <Using Include="ReactiveUI.SourceGenerators" />
-    <Using Include="MainCore.DTO" />
-    <Using Include="MainCore.Entities" />
-    <Using Include="MainCore.Services" />
-    <Using Include="MainCore.Constraints" />    
-    <Using Include="MainCore.Infrasturecture.Persistence" />
-    <Using Include="MainCore.Parsers" />
-    <Using Include="MainCore.Notifications" />
-    <Using Include="MainCore.Tasks" />
-    <Using Include="MainCore.Models" />
-    <Using Include="MainCore.Errors" />
-    <Using Include="MainCore.Enums" />
-    <Using Alias="ILogger" Include="Serilog.ILogger" />
-  </ItemGroup>
+  
 </Project>
