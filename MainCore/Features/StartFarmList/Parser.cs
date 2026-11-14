@@ -6,7 +6,7 @@
 
         public static async Task<List<FarmDto>> GetFarmInfo(this IPage page)
         {
-            var rawFarmsData = await page.EvaluateAsync<List<RawFarmDto>>(@"() => {
+            var rawFarmsData = await page.EvaluateAsync<RawFarmDto[]>(@"() => {
                 const elements = document.querySelectorAll('#rallyPointFarmList div.farmListHeader');
 
                 return Array.from(elements).map(header => {
@@ -26,7 +26,7 @@
                 });
             }") ?? throw new InvalidOperationException("Failed to retrieve or parse farm data from the page.");
 
-            var extractedFarms = new List<FarmDto>(rawFarmsData.Count);
+            var extractedFarms = new List<FarmDto>(rawFarmsData.Length);
             foreach (var raw in rawFarmsData)
             {
                 extractedFarms.Add(new FarmDto

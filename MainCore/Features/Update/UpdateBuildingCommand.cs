@@ -18,7 +18,7 @@ public sealed partial class UpdateBuildingCommand(
         var (browser, accountId, villageId) = command;
 
         var (dtoBuilding, dtoQueueBuilding, tribe) = await browser.CurrentPage.GetBuildingData();
-        UpdateTribe(villageId, tribe);
+        UpdateTribe(villageId, (TribeEnums)tribe);
 
         var result = IsValidQueueBuilding(dtoQueueBuilding);
         if (result.IsFailed) return result;

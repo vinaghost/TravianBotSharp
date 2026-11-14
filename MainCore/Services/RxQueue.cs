@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace MainCore.Services
 {
     using System.Collections.Frozen;
@@ -86,20 +88,16 @@ namespace MainCore.Services
 
             var hasBuildJobVillages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
-                .Where(x => x.Jobs.Any(x => _jobTypes.Contains(x.Type)))
+                .Where(x => x.Jobs.Any(j => _jobTypes.Contains(j.Type)))
                 .Select(x => new VillageId(x.Id))
                 .ToList();
-
-            foreach (var village in hasBuildJobVillages)
+            foreach (var village in hasBuildJobVillages.Where(village => !taskManager.IsExist<UpgradeBuildingTask.Task>(accountId, village)))
             {
-                if (!taskManager.IsExist<UpgradeBuildingTask.Task>(accountId, village))
-                {
-                    taskManager.Add(new UpgradeBuildingTask.Task(accountId, village));
-                }
+                taskManager.Add(new UpgradeBuildingTask.Task(accountId, village));
             }
         }
 
-        private static readonly FrozenSet<JobTypeEnums> _jobTypes =
+        private static readonly List<JobTypeEnums> _jobTypes =
         [
             JobTypeEnums.NormalBuild,
             JobTypeEnums.ResourceBuild

@@ -33,26 +33,26 @@ public static class Parsers
                 const result = [];
 
                 function parseCount(text) {
-                if (!text) return 0;
-                const s = text.trim().toLowerCase();
-                if (s === '') return 0;
+                    if (!text) return 0;
+                    const s = text.trim().toLowerCase();
+                    if (s === '') return 0;
 
-                const suffixMatch = s.match(/^([\d,.]+)([km]?)$/i);
-                if (!suffixMatch) {
-                    // fallback: remove non-digits
-                    const digits = s.replace(/[^0-9.]/g, '');
-                    return digits ? Math.round(parseFloat(digits)) : 0;
-                }
-                let num = parseFloat(suffixMatch[1].replace(/,/g,''));
-                const suffix = suffixMatch[2];
-                if (suffix === 'k') num *= 1_000;
-                else if (suffix === 'm') num *= 1_000_000;
-                return Math.round(num);
+                    const suffixMatch = s.match(/^([\d,.]+)([km]?)$/i);
+                    if (!suffixMatch) {
+                        // fallback: remove non-digits
+                        const digits = s.replace(/[^0-9.]/g, '');
+                        return digits ? Math.round(parseFloat(digits)) : 0;
+                    }
+                    let num = parseFloat(suffixMatch[1].replace(/,/g,''));
+                    const suffix = suffixMatch[2];
+                    if (suffix === 'k') num *= 1_000;
+                    else if (suffix === 'm') num *= 1_000_000;
+                    return Math.round(num);
                 }
 
                 cells.forEach(cell => {
-                const countSlot = cell.querySelector('.count');
-                result.push(countSlot ? parseCount(countSlot.innerText) : 0);
+                    const countSlot = cell.querySelector('.count');
+                    result.push(countSlot ? parseCount(countSlot.innerText) : 0);
                 });
                 return result;
             }");

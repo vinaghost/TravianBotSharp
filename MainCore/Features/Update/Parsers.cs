@@ -6,7 +6,7 @@ public static class Parsers
 
     public static async Task<List<HeroItemDto>> GetHeroItems(this IPage page)
     {
-        var rawItemsData = await page.EvaluateAsync<List<RawHeroItemDto>>(@"() => {
+        var rawItemsData = await page.EvaluateAsync<RawHeroItemDto[]>(@"() => {
             const cells = document.querySelectorAll('div.heroItems div.heroItem:not(.empty)');
             const result = [];
             const itemRegex = /item(\d+)/;
@@ -58,7 +58,7 @@ public static class Parsers
         return extractedItems;
     }
 
-    public record struct AccountDataDto(AccountInfoDto AccountInfo, List<VillageDto> Villages);
+    public record struct AccountDataDto(AccountInfoDto AccountInfo, VillageDto[] Villages);
 
     public static async Task<(AccountInfoDto AccountInfo, List<VillageDto> Villages)> GetAccountData(this IPage page)
     {
@@ -108,7 +108,7 @@ public static class Parsers
                 };
 
                 villages.push({
-                    Id: { Value: id },
+                    Id: id,
                     Name: nameEl ? (nameEl.innerText || nameEl.textContent).trim() : '',
                     X: parseCoord(xEl),
                     Y: parseCoord(yEl),
@@ -120,12 +120,12 @@ public static class Parsers
             return { AccountInfo: accountInfo, Villages: villages };
         }");
 
-        return (data.AccountInfo, data.Villages);
+        return (data.AccountInfo, [.. data.Villages]);
     }
 
-    public record struct BuildingDataDto(List<BuildingDto> Buildings, List<QueueBuildingDto> Queue, TribeEnums Tribe);
+    public record struct BuildingDataDto(BuildingDto[] Buildings, QueueBuildingDto[] Queue, int Tribe);
 
-    public static async Task<(List<BuildingDto> Buildings, List<QueueBuildingDto> Queue, TribeEnums Tribe)> GetBuildingData(this IPage page)
+    public static async Task<(List<BuildingDto> Buildings, List<QueueBuildingDto> Queue, int Tribe)> GetBuildingData(this IPage page)
     {
         var data = await page.EvaluateAsync<BuildingDataDto>(@"() => {
             const url = window.location.href;
@@ -235,6 +235,6 @@ public static class Parsers
             CompleteTime = now.AddSeconds(q.Location)
         }).ToList();
 
-        return (data.Buildings, processedQueue, data.Tribe);
+        return ([.. data.Buildings], processedQueue, data.Tribe);
     }
 }

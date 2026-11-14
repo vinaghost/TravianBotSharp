@@ -40,7 +40,7 @@ public static class Parser
         var rowsLocator = page.Locator("#heroAdventure tbody tr");
         await rowsLocator.WaitForAsync();
 
-        var rawAdventures = await page.EvaluateAsync<List<RawAdventureDto>>(@"() => {
+        var rawAdventures = await page.EvaluateAsync<RawAdventureDto[]>(@"() => {
                 const rows = document.querySelectorAll('#heroAdventure tbody tr');
                 return Array.from(rows).map((row, index) => {
                     const diffEl = row.querySelector('td.difficulty i');
@@ -59,7 +59,7 @@ public static class Parser
                 });
             }") ?? throw new InvalidOperationException("Failed to retrieve or parse adventure data from the page.");
 
-        var adventureInfoList = new List<AdventureInfo>(rawAdventures.Count);
+        var adventureInfoList = new List<AdventureInfo>(rawAdventures.Length);
 
         foreach (var raw in rawAdventures)
         {

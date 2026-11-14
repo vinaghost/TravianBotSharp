@@ -18,7 +18,6 @@ public sealed partial class UpdateAccountInfoCommand(
     {
         var (browser, accountId) = command;
         var (accountInfo, villageDtos) = await browser.CurrentPage.GetAccountData();
-
         UpdateAccountInfo(accountId, accountInfo);
 
         if (villageDtos.Count > 0)
@@ -42,7 +41,7 @@ public sealed partial class UpdateAccountInfoCommand(
                 Gold = accountInfo.Gold,
                 Silver = accountInfo.Silver,
                 HasPlusAccount = accountInfo.HasPlusAccount,
-                Tribe = accountInfo.Tribe
+                Tribe = (TribeEnums)accountInfo.Tribe
             };
             context.Add(dbAccountInfo);
         }
@@ -51,7 +50,7 @@ public sealed partial class UpdateAccountInfoCommand(
             dbAccountInfo.Gold = accountInfo.Gold;
             dbAccountInfo.Silver = accountInfo.Silver;
             dbAccountInfo.HasPlusAccount = accountInfo.HasPlusAccount;
-            dbAccountInfo.Tribe = accountInfo.Tribe;
+            dbAccountInfo.Tribe = (TribeEnums)accountInfo.Tribe;
         }
         context.SaveChanges();
     }
@@ -60,7 +59,7 @@ public sealed partial class UpdateAccountInfoCommand(
     {
         using var context = contextFactory.CreateDbContext();
 
-        var dtoIds = dtos.Select(x => x.Id.Value).ToList();
+        var dtoIds = dtos.Select(x => x.Id).ToList();
 
         context.Villages
             .Where(x => x.AccountId == accountId.Value && !dtoIds.Contains(x.Id))
@@ -72,7 +71,7 @@ public sealed partial class UpdateAccountInfoCommand(
 
         foreach (var village in villagesToUpdate)
         {
-            var dto = dtos.First(x => x.Id.Value == village.Id);
+            var dto = dtos.First(x => x.Id == village.Id);
 
             village.Name = dto.Name;
             village.X = dto.X;
@@ -82,13 +81,13 @@ public sealed partial class UpdateAccountInfoCommand(
         }
 
         var existingIds = villagesToUpdate.Select(v => v.Id).ToHashSet();
-        var newDtos = dtos.Where(x => !existingIds.Contains(x.Id.Value)).ToList();
+        var newDtos = dtos.Where(x => !existingIds.Contains(x.Id)).ToList();
 
         foreach (var dto in newDtos)
         {
             var newVillage = new Village()
             {
-                Id = dto.Id.Value,
+                Id = dto.Id,
                 AccountId = accountId.Value,
                 Name = dto.Name,
                 X = dto.X,
@@ -105,14 +104,14 @@ public sealed partial class UpdateAccountInfoCommand(
         if (newDtos.Count > 0)
         {
             var templateSettings = GetVillageSettingTemplate();
-            foreach (var villageId in newDtos.Select(x => x.Id))
+            foreach (var villageId in newDtos.Select(x => new VillageId(x.Id)))
             {
                 context.FillVillageSettings(accountId, villageId);
             }
 
             context.SaveChanges();
 
-            foreach (var villageId in newDtos.Select(x => x.Id))
+            foreach (var villageId in newDtos.Select(x => new VillageId(x.Id)))
             {
                 context.SaveVillageSetting(villageId, templateSettings);
             }
@@ -120,7 +119,7 @@ public sealed partial class UpdateAccountInfoCommand(
             var enableAutoLoadVillageBuilding = context.BooleanByName(accountId, AccountSettingEnums.EnableAutoLoadVillageBuilding);
             if (enableAutoLoadVillageBuilding)
             {
-                foreach (var villageId in newDtos.Select(x => x.Id))
+                foreach (var villageId in newDtos.Select(x => new VillageId(x.Id)))
                 {
                     if (taskManager.IsExist<UpdateBuildingTask.Task>(accountId, villageId)) continue;
                     taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(accountId, villageId));
