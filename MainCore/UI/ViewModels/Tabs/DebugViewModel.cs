@@ -6,7 +6,6 @@ using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 
 using Serilog.Events;
-using MainCore.Shared.Notifications;
 using Serilog.Templates;
 
 namespace MainCore.UI.ViewModels.Tabs

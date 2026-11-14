@@ -1,15 +1,12 @@
 using System.Reflection;
 
+using MainCore.Shared.Commands;
 using MainCore.UI.Models.Output;
 using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using MainCore.Shared.Commands;
-using MainCore.Shared.Enums;
-using MainCore.Shared.Notifications;
-using Serilog;
 using Serilog.Context;
 
 namespace MainCore.UI.ViewModels.UserControls
@@ -218,6 +215,7 @@ namespace MainCore.UI.ViewModels.UserControls
                     if (result.IsFailed)
                     {
                         await _dialogService.SendMessage("Warning", string.Join(Environment.NewLine, result.Errors.Select(x => x.Message)));
+                        _taskManager.SetStatus(accountId, StatusEnums.Offline);
                         return;
                     }
                 }

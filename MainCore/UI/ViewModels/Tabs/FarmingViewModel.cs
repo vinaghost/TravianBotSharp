@@ -1,14 +1,11 @@
+using FluentValidation;
+
+using MainCore.Features.StartFarmList;
+using MainCore.Features.Update;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
-
-using MainCore.Features.StartFarmList;
-using MainCore.Features.Update;
-using MainCore.Shared.Enums;
-using MainCore.Shared.Notifications;
-
-using FluentValidation;
 
 using Splat;
 
