@@ -1,7 +1,7 @@
 ﻿using MainCore.Features.Navigate;
 using MainCore.Features.Update;
 
-namespace MainCore.Behaviors
+namespace MainCore.Shared.Behaviors
 {
     public class VillageTaskBehavior<TRequest, TResponse>(
         ChromeManager chromeManager,

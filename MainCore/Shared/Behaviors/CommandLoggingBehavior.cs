@@ -1,4 +1,4 @@
-﻿namespace MainCore.Behaviors
+﻿namespace MainCore.Shared.Behaviors
 {
     public sealed class CommandLoggingBehavior<TRequest, TResponse>(ILogger logger)
         : Behavior<TRequest, TResponse>

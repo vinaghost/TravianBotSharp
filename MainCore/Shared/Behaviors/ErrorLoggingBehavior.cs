@@ -1,29 +1,23 @@
-﻿namespace MainCore.Behaviors
+﻿namespace MainCore.Shared.Behaviors
 {
-    public sealed class TaskNameLoggingBehavior<TRequest, TResponse>(ILogger logger)
+    public sealed class ErrorLoggingBehavior<TRequest, TResponse>(ILogger logger)
         : Behavior<TRequest, TResponse>
-        where TRequest : ITask
-        where TResponse : Result
+        where TRequest : ICommand
+        where TResponse : IResultBase
     {
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
-            logger.Information("{TaskName} is started", request.Description);
-
             var response = await Next(request, cancellationToken);
 
             if (response.IsFailed)
             {
-                logger.Warning("{TaskName} failed", request.Description);
                 var message = string.Join(Environment.NewLine, response.Reasons.Select(e => e.Message));
                 if (!string.IsNullOrEmpty(message))
                 {
                     logger.Warning("{Message}", message);
                 }
             }
-            else
-            {
-                logger.Information("{TaskName} is finished", request.Description);
-            }
+
             return response;
         }
     }

@@ -1,6 +1,6 @@
 using Serilog.Context;
 
-namespace MainCore.Behaviors
+namespace MainCore.Shared.Behaviors
 {
     public sealed class AccountDataLoggingBehavior<TRequest, TResponse>(IDbContextFactory<AppDbContext> contextFactory)
        : Behavior<TRequest, TResponse>

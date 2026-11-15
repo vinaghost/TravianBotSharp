@@ -1,7 +1,7 @@
 using MainCore.Features.Login;
 using MainCore.Features.Update;
 
-namespace MainCore.Behaviors
+namespace MainCore.Shared.Behaviors
 {
     public sealed class AccountTaskBehavior<TRequest, TResponse>(
         ChromeManager chromeManager,

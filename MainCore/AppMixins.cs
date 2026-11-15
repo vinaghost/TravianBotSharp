@@ -1,6 +1,6 @@
 using FluentValidation;
 
-using MainCore.Behaviors;
+using MainCore.Shared.Behaviors;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
