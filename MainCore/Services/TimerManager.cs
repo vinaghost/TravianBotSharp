@@ -1,174 +1,170 @@
 using System.Collections.Concurrent;
 
-using MainCore.Infrasturecture.Extensions;
+using MainCore.Features.ClaimDailyQuest;
+using MainCore.Features.ClaimVillageQuest;
+using MainCore.Features.InstantUpgrade;
+using MainCore.Features.Login;
+using MainCore.Features.NPC;
+using MainCore.Features.SetHeroPoint;
+using MainCore.Features.Sleep;
+using MainCore.Features.StartAdventure;
+using MainCore.Features.StartFarmList;
+using MainCore.Features.TrainTroop;
+using MainCore.Features.Update;
+using MainCore.Features.UpgradeBuilding;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using Polly;
 using Polly.Retry;
 
-namespace MainCore.Services
+namespace MainCore.Services;
+
+[RegisterSingleton<TimerManager>]
+public sealed class TimerManager
 {
-    [RegisterSingleton<TimerManager>]
-    public sealed class TimerManager
+    private readonly ConcurrentDictionary<AccountId, CancellationTokenSource> _loops = [];
+
+    private volatile bool _isShutdown = false;
+
+    private readonly TaskManager _taskManager;
+    private readonly RxQueue _rxQueue;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly IDbContextFactory<AppDbContext> _contextFactory;
+    private readonly ChromeManager _chromeManager;
+
+    private static readonly ResiliencePropertyKey<ContextData> contextDataKey = new(nameof(ContextData));
+    private readonly ResiliencePipeline<Result> _pipeline;
+
+    public TimerManager(TaskManager taskManager, IServiceScopeFactory serviceScopeFactory, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, ChromeManager chromeManager)
     {
-        private readonly ConcurrentDictionary<AccountId, CancellationTokenSource> _loops = [];
+        _taskManager = taskManager;
+        _serviceScopeFactory = serviceScopeFactory;
+        _rxQueue = rxQueue;
+        _contextFactory = contextFactory;
+        _chromeManager = chromeManager;
 
-        private volatile bool _isShutdown = false;
-
-        private readonly TaskManager _taskManager;
-        private readonly RxQueue _rxQueue;
-        private readonly CustomServiceScopeFactory _serviceScopeFactory;
-        private readonly IDbContextFactory<AppDbContext> _contextFactory;
-
-        private static readonly ResiliencePropertyKey<ContextData> contextDataKey = new(nameof(ContextData));
-        private readonly ResiliencePipeline<Result> _pipeline;
-
-        public TimerManager(TaskManager taskManager, CustomServiceScopeFactory serviceScopeFactory, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
+        static async ValueTask OnRetry(OnRetryArguments<Result> args)
         {
-            _taskManager = taskManager;
-            _serviceScopeFactory = serviceScopeFactory;
-            _rxQueue = rxQueue;
-            _contextFactory = contextFactory;
+            if (!args.Context.Properties.TryGetValue(contextDataKey, out var contextData)) return;
 
-            static async ValueTask OnRetry(OnRetryArguments<Result> args)
+            var (taskName, browser) = contextData;
+            var error = args.Outcome;
+            if (error.Exception is not null)
             {
-                if (!args.Context.Properties.TryGetValue(contextDataKey, out var contextData)) return;
-
-                var (taskName, browser) = contextData;
-                var error = args.Outcome;
-                if (error.Exception is not null)
-                {
-                    var exception = error.Exception;
-                    browser.Logger.Error(exception, "{Message}", exception.Message);
-                }
-                if (error.Result is not null)
-                {
-                    var message = string.Join(Environment.NewLine, error.Result.Reasons.Select(e => e.Message));
-                    if (!string.IsNullOrEmpty(message))
-                    {
-                        browser.Logger.Warning("Task {TaskName} failed", taskName, message);
-                        browser.Logger.Warning("{Message}", message);
-                    }
-                }
-                await browser.Refresh();
-                browser.Logger.Warning("{TaskName} will retry after {RetryDelay} (#{AttemptNumber} times)", taskName, args.RetryDelay, args.AttemptNumber + 1);
+                var exception = error.Exception;
+                browser.Logger.Error(exception, "{Message}", exception.Message);
             }
-
-            var retryOptions = new RetryStrategyOptions<Result>()
+            if (error.Result is not null)
             {
-                MaxRetryAttempts = 3,
-                Delay = TimeSpan.FromSeconds(30),
-                UseJitter = true,
-                BackoffType = DelayBackoffType.Exponential,
-                ShouldHandle = new PredicateBuilder<Result>()
-                   .Handle<Exception>()
-                   .HandleResult(static x => x.HasError<Retry>()),
-                OnRetry = OnRetry
-            };
-
-            _pipeline = new ResiliencePipelineBuilder<Result>()
-                .AddRetry(retryOptions)
-                .Build();
+                var message = string.Join(Environment.NewLine, error.Result.Reasons.Select(e => e.Message));
+                if (!string.IsNullOrEmpty(message))
+                {
+                    browser.Logger.Warning("Task {TaskName} failed", taskName, message);
+                    browser.Logger.Warning("{Message}", message);
+                }
+            }
+            await browser.Refresh();
+            browser.Logger.Warning("{TaskName} will retry after {RetryDelay} (#{AttemptNumber} times)", taskName, args.RetryDelay, args.AttemptNumber + 1);
         }
 
-        public async Task Execute(AccountId accountId)
+        var retryOptions = new RetryStrategyOptions<Result>()
         {
-            var taskQueue = _taskManager.GetTaskQueue(accountId);
+            MaxRetryAttempts = 3,
+            Delay = TimeSpan.FromSeconds(30),
+            UseJitter = true,
+            BackoffType = DelayBackoffType.Exponential,
+            ShouldHandle = new PredicateBuilder<Result>()
+               .Handle<Exception>()
+               .HandleResult(static x => x.HasError<Retry>()),
+            OnRetry = OnRetry
+        };
 
-            var status = taskQueue.Status;
-            if (status != StatusEnums.Online) return;
-            var tasks = taskQueue.Tasks.OrderBy(x => x.ExecuteAt).ToList();
-            if (tasks.Count == 0) return;
-            var task = tasks[0];
+        _pipeline = new ResiliencePipelineBuilder<Result>()
+            .AddRetry(retryOptions)
+            .Build();
+    }
 
-            if (task.ExecuteAt > DateTime.Now) return;
+    public async Task Execute(AccountId accountId)
+    {
+        var taskQueue = _taskManager.GetTaskQueue(accountId);
 
-            taskQueue.IsExecuting = true;
-            var cts = new CancellationTokenSource();
-            taskQueue.CancellationTokenSource = cts;
+        var status = taskQueue.Status;
+        if (status != StatusEnums.Online) return;
+        var tasks = taskQueue.Tasks.OrderBy(x => x.ExecuteAt).ToList();
+        if (tasks.Count == 0) return;
+        var task = tasks[0];
 
-            task.Stage = StageEnums.Executing;
-            _rxQueue.Enqueue(new TasksModified(accountId));
+        if (task.ExecuteAt > DateTime.Now) return;
 
-            var cacheExecuteTime = task.ExecuteAt;
+        taskQueue.IsExecuting = true;
+        var cts = new CancellationTokenSource();
+        taskQueue.CancellationTokenSource = cts;
 
-            using var scope = _serviceScopeFactory.CreateScope(accountId);
+        task.Stage = StageEnums.Executing;
+        _rxQueue.Enqueue(new TasksModified(accountId));
 
-            ///===========================================================///
-            var browser = scope.ServiceProvider.GetRequiredService<IChromeBrowser>();
-            var logger = browser.Logger;
+        var cacheExecuteTime = task.ExecuteAt;
 
-            var contextData = new ContextData(task.Description, browser);
+        using var scope = _serviceScopeFactory.CreateScope();
 
-            ///===========================================================///
-            var resilienceContext = ResilienceContextPool.Shared.Get(cts.Token);
+        ///===========================================================///
+        var browser = _chromeManager.Get(accountId);
 
-            resilienceContext.Properties.Set(contextDataKey, contextData);
+        var contextData = new ContextData(task.Description, browser);
 
-            var poliResult = await _pipeline.ExecuteOutcomeAsync(
-                async (ctx, state) => Outcome.FromResult(await scope.Execute(state, ctx.CancellationToken)),
-                resilienceContext,
-                task);
+        ///===========================================================///
+        var resilienceContext = ResilienceContextPool.Shared.Get(cts.Token);
 
-            ResilienceContextPool.Shared.Return(resilienceContext);
-            ///===========================================================///
+        resilienceContext.Properties.Set(contextDataKey, contextData);
 
-            task.Stage = StageEnums.Waiting;
-            _rxQueue.Enqueue(new TasksModified(accountId));
+        var poliResult = await _pipeline.ExecuteOutcomeAsync(
+            async (ctx, state) => Outcome.FromResult(await scope.Execute(state, ctx.CancellationToken)),
+            resilienceContext,
+            task);
 
-            taskQueue.IsExecuting = false;
+        ResilienceContextPool.Shared.Return(resilienceContext);
+        ///===========================================================///
 
-            cts.Dispose();
-            taskQueue.CancellationTokenSource = null;
+        task.Stage = StageEnums.Waiting;
+        _rxQueue.Enqueue(new TasksModified(accountId));
 
-            if (poliResult.Exception is not null)
+        taskQueue.IsExecuting = false;
+
+        cts.Dispose();
+        taskQueue.CancellationTokenSource = null;
+
+        if (poliResult.Exception is not null)
+        {
+            var ex = poliResult.Exception;
+
+            if (ex is OperationCanceledException)
             {
-                var ex = poliResult.Exception;
-
-                if (ex is OperationCanceledException)
-                {
-                    logger.Information("Pause button is pressed");
-                }
-                else
-                {
-                    var filename = await browser.Screenshot();
-                    logger.Information("Screenshot saved as {FileName}", filename);
-                    logger.Warning("There is something wrong. Bot is pausing. Last exception is");
-                    logger.Error(ex, "{Message}", ex.Message);
-                }
-
-                _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                browser.Logger.Information("Pause button is pressed");
+            }
+            else
+            {
+                var filename = await browser.Screenshot();
+                browser.Logger.Information("Screenshot saved as {FileName}", filename);
+                browser.Logger.Warning("There is something wrong. Bot is pausing. Last exception is");
+                browser.Logger.Error(ex, "{Message}", ex.Message);
             }
 
-            if (poliResult.Result is not null)
+            _taskManager.SetStatus(accountId, StatusEnums.Paused);
+        }
+
+        if (poliResult.Result is not null)
+        {
+            var result = poliResult.Result;
+            if (result.IsFailed)
             {
-                var result = poliResult.Result;
-                if (result.IsFailed)
+                if (result.HasError<Stop>() || result.HasError<Retry>())
                 {
-                    if (result.HasError<Stop>() || result.HasError<Retry>())
-                    {
-                        var filename = await browser.Screenshot();
-                        logger.Information(messageTemplate: "Screenshot saved as {FileName}", filename);
-                        _taskManager.SetStatus(accountId, StatusEnums.Paused);
-                    }
-                    else if (result.HasError<Skip>())
-                    {
-                        if (task.ExecuteAt == cacheExecuteTime)
-                        {
-                            _taskManager.Remove(accountId, task);
-                        }
-                        else
-                        {
-                            logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
-                        }
-                    }
-                    else if (result.HasError<Cancel>())
-                    {
-                        _taskManager.SetStatus(accountId, StatusEnums.Paused);
-                    }
+                    var filename = await browser.Screenshot();
+                    browser.Logger.Information(messageTemplate: "Screenshot saved as {FileName}", filename);
+                    _taskManager.SetStatus(accountId, StatusEnums.Paused);
                 }
-                else
+                else if (result.HasError<Skip>())
                 {
                     if (task.ExecuteAt == cacheExecuteTime)
                     {
@@ -176,63 +172,151 @@ namespace MainCore.Services
                     }
                     else
                     {
-                        logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
+                        browser.Logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                     }
                 }
-            }
-
-            using var context = _contextFactory.CreateDbContext();
-            var delay = context.ByName(accountId, AccountSettingEnums.TaskDelayMin, AccountSettingEnums.TaskDelayMax);
-            await Task.Delay(delay);
-        }
-
-        public void Shutdown()
-        {
-            _isShutdown = true;
-
-            foreach (var accountId in _loops.Keys)
-            {
-                if (_loops.TryRemove(accountId, out var cancellationTokenSource))
+                else if (result.HasError<Cancel>())
                 {
-                    cancellationTokenSource.Cancel();
-                    cancellationTokenSource.Dispose();
+                    _taskManager.SetStatus(accountId, StatusEnums.Paused);
+                }
+            }
+            else
+            {
+                if (task.ExecuteAt == cacheExecuteTime)
+                {
+                    _taskManager.Remove(accountId, task);
+                }
+                else
+                {
+                    browser.Logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
                 }
             }
         }
 
-        public void Start(AccountId accountId)
-        {
-            if (_isShutdown) return;
+        using var context = _contextFactory.CreateDbContext();
+        var delay = context.ByName(accountId, AccountSettingEnums.TaskDelayMin, AccountSettingEnums.TaskDelayMax);
+        await Task.Delay(delay);
+    }
 
-            var cancellationTokenSource = new CancellationTokenSource();
-            if (!_loops.TryAdd(accountId, cancellationTokenSource))
+    public void Shutdown()
+    {
+        _isShutdown = true;
+
+        foreach (var accountId in _loops.Keys)
+        {
+            if (_loops.TryRemove(accountId, out var cancellationTokenSource))
             {
+                cancellationTokenSource.Cancel();
                 cancellationTokenSource.Dispose();
-                return;
             }
+        }
+    }
 
-            _ = Task.Run(async () =>
-            {
-                while (!_isShutdown && !cancellationTokenSource.Token.IsCancellationRequested)
-                {
-                    try
-                    {
-                        await Execute(accountId);
-                        await Task.Delay(100, cancellationTokenSource.Token);
-                    }
-                    catch (OperationCanceledException) when (_isShutdown || cancellationTokenSource.Token.IsCancellationRequested)
-                    {
-                        break;
-                    }
-                }
+    public void Start(AccountId accountId)
+    {
+        if (_isShutdown) return;
 
-                if (_loops.TryRemove(accountId, out var ownedCancellationTokenSource))
-                {
-                    ownedCancellationTokenSource.Dispose();
-                }
-            }, cancellationTokenSource.Token);
+        var cancellationTokenSource = new CancellationTokenSource();
+        if (!_loops.TryAdd(accountId, cancellationTokenSource))
+        {
+            cancellationTokenSource.Dispose();
+            return;
         }
 
-        public record ContextData(string TaskName, IChromeBrowser Browser);
+        _ = Task.Run(async () =>
+        {
+            while (!_isShutdown && !cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                try
+                {
+                    await Execute(accountId);
+                    await Task.Delay(100, cancellationTokenSource.Token);
+                }
+                catch (OperationCanceledException) when (_isShutdown || cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    break;
+                }
+            }
+
+            if (_loops.TryRemove(accountId, out var ownedCancellationTokenSource))
+            {
+                ownedCancellationTokenSource.Dispose();
+            }
+        }, cancellationTokenSource.Token);
+    }
+
+    public record ContextData(string TaskName, IChromeBrowser Browser);
+}
+
+public static class ServiceScopeExtension
+{
+    private static IHandler<T, Result> GetHandler<T>(this IServiceScope scope)
+    {
+        return scope.ServiceProvider.GetRequiredService<IHandler<T, Result>>();
+    }
+
+    public static async Task<Result> Execute(this IServiceScope scope, BaseTask task, CancellationToken cancellationToken)
+    {
+        switch (task)
+        {
+            case ClaimVillageQuestTask.Task claimQuestTask:
+                var claimQuestTaskHandler = scope.GetHandler<ClaimVillageQuestTask.Task>();
+                return await claimQuestTaskHandler.HandleAsync(claimQuestTask, cancellationToken);
+
+            case InstantUpgradeTask.Task completeImmediatelyTask:
+                var completeImmediatelyTaskHandler = scope.GetHandler<InstantUpgradeTask.Task>();
+                return await completeImmediatelyTaskHandler.HandleAsync(completeImmediatelyTask, cancellationToken);
+
+            case LoginTask.Task loginTask:
+                var loginTaskHandler = scope.GetHandler<LoginTask.Task>();
+                return await loginTaskHandler.HandleAsync(loginTask, cancellationToken);
+
+            case NPCTask.Task npcTask:
+                var npcTaskHandler = scope.GetHandler<NPCTask.Task>();
+                return await npcTaskHandler.HandleAsync(npcTask, cancellationToken);
+
+            case SleepTask.Task sleepTask:
+                var sleepTaskHandler = scope.GetHandler<SleepTask.Task>();
+                return await sleepTaskHandler.HandleAsync(sleepTask, cancellationToken);
+
+            case StartAdventureTask.Task startAdventureTask:
+                var startAdventureTaskHandler = scope.GetHandler<StartAdventureTask.Task>();
+                return await startAdventureTaskHandler.HandleAsync(startAdventureTask, cancellationToken);
+
+            case StartFarmListTask.Task startFarmListTask:
+                var startFarmListTaskHandler = scope.GetHandler<StartFarmListTask.Task>();
+                return await startFarmListTaskHandler.HandleAsync(startFarmListTask, cancellationToken);
+
+            case TrainTroopTask.Task trainTroopTask:
+                var trainTroopTaskHandler = scope.GetHandler<TrainTroopTask.Task>();
+                return await trainTroopTaskHandler.HandleAsync(trainTroopTask, cancellationToken);
+
+            case UpdateBuildingTask.Task updateBuildingTask:
+                var updateBuildingTaskHandler = scope.GetHandler<UpdateBuildingTask.Task>();
+                return await updateBuildingTaskHandler.HandleAsync(updateBuildingTask, cancellationToken);
+
+            case UpdateFarmListTask.Task updateFarmListTask:
+                var updateFarmListTaskHandler = scope.GetHandler<UpdateFarmListTask.Task>();
+                return await updateFarmListTaskHandler.HandleAsync(updateFarmListTask, cancellationToken);
+
+            case UpdateVillageTask.Task updateVillageTask:
+                var updateVillageTaskHandler = scope.GetHandler<UpdateVillageTask.Task>();
+                return await updateVillageTaskHandler.HandleAsync(updateVillageTask, cancellationToken);
+
+            case UpgradeBuildingTask.Task upgradeBuildingTask:
+                var upgradeBuildingTaskHandler = scope.GetHandler<UpgradeBuildingTask.Task>();
+                return await upgradeBuildingTaskHandler.HandleAsync(upgradeBuildingTask, cancellationToken);
+
+            case ClaimDailyQuestTask.Task claimDailyQuestTask:
+                var claimDailyQuestTaskHandler = scope.GetHandler<ClaimDailyQuestTask.Task>();
+                return await claimDailyQuestTaskHandler.HandleAsync(claimDailyQuestTask, cancellationToken);
+
+            case SetHeroPointTask.Task setHeroPointTask:
+                var setHeroPointTaskHandler = scope.GetHandler<SetHeroPointTask.Task>();
+                return await setHeroPointTaskHandler.HandleAsync(setHeroPointTask, cancellationToken);
+
+            default:
+                throw new NotImplementedException($"Task {task.GetType().Name} is not implemented");
+        }
     }
 }

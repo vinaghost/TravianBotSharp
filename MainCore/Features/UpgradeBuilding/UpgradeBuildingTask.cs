@@ -1,0 +1,328 @@
+﻿using MainCore.Features.Navigate;
+using MainCore.Features.Update;
+
+namespace MainCore.Features.UpgradeBuilding;
+
+[Handler]
+public sealed partial class UpgradeBuildingTask(
+    ILogger logger,
+    RxQueue rxQueue,
+    ChromeManager chromeManager,
+    IDbContextFactory<AppDbContext> contextFactory,
+    ToDorfCommand.Handler toDorfCommand,
+    GetBuildPlanCommand.Handler getBuildPlanCommand,
+    ToBuildPageCommand.Handler toBuildPageCommand,
+    HandleResourceCommand.Handler handleResourceCommand,
+    UpgradeCommand.Handler handleUpgradeCommand,
+    UpdateBuildingCommand.Handler updateBuildingCommand)
+{
+    public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
+    {
+        protected override string TaskName => nameof(UpgradeBuildingTask).Humanize();
+    }
+
+    private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
+    {
+        Result result;
+        var browser = chromeManager.Get(task.AccountId);
+        while (true)
+        {
+            if (cancellationToken.IsCancellationRequested) return Cancel.Error;
+
+            var (_, isFailed, plan, errors) = await getBuildPlanCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            if (isFailed)
+            {
+                var upgradeErrors = errors.OfType<UpgradeError>().ToList();
+                if (upgradeErrors.Count == 0)
+                    return Result.Fail(errors);
+
+                var upgradeError = upgradeErrors[0];
+                if (upgradeError.Type == UpgradeErrorType.ConstructionQueueFull)
+                {
+                    task.ExecuteAt = upgradeError.NextExecute!.Value;
+                    return Skip.Error;
+                }
+                else if (upgradeError.Type == UpgradeErrorType.BuildingJobQueueEmpty)
+                {
+                    return Skip.Error;
+                }
+                else if (upgradeError.Type == UpgradeErrorType.BuildingJobQueueBroken)
+                {
+                    return Stop.Error;
+                }
+                else
+                {
+                    return Stop.Error;
+                }
+            }
+
+            logger.Information("Build {Plan}", plan);
+
+            result = await toBuildPageCommand.HandleAsync(new(browser, plan), cancellationToken);
+            if (result.IsFailed)
+            {
+                if (!result.HasError<UpgradeError>())
+                    return result;
+
+                var upgradeError = result.Errors.OfType<UpgradeError>().First();
+                if (upgradeError.Type == UpgradeErrorType.BuildingComplete)
+                {
+                    // roll next plan
+                    continue;
+                }
+                else if (upgradeError.Type == UpgradeErrorType.BuildingInQueue)
+                {
+                    result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
+                    if (result.IsFailed) return result;
+
+                    if (IsPlanUnderConstruction(task.VillageId, plan))
+                    {
+                        // roll next plan
+                        continue;
+                    }
+
+                    // continue
+                    result = await toBuildPageCommand.HandleAsync(new(browser, plan, true), cancellationToken);
+                    if (result.IsFailed) return result;
+                }
+                else if (upgradeError.Type == UpgradeErrorType.BuildingNotExist)
+                {
+                    result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
+                    if (result.IsFailed) return result;
+
+                    if (plan.Type.IsResourceBonus())
+                    {
+                        result = await toDorfCommand.HandleAsync(new(browser, 1), cancellationToken);
+                        if (result.IsFailed) return result;
+
+                        result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
+                        if (result.IsFailed) return result;
+                    }
+
+                    result = CheckPrerequisite(task.VillageId, plan);
+                    if (result.IsFailed)
+                    {
+                        if (!result.HasError<UpgradeError>())
+                            return result;
+
+                        var prerequisiteInQueueError = result.Errors.OfType<UpgradeError>()
+                            .Where(x => x.Type == UpgradeErrorType.PrerequisiteInQueue)
+                            .OrderBy(x => x.NextExecute)
+                            .FirstOrDefault();
+
+                        if (prerequisiteInQueueError is not null)
+                        {
+                            task.ExecuteAt = prerequisiteInQueueError.NextExecute!.Value;
+                            return Skip.Error;
+                        }
+
+                        return Stop.Error;
+                    }
+
+                    // continue
+                    result = await toBuildPageCommand.HandleAsync(new(browser, plan, true), cancellationToken);
+                    if (result.IsFailed) return result;
+                }
+            }
+            var canUseHeroResource = CanUseHeroResource(task.VillageId);
+            result = await handleResourceCommand.HandleAsync(new(browser, plan, canUseHeroResource), cancellationToken);
+            if (result.IsFailed)
+            {
+                if (!result.HasError<UpgradeError>())
+                    return result;
+
+                var lackOfFreeCropError = result.Errors.OfType<UpgradeError>().FirstOrDefault(x => x.Type == UpgradeErrorType.LackOfFreeCrop);
+
+                if (lackOfFreeCropError is not null)
+                {
+                    AddCropland(task.AccountId, task.VillageId);
+                    continue;
+                }
+
+                var storageLimitError = result.Errors.OfType<UpgradeError>().FirstOrDefault(x => x.Type == UpgradeErrorType.StorageLimit);
+
+                if (storageLimitError is not null)
+                {
+                    return Stop.Error;
+                }
+
+                var missingResourceError = result.Errors.OfType<UpgradeError>().FirstOrDefault(x => x.Type == UpgradeErrorType.MissingResource);
+                if (missingResourceError is not null)
+                {
+                    var time = await browser.CurrentPage.GetTimeWhenEnoughResource(plan.Type);
+                    task.ExecuteAt = DateTime.Now.Add(time);
+                    return Skip.Error;
+                }
+            }
+
+            LogBuildingInfo(task.VillageId, plan);
+
+            var canUseSpecialUpgrade = CanUseSpecialUpgrade(task.VillageId);
+
+            result = await handleUpgradeCommand.HandleAsync(new(browser, plan, canUseSpecialUpgrade), cancellationToken);
+            if (result.IsFailed) return result;
+
+            logger.Information("Upgrade for {Type} at #{Location} completed successfully.", plan.Type, plan.Location);
+
+            result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
+            if (result.IsFailed) return result;
+        }
+    }
+
+    private bool IsPlanUnderConstruction(VillageId villageId, NormalBuildPlan plan)
+    {
+        using var context = contextFactory.CreateDbContext();
+        return context.QueueBuildings.Any(x =>
+            x.VillageId == villageId.Value
+            && x.Location == plan.Location
+            && x.Level >= plan.Level);
+    }
+
+    private Result CheckPrerequisite(VillageId villageId, NormalBuildPlan plan)
+    {
+        using var context = contextFactory.CreateDbContext();
+        var buildings = context.Buildings
+            .AsNoTracking()
+            .Where(x => x.VillageId == villageId.Value)
+            .GroupBy(x => x.Type)
+            .Select(g => new
+            {
+                Type = g.Key,
+                MaxLevel = g.Max(y => y.Level)
+            })
+            .ToDictionary(x => x.Type, x => x.MaxLevel);
+
+        var queueBuildings = context.QueueBuildings
+            .AsNoTracking()
+            .Where(x => x.VillageId == villageId.Value)
+            .ToList();
+
+        var errors = new List<IError>();
+        var prerequisiteBuildings = plan.Type.GetPrerequisites();
+
+        foreach (var prereq in prerequisiteBuildings)
+        {
+            var buildingLevel = buildings.GetValueOrDefault(prereq.Type, 0);
+
+            if (buildingLevel < prereq.Level)
+            {
+                var queueBuilding = queueBuildings
+                    .Where(x => x.Type == prereq.Type)
+                    .MinBy(x => x.CompleteTime);
+
+                if (queueBuilding is not null)
+                {
+                    logger.Information("Prerequisite {Type} level {Level} is in queue, will complete at {CompleteTime}.", prereq.Type, prereq.Level, queueBuilding.CompleteTime);
+                    errors.Add(new UpgradeError(UpgradeErrorType.PrerequisiteInQueue)
+                    {
+                        NextExecute = queueBuilding.CompleteTime
+                    });
+                }
+                else
+                {
+                    errors.Add(new UpgradeError(UpgradeErrorType.PrerequisiteMissing));
+                }
+            }
+        }
+
+        if (!plan.Type.IsMultipleBuilding()) return Result.FailIfNotEmpty(errors);
+
+        var highestExistingBuilding = context.Buildings
+            .AsNoTracking()
+            .Where(x => x.VillageId == villageId.Value)
+            .Where(x => x.Type == plan.Type)
+            .OrderByDescending(x => x.Level)
+            .FirstOrDefault();
+
+        if (highestExistingBuilding is null)
+            return Result.FailIfNotEmpty(errors);
+
+        if (highestExistingBuilding.Location == plan.Location)
+            return Result.FailIfNotEmpty(errors);
+
+        if (highestExistingBuilding.Level == highestExistingBuilding.Type.GetMaxLevel())
+            return Result.FailIfNotEmpty(errors);
+
+        var highestLevelInQueue = context.QueueBuildings
+            .AsNoTracking()
+            .Where(x => x.VillageId == villageId.Value)
+            .Where(x => x.Location == highestExistingBuilding.Location)
+            .OrderByDescending(x => x.Level)
+            .FirstOrDefault();
+
+        if (highestLevelInQueue is not null && highestLevelInQueue.Level > highestExistingBuilding.Level)
+        {
+            logger.Information("{Type} need one building at max level before build more, current one at #{Location} is in progress to {Level}, will complete at {CompleteTime}.", highestExistingBuilding.Type, highestExistingBuilding.Location, highestExistingBuilding.Level, highestLevelInQueue.CompleteTime);
+            errors.Add(new UpgradeError(UpgradeErrorType.PrerequisiteInQueue)
+            {
+                NextExecute = highestLevelInQueue.CompleteTime
+            });
+        }
+        else
+        {
+            logger.Information("{Type} need one building at max level before build more, current one is {Level} at #{Location}.", highestExistingBuilding.Type, highestExistingBuilding.Level, highestExistingBuilding.Location);
+            errors.Add(new UpgradeError(UpgradeErrorType.PrerequisiteMissing));
+        }
+
+        return Result.FailIfNotEmpty(errors);
+    }
+
+    private bool CanUseHeroResource(VillageId villageId)
+    {
+        using var context = contextFactory.CreateDbContext();
+        return context.BooleanByName(villageId, VillageSettingEnums.UseHeroResourceForBuilding);
+    }
+
+    private bool CanUseSpecialUpgrade(VillageId villageId)
+    {
+        using var context = contextFactory.CreateDbContext();
+        var useSpecialUpgrade = context.BooleanByName(villageId, VillageSettingEnums.UseSpecialUpgrade);
+        return useSpecialUpgrade;
+    }
+
+    private void AddCropland(AccountId accountId, VillageId villageId)
+    {
+        using var context = contextFactory.CreateDbContext();
+        var buildings = context.GetLayoutBuildings(villageId, true);
+
+        var cropland = buildings
+            .Where(x => x.Type == BuildingEnums.Cropland)
+            .OrderBy(x => x.Level)
+            .First();
+
+        var cropLandPlan = new NormalBuildPlan()
+        {
+            Location = cropland.Location,
+            Type = cropland.Type,
+            Level = cropland.Level + 1,
+        };
+
+        context.AddJob(villageId, cropLandPlan, true);
+        rxQueue.Enqueue(new JobsModified(accountId, villageId));
+    }
+
+    private void LogBuildingInfo(VillageId villageId, NormalBuildPlan plan)
+    {
+        using var context = contextFactory.CreateDbContext();
+
+        var queueBuilding = context.QueueBuildings
+            .Where(x => x.VillageId == villageId.Value)
+            .FirstOrDefault(x => x.Location == plan.Location);
+
+        if (queueBuilding is not null)
+        {
+            logger.Information("{Type} at location {Location} is in queue at level {Level}", queueBuilding.Type, queueBuilding.Location, queueBuilding.Level);
+        }
+        else
+        {
+            var building = context.Buildings
+               .Where(x => x.VillageId == villageId.Value)
+               .FirstOrDefault(x => x.Location == plan.Location);
+
+            if (building is not null)
+            {
+                logger.Information("{Type} at location {Location} is at level {Level}", building.Type, building.Location, building.Level);
+            }
+        }
+    }
+}
