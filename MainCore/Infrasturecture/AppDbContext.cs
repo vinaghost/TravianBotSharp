@@ -1,10 +1,12 @@
 ﻿using System.Collections.Immutable;
 
+using MainCore.Infrasturecture.Entities;
+
 using StronglyTypedIds;
 
 [assembly: StronglyTypedIdDefaults(backingType: StronglyTypedIdBackingType.Int, converters: StronglyTypedIdConverter.None)]
 
-namespace MainCore.Infrasturecture.Persistence
+namespace MainCore.Infrasturecture
 {
     public class AppDbContext : DbContext
     {

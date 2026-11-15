@@ -2,7 +2,7 @@
 
 using Immediate.Handlers.Shared;
 
-using MainCore.Infrasturecture.Persistence;
+using MainCore.Infrasturecture;
 using MainCore.Services;
 
 using static ArchUnitNET.Fluent.ArchRuleDefinition;

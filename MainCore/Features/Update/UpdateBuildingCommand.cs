@@ -1,4 +1,5 @@
 using MainCore.Features.InstantUpgrade;
+using MainCore.Infrasturecture.Entities;
 
 namespace MainCore.Features.Update;
 

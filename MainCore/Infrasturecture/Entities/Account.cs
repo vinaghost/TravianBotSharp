@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
+using MainCore.Infrasturecture.Entities;
+
 using StronglyTypedIds;
 
 #nullable disable
 
-namespace MainCore.Entities
+namespace MainCore.Infrasturecture.Entities
 {
     public class Account
     {

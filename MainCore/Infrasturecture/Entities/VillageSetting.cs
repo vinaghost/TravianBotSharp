@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MainCore.Entities
+namespace MainCore.Infrasturecture.Entities
 {
     [Index(nameof(VillageId), nameof(Setting))]
     public class VillageSetting

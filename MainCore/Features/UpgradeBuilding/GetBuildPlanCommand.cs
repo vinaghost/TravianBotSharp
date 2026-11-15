@@ -1,5 +1,8 @@
 using System.Text.Json;
 
+using MainCore.Infrasturecture.Entities;
+using MainCore.UI.ViewModels.Tabs.Villages;
+
 namespace MainCore.Features.UpgradeBuilding;
 
 [Handler]
@@ -49,7 +52,9 @@ public sealed partial class GetBuildPlanCommand(
 
                 logger.Information("Extracting {ResourceBuildPlan}", resourceBuildPlan);
 
-                var normalBuildPlan = context.ExtractResourceBuildPlan(villageId, resourceBuildPlan);
+                var layoutBuildings = context.GetLayoutBuildings(villageId, ignoreJobBuilding: true);
+
+                var normalBuildPlan = ExtractResourceBuildPlan(layoutBuildings, resourceBuildPlan);
                 if (normalBuildPlan.Type == BuildingEnums.Unknown)
                 {
                     context.DeleteJobById(job.Id);
@@ -65,8 +70,7 @@ public sealed partial class GetBuildPlanCommand(
 
             var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
 
-            var isComplete = context.IsPlanDone(villageId, plan);
-            if (isComplete)
+            if (IsPlanDone(context, villageId, plan))
             {
                 context.DeleteJobById(job.Id);
                 rxQueue.Enqueue(new JobsModified(accountId, villageId));
@@ -224,5 +228,52 @@ public sealed partial class GetBuildPlanCommand(
         return normalResourceJob.Position < globalResourceJob.Position
             ? normalResourceJob
             : globalResourceJob;
+    }
+
+    private static NormalBuildPlan ExtractResourceBuildPlan(List<BuildingItem> buildings, ResourceBuildPlan plan)
+    {
+        var candidateFields = plan.Plan switch
+        {
+            ResourcePlanEnums.ExcludeCrop => buildings.Where(x => x.Type == BuildingEnums.Woodcutter || x.Type == BuildingEnums.ClayPit || x.Type == BuildingEnums.IronMine),
+            ResourcePlanEnums.OnlyCrop => buildings.Where(x => x.Type == BuildingEnums.Cropland),
+            _ => buildings.Where(x => x.Type.IsResourceField())
+        };
+
+        var validFields = candidateFields.Where(x => x.Level < plan.Level).ToList();
+        if (validFields.Count == 0) return new NormalBuildPlan(BuildingEnums.Unknown, 0, 0);
+
+        var minLevel = validFields.Min(x => x.Level);
+        var lowestFields = validFields.Where(x => x.Level == minLevel).ToList();
+
+        var chosenOne = lowestFields[Random.Shared.Next(lowestFields.Count)];
+
+        return new NormalBuildPlan()
+        {
+            Type = chosenOne.Type,
+            Level = chosenOne.Level + 1,
+            Location = chosenOne.Location,
+        };
+    }
+
+    public static bool IsPlanDone(AppDbContext context, VillageId villageId, NormalBuildPlan plan)
+    {
+        var building = context.Buildings
+            .AsNoTracking()
+            .FirstOrDefault(x => x.VillageId == villageId.Value && x.Location == plan.Location);
+
+        if (building is null || building.Type != plan.Type)
+            return false;
+
+        if (building.Level >= plan.Level)
+            return true;
+
+        var maxQueueLevel = context.QueueBuildings
+            .AsNoTracking()
+            .Where(x => x.VillageId == villageId.Value && x.Location == plan.Location)
+            .OrderByDescending(x => x.Level)
+            .Select(x => x.Level)
+            .FirstOrDefault();
+
+        return maxQueueLevel >= plan.Level;
     }
 }

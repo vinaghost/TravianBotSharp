@@ -1,6 +1,6 @@
 ﻿using StronglyTypedIds;
 
-namespace MainCore.Entities
+namespace MainCore.Infrasturecture.Entities
 {
     public class Farm
     {

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MainCore.Entities
+namespace MainCore.Infrasturecture.Entities
 {
     [Index(nameof(Type))]
     public class HeroItem

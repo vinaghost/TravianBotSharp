@@ -4,9 +4,9 @@ global using Humanizer;
 
 global using Immediate.Handlers.Shared;
 
-global using MainCore.Entities;
+global using MainCore.Infrasturecture.Entities;
 global using MainCore.Infrasturecture.Extensions;
-global using MainCore.Infrasturecture.Persistence;
+global using MainCore.Infrasturecture;
 global using MainCore.Services;
 global using MainCore.Shared;
 global using MainCore.Shared.Constraints;
