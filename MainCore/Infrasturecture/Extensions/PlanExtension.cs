@@ -44,9 +44,9 @@
             var maxQueueLevel = context.QueueBuildings
                 .AsNoTracking()
                 .Where(x => x.VillageId == villageId.Value && x.Location == plan.Location)
+                .OrderByDescending(x => x.Level)
                 .Select(x => x.Level)
-                .DefaultIfEmpty(0)
-                .Max();
+                .FirstOrDefault();
 
             return maxQueueLevel >= plan.Level;
         }

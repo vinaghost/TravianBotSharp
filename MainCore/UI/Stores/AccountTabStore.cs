@@ -125,7 +125,7 @@ public partial class AccountTabStore : ViewModelBase
 
     public void Active(AccountTabType tabType)
     {
-        if (tabType == _currentTabType) return;
+        if (tabType == _currentTabType && GetTabViewModel(tabType).IsActive) return;
 
         GetTabViewModel(_currentTabType).IsActive = false;
         _currentTabType = tabType;

@@ -22,11 +22,6 @@ namespace MainCore.Behaviors
             result = await switchVillageCommand.HandleAsync(new(browser, villageId), cancellationToken);
             if (result.IsFailed) return (TResponse)result;
 
-            await updateStorageCommand.HandleAsync(new(browser, villageId), cancellationToken);
-
-            result = await updateBuildingCommand.HandleAsync(new(browser, villageId), cancellationToken);
-            if (result.IsFailed) return (TResponse)result;
-
             var response = await Next(request, cancellationToken);
 
             if (response.IsFailed && !response.HasError<Skip>()) return response;

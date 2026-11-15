@@ -66,7 +66,7 @@ public sealed partial class UpdateBuildingCommand(
         using var context = contextFactory.CreateDbContext();
         var now = DateTime.Now;
 
-        bool updatingDorf1 = buildingDtos.Any(b => b.Type.IsResourceField());
+        bool updatingDorf1 = buildingDtos.Any(b => ((BuildingEnums)b.Type).IsResourceField());
 
         var dbBuildings = context.Buildings
             .Where(x => x.VillageId == villageId.Value)
@@ -81,7 +81,7 @@ public sealed partial class UpdateBuildingCommand(
                 var building = new Building
                 {
                     VillageId = villageId.Value,
-                    Type = dto.Type,
+                    Type = (BuildingEnums)dto.Type,
                     Level = dto.Level,
                     IsUnderConstruction = dto.IsUnderConstruction,
                     Location = dto.Location
@@ -92,7 +92,7 @@ public sealed partial class UpdateBuildingCommand(
             }
             else
             {
-                dbBuilding.Type = dto.Type;
+                dbBuilding.Type = (BuildingEnums)dto.Type;
                 dbBuilding.Level = dto.Level;
                 dbBuilding.IsUnderConstruction = dto.IsUnderConstruction;
                 dbBuilding.Location = dto.Location;

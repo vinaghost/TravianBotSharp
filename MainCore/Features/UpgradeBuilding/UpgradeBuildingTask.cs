@@ -32,17 +32,28 @@ public sealed partial class UpgradeBuildingTask(
             var (_, isFailed, plan, errors) = await getBuildPlanCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
             if (isFailed)
             {
-                var inQueueError = errors.OfType<UpgradeError>()
-                    .Where(x => x.Type == UpgradeErrorType.PrerequisiteInQueue || x.Type == UpgradeErrorType.BuildingInQueue)
-                    .OrderBy(x => x.NextExecute)
-                    .FirstOrDefault();
+                var upgradeErrors = errors.OfType<UpgradeError>().ToList();
+                if (upgradeErrors.Count == 0)
+                    return Result.Fail(errors);
 
-                if (inQueueError is not null)
+                var upgradeError = upgradeErrors[0];
+                if (upgradeError.Type == UpgradeErrorType.ConstructionQueueFull)
                 {
-                    task.ExecuteAt = inQueueError.NextExecute!.Value;
+                    task.ExecuteAt = upgradeError.NextExecute!.Value;
                     return Skip.Error;
                 }
-                return Result.Fail(errors);
+                else if (upgradeError.Type == UpgradeErrorType.BuildingJobQueueEmpty)
+                {
+                    return Skip.Error;
+                }
+                else if (upgradeError.Type == UpgradeErrorType.BuildingJobQueueBroken)
+                {
+                    return Stop.Error;
+                }
+                else
+                {
+                    return Stop.Error;
+                }
             }
 
             logger.Information("Build {Plan}", plan);

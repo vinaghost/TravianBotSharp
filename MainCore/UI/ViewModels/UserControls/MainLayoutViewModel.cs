@@ -70,7 +70,18 @@ namespace MainCore.UI.ViewModels.UserControls
 
             LoadAccountCommand
                 .ObserveOn(RxSchedulers.MainThreadScheduler)
-                .Subscribe(x => Accounts.Load(x));
+                .Subscribe(x =>
+                {
+                    Accounts.Load(x);
+                    if (Accounts.SelectedItem is null && Accounts.Items.Count > 0)
+                    {
+                        Accounts.SelectedItem = Accounts.Items[0];
+                    }
+                    else
+                    {
+                        _accountTabStore.Active(AccountTabType.NoAccount);
+                    }
+                });
 
             GetStatusCommand
                 .Subscribe(SetPauseText);

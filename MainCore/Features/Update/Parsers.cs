@@ -140,7 +140,7 @@ public static class Parsers
 
             const getWallType = (tId) => {
                 switch(tId) {
-                    case 1: return ; // Romans: City Wall
+                    case 1: return 31; // Romans: City Wall
                     case 2: return 32; // Teutons: Earth Wall
                     case 3: return 33; // Gauls: Palisade
                     case 6: return 42; // Egyptians: Stone Wall

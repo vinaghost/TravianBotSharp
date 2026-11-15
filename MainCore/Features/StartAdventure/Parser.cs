@@ -38,7 +38,7 @@ public static class Parser
     public static async Task<List<AdventureInfo>> GetAdventureInfo(this IPage page)
     {
         var rowsLocator = page.Locator("#heroAdventure tbody tr");
-        await rowsLocator.WaitForAsync();
+        await rowsLocator.First.WaitForAsync();
 
         var rawAdventures = await page.EvaluateAsync<RawAdventureDto[]>(@"() => {
                 const rows = document.querySelectorAll('#heroAdventure tbody tr');

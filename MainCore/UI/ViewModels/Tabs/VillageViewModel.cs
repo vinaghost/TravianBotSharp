@@ -140,16 +140,58 @@ namespace MainCore.UI.ViewModels.Tabs
         private List<ListBoxItem> LoadVillage(AccountId accountId)
         {
             using var context = _contextFactory.CreateDbContext();
-            var items = context.Villages
+
+            var villages = context.Villages
                 .Where(x => x.AccountId == accountId.Value)
-                .OrderBy(x => x.Name)
-                .Select(x => new ListBoxItem()
+                .Select(x => new
                 {
-                    Id = x.Id,
-                    Content = $"{x.Name}{Environment.NewLine}({x.X}|{x.Y})",
+                    VillageId = x.Id,
+                    x.Name,
+                    x.X,
+                    x.Y,
                 })
                 .ToList();
+
+            var resourceFields = context.Buildings
+                .Where(x => villages.Select(x => x.VillageId).Contains(x.VillageId))
+                .Where(x => x.Type == BuildingEnums.Woodcutter || x.Type == BuildingEnums.ClayPit || x.Type == BuildingEnums.IronMine || x.Type == BuildingEnums.Cropland)
+                .GroupBy(x => x.VillageId)
+                .ToDictionary(x => x.Key, x => x.Select(b => b.Type));
+
+            List<ListBoxItem> items = [];
+
+            foreach (var village in villages)
+            {
+                if (resourceFields.TryGetValue(village.VillageId, out var buildings) && buildings.Any())
+                {
+                    items.Add(new ListBoxItem()
+                    {
+                        Id = village.VillageId,
+                        Content = $"{village.Name}{Environment.NewLine}({village.X}|{village.Y}) [{GetVillageType([.. buildings])}]",
+                    });
+                }
+                else
+                {
+                    items.Add(new ListBoxItem()
+                    {
+                        Id = village.VillageId,
+                        Content = $"{village.Name}{Environment.NewLine}({village.X}|{village.Y})",
+                    });
+                }
+            }
             return items;
+        }
+
+        private static string GetVillageType(List<BuildingEnums> buildings)
+        {
+            var woodCount = buildings.Count(x => x == BuildingEnums.Woodcutter);
+            var clayCount = buildings.Count(x => x == BuildingEnums.ClayPit);
+            var ironCount = buildings.Count(x => x == BuildingEnums.IronMine);
+            var cropCount = buildings.Count(x => x == BuildingEnums.Cropland);
+            if (cropCount == 0) return "Not loaded";
+            if (cropCount == 15) return "15C";
+            if (cropCount == 9) return "9C";
+            return $"{woodCount}{clayCount}{ironCount}{cropCount}";
         }
     }
 }
