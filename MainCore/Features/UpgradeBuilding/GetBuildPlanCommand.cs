@@ -45,12 +45,12 @@ public sealed partial class GetBuildPlanCommand(
 
             if (job.Type == JobTypeEnums.ResourceBuild)
             {
-                var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content)!;
+                var resourceBuildPlan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content);
 
                 logger.Information("Extracting {ResourceBuildPlan}", resourceBuildPlan);
 
                 var normalBuildPlan = context.ExtractResourceBuildPlan(villageId, resourceBuildPlan);
-                if (normalBuildPlan is null)
+                if (normalBuildPlan.Type == BuildingEnums.Unknown)
                 {
                     context.DeleteJobById(job.Id);
                 }
@@ -63,7 +63,7 @@ public sealed partial class GetBuildPlanCommand(
                 continue;
             }
 
-            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
+            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
 
             var isComplete = context.IsPlanDone(villageId, plan);
             if (isComplete)
@@ -197,7 +197,7 @@ public sealed partial class GetBuildPlanCommand(
             .FirstOrDefault(x =>
             {
                 var plan = JsonSerializer.Deserialize<NormalBuildPlan>(x.Content);
-                return plan != null && !ResourceTypes.Contains(plan.Type);
+                return !ResourceTypes.Contains(plan.Type);
             });
     }
 
@@ -211,7 +211,7 @@ public sealed partial class GetBuildPlanCommand(
             .FirstOrDefault(x =>
             {
                 var plan = JsonSerializer.Deserialize<NormalBuildPlan>(x.Content);
-                return plan != null && ResourceTypes.Contains(plan.Type);
+                return ResourceTypes.Contains(plan.Type);
             });
 
         var globalResourceJob = jobs

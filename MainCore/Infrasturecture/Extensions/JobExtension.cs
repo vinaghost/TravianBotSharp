@@ -59,7 +59,13 @@ namespace MainCore.Infrasturecture.Extensions
                     job.Position = (maxPosition ?? -1) + 1;
                 }
 
-                context.Add(job.ToEntity(villageId));
+                context.Add(new Job
+                {
+                    VillageId = villageId.Value,
+                    Position = job.Position,
+                    Type = job.Type,
+                    Content = job.Content,
+                });
                 context.SaveChanges();
             }
             public void DeleteJobById(JobId jobId)

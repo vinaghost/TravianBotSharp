@@ -1,5 +1,11 @@
 ﻿namespace MainCore.Features.Update;
 
+public class HeroItemDto
+{
+    public HeroItemEnums Type { get; set; }
+    public int Amount { get; set; }
+}
+
 [Handler]
 public sealed partial class UpdateInventoryCommand(IDbContextFactory<AppDbContext> contextFactory)
 {

@@ -127,7 +127,7 @@
                     .Where(x => x.Type == prerequisiteBuilding.Type)
                     .Any(x => x.Level >= prerequisiteBuilding.Level);
 
-                if (!valid) errors.Add(new Error($"Required {prerequisiteBuilding}"));
+                if (!valid) errors.Add(new Error($"Required {prerequisiteBuilding.Type} level {prerequisiteBuilding.Level}"));
             }
             return Result.FailIfNotEmpty(errors);
         }

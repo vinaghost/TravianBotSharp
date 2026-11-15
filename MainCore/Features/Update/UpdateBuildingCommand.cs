@@ -2,6 +2,24 @@ using MainCore.Features.InstantUpgrade;
 
 namespace MainCore.Features.Update;
 
+public class BuildingDto
+{
+    public int Type { get; set; }
+    public int Level { get; set; }
+    public bool IsUnderConstruction { get; set; }
+    public int Location { get; set; }
+}
+
+public class QueueBuildingDto
+{
+    public int Position { get; set; }
+
+    public int Location { get; set; } = -1;
+    public string Type { get; set; } = "";
+    public int Level { get; set; }
+    public DateTime CompleteTime { get; set; }
+}
+
 [Handler]
 public sealed partial class UpdateBuildingCommand(
     IDbContextFactory<AppDbContext> contextFactory,

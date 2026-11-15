@@ -2,7 +2,7 @@
 {
     public static class PlanExtension
     {
-        public static NormalBuildPlan? ExtractResourceBuildPlan(this AppDbContext context, VillageId villageId, ResourceBuildPlan plan)
+        public static NormalBuildPlan ExtractResourceBuildPlan(this AppDbContext context, VillageId villageId, ResourceBuildPlan plan)
         {
             var layoutBuildings = context.GetLayoutBuildings(villageId, ignoreJobBuilding: true);
 
@@ -14,7 +14,7 @@
             };
 
             var validFields = candidateFields.Where(x => x.Level < plan.Level).ToList();
-            if (validFields.Count == 0) return null;
+            if (validFields.Count == 0) return new NormalBuildPlan(BuildingEnums.Unknown, 0, 0);
 
             var minLevel = validFields.Min(x => x.Level);
             var lowestFields = validFields.Where(x => x.Level == minLevel).ToList();

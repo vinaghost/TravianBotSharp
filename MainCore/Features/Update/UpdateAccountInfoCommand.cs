@@ -2,6 +2,24 @@
 
 namespace MainCore.Features.Update;
 
+public class AccountInfoDto
+{
+    public int Tribe { get; set; }
+    public int Gold { get; set; }
+    public int Silver { get; set; }
+    public bool HasPlusAccount { get; set; } = false;
+}
+
+public class VillageDto
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public int X { get; set; }
+    public int Y { get; set; }
+    public bool IsActive { get; set; }
+    public bool IsUnderAttack { get; set; }
+}
+
 [Handler]
 public sealed partial class UpdateAccountInfoCommand(
     IDbContextFactory<AppDbContext> contextFactory,

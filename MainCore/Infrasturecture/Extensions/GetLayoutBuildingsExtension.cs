@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
 
+using MainCore.UI.ViewModels.Tabs.Villages;
+
 namespace MainCore.Infrasturecture.Extensions
 {
     public static class GetLayoutBuildingsExtension
@@ -59,8 +61,6 @@ namespace MainCore.Infrasturecture.Extensions
                             continue;
 
                         var highestPlannedJob = planGroup.MaxBy(plan => plan.Level);
-                        if (highestPlannedJob is null)
-                            continue;
 
                         if (building.Type == BuildingEnums.Site)
                             building.Type = highestPlannedJob.Type;
@@ -84,8 +84,6 @@ namespace MainCore.Infrasturecture.Extensions
                     foreach (var planGroup in plannedResourceBuilds)
                     {
                         var highestPlannedJob = planGroup.MaxBy(plan => plan.Level);
-                        if (highestPlannedJob is null)
-                            continue;
 
                         if (planGroup.Key == ResourcePlanEnums.AllResources)
                         {

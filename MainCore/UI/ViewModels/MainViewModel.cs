@@ -8,6 +8,8 @@ using Microsoft.Win32;
 
 using ReactiveUI.Primitives.Signals;
 
+using Serilog;
+
 using Splat;
 
 namespace MainCore.UI.ViewModels
@@ -54,7 +56,7 @@ namespace MainCore.UI.ViewModels
         public async Task Unload()
         {
             await chromeManager.Shutdown();
-            LogService.Shutdown();
+            await Log.CloseAndFlushAsync();
         }
 
         private static void CheckDriver()

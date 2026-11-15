@@ -115,6 +115,8 @@ namespace MainCore.Shared.Enums
             };
         }
 
+        public record struct PrerequisiteBuilding(BuildingEnums Type, int Level);
+
         public static List<PrerequisiteBuilding> GetPrerequisites(this BuildingEnums building)
         {
             return building switch

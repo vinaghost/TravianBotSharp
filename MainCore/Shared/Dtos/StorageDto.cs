@@ -1,4 +1,4 @@
-﻿namespace MainCore.DTO
+﻿namespace MainCore.Shared.Dtos
 {
     public class StorageDto
     {

@@ -15,6 +15,19 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
 
+    public class BuildingItem
+    {
+        public BuildingId Id { get; set; }
+        public int Location { get; set; }
+        public BuildingEnums Type { get; set; }
+
+        public int CurrentLevel { get; set; }
+        public int QueueLevel { get; set; }
+        public int JobLevel { get; set; }
+
+        public int Level => Math.Max(Math.Max(CurrentLevel, QueueLevel), JobLevel);
+    }
+
     [RegisterSingleton<BuildViewModel>]
     public partial class BuildViewModel : VillageTabViewModelBase
     {
@@ -190,12 +203,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var items = context.Jobs
                 .Where(x => x.VillageId == villageId.Value)
                 .OrderBy(x => x.Position)
-                .ToDto()
                 .AsEnumerable()
                 .Select(x => new ListBoxItem()
                 {
-                    Id = x.Id.Value,
-                    Content = x.ToString(),
+                    Id = x.Id,
+                    Content = JobDto.GetJobContent(x),
                 })
                 .ToList();
 
@@ -459,9 +471,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var jobs = context.Jobs
                 .Where(x => x.VillageId == VillageId.Value)
                 .OrderBy(x => x.Position)
-                .ToDto()
+                .Select(x => new JobDto()
+                {
+                    Id = JobId.Empty,
+                    Position = x.Position,
+                    Type = x.Type,
+                    Content = x.Content,
+                })
                 .ToList();
-            jobs.ForEach(job => job.Id = JobId.Empty);
+
             var jsonString = JsonSerializer.Serialize(jobs);
             await File.WriteAllTextAsync(path, jsonString);
 
