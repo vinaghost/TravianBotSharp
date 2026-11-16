@@ -18,6 +18,7 @@ public sealed partial class NPCCommand(
         Result result;
 
         var values = await GetValues(villageId, browser.CurrentPage);
+        logger.Information("NPC values: {Wood} - {Clay} - {Iron} - {Crop}", values[0], values[1], values[2], values[3]);
 
         result = await CheckOverflow(villageId, browser.CurrentPage, values);
         if (result.IsFailed) return result;
@@ -90,11 +91,13 @@ public sealed partial class NPCCommand(
         if (overflowNPC) return Result.Ok();
 
         var storage = await UpdateStorageCommand.GetData(page);
+
         for (var i = 0; i < 3; i++)
         {
             if (values[i] > storage.Warehouse)
             {
-                return StorageLimit.Warehouse(storage.Warehouse, values[i]);
+                logger.Warning("Warehouse doesn't have enough capacity, need {Required} but have {Storage} ({Diff})", values[i], storage.Warehouse, values[i] - storage.Warehouse);
+                return StorageLimit.Error;
             }
         }
 
@@ -116,7 +119,7 @@ public sealed partial class NPCCommand(
         logger.Information("[{Warehouse}]: {Wood} - {Clay} - {Iron} | [{Granary}]: {Crop}", storage.Warehouse, storage.Wood, storage.Clay, storage.Iron, storage.Granary, storage.Crop);
     }
 
-    private static async ValueTask<Result> InputAmount(IChromeBrowser browser, long[] values)
+    private async ValueTask<Result> InputAmount(IChromeBrowser browser, long[] values)
     {
         var inputs = browser.CurrentPage.GetInputs();
 
@@ -124,7 +127,8 @@ public sealed partial class NPCCommand(
 
         if (inputCount != 4)
         {
-            return Stop.Error.WithError($"Expected 4 input elements, but found {inputCount}.");
+            logger.Error("Expected 4 input elements, but found {InputCount}.", inputCount);
+            return Stop.Error;
         }
 
         for (var i = 0; i < 4; i++)

@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-using MainCore.Infrasturecture.Entities;
-
 using StronglyTypedIds;
 
 #nullable disable

@@ -5,6 +5,7 @@ namespace MainCore.Features.StartFarmList;
 [Handler]
 public sealed partial class StartFarmListTask(
     IDbContextFactory<AppDbContext> contextFactory,
+    ILogger logger,
     ChromeManager chromeManager,
     ToFarmListPageCommand.Handler toFarmListPageCommand,
     StartActiveFarmlistCommand.Handler startActiveFarmlistCommand,
@@ -31,7 +32,11 @@ public sealed partial class StartFarmListTask(
         else
         {
             var farmLists = GetActiveFarms(task.AccountId);
-            if (farmLists.Count == 0) return Skip.Error.WithError("No farmlist is active");
+            if (farmLists.Count == 0)
+            {
+                logger.Information("No farmlist is active");
+                return Skip.Error;
+            }
 
             result = await startActiveFarmlistCommand.HandleAsync(new(browser, farmLists), cancellationToken);
             if (result.IsFailed) return result;

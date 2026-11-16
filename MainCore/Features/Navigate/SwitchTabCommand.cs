@@ -1,7 +1,7 @@
 ﻿namespace MainCore.Features.Navigate;
 
 [Handler]
-public static partial class SwitchTabCommand
+public partial class SwitchTabCommand(ILogger logger)
 {
     public sealed record Command(IChromeBrowser Browser, int TabIndex) : ICommand
     {
@@ -9,7 +9,7 @@ public static partial class SwitchTabCommand
         private string Description => $"#{TabIndex + 1}";
     }
 
-    private static async ValueTask<Result> HandleAsync(Command command)
+    private async ValueTask<Result> HandleAsync(Command command)
     {
         var (browser, tabIndex) = command;
         var tabs = browser.CurrentPage.GetTabs();
@@ -17,8 +17,11 @@ public static partial class SwitchTabCommand
         var countTabs = await tabs.CountAsync();
         if (countTabs == 0) return Result.Ok();
 
-        if (tabIndex >= countTabs) return Retry.Error.WithError($"Found {countTabs} tabs but need tab #{tabIndex + 1} active");
-
+        if (tabIndex >= countTabs)
+        {
+            logger.Warning("Found {CountTabs} tabs but need tab #{TabIndex} active", countTabs, tabIndex + 1);
+            return Retry.Error;
+        }
         var tab = tabs.Nth(tabIndex);
         if (await tab.IsTabActive()) return Result.Ok();
 

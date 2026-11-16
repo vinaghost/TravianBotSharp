@@ -1,7 +1,5 @@
 ﻿using System.Collections.Immutable;
 
-using MainCore.Infrasturecture.Entities;
-
 using StronglyTypedIds;
 
 [assembly: StronglyTypedIdDefaults(backingType: StronglyTypedIdBackingType.Int, converters: StronglyTypedIdConverter.None)]

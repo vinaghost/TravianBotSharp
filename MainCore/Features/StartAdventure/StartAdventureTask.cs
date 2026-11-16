@@ -2,6 +2,7 @@
 
 [Handler]
 public sealed partial class StartAdventureTask(
+    ILogger logger,
     ChromeManager chromeManager,
     OpenAdventurePanelCommand.Handler openAdventurePanelCommand,
     ExploreAdeventureCommand.Handler exploreAdeventureCommand)
@@ -16,7 +17,7 @@ public sealed partial class StartAdventureTask(
         var browser = chromeManager.Get(task.AccountId);
 
         var canStartAdventure = await CanStartAdventure(browser.CurrentPage);
-        if (!canStartAdventure) return Skip.Error.WithError("No adventure available");
+        if (!canStartAdventure) return Skip.Error;
 
         Result result;
         result = await openAdventurePanelCommand.HandleAsync(new(browser), cancellationToken);
@@ -31,22 +32,25 @@ public sealed partial class StartAdventureTask(
         return Result.Ok();
     }
 
-    private static async Task<bool> CanStartAdventure(IPage page)
+    private async Task<bool> CanStartAdventure(IPage page)
     {
         var heroState = await page.GetHeroState();
 
         if (heroState.Health <= 30)
         {
+            logger.Information("Hero health is too low to start adventure ({Health} < 31)", heroState.Health);
             return false;
         }
 
         if (!heroState.IsAtHome)
         {
+            logger.Information("Hero is not at home, cannot start adventure");
             return false;
         }
 
         if (!heroState.IsAdventureReady)
         {
+            logger.Information("No adventure available");
             return false;
         }
         return true;

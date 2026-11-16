@@ -14,7 +14,11 @@ public sealed partial class ExploreAdeventureCommand(ILogger logger)
         Result result;
 
         var adventures = await browser.CurrentPage.GetAdventureInfo();
-        if (adventures.Count == 0) return Skip.Error.WithError("No adventure available");
+        if (adventures.Count == 0)
+        {
+            logger.Information("No adventure available");
+            return Skip.Error;
+        }
 
         var adventure = adventures[0];
 

@@ -16,12 +16,14 @@ public sealed partial class TrainTroopCommand(ILogger logger)
         var maxAmount = await browser.CurrentPage.GetMaxAmount(troop);
         if (maxAmount == 0)
         {
-            return MissingResource.Error(troop);
+            logger.Warning("Cannot train {Troop} because of missing resources", troop);
+            return MissingResource.Error;
         }
 
         if (amount > maxAmount && !trainWhenLowResource)
         {
-            return MissingResource.Error(troop);
+            logger.Warning("Cannot train {Amount} {Troop} because of missing resources", amount, troop);
+            return MissingResource.Error;
         }
         Result result;
         result = await browser.Input(browser.CurrentPage.GetInputBox(troop), $"{amount}");

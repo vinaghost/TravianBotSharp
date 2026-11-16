@@ -2,6 +2,7 @@
 
 [Handler]
 public sealed partial class ToBuildingByTypeCommand(
+    ILogger logger,
     ToDorfCommand.Handler toDorfCommand,
     ToBuildingByLocationCommand.Handler toBuildingByLocationCommand)
 {
@@ -23,7 +24,8 @@ public sealed partial class ToBuildingByTypeCommand(
 
         if (location == -1)
         {
-            return MissingBuilding.Error(buildingType);
+            logger.Warning("Building {BuildingType} not found.", buildingType);
+            return MissingBuilding.Error;
         }
 
         result = await toBuildingByLocationCommand.HandleAsync(new(browser, location), cancellationToken);

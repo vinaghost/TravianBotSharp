@@ -1,6 +1,4 @@
-﻿using MainCore.Infrasturecture.Entities;
-
-using StronglyTypedIds;
+﻿using StronglyTypedIds;
 
 #nullable disable
 

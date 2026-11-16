@@ -29,7 +29,7 @@ public sealed partial class NPCTask(
             if (result.HasError<MissingBuilding>())
             {
                 await TurnOffNPC(task.VillageId);
-                return Skip.Error.WithErrors(result.Errors);
+                return Skip.Error;
             }
             return result;
         }
@@ -48,7 +48,7 @@ public sealed partial class NPCTask(
             if (result.HasError<StorageLimit>())
             {
                 await TurnOffNPC(task.VillageId);
-                return Skip.Error.WithErrors(result.Errors);
+                return Skip.Error;
             }
             return result;
         }

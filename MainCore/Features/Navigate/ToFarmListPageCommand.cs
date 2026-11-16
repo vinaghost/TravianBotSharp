@@ -5,6 +5,7 @@ namespace MainCore.Features.Navigate;
 [Handler]
 public sealed partial class ToFarmListPageCommand(
     IDbContextFactory<AppDbContext> contextFactory,
+    ILogger logger,
     SwitchVillageCommand.Handler switchVillageCommand,
     ToDorfCommand.Handler toDorfCommand,
     ToBuildingByTypeCommand.Handler toBuildingCommand,
@@ -20,7 +21,11 @@ public sealed partial class ToFarmListPageCommand(
         var (browser, accountId) = command;
 
         var rallypointVillageId = GetHasRallypointVillage(accountId);
-        if (rallypointVillageId == VillageId.Empty) return Skip.Error.WithError("No rallypoint found. Recheck & load village has rallypoint in Village>Build tab");
+        if (rallypointVillageId == VillageId.Empty)
+        {
+            logger.Warning("No rallypoint found. Recheck & load village has rallypoint in Village>Build tab");
+            return Skip.Error;
+        }
 
         var result = await switchVillageCommand.HandleAsync(new(browser, rallypointVillageId), cancellationToken);
         if (result.IsFailed) return result;

@@ -24,7 +24,7 @@ namespace MainCore.Shared.Behaviors
 
             var response = await Next(request, cancellationToken);
 
-            if (response.IsFailed && !response.HasError<Skip>()) return response;
+            if (response.IsFailed && !response.HasError<Skip>() && !response.HasError<ReSchedule>()) return response;
 
             result = await toDorfCommand.HandleAsync(new(browser, 2), cancellationToken);
             if (result.IsFailed) return (TResponse)result;

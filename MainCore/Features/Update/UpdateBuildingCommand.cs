@@ -1,5 +1,4 @@
 using MainCore.Features.InstantUpgrade;
-using MainCore.Infrasturecture.Entities;
 
 namespace MainCore.Features.Update;
 
@@ -23,6 +22,7 @@ public class QueueBuildingDto
 
 [Handler]
 public sealed partial class UpdateBuildingCommand(
+    ILogger logger,
     IDbContextFactory<AppDbContext> contextFactory,
     TaskManager taskManager,
     RxQueue rxQueue)
@@ -61,12 +61,17 @@ public sealed partial class UpdateBuildingCommand(
         taskManager.Add(new InstantUpgradeTask.Task(accountId, villageId), true);
     }
 
-    private static Result IsValidQueueBuilding(List<QueueBuildingDto> dtos)
+    private Result IsValidQueueBuilding(List<QueueBuildingDto> dtos)
     {
         foreach (var strType in dtos.Select(x => x.Type))
         {
             var resultParse = Enum.TryParse(strType, false, out BuildingEnums _);
-            if (!resultParse) return Stop.Error.WithError($"Cannot parse {strType}. Is language English ?");
+
+            if (!resultParse)
+            {
+                logger.Error("Cannot parse {StrType}. Is language English ?", strType);
+                return Stop.Error;
+            }
         }
         return Result.Ok();
     }

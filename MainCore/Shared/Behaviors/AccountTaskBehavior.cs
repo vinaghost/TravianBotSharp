@@ -4,6 +4,7 @@ using MainCore.Features.Update;
 namespace MainCore.Shared.Behaviors
 {
     public sealed class AccountTaskBehavior<TRequest, TResponse>(
+        ILogger logger,
         ChromeManager chromeManager,
         TaskManager taskManager,
         UpdateAccountInfoCommand.Handler updateAccountInfoCommand,
@@ -37,7 +38,8 @@ namespace MainCore.Shared.Behaviors
                     }
                     catch (Exception ex)
                     {
-                        return (TResponse)Stop.Error.WithError($"Travian is not ingame nor login page. Please check browser. Exception: {ex.Message}");
+                        logger.Error(ex, "Travian is not ingame nor login page. Please check browser. Exception: {Exception}", ex.Message);
+                        return (TResponse)Stop.Error;
                     }
 
                     await updateAccountInfoCommand.HandleAsync(new(browser), cancellationToken);
@@ -47,7 +49,8 @@ namespace MainCore.Shared.Behaviors
                 {
                     taskManager.AddOrUpdate<LoginTask.Task>(new(accountId), first: true);
                     request.ExecuteAt = request.ExecuteAt.AddSeconds(1);
-                    return (TResponse)Skip.Error.WithError("Account is logout. Re-login now");
+                    logger.Information("Account is logout. Re-login now");
+                    return (TResponse)Skip.Error;
                 }
             }
             else

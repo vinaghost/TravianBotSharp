@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MainCore.Shared.Errors;
+﻿namespace MainCore.Shared.Errors;
 
 public sealed class ReSchedule : Error
 {

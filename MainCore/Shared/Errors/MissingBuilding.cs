@@ -2,9 +2,9 @@
 
 public sealed class MissingBuilding : Error
 {
-    private MissingBuilding(BuildingEnums building) : base($"{building} is missing.")
+    private MissingBuilding()
     {
     }
 
-    public static MissingBuilding Error(BuildingEnums building) => new(building);
+    public static Result Error => new MissingBuilding();
 }

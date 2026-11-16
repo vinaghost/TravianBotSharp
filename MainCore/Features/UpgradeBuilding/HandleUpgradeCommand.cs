@@ -1,7 +1,7 @@
 ﻿namespace MainCore.Features.UpgradeBuilding;
 
 [Handler]
-public static partial class UpgradeCommand
+public partial class UpgradeCommand(ILogger logger)
 {
     public sealed record Command(IChromeBrowser Browser, NormalBuildPlan Plan, bool CanUseSpecialUpgrade) : ICommand
     {
@@ -9,7 +9,7 @@ public static partial class UpgradeCommand
         private string Description => $"{Plan}";
     }
 
-    private static async ValueTask<Result> HandleAsync(Command command)
+    private async ValueTask<Result> HandleAsync(Command command)
     {
         var (browser, plan, canUseSpecialUpgrade) = command;
 
@@ -35,7 +35,7 @@ public static partial class UpgradeCommand
         BuildingEnums.CommandCenter,
     ];
 
-    private static async Task<Result> SpecialUpgrade(IChromeBrowser browser, BuildingEnums building, bool repeat = false)
+    private async Task<Result> SpecialUpgrade(IChromeBrowser browser, BuildingEnums building, bool repeat = false)
     {
         var button = await browser.CurrentPage.GetSpecialButton(building);
         var result = await browser.Click(button);
@@ -62,11 +62,12 @@ public static partial class UpgradeCommand
         return Result.Ok();
     }
 
-    private static async Task<Result> HandleAds(IChromeBrowser browser, BuildingEnums building, bool repeat = false)
+    private async Task<Result> HandleAds(IChromeBrowser browser, BuildingEnums building, bool repeat = false)
     {
         if (repeat)
         {
-            return Retry.Error.WithError("Special upgrade failed after retrying.");
+            logger.Warning("Special upgrade failed after retrying.");
+            return Retry.Error;
         }
 
         var page = browser.CurrentPage;

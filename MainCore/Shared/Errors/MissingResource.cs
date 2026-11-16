@@ -2,9 +2,9 @@
 
 public class MissingResource : Error
 {
-    private MissingResource(TroopEnums troop) : base($"Dont have enough resource to train {troop}")
+    private MissingResource()
     {
     }
 
-    public static MissingResource Error(TroopEnums troop) => new(troop);
+    public static Result Error => new MissingResource();
 }

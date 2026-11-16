@@ -103,14 +103,22 @@ public sealed partial class OpenBrowserCommand(
         var accesses = GetAccesses(accountId);
 
         var access = await GetValidAccess(accesses);
-        if (access is null) return Stop.Error.WithError("All accesses not working");
+        if (access is null)
+        {
+            logger.Error("All accesses not working");
+            return Stop.Error;
+        }
 
         if (accesses.Count == 1) return access;
         if (ignoreSleepTime) return access;
 
         var minSleep = GetSleepTime(accountId);
         var timeValid = DateTime.Now.AddMinutes(-minSleep);
-        if (access.LastUsed > timeValid) return Stop.Error.WithError("Last access is reused, it may get MH's attention");
+        if (access.LastUsed > timeValid)
+        {
+            logger.Error("Last access is reused, it may get MH's attention");
+            return Stop.Error;
+        }
 
         logger.Information("Using connection {Proxy} to start chrome", access);
         return access;

@@ -136,14 +136,23 @@ public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory
 
     public async Task<Result> Refresh()
     {
-        if (_mainPage is null) return Stop.DriverNotReady;
+        if (_mainPage is null)
+        {
+            Logger.Error("Refresh failed: main page is null");
+            return Stop.Error;
+        }
         await _mainPage.ReloadAsync();
         return Result.Ok();
     }
 
     public async Task<Result> Navigate(string url)
     {
-        if (_mainPage is null) return Stop.DriverNotReady;
+        if (_mainPage is null)
+        {
+            Logger.Error("Navigate failed: main page is null");
+            return Stop.Error;
+        }
+
         try
         {
             await _mainPage.GotoAsync(url);
@@ -151,13 +160,18 @@ public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory
         }
         catch (TimeoutException ex)
         {
-            return Retry.Error.WithError($"Navigating to URL [{url}] timed out. Details: {ex.Message}");
+            Logger.Error(ex, "Navigating to URL [{Url}] timed out.", url);
+            return Retry.Error;
         }
     }
 
     public async Task<Result> Click(ILocator locator, [CallerArgumentExpression(nameof(locator))] string? expression = null)
     {
-        if (_mainPage is null) return Stop.DriverNotReady;
+        if (_mainPage is null)
+        {
+            Logger.Error("Click failed: main page is null");
+            return Stop.Error;
+        }
         try
         {
             await locator.ClickAsync();
@@ -166,13 +180,18 @@ public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory
         }
         catch (TimeoutException ex)
         {
-            return Retry.Error.WithError($"Clicking locator [{expression}] timed out. Details: {ex.Message}");
+            Logger.Error(ex, "Clicking locator [{Expression}] timed out.", expression);
+            return Retry.Error;
         }
     }
 
     public async Task<Result> Input(ILocator locator, string content, [CallerArgumentExpression(nameof(locator))] string? expression = null)
     {
-        if (_mainPage is null) return Stop.DriverNotReady;
+        if (_mainPage is null)
+        {
+            Logger.Error("Input failed: main page is null");
+            return Stop.Error;
+        }
         try
         {
             await locator.FillAsync(content);
@@ -181,13 +200,18 @@ public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory
         }
         catch (TimeoutException ex)
         {
-            return Retry.Error.WithError($"Inputting into locator [{expression}] timed out. Details: {ex.Message}");
+            Logger.Error(ex, "Inputting into locator [{Expression}] timed out.", expression);
+            return Retry.Error;
         }
     }
 
     public async Task<Result> ExecuteJsScript(string javascript)
     {
-        if (_mainPage is null) return Stop.DriverNotReady;
+        if (_mainPage is null)
+        {
+            Logger.Error("ExecuteJsScript failed: main page is null");
+            return Stop.Error;
+        }
         await _mainPage.EvaluateAsync(javascript);
         await DelayClick();
         return Result.Ok();
@@ -195,7 +219,11 @@ public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory
 
     public async Task<Result> Wait(ILocator locator, [CallerArgumentExpression(nameof(locator))] string? expression = null)
     {
-        if (_mainPage is null) return Stop.DriverNotReady;
+        if (_mainPage is null)
+        {
+            Logger.Error("Wait failed: main page is null");
+            return Stop.Error;
+        }
         try
         {
             await locator.WaitForAsync();
@@ -203,13 +231,18 @@ public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory
         }
         catch (TimeoutException ex)
         {
-            return Retry.Error.WithError($"Waiting for locator [{expression}] timed out. Details: {ex.Message}");
+            Logger.Error(ex, "Waiting for locator [{Expression}] timed out.", expression);
+            return Retry.Error;
         }
     }
 
     public async Task<Result> Wait(ILocator locator, string condition, [CallerArgumentExpression(nameof(locator))] string? expression = null)
     {
-        if (_mainPage is null) return Stop.DriverNotReady;
+        if (_mainPage is null)
+        {
+            Logger.Error("Wait failed: main page is null");
+            return Stop.Error;
+        }
         try
         {
             await locator.WaitForFunctionAsync(condition);
@@ -217,13 +250,18 @@ public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory
         }
         catch (TimeoutException ex)
         {
-            return Retry.Error.WithError($"Waiting for locator [{expression}] timed out. Details: {ex.Message}");
+            Logger.Error(ex, "Waiting for locator [{Expression}] timed out.", expression);
+            return Retry.Error;
         }
     }
 
     public async Task<Result> WaitPageChanged(string url)
     {
-        if (_mainPage is null) return Stop.DriverNotReady;
+        if (_mainPage is null)
+        {
+            Logger.Error("WaitPageChanged failed: main page is null");
+            return Stop.Error;
+        }
 
         try
         {
@@ -236,7 +274,8 @@ public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory
         catch (TimeoutException ex)
         {
             string actualUrl = _mainPage.Url;
-            return Retry.Error.WithError($"Navigation or page load failed. Expected URL: [{url}]. Current URL: [{actualUrl}]. Details: {ex.Message}");
+            Logger.Error(ex, "Navigation or page load failed. Expected URL: [{Url}]. Current URL: [{ActualUrl}]", url, actualUrl);
+            return Retry.Error;
         }
     }
 }

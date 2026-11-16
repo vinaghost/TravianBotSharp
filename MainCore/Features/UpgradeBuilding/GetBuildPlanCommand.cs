@@ -1,6 +1,5 @@
 using System.Text.Json;
 
-using MainCore.Infrasturecture.Entities;
 using MainCore.UI.ViewModels.Tabs.Villages;
 
 namespace MainCore.Features.UpgradeBuilding;
