@@ -29,48 +29,75 @@ public sealed partial class UpgradeBuildingTask(
         {
             if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-            var (_, isFailed, plan, errors) = await getBuildPlanCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            (_, var isFailed, var plan, IReadOnlyList<IError> errors) = await getBuildPlanCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
             if (isFailed)
             {
                 var upgradeErrors = errors.OfType<UpgradeError>().ToList();
                 if (upgradeErrors.Count == 0)
                     return Result.Fail(errors);
 
-                var upgradeError = upgradeErrors[0];
-                if (upgradeError.Type == UpgradeErrorType.ConstructionQueueFull)
+                var nextExecuteErrors = upgradeErrors.OfType<UpgradeErrorNextExecute>().ToList();
+                if (nextExecuteErrors.Count > 0)
                 {
-                    task.ExecuteAt = upgradeError.NextExecute!.Value;
+                    var nextExecuteError = nextExecuteErrors.OrderBy(x => x.NextExecute).First();
+                    return ReSchedule.Error(nextExecuteError.NextExecute);
+                }
+
+                if (upgradeErrors.Any(x => x.Type == UpgradeErrorType.BuildingJobQueueEmpty))
+                {
                     return Skip.Error;
                 }
-                else if (upgradeError.Type == UpgradeErrorType.BuildingJobQueueEmpty)
-                {
-                    return Skip.Error;
-                }
-                else if (upgradeError.Type == UpgradeErrorType.BuildingJobQueueBroken)
-                {
-                    return Stop.Error;
-                }
-                else
-                {
-                    return Stop.Error;
-                }
+
+                return Stop.Error;
             }
 
             logger.Information("Build {Plan}", plan);
 
-            result = await toBuildPageCommand.HandleAsync(new(browser, plan), cancellationToken);
-            if (result.IsFailed)
+            (_, isFailed, errors) = await toBuildPageCommand.HandleAsync(new(browser, plan), cancellationToken);
+            if (isFailed)
             {
-                if (!result.HasError<UpgradeError>())
-                    return result;
+                var upgradeErrors = errors.OfType<UpgradeError>().ToList();
+                if (upgradeErrors.Count == 0)
+                    return Result.Fail(errors);
 
-                var upgradeError = result.Errors.OfType<UpgradeError>().First();
-                if (upgradeError.Type == UpgradeErrorType.BuildingComplete)
+                if (upgradeErrors.Any(x => x.Type == UpgradeErrorType.BuildingComplete))
                 {
                     // roll next plan
                     continue;
                 }
-                else if (upgradeError.Type == UpgradeErrorType.BuildingInQueue)
+
+                if (upgradeErrors.Any(x => x.Type == UpgradeErrorType.BuildingNotExist))
+                {
+                    result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
+                    if (result.IsFailed) return result;
+
+                    if (plan.Type.IsResourceBonus())
+                    {
+                        result = await toDorfCommand.HandleAsync(new(browser, 1), cancellationToken);
+                        if (result.IsFailed) return result;
+
+                        result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
+                        if (result.IsFailed) return result;
+                    }
+
+                    (_, isFailed, errors) = CheckPrerequisite(task.VillageId, plan);
+                    if (isFailed)
+                    {
+                        var nextExecuteErrors = upgradeErrors.OfType<UpgradeErrorNextExecute>().ToList();
+                        if (nextExecuteErrors.Count > 0)
+                        {
+                            var nextExecuteError = nextExecuteErrors.OrderBy(x => x.NextExecute).First();
+                            return ReSchedule.Error(nextExecuteError.NextExecute);
+                        }
+
+                        return Stop.Error;
+                    }
+
+                    // continue
+                    result = await toBuildPageCommand.HandleAsync(new(browser, plan, true), cancellationToken);
+                    if (result.IsFailed) return result;
+                }
+                else if (upgradeErrors.Any(x => x.Type == UpgradeErrorType.BuildingInQueue))
                 {
                     result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
                     if (result.IsFailed) return result;
@@ -85,73 +112,29 @@ public sealed partial class UpgradeBuildingTask(
                     result = await toBuildPageCommand.HandleAsync(new(browser, plan, true), cancellationToken);
                     if (result.IsFailed) return result;
                 }
-                else if (upgradeError.Type == UpgradeErrorType.BuildingNotExist)
-                {
-                    result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
-                    if (result.IsFailed) return result;
-
-                    if (plan.Type.IsResourceBonus())
-                    {
-                        result = await toDorfCommand.HandleAsync(new(browser, 1), cancellationToken);
-                        if (result.IsFailed) return result;
-
-                        result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
-                        if (result.IsFailed) return result;
-                    }
-
-                    result = CheckPrerequisite(task.VillageId, plan);
-                    if (result.IsFailed)
-                    {
-                        if (!result.HasError<UpgradeError>())
-                            return result;
-
-                        var prerequisiteInQueueError = result.Errors.OfType<UpgradeError>()
-                            .Where(x => x.Type == UpgradeErrorType.PrerequisiteInQueue)
-                            .OrderBy(x => x.NextExecute)
-                            .FirstOrDefault();
-
-                        if (prerequisiteInQueueError is not null)
-                        {
-                            task.ExecuteAt = prerequisiteInQueueError.NextExecute!.Value;
-                            return Skip.Error;
-                        }
-
-                        return Stop.Error;
-                    }
-
-                    // continue
-                    result = await toBuildPageCommand.HandleAsync(new(browser, plan, true), cancellationToken);
-                    if (result.IsFailed) return result;
-                }
             }
             var canUseHeroResource = CanUseHeroResource(task.VillageId);
-            result = await handleResourceCommand.HandleAsync(new(browser, plan, canUseHeroResource), cancellationToken);
-            if (result.IsFailed)
+            (_, isFailed, errors) = await handleResourceCommand.HandleAsync(new(browser, plan, canUseHeroResource), cancellationToken);
+            if (isFailed)
             {
-                if (!result.HasError<UpgradeError>())
-                    return result;
+                var upgradeErrors = errors.OfType<UpgradeError>().ToList();
+                if (upgradeErrors.Count == 0)
+                    return Result.Fail(errors);
 
-                var lackOfFreeCropError = result.Errors.OfType<UpgradeError>().FirstOrDefault(x => x.Type == UpgradeErrorType.LackOfFreeCrop);
-
-                if (lackOfFreeCropError is not null)
+                if (upgradeErrors.Any(x => x.Type == UpgradeErrorType.LackOfFreeCrop))
                 {
                     AddCropland(task.AccountId, task.VillageId);
                     continue;
                 }
 
-                var storageLimitError = result.Errors.OfType<UpgradeError>().FirstOrDefault(x => x.Type == UpgradeErrorType.StorageLimit);
-
-                if (storageLimitError is not null)
+                if (upgradeErrors.Any(x => x.Type == UpgradeErrorType.StorageLimit))
                 {
                     return Stop.Error;
                 }
-
-                var missingResourceError = result.Errors.OfType<UpgradeError>().FirstOrDefault(x => x.Type == UpgradeErrorType.MissingResource);
-                if (missingResourceError is not null)
+                if (upgradeErrors.Any(x => x.Type == UpgradeErrorType.MissingResource))
                 {
                     var time = await browser.CurrentPage.GetTimeWhenEnoughResource(plan.Type);
-                    task.ExecuteAt = DateTime.Now.Add(time);
-                    return Skip.Error;
+                    return ReSchedule.Error(DateTime.Now.Add(time));
                 }
             }
 
@@ -213,10 +196,7 @@ public sealed partial class UpgradeBuildingTask(
                 if (queueBuilding is not null)
                 {
                     logger.Information("Prerequisite {Type} level {Level} is in queue, will complete at {CompleteTime}.", prereq.Type, prereq.Level, queueBuilding.CompleteTime);
-                    errors.Add(new UpgradeError(UpgradeErrorType.PrerequisiteInQueue)
-                    {
-                        NextExecute = queueBuilding.CompleteTime
-                    });
+                    errors.Add(new UpgradeErrorNextExecute(UpgradeErrorType.PrerequisiteInQueue, queueBuilding.CompleteTime));
                 }
                 else
                 {
@@ -253,10 +233,7 @@ public sealed partial class UpgradeBuildingTask(
         if (highestLevelInQueue is not null && highestLevelInQueue.Level > highestExistingBuilding.Level)
         {
             logger.Information("{Type} need one building at max level before build more, current one at #{Location} is in progress to {Level}, will complete at {CompleteTime}.", highestExistingBuilding.Type, highestExistingBuilding.Location, highestExistingBuilding.Level, highestLevelInQueue.CompleteTime);
-            errors.Add(new UpgradeError(UpgradeErrorType.PrerequisiteInQueue)
-            {
-                NextExecute = highestLevelInQueue.CompleteTime
-            });
+            errors.Add(new UpgradeErrorNextExecute(UpgradeErrorType.PrerequisiteInQueue, highestLevelInQueue.CompleteTime));
         }
         else
         {

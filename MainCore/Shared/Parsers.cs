@@ -11,19 +11,19 @@ public static class Parsers
 
     public static ILocator GetFieldLocator(this IPage page, BuildingEnums buildingType)
     {
-        var node = page.Locator($".village1 a.gid{buildingType}");
+        var node = page.Locator($".village1 a.gid{(int)buildingType}");
         return node;
     }
 
     public static ILocator GetFieldLocator(this IPage page, BuildingEnums buildingType, int location)
     {
-        var node = page.Locator($".village1 a.buildingSlot{location}.gid{buildingType}");
+        var node = page.Locator($".village1 a.buildingSlot{location}.gid{(int)buildingType}");
         return node;
     }
 
     public static ILocator GetBuildingLocator(this IPage page, BuildingEnums buildingType, int location)
     {
-        var node = page.Locator($".village2 div.buildingSlot.g{buildingType}.aid{location}");
+        var node = page.Locator($".village2 div.buildingSlot.g{(int)buildingType}.aid{location}");
         return node;
     }
 

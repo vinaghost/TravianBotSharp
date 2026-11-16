@@ -50,18 +50,21 @@ public sealed partial class UseHeroResourceCommand(ILogger logger)
 
     private async Task<Result> IsEnoughResource(IChromeBrowser browser, long[] requiredResources)
     {
-        var errors = new List<Error>();
         var resources = await browser.CurrentPage.GetInventoryResources();
-        for (var i = 0; i < 4; i++)
-        {
-            if (resources[i] >= requiredResources[i])
-            {
-                continue;
-            }
 
-            logger.Warning("Not enough resource in hero inventory. Required: {Required} {Type}, Current: {Current}", requiredResources[i], _itemInputName[i], resources[i]);
-            errors.Add(new UpgradeError(UpgradeErrorType.MissingResource));
+        var missingResources = Enumerable.Range(0, 4)
+            .Where(i => resources[i] < requiredResources[i]);
+
+        foreach (int i in missingResources)
+        {
+            logger.Warning(
+                "Not enough resource in hero inventory. Required: {Required} {Type}, Current: {Current}",
+                requiredResources[i],
+                _itemInputName[i],
+                resources[i]
+            );
         }
-        return Result.FailIfNotEmpty(errors);
+
+        return Result.FailIf(missingResources.Any(), new UpgradeError(UpgradeErrorType.MissingResource));
     }
 }

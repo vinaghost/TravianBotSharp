@@ -104,8 +104,6 @@ public sealed class TimerManager
         task.Stage = StageEnums.Executing;
         _rxQueue.Enqueue(new TasksModified(accountId));
 
-        var cacheExecuteTime = task.ExecuteAt;
-
         using var scope = _serviceScopeFactory.CreateScope();
 
         ///===========================================================///
@@ -152,8 +150,7 @@ public sealed class TimerManager
 
             _taskManager.SetStatus(accountId, StatusEnums.Paused);
         }
-
-        if (poliResult.Result is not null)
+        else if (poliResult.Result is not null)
         {
             var result = poliResult.Result;
             if (result.IsFailed)
@@ -166,31 +163,22 @@ public sealed class TimerManager
                 }
                 else if (result.HasError<Skip>())
                 {
-                    if (task.ExecuteAt == cacheExecuteTime)
-                    {
-                        _taskManager.Remove(accountId, task);
-                    }
-                    else
-                    {
-                        browser.Logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
-                    }
+                    _taskManager.Remove(accountId, task);
+                }
+                else if (result.HasError<ReSchedule>())
+                {
+                    var rescheduleError = result.Errors.OfType<ReSchedule>().First();
+                    task.ExecuteAt = rescheduleError.ExecuteAt;
                 }
                 else if (result.HasError<Cancel>())
                 {
                     _taskManager.SetStatus(accountId, StatusEnums.Paused);
                 }
             }
-            else
-            {
-                if (task.ExecuteAt == cacheExecuteTime)
-                {
-                    _taskManager.Remove(accountId, task);
-                }
-                else
-                {
-                    browser.Logger.Information("Schedule next run at {Time}", task.ExecuteAt.ToString("yyyy-MM-dd HH:mm:ss"));
-                }
-            }
+        }
+        else
+        {
+            _taskManager.Remove(accountId, task);
         }
 
         using var context = _contextFactory.CreateDbContext();

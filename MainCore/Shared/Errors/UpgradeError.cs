@@ -15,8 +15,12 @@ public enum UpgradeErrorType
     MissingResource
 }
 
-public sealed class UpgradeError(UpgradeErrorType type) : Error
+public class UpgradeError(UpgradeErrorType type) : Error
 {
     public UpgradeErrorType Type => type;
-    public DateTime? NextExecute { get; set; }
+}
+
+public sealed class UpgradeErrorNextExecute(UpgradeErrorType type, DateTime nextExecute) : UpgradeError(type)
+{
+    public DateTime NextExecute { get; } = nextExecute;
 }

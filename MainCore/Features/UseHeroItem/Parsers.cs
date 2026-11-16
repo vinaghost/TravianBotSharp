@@ -28,37 +28,16 @@ public static class Parsers
 
     public static async Task<long[]> GetInventoryResources(this IPage page)
     {
-        var jsonResult = await page.EvaluateAsync<JsonElement>(@"() => {
+        var data = await page.EvaluateAsync<long[]>(@"() => {
                 const cells = document.querySelectorAll('div.heroItem');
                 const result = [];
-
-                function parseCount(text) {
-                    if (!text) return 0;
-                    const s = text.trim().toLowerCase();
-                    if (s === '') return 0;
-
-                    const suffixMatch = s.match(/^([\d,.]+)([km]?)$/i);
-                    if (!suffixMatch) {
-                        // fallback: remove non-digits
-                        const digits = s.replace(/[^0-9.]/g, '');
-                        return digits ? Math.round(parseFloat(digits)) : 0;
-                    }
-                    let num = parseFloat(suffixMatch[1].replace(/,/g,''));
-                    const suffix = suffixMatch[2];
-                    if (suffix === 'k') num *= 1_000;
-                    else if (suffix === 'm') num *= 1_000_000;
-                    return Math.round(num);
-                }
-
                 cells.forEach(cell => {
                     const countSlot = cell.querySelector('.count');
-                    result.push(countSlot ? parseCount(countSlot.innerText) : 0);
+                    result.push(countSlot ? parseInt(countSlot.innerText, 10) : 0);
                 });
                 return result;
             }");
-        var text = jsonResult.GetRawText();
-        var rawItemsData = JsonSerializer.Deserialize<long[]>(text) ?? throw new InvalidOperationException($"Failed to deserialize inventory resource from the page. Content: {text}");
-        return rawItemsData;
+        return data;
     }
 
     public static ILocator GetItemSlot(this IPage page, HeroItemEnums type)

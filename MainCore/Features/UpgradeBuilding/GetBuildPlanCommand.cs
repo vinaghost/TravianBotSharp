@@ -29,6 +29,7 @@ public sealed partial class GetBuildPlanCommand(
 
             if (buildJobs.Count == 0)
             {
+                logger.Warning("Job queue is empty.");
                 return new UpgradeError(UpgradeErrorType.BuildingJobQueueEmpty);
             }
 
@@ -131,10 +132,7 @@ public sealed partial class GetBuildPlanCommand(
             }
 
             logger.Warning("No job availabe. Wait for current building to finish at {CompleteTime}", queueBuildings[0].CompleteTime);
-            return new UpgradeError(UpgradeErrorType.ConstructionQueueFull)
-            {
-                NextExecute = queueBuildings[0].CompleteTime,
-            };
+            return new UpgradeErrorNextExecute(UpgradeErrorType.ConstructionQueueFull, queueBuildings[0].CompleteTime);
         }
 
         if (queueBuildings.Count == 2)
@@ -146,19 +144,13 @@ public sealed partial class GetBuildPlanCommand(
             }
 
             logger.Warning("No job availabe. Wait for current building to finish at {CompleteTime}", queueBuildings[0].CompleteTime);
-            return new UpgradeError(UpgradeErrorType.ConstructionQueueFull)
-            {
-                NextExecute = queueBuildings[0].CompleteTime,
-            };
+            return new UpgradeErrorNextExecute(UpgradeErrorType.ConstructionQueueFull, queueBuildings[0].CompleteTime);
         }
 
         if (queueBuildings.Count == 3)
         {
             logger.Warning("No job availabe. Wait for current building to finish at {CompleteTime}", queueBuildings[0].CompleteTime);
-            return new UpgradeError(UpgradeErrorType.ConstructionQueueFull)
-            {
-                NextExecute = queueBuildings[0].CompleteTime,
-            };
+            return new UpgradeErrorNextExecute(UpgradeErrorType.ConstructionQueueFull, queueBuildings[0].CompleteTime);
         }
 
         logger.Warning("No job availabe. But something strange happened. {QueueBuildingCount}", queueBuildings.Count);
@@ -167,15 +159,15 @@ public sealed partial class GetBuildPlanCommand(
 
     private static readonly List<JobTypeEnums> BuildJobTypes = [
         JobTypeEnums.NormalBuild,
-            JobTypeEnums.ResourceBuild
+        JobTypeEnums.ResourceBuild
     ];
 
     public static readonly List<BuildingEnums> ResourceTypes = [
         BuildingEnums.Woodcutter,
-            BuildingEnums.ClayPit,
-            BuildingEnums.IronMine,
-            BuildingEnums.Cropland,
-        ];
+        BuildingEnums.ClayPit,
+        BuildingEnums.IronMine,
+        BuildingEnums.Cropland,
+    ];
 
     private static JobDto? GetJobBasedOnRomanLogic(List<QueueBuilding> queueBuildings, List<JobDto> jobs)
     {
