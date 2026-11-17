@@ -27,7 +27,8 @@ public sealed partial class UpdateBuildingCommand(
     IDbContextFactory<AppDbContext> contextFactory,
     TaskManager taskManager,
     RxQueue rxQueue,
-    ToDorfCommand.Handler toDorfCommand)
+    ToDorfCommand.Handler toDorfCommand,
+    BuildingNameCache nameCache)
 {
     public sealed record Command(IChromeBrowser Browser, VillageId VillageId) : IVillageBrowserCommand
     {
@@ -44,17 +45,22 @@ public sealed partial class UpdateBuildingCommand(
             return Retry.Error;
         }
 
+        nameCache.Store(accountId, villageId, first);
         var snapshots = new List<Parsers.BuildingDataDto> { first };
         var queueSnapshot = first;
-        var resolved = BuildingSnapshotReconciler.ResolveQueue(first, first.Names);
-        var needsOtherPage = !resolved || first.Queue.Any(x => ((BuildingEnums)x.Type).IsResourceField() != (first.Dorf == 1));
-        if (!needsOtherPage)
+        var resolved = BuildingSnapshotReconciler.ResolveQueue(first, nameCache.Get(accountId, villageId));
+        if (first.Queue.Any(x => x.Level <= 0 || x.DurationSeconds < 0 || x.CompleteTime == default))
         {
-            using var context = contextFactory.CreateDbContext();
-            needsOtherPage = context.QueueBuildings.AsNoTracking()
-                .Where(x => x.VillageId == villageId.Value)
-                .Select(x => x.Type).AsEnumerable()
-                .Any(type => type.IsResourceField() != (first.Dorf == 1));
+            logger.Warning("Cannot update buildings: the construction queue has an invalid level or timer.");
+            return Retry.Error;
+        }
+
+        bool needsOtherPage;
+        using (var context = contextFactory.CreateDbContext())
+        {
+            var previousQueue = context.QueueBuildings.AsNoTracking()
+                .Where(x => x.VillageId == villageId.Value).ToList();
+            needsOtherPage = !resolved || BuildingSnapshotReconciler.HasVanishedOtherPageEntries(first, previousQueue);
         }
         if (needsOtherPage)
         {
@@ -70,9 +76,10 @@ public sealed partial class UpdateBuildingCommand(
                 logger.Warning("Cannot update buildings: the other overview is invalid or the construction queue changed during refresh.");
                 return Retry.Error;
             }
+            nameCache.Store(accountId, villageId, second);
             snapshots.Add(second);
             queueSnapshot = second;
-            if (!BuildingSnapshotReconciler.ResolveQueue(second, first.Names.Concat(second.Names)))
+            if (!BuildingSnapshotReconciler.ResolveQueue(second, nameCache.Get(accountId, villageId)))
             {
                 logger.Warning("Cannot resolve every construction queue entry: {QueueNames}", string.Join(", ", second.Queue.Where(x => x.Type <= 0 || x.Level <= 0 || x.CompleteTime == default).Select(x => x.Name)));
                 return Retry.Error;

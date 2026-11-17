@@ -1,5 +1,6 @@
 using FluentValidation;
 
+using MainCore.Features.Update;
 using MainCore.Shared.Behaviors;
 
 using Microsoft.Extensions.DependencyInjection;

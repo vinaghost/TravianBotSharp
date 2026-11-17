@@ -7,3 +7,4 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("ImmediateHandler", "IHR0012:Handler method should use CancellationToken", Scope = "module")]
 [assembly: SuppressMessage("Minor Code Smell", "S1210:\"Equals\" and the comparison operators should be overridden when implementing \"IComparable\"", Scope = "module")]
+[assembly: SuppressMessage("Major Code Smell", "S6966:Awaitable method should be used", Scope = "module")]

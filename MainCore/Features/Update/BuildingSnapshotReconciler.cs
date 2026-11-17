@@ -34,6 +34,16 @@ public static class BuildingSnapshotReconciler
             .All(pair => Normalize(pair.First.Name) == Normalize(pair.Second.Name) && pair.First.Level == pair.Second.Level);
     }
 
+    public static bool HasVanishedOtherPageEntries(Parsers.BuildingDataDto snapshot, IEnumerable<QueueBuilding> previousQueue)
+    {
+        var currentCounts = snapshot.Queue.GroupBy(x => (Type: (BuildingEnums)x.Type, x.Level))
+            .ToDictionary(x => x.Key, x => x.Count());
+        return previousQueue
+            .Where(x => x.Type.IsResourceField() != (snapshot.Dorf == 1))
+            .GroupBy(x => (x.Type, x.Level))
+            .Any(group => group.Count() > currentCounts.GetValueOrDefault(group.Key));
+    }
+
     public static bool IsValidPage(Parsers.BuildingDataDto snapshot)
     {
         return snapshot.Dorf is 1 or 2 && snapshot.Buildings.Length > 0
@@ -97,11 +107,7 @@ public static class BuildingSnapshotReconciler
         {
             var items = group.OrderBy(x => x.Position).ToList();
             var pageObserved = snapshots.Any(x => x.Dorf == (group.Key.Type.IsResourceField() ? 1 : 2));
-            if (!pageObserved)
-            {
-                if (items.Count > 1) items.ForEach(x => x.Location = -1);
-                continue;
-            }
+            if (!pageObserved) continue;
 
             var candidates = candidatesByItem[items[0]].OrderBy(x => x).ToArray();
             var groupItems = items.ToHashSet();
