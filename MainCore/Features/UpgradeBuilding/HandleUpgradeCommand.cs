@@ -97,7 +97,7 @@ public partial class UpgradeCommand(ILogger logger)
             if (result.IsFailed) return result;
             return Result.Ok();
         }
-
+        await Task.Delay(20_000);
         result = await browser.Wait(browser.CurrentPage.GetDorf(building));
         if (result.IsFailed) return result;
         return Result.Ok();

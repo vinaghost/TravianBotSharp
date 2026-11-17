@@ -58,7 +58,7 @@
 
         public static async Task<int> GetBuildingLocation(this IPage page, BuildingEnums buildingType)
         {
-            var buildingLocator = page.Locator($".village2 div.buildingSlot.g{buildingType}");
+            var buildingLocator = page.Locator($".village2 div.buildingSlot.g{(int)buildingType}");
             if (await buildingLocator.CountAsync() == 0)
             {
                 return -1;

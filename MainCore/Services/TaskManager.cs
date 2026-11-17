@@ -32,8 +32,35 @@ public sealed class TaskManager(RxQueue rxQueue)
 
     public void Add<T>(T task, bool first = false) where T : AccountTask
     {
-        var existingTask = GetTaskList(task.AccountId).OfType<T>().Any(x => x.Key == task.Key);
-        if (existingTask) return;
+        var taskList = GetTaskList(task.AccountId);
+        var existingTask = taskList.OfType<T>().FirstOrDefault(x => x.Key == task.Key);
+        if (existingTask is not null)
+        {
+            if (existingTask.ExecuteAt > task.ExecuteAt)
+            {
+                Remove(existingTask.AccountId, existingTask);
+            }
+            else
+            {
+                if (first)
+                {
+                    var firstTask = taskList.OrderBy(x => x.ExecuteAt).FirstOrDefault();
+                    if (firstTask is not null)
+                    {
+                        task.ExecuteAt = firstTask.ExecuteAt.AddHours(-1);
+
+                        if (existingTask.ExecuteAt > task.ExecuteAt)
+                        {
+                            Remove(existingTask.AccountId, existingTask);
+                        }
+                    }
+                }
+                else
+                {
+                    return;
+                }
+            }
+        }
 
         var actor = GetActor(task.AccountId);
         actor.Add(task, first);
