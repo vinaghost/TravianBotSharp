@@ -1,25 +1,36 @@
 using System.Text;
 using System.Text.Json;
 
-using Humanizer;
+using FluentValidation;
 
-using MainCore.Infrasturecture.Extensions;
+using MainCore.Features.UpgradeBuilding;
 using MainCore.UI.Models.Input;
 using MainCore.UI.Models.Output;
+using MainCore.UI.Stores;
 using MainCore.UI.ViewModels.Abstract;
 using MainCore.UI.ViewModels.UserControls;
 
 namespace MainCore.UI.ViewModels.Tabs.Villages
 {
-    using FluentValidation;
-
     using ReactiveUI.Primitives;
     using ReactiveUI.Primitives.Signals;
+
+    public class BuildingItem
+    {
+        public BuildingId Id { get; set; }
+        public int Location { get; set; }
+        public BuildingEnums Type { get; set; }
+
+        public int CurrentLevel { get; set; }
+        public int QueueLevel { get; set; }
+        public int JobLevel { get; set; }
+
+        public int Level => Math.Max(Math.Max(CurrentLevel, QueueLevel), JobLevel);
+    }
 
     [RegisterSingleton<BuildViewModel>]
     public partial class BuildViewModel : VillageTabViewModelBase
     {
-        private readonly DialogService _dialogService;
         private readonly TaskManager _taskManager;
         private readonly IValidator<NormalBuildInput> _normalBuildInputValidator;
         private readonly IValidator<ResourceBuildInput> _resourceBuildInputValidator;
@@ -33,9 +44,8 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         public ListBoxItemViewModel Queue { get; } = new();
         public ListBoxItemViewModel Jobs { get; } = new();
 
-        public BuildViewModel(DialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory)
+        public BuildViewModel(DialogService dialogService, IValidator<NormalBuildInput> normalBuildInputValidator, IValidator<ResourceBuildInput> resourceBuildInputValidator, TaskManager taskManager, RxQueue rxQueue, IDbContextFactory<AppDbContext> contextFactory, SelectedItemStore selectedItemStore) : base(dialogService, selectedItemStore)
         {
-            _dialogService = dialogService;
             _normalBuildInputValidator = normalBuildInputValidator;
             _resourceBuildInputValidator = resourceBuildInputValidator;
             _taskManager = taskManager;
@@ -52,9 +62,9 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 .WhereNotNull()
                 .InvokeCommand(LoadBuildNormalCommand);
 
-            LoadBuildingCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(Buildings.Load);
-            LoadJobCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(Jobs.Load);
-            LoadQueueCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(Queue.Load);
+            LoadBuildingCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(x => Buildings.Load(x));
+            LoadJobCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(x => Jobs.Load(x));
+            LoadQueueCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(x => Queue.Load(x));
 
             LoadBuildNormalCommand.ObserveOn(RxSchedulers.MainThreadScheduler).Subscribe(SetNormalBuildInput);
 
@@ -97,13 +107,6 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (notification.AccountId != AccountId) return;
 
-            using var context = _contextFactory.CreateDbContext();
-            var task = new InstantUpgradeTask.Task(AccountId, notification.VillageId);
-            if (task.CanStart(context) && !_taskManager.IsExist<InstantUpgradeTask.Task>(AccountId, notification.VillageId))
-            {
-                _taskManager.Add(task);
-            }
-
             if (!IsActive) return;
             if (notification.VillageId != VillageId) return;
 
@@ -125,22 +128,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             await LoadBuildingCommand.Execute(notification.VillageId);
         }
 
-        protected override async Task Load(AccountId accountId, VillageId villageId)
+        protected override async Task Load(VillageId villageId)
         {
             await LoadJobCommand.Execute(villageId);
             await LoadBuildingCommand.Execute(villageId);
             await LoadQueueCommand.Execute(villageId);
-        }
-
-        protected override async Task OnContextInvalidated(AccountId accountId)
-        {
-            await Signal.Start(() =>
-            {
-                Buildings.Load([]);
-                Jobs.Load([]);
-                Queue.Load([]);
-                NormalBuildInput.Clear();
-            }, RxSchedulers.MainThreadScheduler);
         }
 
         [ReactiveCommand(RunInBackground = true)]
@@ -211,12 +203,11 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var items = context.Jobs
                 .Where(x => x.VillageId == villageId.Value)
                 .OrderBy(x => x.Position)
-                .ToDto()
                 .AsEnumerable()
                 .Select(x => new ListBoxItem()
                 {
-                    Id = x.Id.Value,
-                    Content = x.ToString(),
+                    Id = x.Id,
+                    Content = JobDto.GetJobContent(x),
                 })
                 .ToList();
 
@@ -480,9 +471,15 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             var jobs = context.Jobs
                 .Where(x => x.VillageId == VillageId.Value)
                 .OrderBy(x => x.Position)
-                .ToDto()
+                .Select(x => new JobDto()
+                {
+                    Id = JobId.Empty,
+                    Position = x.Position,
+                    Type = x.Type,
+                    Content = x.Content,
+                })
                 .ToList();
-            jobs.ForEach(job => job.Id = JobId.Empty);
+
             var jsonString = JsonSerializer.Serialize(jobs);
             await File.WriteAllTextAsync(path, jsonString);
 
