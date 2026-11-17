@@ -134,12 +134,6 @@
           "ReactiveUI.SourceGenerators.Analyzers.CodeFixes": "3.2.0"
         }
       },
-      "Riok.Mapperly": {
-        "type": "Direct",
-        "requested": "[4.3.1, )",
-        "resolved": "4.3.1",
-        "contentHash": "oSE+OVLHyiojrws0QVbQaAT2YKsYbyHqJXPdV7EhGseR/dYgeWS2x1T5qY5I4E+RJkJqMSG+FyZOq4SljWgJWQ=="
-      },
       "Serilog": {
         "type": "Direct",
         "requested": "[4.4.0, )",
