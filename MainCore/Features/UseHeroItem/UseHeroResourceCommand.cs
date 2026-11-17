@@ -19,7 +19,14 @@ public sealed partial class UseHeroResourceCommand(ILogger logger)
         if (result.IsFailed) return result;
 
         result = await browser.Wait(browser.CurrentPage.GetResourceTransferDialog());
-        if (result.IsFailed) return result;
+        if (result.IsFailed)
+        {
+            result = await browser.Click(fillUpButton);
+            if (result.IsFailed) return result;
+            
+            result = await browser.Wait(browser.CurrentPage.GetResourceTransferDialog());
+            if (result.IsFailed) return result;
+        }
 
         result = await IsEnoughResource(browser, resource);
         if (result.IsFailed)
