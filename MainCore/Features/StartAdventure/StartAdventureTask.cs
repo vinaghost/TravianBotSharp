@@ -32,25 +32,25 @@ public sealed partial class StartAdventureTask(
         return Result.Ok();
     }
 
-    private async Task<bool> CanStartAdventure(IPage page)
+    private async Task<bool> CanStartAdventure(IPage page, bool isLogged = true)
     {
         var heroState = await page.GetHeroState();
 
         if (heroState.Health <= 30)
         {
-            logger.Information("Hero health is too low to start adventure ({Health} < 31)", heroState.Health);
+            if (isLogged) logger.Information("Hero health is too low to start adventure ({Health} < 31)", heroState.Health);
             return false;
         }
 
         if (!heroState.IsAtHome)
         {
-            logger.Information("Hero is not at home, cannot start adventure");
+            if (isLogged) logger.Information("Hero is not at home, cannot start adventure");
             return false;
         }
 
         if (!heroState.IsAdventureReady)
         {
-            logger.Information("No adventure available");
+            if (isLogged) logger.Information("No adventure available");
             return false;
         }
         return true;

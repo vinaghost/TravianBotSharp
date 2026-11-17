@@ -226,7 +226,8 @@ public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory
         }
         try
         {
-            await locator.WaitForAsync();
+            const int timeout = 10_000; // 10 seconds in milliseconds
+            await locator.WaitForAsync(new() { Timeout = timeout });
             return Result.Ok();
         }
         catch (TimeoutException ex)

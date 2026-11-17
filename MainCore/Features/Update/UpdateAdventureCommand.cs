@@ -27,9 +27,19 @@ public sealed partial class UpdateAdventureCommand(
         taskManager.Add(new StartAdventureTask.Task(accountId));
     }
 
-    private static async Task<bool> CanStartAdventure(IPage page)
+    private async Task<bool> CanStartAdventure(IPage page)
     {
         var heroState = await page.GetHeroState();
+
+        if (heroState.Health <= 30)
+        {
+            return false;
+        }
+
+        if (!heroState.IsAtHome)
+        {
+            return false;
+        }
 
         if (!heroState.IsAdventureReady)
         {
