@@ -104,7 +104,7 @@ namespace MainCore.UI.ViewModels.Tabs
         [ReactiveCommand(RunInBackground = true)]
         private async Task UpdateFarmList()
         {
-            _taskManager.AddOrUpdate<UpdateFarmListTask.Task>(new(AccountId));
+            _taskManager.Add<UpdateFarmListTask.Task>(new(AccountId));
             await _dialogService.SendMessage("Information", "Added update farm list task");
         }
 
@@ -126,7 +126,7 @@ namespace MainCore.UI.ViewModels.Tabs
                     return;
                 }
             }
-            _taskManager.AddOrUpdate<StartFarmListTask.Task>(new(AccountId));
+            _taskManager.Add<StartFarmListTask.Task>(new(AccountId));
             await _dialogService.SendMessage("Information", "Added start farm list task");
         }
 

@@ -139,8 +139,7 @@ public sealed partial class UpdateAccountInfoCommand(
             {
                 foreach (var villageId in newDtos.Select(x => new VillageId(x.Id)))
                 {
-                    if (taskManager.IsExist<UpdateBuildingTask.Task>(accountId, villageId)) continue;
-                    taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(accountId, villageId));
+                    taskManager.Add<UpdateBuildingTask.Task>(new(accountId, villageId));
                 }
             }
         }

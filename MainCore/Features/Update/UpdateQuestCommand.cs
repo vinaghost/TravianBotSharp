@@ -15,8 +15,8 @@ public sealed partial class UpdateVillageQuestCommand(
     private async ValueTask HandleAsync(Command command)
     {
         var (browser, accountId, villageId) = command;
-        if (!(await browser.CurrentPage.IsVillageQuestClaimable())) return;
         if (taskManager.IsExist<ClaimVillageQuestTask.Task>(accountId, villageId)) return;
+        if (!(await browser.CurrentPage.IsVillageQuestClaimable())) return;
         using var context = contextFactory.CreateDbContext();
         if (!context.IsVillageQuestEnable(villageId)) return;
 

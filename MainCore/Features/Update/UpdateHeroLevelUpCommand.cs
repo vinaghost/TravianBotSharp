@@ -16,8 +16,8 @@ public sealed partial class UpdateHeroLevelUpCommand(
     {
         var (browser, accountId) = command;
 
-        if (await browser.CurrentPage.Locator("#topBarHero i.levelUp.show").CountAsync() == 0) return;
         if (taskManager.IsExist<SetHeroPointTask.Task>(accountId)) return;
+        if (await browser.CurrentPage.Locator("#topBarHero i.levelUp.show").CountAsync() == 0) return;
         using var context = contextFactory.CreateDbContext();
         if (!context.IsSetHeroPointEnable(accountId)) return;
         taskManager.Add(new SetHeroPointTask.Task(accountId));

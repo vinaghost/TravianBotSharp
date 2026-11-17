@@ -87,19 +87,19 @@ public sealed class TimerManager
 
     public async Task Execute(AccountId accountId)
     {
-        var taskQueue = _taskManager.GetTaskQueue(accountId);
+        var actor = _taskManager.GetActor(accountId);
 
-        var status = taskQueue.Status;
+        var status = actor.Status;
         if (status != StatusEnums.Online) return;
-        var tasks = taskQueue.Tasks.OrderBy(x => x.ExecuteAt).ToList();
+        var tasks = actor.Tasks.OrderBy(x => x.ExecuteAt).ToList();
         if (tasks.Count == 0) return;
         var task = tasks[0];
 
         if (task.ExecuteAt > DateTime.Now) return;
 
-        taskQueue.IsExecuting = true;
+        actor.IsExecuting = true;
         var cts = new CancellationTokenSource();
-        taskQueue.CancellationTokenSource = cts;
+        actor.CancellationTokenSource = cts;
 
         task.Stage = StageEnums.Executing;
         _rxQueue.Enqueue(new TasksModified(accountId));
@@ -127,10 +127,10 @@ public sealed class TimerManager
         task.Stage = StageEnums.Waiting;
         _rxQueue.Enqueue(new TasksModified(accountId));
 
-        taskQueue.IsExecuting = false;
+        actor.IsExecuting = false;
 
         cts.Dispose();
-        taskQueue.CancellationTokenSource = null;
+        actor.CancellationTokenSource = null;
 
         if (poliResult.Exception is not null)
         {

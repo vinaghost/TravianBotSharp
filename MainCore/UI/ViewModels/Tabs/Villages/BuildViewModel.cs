@@ -119,7 +119,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
         {
             if (notification.AccountId != AccountId) return;
 
-            _taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(AccountId, notification.VillageId));
+            _taskManager.Add(new UpgradeBuildingTask.Task(AccountId, notification.VillageId));
 
             if (!IsActive) return;
             if (notification.VillageId != VillageId) return;

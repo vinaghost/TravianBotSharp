@@ -26,8 +26,8 @@ public sealed partial class UpdateStorageCommand(
 
     private void TriggerNpcTask(AccountId accountId, VillageId villageId)
     {
-        using var context = contextFactory.CreateDbContext();
         if (taskManager.IsExist<NPCTask.Task>(accountId, villageId)) return;
+        using var context = contextFactory.CreateDbContext();
         if (!context.IsNPCEnable(accountId, villageId)) return;
         taskManager.Add(new NPCTask.Task(accountId, villageId), true);
     }

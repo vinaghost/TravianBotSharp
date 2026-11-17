@@ -53,7 +53,7 @@ public sealed partial class NPCTask(
             return result;
         }
 
-        taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId), true);
+        taskManager.Add(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId), true);
 
         return Result.Ok();
     }

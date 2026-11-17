@@ -14,7 +14,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             {
                 if (settings[VillageSettingEnums.CompleteImmediately] == 1)
                 {
-                    if (context.IsInstantUpgradeEnable(accountId, villageId) && !taskManager.IsExist<InstantUpgradeTask.Task>(accountId, villageId))
+                    if (context.IsInstantUpgradeEnable(accountId, villageId))
                     {
                         taskManager.Add(new InstantUpgradeTask.Task(accountId, villageId));
                     }
@@ -29,7 +29,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             {
                 if (settings[VillageSettingEnums.TrainTroopEnable] == 1)
                 {
-                    if (context.IsTrainTroopEnable(villageId) && !taskManager.IsExist<TrainTroopTask.Task>(accountId, villageId))
+                    if (context.IsTrainTroopEnable(villageId))
                     {
                         taskManager.Add(new TrainTroopTask.Task(accountId, villageId));
                     }
@@ -44,7 +44,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             {
                 if (settings[VillageSettingEnums.AutoNPCEnable] == 1)
                 {
-                    if (context.IsNPCEnable(accountId, villageId) && !taskManager.IsExist<NPCTask.Task>(accountId, villageId))
+                    if (context.IsNPCEnable(accountId, villageId))
                     {
                         taskManager.Add(new NPCTask.Task(accountId, villageId));
                     }
@@ -59,7 +59,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             {
                 if (settings[VillageSettingEnums.AutoRefreshEnable] == 1)
                 {
-                    if (context.IsRefreshEnable(villageId) && !taskManager.IsExist<UpdateVillageTask.Task>(accountId, villageId))
+                    if (context.IsRefreshEnable(villageId))
                     {
                         taskManager.Add(new UpdateVillageTask.Task(accountId, villageId));
                     }
@@ -74,7 +74,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
             {
                 if (settings[VillageSettingEnums.AutoClaimQuestEnable] == 1)
                 {
-                    if (context.IsVillageQuestEnable(villageId) && !taskManager.IsExist<ClaimVillageQuestTask.Task>(accountId, villageId))
+                    if (context.IsVillageQuestEnable(villageId))
                     {
                         taskManager.Add(new ClaimVillageQuestTask.Task(accountId, villageId));
                     }

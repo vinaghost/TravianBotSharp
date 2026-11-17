@@ -26,7 +26,7 @@ public sealed partial class InstantUpgradeTask(
         result = await instantUpgradeCommand.HandleAsync(new(browser), cancellationToken);
         if (result.IsFailed) return result;
 
-        taskManager.AddOrUpdate(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId), true);
+        taskManager.Add(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId), true);
         return Result.Ok();
     }
 }

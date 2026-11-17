@@ -90,7 +90,7 @@ namespace MainCore.UI.ViewModels.Tabs
             }
 
             var villageId = new VillageId(Villages.SelectedItem.Id);
-            _taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, villageId));
+            _taskManager.Add<UpdateBuildingTask.Task>(new(AccountId, villageId));
 
             await _dialogService.SendMessage("Information", $"Added update task to {Villages.SelectedItem.Content}");
         }
@@ -102,7 +102,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             foreach (var village in villages)
             {
-                _taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village));
+                _taskManager.Add<UpdateBuildingTask.Task>(new(AccountId, village));
             }
 
             await _dialogService.SendMessage("Information", $"Added update task to {villages.Count} villages");
@@ -123,7 +123,7 @@ namespace MainCore.UI.ViewModels.Tabs
             List<VillageId> villages = GetVillages(AccountId);
             foreach (var village in villages)
             {
-                _taskManager.AddOrUpdate<UpdateBuildingTask.Task>(new(AccountId, village));
+                _taskManager.Add<UpdateBuildingTask.Task>(new(AccountId, village));
             }
             await _dialogService.SendMessage("Information", "Added update task to all villages");
         }

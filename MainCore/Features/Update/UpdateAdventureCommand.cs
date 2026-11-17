@@ -15,11 +15,10 @@ public sealed partial class UpdateAdventureCommand(
     private async ValueTask HandleAsync(Command command)
     {
         var (browser, accountId) = command;
+        if (taskManager.IsExist<StartAdventureTask.Task>(accountId)) return;
 
         var canStartAdventure = await CanStartAdventure(browser.CurrentPage);
         if (!canStartAdventure) return;
-
-        if (taskManager.IsExist<StartAdventureTask.Task>(accountId)) return;
 
         using var context = contextFactory.CreateDbContext();
         if (!context.IsStartAdventureEnable(accountId)) return;

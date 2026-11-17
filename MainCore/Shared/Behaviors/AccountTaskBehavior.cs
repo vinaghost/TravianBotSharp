@@ -47,7 +47,7 @@ namespace MainCore.Shared.Behaviors
 
                 if (request is not LoginTask.Task)
                 {
-                    taskManager.AddOrUpdate<LoginTask.Task>(new(accountId), first: true);
+                    taskManager.Add<LoginTask.Task>(new(accountId), first: true);
                     request.ExecuteAt = request.ExecuteAt.AddSeconds(1);
                     logger.Information("Account is logout. Re-login now");
                     return (TResponse)Skip.Error;

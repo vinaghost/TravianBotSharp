@@ -52,9 +52,9 @@ public class RxQueue
         {
             ExecuteAt = DateTime.Now.AddMinutes(workTime)
         };
-        taskManager.AddOrUpdate(sleepTask);
+        taskManager.Add(sleepTask);
 
-        if (context.IsStartAdventureEnable(accountId) && !taskManager.IsExist<StartAdventureTask.Task>(accountId))
+        if (context.IsStartAdventureEnable(accountId))
         {
             taskManager.Add(new StartAdventureTask.Task(accountId));
         }
@@ -66,12 +66,12 @@ public class RxQueue
 
         foreach (var village in villages)
         {
-            if (context.IsRefreshEnable(village) && !taskManager.IsExist<UpdateVillageTask.Task>(accountId, village))
+            if (context.IsRefreshEnable(village))
             {
                 taskManager.Add(new UpdateVillageTask.Task(accountId, village));
             }
 
-            if (context.IsTrainTroopEnable(village) && !taskManager.IsExist<TrainTroopTask.Task>(accountId, village))
+            if (context.IsTrainTroopEnable(village))
             {
                 taskManager.Add(new TrainTroopTask.Task(accountId, village));
             }
@@ -80,9 +80,8 @@ public class RxQueue
         var hasBuildJobVillages = context.Villages
             .Where(x => x.AccountId == accountId.Value)
             .Where(x => x.Jobs.Any(j => _jobTypes.Contains(j.Type)))
-            .Select(x => new VillageId(x.Id))
-            .ToList();
-        foreach (var village in hasBuildJobVillages.Where(village => !taskManager.IsExist<UpgradeBuildingTask.Task>(accountId, village)))
+            .Select(x => new VillageId(x.Id));
+        foreach (var village in hasBuildJobVillages)
         {
             taskManager.Add(new UpgradeBuildingTask.Task(accountId, village));
         }

@@ -131,10 +131,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
                     foreach (var village in villages)
                     {
-                        if (!_taskManager.IsExist<UpdateBuildingTask.Task>(accountId, village))
-                        {
-                            _taskManager.Add(new UpdateBuildingTask.Task(accountId, village));
-                        }
+                        _taskManager.Add(new UpdateBuildingTask.Task(accountId, village));
                     }
                 }
                 else
@@ -154,7 +151,7 @@ namespace MainCore.UI.ViewModels.Tabs
             {
                 if (settings[AccountSettingEnums.EnableAutoStartAdventure] == 1)
                 {
-                    if (context.IsStartAdventureEnable(accountId) && !_taskManager.IsExist<StartAdventureTask.Task>(accountId))
+                    if (context.IsStartAdventureEnable(accountId))
                     {
                         _taskManager.Add(new StartAdventureTask.Task(accountId));
                     }
@@ -169,7 +166,7 @@ namespace MainCore.UI.ViewModels.Tabs
             {
                 if (settings[AccountSettingEnums.EnableAutoClaimDailyQuest] == 1)
                 {
-                    if (context.IsDailyQuestEnable(accountId) && !_taskManager.IsExist<ClaimDailyQuestTask.Task>(accountId))
+                    if (context.IsDailyQuestEnable(accountId))
                     {
                         _taskManager.Add(new ClaimDailyQuestTask.Task(accountId));
                     }
@@ -184,7 +181,7 @@ namespace MainCore.UI.ViewModels.Tabs
             {
                 if (settings[AccountSettingEnums.EnableAutoSetHeroPoint] == 1)
                 {
-                    if (context.IsSetHeroPointEnable(accountId) && !_taskManager.IsExist<SetHeroPointTask.Task>(accountId))
+                    if (context.IsSetHeroPointEnable(accountId))
                     {
                         _taskManager.Add(new SetHeroPointTask.Task(accountId));
                     }

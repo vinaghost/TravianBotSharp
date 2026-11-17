@@ -103,8 +103,8 @@ public sealed partial class UpdateBuildingCommand(
 
     private void TriggerTask(AccountId accountId, VillageId villageId)
     {
-        using var context = contextFactory.CreateDbContext();
         if (taskManager.IsExist<InstantUpgradeTask.Task>(accountId, villageId)) return;
+        using var context = contextFactory.CreateDbContext();
         if (!context.IsInstantUpgradeEnable(accountId, villageId)) return;
 
         taskManager.Add(new InstantUpgradeTask.Task(accountId, villageId), true);
