@@ -2,6 +2,11 @@
 {
     public static class Parser
     {
+        public static ILocator GetBuildPanel(this IPage page)
+        {
+            return page.Locator("#content.build");
+        }
+
         public static ILocator GetTabs(this IPage page)
         {
             var tabs = page.Locator(".contentNavi.subNavi a.tabItem");

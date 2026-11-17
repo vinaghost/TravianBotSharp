@@ -108,6 +108,12 @@ public sealed partial class UpgradeBuildingTask(
                         continue;
                     }
 
+                    if (HasUnlocatedQueueEntry(task.VillageId, plan))
+                    {
+                        logger.Warning("Cannot determine whether {Type} at #{Location} is already queued; its queue location is unknown.", plan.Type, plan.Location);
+                        return Retry.Error;
+                    }
+
                     // continue
                     result = await toBuildPageCommand.HandleAsync(new(browser, plan, true), cancellationToken);
                     if (result.IsFailed) return result;
@@ -158,6 +164,16 @@ public sealed partial class UpgradeBuildingTask(
         return context.QueueBuildings.Any(x =>
             x.VillageId == villageId.Value
             && x.Location == plan.Location
+            && x.Level >= plan.Level);
+    }
+
+    private bool HasUnlocatedQueueEntry(VillageId villageId, NormalBuildPlan plan)
+    {
+        using var context = contextFactory.CreateDbContext();
+        return context.QueueBuildings.Any(x =>
+            x.VillageId == villageId.Value
+            && x.Location == -1
+            && x.Type == plan.Type
             && x.Level >= plan.Level);
     }
 

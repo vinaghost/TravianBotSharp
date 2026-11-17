@@ -123,20 +123,22 @@ public static class Parsers
         return (data.AccountInfo, [.. data.Villages]);
     }
 
-    public record struct BuildingDataDto(BuildingDto[] Buildings, QueueBuildingDto[] Queue, int Tribe);
+    public record struct BuildingNameDto(string Name, int Type);
+    public record struct BuildingDataDto(BuildingDto[] Buildings, QueueBuildingDto[] Queue, BuildingNameDto[] Names, int Dorf, int Tribe);
 
-    public static async Task<(List<BuildingDto> Buildings, List<QueueBuildingDto> Queue, int Tribe)> GetBuildingData(this IPage page)
+    public static async Task<BuildingDataDto> GetBuildingData(this IPage page)
     {
         var data = await page.EvaluateAsync<BuildingDataDto>(@"() => {
-            const url = window.location.href;
-            const isDorf1 = url.includes('dorf1');
+            const isDorf1 = document.querySelector('.village1') !== null;
+            const isDorf2 = document.querySelector('.village2') !== null;
             const buildingsResult = [];
             const queueResult = [];
+            const names = [];
 
             const questMaster = document.querySelector('#questmasterButton');
             const tribeAttr = questMaster ? (questMaster.getAttribute('class') || '') : '';
             const tribeMatch = tribeAttr.match(/vid_(\d+)/);
-            const tribeId = tribeMatch ? parseInt(tribeMatch[1], 10) : 0; // 0 maps to TribeEnums.Any
+            const tribeId = tribeMatch ? parseInt(tribeMatch[1], 10) : 0;
 
             const getWallType = (tId) => {
                 switch(tId) {
@@ -146,7 +148,7 @@ public static class Parsers
                     case 6: return 42; // Egyptians: Stone Wall
                     case 7: return 43; // Huns: Makeshift Wall
                     case 8: return 47; // Spartan: Defensive Wall
-                    default: return 0;  // Unknown/None
+                    default: return 0;
                 }
             };
 
@@ -161,18 +163,36 @@ public static class Parsers
                     const locMatch = classAttr.match(locRegex);
                     const gidMatch = classAttr.match(gidRegex);
                     const levelMatch = classAttr.match(levelRegex);
+                    const gid = gidMatch ? parseInt(gidMatch[1], 10) : 0;
 
                     buildingsResult.push({
                         Location: locMatch ? parseInt(locMatch[1], 10) : -1,
-                        Type: gidMatch ? parseInt(gidMatch[1], 10) : 0, // BuildingEnums.Unknown
+                        Type: gid,
                         Level: levelMatch ? parseInt(levelMatch[1], 10) : -1,
                         IsUnderConstruction: classAttr.includes('underConstruction')
                     });
+
+                    if (gid > 0) {
+                        const rawContent = field._tippy?.props?.content || field.getAttribute('title');
+                        if (rawContent) {
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = typeof rawContent === 'string' ? rawContent : rawContent.innerHTML;
+                            const titleEl = tempDiv.querySelector('.title') || tempDiv;
+                            const name = Array.from(titleEl.childNodes)
+                                .filter(n => n.nodeType === Node.TEXT_NODE)
+                                .map(n => n.textContent.trim())
+                                .join('')
+                                .split('||')[0]
+                                .trim();
+
+                            if (name) names.push({ Name: name, Type: gid });
+                        }
+                    }
                 });
             } else {
                 const elements = document.querySelectorAll('#villageContent .buildingSlot');
                 elements.forEach((building, i) => {
-                    if (i === 22) return; // Skip rally point visual slot spacer if present
+                    if (i === 22) return;
 
                     const link = building.querySelector('a');
                     const rawLoc = parseInt(building.getAttribute('data-did') || building.getAttribute('data-aid'), 10);
@@ -181,8 +201,8 @@ public static class Parsers
                     const rawType = parseInt(building.getAttribute('data-gid'), 10);
                     let typeId = isNaN(rawType) ? -1 : rawType;
 
-                    if (location === 26) typeId = 15;      // MainBuilding
-                    else if (location === 39) typeId = 16; // RallyPoint
+                    if (location === 26) typeId = 15;
+                    else if (location === 39) typeId = 16;
                     else if (location === 40) typeId = getWallType(tribeId);
 
                     const rawLvl = link ? parseInt(link.getAttribute('data-level'), 10) : -1;
@@ -193,48 +213,51 @@ public static class Parsers
                         Level: isNaN(rawLvl) ? -1 : rawLvl,
                         IsUnderConstruction: link ? link.classList.contains('underConstruction') : false
                     });
+
+                    const rawName = building.getAttribute('data-name');
+                    if (typeId > 0 && rawName && rawName.trim()) {
+                        names.push({ Name: rawName.trim(), Type: typeId });
+                    }
                 });
             }
 
             const queueElements = document.querySelectorAll('.buildingList li');
-            queueElements.forEach(building => {
+            queueElements.forEach((building, position) => {
                 const nameEl = building.querySelector('.name');
                 const lvlEl = building.querySelector('.lvl');
                 const timerEl = building.querySelector('.timer');
 
                 const rawText = nameEl && nameEl.childNodes.length > 0 ? nameEl.childNodes[0].textContent : '';
-                const cleanedType = rawText.replace(/[^a-zA-Z0-9]/g, '');
-
                 const lvlText = lvlEl ? (lvlEl.innerText || lvlEl.textContent || '') : '';
                 const lvlMatch = lvlText.match(/\d+/);
-                const level = lvlMatch ? parseInt(lvlMatch[0], 10) : 0;
-
-                const durationRaw = timerEl ? parseInt(timerEl.getAttribute('value'), 10) : 0;
-                const durationSeconds = isNaN(durationRaw) ? 0 : durationRaw;
+                const level = lvlMatch ? parseInt(lvlMatch[0], 10) : -1;
+                const durationText = timerEl?.getAttribute('value');
+                const durationSeconds = durationText && /^\d+$/.test(durationText) ? Number(durationText) : -1;
 
                 queueResult.push({
-                    Type: cleanedType,
+                    Name: (rawText || '').trim(),
+                    Position: position,
                     Level: level,
-                    Location: durationSeconds
+                    DurationSeconds: durationSeconds
                 });
             });
 
             return {
                 Buildings: buildingsResult,
                 Queue: queueResult,
+                Names: names,
+                Dorf: isDorf1 === isDorf2 ? 0 : (isDorf1 ? 1 : 2),
                 Tribe: tribeId
             };
         }");
 
         var now = DateTime.Now;
-        var processedQueue = data.Queue.Select(q => new QueueBuildingDto
+        foreach (var item in data.Queue)
         {
-            Type = q.Type,
-            Level = q.Level,
-            Location = -1,
-            CompleteTime = now.AddSeconds(q.Location)
-        }).ToList();
+            if (item.DurationSeconds >= 0 && item.DurationSeconds <= (DateTime.MaxValue - now).TotalSeconds)
+                item.CompleteTime = now.AddSeconds(item.DurationSeconds);
+        }
 
-        return ([.. data.Buildings], processedQueue, data.Tribe);
+        return data;
     }
 }

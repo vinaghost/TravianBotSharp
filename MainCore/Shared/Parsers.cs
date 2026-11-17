@@ -27,6 +27,21 @@ public static class Parsers
         return node;
     }
 
+    public static ILocator GetDorf(this IPage page, int dorf)
+    {
+        var node = page.Locator($".village{dorf}").First;
+        return node;
+    }
+
+    public static ILocator GetDorf(this IPage page, BuildingEnums buildingType)
+    {
+        if (buildingType.IsResourceField())
+        {
+            return page.GetDorf(1);
+        }
+        return page.GetDorf(2);
+    }
+
     public static ILocator GetButton(this IPage page, int key)
     {
         var button = page.Locator($"#navigation a[accesskey='{key}']");

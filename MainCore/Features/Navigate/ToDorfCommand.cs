@@ -13,8 +13,7 @@ public static partial class ToDorfCommand
     {
         var (browser, dorf) = command;
 
-        var currentUrl = browser.CurrentUrl;
-        var currentDorf = GetCurrentDorf(currentUrl);
+        var currentDorf = await GetCurrentDorf(browser.CurrentPage);
         if (dorf == 0)
         {
             if (currentDorf == 0) dorf = 2;
@@ -30,16 +29,16 @@ public static partial class ToDorfCommand
         result = await browser.Click(browser.CurrentPage.GetDorfButton(dorf));
         if (result.IsFailed) return result;
 
-        result = await browser.WaitPageChanged($"dorf{dorf}.php");
+        result = await browser.Wait(browser.CurrentPage.GetDorf(dorf));
         if (result.IsFailed) return result;
 
         return Result.Ok();
     }
 
-    private static int GetCurrentDorf(string url)
+    private static async Task<int> GetCurrentDorf(IPage page)
     {
-        if (url.Contains("dorf1")) return 1;
-        if (url.Contains("dorf2")) return 2;
+        if (await page.GetDorf(1).CountAsync() > 0) return 1;
+        if (await page.GetDorf(2).CountAsync() > 0) return 2;
         return 0;
     }
 }

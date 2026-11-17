@@ -17,15 +17,14 @@ public sealed partial class UpdateVillageTask(
     private async ValueTask<Result> HandleAsync(Task task, CancellationToken cancellationToken)
     {
         var browser = chromeManager.Get(task.AccountId);
-        var url = browser.CurrentUrl;
         Result result;
 
-        if (url.Contains("dorf1"))
+        if (await browser.CurrentPage.GetDorf(1).CountAsync() > 0)
         {
             result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
             if (result.IsFailed) return result;
         }
-        else if (url.Contains("dorf2"))
+        else if (await browser.CurrentPage.GetDorf(2).CountAsync() > 0)
         {
             result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
             if (result.IsFailed) return result;

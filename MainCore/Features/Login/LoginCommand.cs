@@ -26,7 +26,7 @@ public static partial class LoginCommand
         result = await browser.Click(page.GetLoginButton());
         if (result.IsFailed) return result;
 
-        result = await browser.WaitPageChanged("dorf");
+        result = await browser.Wait(browser.CurrentPage.GetServerTime());
         if (result.IsFailed) return result;
 
         return Result.Ok();

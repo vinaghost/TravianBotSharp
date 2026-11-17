@@ -175,6 +175,10 @@ public sealed class TimerManager
                     _taskManager.SetStatus(accountId, StatusEnums.Paused);
                 }
             }
+            else
+            {
+                _taskManager.Remove(accountId, task);
+            }
         }
         else
         {

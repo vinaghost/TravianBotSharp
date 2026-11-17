@@ -98,7 +98,7 @@ public partial class UpgradeCommand(ILogger logger)
             return Result.Ok();
         }
 
-        result = await browser.WaitPageChanged("dorf");
+        result = await browser.Wait(browser.CurrentPage.GetDorf(building));
         if (result.IsFailed) return result;
         return Result.Ok();
     }
@@ -109,7 +109,7 @@ public partial class UpgradeCommand(ILogger logger)
         var result = await browser.Click(button);
         if (result.IsFailed) return result;
 
-        result = await browser.WaitPageChanged("dorf");
+        result = await browser.Wait(browser.CurrentPage.GetDorf(building));
         if (result.IsFailed) return result;
 
         return Result.Ok();

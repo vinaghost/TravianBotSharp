@@ -32,7 +32,7 @@ public static partial class ToBuildingByLocationCommand
             if (result.IsFailed) return result;
         }
 
-        result = await browser.WaitPageChanged("build");
+        result = await browser.Wait(browser.CurrentPage.GetBuildPanel());
         if (result.IsFailed) return result;
         return Result.Ok();
     }

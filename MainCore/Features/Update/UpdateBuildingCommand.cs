@@ -1,4 +1,5 @@
 using MainCore.Features.InstantUpgrade;
+using MainCore.Features.Navigate;
 
 namespace MainCore.Features.Update;
 
@@ -12,11 +13,11 @@ public class BuildingDto
 
 public class QueueBuildingDto
 {
+    public string Name { get; set; } = "";
     public int Position { get; set; }
-
-    public int Location { get; set; } = -1;
-    public string Type { get; set; } = "";
+    public int Type { get; set; } = -1;
     public int Level { get; set; }
+    public int DurationSeconds { get; set; }
     public DateTime CompleteTime { get; set; }
 }
 
@@ -25,30 +26,71 @@ public sealed partial class UpdateBuildingCommand(
     ILogger logger,
     IDbContextFactory<AppDbContext> contextFactory,
     TaskManager taskManager,
-    RxQueue rxQueue)
+    RxQueue rxQueue,
+    ToDorfCommand.Handler toDorfCommand)
 {
     public sealed record Command(IChromeBrowser Browser, VillageId VillageId) : IVillageBrowserCommand
     {
         public string Name => "";
     }
 
-    private async ValueTask<Result> HandleAsync(Command command)
+    private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
     {
         var (browser, accountId, villageId) = command;
+        var first = await browser.CurrentPage.GetBuildingData();
+        if (!BuildingSnapshotReconciler.IsValidPage(first))
+        {
+            logger.Warning("Cannot update buildings: the current page is not a valid village overview.");
+            return Retry.Error;
+        }
 
-        var (dtoBuilding, dtoQueueBuilding, tribe) = await browser.CurrentPage.GetBuildingData();
-        UpdateTribe(villageId, (TribeEnums)tribe);
+        var snapshots = new List<Parsers.BuildingDataDto> { first };
+        var queueSnapshot = first;
+        var resolved = BuildingSnapshotReconciler.ResolveQueue(first, first.Names);
+        var needsOtherPage = !resolved || first.Queue.Any(x => ((BuildingEnums)x.Type).IsResourceField() != (first.Dorf == 1));
+        if (!needsOtherPage)
+        {
+            using var context = contextFactory.CreateDbContext();
+            needsOtherPage = context.QueueBuildings.AsNoTracking()
+                .Where(x => x.VillageId == villageId.Value)
+                .Select(x => x.Type).AsEnumerable()
+                .Any(type => type.IsResourceField() != (first.Dorf == 1));
+        }
+        if (needsOtherPage)
+        {
+            var result = await toDorfCommand.HandleAsync(new(browser, first.Dorf == 1 ? 2 : 1), cancellationToken);
+            if (result.IsFailed) return result;
 
-        var result = IsValidQueueBuilding(dtoQueueBuilding);
-        if (result.IsFailed) return result;
+            var second = await browser.CurrentPage.GetBuildingData();
+            result = await toDorfCommand.HandleAsync(new(browser, first.Dorf), cancellationToken);
+            if (result.IsFailed) return result;
 
-        if (dtoBuilding.Count == 0) return Result.Ok();
-        UpdateBuildings(villageId, dtoBuilding, dtoQueueBuilding);
+            if (!BuildingSnapshotReconciler.IsValidPage(second) || second.Dorf == first.Dorf || !BuildingSnapshotReconciler.SameQueue(first, second))
+            {
+                logger.Warning("Cannot update buildings: the other overview is invalid or the construction queue changed during refresh.");
+                return Retry.Error;
+            }
+            snapshots.Add(second);
+            queueSnapshot = second;
+            if (!BuildingSnapshotReconciler.ResolveQueue(second, first.Names.Concat(second.Names)))
+            {
+                logger.Warning("Cannot resolve every construction queue entry: {QueueNames}", string.Join(", ", second.Queue.Where(x => x.Type <= 0 || x.Level <= 0 || x.CompleteTime == default).Select(x => x.Name)));
+                return Retry.Error;
+            }
+        }
+
+        using (var context = contextFactory.CreateDbContext())
+        {
+            var tribe = context.VillagesSetting.FirstOrDefault(x => x.VillageId == villageId.Value && x.Setting == VillageSettingEnums.Tribe);
+            if (tribe is not null && queueSnapshot.Tribe > 0) tribe.Value = queueSnapshot.Tribe;
+            BuildingSnapshotReconciler.Apply(context, villageId, snapshots, queueSnapshot);
+            var unresolvedLocations = context.QueueBuildings.Count(x => x.VillageId == villageId.Value && x.Location == -1);
+            if (unresolvedLocations > 0)
+                logger.Warning("Could not uniquely identify locations for {Count} construction queue entries in village {VillageId}.", unresolvedLocations, villageId.Value);
+        }
 
         TriggerTask(accountId, villageId);
-
         rxQueue.Enqueue(new BuildingsModified(accountId, villageId));
-
         return Result.Ok();
     }
 
@@ -59,174 +101,5 @@ public sealed partial class UpdateBuildingCommand(
         if (!context.IsInstantUpgradeEnable(accountId, villageId)) return;
 
         taskManager.Add(new InstantUpgradeTask.Task(accountId, villageId), true);
-    }
-
-    private Result IsValidQueueBuilding(List<QueueBuildingDto> dtos)
-    {
-        foreach (var strType in dtos.Select(x => x.Type))
-        {
-            var resultParse = Enum.TryParse(strType, false, out BuildingEnums _);
-
-            if (!resultParse)
-            {
-                logger.Error("Cannot parse {StrType}. Is language English ?", strType);
-                return Stop.Error;
-            }
-        }
-        return Result.Ok();
-    }
-
-    private void UpdateTribe(VillageId villageId, TribeEnums tribe)
-    {
-        using var context = contextFactory.CreateDbContext();
-        context.VillagesSetting
-            .Where(x => x.VillageId == villageId.Value)
-            .Where(x => x.Setting == VillageSettingEnums.Tribe)
-            .ExecuteUpdate(x => x.SetProperty(x => x.Value, (int)tribe));
-    }
-
-    private void UpdateBuildings(VillageId villageId, List<BuildingDto> buildingDtos, List<QueueBuildingDto> queueBuildingDtos)
-    {
-        using var context = contextFactory.CreateDbContext();
-        var now = DateTime.Now;
-
-        bool updatingDorf1 = buildingDtos.Any(b => ((BuildingEnums)b.Type).IsResourceField());
-
-        var dbBuildings = context.Buildings
-            .Where(x => x.VillageId == villageId.Value)
-            .ToList();
-
-        var buildingMap = dbBuildings.ToDictionary(x => x.Location);
-
-        foreach (var dto in buildingDtos)
-        {
-            if (!buildingMap.TryGetValue(dto.Location, out var dbBuilding))
-            {
-                var building = new Building
-                {
-                    VillageId = villageId.Value,
-                    Type = (BuildingEnums)dto.Type,
-                    Level = dto.Level,
-                    IsUnderConstruction = dto.IsUnderConstruction,
-                    Location = dto.Location
-                };
-                dbBuildings.Add(building);
-                buildingMap[dto.Location] = building;
-                context.Buildings.Add(building);
-            }
-            else
-            {
-                dbBuilding.Type = (BuildingEnums)dto.Type;
-                dbBuilding.Level = dto.Level;
-                dbBuilding.IsUnderConstruction = dto.IsUnderConstruction;
-                dbBuilding.Location = dto.Location;
-            }
-        }
-
-        var dbQueueBuildings = context.QueueBuildings
-            .Where(x => x.VillageId == villageId.Value)
-            .ToList();
-
-        var completeQueueBuildings = dbQueueBuildings
-            .Where(x => x.CompleteTime < now && x.Location != -1)
-            .OrderBy(x => x.Level)
-            .ToList();
-
-        foreach (var completeQueueBuilding in completeQueueBuildings)
-        {
-            if (buildingMap.TryGetValue(completeQueueBuilding.Location, out var building))
-            {
-                building.Level = completeQueueBuilding.Level;
-                dbQueueBuildings.Remove(completeQueueBuilding);
-                context.Remove(completeQueueBuilding);
-            }
-        }
-
-        var dbQueueGroups = dbQueueBuildings
-            .GroupBy(x => new { x.Level, x.Type })
-            .ToDictionary(g => g.Key, g => g.ToList());
-
-        var matchedDbQueueItems = new HashSet<QueueBuilding>();
-
-        foreach (var dto in queueBuildingDtos)
-        {
-            var buildingType = Enum.Parse<BuildingEnums>(dto.Type);
-            var key = new { dto.Level, Type = buildingType };
-
-            if (dbQueueGroups.TryGetValue(key, out var existingDbItems) && existingDbItems.Count > 0)
-            {
-                var match = existingDbItems.FirstOrDefault(x => x.Location != -1) ?? existingDbItems[0];
-                matchedDbQueueItems.Add(match);
-                existingDbItems.Remove(match);
-            }
-            else
-            {
-                var newQueueBuilding = new QueueBuilding
-                {
-                    VillageId = villageId.Value,
-                    Position = dto.Position,
-                    Location = dto.Location,
-                    Type = buildingType,
-                    Level = dto.Level,
-                    CompleteTime = dto.CompleteTime
-                };
-
-                dbQueueBuildings.Add(newQueueBuilding);
-                context.Add(newQueueBuilding);
-
-                if (!dbQueueGroups.TryGetValue(key, out var list))
-                {
-                    list = [];
-                    dbQueueGroups[key] = list;
-                }
-                list.Add(newQueueBuilding);
-            }
-        }
-
-        var missingLocation = dbQueueBuildings.Where(x => x.Location == -1).ToList();
-        if (missingLocation.Count > 0)
-        {
-            var underConstruction = dbBuildings.Where(x => x.IsUnderConstruction).ToList();
-
-            foreach (var queueBuilding in missingLocation)
-            {
-                bool isResource = queueBuilding.Type.IsResourceField();
-                if ((updatingDorf1 && !isResource) || (!updatingDorf1 && isResource))
-                {
-                    continue;
-                }
-
-                var building = underConstruction.Find(x => x.Type == queueBuilding.Type && x.Level == queueBuilding.Level - 1)
-                            ?? underConstruction.Find(x => x.Type == queueBuilding.Type && x.Level == queueBuilding.Level - 2);
-
-                if (building is null) continue;
-
-                queueBuilding.Location = building.Location;
-
-                if (underConstruction.Count(x => x.Type == queueBuilding.Type) > 1)
-                {
-                    underConstruction.Remove(building);
-                }
-            }
-        }
-
-        foreach (var dbQueueItem in dbQueueBuildings.ToList())
-        {
-            if (matchedDbQueueItems.Contains(dbQueueItem)) continue;
-            bool isResource = dbQueueItem.Type.IsResourceField();
-
-            if ((updatingDorf1 && isResource) || (!updatingDorf1 && !isResource))
-            {
-                context.Remove(dbQueueItem);
-                dbQueueBuildings.Remove(dbQueueItem);
-
-                if (buildingMap.TryGetValue(dbQueueItem.Location, out var building))
-                {
-                    building.Level = dbQueueItem.Level;
-                }
-            }
-        }
-
-        context.SaveChanges();
     }
 }
