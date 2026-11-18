@@ -52,7 +52,7 @@ jobs:
         run: dotnet test -c Release --filter Mode!=Debug
 
   Build:
-    runs-on: windows-latest
+    runs-on: windows-2022
     permissions:
       contents: write
       pull-requests: write
@@ -89,27 +89,18 @@ jobs:
         with:
           path: ${{ env.NUGET_PACKAGES }}
           key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json') }}
+      
+      - name: Install dependencies
+        run: dotnet restore --locked-mode
 
-      - name: Bump SemVer and Push Git Tag via API
-        id: bump_tag
+      - name: Get next tag
+        id: get_tag
         shell: pwsh
         working-directory: ${{ github.workspace }}
         env:
-          # 1. Get Tag Inputs
           TAG_PATTERN: "*"                    # Wildcard pattern to match tags (e.g., "*" or "v*")
           INPUT_FALLBACK: "0.0.0"             # Fallback tag if no tags exist yet
-
-          # 2. SemVer Bump Input
           BUMP_TYPE: "patch"                  # Set to "major", "minor", or "patch"
-
-          # 3. Create & Push Tag Inputs
-          INPUT_MESSAGE: ""                   # Optional: defaults to "Release <TAG>"
-          INPUT_FORCE_PUSH_TAG: "false"       # Optional: "true" or "false"
-          INPUT_TAG_EXISTS_ERROR: "true"      # Optional: "true" or "false"
-          INPUT_NO_VERIFY_TAG: "false"        # Optional: "true" or "false"
-          INPUT_COMMIT_SHA: ""                # Optional: defaults to GITHUB_SHA
-          INPUT_GPG_PRIVATE_KEY: ""           # Optional: GPG private key
-          INPUT_GPG_PASSPHRASE: ""            # Optional: GPG passphrase
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $ErrorActionPreference = "Stop"
@@ -168,13 +159,47 @@ jobs:
 
           Write-Host "Bumping ($bumpType): $currentTag -> $nextTag" -ForegroundColor Cyan
 
-          # ==========================================
-          # 3. CREATE & PUSH GIT TAG
-          # ==========================================
+          $tag = $nextTag -replace ' ', '_'
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      
+      - name: Publish
+        run: > 
+          dotnet publish WPFUI 
+          -c Release 
+          --no-restore 
+          --self-contained 
+          -p:PublishSingleFile=True 
+          -p:AssemblyVersion=${{ steps.get_tag.outputs.tag }}
+          -p:RunAnalyzersDuringBuild=True
+      
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: TBS-${{ steps.get_tag.outputs.tag }}
+          path: WPFUI\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish\
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 1
+
+      - name: Push Git Tag
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        env:
+          TAG: ${{ steps.get_tag.outputs.tag }}
+          INPUT_MESSAGE: ""                   # Optional: defaults to "Release <TAG>"
+          INPUT_FORCE_PUSH_TAG: "false"       # Optional: "true" or "false"
+          INPUT_TAG_EXISTS_ERROR: "true"      # Optional: "true" or "false"
+          INPUT_NO_VERIFY_TAG: "false"        # Optional: "true" or "false"
+          INPUT_COMMIT_SHA: ""                # Optional: defaults to GITHUB_SHA
+          INPUT_GPG_PRIVATE_KEY: ""           # Optional: GPG private key
+          INPUT_GPG_PASSPHRASE: ""            # Optional: GPG passphrase
+        run: |
+          $ErrorActionPreference = "Stop"
+
           git config --global --add safe.directory $env:GITHUB_WORKSPACE
 
           $flags = [System.Collections.Generic.List[string]]::new()
-          $tag = $nextTag -replace ' ', '_'
+          $tag = $env:TAG
           $actionOutputMessage = "[action-create-tag] Push tag '$tag'"
           $message = if ([string]::IsNullOrWhiteSpace($env:INPUT_MESSAGE)) { "Release $tag" } else { $env:INPUT_MESSAGE }
           $forceTag = ($env:INPUT_FORCE_PUSH_TAG -eq "true")
@@ -217,15 +242,9 @@ jobs:
               git config --global user.email "$($env:GITHUB_ACTOR)@users.noreply.github.com"
           }
 
-          # Check if tag already exists via gh api (since shallow checkout won't have local tags)
+          # Shallow checkout has no local tags, so check the remote
           $tagExists = -not [string]::IsNullOrWhiteSpace((git ls-remote --tags origin "refs/tags/$tag"))
-          $tagExistsStr = if ($tagExists) { "true" } else { "false" }
 
-          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "tag_exists=$tagExistsStr" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "TAG_EXISTS=$tagExistsStr" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-          # Create tag and handle force push
           Write-Host "[action-create-tag] Create tag '$tag'."
           if ($tagExists) {
               Write-Host "[action-create-tag] Tag '$tag' already exists."
@@ -259,7 +278,6 @@ jobs:
               $actionOutputMessage += ", with --no-verify"
           }
 
-          # Push tag
           if ($tagExists -and -not $forceTag) {
               exit 0
           }
@@ -267,28 +285,6 @@ jobs:
           Write-Host $actionOutputMessage
           git push @flags origin $tag
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          
-      - name: Install dependencies
-        run: dotnet restore --locked-mode
-      
-      - name: Publish
-        run: > 
-          dotnet publish WPFUI 
-          -c Release 
-          --no-restore 
-          --self-contained 
-          -p:PublishSingleFile=true 
-          -p:AssemblyVersion=${{ steps.bump_tag.outputs.tag }}
-          -p:RunAnalyzersDuringBuild=True
-      
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: TBS-${{ steps.bump_tag.outputs.tag }}
-          path: WPFUI\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish\
-          if-no-files-found: error
-          include-hidden-files: true
-          compression-level: 1
 
       - name: Comment PR
         id: comment_pr
@@ -297,7 +293,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INPUT_PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
           INPUT_MESSAGE: |
-            Version of this build is ${{ steps.bump_tag.outputs.tag }}
+            Version of this build is ${{ steps.get_tag.outputs.tag }}
             Check download link [here](https://nightly.link/vinaghost/TravianBotSharp/actions/runs/${{ github.run_id }})
           INPUT_FILE_PATH: ""                 # Optional: path to markdown/text file
           INPUT_COMMENT_TAG: ""               # Optional: unique tag to find/update existing comment
