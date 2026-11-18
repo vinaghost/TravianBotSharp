@@ -72,25 +72,21 @@ jobs:
           $ErrorActionPreference = "Stop"
 
           # ==========================================
-          # 1. GET LATEST TAG VIA GH API
+          # 1. GET LATEST TAG VIA GH API (GraphQL, newest by commit date)
           # ==========================================
-          # Fetch all tags from GitHub API and filter by TAG_PATTERN
-          $rawTags = gh api "repos/$env:GITHUB_REPOSITORY/tags" --paginate --jq '.[].name' 2>&1
+          $owner, $repo = $env:GITHUB_REPOSITORY -split '/'
+          $query = 'query($owner: String!, $name: String!, $refPrefix: String!) { repository(owner: $owner, name: $name) { refs(refPrefix: $refPrefix, first: 100, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) { nodes { name } } } }'
+          $rawTags = gh api graphql -f query=$query -F owner=$owner -F name=$repo -F refPrefix=refs/tags/ --jq '.data.repository.refs.nodes[].name' 2>&1
           if ($LASTEXITCODE -ne 0) {
               Write-Host "Failed to fetch tags via gh api: $rawTags" -ForegroundColor Red
               exit 1
           }
 
           $pattern = if ([string]::IsNullOrWhiteSpace($env:TAG_PATTERN)) { "*" } else { $env:TAG_PATTERN }
-    
-          # Filter by wildcard pattern and sort semantically (newest version first)
+
+          # Filter by wildcard pattern; GraphQL order is already newest first
           $currentTag = $rawTags |
               Where-Object { $_ -like $pattern } |
-              Sort-Object -Descending {
-                  $clean = $_.TrimStart('v', 'V') -split '[-+]' | Select-Object -First 1
-                  $ver = [version]::new(0, 0, 0)
-                  if ([version]::TryParse($clean, [ref]$ver)) { $ver } else { [version]::new(0, 0, 0) }
-              } |
               Select-Object -First 1
 
           if ([string]::IsNullOrEmpty($currentTag)) {
@@ -179,7 +175,7 @@ jobs:
           }
 
           # Check if tag already exists via gh api (since shallow checkout won't have local tags)
-          $tagExists = $rawTags -contains $tag
+          $tagExists = -not [string]::IsNullOrWhiteSpace((git ls-remote --tags origin "refs/tags/$tag"))
           $tagExistsStr = if ($tagExists) { "true" } else { "false" }
 
           "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
