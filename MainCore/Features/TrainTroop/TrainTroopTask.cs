@@ -56,8 +56,7 @@ public sealed partial class TrainTroopTask(
         }
 
         SaveSetting(task, settings);
-        task.ExecuteAt = GetNextExecute(task.VillageId);
-        return Result.Ok();
+        return ReSchedule.Error(GetNextExecute(task.VillageId));
     }
 
     private void SaveSetting(Task task, Dictionary<VillageSettingEnums, int> settings)

@@ -42,8 +42,7 @@ public sealed partial class StartFarmListTask(
             if (result.IsFailed) return result;
         }
 
-        task.ExecuteAt = GetNextExecuteTime(task.AccountId);
-        return Result.Ok();
+        return ReSchedule.Error(GetNextExecuteTime(task.AccountId));
     }
 
     private bool UseStartAllButton(AccountId accountId)

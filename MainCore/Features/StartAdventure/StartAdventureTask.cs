@@ -27,9 +27,7 @@ public sealed partial class StartAdventureTask(
         if (result.IsFailed) return result;
 
         var adventureDuration = await browser.CurrentPage.GetAdventureDuration();
-        task.ExecuteAt = DateTime.Now.Add(adventureDuration * 2);
-
-        return Result.Ok();
+        return ReSchedule.Error(DateTime.Now.Add(adventureDuration * 2));
     }
 
     private async Task<bool> CanStartAdventure(IPage page, bool isLogged = true)

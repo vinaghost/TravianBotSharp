@@ -44,8 +44,7 @@ public sealed partial class UpdateVillageTask(
             if (result.IsFailed) return result;
         }
 
-        task.ExecuteAt = GetNextExecuteTime(task.VillageId);
-        return Result.Ok();
+        return ReSchedule.Error(GetNextExecuteTime(task.VillageId));
     }
 
     private DateTime GetNextExecuteTime(VillageId villageId)
