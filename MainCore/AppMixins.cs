@@ -1,6 +1,7 @@
 using FluentValidation;
 
-using MainCore.Behaviors;
+using MainCore.Features.Update;
+using MainCore.Shared.Behaviors;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -54,21 +55,6 @@ namespace MainCore
                 services.AddMainCore();
                 services.AddValidatorsFromAssembly(typeof(AppMixins).Assembly, ServiceLifetime.Singleton);
                 services.AddMainCoreHandlers();
-
-                services.AddScoped(sp =>
-                {
-                    var dataService = sp.GetRequiredService<DataService>();
-                    if (dataService.AccountId == AccountId.Empty) throw new InvalidOperationException("AccountId is empty");
-                    var chromeManager = sp.GetRequiredService<ChromeManager>();
-                    var logger = Log
-                        .ForContext("Account", dataService.AccountData)
-                        .ForContext("AccountId", dataService.AccountId);
-
-                    var browser = chromeManager.Get(dataService.AccountId);
-                    browser.Logger = logger;
-
-                    return browser;
-                });
             });
 
         public static IHostBuilder GetHostBuilder()

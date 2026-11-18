@@ -1,23 +1,14 @@
 ﻿using MainCore.UI.ViewModels.Abstract;
 
-using Microsoft.Extensions.DependencyInjection;
-
 using ReactiveUI.Primitives.Concurrency;
 using ReactiveUI.Primitives.Disposables;
 
 namespace MainCore.UI.ViewModels.UserControls
 {
-    [RegisterSingleton<IWaitingOverlayViewModel, WaitingOverlayViewModel>]
-    public partial class WaitingOverlayViewModel : ViewModelBase, IWaitingOverlayViewModel
+    [RegisterSingleton<WaitingOverlayViewModel>]
+    public partial class WaitingOverlayViewModel : ViewModelBase
     {
-        [RegisterServices]
-        public static void Register(IServiceCollection services)
-        {
-            services
-                .AddSingleton(x => (x.GetRequiredService<IWaitingOverlayViewModel>() as WaitingOverlayViewModel)!);
-        }
-
-        public async Task Show(string message)
+        public void Show(string message)
         {
             RxSchedulers.MainThreadScheduler.Schedule(
                 state: (this, message),
@@ -29,7 +20,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 });
         }
 
-        public async Task Show()
+        public void Show()
         {
             RxSchedulers.MainThreadScheduler.Schedule(
                 state: this,
@@ -40,7 +31,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 });
         }
 
-        public async Task Hide()
+        public void Hide()
         {
             RxSchedulers.MainThreadScheduler.Schedule(
                 state: this,
@@ -52,7 +43,7 @@ namespace MainCore.UI.ViewModels.UserControls
                 });
         }
 
-        public async Task ChangeMessage(string message)
+        public void ChangeMessage(string message)
         {
             RxSchedulers.MainThreadScheduler.Schedule(
                 state: (this, message),

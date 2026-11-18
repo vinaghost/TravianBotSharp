@@ -1,6 +1,4 @@
-﻿using MainCore.Tasks.Base;
-
-namespace MainCore.UI.Models.Output
+﻿namespace MainCore.UI.Models.Output
 {
     public partial class TaskItem : ReactiveObject
     {
