@@ -30,30 +30,4 @@ namespace MainCore.UI.Models.Input
             Accesses.Clear();
         }
     }
-
-    public static partial class AccountInputExtension
-    {
-        public static AccountInput ToInput(this AccountDto dto)
-        {
-            var input = new AccountInput
-            {
-                Id = dto.Id,
-                Username = dto.Username,
-                Server = dto.Server,
-            };
-            input.SetAccesses(dto.Accesses.Select(a => a.ToInput()));
-            return input;
-        }
-
-        public static AccountDto ToDto(this AccountInput input)
-        {
-            return new AccountDto
-            {
-                Id = input.Id,
-                Username = input.Username.Sanitize(),
-                Server = input.Server.GetServerUrl(),
-                Accesses = input.Accesses.Select(a => a.ToDto()).ToList(),
-            };
-        }
-    }
 }

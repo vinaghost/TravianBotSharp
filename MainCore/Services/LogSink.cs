@@ -5,53 +5,52 @@ using Serilog.Events;
 
 using Splat;
 
-namespace MainCore.Services
+namespace MainCore.Services;
+
+[RegisterSingleton<LogSink>]
+public sealed class LogSink(RxQueue rxQueue) : ILogEventSink
 {
-    [RegisterSingleton<LogSink>]
-    public sealed class LogSink(RxQueue rxQueue) : ILogEventSink
+    private Dictionary<AccountId, LinkedList<LogEvent>> Logs { get; } = [];
+
+    private readonly RxQueue _rxQueue = rxQueue;
+
+    public LinkedList<LogEvent> GetLogs(AccountId accountId)
     {
-        private Dictionary<AccountId, LinkedList<LogEvent>> Logs { get; } = [];
-
-        private readonly RxQueue _rxQueue = rxQueue;
-
-        public LinkedList<LogEvent> GetLogs(AccountId accountId)
+        var logs = Logs.GetValueOrDefault(accountId);
+        if (logs is null)
         {
-            var logs = Logs.GetValueOrDefault(accountId);
-            if (logs is null)
-            {
-                logs = new LinkedList<LogEvent>();
-                Logs.Add(accountId, logs);
-            }
-            return logs;
+            logs = new LinkedList<LogEvent>();
+            Logs.Add(accountId, logs);
         }
-
-        public void Emit(LogEvent logEvent)
-        {
-            if (logEvent.Level < LogEventLevel.Information) return;
-            var logEventPropertyValue = logEvent.Properties.GetValueOrDefault("AccountId");
-            if (logEventPropertyValue is null) return;
-            if (logEventPropertyValue is not ScalarValue scalarValue) return;
-            var value = scalarValue.Value as string;
-            var accountId = new AccountId(int.Parse(value!));
-
-            var logs = GetLogs(accountId);
-            logs.AddLast(logEvent);
-            // keeps 200 message
-            if (logs.Count > 200)
-            {
-                logs.RemoveFirst();
-            }
-
-            _rxQueue.Enqueue(new LogEmitted(accountId, logEvent));
-        }
+        return logs;
     }
 
-    public static class LogSinkExtensions
+    public void Emit(LogEvent logEvent)
     {
-        public static LoggerConfiguration LogSink(
-                  this LoggerSinkConfiguration loggerConfiguration)
+        if (logEvent.Level < LogEventLevel.Information) return;
+        var logEventPropertyValue = logEvent.Properties.GetValueOrDefault("AccountId");
+        if (logEventPropertyValue is null) return;
+        if (logEventPropertyValue is not ScalarValue scalarValue) return;
+        var value = scalarValue.Value as string;
+        var accountId = new AccountId(int.Parse(value!));
+
+        var logs = GetLogs(accountId);
+        logs.AddLast(logEvent);
+        // keeps 200 message
+        if (logs.Count > 200)
         {
-            return loggerConfiguration.Sink(Locator.Current.GetService<LogSink>()!);
+            logs.RemoveFirst();
         }
+
+        _rxQueue.Enqueue(new LogEmitted(accountId, logEvent));
+    }
+}
+
+public static class LogSinkExtensions
+{
+    public static LoggerConfiguration LogSink(
+              this LoggerSinkConfiguration loggerConfiguration)
+    {
+        return loggerConfiguration.Sink(Locator.Current.GetService<LogSink>()!);
     }
 }

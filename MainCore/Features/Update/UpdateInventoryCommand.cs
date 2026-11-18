@@ -1,0 +1,54 @@
+﻿namespace MainCore.Features.Update;
+
+public class HeroItemDto
+{
+    public HeroItemEnums Type { get; set; }
+    public int Amount { get; set; }
+}
+
+[Handler]
+public sealed partial class UpdateInventoryCommand(IDbContextFactory<AppDbContext> contextFactory)
+{
+    public sealed record Command(IChromeBrowser Browser) : IBrowserCommand
+    {
+        public string Name => "";
+    }
+
+    private async ValueTask HandleAsync(Command command)
+    {
+        var (browser, accountId) = command;
+        var dtos = await browser.CurrentPage.GetHeroItems();
+        Update(accountId, dtos);
+    }
+
+    private void Update(AccountId accountId, List<HeroItemDto> dtos)
+    {
+        using var context = contextFactory.CreateDbContext();
+        var items = context.HeroItems
+            .Where(x => x.AccountId == accountId.Value)
+            .ToList();
+
+        var types = dtos.Select(x => x.Type).ToList();
+
+        var itemDeleted = items.Where(x => !types.Contains(x.Type)).ToList();
+        var itemInserted = dtos.Where(x => !items.Exists(v => v.Type == x.Type)).ToList();
+        var itemUpdated = items.Where(x => types.Contains(x.Type)).ToList();
+
+        itemDeleted.ForEach(x => context.Remove(x));
+        itemInserted.ForEach(x => context.Add(new HeroItem()
+        {
+            AccountId = accountId.Value,
+            Type = x.Type,
+            Amount = x.Amount,
+        }));
+
+        foreach (var item in itemUpdated)
+        {
+            var dto = dtos.First(x => x.Type == item.Type);
+            item.Type = dto.Type;
+            item.Amount = dto.Amount;
+        }
+
+        context.SaveChanges();
+    }
+}
