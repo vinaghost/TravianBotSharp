@@ -7,7 +7,15 @@
         [Reactive]
         private bool _isActive;
 
-        protected TabViewModelBase()
+        protected readonly DialogService _dialogService;
+
+        protected TabViewModelBase(DialogService dialogService)
+        {
+            _dialogService = dialogService;
+            Init();
+        }
+
+        private void Init()
         {
             this.WhenAnyValue(x => x.IsActive)
                 .ObserveOn(RxSchedulers.TaskpoolScheduler)

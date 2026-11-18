@@ -8,30 +8,32 @@ on:
 jobs:
   Test:
     if: false
-    runs-on: windows-latest
+    runs-on: windows-2022
     env:
-        DOTNET_INSTALL_DIR: "D:/tools/dotnet"
-        DOTNET_ROOT: "D:/tools/dotnet"
-        NUGET_PACKAGES: "D:/.nuget/packages"
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      NUGET_PACKAGES: "D:/.nuget/packages"
+      DOTNET_INSTALL_DIR: "D:/tools/dotnet"
+      DOTNET_ROOT: "D:/tools/dotnet"
     steps:
       - name: Cache dotnet
         id: cache-dotnet
         uses: actions/cache@v6
         with:
           path: ${{ env.DOTNET_INSTALL_DIR }}
-          key: dotnet-${{ runner.os }}-10.0.400
-          
+          key: dotnet-${{ runner.os }}-10.0.404
+      
       - name: Install dotnet
         if: ${{ steps.cache-dotnet.outputs.cache-hit != 'true' }}
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.400
+          dotnet-version: 10.0.404
 
       - name: Set installed/cached dotnet path [${{ env.DOTNET_INSTALL_DIR }}]
         run: echo "${{ env.DOTNET_INSTALL_DIR }}" | Out-File -FilePath $ENV:GITHUB_PATH -Encoding utf8 -Append
-                  
+
       - name: Checkout
-        uses: actions/checkout@v7      
+        uses: actions/checkout@v7
       
       - name: Cache NuGet packages      
         id: cache-nuget
@@ -48,44 +50,18 @@ jobs:
         
       - name: Test others
         run: dotnet test -c Release --filter Mode!=Debug
-        
-  Version:
-    runs-on: ubuntu-latest
-    permissions:
-        contents: write
-    outputs:
-      version: ${{ steps.semvers.outputs.patch }}
-    steps:
-      - name: Checkout 
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0 
-      
-      - name: Get Previous tag
-        id: previoustag
-        uses: WyriHaximus/github-action-get-previous-tag@v2
-        with:
-          fallback: 1.0.0
-      
-      - name: Get next version
-        id: semvers
-        uses: WyriHaximus/github-action-next-semvers@v1.2.1
-        with:
-          version: ${{ steps.previoustag.outputs.tag }}
-          
-      - name: Create tag
-        uses: rickstaa/action-create-tag@v1.7.2
-        with:
-          tag: ${{ steps.semvers.outputs.patch }}
-          tag_exists_error: false
-          message: TBS-${{ steps.semvers.outputs.patch }}
+
   Build:
     runs-on: windows-latest
-    needs: Version
+    permissions:
+      contents: write
+      pull-requests: write
     env:
-        DOTNET_INSTALL_DIR: "D:/tools/dotnet"
-        DOTNET_ROOT: "D:/tools/dotnet"
-        NUGET_PACKAGES: "D:/.nuget/packages"
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      NUGET_PACKAGES: "D:/.nuget/packages"
+      DOTNET_INSTALL_DIR: "D:/tools/dotnet"
+      DOTNET_ROOT: "D:/tools/dotnet"
     
     steps:
       - name: Cache dotnet
@@ -93,19 +69,19 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ${{ env.DOTNET_INSTALL_DIR }}
-          key: dotnet-${{ runner.os }}-10.0.400
-          
+          key: dotnet-${{ runner.os }}-10.0.404
+      
       - name: Install dotnet
         if: ${{ steps.cache-dotnet.outputs.cache-hit != 'true' }}
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.400
+          dotnet-version: 10.0.404
 
       - name: Set installed/cached dotnet path [${{ env.DOTNET_INSTALL_DIR }}]
         run: echo "${{ env.DOTNET_INSTALL_DIR }}" | Out-File -FilePath $ENV:GITHUB_PATH -Encoding utf8 -Append
-                  
+
       - name: Checkout
-        uses: actions/checkout@v7      
+        uses: actions/checkout@v7
       
       - name: Cache NuGet packages      
         id: cache-nuget
@@ -113,30 +89,334 @@ jobs:
         with:
           path: ${{ env.NUGET_PACKAGES }}
           key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json') }}
+
+      - name: Bump SemVer and Push Git Tag via API
+        id: bump_tag
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        env:
+          # 1. Get Tag Inputs
+          TAG_PATTERN: "*"                    # Wildcard pattern to match tags (e.g., "*" or "v*")
+          INPUT_FALLBACK: "0.0.0"             # Fallback tag if no tags exist yet
+
+          # 2. SemVer Bump Input
+          BUMP_TYPE: "patch"                  # Set to "major", "minor", or "patch"
+
+          # 3. Create & Push Tag Inputs
+          INPUT_MESSAGE: ""                   # Optional: defaults to "Release <TAG>"
+          INPUT_FORCE_PUSH_TAG: "false"       # Optional: "true" or "false"
+          INPUT_TAG_EXISTS_ERROR: "true"      # Optional: "true" or "false"
+          INPUT_NO_VERIFY_TAG: "false"        # Optional: "true" or "false"
+          INPUT_COMMIT_SHA: ""                # Optional: defaults to GITHUB_SHA
+          INPUT_GPG_PRIVATE_KEY: ""           # Optional: GPG private key
+          INPUT_GPG_PASSPHRASE: ""            # Optional: GPG passphrase
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          # ==========================================
+          # 1. GET LATEST TAG VIA GH API (GraphQL, newest by commit date)
+          # ==========================================
+          $owner, $repo = $env:GITHUB_REPOSITORY -split '/'
+          $query = 'query($owner: String!, $name: String!, $refPrefix: String!) { repository(owner: $owner, name: $name) { refs(refPrefix: $refPrefix, first: 100, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) { nodes { name } } } }'
+          $rawTags = gh api graphql -f query=$query -F owner=$owner -F name=$repo -F refPrefix=refs/tags/ --jq '.data.repository.refs.nodes[].name' 2>&1
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "Failed to fetch tags via gh api: $rawTags" -ForegroundColor Red
+              exit 1
+          }
+
+          $pattern = if ([string]::IsNullOrWhiteSpace($env:TAG_PATTERN)) { "*" } else { $env:TAG_PATTERN }
+
+          # Filter by wildcard pattern; GraphQL order is already newest first
+          $currentTag = $rawTags |
+              Where-Object { $_ -like $pattern } |
+              Select-Object -First 1
+
+          if ([string]::IsNullOrEmpty($currentTag)) {
+              if ([string]::IsNullOrEmpty($env:INPUT_FALLBACK)) {
+                  Write-Host "No fallback tag was provided and no tag was found." -ForegroundColor Red
+                  exit 1
+              }
+              Write-Host "Falling back to default tag: $env:INPUT_FALLBACK" -ForegroundColor Yellow
+              $currentTag = $env:INPUT_FALLBACK
+          } else {
+              Write-Host "Found latest tag: $currentTag" -ForegroundColor Green
+          }
+
+          # ==========================================
+          # 2. CALCULATE NEXT SEMVER
+          # ==========================================
+          $cleanVersion = $currentTag.Trim().TrimStart('v', 'V')
+          $baseVersion = ($cleanVersion -split '[-+]')[0]
+          $parts = $baseVersion.Split('.')
+
+          [int]$major = if ($parts.Count -ge 1) { [int]$parts[0] } else { 0 }
+          [int]$minor = if ($parts.Count -ge 2) { [int]$parts[1] } else { 0 }
+          [int]$patch = if ($parts.Count -ge 3) { [int]$parts[2] } else { 0 }
+
+          $bumpType = if ([string]::IsNullOrWhiteSpace($env:BUMP_TYPE)) { "patch" } else { $env:BUMP_TYPE.ToLower().Trim() }
+
+          switch ($bumpType) {
+              "major" { $nextTag = "$($major + 1).0.0" }
+              "minor" { $nextTag = "$major.$($minor + 1).0" }
+              "patch" { $nextTag = "$major.$minor.$($patch + 1)" }
+              default {
+                  Write-Host "Invalid BUMP_TYPE '$bumpType'. Must be 'major', 'minor', or 'patch'." -ForegroundColor Red
+                  exit 1
+              }
+          }
+
+          Write-Host "Bumping ($bumpType): $currentTag -> $nextTag" -ForegroundColor Cyan
+
+          # ==========================================
+          # 3. CREATE & PUSH GIT TAG
+          # ==========================================
+          git config --global --add safe.directory $env:GITHUB_WORKSPACE
+
+          $flags = [System.Collections.Generic.List[string]]::new()
+          $tag = $nextTag -replace ' ', '_'
+          $actionOutputMessage = "[action-create-tag] Push tag '$tag'"
+          $message = if ([string]::IsNullOrWhiteSpace($env:INPUT_MESSAGE)) { "Release $tag" } else { $env:INPUT_MESSAGE }
+          $forceTag = ($env:INPUT_FORCE_PUSH_TAG -eq "true")
+          $tagExistsError = ($env:INPUT_TAG_EXISTS_ERROR -ne "false")
+          $noVerify = ($env:INPUT_NO_VERIFY_TAG -eq "true")
+          $sha = if ([string]::IsNullOrWhiteSpace($env:INPUT_COMMIT_SHA)) { $env:GITHUB_SHA } else { $env:INPUT_COMMIT_SHA }
+          $gpgPrivateKey = $env:INPUT_GPG_PRIVATE_KEY
+          $gpgPassphrase = $env:INPUT_GPG_PASSPHRASE
+
+          # Configure git and gpg if GPG key is provided
+          if (-not [string]::IsNullOrWhiteSpace($gpgPrivateKey)) {
+              Write-Host "[action-update-semver] Importing GPG key."
+              $gpgPrivateKey | gpg --batch --yes --import
+
+              if (-not [string]::IsNullOrWhiteSpace($gpgPassphrase)) {
+                  Write-Host "[action-update-semver] Unlocking GPG key."
+                  $gpgPassphrase | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --output $null --sign
+              }
+
+              $secretKeys = gpg --list-secret-keys --with-colons
+              $secLine = $secretKeys | Where-Object { $_ -match '^sec:' } | Select-Object -First 1
+              $publicKeyId = ($secLine -split ':')[4]
+
+              $pubKeys = gpg --list-keys --with-colons $publicKeyId
+              $uidLine = $pubKeys | Where-Object { $_ -match '^uid:' } | Select-Object -First 1
+              $uidString = ($uidLine -split ':')[9]
+
+              $signingKeyEmail = if ($uidString -match '<([^>]+)>') { $matches[1] } else { "" }
+              $signingKeyUsername = ($uidString -replace '\s*<[^>]+>', '' -replace '\s*\([^)]+\)', '').Trim()
+
+              Write-Host "[action-update-semver] Setup git user name, email, and signingkey."
+              git config --global user.name $signingKeyUsername
+              git config --global user.email $signingKeyEmail
+              git config --global user.signingkey $publicKeyId
+              git config --global commit.gpgsign true
+              git config --global tag.gpgSign true
+          } else {
+              Write-Host "[action-update-semver] Setup git user name and email."
+              git config --global user.name $env:GITHUB_ACTOR
+              git config --global user.email "$($env:GITHUB_ACTOR)@users.noreply.github.com"
+          }
+
+          # Check if tag already exists via gh api (since shallow checkout won't have local tags)
+          $tagExists = -not [string]::IsNullOrWhiteSpace((git ls-remote --tags origin "refs/tags/$tag"))
+          $tagExistsStr = if ($tagExists) { "true" } else { "false" }
+
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "tag_exists=$tagExistsStr" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "TAG_EXISTS=$tagExistsStr" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          # Create tag and handle force push
+          Write-Host "[action-create-tag] Create tag '$tag'."
+          if ($tagExists) {
+              Write-Host "[action-create-tag] Tag '$tag' already exists."
+          }
+
+          if ($forceTag) {
+              if ($tagExists) {
+                  Write-Host "[action-create-tag] Overwriting tag '$tag' since 'force_push_tag' is set to 'true'."
+              }
+              git tag -fa $tag $sha -m $message
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+              $flags.Add("--force")
+              $actionOutputMessage += ", with --force"
+          } else {
+              if ($tagExists) {
+                  Write-Host "[action-create-tag] Please set 'force_push_tag' to 'true' if you want to overwrite it."
+                  if ($tagExistsError) {
+                      Write-Host "[action-create-tag] Throwing an error. Please set 'tag_exists_error' to 'false' if you want to ignore this error." -ForegroundColor Red
+                      exit 1
+                  }
+                  Write-Host "[action-create-tag] Ignoring error since 'tag_exists_error' is set to 'false'."
+              } else {
+                  git tag -a $tag $sha -m $message
+                  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+              }
+          }
+
+          # Handle no-verify flag
+          if ($noVerify) {
+              $flags.Add("--no-verify")
+              $actionOutputMessage += ", with --no-verify"
+          }
+
+          # Push tag
+          if ($tagExists -and -not $forceTag) {
+              exit 0
+          }
+
+          Write-Host $actionOutputMessage
+          git push @flags origin $tag
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           
       - name: Install dependencies
         run: dotnet restore --locked-mode
       
       - name: Publish
-        run: dotnet publish WPFUI -c Release --no-restore --self-contained -p:PublishSingleFile=true -p:AssemblyVersion=${{needs.version.outputs.version}} -p:RunAnalyzersDuringBuild=True
+        run: > 
+          dotnet publish WPFUI 
+          -c Release 
+          --no-restore 
+          --self-contained 
+          -p:PublishSingleFile=true 
+          -p:AssemblyVersion=${{ steps.bump_tag.outputs.tag }}
+          -p:RunAnalyzersDuringBuild=True
       
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v7
         with:
-          name: TBS-${{needs.version.outputs.version}}
+          name: TBS-${{ steps.bump_tag.outputs.tag }}
           path: WPFUI\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish\
           if-no-files-found: error
           include-hidden-files: true
+          compression-level: 1
 
-  Comment:
-    needs: [Build, Version]
-    runs-on: ubuntu-latest
-    permissions:
-        pull-requests: write
-    steps:
       - name: Comment PR
-        uses: thollander/actions-comment-pull-request@v3
-        with:
-          message: |
-            Version of this build is ${{needs.version.outputs.version}}
+        id: comment_pr
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          INPUT_MESSAGE: |
+            Version of this build is ${{ steps.bump_tag.outputs.tag }}
             Check download link [here](https://nightly.link/vinaghost/TravianBotSharp/actions/runs/${{ github.run_id }})
+          INPUT_FILE_PATH: ""                 # Optional: path to markdown/text file
+          INPUT_COMMENT_TAG: ""               # Optional: unique tag to find/update existing comment
+          INPUT_MODE: "upsert"                # "upsert", "recreate", or "delete"
+          INPUT_CREATE_IF_NOT_EXISTS: "true"  # "true" or "false"
+          INPUT_REACTIONS: ""                 # Optional: comma-separated (e.g. "+1, rocket, heart")
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $validReactions = @('+1', '-1', 'laugh', 'confused', 'heart', 'hooray', 'rocket', 'eyes')
+          $message = $env:INPUT_MESSAGE
+          $filePath = $env:INPUT_FILE_PATH
+          $issueNumber = $env:INPUT_PR_NUMBER
+          $commentTag = $env:INPUT_COMMENT_TAG
+          $reactions = $env:INPUT_REACTIONS
+          $mode = if ([string]::IsNullOrWhiteSpace($env:INPUT_MODE)) { "upsert" } else { $env:INPUT_MODE.Trim() }
+          $createIfNotExists = ($env:INPUT_CREATE_IF_NOT_EXISTS -ne "false")
+
+          # 1. Validate inputs
+          if ([string]::IsNullOrWhiteSpace($message) -and [string]::IsNullOrWhiteSpace($filePath) -and $mode -ne "delete") {
+              Write-Error 'Either "file-path" or "message" should be provided unless running as "delete".'
+              exit 1
+          }
+
+          if ([string]::IsNullOrWhiteSpace($issueNumber)) {
+              Write-Error "No issue/pull request in input neither in current context."
+              exit 1
+          }
+
+          $content = if (-not [string]::IsNullOrWhiteSpace($message)) {
+              $message.TrimEnd()
+          } elseif (-not [string]::IsNullOrWhiteSpace($filePath)) {
+              Get-Content -Path $filePath -Raw -Encoding utf8
+          } else {
+              ""
+          }
+
+          # 2. Helper functions
+          function Add-CommentReactions {
+              param([long]$CommentId, [string]$ReactionList)
+              if ([string]::IsNullOrWhiteSpace($ReactionList)) { return }
+
+              $items = ($ReactionList -replace '\s', '').Split(',') | Where-Object { $validReactions -contains $_ }
+              foreach ($r in $items) {
+                  gh api "repos/$env:GITHUB_REPOSITORY/issues/comments/$CommentId/reactions" `
+                      --method POST -f content="$r" --silent | Out-Null
+              }
+          }
+
+          function Set-ActionOutputs {
+              param($CommentObj)
+              "id=$($CommentObj.id)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+              "html-url=$($CommentObj.html_url)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        
+              # Safely write multiline body to GITHUB_OUTPUT
+              $delimiter = "EOF_$([guid]::NewGuid().ToString('N'))"
+              "body<<$delimiter`n$($CommentObj.body)`n$delimiter" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          }
+
+          function New-PrComment {
+              param([string]$BodyText)
+              $res = gh api "repos/$env:GITHUB_REPOSITORY/issues/$issueNumber/comments" `
+                  --method POST -f body="$BodyText" | ConvertFrom-Json
+              Set-ActionOutputs -CommentObj $res
+              Add-CommentReactions -CommentId $res.id -ReactionList $reactions
+          }
+
+          function Update-PrComment {
+              param([long]$CommentId, [string]$BodyText)
+              $res = gh api "repos/$env:GITHUB_REPOSITORY/issues/comments/$CommentId" `
+                  --method PATCH -f body="$BodyText" | ConvertFrom-Json
+              Set-ActionOutputs -CommentObj $res
+              Add-CommentReactions -CommentId $res.id -ReactionList $reactions
+          }
+
+          function Remove-PrComment {
+              param([long]$CommentId)
+              gh api "repos/$env:GITHUB_REPOSITORY/issues/comments/$CommentId" --method DELETE --silent | Out-Null
+          }
+
+          # 3. Handle comment-tag matching and modes
+          $tagPattern = if (-not [string]::IsNullOrWhiteSpace($commentTag)) {
+              "<!-- thollander/actions-comment-pull-request `"$commentTag`" -->"
+          } else { $null }
+
+          $finalBody = if ($tagPattern) { "$content`n$tagPattern" } else { $content }
+
+          if ($tagPattern) {
+              $allComments = gh api "repos/$env:GITHUB_REPOSITORY/issues/$issueNumber/comments" --paginate | ConvertFrom-Json
+              $existingComment = $allComments | Where-Object { $_.body -and $_.body.Contains($tagPattern) } | Select-Object -First 1
+
+              if ($existingComment) {
+                  switch ($mode) {
+                      "upsert" {
+                          Update-PrComment -CommentId $existingComment.id -BodyText $finalBody
+                          exit 0
+                      }
+                      "recreate" {
+                          Remove-PrComment -CommentId $existingComment.id
+                          New-PrComment -BodyText $finalBody
+                          exit 0
+                      }
+                      "delete" {
+                          Remove-PrComment -CommentId $existingComment.id
+                          exit 0
+                      }
+                      default {
+                          Write-Error "Mode '$mode' is unknown. Please use 'upsert', 'recreate', or 'delete'."
+                          exit 1
+                      }
+                  }
+              } elseif ($mode -eq "delete") {
+                  Write-Host "No comment found with pattern. Nothing to delete."
+                  exit 0
+              } elseif (-not $createIfNotExists) {
+                  Write-Host "Pattern not found and create-if-not-exists is false. Skipping."
+                  exit 0
+              }
+          }
+
+          # 4. Create new comment
+          New-PrComment -BodyText $finalBody

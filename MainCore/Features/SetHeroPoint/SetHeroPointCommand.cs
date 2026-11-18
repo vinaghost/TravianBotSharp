@@ -1,0 +1,45 @@
+﻿namespace MainCore.Features.SetHeroPoint;
+
+[Handler]
+public static partial class SetHeroPointCommand
+{
+    public sealed record Command(IChromeBrowser Browser) : ICommand
+    {
+        public string Name => $"{nameof(SetHeroPointCommand).Humanize()} [{Description}]";
+        private static string Description => $"{string.Join(", ", [1, 0, 0, 3])}";
+    }
+
+    private static readonly string[] NameInputs = [
+        "power",
+        "offBonus",
+        "defBonus",
+        "productionPoints",
+    ];
+
+    private static async ValueTask<Result> HandleAsync(Command command)
+    {
+        var browser = command.Browser;
+        Result result;
+
+        int[] Points = [1, 0, 0, 3];
+
+        for (var i = 0; i < NameInputs.Length; i++)
+        {
+            if (Points[i] == 0) continue;
+            var input = browser.CurrentPage.GetHeroAttributeBox(NameInputs[i]);
+
+            var currentValueText = await input.InputValueAsync();
+            var currentValue = int.TryParse(currentValueText, out var value) ? value : 0;
+            var desiredValue = currentValue + Points[i];
+
+            result = await browser.Input(input, desiredValue.ToString());
+            if (result.IsFailed) return result;
+        }
+
+        var saveButton = browser.CurrentPage.GetHeroAttributeSaveButton();
+        result = await browser.Click(saveButton);
+        if (result.IsFailed) return result;
+
+        return Result.Ok();
+    }
+}
