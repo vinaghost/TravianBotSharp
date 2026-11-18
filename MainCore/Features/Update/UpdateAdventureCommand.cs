@@ -26,7 +26,7 @@ public sealed partial class UpdateAdventureCommand(
         taskManager.Add(new StartAdventureTask.Task(accountId));
     }
 
-    private async Task<bool> CanStartAdventure(IPage page)
+    private static async Task<bool> CanStartAdventure(IPage page)
     {
         var heroState = await page.GetHeroState();
 

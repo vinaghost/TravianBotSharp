@@ -37,7 +37,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                 {
                     case JobTypeEnums.NormalBuild:
                         {
-                            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content)!;
+                            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
 
                             Modify(buildings, plan, changedLocations, shuffle);
                             job.Content = JsonSerializer.Serialize(plan);
@@ -47,7 +47,7 @@ namespace MainCore.UI.ViewModels.Tabs.Villages
                         }
                     case JobTypeEnums.ResourceBuild:
                         {
-                            var plan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content)!;
+                            var plan = JsonSerializer.Deserialize<ResourceBuildPlan>(job.Content);
                             if (IsValidPlan(buildings, plan)) yield return job;
                             continue;
                         }

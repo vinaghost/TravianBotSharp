@@ -1,7 +1,7 @@
 ﻿namespace MainCore.Features.UpgradeBuilding;
 
 [Handler]
-public partial class UpgradeCommand(ILogger logger)
+public sealed partial class UpgradeCommand(ILogger logger)
 {
     public sealed record Command(IChromeBrowser Browser, NormalBuildPlan Plan, bool CanUseSpecialUpgrade) : ICommand
     {

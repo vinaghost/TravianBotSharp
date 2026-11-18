@@ -22,7 +22,6 @@ public static partial class SetHeroPointCommand
         Result result;
 
         int[] Points = [1, 0, 0, 3];
-        //int[] Points = [0, 0, 0, 4];
 
         for (var i = 0; i < NameInputs.Length; i++)
         {

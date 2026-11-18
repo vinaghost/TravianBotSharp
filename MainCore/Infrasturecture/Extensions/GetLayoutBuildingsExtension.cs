@@ -52,7 +52,7 @@ namespace MainCore.Infrasturecture.Extensions
                         .Where(j => j.VillageId == villageId.Value && j.Type == JobTypeEnums.NormalBuild)
                         .Select(j => j.Content)
                         .AsEnumerable()
-                        .Select(content => JsonSerializer.Deserialize<NormalBuildPlan>(content)!)
+                        .Select(content => JsonSerializer.Deserialize<NormalBuildPlan>(content))
                         .GroupBy(plan => plan.Location);
 
                     foreach (var planGroup in plannedNormalBuilds)
@@ -74,7 +74,7 @@ namespace MainCore.Infrasturecture.Extensions
                         .Where(j => j.VillageId == villageId.Value && j.Type == JobTypeEnums.ResourceBuild)
                         .Select(j => j.Content)
                         .AsEnumerable()
-                        .Select(content => JsonSerializer.Deserialize<ResourceBuildPlan>(content)!)
+                        .Select(content => JsonSerializer.Deserialize<ResourceBuildPlan>(content))
                         .GroupBy(plan => plan.Plan);
 
                     var resourceFields = buildingsByLocation.Values

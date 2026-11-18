@@ -1,7 +1,7 @@
 ﻿namespace MainCore.Features.Navigate;
 
 [Handler]
-public partial class SwitchTabCommand(ILogger logger)
+public sealed partial class SwitchTabCommand(ILogger logger)
 {
     public sealed record Command(IChromeBrowser Browser, int TabIndex) : ICommand
     {
