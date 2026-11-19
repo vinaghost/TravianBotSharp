@@ -6,6 +6,7 @@ namespace MainCore.Services;
 public class ChromeSetting
 {
     public required string ProfilePath { get; set; }
+    public required string UserAgent { get; set; }
     public string? ProxyHost { get; set; }
     public int ProxyPort { get; set; }
     public string? ProxyUsername { get; set; }
@@ -56,6 +57,7 @@ public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory
                 Password = setting.ProxyPassword
             },
             ViewportSize = ViewportSize.NoViewport,
+            UserAgent = string.IsNullOrEmpty(setting.UserAgent) ? null : setting.UserAgent,
             Args =
             [
                 "--ignore-certificate-errors",

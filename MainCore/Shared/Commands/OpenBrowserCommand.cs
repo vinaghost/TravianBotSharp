@@ -26,6 +26,7 @@ public sealed partial class OpenBrowserCommand(
         var chromeSetting = new ChromeSetting()
         {
             ProfilePath = GetProfilePath(server, username),
+            UserAgent = access.UserAgent,
             ProxyHost = access.ProxyHost,
             ProxyPort = access.ProxyPort,
             ProxyUsername = access.ProxyUsername,
@@ -86,6 +87,7 @@ public sealed partial class OpenBrowserCommand(
               ProxyPort = x.ProxyPort,
               ProxyUsername = x.ProxyUsername,
               ProxyPassword = x.ProxyPassword,
+              UserAgent = x.Useragent,
               LastUsed = x.LastUsed
           })
           .ToList();

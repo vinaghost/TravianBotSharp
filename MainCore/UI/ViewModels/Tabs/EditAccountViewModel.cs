@@ -154,6 +154,8 @@ namespace MainCore.UI.ViewModels.Tabs
                     ProxyPort = x.ProxyPort,
                     ProxyUsername = x.ProxyUsername,
                     ProxyPassword = x.ProxyPassword,
+                    Useragent = x.Useragent,
+                    LastUsed = x.LastUsed,
                 })
                 .ToList();
 
@@ -180,16 +182,21 @@ namespace MainCore.UI.ViewModels.Tabs
         {
             var account = new Account()
             {
+                Id = dto.Id.Value,
                 Username = dto.Username,
                 Server = dto.Server,
                 Accesses = [..dto.Accesses.Select(x => new Access()
                 {
+                    Id = x.Id.Value,
+                    AccountId = dto.Id.Value,
                     Username = x.Username,
                     Password = x.Password,
                     ProxyHost = x.ProxyHost,
                     ProxyPort = x.ProxyPort,
                     ProxyUsername = x.ProxyUsername,
                     ProxyPassword = x.ProxyPassword,
+                    Useragent = x.Useragent,
+                    LastUsed = x.LastUsed,
                 })],
             };
 
@@ -197,9 +204,9 @@ namespace MainCore.UI.ViewModels.Tabs
             context.Update(account);
             context.SaveChanges();
 
-            var existingAccessIds = dto.Accesses.Select(a => a.Id.Value).ToHashSet();
+            var keptAccessIds = account.Accesses.Select(a => a.Id).ToList();
             context.Accesses
-                .Where(a => a.AccountId == account.Id && !existingAccessIds.Contains(a.Id))
+                .Where(a => a.AccountId == account.Id && !keptAccessIds.Contains(a.Id))
                 .ExecuteDelete();
         }
     }

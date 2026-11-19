@@ -38,6 +38,7 @@ namespace MainCore.Infrasturecture.Entities
         public int ProxyPort { get; set; }
         public required string ProxyUsername { get; set; }
         public required string ProxyPassword { get; set; }
+        public string UserAgent { get; set; } = "";
         public DateTime LastUsed { get; set; }
 
         public override string ToString()
