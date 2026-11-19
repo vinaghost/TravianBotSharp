@@ -1,0 +1,24 @@
+﻿namespace MainCore.Features.StartAdventure;
+
+[Handler]
+public static partial class OpenAdventurePanelCommand
+{
+    public sealed record Command(IChromeBrowser Browser) : ICommand
+    {
+        public string Name => nameof(OpenAdventurePanelCommand).Humanize();
+    }
+
+    private static async ValueTask<Result> HandleAsync(Command command)
+    {
+        var browser = command.Browser;
+        Result result;
+
+        result = await browser.Click(browser.CurrentPage.GetHeroAdventureButton());
+        if (result.IsFailed) return result;
+        result = await browser.WaitPageChanged("hero/adventures");
+        if (result.IsFailed) return result;
+        result = await browser.Wait(browser.CurrentPage.GetAdventureDurationSection());
+        if (result.IsFailed) return result;
+        return Result.Ok();
+    }
+}
