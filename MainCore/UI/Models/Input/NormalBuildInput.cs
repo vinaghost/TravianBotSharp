@@ -1,12 +1,12 @@
 ﻿using System.Collections.ObjectModel;
 
-using Humanizer;
-
 using MainCore.UI.Models.Output;
 using MainCore.UI.ViewModels.Abstract;
 
 namespace MainCore.UI.Models.Input
 {
+    using MainCore.Shared.Enums;
+
     using ReactiveUI.Primitives;
 
     public partial class NormalBuildInput : ViewModelBase
