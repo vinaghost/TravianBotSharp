@@ -10,14 +10,14 @@ public sealed partial class GetBuildPlanCommand(
     ILogger logger,
     RxQueue rxQueue)
 {
-    public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand
+    public sealed record Command(AccountId AccountId, VillageId VillageId, BuildState State) : IAccountVillageCommand
     {
         public string Name => nameof(GetBuildPlanCommand).Humanize();
     }
 
-    private async ValueTask<Result<NormalBuildPlan>> HandleAsync(Command command, CancellationToken cancellationToken)
+    private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
     {
-        var (accountId, villageId) = command;
+        var (accountId, villageId, state) = command;
 
         while (true)
         {
@@ -76,7 +76,9 @@ public sealed partial class GetBuildPlanCommand(
                 rxQueue.Enqueue(new JobsModified(accountId, villageId));
                 continue;
             }
-            return plan;
+
+            state.Plan = plan;
+            return Result.Ok();
         }
     }
 

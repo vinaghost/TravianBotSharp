@@ -29,9 +29,7 @@ namespace MainCore.Shared.Behaviors
             result = await toDorfCommand.HandleAsync(new(browser, 2), cancellationToken);
             if (result.IsFailed) return (TResponse)result;
 
-            result = await updateBuildingCommand.HandleAsync(new(browser, villageId), cancellationToken);
-            if (result.IsFailed) return (TResponse)result;
-
+            await updateBuildingCommand.HandleAsync(new(browser, villageId), cancellationToken);
             await updateStorageCommand.HandleAsync(new(browser, villageId), cancellationToken);
             await updateQuestCommand.HandleAsync(new(browser, villageId), cancellationToken);
 

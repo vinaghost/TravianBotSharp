@@ -29,7 +29,13 @@ public sealed partial class UpgradeBuildingTask(
         {
             if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-            (_, var isFailed, var plan, IReadOnlyList<IError> errors) = await getBuildPlanCommand.HandleAsync(new(task.AccountId, task.VillageId), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(browser, 0), cancellationToken);
+            if (result.IsFailed) return result;
+
+            await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
+
+            var state = new BuildState();
+            var (_, isFailed, errors) = await getBuildPlanCommand.HandleAsync(new(task.AccountId, task.VillageId, state), cancellationToken);
             if (isFailed)
             {
                 var upgradeErrors = errors.OfType<UpgradeError>().ToList();
@@ -51,6 +57,7 @@ public sealed partial class UpgradeBuildingTask(
                 return Stop.Error;
             }
 
+            var plan = state.Plan;
             logger.Information("Build {Plan}", plan);
 
             (_, isFailed, errors) = await toBuildPageCommand.HandleAsync(new(browser, plan), cancellationToken);
@@ -68,16 +75,14 @@ public sealed partial class UpgradeBuildingTask(
 
                 if (upgradeErrors.Any(x => x.Type == UpgradeErrorType.BuildingNotExist))
                 {
-                    result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
-                    if (result.IsFailed) return result;
+                    await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
 
                     if (plan.Type.IsResourceBonus())
                     {
                         result = await toDorfCommand.HandleAsync(new(browser, 1), cancellationToken);
                         if (result.IsFailed) return result;
 
-                        result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
-                        if (result.IsFailed) return result;
+                        await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
                     }
 
                     (_, isFailed, errors) = CheckPrerequisite(task.VillageId, plan);
@@ -99,8 +104,7 @@ public sealed partial class UpgradeBuildingTask(
                 }
                 else if (upgradeErrors.Any(x => x.Type == UpgradeErrorType.BuildingInQueue))
                 {
-                    result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
-                    if (result.IsFailed) return result;
+                    await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
 
                     if (IsPlanUnderConstruction(task.VillageId, plan))
                     {
@@ -153,8 +157,7 @@ public sealed partial class UpgradeBuildingTask(
 
             logger.Information("Upgrade for {Type} at #{Location} completed successfully.", plan.Type, plan.Location);
 
-            result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
-            if (result.IsFailed) return result;
+            await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
         }
     }
 
