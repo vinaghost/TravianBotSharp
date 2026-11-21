@@ -124,16 +124,16 @@ public static class Parsers
     }
 
     public record struct BuildingNameDto(string Name, int Type);
-    public record struct BuildingDataDto(BuildingDto[] Buildings, QueueBuildingDto[] Queue, BuildingNameDto[] Names, int Dorf, int Tribe);
+    public record struct BuildingDataDto(BuildingDto[] Buildings, QueueBuildingDto[] Queue, int Dorf, int Tribe);
 
-    public static async Task<BuildingDataDto> GetBuildingData(this IPage page)
+    public static async Task<BuildingDataDto> GetBuildingData(this IPage page, IReadOnlyDictionary<string, int> buildingNames)
     {
+        await page.WaitForSelectorAsync("#questmasterButton");
         var data = await page.EvaluateAsync<BuildingDataDto>(@"() => {
             const isDorf1 = document.querySelector('.village1') !== null;
             const isDorf2 = document.querySelector('.village2') !== null;
             const buildingsResult = [];
             const queueResult = [];
-            const names = [];
 
             const questMaster = document.querySelector('#questmasterButton');
             const tribeAttr = questMaster ? (questMaster.getAttribute('class') || '') : '';
@@ -171,25 +171,8 @@ public static class Parsers
                         Level: levelMatch ? parseInt(levelMatch[1], 10) : -1,
                         IsUnderConstruction: classAttr.includes('underConstruction')
                     });
-
-                    if (gid > 0) {
-                        const rawContent = field._tippy?.props?.content || field.getAttribute('title');
-                        if (rawContent) {
-                            const tempDiv = document.createElement('div');
-                            tempDiv.innerHTML = typeof rawContent === 'string' ? rawContent : rawContent.innerHTML;
-                            const titleEl = tempDiv.querySelector('.title') || tempDiv;
-                            const name = Array.from(titleEl.childNodes)
-                                .filter(n => n.nodeType === Node.TEXT_NODE)
-                                .map(n => n.textContent.trim())
-                                .join('')
-                                .split('||')[0]
-                                .trim();
-
-                            if (name) names.push({ Name: name, Type: gid });
-                        }
-                    }
                 });
-            } else {
+            } else if (isDorf2) {
                 const elements = document.querySelectorAll('#villageContent .buildingSlot');
                 elements.forEach((building, i) => {
                     if (i === 22) return;
@@ -213,11 +196,6 @@ public static class Parsers
                         Level: isNaN(rawLvl) ? -1 : rawLvl,
                         IsUnderConstruction: link ? link.classList.contains('underConstruction') : false
                     });
-
-                    const rawName = building.getAttribute('data-name');
-                    if (typeId > 0 && rawName && rawName.trim()) {
-                        names.push({ Name: rawName.trim(), Type: typeId });
-                    }
                 });
             }
 
@@ -245,7 +223,6 @@ public static class Parsers
             return {
                 Buildings: buildingsResult,
                 Queue: queueResult,
-                Names: names,
                 Dorf: isDorf1 === isDorf2 ? 0 : (isDorf1 ? 1 : 2),
                 Tribe: tribeId
             };
@@ -256,6 +233,11 @@ public static class Parsers
         {
             if (item.DurationSeconds >= 0 && item.DurationSeconds <= (DateTime.MaxValue - now).TotalSeconds)
                 item.CompleteTime = now.AddSeconds(item.DurationSeconds);
+
+            if (!buildingNames.TryGetValue(item.Name, out var type))
+                throw new InvalidOperationException($"Unknown building name in queue: {item.Name}");
+
+            item.Type = (BuildingEnums)type;
         }
 
         return data;
