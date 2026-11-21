@@ -111,8 +111,10 @@ public sealed partial class GetBuildPlanCommand(
                             .Select(x => x.HasPlusAccount)
                             .FirstOrDefault();
 
+        var romanTribe = (TribeEnums)context.ByName(villageId, VillageSettingEnums.Tribe) == TribeEnums.Romans;
+
         var applyRomanQueueLogic = context.BooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
-        return (plusActive, applyRomanQueueLogic);
+        return (plusActive, applyRomanQueueLogic && romanTribe);
     }
 
     private Result<JobDto> GetJob(List<JobDto> jobs, List<QueueBuilding> queueBuildings, bool plusActive, bool applyRomanQueueLogic)
