@@ -23,6 +23,9 @@ public sealed partial class InstantUpgradeTask(
         result = await toDorfCommand.HandleAsync(new(browser, 0), cancellationToken);
         if (result.IsFailed) return result;
 
+        var oldQueueCount = await browser.CurrentPage.CountQueueBuilding();
+        if (oldQueueCount == 0) return Result.Ok();
+
         result = await instantUpgradeCommand.HandleAsync(new(browser), cancellationToken);
         if (result.IsFailed) return result;
 
