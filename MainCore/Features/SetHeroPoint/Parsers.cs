@@ -12,6 +12,11 @@ public static class Parsers
         return page.Locator("#heroV2");
     }
 
+    public static ILocator GetPointAvailable(this IPage page)
+    {
+        return page.Locator("#heroV2 .attributeBox .heroAttributes .pointsAvailable");
+    }
+
     public static ILocator GetHeroAttributeBoxes(this IPage page)
     {
         return page.Locator("#heroV2 .attributeBox .heroAttributes .attributes.formV2");
