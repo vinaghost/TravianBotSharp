@@ -8,10 +8,10 @@ public static class Parsers
         return button;
     }
 
-    public static async Task<bool> IsVillageQuestClaimable(this IPage page)
+    public static ILocator GetNewQuestSpeechBubble(this IPage page)
     {
         var speechBubble = page.Locator("#questmasterButton div.newQuestSpeechBubble");
-        return await speechBubble.CountAsync() > 0;
+        return speechBubble;
     }
 
     public static ILocator GetVillageQuestCollectButton(this IPage page)

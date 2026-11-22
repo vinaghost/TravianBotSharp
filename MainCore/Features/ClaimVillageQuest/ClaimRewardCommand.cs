@@ -26,6 +26,12 @@ public sealed partial class ClaimRewardCommand(SwitchTabCommand.Handler switchTa
                 return Cancel.Error;
             }
 
+            var newQuestSpeechBubble = browser.CurrentPage.GetNewQuestSpeechBubble();
+            if (await newQuestSpeechBubble.CountAsync() == 0)
+            {
+                return Result.Ok();
+            }
+
             if (await quest.CountAsync() != 0)
             {
                 result = await browser.Click(quest.First);

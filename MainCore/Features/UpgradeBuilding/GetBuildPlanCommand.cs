@@ -165,7 +165,7 @@ public sealed partial class GetBuildPlanCommand(
         JobTypeEnums.ResourceBuild
     ];
 
-    public static readonly List<BuildingEnums> ResourceTypes = [
+    private static readonly List<BuildingEnums> ResourceTypes = [
         BuildingEnums.Woodcutter,
         BuildingEnums.ClayPit,
         BuildingEnums.IronMine,

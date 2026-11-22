@@ -1,4 +1,5 @@
 using MainCore.Features.Navigate;
+using MainCore.Features.Update;
 using MainCore.Features.UpgradeBuilding;
 
 namespace MainCore.Features.InstantUpgrade;
@@ -8,6 +9,7 @@ public sealed partial class InstantUpgradeTask(
     ChromeManager chromeManager,
     ToDorfCommand.Handler toDorfCommand,
     InstantUpgradeCommand.Handler instantUpgradeCommand,
+    UpdateBuildingCommand.Handler updateBuildingCommand,
     TaskManager taskManager)
 {
     public sealed class Task(AccountId accountId, VillageId villageId) : VillageTask(accountId, villageId)
@@ -29,6 +31,7 @@ public sealed partial class InstantUpgradeTask(
         result = await instantUpgradeCommand.HandleAsync(new(browser), cancellationToken);
         if (result.IsFailed) return result;
 
+        await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
         taskManager.Add(new UpgradeBuildingTask.Task(task.AccountId, task.VillageId), true);
         return Result.Ok();
     }
