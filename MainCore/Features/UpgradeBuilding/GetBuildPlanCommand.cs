@@ -160,7 +160,7 @@ public sealed partial class GetBuildPlanCommand(
         return new UpgradeError(UpgradeErrorType.BuildingJobQueueBroken);
     }
 
-    private static readonly List<JobTypeEnums> BuildJobTypes = [
+    public static readonly List<JobTypeEnums> BuildJobTypes = [
         JobTypeEnums.NormalBuild,
         JobTypeEnums.ResourceBuild
     ];

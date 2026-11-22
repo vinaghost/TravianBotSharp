@@ -1,4 +1,6 @@
-﻿using MainCore.Features.Navigate;
+﻿using System.Text.Json;
+
+using MainCore.Features.Navigate;
 using MainCore.Features.Update;
 
 namespace MainCore.Features.UpgradeBuilding;
@@ -29,7 +31,7 @@ public sealed partial class UpgradeBuildingTask(
         {
             if (cancellationToken.IsCancellationRequested) return Cancel.Error;
 
-            result = await toDorfCommand.HandleAsync(new(browser, 0), cancellationToken);
+            result = await toDorfCommand.HandleAsync(new(browser, GetDorf(task.VillageId)), cancellationToken);
             if (result.IsFailed) return result;
 
             await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
@@ -320,5 +322,27 @@ public sealed partial class UpgradeBuildingTask(
                 logger.Information("{Type} at location {Location} is at level {Level}", building.Type, building.Location, building.Level);
             }
         }
+    }
+
+    private int GetDorf(VillageId villageId)
+    {
+        using var context = contextFactory.CreateDbContext();
+        var jobs = context.Jobs
+            .AsNoTracking()
+            .Where(x => x.VillageId == villageId.Value)
+            .Where(x => GetBuildPlanCommand.BuildJobTypes.Contains(x.Type))
+            .ToList();
+
+        if (jobs.Count == 0) return 0;
+
+        var job = jobs[0];
+        if (job.Type == JobTypeEnums.ResourceBuild) return 1;
+        if (job.Type == JobTypeEnums.NormalBuild)
+        {
+            var plan = JsonSerializer.Deserialize<NormalBuildPlan>(job.Content);
+            if (plan.Type.IsResourceField()) return 1;
+            return 2;
+        }
+        return 0;
     }
 }
