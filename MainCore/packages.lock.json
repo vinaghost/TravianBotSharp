@@ -95,9 +95,9 @@
       },
       "Patchright": {
         "type": "Direct",
-        "requested": "[1.63.0, )",
-        "resolved": "1.63.0",
-        "contentHash": "I283/ZzDARf0vnCZtJinZS9oDXIdLpYaUu6IOH1Rbi/ku1N8NTwPN9WzamQcg4kwbKi6+tRXZadl6OOA1wIGYA==",
+        "requested": "[1.64.1, )",
+        "resolved": "1.64.1",
+        "contentHash": "PtmRAfkimFonbvmCB6/ZB65KvOejx6RKXzMGi05YUaJHJivxEJ1ffuj4OTBW31HJa9KBCpb7KjF96IQ/5IvQsQ==",
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
           "System.ComponentModel.Annotations": "5.0.0"

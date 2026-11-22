@@ -10,14 +10,14 @@ public sealed partial class GetBuildPlanCommand(
     ILogger logger,
     RxQueue rxQueue)
 {
-    public sealed record Command(AccountId AccountId, VillageId VillageId) : IAccountVillageCommand
+    public sealed record Command(AccountId AccountId, VillageId VillageId, BuildState State) : IAccountVillageCommand
     {
         public string Name => nameof(GetBuildPlanCommand).Humanize();
     }
 
-    private async ValueTask<Result<NormalBuildPlan>> HandleAsync(Command command, CancellationToken cancellationToken)
+    private async ValueTask<Result> HandleAsync(Command command, CancellationToken cancellationToken)
     {
-        var (accountId, villageId) = command;
+        var (accountId, villageId, state) = command;
 
         while (true)
         {
@@ -76,7 +76,9 @@ public sealed partial class GetBuildPlanCommand(
                 rxQueue.Enqueue(new JobsModified(accountId, villageId));
                 continue;
             }
-            return plan;
+
+            state.Plan = plan;
+            return Result.Ok();
         }
     }
 
@@ -111,8 +113,10 @@ public sealed partial class GetBuildPlanCommand(
                             .Select(x => x.HasPlusAccount)
                             .FirstOrDefault();
 
+        var romanTribe = (TribeEnums)context.ByName(villageId, VillageSettingEnums.Tribe) == TribeEnums.Romans;
+
         var applyRomanQueueLogic = context.BooleanByName(villageId, VillageSettingEnums.ApplyRomanQueueLogicWhenBuilding);
-        return (plusActive, applyRomanQueueLogic);
+        return (plusActive, applyRomanQueueLogic && romanTribe);
     }
 
     private Result<JobDto> GetJob(List<JobDto> jobs, List<QueueBuilding> queueBuildings, bool plusActive, bool applyRomanQueueLogic)
@@ -156,12 +160,12 @@ public sealed partial class GetBuildPlanCommand(
         return new UpgradeError(UpgradeErrorType.BuildingJobQueueBroken);
     }
 
-    private static readonly List<JobTypeEnums> BuildJobTypes = [
+    public static readonly List<JobTypeEnums> BuildJobTypes = [
         JobTypeEnums.NormalBuild,
         JobTypeEnums.ResourceBuild
     ];
 
-    public static readonly List<BuildingEnums> ResourceTypes = [
+    private static readonly List<BuildingEnums> ResourceTypes = [
         BuildingEnums.Woodcutter,
         BuildingEnums.ClayPit,
         BuildingEnums.IronMine,

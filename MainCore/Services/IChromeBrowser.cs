@@ -10,6 +10,7 @@ public interface IChromeBrowser
     bool IsInitialized { get; }
     bool IsHeadless { get; }
     AccountId AccountId { get; }
+    IReadOnlyDictionary<string, int> BuildingNames { get; }
 
     Task<Result> Click(ILocator locator, [CallerArgumentExpression(nameof(locator))] string? expression = null);
 

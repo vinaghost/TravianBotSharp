@@ -7,8 +7,6 @@ namespace MainCore.Shared.Behaviors
         ChromeManager chromeManager,
         SwitchVillageCommand.Handler switchVillageCommand,
         UpdateStorageCommand.Handler updateStorageCommand,
-        ToDorfCommand.Handler toDorfCommand,
-        UpdateBuildingCommand.Handler updateBuildingCommand,
         UpdateVillageQuestCommand.Handler updateQuestCommand)
             : Behavior<TRequest, TResponse>
                 where TRequest : VillageTask
@@ -25,12 +23,6 @@ namespace MainCore.Shared.Behaviors
             var response = await Next(request, cancellationToken);
 
             if (response.IsFailed && !response.HasError<Skip>() && !response.HasError<ReSchedule>()) return response;
-
-            result = await toDorfCommand.HandleAsync(new(browser, 2), cancellationToken);
-            if (result.IsFailed) return (TResponse)result;
-
-            result = await updateBuildingCommand.HandleAsync(new(browser, villageId), cancellationToken);
-            if (result.IsFailed) return (TResponse)result;
 
             await updateStorageCommand.HandleAsync(new(browser, villageId), cancellationToken);
             await updateQuestCommand.HandleAsync(new(browser, villageId), cancellationToken);

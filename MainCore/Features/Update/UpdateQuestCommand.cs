@@ -16,7 +16,7 @@ public sealed partial class UpdateVillageQuestCommand(
     {
         var (browser, accountId, villageId) = command;
         if (taskManager.IsExist<ClaimVillageQuestTask.Task>(accountId, villageId)) return;
-        if (!(await browser.CurrentPage.IsVillageQuestClaimable())) return;
+        if (await browser.CurrentPage.GetNewQuestSpeechBubble().CountAsync() == 0) return;
         using var context = contextFactory.CreateDbContext();
         if (!context.IsVillageQuestEnable(villageId)) return;
 
