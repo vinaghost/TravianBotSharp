@@ -20,39 +20,33 @@ public sealed partial class UpdateBuildingTask(
 
         if (await browser.CurrentPage.GetDorf(1).CountAsync() > 0)
         {
-            result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
-            if (result.IsFailed) return result;
+            await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
 
             result = await toDorfCommand.HandleAsync(new(browser, 2), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
-            if (result.IsFailed) return result;
+            await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
         }
         else if (await browser.CurrentPage.GetDorf(2).CountAsync() > 0)
         {
-            result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
-            if (result.IsFailed) return result;
+            await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
 
             result = await toDorfCommand.HandleAsync(new(browser, 1), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
-            if (result.IsFailed) return result;
+            await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
         }
         else
         {
-            result = await toDorfCommand.HandleAsync(new(browser, 2), cancellationToken);
-            if (result.IsFailed) return result;
-
-            result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
-            if (result.IsFailed) return result;
-
             result = await toDorfCommand.HandleAsync(new(browser, 1), cancellationToken);
             if (result.IsFailed) return result;
 
-            result = await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
+            await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
+
+            result = await toDorfCommand.HandleAsync(new(browser, 2), cancellationToken);
             if (result.IsFailed) return result;
+
+            await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
         }
         return Result.Ok();
     }

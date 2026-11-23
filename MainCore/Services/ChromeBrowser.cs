@@ -19,8 +19,11 @@ public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory
     private IPlaywright? _playwright;
     private IBrowserContext? _browser;
     private IPage? _mainPage;
+    private IReadOnlyDictionary<string, int> _buildingNames = new Dictionary<string, int>();
 
     public IPage CurrentPage => _mainPage ?? throw new InvalidOperationException("Main page is not initialized.");
+
+    public IReadOnlyDictionary<string, int> BuildingNames => _buildingNames;
 
     public string CurrentUrl => _mainPage?.Url ?? "";
 
@@ -71,6 +74,7 @@ public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory
                 "--force-webrtc-ip-handling-policy",
             ],
         });
+        _browser.Response += OnBrowserResponse;
         IsHeadless = setting.IsHeadless;
         _mainPage = await _browser.NewPageAsync();
 
@@ -78,6 +82,30 @@ public sealed class ChromeBrowser(IDbContextFactory<AppDbContext> contextFactory
         if (firstPage != null && firstPage.Url == "about:blank")
         {
             await firstPage.CloseAsync();
+        }
+    }
+
+    private async void OnBrowserResponse(object? sender, IResponse response)
+    {
+        // 304 (revalidated cache hit) is not Ok in Playwright, so only skip error statuses
+        if (response.Status >= 400 || !response.Url.Contains("/allgemein.json", StringComparison.OrdinalIgnoreCase)) return;
+
+        try
+        {
+            var raw = await response.JsonAsync<Dictionary<string, string>>();
+            if (raw is null) return;
+
+            var names = new Dictionary<string, int>();
+            foreach (var (key, value) in raw)
+            {
+                if (key.StartsWith("gid", StringComparison.Ordinal) && int.TryParse(key.AsSpan(3), out var gid) && !string.IsNullOrWhiteSpace(value))
+                    names[value.Trim()] = gid;
+            }
+            _buildingNames = names;
+        }
+        catch (Exception ex)
+        {
+            Logger?.Warning(ex, "Reading building names from [{Url}] failed.", response.Url);
         }
     }
 

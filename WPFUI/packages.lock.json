@@ -526,8 +526,8 @@
       },
       "Patchright": {
         "type": "Transitive",
-        "resolved": "1.63.0",
-        "contentHash": "I283/ZzDARf0vnCZtJinZS9oDXIdLpYaUu6IOH1Rbi/ku1N8NTwPN9WzamQcg4kwbKi6+tRXZadl6OOA1wIGYA==",
+        "resolved": "1.64.1",
+        "contentHash": "PtmRAfkimFonbvmCB6/ZB65KvOejx6RKXzMGi05YUaJHJivxEJ1ffuj4OTBW31HJa9KBCpb7KjF96IQ/5IvQsQ==",
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
           "System.ComponentModel.Annotations": "5.0.0"
@@ -598,11 +598,6 @@
         "dependencies": {
           "ReactiveUI.Primitives": "7.3.0"
         }
-      },
-      "Riok.Mapperly": {
-        "type": "Transitive",
-        "resolved": "4.3.1",
-        "contentHash": "oSE+OVLHyiojrws0QVbQaAT2YKsYbyHqJXPdV7EhGseR/dYgeWS2x1T5qY5I4E+RJkJqMSG+FyZOq4SljWgJWQ=="
       },
       "Serilog": {
         "type": "Transitive",
@@ -751,10 +746,9 @@
           "Immediate.Handlers": "[4.2.0, )",
           "Microsoft.EntityFrameworkCore.Sqlite": "[10.0.12, )",
           "Microsoft.Extensions.Hosting": "[10.0.12, )",
-          "Patchright": "[1.63.0, )",
+          "Patchright": "[1.64.1, )",
           "Polly": "[8.8.0, )",
           "ReactiveUI": "[24.2.0, )",
-          "Riok.Mapperly": "[4.3.1, )",
           "Serilog": "[4.4.0, )",
           "Serilog.Expressions": "[5.0.0, )",
           "Serilog.Extensions.Hosting": "[10.0.0, )",

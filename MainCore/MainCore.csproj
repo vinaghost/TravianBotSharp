@@ -34,7 +34,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
-    <PackageReference Include="Patchright" Version="1.63.0" />
+    <PackageReference Include="Patchright" Version="1.64.1" />
     <PackageReference Include="Polly" Version="8.8.0" />
     <PackageReference Include="ReactiveUI" Version="24.2.0" />
     <PackageReference Include="ReactiveUI.SourceGenerators" Version="3.2.0">

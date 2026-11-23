@@ -12,9 +12,6 @@ public static partial class InstantUpgradeCommand
     {
         var browser = command.Browser;
 
-        var oldQueueCount = await browser.CurrentPage.CountQueueBuilding();
-        if (oldQueueCount == 0) return Result.Ok();
-
         var completeButton = browser.CurrentPage.GetCompleteButton();
         var result = await browser.Click(completeButton);
         if (result.IsFailed) return result;
