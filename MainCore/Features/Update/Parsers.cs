@@ -58,15 +58,51 @@ public static class Parsers
         return extractedItems;
     }
 
+    // The sidebar script embeds the page data as a JSON-compatible object literal after "viewData:".
+    // The object is cut out by matching braces (skipping string contents) and parsed.
+    private const string ReadViewDataScript = @"
+            const readViewData = () => {
+                const scripts = document.querySelectorAll('div#sidebarAfterContent div.sidebarBoxWrapper script');
+                for (const script of scripts) {
+                    const source = script.textContent || '';
+                    const keyIndex = source.indexOf('viewData:');
+                    if (keyIndex < 0) continue;
+
+                    const start = source.indexOf('{', keyIndex);
+                    if (start < 0) continue;
+
+                    let depth = 0;
+                    let inString = false;
+                    for (let i = start; i < source.length; i++) {
+                        const c = source[i];
+                        if (inString) {
+                            if (c === '\\') i++;
+                            else if (c === '""') inString = false;
+                        } else if (c === '""') {
+                            inString = true;
+                        } else if (c === '{') {
+                            depth++;
+                        } else if (c === '}' && --depth === 0) {
+                            try {
+                                return JSON.parse(source.substring(start, i + 1));
+                            } catch {
+                                return null;
+                            }
+                        }
+                    }
+                }
+                return null;
+            };
+";
+
     public record struct AccountDataDto(AccountInfoDto AccountInfo, VillageDto[] Villages);
 
     public static async Task<(AccountInfoDto AccountInfo, List<VillageDto> Villages)> GetAccountData(this IPage page)
     {
-        var data = await page.EvaluateAsync<AccountDataDto>(@"() => {
+        var data = await page.EvaluateAsync<AccountDataDto>("() => {" + ReadViewDataScript + @"
             const goldEl = document.querySelector('div.ajaxReplaceableGoldAmount');
             const silverEl = document.querySelector('div.ajaxReplaceableSilverAmount');
-            const editButton = document.querySelector('#sidebarBoxLinklist a.edit.round');
-            const questmasterBtn = document.querySelector('#questmasterButton');
+            const player = readViewData()?.ownPlayer;
 
             const parseDomInt = (el) => {
                 if (!el) return 0;
@@ -76,48 +112,41 @@ public static class Parsers
                 return isNaN(parsed) ? 0 : parsed;
             };
 
-            const plusAttr = editButton ? (editButton.getAttribute('class') || '') : '';
-            const tribeAttr = questmasterBtn ? (questmasterBtn.getAttribute('class') || '') : '';
-
-            const tribeMatch = tribeAttr.match(/vid_(\d+)/);
-            const tribeId = tribeMatch ? parseInt(tribeMatch[1], 10) : 0;
-
             const accountInfo = {
                 Gold: parseDomInt(goldEl),
                 Silver: parseDomInt(silverEl),
-                HasPlusAccount: plusAttr.includes('green'),
-                Tribe: tribeId
+                HasPlusAccount: player?.goldFeatures?.travianPlus?.isActive === true,
+                Tribe: player?.tribeId ?? 0
             };
 
-            const villageElements = document.querySelectorAll('#sidebarBoxVillageList div.listEntry.village');
-            const villages = [];
+            // names arrive HTML-encoded (e.g. &#39;)
+            const decoder = document.createElement('textarea');
+            const decode = (text) => {
+                decoder.innerHTML = text ?? '';
+                return decoder.value.trim();
+            };
 
-            villageElements.forEach(node => {
-                const nameEl = node.querySelector('a span.name');
-                const xEl = node.querySelector('span.coordinateX');
-                const yEl = node.querySelector('span.coordinateY');
+            const currentVillageId = player?.village?.id ?? 0;
+            const villageById = new Map();
 
-                const rawId = parseInt(node.getAttribute('data-did'), 10);
-                const id = isNaN(rawId) ? 0 : rawId;
+            // the list mixes groups (with nested villages) and ungrouped villages
+            (player?.villageList ?? []).forEach(entry => {
+                const items = entry && Array.isArray(entry.villages) ? entry.villages : [entry];
+                items.forEach(village => {
+                    if (!village || !village.id || villageById.has(village.id)) return;
 
-                const parseCoord = (el) => {
-                    if (!el) return 0;
-                    const text = (el.innerText || el.textContent || '').replace(/[^\d-]/g, '');
-                    const parsed = parseInt(text, 10);
-                    return isNaN(parsed) ? 0 : parsed;
-                };
-
-                villages.push({
-                    Id: id,
-                    Name: nameEl ? (nameEl.innerText || nameEl.textContent).trim() : '',
-                    X: parseCoord(xEl),
-                    Y: parseCoord(yEl),
-                    IsActive: node.classList.contains('active'),
-                    IsUnderAttack: node.classList.contains('attack')
+                    villageById.set(village.id, {
+                        Id: village.id,
+                        Name: decode(village.name),
+                        X: village.x ?? 0,
+                        Y: village.y ?? 0,
+                        IsActive: village.id === currentVillageId,
+                        IsUnderAttack: (village.incomingAttacksAmount ?? 0) > 0
+                    });
                 });
             });
 
-            return { AccountInfo: accountInfo, Villages: villages };
+            return { AccountInfo: accountInfo, Villages: [...villageById.values()] };
         }");
 
         return (data.AccountInfo, [.. data.Villages]);
@@ -129,16 +158,13 @@ public static class Parsers
     public static async Task<BuildingDataDto> GetBuildingData(this IPage page, IReadOnlyDictionary<string, int> buildingNames)
     {
         await page.WaitForSelectorAsync("#questmasterButton");
-        var data = await page.EvaluateAsync<BuildingDataDto>(@"() => {
+        var data = await page.EvaluateAsync<BuildingDataDto>("() => {" + ReadViewDataScript + @"
             const isDorf1 = document.querySelector('.village1') !== null;
             const isDorf2 = document.querySelector('.village2') !== null;
             const buildingsResult = [];
             const queueResult = [];
 
-            const questMaster = document.querySelector('#questmasterButton');
-            const tribeAttr = questMaster ? (questMaster.getAttribute('class') || '') : '';
-            const tribeMatch = tribeAttr.match(/vid_(\d+)/);
-            const tribeId = tribeMatch ? parseInt(tribeMatch[1], 10) : 0;
+            const tribeId = readViewData()?.ownPlayer?.village?.tribeId ?? 0;
 
             const getWallType = (tId) => {
                 switch(tId) {

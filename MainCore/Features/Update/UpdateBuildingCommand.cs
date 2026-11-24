@@ -54,6 +54,7 @@ public sealed partial class UpdateBuildingCommand(
 
     private void UpdateTribe(VillageId villageId, int tribe)
     {
+        if (tribe == 0) return;
         using var context = contextFactory.CreateDbContext();
         var dict = new Dictionary<VillageSettingEnums, int>
         {
