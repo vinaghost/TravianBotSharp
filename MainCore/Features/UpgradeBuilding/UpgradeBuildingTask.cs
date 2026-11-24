@@ -72,6 +72,7 @@ public sealed partial class UpgradeBuildingTask(
                 if (upgradeErrors.Any(x => x.Type == UpgradeErrorType.BuildingComplete))
                 {
                     // roll next plan
+                    await updateBuildingCommand.HandleAsync(new(browser, task.VillageId), cancellationToken);
                     continue;
                 }
 
