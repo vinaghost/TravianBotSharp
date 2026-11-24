@@ -17,10 +17,6 @@ namespace MainCore.Shared.Behaviors
     {
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return (TResponse)Cancel.Error;
-            }
             var accountId = request.AccountId;
             var cacheExecuteAt = request.ExecuteAt;
             var browser = chromeManager.Get(accountId);
