@@ -37,6 +37,7 @@ public sealed partial class UpdateBuildingCommand(
         var (browser, accountId, villageId) = command;
         var data = await browser.CurrentPage.GetBuildingData(browser.BuildingNames);
 
+        UpdateTribe(villageId, data.Tribe);
         UpdateBuildingToDatabase(villageId, data.Buildings, data.Queue);
         TriggerTask(accountId, villageId);
         rxQueue.Enqueue(new BuildingsModified(accountId, villageId));
@@ -49,6 +50,17 @@ public sealed partial class UpdateBuildingCommand(
         if (!context.IsInstantUpgradeEnable(accountId, villageId)) return;
 
         taskManager.Add(new InstantUpgradeTask.Task(accountId, villageId), true);
+    }
+
+    private void UpdateTribe(VillageId villageId, int tribe)
+    {
+        if (tribe == 0) return;
+        using var context = contextFactory.CreateDbContext();
+        var dict = new Dictionary<VillageSettingEnums, int>
+        {
+            { VillageSettingEnums.Tribe, tribe }
+        };
+        context.SaveVillageSetting(villageId, dict);
     }
 
     private void UpdateBuildingToDatabase(VillageId villageId, BuildingDto[] buildingDtos, QueueBuildingDto[] queueBuildingDtos)

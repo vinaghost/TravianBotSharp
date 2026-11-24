@@ -160,7 +160,7 @@ namespace MainCore.UI.ViewModels.Tabs
 
             List<ListBoxItem> items = [];
 
-            foreach (var village in villages)
+            foreach (var village in villages.OrderBy(x => x.Name))
             {
                 if (resourceFields.TryGetValue(village.VillageId, out var buildings) && buildings.Any())
                 {
