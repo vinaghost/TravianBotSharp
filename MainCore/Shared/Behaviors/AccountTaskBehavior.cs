@@ -17,10 +17,6 @@ namespace MainCore.Shared.Behaviors
     {
         public override async ValueTask<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken)
         {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return (TResponse)Cancel.Error;
-            }
             var accountId = request.AccountId;
             var cacheExecuteAt = request.ExecuteAt;
             var browser = chromeManager.Get(accountId);
@@ -48,9 +44,8 @@ namespace MainCore.Shared.Behaviors
                 if (request is not LoginTask.Task)
                 {
                     taskManager.Add<LoginTask.Task>(new(accountId), first: true);
-                    request.ExecuteAt = request.ExecuteAt.AddSeconds(1);
                     logger.Information("Account is logout. Re-login now");
-                    return (TResponse)Skip.Error;
+                    return (TResponse)ReSchedule.Error(request.ExecuteAt.AddSeconds(1));
                 }
             }
             else
